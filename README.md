@@ -17,8 +17,8 @@ As organizations migrate to cloud-native environments, managing resource efficie
 
 To maintain code quality and deployment stability, we strictly follow a main/dev/feature branch strategy:
 
-* **[`main`](../../../tree/main)**: This branch is strictly reserved for stable, production-ready code. Code is only merged into this branch after passing rigorous automated testing, Quality Assurance (QA), and User Acceptance Testing (UAT).
-* **[`dev`](../../../tree/dev)**: This is our active integration branch. Completed features are merged here first for testing and verification before being promoted to `main`.
+* **[`main`](https://github.com/COS301-SE-2026/CloudSherpa/tree/main)**: This branch is strictly reserved for stable, production-ready code. Code is only merged into this branch after passing rigorous automated testing, Quality Assurance (QA), and User Acceptance Testing (UAT).
+* **[`dev`](https://github.com/COS301-SE-2026/CloudSherpa/tree/dev)**: This is our active integration branch. Completed features are merged here first for testing and verification before being promoted to `main`.
 * **`feature/*`**: Short-lived branches created from `dev` for individual features/fixes. Once complete and reviewed, they are merged back into `dev`.
 
 ## About Team BitFlip
