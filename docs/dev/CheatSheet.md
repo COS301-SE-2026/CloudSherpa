@@ -49,6 +49,25 @@ Start Kafka, initialize topics, and start Schema Registry:
 docker compose -f infra/docker-compose.yml up -d --build kafka kafka-init schema-registry
 ```
 
+Start AnalyticsDB (TimescaleDB):
+
+```bash
+docker compose --env-file .env -f infra/docker-compose.yml up -d analytics-db
+```
+
+Connect to AnalyticsDB:
+
+```bash
+docker exec -it analytics-db sh -lc 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
+```
+
+Enable Timescale (one-time per database):
+
+```sql
+CREATE EXTENSION IF NOT EXISTS timescaledb;
+\dx
+```
+
 Start the full local stack:
 
 ```bash

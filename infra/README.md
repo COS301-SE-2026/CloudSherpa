@@ -40,6 +40,59 @@ Docker-network connection values:
 - Kafka: `kafka:9092`
 - Schema Registry: `http://schema-registry:8081`
 
+## AnalyticsDB (TimescaleDB)
+
+CloudSherpa’s AnalyticsDB runs as a dedicated TimescaleDB container named `analytics-db`. The `analytics-engine` container can reach it over the Docker network.
+
+### Before you start
+
+1. Make sure you have a repo-root `.env` file. It should define:
+
+   - `ANALYTICS_DB_NAME`
+   - `ANALYTICS_DB_USER`
+   - `ANALYTICS_DB_PASSWORD`
+2. Run the commands below from the repository root.
+
+### Start AnalyticsDB
+
+1. Start the database (first time will download the TimescaleDB image):
+
+   ```bash
+   docker compose --env-file .env -f infra/docker-compose.yml pull analytics-db
+   docker compose --env-file .env -f infra/docker-compose.yml up -d analytics-db
+   docker compose --env-file .env -f infra/docker-compose.yml ps
+   ```
+
+2. Open `psql` inside the DB container:
+
+   ```bash
+   docker exec -it analytics-db sh -lc 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
+   ```
+
+3. Enable TimescaleDB (one-time per database):
+
+   ```sql
+   CREATE EXTENSION IF NOT EXISTS timescaledb;
+   \dx
+   ```
+
+4. Start creating schemas/tables as normal. Exit `psql` with `\q`.
+
+### Container-to-container connectivity
+
+- From containers in this Compose stack: use `analytics-db:5432`
+- From the host machine (because the port is published): use `localhost:5432`
+
+### Persistence and resets
+
+AnalyticsDB data is persisted via a named Docker volume (so data survives container restarts).
+
+To reset the stack and remove volumes (destructive; deletes DB data):
+
+```bash
+docker compose --env-file .env -f infra/docker-compose.yml down -v
+```
+
 ## Start the Full Stack
 
 From the repository root:
