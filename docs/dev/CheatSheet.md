@@ -33,6 +33,8 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
+The `python -m venv .venv` command depends on your Python installation. If it fails, make sure the Python `venv` module is installed, then try `python3 -m venv .venv`.
+
 Spring Boot services use their Maven wrappers:
 
 ```bash
