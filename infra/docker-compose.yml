@@ -1,0 +1,119 @@
+services:
+  kafka:
+    image: apache/kafka:4.1.2
+    container_name: kafka
+    ports:
+      - "29092:29092"
+    environment:
+      # Unique ID of Kafka node/broker in the cluster
+      KAFKA_NODE_ID: 1
+      # Node manages both brokerage (storing data and serving clients) and controller
+      # cluster metadata and broker coordination
+      KAFKA_PROCESS_ROLES: broker,controller
+      # Sockets kafka binds to within containers
+      # 9092 normal kafka traffic within docker network 
+      # 29092 normal kafka traffic from docker host
+      # 9093 cluster quorum traffic
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:9092,EXTERNAL://0.0.0.0:29092,CONTROLLER://0.0.0.0:9093
+      # Address clients use when connecting, PLAINTEXT equivalent to no TLS/encryption, will change to SSL for prod
+      KAFKA_ADVERTISED_LISTENERS: EXTERNAL://localhost:29092,INTERNAL://kafka:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      # Maps each listener name to a security protocol
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+  
+  schema-registry:
+      image: confluentinc/cp-schema-registry:8.0.0
+      container_name: schema-registry
+      depends_on:
+        - kafka
+      ports:
+        - "9000:8081"
+      environment:
+        SCHEMA_REGISTRY_HOST_NAME: schema-registry
+        # Schema Registry, connect to Kafka at kafka:9092 using PLAINTEXT protocol so you can store and read schemas.
+        # Schemas are persisted in internal topic _schemas
+        SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka:9092
+
+  # TODO: add explicit container names 
+  ingestion-service:
+    build:
+      context: ../apps/ingestion-service
+      dockerfile: Dockerfile
+    image: cloudsherpa-ingestion-service:latest
+    container_name: ingestion-service
+    ports:
+      - "8081:8080"
+    env_file:
+      - ../apps/ingestion-service/.env
+
+  normalization-service:
+    build:
+      context: ../apps/normalization-service
+      dockerfile: Dockerfile
+    image: cloudsherpa-normalization-service:latest
+    container_name: normalization-service
+    ports:
+      - "8082:8080"
+    env_file:
+      - ../apps/normalization-service/.env
+    
+  analytics-engine:
+    build:
+      context: ../apps/analytics-engine
+      dockerfile: Dockerfile
+    image: cloudsherpa-analytics-engine:latest
+    container_name: analytics-engine
+    ports:
+      - "8083:8080"
+    env_file:
+      - ../apps/analytics-engine/.env
+  
+  alert-engine:
+    build:
+      context: ../apps/alert-engine
+      dockerfile: Dockerfile
+    image: cloudsherpa-alert-engine:latest
+    container_name: alert-engine
+    ports:
+      - "3002:3000"
+    env_file:
+      - ../apps/alert-engine/.env
+  
+  dashboard-backend:
+    build:
+      context: ../apps/dashboard-backend
+      dockerfile: Dockerfile
+    image: cloudsherpa-dashboard-backend:latest
+    container_name: dashboard-backend
+    ports:
+      - "3001:3001"
+    env_file:
+      - ../apps/dashboard-backend/.env
+  
+  dashboard-frontend:
+    build:
+      context: ../apps/dashboard-frontend
+      dockerfile: Dockerfile
+    image: cloudsherpa-dashboard-frontend:latest
+    container_name: dashboard-frontend
+    ports:
+      - "3000:3000"
+    env_file:
+      - ../apps/dashboard-frontend/.env
+  
+  intelligence-engine:
+    build:
+      context: ../apps/intelligence-engine
+      dockerfile: Dockerfile
+    image: cloudsherpa-intelligence-engine:latest
+    ports:
+      - "8000:8000"
+    container_name: intelligence-engine
+    env_file:
+      - ../apps/intelligence-engine/.env
