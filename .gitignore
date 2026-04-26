@@ -1,4 +1,5 @@
 .env
+.vscode
 
 HELP.md
 target/
@@ -60,3 +61,6 @@ next-env.d.ts
 !.vscode/extensions.json
 
 dist
+
+# Python
+.venv
