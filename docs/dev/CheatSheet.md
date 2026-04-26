@@ -43,10 +43,10 @@ chmod +x apps/analytics-engine/mvnw
 
 ## Docker Compose
 
-Start Kafka and Schema Registry only:
+Start Kafka, initialize topics, and start Schema Registry:
 
 ```bash
-docker compose -f infra/docker-compose.yml up -d kafka schema-registry
+docker compose -f infra/docker-compose.yml up -d --build kafka kafka-init schema-registry
 ```
 
 Start the full local stack:
@@ -190,6 +190,7 @@ cd apps/dashboard-backend && npm run format
 | Dashboard Backend | `3001` | `3001` |
 | Alert Engine | `3000` | `3002` |
 | Intelligence Engine | `8000` | `8000` |
+| Kafka Init | n/a | n/a |
 | Ingestion Service | `8080` | `8081` |
 | Normalization Service | `8080` | `8082` |
 | Analytics Engine | `8080` | `8083` |
@@ -210,6 +211,7 @@ cd apps/dashboard-backend && npm run format
 | `apps/` | Runtime services |
 | `infra/docker-compose.yml` | Local container stack |
 | `libs/kafka/` | Shared Kafka schemas |
+| `apps/kafka-init/` | Local Kafka topic initialization service |
 | `scripts/env-init.sh` | Initializes local `.env` files |
 | `docs/dev/MonorepoMadness.md` | Repo structure guide |
 | `docs/dev/UsingKafka.md` | Kafka usage notes |

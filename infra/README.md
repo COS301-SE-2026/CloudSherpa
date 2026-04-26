@@ -4,7 +4,7 @@ Local infrastructure and container orchestration for CloudSherpa.
 
 ## Contents
 
-- `docker-compose.yml` - local Docker Compose stack for Kafka, Schema Registry, and CloudSherpa app containers.
+- `docker-compose.yml` - local Docker Compose stack for Kafka, Kafka topic initialization, Schema Registry, and CloudSherpa app containers.
 
 ## Prerequisites
 
@@ -24,10 +24,10 @@ The script is idempotent and does not overwrite existing `.env` files. Once it h
 
 ## Start Shared Dependencies
 
-Use this when running app dev servers directly on the host:
+Use this when running app dev servers directly on the host. This starts Kafka, runs `kafka-init` to create local topics, and starts Schema Registry:
 
 ```bash
-docker compose -f infra/docker-compose.yml up -d kafka schema-registry
+docker compose -f infra/docker-compose.yml up -d --build kafka kafka-init schema-registry
 ```
 
 Host connection values:
@@ -107,6 +107,7 @@ docker compose -f infra/docker-compose.yml logs -f kafka
 | `dashboard-backend` | `3001` | `3001` | NestJS API |
 | `alert-engine` | `3002` | `3000` | Express API |
 | `intelligence-engine` | `8000` | `8000` | FastAPI service |
+| `kafka-init` | n/a | n/a | One-shot Kafka topic initialization |
 | `ingestion-service` | `8081` | `8080` | Spring Boot service |
 | `normalization-service` | `8082` | `8080` | Spring Boot service |
 | `analytics-engine` | `8083` | `8080` | Spring Boot service |
@@ -121,6 +122,8 @@ The local Kafka container exposes two client paths:
 - `kafka:9092` for applications running inside Docker Compose.
 
 Use the correct address for the runtime location of the client. A service running in Docker Compose should not use `localhost:29092` to reach Kafka.
+
+`kafka-init` uses the Docker-network address by default and exits after creating configured topics. Re-running it is safe when topics already exist.
 
 ## Development vs Production
 

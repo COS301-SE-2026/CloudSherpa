@@ -22,10 +22,10 @@ pip install -r requirements.txt
 
 Environment files are initialized repo-wide by `scripts/env-init.sh`. Once that script has been run, services with `.env.example` files should already have the `.env` files they need for local development. Add `apps/intelligence-engine/.env.example` before relying on the script for this service.
 
-If the service needs Kafka locally, start the shared development dependencies from the repository root:
+If the service needs Kafka locally, start the shared development dependencies and initialize topics from the repository root:
 
 ```bash
-docker compose -f infra/docker-compose.yml up -d kafka schema-registry
+docker compose -f infra/docker-compose.yml up -d --build kafka kafka-init schema-registry
 ```
 
 ## Development Server

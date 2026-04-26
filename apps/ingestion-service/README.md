@@ -19,10 +19,10 @@ chmod +x mvnw
 
 Environment files are initialized repo-wide by `scripts/env-init.sh`. Once that script has been run, this service should already have the `.env` file it needs for local development.
 
-If the service needs Kafka locally, start the shared development dependencies from the repository root:
+If the service needs Kafka locally, start the shared development dependencies and initialize topics from the repository root:
 
 ```bash
-docker compose -f infra/docker-compose.yml up -d kafka schema-registry
+docker compose -f infra/docker-compose.yml up -d --build kafka kafka-init schema-registry
 ```
 
 ## Development Server

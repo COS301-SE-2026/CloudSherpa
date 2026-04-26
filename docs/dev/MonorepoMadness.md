@@ -18,6 +18,7 @@ _Generated on 26/04_. Should update regularly or automate via local git lifecycl
 |   |-- dashboard-frontend
 |   |-- ingestion-service
 |   |-- intelligence-engine
+|   |-- kafka-init
 |   `-- normalization-service
 |-- docs
 |   |-- assets
@@ -94,6 +95,7 @@ Use these READMEs for service-specific setup, development commands, build comman
 | Dashboard Frontend | [`apps/dashboard-frontend/README.md`](../../apps/dashboard-frontend/README.md) |
 | Ingestion Service | [`apps/ingestion-service/README.md`](../../apps/ingestion-service/README.md) |
 | Intelligence Engine | [`apps/intelligence-engine/README.md`](../../apps/intelligence-engine/README.md) |
+| Kafka Init | [`apps/kafka-init/README.md`](../../apps/kafka-init/README.md) |
 | Normalization Service | [`apps/normalization-service/README.md`](../../apps/normalization-service/README.md) |
 
 ## `docs/`
