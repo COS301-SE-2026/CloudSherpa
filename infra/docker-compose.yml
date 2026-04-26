@@ -27,6 +27,19 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
   
+  kafka-init:
+    build:
+      context: ../apps/kafka-init
+      dockerfile: Dockerfile
+    image: cloudsherpa-kafka-init
+    container_name: kafka-init
+    depends_on:
+      - kafka
+    restart: "no"
+    env_file:
+      - "../apps/kafka-init/.env"
+
+
   schema-registry:
       image: confluentinc/cp-schema-registry:8.0.0
       container_name: schema-registry
