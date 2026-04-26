@@ -130,3 +130,25 @@ services:
     container_name: intelligence-engine
     env_file:
       - ../apps/intelligence-engine/.env
+
+  analytics-db:
+    image: timescale/timescaledb:2.16.1-pg16
+    container_name: analytics-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${ANALYTICS_DB_NAME:-analytics}
+      POSTGRES_USER: ${ANALYTICS_DB_USER:-cloudsherpa}
+      POSTGRES_PASSWORD: ${ANALYTICS_DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - analytics_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  analytics_db_data: 
+  # Ensures that the data is persistent across docker compose down / up 
