@@ -20,6 +20,8 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
+The `python -m venv .venv` command depends on how Python is installed on your machine. If it fails, make sure the Python `venv` module is installed, then try `python3 -m venv .venv`.
+
 Environment files are initialized repo-wide by `scripts/env-init.sh`. Once that script has been run, services with `.env.example` files should already have the `.env` files they need for local development. Add `apps/intelligence-engine/.env.example` before relying on the script for this service.
 
 If the service needs Kafka locally, start the shared development dependencies and initialize topics from the repository root:
