@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="docs/TeamLogo.png" alt="CloudSherpa Logo" width="250"/>
+  <img src="docs/assets/team-photos/TeamLogo.png" alt="CloudSherpa Logo" width="250"/>
 
   <p><strong><span style="font-size: 56px; line-height: 1.1;">CloudSherpa</span></strong></p>
   <p><strong>An AI-Driven Multi-Cloud FinOps Platform</strong></p>
@@ -24,7 +24,7 @@ To maintain code quality and deployment stability, we strictly follow a main/dev
 ## About Team BitFlip
 
 <div align="center">
-  <img src="docs/TeamPhoto.png" alt="Team BitFlip" width="650"/>
+  <img src="docs/assets/team-photos/TeamPhoto.png" alt="Team BitFlip" width="650"/>
 </div>
 
 Team BitFlip is a cross-functional group of dedicated software engineering students committed to transparency, accountability, and quality-focused delivery. We utilize an Agile delivery framework to ensure continuous alignment with our stakeholders' vision. 
