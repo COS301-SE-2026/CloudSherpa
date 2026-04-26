@@ -11,6 +11,27 @@ CloudSherpa is an AI-driven cloud cost optimization platform designed to analyze
 
 As organizations migrate to cloud-native environments, managing resource efficiency is a significant challenge. CloudSherpa acts as a set of financial guardrails by collecting operational monitoring and billing data, and applying machine learning models to detect anomalies and predict future costs. Through an interactive web-based dashboard, users can visualize resource usage, forecast spending, and receive intelligent optimization recommendations to support data-driven cloud management decisions.
 
+## Running the Project
+
+CloudSherpa runs locally through Docker Compose. From the repository root, initialize local environment files once:
+
+```bash
+cd scripts
+chmod +x env-init.sh
+./env-init.sh
+cd ..
+```
+
+Then start the stack:
+
+```bash
+docker compose -f infra/docker-compose.yml up --build
+```
+
+The dashboard frontend is available at `http://localhost:3000`.
+
+For development workflows, individual service commands, ports, and troubleshooting, see [`docs/dev/CheatSheet.md`](docs/dev/CheatSheet.md), [`infra/README.md`](infra/README.md), and the app-specific READMEs under [`apps/`](apps/).
+
 ## Current Status & Branch Strategy
 
 **Status: Active Development**

@@ -1,19 +1,19 @@
-# Dashboard Frontend
+# Alert Engine
 
-Next.js frontend for the CloudSherpa dashboard.
+Lightweight TypeScript/Express service responsible for alert-related functionality.
 
 ## Runtime
 
 - Node.js 20
-- Next.js 16
-- React 19
+- Express
+- TypeScript
 - Default local port: `3000`
-- Docker Compose host port: `3000`
+- Docker Compose host port: `3002`
 
 ## Local Setup
 
 ```bash
-cd apps/dashboard-frontend
+cd apps/alert-engine
 npm install
 ```
 
@@ -25,7 +25,7 @@ Environment files are initialized repo-wide by `scripts/env-init.sh`. Once that 
 npm run dev
 ```
 
-The Next.js dev server starts on `http://localhost:3000` unless a different port is provided.
+The dev server uses `ts-node-dev` and restarts when files under `src/` change.
 
 ## Build and Production Run
 
@@ -34,12 +34,12 @@ npm run build
 npm start
 ```
 
-The production start script serves the built Next.js app on port `3000`.
+The production command runs the compiled entrypoint at `dist/server.js`.
 
-## Lint
+## Tests
 
 ```bash
-npm run lint
+npm test
 ```
 
 ## Docker
@@ -47,17 +47,17 @@ npm run lint
 From the repository root:
 
 ```bash
-docker compose -f infra/docker-compose.yml up --build dashboard-frontend
+docker compose -f infra/docker-compose.yml up --build alert-engine
 ```
 
 ## Dev Dependencies
 
-This app uses development-only packages for:
+This service uses development-only packages for:
 
-- TypeScript types: `@types/node`, `@types/react`, `@types/react-dom`
-- Linting: `eslint`, `eslint-config-next`
-- Styling pipeline: `tailwindcss`, `@tailwindcss/postcss`
-- TypeScript: `typescript`
+- TypeScript compilation: `typescript`
+- Hot reload: `ts-node-dev`
+- Testing: `jest`, `ts-jest`, `supertest`
+- Type definitions: `@types/*`
 
 Install all dependencies with `npm install` for local development. The Docker production image installs runtime dependencies only with `npm ci --omit=dev`.
 
@@ -68,10 +68,5 @@ Local environment values should live in `.env`. Keep committed defaults and docu
 ### Development
 
 - If `scripts/env-init.sh` has already been run, the local `.env` file should be in place.
-- Client-exposed values must use the `NEXT_PUBLIC_` prefix.
-- Point API URLs at the local dashboard backend, usually `http://localhost:3001`.
-
-### Production
-
-- Build with production API URLs.
-- Run with `NODE_ENV=production`.
+- Use localhost service addresses when running dependencies on the host.
+- Use Docker service names such as `kafka` when running inside Docker Compose.
