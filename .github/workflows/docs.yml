@@ -1,0 +1,56 @@
+# This action publishes mkdocs to CloudSherpa GitHub pages on push to dev or main. 
+name: Publish Docs
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  # Workflow dispatch adds "run workflow" button in actions tab, if we want to manually rerun it for
+  # docs on main for example
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# If doc deployment in progress, cancel
+concurrency:
+  group: github-pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build MkDocs site
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install MkDocs dependencies
+        run: |
+          pip install mkdocs mkdocs-material pymdown-extensions
+
+      - name: Build MkDocs site
+        # Strict fails on warnings, make sure all links can resolve otherwise action fail
+        run: |
+          mkdocs build --strict
+
+      - name: Add nojekyll file
+        run: |
+          touch site/.nojekyll
+
+      - name: Deploy to gh-pages branch
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./site
+          publish_branch: gh-pages
+          force_orphan: true
