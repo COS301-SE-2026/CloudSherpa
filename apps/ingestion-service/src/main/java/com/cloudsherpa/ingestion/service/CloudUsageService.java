@@ -21,7 +21,7 @@ public class CloudUsageService {
     // Spring handles instantiation, we defined KafkaTemplate bean in config and we inject topic value from app properties
     public CloudUsageService(
         KafkaTemplate<String, CloudUsageEvent> kafkaTemplate,
-        @Value("{app.kafka.topics.cloud-usage}")
+        @Value("${app.kafka.topics.cloud-usage}")
         String topic
     ) {
         this.kafkaTemplate = kafkaTemplate;

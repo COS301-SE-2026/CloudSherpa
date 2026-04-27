@@ -5,8 +5,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.cloudsherpa.ingestion.service.CloudUsageService;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-
 
 @RestController
 @RequestMapping("/api/events")
