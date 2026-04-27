@@ -1,4 +1,4 @@
-# How services Produce and Consume events 
+# How Services Produce and Consume Events
 
 ## Resources
 
@@ -25,7 +25,40 @@ Ingestion Service  --->  cloud.raw.aws.usage
                               |
                               v
               Analytics / AI Services
-````
+```
 
----
+## Schema Registry Workflow
 
+Kafka message contracts are defined as Avro schema files (`.avsc`). The source of truth for shared Kafka schemas is:
+
+```text
+libs/kafka/schemas
+```
+
+When a schema changes:
+
+1. Update or add the `.avsc` file under `libs/kafka/schemas`.
+2. Copy the required `.avsc` files into each Spring Boot producer or consumer under `apps/<service>/src/main/avro`.
+3. Rebuild the Spring Boot service so Maven can generate Avro classes from `src/main/avro`.
+4. Run the affected producer and consumer against the same Schema Registry instance.
+
+The copy from `libs/kafka/schemas` to `apps/<service>/src/main/avro` is manual for now and will be automated later. Do not treat a service-local `src/main/avro` file as the canonical schema if it differs from `libs/kafka/schemas`.
+
+Example from a Spring Boot service directory:
+
+```bash
+mkdir -p src/main/avro
+cp ../../libs/kafka/schemas/*.avsc src/main/avro/
+./mvnw clean package
+```
+
+## Local Connection Values
+
+Use the address that matches where the client process runs:
+
+| Client location | Kafka bootstrap servers | Schema Registry URL |
+| --- | --- | --- |
+| Host machine | `localhost:29092` | `http://localhost:9000` |
+| Docker Compose network | `kafka:9092` | `http://schema-registry:8081` |
+
+Kafka bootstrap servers are broker addresses and should not include protocol (i.e. `http://`). Schema Registry is an HTTP service and should include the `http://` scheme.

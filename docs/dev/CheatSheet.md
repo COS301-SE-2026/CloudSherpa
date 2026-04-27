@@ -218,13 +218,32 @@ cd apps/dashboard-backend && npm run format
 - Host Schema Registry: `http://localhost:9000`
 - Docker Compose Schema Registry: `http://schema-registry:8081`
 
+Kafka bootstrap servers do not use `http://` (do not specify protocol). Schema Registry URLs do.
+
+## Kafka Schemas
+
+Kafka processing schemas are Avro `.avsc` files. Keep the canonical copies in:
+
+```text
+libs/kafka/schemas
+```
+
+Spring Boot Kafka producers and consumers also need the relevant schemas copied into their local Maven Avro input directory before build/run:
+
+```bash
+mkdir -p apps/<service>/src/main/avro
+cp libs/kafka/schemas/*.avsc apps/<service>/src/main/avro/
+```
+
+This copy step is manual for now and will be automated later.
+
 ## Useful Paths
 
 | Path | Purpose |
 | --- | --- |
 | `apps/` | Runtime services |
 | `infra/docker-compose.yml` | Local container stack |
-| `libs/kafka/` | Shared Kafka schemas |
+| `libs/kafka/schemas/` | Shared Kafka Avro schemas |
 | `apps/kafka-init/` | Local Kafka topic initialization service |
 | `scripts/env-init.sh` | Initializes local `.env` files |
 | `docs/dev/MonorepoMadness.md` | Repo structure guide |

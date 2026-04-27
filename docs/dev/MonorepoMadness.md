@@ -34,7 +34,8 @@ _Generated on 26/04_. Should update regularly or automate via local git lifecycl
 |   `-- docker-compose.yml
 |-- libs
 |   `-- kafka
-|       `-- example_schema.avsc
+|       `-- schemas
+|           `-- cloud_usage_event.avsc
 `-- scripts
     |-- README.md
     |-- dev-dependencies.sh
@@ -150,9 +151,9 @@ Current files:
 
 | File | Purpose |
 | --- | --- |
-| [`libs/kafka/example_schema.avsc`](../../libs/kafka/example_schema.avsc) | Example Avro schema for shared Kafka message contracts. |
+| [`libs/kafka/schemas/cloud_usage_event.avsc`](../../libs/kafka/schemas/cloud_usage_event.avsc) | Avro schema for cloud usage events. |
 
-Schema changes should be coordinated with every producer and consumer that uses the schema.
+Treat `libs/kafka/schemas` as the canonical source if a service-local `src/main/avro` copy differs.
 
 ## `scripts/`
 
@@ -194,7 +195,7 @@ Use this quick placement guide:
 | Service-specific tests | `apps/<service-name>/tests/` or the framework's test folder |
 | Service-specific setup docs | `apps/<service-name>/README.md` |
 | Docker Compose or local stack wiring | `infra/` |
-| Shared Kafka schemas | `libs/kafka/` |
+| Shared Kafka schemas | `libs/kafka/schemas/` |
 | Shared cross-service code or contracts | `libs/` |
 | Developer docs | `docs/dev/` |
 | Documentation images or diagrams | `docs/assets/` |

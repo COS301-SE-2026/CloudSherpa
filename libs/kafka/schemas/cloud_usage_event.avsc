@@ -1,0 +1,14 @@
+{
+  "type": "record",
+  "name": "CloudUsageEvent",
+  "namespace": "com.cloudsherpa.events",
+  "fields": [
+    { "name": "provider", "type": "string" },
+    { "name": "accountId", "type": "string" },
+    { "name": "serviceName", "type": "string" },
+    { "name": "usageAmount", "type": "double" },
+    { "name": "cost", "type": "double" },
+    { "name": "currency", "type": "string" },
+    { "name": "timestamp", "type": "long" }
+  ]
+}
