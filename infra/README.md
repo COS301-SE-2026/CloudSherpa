@@ -40,6 +40,61 @@ Docker-network connection values:
 - Kafka: `kafka:9092`
 - Schema Registry: `http://schema-registry:8081`
 
+## AnalyticsDB (TimescaleDB)
+
+CloudSherpa’s AnalyticsDB runs as a dedicated TimescaleDB container named `analytics-db`. The `analytics-engine` container can reach it over the Docker network.
+
+### Before you start
+
+1. Make sure you have a repo-root `.env` file. It should define:
+
+   - `POSTGRES_DB`
+   - `POSTGRES_USER`
+   - `POSTGRES_PASSWORD`
+2. Run the commands below from the repository root.
+
+### Start AnalyticsDB
+
+1. Start the database:
+
+   ```bash
+   docker compose -f infra/docker-compose.yml up -d analytics-db
+   docker compose -f infra/docker-compose.yml ps
+   ```
+
+   On first startup, initialization scripts automatically run:
+   - TimescaleDB extension is enabled
+   - Base schemas and tables are created via `persistence/analytics/analytics-schema.sql`
+
+2. Connect to the database if needed:
+
+   ```bash
+   docker exec -it analytics-db sh -lc 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
+   ```
+
+   You can run additional SQL commands here. Exit `psql` with `\q`.
+
+**Note:** Init scripts under `persistence/analytics/` run only on first startup with a fresh volume. If you started the DB before this automation was added (or you need to re-run init scripts), reset the DB volume:
+
+```bash
+docker compose -f infra/docker-compose.yml down -v
+```
+
+### Container-to-container connectivity
+
+- From containers in this Compose stack: use `analytics-db:5432`
+- From the host machine (because the port is published): use `localhost:5432`
+
+### Persistence and resets
+
+AnalyticsDB data is persisted via a named Docker volume (so data survives container restarts).
+
+To reset the stack and remove volumes (destructive; deletes DB data):
+
+```bash
+docker compose -f infra/docker-compose.yml down -v
+```
+
 ## Start the Full Stack
 
 From the repository root:
