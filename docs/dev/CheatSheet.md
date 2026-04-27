@@ -33,6 +33,8 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
+The `python -m venv .venv` command depends on your Python installation. If it fails, make sure the Python `venv` module is installed, then try `python3 -m venv .venv`.
+
 Spring Boot services use their Maven wrappers:
 
 ```bash
@@ -47,6 +49,18 @@ Start Kafka, initialize topics, and start Schema Registry:
 
 ```bash
 docker compose -f infra/docker-compose.yml up -d --build kafka kafka-init schema-registry
+```
+
+Start AnalyticsDB (TimescaleDB):
+
+```bash
+docker compose -f infra/docker-compose.yml up -d analytics-db
+```
+
+Connect to AnalyticsDB:
+
+```bash
+docker exec -it analytics-db sh -lc 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
 ```
 
 Start the full local stack:
