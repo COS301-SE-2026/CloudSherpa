@@ -57,7 +57,11 @@ CloudSherpa’s AnalyticsDB runs as a dedicated TimescaleDB container named `ana
 
 ### Start AnalyticsDB
 
-1. Start the database:
+1. **First time only:** Reset the volume to ensure init scripts run:
+   ```bash
+   docker compose -f infra/docker-compose.yml down -v
+
+2. Start the database:
 
    ```bash
    docker compose -f infra/docker-compose.yml up -d analytics-db
@@ -68,7 +72,8 @@ CloudSherpa’s AnalyticsDB runs as a dedicated TimescaleDB container named `ana
    - TimescaleDB extension is enabled
    - Base schemas and tables are created via `persistence/analytics/analytics-schema.sql`
 
-2. Connect to the database if needed:
+3. Connect to the database if needed:
+   Currently using `psql`: The command-line interface (CLI) client for PostgreSQL
 
    ```bash
    docker exec -it analytics-db sh -lc 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
@@ -76,11 +81,74 @@ CloudSherpa’s AnalyticsDB runs as a dedicated TimescaleDB container named `ana
 
    You can run additional SQL commands here. Exit `psql` with `\q`.
 
-**Note:** Init scripts under `persistence/analytics/` run only on first startup with a fresh volume. If you started the DB before this automation was added (or you need to re-run init scripts), reset the DB volume:
+4. Verify the schema was created successfully:
 
-```bash
-docker compose -f infra/docker-compose.yml down -v
-```
+   Inside psql, run these commands to verify:
+
+   **List all tables:**
+   ```sql
+   \dt
+   ```
+
+   Expected output:
+   ```
+                List of relations
+    Schema |        Name        | Type  |   Owner
+   --------+-----------------------+-------+----------
+    public | environment_reference | table | cloudsherpa
+    public | normalized_metrics    | table | cloudsherpa
+   (2 rows)
+   ```
+
+   **View the normalized_metrics table structure:**
+   ```sql
+   \d normalized_metrics
+   ```
+
+   Expected output:
+   ```
+                             Table "public.normalized_metrics"
+         Column      |           Type           | Collation | Nullable | Default
+   -------------------+--------------------------+-----------+----------+---------
+    recorded_at       | timestamp with time zone |           | not null |
+    environment_id    | uuid                     |           |          |
+    resource_id       | character varying(255)   |           | not null |
+    service_category  | character varying(100)   |           | not null |
+    usage_amount      | numeric                  |           | not null |
+    usage_unit        | character varying(50)    |           | not null |
+    cost_amount       | numeric                  |           | not null |
+    currency          | character varying(10)    |           |          | 'ZAR'::character varying
+   Indexes:
+       "ix_environment_time" btree (environment_id, recorded_at DESC)
+   ```
+
+   **Verify TimescaleDB hypertable:**
+   ```sql
+   SELECT * FROM timescaledb_information.hypertables;
+   ```
+
+   Expected output:
+   ```
+    hypertable_schema | hypertable_name    | owner
+   -------------------+--------------------+----------
+    public            | normalized_metrics | cloudsherpa
+   (1 row)
+   ```
+
+   **Check row count (should be empty initially):**
+   ```sql
+   SELECT COUNT(*) FROM normalized_metrics;
+   ```
+
+   Expected output:
+   ```
+    count
+   -------
+        0
+   (1 row)
+   ```
+
+   Exit psql with `\q`.
 
 ### Container-to-container connectivity
 
