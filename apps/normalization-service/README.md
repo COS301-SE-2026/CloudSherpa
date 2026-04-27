@@ -33,6 +33,25 @@ docker compose -f infra/docker-compose.yml up -d --build kafka kafka-init schema
 
 Spring Boot runs on port `8080` by default unless `SERVER_PORT` or application configuration overrides it.
 
+If this service is run on the host and connects to the local Docker Compose Kafka stack, use host addresses:
+
+```bash
+SERVER_PORT=8082 KAFKA_BOOTSTRAP_SERVERS=localhost:29092 SCHEMA_REGISTRY_URL=http://localhost:9000 ./mvnw spring-boot:run
+```
+
+## Kafka Schema Workflow
+
+Kafka message contracts are Avro schemas (`.avsc` files). The canonical shared schemas live in `libs/kafka/schemas`.
+
+When this service produces or consumes Avro Kafka records, copy the required schemas from `libs/kafka/schemas` into `apps/normalization-service/src/main/avro` before building or running the Spring Boot app:
+
+```bash
+mkdir -p src/main/avro
+cp ../../libs/kafka/schemas/*.avsc src/main/avro/
+```
+
+The copy step is expected to be automated later. Until then, update `libs/kafka/schemas` first, then refresh the service-local `src/main/avro` copy for every Spring Boot producer or consumer that uses the schema.
+
 ## Build and Production Run
 
 ```bash
@@ -81,4 +100,6 @@ Local environment values should live in `.env`. Keep committed defaults and docu
 - If `scripts/env-init.sh` has already been run, the local `.env` file should be in place.
 - Use `localhost:29092` for Kafka when the app runs on the host.
 - Use `kafka:9092` for Kafka when the app runs inside Docker Compose.
+- Use `http://localhost:9000` for Schema Registry on the host.
+- Use `http://schema-registry:8081` for Schema Registry inside Docker Compose.
 - Keep schema or topic changes aligned with files under `libs/kafka/schemas`.

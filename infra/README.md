@@ -40,6 +40,8 @@ Docker-network connection values:
 - Kafka: `kafka:9092`
 - Schema Registry: `http://schema-registry:8081`
 
+Kafka bootstrap server values are broker addresses and do not include `http://`. Schema Registry values are HTTP URLs and should include the `http://` scheme.
+
 ## Start the Full Stack
 
 From the repository root:
@@ -124,6 +126,12 @@ The local Kafka container exposes two client paths:
 Use the correct address for the runtime location of the client. A service running in Docker Compose should not use `localhost:29092` to reach Kafka.
 
 `kafka-init` uses the Docker-network address by default and exits after creating configured topics. Re-running it is safe when topics already exist.
+
+## Schema Registry and Avro Schemas
+
+Schema Registry stores registered schemas for Kafka clients at runtime. The source files for CloudSherpa Kafka processing schemas are Avro `.avsc` files under `libs/kafka/schemas`.
+
+Spring Boot Kafka producers and consumers generate Java Avro classes from `apps/<service>/src/main/avro`, so copy the required files from `libs/kafka/schemas` into that service-local directory before building or running the service. This copy step is manual for now and should be automated later.
 
 ## Development vs Production
 
