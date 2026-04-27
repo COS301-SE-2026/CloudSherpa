@@ -48,35 +48,37 @@ CloudSherpa’s AnalyticsDB runs as a dedicated TimescaleDB container named `ana
 
 1. Make sure you have a repo-root `.env` file. It should define:
 
-   - `ANALYTICS_DB_NAME`
-   - `ANALYTICS_DB_USER`
-   - `ANALYTICS_DB_PASSWORD`
+   - `POSTGRES_DB`
+   - `POSTGRES_USER`
+   - `POSTGRES_PASSWORD`
 2. Run the commands below from the repository root.
 
 ### Start AnalyticsDB
 
-1. Start the database (first time will download the TimescaleDB image):
+1. Start the database:
 
    ```bash
-   docker compose --env-file .env -f infra/docker-compose.yml pull analytics-db
-   docker compose --env-file .env -f infra/docker-compose.yml up -d analytics-db
-   docker compose --env-file .env -f infra/docker-compose.yml ps
+   docker compose -f infra/docker-compose.yml up -d analytics-db
+   docker compose -f infra/docker-compose.yml ps
    ```
 
-2. Open `psql` inside the DB container:
+   On first startup, initialization scripts automatically run:
+   - TimescaleDB extension is enabled
+   - Base schemas and tables are created via `persistence/analytics/analytics-schema.sql`
+
+2. Connect to the database if needed:
 
    ```bash
    docker exec -it analytics-db sh -lc 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
    ```
 
-3. Enable TimescaleDB (one-time per database):
+   You can run additional SQL commands here. Exit `psql` with `\q`.
 
-   ```sql
-   CREATE EXTENSION IF NOT EXISTS timescaledb;
-   \dx
-   ```
+**Note:** Init scripts under `persistence/analytics/` run only on first startup with a fresh volume. If you started the DB before this automation was added (or you need to re-run init scripts), reset the DB volume:
 
-4. Start creating schemas/tables as normal. Exit `psql` with `\q`.
+```bash
+docker compose -f infra/docker-compose.yml down -v
+```
 
 ### Container-to-container connectivity
 
@@ -90,7 +92,7 @@ AnalyticsDB data is persisted via a named Docker volume (so data survives contai
 To reset the stack and remove volumes (destructive; deletes DB data):
 
 ```bash
-docker compose --env-file .env -f infra/docker-compose.yml down -v
+docker compose -f infra/docker-compose.yml down -v
 ```
 
 ## Start the Full Stack
