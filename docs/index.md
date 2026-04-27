@@ -4,6 +4,9 @@ Welcome to the CloudSherpa developer documentation.
 
 ## Main sections
 
+!!! warning
+    This documentation is intended as **development documentation**. It is automatically deployed on `push` to the `dev` and `main` branches of the _CloudSherpa_ repository. It is thus possible and highly likely that this documentation documents implementation done on the `dev` branch that **does not exist** on the `main` branch. For the current stage of _CloudSherpa_ development, this is intentional. It is still something to take note of and keep in mind as you are reading this documentation.
+
 ??? note "Developer Guides"
     [Developer Guides](dev/CheatSheet.md)
 
