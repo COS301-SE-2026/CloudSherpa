@@ -1,0 +1,62 @@
+site_name: CloudSherpa Docs
+site_description: Developer documentation for the CloudSherpa monorepo
+repo_name: CloudSherpa
+docs_dir: docs
+site_dir: site
+
+theme:
+  name: material
+  logo: assets/team-photos/TeamLogo.png
+  palette:
+    - scheme: slate
+      primary: blue
+      accent: green
+
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+
+nav:
+  - Home: index.md
+
+  - Developer Guides:
+      - Cheat Sheet: dev/CheatSheet.md
+      - Monorepo Madness: dev/MonorepoMadness.md
+      - Using Kafka: dev/UsingKafka.md
+      - Development Scripts: scripts/README.md
+
+  - Services:
+      - Alert Engine: services/alert-engine.md
+      - Analytics Engine: services/analytics-engine.md
+      - Dashboard Backend: services/dashboard-backend.md
+      - Dashboard Frontend: services/dashboard-frontend.md
+      - Ingestion Service: services/ingestion-service.md
+      - Intelligence Engine: services/intelligence-engine.md
+      - Kafka Init: services/kafka-init.md
+      - Normalization Service: services/normalization-service.md
+  
+  - API Documentation:
+      - Placeholder: api/api-placeholder.md
+  
+  - Doxygen:
+      - Placeholder: doxygen/doxygen-placeholder.md
+
+extra_css:
+  - stylesheets/extra.css
+
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+  - tables
+  - fenced_code
+  - codehilite
+  - pymdownx.superfences
+  - pymdownx.details
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
