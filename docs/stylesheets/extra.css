@@ -1,0 +1,42 @@
+[data-md-color-scheme="slate"] {
+
+  /* Primary (header, tabs, nav) */
+  --md-primary-fg-color: #0B3C5D;
+  --md-primary-fg-color--light: #145A86;
+  --md-primary-fg-color--dark: #072B40;
+
+  /* Accent (links, highlights) */
+  --md-accent-fg-color: #2ECC71;
+
+  /* Backgrounds */
+  --md-default-bg-color: #0F172A;        /* deep dark */
+  --md-default-fg-color: #E2E8F0;        /* main text */
+  --md-default-fg-color--light: #CBD5F5; /* secondary text */
+  --md-default-fg-color--lighter: #94A3B8;
+
+  /* Code blocks */
+  --md-code-bg-color: #020617;
+  --md-code-fg-color: #E2E8F0;
+
+  /* Links */
+  --md-typeset-a-color: #2ECC71;
+
+  /* Admonitions */
+  --md-admonition-bg-color: #1E293B;
+
+  /* Tables */
+  --md-typeset-table-color: #E2E8F0;
+
+  /* Borders / subtle UI */
+  --md-default-border-color: rgba(255, 255, 255, 0.1);
+
+  /* Increase logo size */
+    .md-header__button.md-logo img {
+        height: 55px; 
+        width: auto;
+        background-color: white;
+        border-radius: 20px;
+        padding: 5px;
+        margin-top: 5px;
+    }
+}

@@ -90,14 +90,14 @@ Use these READMEs for service-specific setup, development commands, build comman
 
 | Service | README |
 | --- | --- |
-| Alert Engine | [`apps/alert-engine/README.md`](../../apps/alert-engine/README.md) |
-| Analytics Engine | [`apps/analytics-engine/README.md`](../../apps/analytics-engine/README.md) |
-| Dashboard Backend | [`apps/dashboard-backend/README.md`](../../apps/dashboard-backend/README.md) |
-| Dashboard Frontend | [`apps/dashboard-frontend/README.md`](../../apps/dashboard-frontend/README.md) |
-| Ingestion Service | [`apps/ingestion-service/README.md`](../../apps/ingestion-service/README.md) |
-| Intelligence Engine | [`apps/intelligence-engine/README.md`](../../apps/intelligence-engine/README.md) |
-| Kafka Init | [`apps/kafka-init/README.md`](../../apps/kafka-init/README.md) |
-| Normalization Service | [`apps/normalization-service/README.md`](../../apps/normalization-service/README.md) |
+| Alert Engine | [`docs/services/alert-engine.md`](../services/alert-engine.md) |
+| Analytics Engine | [`docs/services/analytics-engine.md`](../services/analytics-engine.md) |
+| Dashboard Backend | [`docs/services/dashboard-backend.md`](../services/dashboard-backend.md) |
+| Dashboard Frontend | [`docs/services/dashboard-frontend.md`](../services/dashboard-frontend.md) |
+| Ingestion Service | [`docs/services/ingestion-service.md`](../services/ingestion-service.md) |
+| Intelligence Engine | [`docs/services/intelligence-engine.md`](../services/intelligence-engine.md) |
+| Kafka Init | [`docs/services/kafka-init.md`](../services/kafka-init.md) |
+| Normalization Service | [`docs/services/normalization-service.md`](../services/normalization-service.md) |
 
 ## `docs/`
 
@@ -124,8 +124,8 @@ Current files:
 
 | File | Purpose |
 | --- | --- |
-| [`infra/docker-compose.yml`](../../infra/docker-compose.yml) | Local container stack for Kafka, Schema Registry, and app services. |
-| [`infra/README.md`](../../infra/README.md) | Infrastructure commands, ports, environment notes, and Docker Compose usage. |
+| `infra/docker-compose.yml` | Local container stack for Kafka, Schema Registry, and app services. |
+| `infra/README.md` | Infrastructure commands, ports, environment notes, and Docker Compose usage. |
 
 Put container orchestration, local infrastructure wiring, and future deployment-adjacent configuration here. Do not put application source code in `infra/`.
 
@@ -151,7 +151,7 @@ Current files:
 
 | File | Purpose |
 | --- | --- |
-| [`libs/kafka/schemas/cloud_usage_event.avsc`](../../libs/kafka/schemas/cloud_usage_event.avsc) | Avro schema for cloud usage events. |
+| `libs/kafka/schemas/cloud_usage_event.avsc` | Avro schema for cloud usage events. |
 
 Treat `libs/kafka/schemas` as the canonical source if a service-local `src/main/avro` copy differs.
 
@@ -159,7 +159,7 @@ Treat `libs/kafka/schemas` as the canonical source if a service-local `src/main/
 
 Developer scripts belong in `scripts/`.
 
-Refer to [`scripts/README.md`](../../scripts/README.md) 
+Refer to `scripts/README.md`.
 
 Scripts should be repeatable where possible, documented in `scripts/README.md`, and scoped to setup or maintenance tasks that developers actually run more than once.
 
@@ -193,7 +193,7 @@ Use this quick placement guide:
 | A new independently runnable service | `apps/<service-name>/` |
 | Service-specific source code | `apps/<service-name>/src/` |
 | Service-specific tests | `apps/<service-name>/tests/` or the framework's test folder |
-| Service-specific setup docs | `apps/<service-name>/README.md` |
+| Service-specific setup docs | `docs/services/<service-name>.md` symlinked to `apps/<service-name>/README.md` |
 | Docker Compose or local stack wiring | `infra/` |
 | Shared Kafka schemas | `libs/kafka/schemas/` |
 | Shared cross-service code or contracts | `libs/` |
@@ -216,8 +216,8 @@ Keep detailed service behavior out of this document. The service README is the s
 
 ## Related Docs
 
-- [`README.md`](../../README.md) - user-facing project overview and basic run instructions.
+- `README.md` - user-facing project overview and basic run instructions.
 - [`docs/dev/CheatSheet.md`](CheatSheet.md) - quick command reference.
-- [`infra/README.md`](../../infra/README.md) - Docker Compose and infrastructure details.
-- [`scripts/README.md`](../../scripts/README.md) - script usage.
+- `infra/README.md` - Docker Compose and infrastructure details.
+- `scripts/README.md` - script usage.
 - [`docs/dev/UsingKafka.md`](UsingKafka.md) - Kafka development notes.
