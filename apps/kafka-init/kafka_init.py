@@ -12,7 +12,7 @@ if broker == None:
 admin = AdminClient({
     "bootstrap.servers": broker,
     "retries": 5,
-    "retry.backoff": 2000,
+    "retry.backoff.ms": 2000,
 })
 
 # CloudSherpa kafka topics are configured here
