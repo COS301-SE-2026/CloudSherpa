@@ -7,9 +7,10 @@ on:
       - main
       - dev
     paths:
-      - "docs/**"
       # Keep strict manually selected files to trigger run according to repo structure, actions do not pick up changes in symlinked
       # files so need to add them manually here. 
+      - "docs/**"
+      - "mkdocs.yml"
       - "scripts/README.md"
       - "apps/alert-engine/README.md"
       - "apps/analytics-engine/README.md"
