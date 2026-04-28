@@ -25,6 +25,18 @@ If the service needs Kafka locally, start the shared development dependencies an
 docker compose -f infra/docker-compose.yml up -d --build kafka kafka-init schema-registry
 ```
 
+Also start the ingestion service if events need to be produced either via the local server or docker container (local server preferred, containers built with production in mind, not optimized for dev currently)
+
+Locally:
+```bash
+SERVER_PORT=8081 KAFKA_BOOTSTRAP_SERVERS=localhost:29092 SCHEMA_REGISTRY_URL=http://localhost:9000 ./apps/ingestion-service/mvnw spring-boot:run
+```
+
+Docker:
+```bash
+docker compose -f infra/docker-compose.yml up -d --build ingestion-service
+```
+
 ## Development Server
 
 ```bash
