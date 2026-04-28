@@ -8,7 +8,7 @@ on:
       - dev
     paths:
       - "docs/**"
-      # Keep strict manually selected files to trigger run according to repo structure, actions to not pick up changes in symlinked
+      # Keep strict manually selected files to trigger run according to repo structure, actions do not pick up changes in symlinked
       # files so need to add them manually here. 
       - "scripts/README.md"
       - "apps/alert-engine/README.md"
@@ -21,7 +21,7 @@ on:
       - "apps/normalization-service/README.md"
       - ".github/workflows/docs.yml"
       # Once doxygen is set up, we will have to run the workflow on code changes, since there is not any way of knowing 
-      # if doxygen was added or not, so then any docs/code change -> trigger action (uncomment below path)
+      # if doxygen comments were added or not, so then any docs/code change -> trigger action (uncomment below path)
       # - "apps/**/src/**" 
 
   # Workflow dispatch adds "run workflow" button in actions tab, if we want to manually rerun it for
