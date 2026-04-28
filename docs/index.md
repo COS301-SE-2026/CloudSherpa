@@ -17,7 +17,13 @@ Welcome to the CloudSherpa developer documentation.
 
     CloudSherpa follows a microservices architecture with event-driven communication. Each service is documented in detail, covering responsibilities and dependencies.
 
-??? note "REST API Documentation"
+??? note "Persistence Documentation"
+    [Database and Kafka Schemas](persistence/schemas.md)
+
+    Persistence documentation covers storage systems, database responsibilities, and schema references.
+
+
+<!-- ??? note "REST API Documentation"
     [REST API Documentation](api/api-placeholder.md)
 
     Swagger (OpenAPI) provides interactive documentation for all REST endpoints exposed across services.
@@ -25,4 +31,4 @@ Welcome to the CloudSherpa developer documentation.
 ??? note "Doxygen Code Reference"
     [Doxygen Documentation](doxygen/doxygen-placeholder.md)
 
-    Inline code documentation is generated using Doxygen, providing detailed reference material for classes, functions, and internal logic.
+    Inline code documentation is generated using Doxygen, providing detailed reference material for classes, functions, and internal logic. -->

@@ -39,12 +39,16 @@ nav:
       - Intelligence Engine: services/intelligence-engine.md
       - Kafka Init: services/kafka-init.md
       - Normalization Service: services/normalization-service.md
+
+  - Persistence:
+      - Schema Reference: persistence/schemas.md
+      - AnalyticsDB Overview: persistence/analytics-db.md
+
+  # - API Documentation:
+  #     - Placeholder: api/api-placeholder.md
   
-  - API Documentation:
-      - Placeholder: api/api-placeholder.md
-  
-  - Doxygen:
-      - Placeholder: doxygen/doxygen-placeholder.md
+  # - Doxygen:
+  #     - Placeholder: doxygen/doxygen-placeholder.md
 
 extra_css:
   - stylesheets/extra.css
