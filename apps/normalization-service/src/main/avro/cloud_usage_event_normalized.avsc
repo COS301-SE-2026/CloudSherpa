@@ -1,0 +1,17 @@
+{
+  "type": "record",
+  "name": "CloudUsageEventNormalized",
+  "namespace": "com.cloudsherpa.events",
+  "fields": [
+    { "name": "provider", "type": "string" },
+    { "name": "accountId", "type": "string" },
+    { "name": "environmentId", "type": "string" },
+    { "name": "recordedAt", "type": "long" },
+    { "name": "resourceId", "type": "string" },
+    { "name": "serviceCategory", "type": "string" },
+    { "name": "usageAmount", "type": "double" },
+    { "name": "usageUnit", "type": "string" },
+    { "name": "costAmount", "type": "double" },
+    { "name": "currency", "type": "string" }
+  ]
+}

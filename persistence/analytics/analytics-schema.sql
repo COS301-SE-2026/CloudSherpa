@@ -7,6 +7,7 @@ CREATE TABLE environment_reference (
 );
 
 CREATE TABLE normalized_metrics (
+    metric_id UUID NOT NULL,
     recorded_at TIMESTAMPTZ NOT NULL,
     environment_id UUID REFERENCES environment_reference(environment_id),
     resource_id VARCHAR(255) NOT NULL,
