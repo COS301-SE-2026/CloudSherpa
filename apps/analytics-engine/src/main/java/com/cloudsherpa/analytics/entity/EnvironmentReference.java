@@ -38,9 +38,10 @@ public class EnvironmentReference
         // required by JPA to have a no-argument default constructor
     }
 
-    public EnvironmentReference(String provider) 
+    public EnvironmentReference(String provider, OffsetDateTime createdAt) 
     {
         this.provider = provider;
+        this.createdAt = createdAt;
     }
 
     public UUID getEnvironmentId() 

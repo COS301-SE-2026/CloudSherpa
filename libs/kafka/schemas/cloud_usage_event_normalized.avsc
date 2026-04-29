@@ -4,6 +4,7 @@
   "namespace": "com.cloudsherpa.events",
   "fields": [
     { "name": "provider", "type": "string" },
+    { "name": "created_at", "type": { "type": "long", "logicalType": "timestamp-millis" }},
     { "name": "accountId", "type": "string" },
     { "name": "environmentId", "type": "string" },
     { "name": "recordedAt", "type": "long" },
