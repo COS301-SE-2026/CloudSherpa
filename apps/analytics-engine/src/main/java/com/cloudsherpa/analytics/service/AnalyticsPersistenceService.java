@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.UUID;
+import java.util.List;
 
 @Service
 public class AnalyticsPersistenceService 
@@ -38,5 +39,18 @@ public class AnalyticsPersistenceService
 
         // SQL insert statement
         metricsRepo.save(newMetric);
+    }
+
+    
+    //Fetches all metrics recorded between the specified start and end times.
+    public List<NormalizedMetrics> getMetricsInTimeWindow(OffsetDateTime startTime, OffsetDateTime endTime) 
+    {
+        List<NormalizedMetrics> metrics = metricsRepo.findByRecordedAtBetween(startTime, endTime);
+        
+        // Note: Because we are fetching a List of objects, we can easily perform additional 
+        // business logic right here in Java using Streams (e.g., calculating total costs) 
+        // without needing to write complex SQL aggregation scripts.
+        
+        return metrics;
     }
 }
