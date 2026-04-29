@@ -10,7 +10,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 
 import java.time.OffsetDateTime;
-import jakarta.persistence.PrePersist;
 
 import java.util.UUID;
 import jakarta.persistence.Id;
@@ -42,14 +41,6 @@ public class EnvironmentReference
     public EnvironmentReference(String provider) 
     {
         this.provider = provider;
-    }
-
-    // This method should execute automatically before the entity is inserted into the database for the first time
-    // It will NOT trigger on SQL UPDATE statements
-    @PrePersist
-    private void generateCreatedAt() 
-    {
-        this.createdAt = OffsetDateTime.now();
     }
 
     public UUID getEnvironmentId() 

@@ -45,7 +45,7 @@ public class NormalizedMetrics
     private String usageUnit;
 
     @Column(name = "currency", length = 10, nullable = false)
-    private String currency = "ZAR";
+    private String currency;
 
     // Use BigDecimal when working with financial data or measurement data
     // This is for better accuracy
@@ -62,7 +62,7 @@ public class NormalizedMetrics
 
     public NormalizedMetrics(OffsetDateTime recordedAt, EnvironmentReference environmentReference, 
                             String resourceId, String serviceCategory, BigDecimal usageAmount, 
-                             String usageUnit, BigDecimal costAmount) 
+                             String usageUnit, BigDecimal costAmount, String currency) 
     {
         this.recordedAt = recordedAt;
         this.environmentReference = environmentReference;
@@ -71,6 +71,7 @@ public class NormalizedMetrics
         this.usageAmount = usageAmount;
         this.usageUnit = usageUnit;
         this.costAmount = costAmount;
+        this.currency = currency;
     }
 
     public UUID getMetricId()
@@ -106,11 +107,6 @@ public class NormalizedMetrics
     public String getCurrency() 
     { 
         return currency; 
-    }
-
-    public void setCurrency(String currency) 
-    { 
-        this.currency = currency; 
     }
     
     public BigDecimal getUsageAmount() 
