@@ -62,3 +62,20 @@ Use the address that matches where the client process runs:
 | Docker Compose network | `kafka:9092` | `http://schema-registry:8081` |
 
 Kafka bootstrap servers are broker addresses and should not include protocol (i.e. `http://`). Schema Registry is an HTTP service and should include the `http://` scheme.
+
+## Reference Links
+Links to Kafka, Confluent and other related docs and tutorials developers found useful
+
+Quick reference/overview of sending/receiving messages: https://docs.spring.io/spring-boot/reference/messaging/kafka.html#messaging.kafka
+
+### Producer (sending messages, `KafkaTemplate`)
+- https://docs.spring.io/spring-kafka/reference/kafka/sending-messages.html#kafka-template
+- https://www.geeksforgeeks.org/java/spring-boot-kafka-producer-example/
+
+### Consumer (receiving messages, `@KafkaListener`)
+- https://docs.spring.io/spring-kafka/reference/kafka/receiving-messages/listener-annotation.html
+- https://www.geeksforgeeks.org/java/spring-boot-kafka-consumer-example/
+
+### Schema Registry, Serialization & Deserialization
+- https://docs.confluent.io/platform/current/schema-registry/fundamentals/serdes-develop/index.html#configuration-details
+- https://docs.spring.io/spring-kafka/reference/kafka/serdes.html
