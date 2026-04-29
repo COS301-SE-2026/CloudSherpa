@@ -17,7 +17,9 @@ admin = AdminClient({
 
 # CloudSherpa kafka topics are configured here
 topics = [
-    NewTopic("cloud-usage-events", num_partitions=1, replication_factor=1)
+    NewTopic("cloud.usage.v1", num_partitions=1, replication_factor=1),
+    NewTopic("sherpa.normalized.v1", num_partitions=1, replication_factor=1),
+    NewTopic("sherpa.alert.v1", num_partitions=1, replication_factor=1),
 ]
 
 # Returns dict[str, concurrent.futures.Future] -> topics created asynchronously

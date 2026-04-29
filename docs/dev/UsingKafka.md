@@ -63,6 +63,26 @@ Use the address that matches where the client process runs:
 
 Kafka bootstrap servers are broker addresses and should not include protocol (i.e. `http://`). Schema Registry is an HTTP service and should include the `http://` scheme.
 
+## Topics naming convention
+
+Defines CloudSherpa Kafka topics naming convention (used <https://www.confluent.io/learn/kafka-topic-naming-convention/#components-of-a-kafka-topic-name> for inspiration)
+
+`<domain>.<data-type/action>.version`
+
+Identified domains:
+- `cloud` generic cloud domain
+- `aws` topics specific to aws messages
+- `gcp` topics specific to gcp messages
+- `azure` topics specific to azure messages
+- `sherpa` Messages generated and published by CloudSherpa services, like the normalization and alert-engine service.  
+
+Data types are context specific, like `usage`, `performance` or `billing`.
+
+Version represents the schema contract of the topic. It is incremented only when a breaking (non-backward-compatible) schema change is introduced (the scema in `apps/<service>/src/main/avro` is changed in a breaking way), a breaking schema change has cascading effects. Changing the version emphasises that producer/consumer logic needs to be revised according to new schema. 
+
+!!! note
+      Be sure to run either docker compose build or just add the `--build` flag when starting the `kafka-init` service after topics changed. Luckily very quick to rebuild once initially built.
+
 ## Reference Links
 Links to Kafka, Confluent and other related docs and tutorials developers found useful
 
