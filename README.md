@@ -5,6 +5,10 @@
   <p><strong>An AI-Driven Multi-Cloud FinOps Platform</strong></p>
 </div>
 
+## Documentation
+
+Visit our [official documentation site](https://cos301-se-2026.github.io/CloudSherpa/) for more details.
+
 ## Project Overview
 
 CloudSherpa is an AI-driven cloud cost optimization platform designed to analyze infrastructure usage and spending patterns across major cloud providers, including Amazon Web Services, Microsoft Azure, and Google Cloud Platform. 
