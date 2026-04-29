@@ -32,7 +32,7 @@ public class CloudUsageService {
     // Temporary method used to test Kafka producer
     public void sendMockEvent() {
 
-        // Build event according to schema for topic cloud-usage-event
+        // Build event according to schema for topic cloud.usage.v1
         CloudUsageEvent event = CloudUsageEvent.newBuilder()
             .setProvider("AWS")
             .setAccountId("123")
@@ -43,7 +43,7 @@ public class CloudUsageService {
             .setTimestamp(System.currentTimeMillis())
             .build();
         
-        // the template send method takes 3 args, the topic (like cloud-usage-event), the record key (account ID in this case)
+        // the template send method takes 3 args, the topic (like cloud.usage.v1), the record key (account ID in this case)
         // and the record (event build from CloudUsageEvent schema defined in apps/ingestion-service/src/main/avro/cloud_usage_event.avsc)
         kafkaTemplate.send(topic, event.getAccountId().toString(), event);
 
