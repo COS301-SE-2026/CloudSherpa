@@ -22,7 +22,10 @@ Welcome to the CloudSherpa developer documentation.
 
     Persistence documentation covers storage systems, database responsibilities, and schema references.
 
+??? note "Sofware Design"
+    [CloudSherpa Design](design/design.md)
 
+    Design documentation covers domain modelling, architecture diagrams, and requirement specification.
 <!-- ??? note "REST API Documentation"
     [REST API Documentation](api/api-placeholder.md)
 

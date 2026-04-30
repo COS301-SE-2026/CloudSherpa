@@ -44,7 +44,7 @@ nav:
       - Schema Reference: persistence/schemas.md
       - AnalyticsDB Overview: persistence/analytics-db.md
 
-  - CloudSherpa Design: design/design.md
+  - Software Design: design/design.md
   # - API Documentation:
   #     - Placeholder: api/api-placeholder.md
   
