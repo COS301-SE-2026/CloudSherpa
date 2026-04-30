@@ -19,8 +19,16 @@ public class NormalizationConsumer {
     * properties and let Spring Boot do the grunt work before we consider implementing our own consumer config,
     * but the option is available
     */
+
+    private final NormalizationProducer normalizationProducer;
+
+    public NormalizationConsumer(NormalizationProducer normalizationProducer) {
+        this.normalizationProducer = normalizationProducer;
+    }
+
     @KafkaListener(topics = "${app.kafka.topics.cloud-usage}")
-    void consume(CloudUsageEvent event) {
+    private void consume(CloudUsageEvent event) {
         System.out.println(event);
+        normalizationProducer.sendNormalizedEvent(event);
     }
 }

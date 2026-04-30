@@ -2,7 +2,6 @@ package com.cloudsherpa.analytics.dto;
 
 import java.math.BigDecimal;
 import java.util.UUID;
-import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
 
