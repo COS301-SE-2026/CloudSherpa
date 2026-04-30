@@ -9,7 +9,9 @@
 ## Domain Model
 ![CloudSherpa Domain Model](../assets/diagrams/images/CloudSherpaDomainModelDark.drawio.png)
 
+Link to draw.io canvas: [CloudSherpa Domain Model](https://drive.google.com/file/d/1w7XxdrTpzM0m0LZluIb9O-2rBCmhpVox/view?usp=sharing)
 ## Architecture diagram
 ![CloudSherpa Architecture Diagram](../assets/diagrams/images/CloudSherpaArchitectureDark.drawio.png)
 
+Link to draw.io canvas: [CloudSherpa Architecture Diagram]()
 ## Appendix
