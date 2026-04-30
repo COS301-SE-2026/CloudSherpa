@@ -13,5 +13,5 @@ Link to draw.io canvas: [CloudSherpa Domain Model](https://drive.google.com/file
 ## Architecture diagram
 ![CloudSherpa Architecture Diagram](../assets/diagrams/images/CloudSherpaArchitectureDark.drawio.png)
 
-Link to draw.io canvas: [CloudSherpa Architecture Diagram]()
+Link to draw.io canvas: [CloudSherpa Architecture Diagram](https://drive.google.com/file/d/1M0oArovSx9Cqs7VotqdYv6Ge8dr5yvIj/view?usp=sharing)
 ## Appendix
