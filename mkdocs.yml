@@ -44,6 +44,7 @@ nav:
       - Schema Reference: persistence/schemas.md
       - AnalyticsDB Overview: persistence/analytics-db.md
 
+  - CloudSherpa Design: design/design.md
   # - API Documentation:
   #     - Placeholder: api/api-placeholder.md
   
@@ -64,3 +65,14 @@ markdown_extensions:
   - pymdownx.details
   - pymdownx.highlight
   - pymdownx.inlinehilite
+
+plugins:
+  - search
+  - glightbox:
+      touchNavigation: true
+      loop: false
+      effect: zoom
+      width: 100%
+      height: auto
+      zoomable: true
+      draggable: true

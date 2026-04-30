@@ -55,7 +55,7 @@ jobs:
 
       - name: Install MkDocs dependencies
         run: |
-          pip install mkdocs mkdocs-material pymdown-extensions
+          pip install mkdocs mkdocs-material pymdown-extensions mkdocs-glightbox
 
       - name: Build MkDocs site
         # Strict fails on warnings, make sure all links can resolve otherwise action fail

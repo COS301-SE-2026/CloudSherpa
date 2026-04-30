@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # USAGE
+# sudo chmod +x scripts/mkdocs-local.sh
 # Run from root directory, ./scripts/mkdocs-local.sh
 
 if [[ ! -d "docs/.venv" ]]; then
@@ -9,7 +10,7 @@ if [[ ! -d "docs/.venv" ]]; then
 fi
 
 source docs/.venv/bin/activate
-pip install mkdocs mkdocs-material pymdown-extensions
+pip install mkdocs mkdocs-material pymdown-extensions mkdocs-glightbox
 
 mkdocs serve
 
