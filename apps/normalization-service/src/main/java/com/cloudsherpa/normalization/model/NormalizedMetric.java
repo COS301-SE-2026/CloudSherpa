@@ -1,5 +1,10 @@
 package com.cloudsherpa.normalization.model;
 
+// This creates a java object for each metric (corresponds to the fields in the database)
+// These are the new fields that I think we would need for CloudSherpa
+
+// I chose to keep it all in 1 table as I saw there would be a lot of joins between tables if we 
+// split the usage and billing
 public class NormalizedMetric
 {
     private String metricId;
