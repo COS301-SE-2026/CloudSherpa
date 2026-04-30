@@ -1,6 +1,6 @@
 {
   "type": "record",
-  "name": "CloudUsageEventNormalized",
+  "name": "SherpaNormalizedEvent",
   "namespace": "com.cloudsherpa.events",
   "fields": [
     { "name": "provider", "type": "string" },
