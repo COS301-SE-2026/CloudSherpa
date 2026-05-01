@@ -124,3 +124,20 @@
     @apply bg-background text-foreground;
   }
 }
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(5px); }
+}
+
+.animate-bounce {
+  animation: bounce 1.8s ease-in-out infinite;
+}
+
+.feature-card {
+  background: #030712;
+  border: 1px solid transparent;
+  background-image: linear-gradient(#030712, #030712), linear-gradient(135deg, #2F2FE4 0%, #162E93 100%);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+}
