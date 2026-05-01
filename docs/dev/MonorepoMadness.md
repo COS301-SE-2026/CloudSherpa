@@ -11,6 +11,7 @@ _Generated on 26/04_. Should update regularly or automate via local git lifecycl
 |-- .env.example
 |-- .gitignore
 |-- README.md
+|-- mkdocs.yml
 |-- apps
 |   |-- alert-engine
 |   |-- analytics-engine
@@ -115,6 +116,12 @@ Current developer docs:
 | [`docs/dev/CheatSheet.md`](CheatSheet.md) | Quick command reference for local development. |
 | [`docs/dev/MonorepoMadness.md`](MonorepoMadness.md) | Repository structure and file placement guide. |
 | [`docs/dev/UsingKafka.md`](UsingKafka.md) | Kafka-specific development notes. |
+
+### MkDocs
+
+`mkdocs.yml` lives at the repository root because it configures the whole documentation site.
+
+Use it for site navigation, theme, plugins, and build paths. Run `scripts/mkdocs-local.sh` from the repository root to serve the docs locally.
 
 ## `infra/`
 

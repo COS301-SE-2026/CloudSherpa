@@ -48,6 +48,8 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+*.sync-conflict*
+
 # vercel
 .vercel
 
