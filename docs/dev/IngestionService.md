@@ -17,7 +17,7 @@ These models are designed to normalize data across:
 - Microsoft Azure
 - Google Cloud Platform (GCP)
 
-and will be to Kafka topics for downstream processing.
+and pass through the ingestion and normalization pipeline for downstream service use.
 
 ---
 
@@ -44,9 +44,9 @@ All timestamps use `java.time.Instant` (UTC) to:
 - Avoid timezone ambiguity
 - Ensure consistency across distributed systems
 
-### 2.4 Event-Driven
+### 2.4 Pipeline Records
 
-Records are emitted as Kafka events and must be:
+Records passed through the ingestion pipeline must be:
 
 - Self-contained
 - Traceable

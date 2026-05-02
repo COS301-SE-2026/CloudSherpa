@@ -13,12 +13,12 @@ Welcome to the CloudSherpa developer documentation.
     Core development resources, including workflows, conventions, and quick-reference material for working within CloudSherpa.
 
 ??? note "Service Documentation"
-    [Service Documentation](services/alert-engine.md)
+    [Service Documentation](services/service.md)
 
-    CloudSherpa follows a microservices architecture with event-driven communication. Each service is documented in detail, covering responsibilities and dependencies.
+    CloudSherpa follows a microservices architecture. Each service is documented in detail, covering responsibilities and dependencies.
 
 ??? note "Persistence Documentation"
-    [Database and Kafka Schemas](persistence/schemas.md)
+    [Database Schemas](persistence/schemas.md)
 
     Persistence documentation covers storage systems, database responsibilities, and schema references.
 

@@ -38,18 +38,11 @@ The `python -m venv .venv` command depends on your Python installation. If it fa
 Spring Boot services use their Maven wrappers:
 
 ```bash
-chmod +x apps/ingestion-service/mvnw
-chmod +x apps/normalization-service/mvnw
-chmod +x apps/analytics-engine/mvnw
+chmod +x apps/ingestion/mvnw
+chmod +x apps/service/mvnw
 ```
 
 ## Docker Compose
-
-Start Kafka, initialize topics, and start Schema Registry:
-
-```bash
-docker compose -f infra/docker-compose.yml up -d --build kafka kafka-init schema-registry
-```
 
 Start AnalyticsDB (TimescaleDB):
 
@@ -85,7 +78,6 @@ Follow logs:
 
 ```bash
 docker compose -f infra/docker-compose.yml logs -f
-docker compose -f infra/docker-compose.yml logs -f kafka
 ```
 
 Check container status:
@@ -133,28 +125,19 @@ uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
 
 URL: `http://localhost:8000`
 
-### Ingestion Service
+### Ingestion
 
 ```bash
-cd apps/ingestion-service
+cd apps/ingestion
 ./mvnw spring-boot:run
 ```
 
 URL: `http://localhost:8080` locally, or `http://localhost:8081` through Docker Compose.
 
-### Normalization Service
+### Service
 
 ```bash
-cd apps/normalization-service
-./mvnw spring-boot:run
-```
-
-URL: `http://localhost:8080` locally, or `http://localhost:8082` through Docker Compose.
-
-### Analytics Engine
-
-```bash
-cd apps/analytics-engine
+cd apps/service
 ./mvnw spring-boot:run
 ```
 
@@ -166,9 +149,8 @@ URL: `http://localhost:8080` locally, or `http://localhost:8083` through Docker 
 cd apps/dashboard-frontend && npm run build
 cd apps/dashboard-backend && npm run build
 cd apps/alert-engine && npm run build
-cd apps/ingestion-service && ./mvnw clean package
-cd apps/normalization-service && ./mvnw clean package
-cd apps/analytics-engine && ./mvnw clean package
+cd apps/ingestion && ./mvnw clean package
+cd apps/service && ./mvnw clean package
 ```
 
 For Spring Boot builds without tests:
@@ -183,9 +165,8 @@ For Spring Boot builds without tests:
 cd apps/dashboard-backend && npm test
 cd apps/dashboard-backend && npm run test:e2e
 cd apps/alert-engine && npm test
-cd apps/ingestion-service && ./mvnw test
-cd apps/normalization-service && ./mvnw test
-cd apps/analytics-engine && ./mvnw test
+cd apps/ingestion && ./mvnw test
+cd apps/service && ./mvnw test
 ```
 
 ## Lint and Format
@@ -204,38 +185,8 @@ cd apps/dashboard-backend && npm run format
 | Dashboard Backend | `3001` | `3001` |
 | Alert Engine | `3000` | `3002` |
 | Intelligence Engine | `8000` | `8000` |
-| Kafka Init | n/a | n/a |
-| Ingestion Service | `8080` | `8081` |
-| Normalization Service | `8080` | `8082` |
-| Analytics Engine | `8080` | `8083` |
-| Schema Registry | n/a | `9000` |
-| Kafka | n/a | `29092` |
-
-## Kafka Addresses
-
-- Host machine clients: `localhost:29092`
-- Docker Compose clients: `kafka:9092`
-- Host Schema Registry: `http://localhost:9000`
-- Docker Compose Schema Registry: `http://schema-registry:8081`
-
-Kafka bootstrap servers do not use `http://` (do not specify protocol). Schema Registry URLs do.
-
-## Kafka Schemas
-
-Kafka processing schemas are Avro `.avsc` files. Keep the canonical copies in:
-
-```text
-libs/kafka/schemas
-```
-
-Spring Boot Kafka producers and consumers also need the relevant schemas copied into their local Maven Avro input directory before build/run:
-
-```bash
-mkdir -p apps/<service>/src/main/avro
-cp libs/kafka/schemas/*.avsc apps/<service>/src/main/avro/
-```
-
-This copy step is manual for now and will be automated later.
+| Ingestion | `8080` | `8081` |
+| Service | `8080` | `8083` |
 
 ## Useful Paths
 
@@ -243,11 +194,8 @@ This copy step is manual for now and will be automated later.
 | --- | --- |
 | `apps/` | Runtime services |
 | `infra/docker-compose.yml` | Local container stack |
-| `libs/kafka/schemas/` | Shared Kafka Avro schemas |
-| `apps/kafka-init/` | Local Kafka topic initialization service |
 | `scripts/env-init.sh` | Initializes local `.env` files |
 | `docs/dev/MonorepoMadness.md` | Repo structure guide |
-| `docs/dev/UsingKafka.md` | Kafka usage notes |
 
 ## Troubleshooting
 
@@ -262,5 +210,3 @@ Remove containers and anonymous volumes:
 ```bash
 docker compose -f infra/docker-compose.yml down -v
 ```
-
-If Kafka connections fail, check whether the client is running on the host or inside Docker Compose and use the matching Kafka address.

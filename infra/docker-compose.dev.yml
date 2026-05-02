@@ -4,8 +4,8 @@ services:
     build:
       context: ../apps/ingestion
       dockerfile: Dockerfile
-      target: prod
-    image: cloudsherpa-ingestion:prod
+      target: dev
+    image: cloudsherpa-ingestion:dev
     container_name: ingestion
     ports:
       - "8081:8080"
@@ -19,8 +19,8 @@ services:
     build:
       context: ../apps/service
       dockerfile: Dockerfile
-      target: prod
-    image: cloudsherpa-service:prod
+      target: dev
+    image: cloudsherpa-service:dev
     container_name: service
     ports:
       - "8083:8080"
@@ -32,15 +32,19 @@ services:
   
   dashboard:
     build:
-      context: ../apps/dashboard-frontend
+      context: ../apps/dashboard
       dockerfile: Dockerfile
-      target: prod
-    image: cloudsherpa-dashboard-frontend:prod
-    container_name: dashboard-frontend
+      target: dev
+    image: cloudsherpa-dashboard:latest
+    container_name: dashboard
     ports:
       - "3000:3000"
+    volumes:
+      - ../apps/dashboard:/app
+      - /app/node_modules
+      - /app/.next
     env_file:
-      - ../apps/dashboard-frontend/.env
+      - ../apps/dashboard/.env
 
   analytics-db:
     image: timescale/timescaledb:2.16.1-pg16
@@ -58,7 +62,7 @@ services:
       interval: 5s
       timeout: 3s
       retries: 20
-
+  
 volumes:
   analytics_db_data: 
   # Ensures that the data is persistent across docker compose down / up 

@@ -2,7 +2,7 @@
 
 The analytics database is powered by **TimescaleDB**, a time-series extension for PostgreSQL. It is designed to store normalized cloud usage and cost metrics for time-based analytics workloads.
 
-For the canonical table definitions, column types, constraints, hypertable configuration, and indexes, see [Database and Kafka Schemas](schemas.md#analytics-database).
+For the canonical table definitions, column types, constraints, hypertable configuration, and indexes, see [Database Schemas](schemas.md#analytics-database).
 
 ## Purpose
 
@@ -19,4 +19,4 @@ It is used to:
 
 Analytics data is stored as time-series data. The schema is optimized around recorded usage time and environment-specific lookups.
 
-Schema details are intentionally kept out of this page to avoid duplicate documentation. Update [Database and Kafka Schemas](schemas.md#analytics-database) whenever the analytics database schema changes.
+Schema details are intentionally kept out of this page to avoid duplicate documentation. Update [Database Schemas](schemas.md#analytics-database) whenever the analytics database schema changes.
