@@ -1,5 +1,28 @@
 CREATE EXTENSION IF NOT EXISTS timescaledb;
 
+CREATE TABLE connector (
+    connector_id UUID PRIMARY KEY,
+    user_id UUID NOT NULL,
+    provider VARCHAR(50) NOT NULL,
+    account_id VARCHAR(100) NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE environment_reference (
+    environment_id UUID PRIMARY KEY,
+    connector_id UUID REFERENCES connector(connector_id),
+    provider VARCHAR(50) NOT NULL,
+    account_id VARCHAR(100) NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE deployment (
+    deployment_id UUID PRIMARY KEY,
+    environment_id UUID REFERENCES environment_reference(environment_id),
+    name VARCHAR(100),
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 CREATE TABLE normalized_metrics (
     metric_id UUID NOT NULL,
     recorded_at TIMESTAMPTZ NOT NULL,
