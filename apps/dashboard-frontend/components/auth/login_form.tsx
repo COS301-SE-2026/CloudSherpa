@@ -10,7 +10,7 @@ interface LoginFormProps {
 
 export default function LoginForm({ onSubmit, isLoading = false }: LoginFormProps) {
   return (
-    <div className="w-full max-w-sm space-y-8 p-4">
+    <div className="w-full max-w-sm space-y-8 p-4 bg-white">
       <div className="text-center">
         <h2 className="text-3xl font-bold tracking-tight text-foreground">
           Sign in
