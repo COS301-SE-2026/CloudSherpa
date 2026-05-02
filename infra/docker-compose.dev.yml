@@ -4,13 +4,15 @@ services:
     build:
       context: ../apps/ingestion
       dockerfile: Dockerfile
-      target: prod
-    image: cloudsherpa-ingestion:prod
+      target: dev
+    image: cloudsherpa-ingestion:dev
     container_name: ingestion
     ports:
       - "8081:8080"
     env_file:
       - ../apps/ingestion/.env
+    volumes:
+      - ../apps/ingestion:/app
     depends_on:
       analytics-db:
         condition: service_healthy
@@ -19,13 +21,15 @@ services:
     build:
       context: ../apps/service
       dockerfile: Dockerfile
-      target: prod
-    image: cloudsherpa-service:prod
+      target: dev
+    image: cloudsherpa-service:dev
     container_name: service
     ports:
       - "8083:8080"
     env_file:
       - ../apps/service/.env
+    volumes:
+      - ../apps/service:/app
     depends_on:
       analytics-db:
         condition: service_healthy
@@ -34,11 +38,15 @@ services:
     build:
       context: ../apps/dashboard
       dockerfile: Dockerfile
-      target: prod
-    image: cloudsherpa-dashboard:prod
+      target: dev
+    image: cloudsherpa-dashboard:latest
     container_name: dashboard
     ports:
       - "3000:3000"
+    volumes:
+      - ../apps/dashboard:/app
+      - /app/node_modules
+      - /app/.next
     env_file:
       - ../apps/dashboard/.env
 
@@ -58,7 +66,7 @@ services:
       interval: 5s
       timeout: 3s
       retries: 20
-
+  
 volumes:
   analytics_db_data: 
   # Ensures that the data is persistent across docker compose down / up 

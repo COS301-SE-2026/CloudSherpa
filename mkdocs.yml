@@ -27,18 +27,15 @@ nav:
   - Developer Guides:
       - Cheat Sheet: dev/CheatSheet.md
       - Monorepo Madness: dev/MonorepoMadness.md
-      - Using Kafka: dev/UsingKafka.md
       - Development Scripts: scripts/README.md
 
   - Services:
       - Alert Engine: services/alert-engine.md
-      - Analytics Engine: services/analytics-engine.md
+      - Service: services/service.md
       - Dashboard Backend: services/dashboard-backend.md
       - Dashboard Frontend: services/dashboard-frontend.md
-      - Ingestion Service: services/ingestion-service.md
+      - Ingestion: services/ingestion.md
       - Intelligence Engine: services/intelligence-engine.md
-      - Kafka Init: services/kafka-init.md
-      - Normalization Service: services/normalization-service.md
 
   - Persistence:
       - Schema Reference: persistence/schemas.md

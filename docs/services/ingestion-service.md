@@ -1,1 +1,0 @@
-../../apps/ingestion-service/README.md

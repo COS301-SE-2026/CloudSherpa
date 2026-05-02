@@ -1,1 +1,0 @@
-../../apps/intelligence-engine/README.md
