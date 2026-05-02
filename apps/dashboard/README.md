@@ -50,6 +50,16 @@ From the repository root:
 docker compose -f infra/docker-compose.yml up --build dashboard
 ```
 
+## Development Container
+
+From the repository root:
+
+```bash
+docker compose -f infra/docker-compose.dev.yml up --build dashboard
+```
+
+The development Compose service bind-mounts `apps/dashboard` into `/app` and runs the Next.js development server. Next.js watches the mounted source and live reloads browser changes for pages, components, styles, and other frontend files.
+
 ## Dev Dependencies
 
 This app uses development-only packages for:

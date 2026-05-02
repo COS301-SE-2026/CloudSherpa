@@ -62,6 +62,14 @@ Start the full local stack:
 docker compose -f infra/docker-compose.yml up --build
 ```
 
+Start the development container stack:
+
+```bash
+docker compose -f infra/docker-compose.dev.yml up --build
+```
+
+The development stack bind-mounts app source into the containers. The dashboard runs the Next.js development server and supports live reload for frontend changes. The Spring Boot containers use the dev image target with source mounted into `/app`; with VS Code, Java file changes can trigger Spring Boot reload through the Java tooling. With other IDEs, run `./mvnw compile` inside the relevant app directory or container to trigger reload after `.java` changes.
+
 Start one service:
 
 ```bash

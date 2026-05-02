@@ -32,15 +32,15 @@ services:
   
   dashboard:
     build:
-      context: ../apps/dashboard-frontend
+      context: ../apps/dashboard
       dockerfile: Dockerfile
       target: prod
-    image: cloudsherpa-dashboard-frontend:prod
-    container_name: dashboard-frontend
+    image: cloudsherpa-dashboard:prod
+    container_name: dashboard
     ports:
       - "3000:3000"
     env_file:
-      - ../apps/dashboard-frontend/.env
+      - ../apps/dashboard/.env
 
   analytics-db:
     image: timescale/timescaledb:2.16.1-pg16
