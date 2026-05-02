@@ -2,6 +2,16 @@
 
 This document explains where things live in the CloudSherpa repository and where new files should go. It is intentionally focused on directory. For service-specific setup, commands, ports, dependencies, and environment details, use the service READMEs under `apps/`.
 
+## Branching Strategy
+
+To maintain code quality and deployment stability, we strictly follow a main/dev/feature branch strategy:
+
+* **[`main`](https://github.com/COS301-SE-2026/CloudSherpa/tree/main)**: This branch is strictly reserved for stable, production-ready code. Code is only merged into this branch after passing rigorous automated testing, Quality Assurance (QA), and User Acceptance Testing (UAT).
+* **[`dev`](https://github.com/COS301-SE-2026/CloudSherpa/tree/dev)**: This is our active integration branch. Completed features are merged here first for testing and verification before being promoted to `main`.
+* **`feature/*`**: Short-lived branches created from `dev` for individual features/fixes. Once complete and reviewed, they are merged back into `dev`.
+* **`doc/*`**: Branches focused solely on documentation updates. Merged back into `dev` once complete.
+* **`test/*`**: Branches created exclusively for adding or improving test coverage. Merged back into `dev` after passing CI checks.
+
 ## Repository Tree
 
 _Generated on 26/04_. Should update regularly or automate via local git lifecycle hooks or github actions.
