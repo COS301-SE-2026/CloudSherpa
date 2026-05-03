@@ -8,18 +8,21 @@ import RegisterForm from "@/components/auth/register_form";
 
 export default function Authentication() {
   const [isSignUp, setIsSignUp] = useState(false);
+
   return (
     <div className="fixed inset-0 overflow-hidden bg-white font-sans">
       <div className="relative w-full h-full">
         
         {/* login container */}
+        {/* if isActive is false react unmounts the component which resets the state so it feels like you are navigating to a fresh page, 
+        also removes previous errors in state of the components */}
         <AuthPanel isActive={!isSignUp} isSignUpState={isSignUp}>
-          <LoginForm />
+          <LoginForm key={isSignUp ? "hidden" : "active"} />
         </AuthPanel>
 
         {/* register container */}
         <AuthPanel isActive={isSignUp} isSignUpState={isSignUp}>
-          <RegisterForm />
+          <RegisterForm key={isSignUp ? "active" : "hidden"} />
         </AuthPanel>
 
         {/* sliding overlay */}

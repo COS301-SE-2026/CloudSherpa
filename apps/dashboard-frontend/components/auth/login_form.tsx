@@ -78,7 +78,7 @@ export default function LoginForm({ onSubmit, isLoading = false }: any) {
               type="button"
               onClick={togglePasswordVisibility}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#2F2FE4]">
-              {isPasswordVisible ? <EyeOff size={18} /> : <Eye size={18} />}
+              {isPasswordVisible ? <Eye size={20} /> : <EyeOff size={20} />}
             </button>
           </div>
 
