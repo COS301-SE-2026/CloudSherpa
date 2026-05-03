@@ -2,6 +2,16 @@
 
 This document explains where things live in the CloudSherpa repository and where new files should go. It is intentionally focused on directory. For service-specific setup, commands, ports, dependencies, and environment details, use the service READMEs under `apps/`.
 
+## Branching Strategy
+
+To maintain code quality and deployment stability, we strictly follow a main/dev/feature branch strategy:
+
+* **[`main`](https://github.com/COS301-SE-2026/CloudSherpa/tree/main)**: This branch is strictly reserved for stable, production-ready code. Code is only merged into this branch after passing rigorous automated testing, Quality Assurance (QA), and User Acceptance Testing (UAT).
+* **[`dev`](https://github.com/COS301-SE-2026/CloudSherpa/tree/dev)**: This is our active integration branch. Completed features are merged here first for testing and verification before being promoted to `main`.
+* **`feature/*`**: Short-lived branches created from `dev` for individual features/fixes. Once complete and reviewed, they are merged back into `dev`.
+* **`doc/*`**: Branches focused solely on documentation updates. Merged back into `dev` once complete.
+* **`test/*`**: Branches created exclusively for adding or improving test coverage. Merged back into `dev` after passing CI checks.
+
 ## Repository Tree
 
 _Generated on 26/04_. Should update regularly or automate via local git lifecycle hooks or github actions.
@@ -14,13 +24,10 @@ _Generated on 26/04_. Should update regularly or automate via local git lifecycl
 |-- mkdocs.yml
 |-- apps
 |   |-- alert-engine
-|   |-- analytics-engine
-|   |-- dashboard-backend
-|   |-- dashboard-frontend
-|   |-- ingestion-service
-|   |-- intelligence-engine
-|   |-- kafka-init
-|   `-- normalization-service
+|   |-- dashboard
+|   |-- ingestion
+|   |-- intelligence
+|   `-- service
 |-- docs
 |   |-- assets
 |   |   `-- team-photos
@@ -28,15 +35,10 @@ _Generated on 26/04_. Should update regularly or automate via local git lifecycl
 |   |       `-- TeamPhoto.png
 |   `-- dev
 |       |-- CheatSheet.md
-|       |-- MonorepoMadness.md
-|       `-- UsingKafka.md
+|       `-- MonorepoMadness.md
 |-- infra
 |   |-- README.md
 |   `-- docker-compose.yml
-|-- libs
-|   `-- kafka
-|       `-- schemas
-|           `-- cloud_usage_event.avsc
 `-- scripts
     |-- README.md
     |-- dev-dependencies.sh
@@ -67,7 +69,7 @@ Use `apps/` for code that:
 - has its own dependency manifest;
 - has its own Dockerfile;
 - has its own `.env.example`;
-- communicates with other services through explicit interfaces such as HTTP or Kafka.
+- communicates with other services through explicit interfaces such as HTTP.
 
 Do not put shared utility code in `apps/` just because one service uses it first. If it becomes a cross-service contract or reusable module, move it under `libs/`.
 
@@ -91,14 +93,10 @@ Use these READMEs for service-specific setup, development commands, build comman
 
 | Service | README |
 | --- | --- |
-| Alert Engine | [`docs/services/alert-engine.md`](../services/alert-engine.md) |
-| Analytics Engine | [`docs/services/analytics-engine.md`](../services/analytics-engine.md) |
-| Dashboard Backend | [`docs/services/dashboard-backend.md`](../services/dashboard-backend.md) |
-| Dashboard Frontend | [`docs/services/dashboard-frontend.md`](../services/dashboard-frontend.md) |
-| Ingestion Service | [`docs/services/ingestion-service.md`](../services/ingestion-service.md) |
-| Intelligence Engine | [`docs/services/intelligence-engine.md`](../services/intelligence-engine.md) |
-| Kafka Init | [`docs/services/kafka-init.md`](../services/kafka-init.md) |
-| Normalization Service | [`docs/services/normalization-service.md`](../services/normalization-service.md) |
+| Dashboard | [`docs/services/dashboard-frontend.md`](../services/dashboard-frontend.md) |
+| Ingestion | [`docs/services/ingestion.md`](../services/ingestion.md) |
+| Intelligence | [`docs/services/intelligence-engine.md`](../services/intelligence-engine.md) |
+| Service | [`docs/services/service.md`](../services/service.md) |
 
 ## `docs/`
 
@@ -115,7 +113,6 @@ Current developer docs:
 | --- | --- |
 | [`docs/dev/CheatSheet.md`](CheatSheet.md) | Quick command reference for local development. |
 | [`docs/dev/MonorepoMadness.md`](MonorepoMadness.md) | Repository structure and file placement guide. |
-| [`docs/dev/UsingKafka.md`](UsingKafka.md) | Kafka-specific development notes. |
 
 ### MkDocs
 
@@ -131,7 +128,7 @@ Current files:
 
 | File | Purpose |
 | --- | --- |
-| `infra/docker-compose.yml` | Local container stack for Kafka, Schema Registry, and app services. |
+| `infra/docker-compose.yml` | Local container stack for app services and shared dependencies. |
 | `infra/README.md` | Infrastructure commands, ports, environment notes, and Docker Compose usage. |
 
 Put container orchestration, local infrastructure wiring, and future deployment-adjacent configuration here. Do not put application source code in `infra/`.
@@ -142,25 +139,12 @@ Shared cross-service contracts and reusable files belong in `libs/`.
 
 Use `libs/` for:
 
-- Kafka schemas;
 - shared message contracts;
 - shared validation rules;
 - generated or shared types used by more than one service;
 - cross-service utilities that are not owned by a single app.
 
 Do not use `libs/` for service-specific business logic. If only one service uses it and owns it, keep it inside that service.
-
-### `libs/kafka/`
-
-Kafka-related shared definitions live under `libs/kafka/`.
-
-Current files:
-
-| File | Purpose |
-| --- | --- |
-| `libs/kafka/schemas/cloud_usage_event.avsc` | Avro schema for cloud usage events. |
-
-Treat `libs/kafka/schemas` as the canonical source if a service-local `src/main/avro` copy differs.
 
 ## `scripts/`
 
@@ -202,7 +186,6 @@ Use this quick placement guide:
 | Service-specific tests | `apps/<service-name>/tests/` or the framework's test folder |
 | Service-specific setup docs | `docs/services/<service-name>.md` symlinked to `apps/<service-name>/README.md` |
 | Docker Compose or local stack wiring | `infra/` |
-| Shared Kafka schemas | `libs/kafka/schemas/` |
 | Shared cross-service code or contracts | `libs/` |
 | Developer docs | `docs/dev/` |
 | Documentation images or diagrams | `docs/assets/` |
@@ -227,4 +210,3 @@ Keep detailed service behavior out of this document. The service README is the s
 - [`docs/dev/CheatSheet.md`](CheatSheet.md) - quick command reference.
 - `infra/README.md` - Docker Compose and infrastructure details.
 - `scripts/README.md` - script usage.
-- [`docs/dev/UsingKafka.md`](UsingKafka.md) - Kafka development notes.

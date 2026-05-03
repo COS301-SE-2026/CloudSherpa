@@ -7,18 +7,21 @@ Welcome to the CloudSherpa developer documentation.
 !!! warning
     This documentation is intended as **development documentation**. It is automatically deployed on `push` to the `dev` and `main` branches of the _CloudSherpa_ repository. It is thus possible and highly likely that this documentation documents implementation done on the `dev` branch that **does not exist** on the `main` branch. For the current stage of _CloudSherpa_ development, this is intentional. It is still something to take note of and keep in mind as you are reading this documentation.
 
+!!! warning "Repository refactor in progress"
+    Most of the current documentation is probably invalidated by ongoing repository refactoring. Treat paths, service names, commands, and architecture notes as provisional until the documentation is reviewed against the new app layout.
+
 ??? note "Developer Guides"
     [Developer Guides](dev/CheatSheet.md)
 
     Core development resources, including workflows, conventions, and quick-reference material for working within CloudSherpa.
 
 ??? note "Service Documentation"
-    [Service Documentation](services/alert-engine.md)
+    [Service Documentation](services/service.md)
 
-    CloudSherpa follows a microservices architecture with event-driven communication. Each service is documented in detail, covering responsibilities and dependencies.
+    CloudSherpa follows a microservices architecture. Each service is documented in detail, covering responsibilities and dependencies.
 
 ??? note "Persistence Documentation"
-    [Database and Kafka Schemas](persistence/schemas.md)
+    [Database Schemas](persistence/schemas.md)
 
     Persistence documentation covers storage systems, database responsibilities, and schema references.
 

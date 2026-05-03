@@ -1,1 +1,0 @@
-../../apps/kafka-init/README.md

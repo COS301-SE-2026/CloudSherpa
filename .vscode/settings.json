@@ -1,0 +1,4 @@
+{
+    "java.autobuild.enabled": true,
+    "java.configuration.updateBuildConfiguration": "interactive"
+}

@@ -7,7 +7,11 @@
 
 ## Documentation
 
-Visit our [official documentation site](https://cos301-se-2026.github.io/CloudSherpa/) for more details.
+For a comprehensive overview of CloudSherpa, visit our [official documentation site](https://cos301-se-2026.github.io/CloudSherpa/).
+
+## GitHub Project
+
+Follow our active development, feature tracking, and issue management on our [CloudSherpa Project](https://github.com/orgs/COS301-SE-2026/projects/39).
 
 ## Project Overview
 
@@ -35,16 +39,6 @@ docker compose -f infra/docker-compose.yml up --build
 The dashboard frontend is available at `http://localhost:3000`.
 
 For development workflows, individual service commands, ports, and troubleshooting, see [`docs/dev/CheatSheet.md`](docs/dev/CheatSheet.md), [`infra/README.md`](infra/README.md), and the app-specific READMEs under [`apps/`](apps/).
-
-## Current Status & Branch Strategy
-
-**Status: Active Development**
-
-To maintain code quality and deployment stability, we strictly follow a main/dev/feature branch strategy:
-
-* **[`main`](https://github.com/COS301-SE-2026/CloudSherpa/tree/main)**: This branch is strictly reserved for stable, production-ready code. Code is only merged into this branch after passing rigorous automated testing, Quality Assurance (QA), and User Acceptance Testing (UAT).
-* **[`dev`](https://github.com/COS301-SE-2026/CloudSherpa/tree/dev)**: This is our active integration branch. Completed features are merged here first for testing and verification before being promoted to `main`.
-* **`feature/*`**: Short-lived branches created from `dev` for individual features/fixes. Once complete and reviewed, they are merged back into `dev`.
 
 ## About Team BitFlip
 
