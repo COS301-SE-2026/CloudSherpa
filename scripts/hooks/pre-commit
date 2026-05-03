@@ -1,0 +1,16 @@
+#!/bin/bash
+
+set -eo pipefail
+
+INFO='\033[1;34m'     
+SUCCESS='\033[1;32m'  
+RESET='\033[0m'
+ERROR='\033[1;31m'
+
+echo -e "${INFO}Running CloudSherpa Dashboard Lint...${RESET}"
+(cd apps/dashboard && npx eslint . >/dev/null 2>&1 || {
+	echo -e "${ERROR}Dashboard lint failed. Run \"npm lint\" in apps/dashbaord for more verbose error messages. Commit not made.${RESET}"
+	exit 1
+})
+echo -e "${SUCCESS}Dashboard lint succeeded${RESET}"
+echo -e "${SUCCESS}Succesfully made a commit, congrats!${RESET}"
