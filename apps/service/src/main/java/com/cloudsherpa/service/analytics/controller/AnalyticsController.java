@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import java.time.OffsetDateTime;
 import java.util.List;
 
+// This receives the HTTP POST request sent by CloudUsageService.java
 @RestController
 @RequestMapping("/api/analytics")
 public class AnalyticsController 
@@ -34,7 +35,10 @@ public class AnalyticsController
 
     // POST request to insert a record into the database
     // Insert into the AnalyticsDB
-    @PostMapping("/metrics/record") // URL: /api/analytics/metrics/record
+    // Listens for HTTP POST requests at "/api/analytics/metrics/record"
+    // @RequestBody tells Spring to automatically parse the incoming JSON payload and map it 
+    // to the fields inside the MetricDTO object.
+    @PostMapping("/metrics/record")
     public String recordMetric(@RequestBody MetricDTO request) 
     {
         analyticsPersistenceService.recordMetric(request.getEnvironmentId(), request.getResourceId(), request.getServiceCategory(),

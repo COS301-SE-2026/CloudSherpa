@@ -35,13 +35,18 @@ public class AnalyticsPersistenceService
     public void recordMetric(UUID environmentId, String resourceId, String serviceCategory, BigDecimal usageAmount, String usageUnit, BigDecimal costAmount, String currency) 
     {
         EnvironmentReference environment = environmentRepo.getReferenceById(environmentId);
+
+        // Create the new entity representing the row in the normalized_metrics table.
         NormalizedMetrics newMetric = new NormalizedMetrics(OffsetDateTime.now(), environment, resourceId, serviceCategory, usageAmount, usageUnit, costAmount, currency);
 
         // SQL insert statement
+        // The actual database insertion. Spring Data JPA translates this into:
+        // "INSERT INTO normalized_metrics (recorded_at, environment_id, ...) VALUES (...)"
+        // Because an INSERT happens here, PostgreSQL immediately executes the `metric_notify_trigger` 
+        // defined in analytics-schema.sql, broadcasting the JSON event.
         metricsRepo.save(newMetric);
     }
 
-    
     //Fetches all metrics recorded between the specified start and end times.
     public List<NormalizedMetrics> getMetricsInTimeWindow(OffsetDateTime startTime, OffsetDateTime endTime) 
     {
