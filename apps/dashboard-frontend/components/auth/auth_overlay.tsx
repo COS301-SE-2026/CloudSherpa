@@ -24,7 +24,7 @@ export function AuthOverlay({ isSignUp, toggle }: OverlayProps) {
         )}>
           <h1 className="text-5xl font-extrabold mb-6">Welcome Back</h1>
           <p className="text-lg font-light mb-10 max-w-md">Return to your FinOps journey</p>
-          <Button variant="outline" className="text-primary hover:text-secondary hover:bg-primary" onClick={() => toggle(false)}>
+          <Button variant="outline" className="text-primary hover:text-slate-50 hover:bg-primary" onClick={() => toggle(false)}>
             Sign In
           </Button>
         </div>
@@ -36,7 +36,7 @@ export function AuthOverlay({ isSignUp, toggle }: OverlayProps) {
         )}>
           <h1 className="text-5xl font-extrabold mb-6">CloudSherpa</h1>
           <p className="text-lg font-light mb-10 max-w-md">Start your optimization journey</p>
-          <Button variant="outline" className=" text-primary hover:text-secondary hover:bg-primary" onClick={() => toggle(true)}>
+          <Button variant="outline" className=" text-primary hover:text-slate-50 hover:bg-primary" onClick={() => toggle(true)}>
             Get Started
           </Button>
         </div>

@@ -140,4 +140,28 @@
   }
 }
 
+@theme {
+  --background-cloudsherpa: radial-gradient(at 0% 0%, #2F2FE4 0%, transparent 50%),
+                            radial-gradient(at 100% 0%, #162E93 0%, transparent 50%),
+                            radial-gradient(at 100% 100%, #1A1953 0%, transparent 50%),
+                            radial-gradient(at 0% 100%, #080616 0%, transparent 50%);
+}
+
+.bg-cloudsherpa-mesh {
+  background-color: #080616; /* The base "Deep Space" color */
+  background-image: 
+    radial-gradient(at 0% 0%, hsla(240, 77%, 54%, 0.3) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, hsla(228, 74%, 33%, 0.3) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, hsla(241, 54%, 21%, 0.5) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, #080616 0px, transparent 50%);
+  background-size: 200% 200%;
+  animation: mesh-flow 15s ease infinite;
+}
+
+@keyframes mesh-flow {
+  0% { background-position: 0% 0%; }
+  50% { background-position: 100% 100%; }
+  100% { background-position: 0% 0%; }
+}
+
 

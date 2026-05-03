@@ -40,6 +40,8 @@ export default function RegisterForm({ onSubmit, isLoading = false }: RegisterFo
               type={isPasswordVisible ? "text" : "password"}
               required 
               disabled={isLoading}
+              pattern="[a-zA-Z0-9]{8,}"
+              title="Password must be at least 8 alphanumeric characters"
               className="pr-10"
             />
             <button
@@ -47,7 +49,7 @@ export default function RegisterForm({ onSubmit, isLoading = false }: RegisterFo
               aria-pressed={isPasswordVisible}
               aria-label="Toggle password visibility"
               onClick={togglePasswordVisibility}
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-primary focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-primary focus:outline-none"
               disabled={isLoading}
             >
               {isPasswordVisible ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -66,6 +68,8 @@ export default function RegisterForm({ onSubmit, isLoading = false }: RegisterFo
               type={isConfirmPasswordVisible ? "text" : "password"}
               required 
               disabled={isLoading}
+              pattern="[a-zA-Z0-9]{8,}"
+              title="Password must be at least 8 alphanumeric characters"
               className="pr-10"
             />
             <button
@@ -73,7 +77,7 @@ export default function RegisterForm({ onSubmit, isLoading = false }: RegisterFo
               aria-pressed={isConfirmPasswordVisible}
               aria-label="Toggle confirm password visibility"
               onClick={toggleConfirmPasswordVisibility}
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-primary focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-primary focus:outline-none"
               disabled={isLoading}
             >
               {isConfirmPasswordVisible ? <EyeOff size={20} /> : <Eye size={20} />}
