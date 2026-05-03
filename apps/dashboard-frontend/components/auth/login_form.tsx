@@ -2,9 +2,9 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label"; 
-import { Loader2, Eye, EyeOff, AlertCircle } from "lucide-react"; 
-import { useState } from "react"; 
+import { Label } from "@/components/ui/label";
+import { Loader2, Eye, EyeOff, AlertCircle } from "lucide-react";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 export default function LoginForm({ onSubmit, isLoading = false }: any) {
@@ -16,9 +16,9 @@ export default function LoginForm({ onSubmit, isLoading = false }: any) {
 
   const validatePassword = (value: string) => {
     setPassword(value);
-    
+
     // at least 8 characters
-    //  alphanumeric 
+    //  alphanumeric
     const minLength = value.length >= 8;
     const isAlphanumericPlus = /^[a-zA-Z0-9!@#$%^&*()_+={}\[\]:;"'<>,.?/|\\~`-]*$/.test(value);
 
@@ -51,23 +51,22 @@ export default function LoginForm({ onSubmit, isLoading = false }: any) {
         <div className="space-y-2">
           <Label htmlFor="password">Password</Label>
           <div className="relative">
-            <Input 
-              id="password" 
+            <Input
+              id="password"
               type={isPasswordVisible ? "text" : "password"}
               value={password}
               onChange={(e) => validatePassword(e.target.value)}
-              required 
+              required
               disabled={isLoading}
               className={cn(
                 "pr-10",
-                error ? "border-red-500 focus-visible:ring-red-500" : "focus-visible:ring-[#2F2FE4]"
+                error ? "border-red-500 focus-visible:ring-red-500" : "focus-visible:ring-[#2F2FE4]",
               )}
             />
             <button
               type="button"
               onClick={togglePasswordVisibility}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#2F2FE4]"
-            >
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#2F2FE4]">
               {isPasswordVisible ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
@@ -80,11 +79,10 @@ export default function LoginForm({ onSubmit, isLoading = false }: any) {
           )}
         </div>
 
-        <Button 
-          type="submit" 
-          className="w-full bg-[#2F2FE4] hover:bg-[#162E93]" 
-          disabled={isLoading || (!!error) || password.length < 8}
-        >
+        <Button
+          type="submit"
+          className="w-full bg-[#2F2FE4] hover:bg-[#162E93]"
+          disabled={isLoading || !!error || password.length < 8}>
           {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Sign in"}
         </Button>
       </form>
