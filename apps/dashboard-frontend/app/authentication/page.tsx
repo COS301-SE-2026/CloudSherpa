@@ -12,13 +12,13 @@ export default function Authentication() {
     <div className="fixed inset-0 overflow-hidden bg-white font-sans">
       <div className="relative w-full h-full">
         
-        {/* login containerl */}
-        <AuthPanel isActive={!isSignUp} side="left" isSignUpState={isSignUp}>
+        {/* login container */}
+        <AuthPanel isActive={!isSignUp} isSignUpState={isSignUp}>
           <LoginForm />
         </AuthPanel>
 
         {/* register container */}
-        <AuthPanel isActive={isSignUp} side="left" isSignUpState={isSignUp}>
+        <AuthPanel isActive={isSignUp} isSignUpState={isSignUp}>
           <RegisterForm />
         </AuthPanel>
 

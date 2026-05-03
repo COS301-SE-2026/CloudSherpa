@@ -1,4 +1,3 @@
-// components/auth/auth-overlay.tsx
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -15,7 +14,7 @@ export function AuthOverlay({ isSignUp, toggle }: OverlayProps) {
       isSignUp ? "-translate-x-full" : ""
     )}>
       <div className={cn(
-        "relative -left-full h-full w-[200%] transform transition-transform duration-700 ease-in-out bg-slate-900 text-white", //adjust this to change the background
+        "relative -left-full h-full w-[200%] transform transition-transform duration-700 ease-in-out bg-primary text-white", //adjust this to change the background
         isSignUp ? "translate-x-1/2" : "translate-x-0"
       )}>
         {/* gp to Login */}
