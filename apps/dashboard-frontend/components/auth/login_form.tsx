@@ -40,13 +40,23 @@ export default function LoginForm({ onSubmit, isLoading = false }: any) {
   return (
     <div className="w-full max-w-sm space-y-8 p-4 bg-white">
       <div className="text-center">
-        <h2 className="text-3xl font-bold tracking-tight text-[#080616]">Sign in</h2>
+        <h2 className="text-3xl font-bold tracking-tight text-[#1A1953]">Sign in</h2>
       </div>
 
       <form className="space-y-6" onSubmit={handleFormSubmit}>
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" placeholder="name@company.com" required disabled={isLoading} />
+          <Input
+            id="email"
+            type="email"
+            placeholder="name@company.com"
+            required
+            disabled={isLoading}
+            className={cn(
+              "pr-10",
+              error ? "border-red-500 focus-visible:ring-red-500" : "focus-visible:ring-[#2F2FE4]",
+            )}
+          />
         </div>
 
         <div className="space-y-2">

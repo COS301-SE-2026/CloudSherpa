@@ -61,7 +61,18 @@ export default function RegisterForm({ onSubmit, isLoading = false }: RegisterFo
       <form className="space-y-6" action="#" method="POST">
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
-          <Input id="email" name="email" type="email" placeholder="name@company.com" required disabled={isLoading} />
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            placeholder="name@company.com"
+            required
+            disabled={isLoading}
+            className={cn(
+              "pr-10",
+              confirmPasswordError ? "border-red-500 focus-visible:ring-red-500" : "focus-visible:ring-[#2F2FE4]",
+            )}
+          />
         </div>
 
         <div className="space-y-2">
@@ -77,6 +88,10 @@ export default function RegisterForm({ onSubmit, isLoading = false }: RegisterFo
               type={isPasswordVisible ? "text" : "password"}
               required
               disabled={isLoading}
+              className={cn(
+                "pr-10",
+                confirmPasswordError ? "border-red-500 focus-visible:ring-red-500" : "focus-visible:ring-[#2F2FE4]",
+              )}
             />
             <button
               type="button"
@@ -85,7 +100,7 @@ export default function RegisterForm({ onSubmit, isLoading = false }: RegisterFo
               onClick={togglePasswordVisibility}
               className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-primary focus:outline-none"
               disabled={isLoading}>
-              {isPasswordVisible ? <EyeOff size={20} /> : <Eye size={20} />}
+              {isPasswordVisible ? <Eye size={20} /> : <EyeOff size={20} />}
             </button>
           </div>
           {passwordError && (
@@ -121,7 +136,7 @@ export default function RegisterForm({ onSubmit, isLoading = false }: RegisterFo
               onClick={toggleConfirmPasswordVisibility}
               className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-primary focus:outline-none"
               disabled={isLoading}>
-              {isConfirmPasswordVisible ? <EyeOff size={20} /> : <Eye size={20} />}
+              {isConfirmPasswordVisible ? <Eye size={20} /> : <EyeOff size={20} />}
             </button>
           </div>
           {confirmPasswordError && (
@@ -132,7 +147,12 @@ export default function RegisterForm({ onSubmit, isLoading = false }: RegisterFo
           )}
         </div>
 
-        <Button type="submit" className="w-full" disabled={isLoading || !!passwordError || !!confirmPasswordError || password.length < 8}> {/*i know the disabled is a bit redundent, I'll fix it*/}
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={isLoading || !!passwordError || !!confirmPasswordError || password.length < 8}>
+          {" "}
+          {/*i know the disabled is a bit redundent, I'll fix it*/}
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {isLoading ? "Authenticating..." : "Sign Up"}
         </Button>
