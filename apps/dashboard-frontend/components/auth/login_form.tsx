@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Loader2, Eye, EyeOff, AlertCircle } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { SocialAuth } from "./social_auth";
 
 export default function LoginForm({ onSubmit, isLoading = false }: any) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -85,6 +86,8 @@ export default function LoginForm({ onSubmit, isLoading = false }: any) {
           disabled={isLoading || !!error || password.length < 8}>
           {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Sign in"}
         </Button>
+
+        <SocialAuth />
       </form>
     </div>
   );

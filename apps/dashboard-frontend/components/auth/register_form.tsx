@@ -5,6 +5,7 @@ import { Loader2 } from "lucide-react";
 import { Eye, EyeOff, AlertCircle } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { SocialAuth } from "./social_auth";
 
 interface RegisterFormProps {
   onSubmit?: (data: any) => void; //indicates form submission.
@@ -131,10 +132,12 @@ export default function RegisterForm({ onSubmit, isLoading = false }: RegisterFo
           )}
         </div>
 
-        <Button type="submit" className="w-full" disabled={isLoading}>
+        <Button type="submit" className="w-full" disabled={isLoading || !!passwordError || !!confirmPasswordError || password.length < 8}> {/*i know the disabled is a bit redundent, I'll fix it*/}
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {isLoading ? "Authenticating..." : "Sign Up"}
         </Button>
+
+        <SocialAuth />
       </form>
     </div>
   );
