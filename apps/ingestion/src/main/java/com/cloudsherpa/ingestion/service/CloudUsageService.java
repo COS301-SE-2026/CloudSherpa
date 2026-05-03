@@ -1,19 +1,17 @@
 package com.cloudsherpa.ingestion.service;
 
+import com.cloudsherpa.ingestion.normalization.model.NormalizedMetric;
 import org.springframework.stereotype.Service;
 
-import com.cloudsherpa.ingestion.normalization.model.NormalizedMetric;
-
-/**
- * Intermediary between the CloudUsageController and the ingestion pipeline.
- */
+/** Intermediary between the CloudUsageController and the ingestion pipeline. */
 @Service
 public class CloudUsageService {
 
-    // Temporary method used to test the ingestion and normalization flow.
-    public NormalizedMetric sendMockEvent() {
-        long now = System.currentTimeMillis();
-        NormalizedMetric metric = new NormalizedMetric(
+  // Temporary method used to test the ingestion and normalization flow.
+  public NormalizedMetric sendMockEvent() {
+    long now = System.currentTimeMillis();
+    NormalizedMetric metric =
+        new NormalizedMetric(
             "mock-metric-1",
             "AWS",
             now,
@@ -25,10 +23,9 @@ public class CloudUsageService {
             "Hours",
             12.75,
             "USD",
-            "OnDemand"
-        );
+            "OnDemand");
 
-        System.out.println("Ingested normalized metric: " + metric.getMetricId());
-        return metric;
-    }
+    System.out.println("Ingested normalized metric: " + metric.getMetricId());
+    return metric;
+  }
 }
