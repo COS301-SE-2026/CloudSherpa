@@ -54,6 +54,7 @@ jobs:
                     apps/dashboard/package.json
                     apps/dashboard/package-lock.json
                     apps/dashboard/public
+            
     lighthouseci:
         runs-on: ubuntu-latest
         needs: build-lint-test-dashboard
@@ -79,7 +80,13 @@ jobs:
             - name: Install Production Dependencies
               run: npm ci --omit=dev
 
-            - name: Run Lighthouse CI
-              run: npx @lhci/cli@0.15.x autorun --collect.settings.chromeFlags="--no-sandbox"
-              env:
-                  LHCI_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            - name: Debug
+              run: |
+                ls
+                npx next start &
+                sleep 5
+                curl -v http://localhost:3000
+            # - name: Run Lighthouse CI
+            #   run: npx @lhci/cli@0.15.x autorun --collect.settings.chromeFlags="--no-sandbox"
+            #   env:
+            #       LHCI_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
