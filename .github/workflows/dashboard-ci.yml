@@ -70,7 +70,7 @@ jobs:
               uses: actions/download-artifact@v4
               with:
                 name: dashboard-build
-                path: .
+                path: apps/dashboard
         
             - name: Setup Chrome
               uses: browser-actions/setup-chrome@v2
@@ -78,14 +78,12 @@ jobs:
                   install-dependencies: true
 
             - name: Install Production Dependencies
-            #   run: npm ci --omit=dev
-              run: npm ci
+              run: npm ci --omit=dev
 
             - name: Debug
               run: |
                 ls -a
                 ls .next
-                npm run build
 
             - name: Run Lighthouse CI
               run: npx @lhci/cli@0.15.x autorun --collect.settings.chromeFlags="--no-sandbox"
