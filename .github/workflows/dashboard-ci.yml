@@ -80,6 +80,6 @@ jobs:
               run: npm ci --omit=dev
 
             - name: Run Lighthouse CI
-              run: npx lhci autorun --collect.settings.chromeFlags="--no-sandbox"
+              run: npx @lhci/cli@0.15.x autorun --collect.settings.chromeFlags="--no-sandbox"
               env:
                   LHCI_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
