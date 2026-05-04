@@ -231,14 +231,14 @@ const forFeatureCards = forwardRef<HTMLElement, forFeatureBlocks>(
     const handleCardClick = (forIndex: number) => {
       setActiveCardIndex(forIndex);
       setTimeout(() => {
-        containerRef?.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // containerRef?.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 10);
     };
 
     const handleBack = () => {
       setActiveCardIndex(null);
       setTimeout(() => {
-        containerRef?.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // containerRef?.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 10);
     };
 

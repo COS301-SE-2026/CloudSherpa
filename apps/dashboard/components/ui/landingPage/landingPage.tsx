@@ -5,7 +5,7 @@ import View from "./view";
 import FeatureCards from "./featureCards";
 
 //this is for the main landing page components
-export default function forLandingPage(){
+export default function LandingPage(){
   const [showFeatures, setShowFeatures] = useState(false);
   const featuresRef = useRef<HTMLElement>(null);
   const [hasAnimated, setHasAnimated] = useState(false);
