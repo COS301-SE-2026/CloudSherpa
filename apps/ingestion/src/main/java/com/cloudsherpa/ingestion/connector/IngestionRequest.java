@@ -1,7 +1,6 @@
 package com.cloudsherpa.ingestion.connector;
 
 import java.time.Instant;
-
 import java.util.List;
 
 public class IngestionRequest {
