@@ -49,6 +49,7 @@ jobs:
               uses: actions/upload-artifact@v4
               with:
                 name: dashboard-build
+                include-hidden-files: true
                 path: |
                     apps/dashboard/.next
                     apps/dashboard/package.json
