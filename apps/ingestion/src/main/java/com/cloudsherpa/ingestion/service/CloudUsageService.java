@@ -1,33 +1,27 @@
 package com.cloudsherpa.ingestion.service;
 
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import com.cloudsherpa.ingestion.connector.AwsConnector;
 import com.cloudsherpa.ingestion.normalization.model.NormalizedMetric;
 import com.cloudsherpa.ingestion.normalization.normalizers.AwsNormalizer;
+import com.cloudsherpa.ingestion.normalization.persistence.service.SherpaDbPersistenceService;
 
-import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-// This class ties the Connector and Normalizer together, then sends the result to the Analytics service.
+// This class ties the Connector and Normalizer together, then writes the result to SherpaDB.
 @Service
 public class CloudUsageService 
 {
     @Autowired
     private AwsConnector awsConnector;
+
+    @Autowired
+    private SherpaDbPersistenceService sherpaDbPersistenceService;
     
     private final AwsNormalizer normalizer = new AwsNormalizer();
-
-    // RestTemplate is Spring's standard HTTP client for making requests to external APIs
-    private final RestTemplate restTemplate = new RestTemplate();
-    
-    @Value("${analytics.service.url}")
-    private String analyticsServiceUrl;
 
     public void ingestAndProcessMetrics() 
     {
@@ -45,29 +39,17 @@ public class CloudUsageService
             
             if (normalized != null) 
             {
-                // Send the clean object to the Analytics service
-                sendToAnalyticsService(environmentId, normalized);
+                // Write the clean object directly into SherpaDB
+                writeToSherpaDb(environmentId, normalized);
             }
         }
     }
 
-    private void sendToAnalyticsService(UUID environmentId, NormalizedMetric metric) 
+    private void writeToSherpaDb(UUID environmentId, NormalizedMetric metric) 
     {
-        // Repackage the NormalizedMetric into a Map (which RestTemplate easily converts to JSON)
-        // matching the structure expected by the AnalyticsController's MetricDTO.
         try 
         {
-            Map<String, Object> payload = new HashMap<>();
-            payload.put("environmentId", environmentId);
-            payload.put("resourceId", metric.getResourceId());
-            payload.put("serviceCategory", metric.getServiceCategory());
-            payload.put("usageAmount", BigDecimal.valueOf(metric.getUsageAmount()));
-            payload.put("usageUnit", metric.getUsageUnit());
-            payload.put("costAmount", BigDecimal.valueOf(metric.getEffectiveCost()));
-            payload.put("currency", metric.getCurrency());
-            
-            // Execute an HTTP POST request to the Analytics service, sending the JSON payload.
-            restTemplate.postForObject(analyticsServiceUrl, payload, String.class);
+            sherpaDbPersistenceService.recordMetric(environmentId, metric);
         } 
         catch (Exception e) 
         {
@@ -92,8 +74,6 @@ public class CloudUsageService
             "USD",
             "OnDemand"
         );
-
-        System.out.println("Ingested normalized metric: " + metric.getMetricId());
         return metric;
     }
 }
