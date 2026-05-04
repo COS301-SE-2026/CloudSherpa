@@ -66,6 +66,11 @@
 		</dependency>
 		<dependency>
 			<groupId>software.amazon.awssdk</groupId>
+			<artifactId>ec2</artifactId>
+			<version>2.25.46</version>
+		</dependency>
+		<dependency>
+			<groupId>software.amazon.awssdk</groupId>
 			<artifactId>sts</artifactId>
 			<version>2.25.26</version>
 		</dependency>

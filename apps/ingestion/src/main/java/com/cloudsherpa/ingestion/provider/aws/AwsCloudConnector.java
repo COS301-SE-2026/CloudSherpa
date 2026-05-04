@@ -11,6 +11,9 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
 import software.amazon.awssdk.services.cloudwatch.model.*;
 
+import software.amazon.awssdk.services.cloudwatch.model.Dimension;
+import software.amazon.awssdk.services.ec2.model.*;
+import software.amazon.awssdk.services.ec2.Ec2Client;
 import java.util.*;
 
 @Component("AWS")
@@ -20,8 +23,42 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
       .region(Region.AF_SOUTH_1)
       .build();
 
+  public List<String> getRunningInstanceIds(Ec2Client ec2) {
+    List<String> instanceIds = new ArrayList<>();
+
+    DescribeInstancesRequest request = DescribeInstancesRequest.builder()
+        .build();
+
+    for (DescribeInstancesResponse page : ec2.describeInstancesPaginator(request)) {
+      for (Reservation reservation : page.reservations()) {
+        for (Instance instance : reservation.instances()) {
+
+          if (instance.state().name() == InstanceStateName.RUNNING) {
+            instanceIds.add(instance.instanceId());
+          }
+        }
+      }
+    }
+
+    return instanceIds;
+  }
+
+  public List<Dimension> buildDimensions(List<String> instanceIds) {
+    return instanceIds.stream()
+        .map(id -> Dimension.builder()
+            .name("InstanceId")
+            .value(id)
+            .build())
+        .toList();
+  }
+
   @Override
   public List<UsageRecordModel> fetchUsage(AccountScope scope, IngestionRequestEvent request) {
+    Ec2Client ec2 = Ec2Client.create();
+
+    List<String> instanceIds = getRunningInstanceIds(ec2);
+
+    List<Dimension> dimensions = buildDimensions(instanceIds);
 
     GetMetricStatisticsRequest req = GetMetricStatisticsRequest.builder()
         .namespace("AWS/EC2")
