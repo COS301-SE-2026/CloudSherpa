@@ -8,17 +8,17 @@ Implementation notes, service behavior, deployment details, and analytics query 
 
 ## Database Schemas
 
-### Analytics Database
+### SherpaDB
 
 Source schema file:
 
-`persistence/analytics/analytics-schema.sql`
+`persistence/sherpadb/sherpadb-schema.sql`
 
-The analytics database is backed by PostgreSQL with TimescaleDB enabled for time-series storage.
+SherpaDB is backed by PostgreSQL with TimescaleDB enabled for time-series storage.
 
 #### `environment_reference`
 
-Registry table for cloud environments/accounts known to the analytics database.
+Registry table for cloud environments/accounts known to SherpaDB.
 
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
@@ -49,7 +49,7 @@ Time-series table for normalized usage and cost metrics.
 SELECT create_hypertable('normalized_metrics', 'recorded_at');
 ```
 
-The analytics schema also defines an index for environment and time-based lookups.
+The SherpaDB schema also defines an index for environment and time-based lookups.
 
 ```sql
 CREATE INDEX ix_environment_time ON normalized_metrics (environment_id, recorded_at DESC);

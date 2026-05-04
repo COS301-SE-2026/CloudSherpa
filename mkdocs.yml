@@ -39,7 +39,7 @@ nav:
 
   - Persistence:
       - Schema Reference: persistence/schemas.md
-      - AnalyticsDB Overview: persistence/analytics-db.md
+      - SherpaDB Overview: persistence/sherpadb.md
 
   - Software Design: design/design.md
   # - API Documentation:

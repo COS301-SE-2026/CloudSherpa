@@ -1,6 +1,6 @@
 # Service
 
-The `service` app is the Spring Boot service that owns analytics-facing API and persistence code.
+The `service` app is the Spring Boot service that listens for SherpaDB notifications and runs analytics workflows.
 
 ## Location
 
