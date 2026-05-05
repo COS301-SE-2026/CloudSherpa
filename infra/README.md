@@ -22,9 +22,9 @@ chmod +x env-init.sh
 
 The script is idempotent and does not overwrite existing `.env` files. Once it has been run, the Docker Compose stack should have the local `.env` files it needs. Services without a `.env.example` need one added before the script can initialize their `.env`.
 
-## AnalyticsDB (TimescaleDB)
+## SherpaDB (TimescaleDB)
 
-CloudSherpa’s AnalyticsDB runs as a dedicated TimescaleDB container named `analytics-db`. The `service` and `ingestion` containers can reach it over the Docker network.
+CloudSherpa’s SherpaDB runs as a dedicated TimescaleDB container named `sherpa-db`. The `service` and `ingestion` containers can reach it over the Docker network.
 
 ### Before you start
 
@@ -35,7 +35,7 @@ CloudSherpa’s AnalyticsDB runs as a dedicated TimescaleDB container named `ana
    - `POSTGRES_PASSWORD`
 2. Run the commands below from the repository root.
 
-### Start AnalyticsDB
+### Start SherpaDB
 
 1. **First time only:** Reset the volume to ensure init scripts run:
    ```bash
@@ -44,19 +44,19 @@ CloudSherpa’s AnalyticsDB runs as a dedicated TimescaleDB container named `ana
 2. Start the database:
 
    ```bash
-   docker compose -f infra/docker-compose.yml up -d analytics-db
+   docker compose -f infra/docker-compose.yml up -d sherpa-db
    docker compose -f infra/docker-compose.yml ps
    ```
 
    On first startup, initialization scripts automatically run:
    - TimescaleDB extension is enabled
-   - Base schemas and tables are created via `persistence/analytics/analytics-schema.sql`
+   - Base schemas and tables are created via `persistence/sherpadb/sherpadb-schema.sql`
 
 3. Connect to the database if needed:
    Currently using `psql`: The command-line interface (CLI) client for PostgreSQL
 
    ```bash
-   docker exec -it analytics-db sh -lc 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
+   docker exec -it sherpa-db sh -lc 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
    ```
 
    You can run additional SQL commands here. Exit `psql` with `\q`.
@@ -132,12 +132,12 @@ CloudSherpa’s AnalyticsDB runs as a dedicated TimescaleDB container named `ana
 
 ### Container-to-container connectivity
 
-- From containers in this Compose stack: use `analytics-db:5432`
+- From containers in this Compose stack: use `sherpa-db:5432`
 - From the host machine (because the port is published): use `localhost:5432`
 
 ### Persistence and resets
 
-AnalyticsDB data is persisted via a named Docker volume (so data survives container restarts).
+SherpaDB data is persisted via a named Docker volume (so data survives container restarts).
 
 To reset the stack and remove volumes (destructive; deletes DB data):
 

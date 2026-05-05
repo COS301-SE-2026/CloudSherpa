@@ -31,4 +31,14 @@ public class CloudUsageController {
         return cloudUsageService.sendMockEvent();
     }
 
+    // Maps HTTP POST requests sent to "/api/events/flow/trigger" to this method.
+    // It's a POST because it initiates an action that modifies state (processing
+    // data).
+    @PostMapping("/flow/trigger")
+    public String triggerDataFlow() {
+        // Calls service to begin the entire ingestion pipeline.
+        cloudUsageService.ingestAndProcessMetrics();
+
+        return "Data flow triggered.";
+    }
 }

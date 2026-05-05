@@ -2,6 +2,14 @@
 
 This document explains where things live in the CloudSherpa repository and where new files should go. It is intentionally focused on directory. For service-specific setup, commands, ports, dependencies, and environment details, use the service READMEs under `apps/`.
 
+!!! important "Do this first"
+
+    After cloning the repository, configure Git to use the shared hook scripts before making commits:
+
+    ```bash
+    git config core.hooksPath scripts/hooks
+    ```
+
 ## Branching Strategy
 
 To maintain code quality and deployment stability, we strictly follow a main/dev/feature branch strategy:

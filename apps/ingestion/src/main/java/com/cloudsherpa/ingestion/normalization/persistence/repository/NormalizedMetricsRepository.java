@@ -1,8 +1,7 @@
 // Refer to EnvironmentReferenceRepository.java for most documentation
+package com.cloudsherpa.ingestion.normalization.persistence.repository;
 
-package com.cloudsherpa.service.analytics.repository;
-
-import com.cloudsherpa.service.analytics.entity.NormalizedMetrics;
+import com.cloudsherpa.ingestion.normalization.persistence.entity.NormalizedMetrics;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.OffsetDateTime;
