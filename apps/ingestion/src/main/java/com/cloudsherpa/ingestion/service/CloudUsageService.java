@@ -1,9 +1,9 @@
 package com.cloudsherpa.ingestion.service;
 
+import com.cloudsherpa.ingestion.normalization.model.NormalizedMetric;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.cloudsherpa.ingestion.connector.AwsConnector;
-import com.cloudsherpa.ingestion.normalization.model.NormalizedMetric;
 import com.cloudsherpa.ingestion.normalization.normalizers.AwsNormalizer;
 import com.cloudsherpa.ingestion.normalization.persistence.service.SherpaDbPersistenceService;
 
@@ -57,10 +57,11 @@ public class CloudUsageService
         }
     }
 
-    // Temporary method used to test the ingestion and normalization flow.
-    public NormalizedMetric sendMockEvent() {
-        long now = System.currentTimeMillis();
-        NormalizedMetric metric = new NormalizedMetric(
+  // Temporary method used to test the ingestion and normalization flow.
+  public NormalizedMetric sendMockEvent() {
+    long now = System.currentTimeMillis();
+    NormalizedMetric metric =
+        new NormalizedMetric(
             "mock-metric-1",
             "AWS",
             now,

@@ -1,15 +1,14 @@
 // Used https://jakarta.ee/learn/docs/jakartaee-tutorial/current/persist/persistence-intro/persistence-intro.html for assistance
 package com.cloudsherpa.ingestion.normalization.persistence.entity;
 
-import jakarta.persistence.Table;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-
 import java.time.OffsetDateTime;
 import java.util.UUID;
+import jakarta.persistence.Table;
 
 @Entity
 // Table name is the same as the environment_reference table in sherpadb-schema.sql
@@ -23,32 +22,28 @@ public class EnvironmentReference
     @Column(name = "environment_id", nullable = false, updatable = false)
     private UUID environmentId;
 
-    @Column(name = "provider", nullable = false, length = 50)
-    private String provider;
+  @Column(name = "provider", nullable = false, length = 50)
+  private String provider;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private OffsetDateTime createdAt;
+  @Column(name = "created_at", nullable = false, updatable = false)
+  private OffsetDateTime createdAt;
 
-    public EnvironmentReference() 
-    {
-        // required by JPA to have a no-argument default constructor
-    }
+  public EnvironmentReference() {
+    // required by JPA to have a no-argument default constructor
+  }
 
-    public EnvironmentReference(String provider, OffsetDateTime createdAt) 
-    {
-        this.provider = provider;
-        this.createdAt = createdAt;
-    }
+  public EnvironmentReference(String provider, OffsetDateTime createdAt) {
+    this.provider = provider;
+    this.createdAt = createdAt;
+  }
 
-    public UUID getEnvironmentId() 
-    {
-        return environmentId;
-    }
+  public UUID getEnvironmentId() {
+    return environmentId;
+  }
 
-    public String getProvider() 
-    {
-        return provider;
-    }
+  public String getProvider() {
+    return provider;
+  }
 
     public OffsetDateTime getCreatedAt() 
     {
