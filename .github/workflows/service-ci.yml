@@ -1,0 +1,47 @@
+name: Service CI
+
+on:
+    pull_request:
+        branches:
+            - dev
+            - main
+        paths:
+          - apps/service/**
+          - .github/workflows/service-ci.yml
+jobs:
+    ingestion-validation:
+        runs-on: ubuntu-latest
+        defaults:
+            run:
+                working-directory: apps/service
+        steps:
+            - name: Checkout Repo
+              uses: actions/checkout@v5
+            
+            - name: Set up JDK
+              uses: actions/setup-java@v5
+              with:
+                distribution: 'temurin'
+                java-version: 21
+            
+            - name: Cache Maven Packages
+              uses: actions/cache@v5
+              # Keys: If dependencies change, load old cache, maven only downloads missing/changed deps
+              with:
+                path: ~/.m2/repository
+                key: ${{ runner.os }}-maven-${{ hashFiles('pom.xml') }}
+                restore-keys: ${{ runner.os }}-maven
+            
+            - name: Make Maven Wrapper Executable
+              run: chmod +x mvnw
+              
+            - name: Lint
+              run: ./mvnw checkstyle:check
+            
+            # Skip tests here but run them in next step for improved fault localization, i.e. we
+            # know easily if it was the build or tests that failed.
+            - name: Build
+              run: ./mvnw clean package -DskipTests
+            
+            - name: Unit Tests
+              run: ./mvnw test
