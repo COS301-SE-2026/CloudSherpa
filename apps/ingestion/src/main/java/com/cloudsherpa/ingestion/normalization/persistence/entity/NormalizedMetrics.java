@@ -1,6 +1,4 @@
-// Refer to EnvironmentReference.java for most of the documentation
-// and explanations on what I am doing here
-package com.cloudsherpa.service.analytics.entity;
+package com.cloudsherpa.ingestion.normalization.persistence.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -9,10 +7,10 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.UUID;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "normalized_metrics")
@@ -56,58 +54,62 @@ public class NormalizedMetrics {
     // Default constructor
   }
 
-  public NormalizedMetrics(
-      OffsetDateTime recordedAt,
-      EnvironmentReference environmentReference,
-      String resourceId,
-      String serviceCategory,
-      BigDecimal usageAmount,
-      String usageUnit,
-      BigDecimal costAmount,
-      String currency) {
-    this.recordedAt = recordedAt;
-    this.environmentReference = environmentReference;
-    this.resourceId = resourceId;
-    this.serviceCategory = serviceCategory;
-    this.usageAmount = usageAmount;
-    this.usageUnit = usageUnit;
-    this.costAmount = costAmount;
-    this.currency = currency;
-  }
+    public NormalizedMetrics(OffsetDateTime recordedAt, EnvironmentReference environmentReference,
+                             String resourceId, String serviceCategory, BigDecimal usageAmount,
+                             String usageUnit, BigDecimal costAmount, String currency) 
+    {
+        this.recordedAt = recordedAt;
+        this.environmentReference = environmentReference;
+        this.resourceId = resourceId;
+        this.serviceCategory = serviceCategory;
+        this.usageAmount = usageAmount;
+        this.usageUnit = usageUnit;
+        this.costAmount = costAmount;
+        this.currency = currency;
+    }
 
-  public UUID getMetricId() {
-    return metricId;
-  }
+    public UUID getMetricId() 
+    {
+        return metricId;
+    }
 
-  public OffsetDateTime getRecordedAt() {
-    return recordedAt;
-  }
+    public OffsetDateTime getRecordedAt() 
+    {
+        return recordedAt;
+    }
 
-  public EnvironmentReference getEnvironmentReference() {
-    return environmentReference;
-  }
+    public EnvironmentReference getEnvironmentReference() 
+    {
+        return environmentReference;
+    }
 
-  public String getResourceId() {
-    return resourceId;
-  }
+    public String getResourceId() 
+    {
+        return resourceId;
+    }
 
-  public String getServiceCategory() {
-    return serviceCategory;
-  }
+    public String getServiceCategory() 
+    {
+        return serviceCategory;
+    }
 
-  public String getUsageUnit() {
-    return usageUnit;
-  }
+    public String getUsageUnit() 
+    {
+        return usageUnit;
+    }
 
-  public String getCurrency() {
-    return currency;
-  }
+    public String getCurrency() 
+    {
+        return currency;
+    }
 
-  public BigDecimal getUsageAmount() {
-    return usageAmount;
-  }
+    public BigDecimal getUsageAmount() 
+    {
+        return usageAmount;
+    }
 
-  public BigDecimal getCostAmount() {
-    return costAmount;
-  }
+    public BigDecimal getCostAmount() 
+    {
+        return costAmount;
+    }
 }

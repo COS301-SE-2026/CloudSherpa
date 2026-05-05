@@ -30,6 +30,7 @@ nav:
       - Development Scripts: scripts/README.md
 
   - Services:
+      - Data Flow: services/data-flow.md
       - Alert Engine: services/alert-engine.md
       - Service: services/service.md
       - Dashboard Backend: services/dashboard-backend.md
@@ -39,7 +40,7 @@ nav:
 
   - Persistence:
       - Schema Reference: persistence/schemas.md
-      - AnalyticsDB Overview: persistence/analytics-db.md
+      - SherpaDB Overview: persistence/sherpadb.md
 
   - Software Design: design/design.md
   # - API Documentation:

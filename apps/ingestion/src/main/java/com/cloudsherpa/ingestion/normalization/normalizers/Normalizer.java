@@ -1,8 +1,9 @@
 package com.cloudsherpa.ingestion.normalization.normalizers;
 
 import com.cloudsherpa.ingestion.normalization.model.NormalizedMetric;
+import java.util.Map;
 
-public interface Normalizer {
-  // This will eventually be something like NormalizedMetric normalize(RawMetric raw);
-  NormalizedMetric normalize(String mockRawMetrics);
+public interface Normalizer 
+{
+    NormalizedMetric normalize(Map<String, String> rawData);
 }

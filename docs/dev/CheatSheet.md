@@ -44,16 +44,16 @@ chmod +x apps/service/mvnw
 
 ## Docker Compose
 
-Start AnalyticsDB (TimescaleDB):
+Start SherpaDB (TimescaleDB):
 
 ```bash
-docker compose -f infra/docker-compose.yml up -d analytics-db
+docker compose -f infra/docker-compose.yml up -d sherpa-db
 ```
 
-Connect to AnalyticsDB:
+Connect to SherpaDB:
 
 ```bash
-docker exec -it analytics-db sh -lc 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
+docker exec -it sherpa-db sh -lc 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
 ```
 
 Start the full local stack:

@@ -16,9 +16,20 @@ public class CloudUsageController {
     this.cloudUsageService = cloudUsageService;
   }
 
-  // POST even though no request body, produce artifact (metric) => POST
-  @PostMapping("/mock")
-  public NormalizedMetric sendMockEvent() {
-    return cloudUsageService.sendMockEvent();
-  }
+    // POST even though no request body, produce artifact (metric) => POST
+    @PostMapping("/mock")
+    public NormalizedMetric sendMockEvent() {
+        return cloudUsageService.sendMockEvent();
+    }
+    
+    // Maps HTTP POST requests sent to "/api/events/flow/trigger" to this method.
+    // It's a POST because it initiates an action that modifies state (processing data).
+    @PostMapping("/flow/trigger")
+    public String triggerDataFlow() 
+    {
+        // Calls service to begin the entire ingestion pipeline.
+        cloudUsageService.ingestAndProcessMetrics();
+
+        return "Data flow triggered.";
+    }
 }
