@@ -30,6 +30,7 @@ nav:
       - Development Scripts: scripts/README.md
 
   - Services:
+      - Data Flow: services/data-flow.md
       - Alert Engine: services/alert-engine.md
       - Service: services/service.md
       - Dashboard Backend: services/dashboard-backend.md
