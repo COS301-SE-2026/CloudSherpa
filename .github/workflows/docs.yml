@@ -21,9 +21,6 @@ on:
       - "apps/kafka-init/README.md"
       - "apps/normalization-service/README.md"
       - ".github/workflows/docs.yml"
-      # Once doxygen is set up, we will have to run the workflow on code changes, since there is not any way of knowing 
-      # if doxygen comments were added or not, so then any docs/code change -> trigger action (uncomment below path)
-      # - "apps/**/src/**" 
 
   # Workflow dispatch adds "run workflow" button in actions tab, if we want to manually rerun it for
   # docs on main for example
@@ -51,7 +48,8 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
-          python-version: "3.12"
+          python-version: '3.12'
+          cache: 'pip'
 
       - name: Install MkDocs dependencies
         run: |
@@ -69,7 +67,7 @@ jobs:
       - name: Deploy to gh-pages branch
         uses: peaceiris/actions-gh-pages@v4
         with:
-          personal_token: ${{ secrets.PERSONAL_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./site
           publish_branch: gh-pages
           force_orphan: true
