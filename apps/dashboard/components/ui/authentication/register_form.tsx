@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { SocialAuth } from "./social_auth";
 
 interface RegisterFormProps {
-  onSubmit?: (data: any) => void; //indicates form submission.
+  onSubmit?: (data: Record<string, FormDataEntryValue>) => void; //indicates form submission.
   isLoading?: boolean; //indicates loading state of form for asynchronous events.
 }
 
@@ -49,8 +49,13 @@ export default function RegisterForm({ onSubmit, isLoading = false }: RegisterFo
     }
   };
 
-  const handleFormSubmit = (e: React.FormEvent) => {
+  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (onSubmit && !passwordError && !confirmPasswordError) {
+      const formData = new FormData(e.currentTarget);
+      const data = Object.fromEntries(formData.entries());
+      onSubmit(data);
+    }
   };
   return (
     <div className="w-full max-w-sm space-y-8 p-4">
@@ -58,7 +63,7 @@ export default function RegisterForm({ onSubmit, isLoading = false }: RegisterFo
         <h2 className="text-3xl font-bold tracking-tight text-foreground">Sign Up</h2>
       </div>
 
-      <form className="space-y-6" action="#" method="POST">
+      <form className="space-y-6" onSubmit={handleFormSubmit}>
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
           <Input

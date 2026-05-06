@@ -8,7 +8,12 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { SocialAuth } from "./social_auth";
 
-export default function LoginForm({ onSubmit, isLoading = false }: any) {
+interface LoginFormProps {
+  onSubmit?: (data: { password?: string }) => void;
+  isLoading?: boolean;
+}
+
+export default function LoginForm({ onSubmit, isLoading = false }: LoginFormProps) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
