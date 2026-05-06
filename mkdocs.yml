@@ -31,12 +31,10 @@ nav:
 
   - Services:
       - Data Flow: services/data-flow.md
-      - Alert Engine: services/alert-engine.md
       - Service: services/service.md
-      - Dashboard Backend: services/dashboard-backend.md
-      - Dashboard Frontend: services/dashboard-frontend.md
+      - Dashboard: services/dashboard.md
       - Ingestion: services/ingestion.md
-      - Intelligence Engine: services/intelligence-engine.md
+      - Intelligence: services/README.md
 
   - Persistence:
       - Schema Reference: persistence/schemas.md

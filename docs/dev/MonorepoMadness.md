@@ -101,9 +101,9 @@ Use these READMEs for service-specific setup, development commands, build comman
 
 | Service | README |
 | --- | --- |
-| Dashboard | [`docs/services/dashboard-frontend.md`](../services/dashboard-frontend.md) |
+| Dashboard | [`docs/services/dashboard.md`](../services/dashboard.md) |
 | Ingestion | [`docs/services/ingestion.md`](../services/ingestion.md) |
-| Intelligence | [`docs/services/intelligence-engine.md`](../services/intelligence-engine.md) |
+| Intelligence | [`docs/services/README.md`](../services/README.md) |
 | Service | [`docs/services/service.md`](../services/service.md) |
 
 ## `docs/`
