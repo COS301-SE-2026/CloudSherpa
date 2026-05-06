@@ -22,4 +22,9 @@ public class CloudUsageController {
   public IngestionResult ingest(@RequestBody IngestionRequestEvent request) {
     return cloudUsageService.ingest(request);
   }
+
+  @PostMapping("/ingest/mock")
+  public IngestionResult ingestMock(@RequestBody IngestionRequestEvent request) {
+    return cloudUsageService.ingestMock(request);
+  }
 }

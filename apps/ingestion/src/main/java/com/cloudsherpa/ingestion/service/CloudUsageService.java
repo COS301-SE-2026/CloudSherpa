@@ -12,6 +12,7 @@ import com.cloudsherpa.ingestion.models.UsageRecordModel;
 import com.cloudsherpa.ingestion.normalization.model.NormalizedMetric;
 import com.cloudsherpa.ingestion.normalization.normalizers.AwsNormalizer;
 import com.cloudsherpa.ingestion.normalization.persistence.service.SherpaDbPersistenceService;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -50,6 +51,21 @@ public class CloudUsageService {
     return new IngestionResult(usageResults, billingResults);
   }
 
+  public IngestionResult ingestMock(IngestionRequestEvent request) {
+    List<UsageRecordModel> usageResults = new ArrayList<>();
+    List<BillingRecordModel> billingResults = new ArrayList<>();
+
+    for (AccountScope scope : request.getScopes()) {
+      if (request.isIncludeUsage()) {
+        List<UsageRecordModel> usageRecords = buildMockUsage(scope);
+        usageResults.addAll(usageRecords);
+        normalizeAndPersistUsage(usageRecords);
+      }
+    }
+
+    return new IngestionResult(usageResults, billingResults);
+  }
+
   @Autowired private SherpaDbPersistenceService sherpaDbPersistenceService;
 
   private final AwsNormalizer normalizer = new AwsNormalizer();
@@ -69,6 +85,51 @@ public class CloudUsageService {
         writeToSherpaDb(environmentId, normalized);
       }
     }
+  }
+
+  private List<UsageRecordModel> buildMockUsage(AccountScope scope) {
+    List<UsageRecordModel> results = new ArrayList<>();
+
+    String provider = "AWS";
+    if (scope.getProvider() != null) {
+      provider = scope.getProvider();
+    }
+    String accountId = scope.getAccountId();
+
+    String[] timestamps = {
+      "2026-05-02T18:17:00+02:00",
+      "2026-05-02T18:12:00+02:00",
+      "2026-05-02T18:07:00+02:00",
+      "2026-05-02T18:02:00+02:00",
+      "2026-05-02T17:57:00+02:00",
+      "2026-05-02T17:52:00+02:00",
+      "2026-05-02T17:47:00+02:00"
+    };
+
+    double[] averages = {
+      1.9488974910916348,
+      1.8703353383091854,
+      2.524456273466404,
+      1.9650714832950267,
+      2.436655917725189,
+      13.769105242611008,
+      4.416415999768938
+    };
+
+    for (int i = 0; i < timestamps.length; i++) {
+      UsageRecordModel record = new UsageRecordModel();
+      record.setProvider(provider);
+      record.setAccountId(accountId);
+      record.setServiceName("EC2");
+      record.setMetricName("CPUUtilization");
+      record.setResourceId("mock-ec2-" + (i + 1));
+      record.setValue(averages[i]);
+      record.setUnit("Percent");
+      record.setTimestamp(OffsetDateTime.parse(timestamps[i]).toInstant());
+      results.add(record);
+    }
+
+    return results;
   }
 
   private void writeToSherpaDb(UUID environmentId, NormalizedMetric metric) {
