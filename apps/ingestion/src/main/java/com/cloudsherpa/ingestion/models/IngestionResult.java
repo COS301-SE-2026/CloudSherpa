@@ -19,5 +19,4 @@ public class IngestionResult {
   public List<BillingRecordModel> getBilling() {
     return this.billing;
   }
-
 }

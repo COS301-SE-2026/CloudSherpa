@@ -1,40 +1,33 @@
 package com.cloudsherpa.ingestion.provider.aws;
 
-import org.apache.logging.log4j.CloseableThreadContext.Instance;
-import org.springframework.stereotype.Component;
-
-import java.util.List;
-
 import com.cloudsherpa.ingestion.connector.*;
 import com.cloudsherpa.ingestion.models.*;
-
+import java.util.*;
+import java.util.List;
+import org.springframework.stereotype.Component;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
 import software.amazon.awssdk.services.cloudwatch.model.*;
 import software.amazon.awssdk.services.ec2.Ec2Client;
 import software.amazon.awssdk.services.ec2.model.DescribeInstancesRequest;
 import software.amazon.awssdk.services.ec2.model.DescribeInstancesResponse;
-import software.amazon.awssdk.services.ec2.model.InstanceStateName;
 import software.amazon.awssdk.services.ec2.model.Reservation;
-
-import java.util.*;
 
 @Component("AWS")
 public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingCapable {
 
-  private final CloudWatchClient client = CloudWatchClient.builder()
-      .region(Region.AF_SOUTH_1)
-      .build();
+  private final CloudWatchClient client =
+      CloudWatchClient.builder().region(Region.AF_SOUTH_1).build();
 
   public List<String> getAllInstanceIds(Ec2Client ec2) {
     List<String> instanceIds = new ArrayList<>();
 
-    DescribeInstancesRequest request = DescribeInstancesRequest.builder()
-        .build();
+    DescribeInstancesRequest request = DescribeInstancesRequest.builder().build();
 
     for (DescribeInstancesResponse page : ec2.describeInstancesPaginator(request)) {
       for (Reservation reservation : page.reservations()) {
-        for (software.amazon.awssdk.services.ec2.model.Instance instance : reservation.instances()) {
+        for (software.amazon.awssdk.services.ec2.model.Instance instance :
+            reservation.instances()) {
           instanceIds.add(instance.instanceId());
         }
       }
@@ -54,20 +47,18 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
 
     for (String instanceId : instanceIds) {
 
-      Dimension dimension = Dimension.builder()
-          .name("InstanceId")
-          .value(instanceId)
-          .build();
+      Dimension dimension = Dimension.builder().name("InstanceId").value(instanceId).build();
 
-      GetMetricStatisticsRequest req = GetMetricStatisticsRequest.builder()
-          .namespace("AWS/EC2")
-          .metricName("CPUUtilization")
-          .dimensions(dimension)
-          .startTime(request.getFrom())
-          .endTime(request.getTo())
-          .period(600)
-          .statistics(Statistic.AVERAGE)
-          .build();
+      GetMetricStatisticsRequest req =
+          GetMetricStatisticsRequest.builder()
+              .namespace("AWS/EC2")
+              .metricName("CPUUtilization")
+              .dimensions(dimension)
+              .startTime(request.getFrom())
+              .endTime(request.getTo())
+              .period(600)
+              .statistics(Statistic.AVERAGE)
+              .build();
 
       GetMetricStatisticsResponse response = client.getMetricStatistics(req);
 
@@ -107,7 +98,6 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
   }
 
   @Override
-
   public String getProviderName() {
     return "AWS";
   }

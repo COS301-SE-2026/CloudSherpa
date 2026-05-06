@@ -1,4 +1,5 @@
-// Used https://jakarta.ee/learn/docs/jakartaee-tutorial/current/persist/persistence-intro/persistence-intro.html for assistance
+// Used
+// https://jakarta.ee/learn/docs/jakartaee-tutorial/current/persist/persistence-intro/persistence-intro.html for assistance
 package com.cloudsherpa.ingestion.normalization.persistence.entity;
 
 import jakarta.persistence.Column;
@@ -6,21 +7,21 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import java.time.OffsetDateTime;
 import java.util.UUID;
-import jakarta.persistence.Table;
 
 @Entity
 // Table name is the same as the environment_reference table in sherpadb-schema.sql
 @Table(name = "environment_reference")
-public class EnvironmentReference 
-{
-    // The following variables are directly mapped to column names in the environment_reference table in sherpadb-schema.sql
-    // Automatically generates a UUID for each record
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "environment_id", nullable = false, updatable = false)
-    private UUID environmentId;
+public class EnvironmentReference {
+  // The following variables are directly mapped to column names in the environment_reference table
+  // in sherpadb-schema.sql
+  // Automatically generates a UUID for each record
+  @Id
+  @GeneratedValue(strategy = GenerationType.UUID)
+  @Column(name = "environment_id", nullable = false, updatable = false)
+  private UUID environmentId;
 
   @Column(name = "provider", nullable = false, length = 50)
   private String provider;
@@ -45,8 +46,7 @@ public class EnvironmentReference
     return provider;
   }
 
-    public OffsetDateTime getCreatedAt() 
-    {
-        return createdAt;
-    }
+  public OffsetDateTime getCreatedAt() {
+    return createdAt;
+  }
 }
