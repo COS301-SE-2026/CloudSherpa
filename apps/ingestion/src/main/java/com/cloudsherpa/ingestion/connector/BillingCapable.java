@@ -1,5 +1,8 @@
 package com.cloudsherpa.ingestion.connector;
 
+import com.cloudsherpa.ingestion.models.*;
+import java.util.List;
+
 public interface BillingCapable {
-  void ingestBilling(IngestionRequest request);
+  List<BillingRecordModel> fetchBilling(AccountScope scope, IngestionRequestEvent request);
 }

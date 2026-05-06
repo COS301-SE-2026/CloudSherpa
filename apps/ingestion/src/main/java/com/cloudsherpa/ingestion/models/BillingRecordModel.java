@@ -4,7 +4,7 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
 
-public class BillingRecord {
+public class BillingRecordModel implements Record {
   private UUID recordId;
   private String provider;
 
@@ -36,18 +36,22 @@ public class BillingRecord {
   private String ingestionId; // trace batch/job
   private String source; // CUR, API, Export
 
+  @Override
   public UUID getRecordId() {
     return recordId;
   }
 
+  @Override
   public void setRecordId(UUID recordId) {
     this.recordId = recordId;
   }
 
+  @Override
   public String getProvider() {
     return provider;
   }
 
+  @Override
   public void setProvider(String provider) {
     this.provider = provider;
   }
@@ -192,30 +196,45 @@ public class BillingRecord {
     return tags;
   }
 
+  public String resolveKey() {
+    return switch (this.provider.toUpperCase()) {
+      case "AWS" -> accountId;
+      case "AZURE" -> subscriptionId;
+      case "GCP" -> projectId;
+      default -> accountId;
+    };
+  }
+
   public void setTags(Map<String, String> tags) {
     this.tags = tags;
   }
 
+  @Override
   public Instant getIngestionTimestamp() {
     return ingestionTimestamp;
   }
 
+  @Override
   public void setIngestionTimestamp(Instant ingestionTimestamp) {
     this.ingestionTimestamp = ingestionTimestamp;
   }
 
+  @Override
   public String getIngestionId() {
     return ingestionId;
   }
 
+  @Override
   public void setIngestionId(String ingestionId) {
     this.ingestionId = ingestionId;
   }
 
+  @Override
   public String getSource() {
     return source;
   }
 
+  @Override
   public void setSource(String source) {
     this.source = source;
   }

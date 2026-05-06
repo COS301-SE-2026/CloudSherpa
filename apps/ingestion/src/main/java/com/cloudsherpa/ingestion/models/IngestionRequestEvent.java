@@ -1,31 +1,29 @@
-package com.cloudsherpa.ingestion.connector;
+package com.cloudsherpa.ingestion.models;
 
 import java.time.Instant;
 import java.util.List;
 
-public class IngestionRequest {
+import com.cloudsherpa.ingestion.connector.AccountScope;
+import com.cloudsherpa.ingestion.connector.CloudCredentials;
+
+public class IngestionRequestEvent {
+
+  private List<AccountScope> scopes;
+
+  private CloudCredentials credentials;
 
   private Instant from;
   private Instant to;
-  private CloudCredentials credentials;
-  private List<AccountScope> scopes;
+
   private boolean includeBilling;
   private boolean includeUsage;
 
-  public Instant getInstantFrom() {
-    return from;
+  public List<AccountScope> getScopes() {
+    return scopes;
   }
 
-  public void setInstantFrom(Instant from) {
-    this.from = from;
-  }
-
-  public Instant getInstantTo() {
-    return to;
-  }
-
-  public void setInstantTo(Instant to) {
-    this.to = to;
+  public void setScopes(List<AccountScope> scopes) {
+    this.scopes = scopes;
   }
 
   public CloudCredentials getCredentials() {
@@ -36,12 +34,20 @@ public class IngestionRequest {
     this.credentials = credentials;
   }
 
-  public void setScopes(List<AccountScope> scopes) {
-    this.scopes = scopes;
+  public Instant getFrom() {
+    return from;
   }
 
-  public List<AccountScope> getScopes() {
-    return this.scopes;
+  public void setFrom(Instant from) {
+    this.from = from;
+  }
+
+  public Instant getTo() {
+    return to;
+  }
+
+  public void setTo(Instant to) {
+    this.to = to;
   }
 
   public boolean isIncludeBilling() {

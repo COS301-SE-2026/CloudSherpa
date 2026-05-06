@@ -1,23 +1,27 @@
 package com.cloudsherpa.ingestion.connector;
 
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
+
+import java.util.Map;
 
 @Component
 public class CloudConnectorFactory {
 
   private final Map<String, CloudConnector> connectors;
 
-  public CloudConnectorFactory(List<CloudConnector> connectorList) {
-    this.connectors =
-        connectorList.stream()
-            .collect(Collectors.toMap(c -> c.getProviderName().toLowerCase(), Function.identity()));
+  public CloudConnectorFactory(Map<String, CloudConnector> connectors) {
+    this.connectors = connectors;
   }
 
   public CloudConnector getConnector(String provider) {
-    return connectors.get(provider.toLowerCase());
+
+    CloudConnector connector = connectors.get(provider.toUpperCase());
+
+    if (connector == null) {
+      throw new IllegalArgumentException(
+          "No connector found for provider: " + provider);
+    }
+
+    return connector;
   }
 }

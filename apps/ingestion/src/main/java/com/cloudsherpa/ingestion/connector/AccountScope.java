@@ -1,12 +1,20 @@
 package com.cloudsherpa.ingestion.connector;
 
 public class AccountScope {
-
+  private String provider;
   private String accountId; // AWS
   private String subscriptionId; // Azure
   private String projectId; // GCP
 
   private String billingAccountId;
+
+  public String getProvider() {
+    return provider;
+  }
+
+  public void setProvider(String provider) {
+    this.provider = provider;
+  }
 
   public String getAccountId() {
     return accountId;
