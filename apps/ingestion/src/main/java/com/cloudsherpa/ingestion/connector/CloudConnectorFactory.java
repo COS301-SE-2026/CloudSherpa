@@ -1,8 +1,7 @@
 package com.cloudsherpa.ingestion.connector;
 
-import org.springframework.stereotype.Component;
-
 import java.util.Map;
+import org.springframework.stereotype.Component;
 
 @Component
 public class CloudConnectorFactory {
@@ -18,8 +17,7 @@ public class CloudConnectorFactory {
     CloudConnector connector = connectors.get(provider.toUpperCase());
 
     if (connector == null) {
-      throw new IllegalArgumentException(
-          "No connector found for provider: " + provider);
+      throw new IllegalArgumentException("No connector found for provider: " + provider);
     }
 
     return connector;
