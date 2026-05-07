@@ -39,9 +39,8 @@ jobs:
             - name: Lint
               run: npm run lint
             
-            # Still need to config tests
-            # - name: Test
-            #   run: npm test
+            - name: Test
+              run: npm run test
 
             - name: Build
               run: npm run build

@@ -37,4 +37,6 @@ echo -e "${INFO}Running CloudSherpa Service Lint...${RESET}"
 })
 echo -e "${SUCCESS}Ingestion lint succeeded${RESET}"
 
+git add .
+
 echo -e "${SUCCESS}Succesfully made a commit, congrats!${RESET}"
