@@ -96,6 +96,7 @@ public class PostgresNotificationListener {
           // This retrieves the actual text payload we sent from the database trigger
           // Thanks to row_to_json(NEW), it should be a JSON string representing a database row.
           String payload = notification.getParameter();
+          System.out.println("NOTIFIED metric_events: " + payload);
 
           try {
             // Parse the raw string back into a JSON object
