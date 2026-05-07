@@ -1,39 +1,49 @@
 package com.cloudsherpa.ingestion.normalization.normalizers;
 
+import com.cloudsherpa.ingestion.models.UsageRecordModel;
 import com.cloudsherpa.ingestion.normalization.model.NormalizedMetric;
-import java.time.OffsetDateTime;
-import java.util.Map;
 import java.util.UUID;
 
 public class AwsNormalizer implements Normalizer {
-  @Override
-  public NormalizedMetric normalize(Map<String, String> row) {
-    if (row == null || row.isEmpty()) {
-      return null; // validation needs to happen in the class that creates the normalized metrics
+  public NormalizedMetric normalize(UsageRecordModel record) {
+    if (record == null) {
+      return null;
     }
 
     String metricId = UUID.randomUUID().toString();
-    String provider = "AWS";
+    String provider = "unknown";
 
-    long usageStart = parseTime(row.get("lineItem_UsageStartDate"));
-    long usageEnd = parseTime(row.get("lineItem_UsageEndDate"));
+    if (record.getProvider() != null) {
+      provider = record.getProvider();
+    }
 
-    String resourceId = row.get("lineItem_ResourceId");
+    long usageStart = 0;
+    if (record.getPeriodStart() != null) {
+      usageStart = record.getPeriodStart().toEpochMilli();
+    } else if (record.getTimestamp() != null) {
+      usageStart = record.getTimestamp().toEpochMilli();
+    }
 
-    String service = row.get("lineItem_ProductCode");
+    long usageEnd = 0;
+    if (record.getPeriodEnd() != null) {
+      usageEnd = record.getPeriodEnd().toEpochMilli();
+    } else if (record.getTimestamp() != null) {
+      usageEnd = record.getTimestamp().toEpochMilli();
+    }
 
+    String resourceId = record.getResourceId();
+    String service = record.getServiceName();
     String serviceCategory = normalizeCategory(service);
 
-    double usageAmount = parseDouble(row.get("lineItem_UsageAmount"));
+    double usageAmount = record.getValue();
+    String usageUnit = "unknown";
+    if (record.getUnit() != null) {
+      usageUnit = record.getUnit();
+    }
 
-    String usageUnit = row.get("pricing_unit");
-
-    double effectiveCost = parseDouble(row.get("lineItem_UnblendedCost"));
-
-    String currency =
-        "ZAR"; // We will need to determine what currency it is in and convert it to ZAR
-
-    String pricingModel = normalizePricingModel(row.get("lineItem_LineItemType"));
+    double effectiveCost = 0.0;
+    String currency = "ZAR";
+    String pricingModel = "on_demand";
 
     return new NormalizedMetric(
         metricId,
@@ -73,40 +83,5 @@ public class AwsNormalizer implements Normalizer {
     }
 
     return "other";
-  }
-
-  private long parseTime(String value) {
-    if (value == null) {
-      return 0;
-    }
-
-    // Converts to Unix timestamp in milliseconds
-    // converts input from 2023-01-01T12:00:00Z
-    // to 1672574400000 which is standard for timestamps in Java
-    return OffsetDateTime.parse(value).toEpochSecond() * 1000;
-  }
-
-  private double parseDouble(String value) {
-    if (value == null || value.isEmpty()) {
-      return 0.0;
-    }
-
-    return Double.parseDouble(value);
-  }
-
-  private String normalizePricingModel(String model) {
-    if (model == null) {
-      return "on_demand";
-    }
-
-    if (model.contains("SavingsPlan")) {
-      return "savings_plan";
-    }
-
-    if (model.contains("Reserved")) {
-      return "reserved";
-    }
-
-    return "on_demand";
   }
 }
