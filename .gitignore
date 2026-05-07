@@ -63,3 +63,6 @@ dist
 
 # Python
 .venv
+
+# style dictionairy tokens
+apps/dashboard/app/tokens.css

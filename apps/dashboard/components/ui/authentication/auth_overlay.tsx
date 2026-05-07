@@ -14,7 +14,7 @@ export function AuthOverlay({ isSignUp, toggle }: OverlayProps) {
       isSignUp ? "-translate-x-full" : ""
     )}>
       <div className={cn(
-        "relative -left-full h-full w-[200%] transform transition-transform duration-700 ease-in-out bg-primary text-white", //note to self adjust this to change the background
+        "relative -left-full h-full w-[200%] transform transition-transform duration-700 ease-in-out bg-foreground text-white", //note to self adjust this to change the background
         isSignUp ? "translate-x-1/2" : "translate-x-0"
       )}>
         {/* gp to Login */}

@@ -43,9 +43,9 @@ export default function LoginForm({ onSubmit, isLoading = false }: LoginFormProp
   };
 
   return (
-    <div className="w-full max-w-sm space-y-8 p-4 bg-white">
+    <div className="w-full max-w-sm space-y-8 p-4 bg-background">
       <div className="text-center">
-        <h2 className="text-3xl font-bold tracking-tight text-[#1A1953]">Sign in</h2>
+        <h2 className="text-3xl font-bold tracking-tight text-foreground">Sign in</h2>
       </div>
 
       <form className="space-y-6" onSubmit={handleFormSubmit}>
@@ -59,7 +59,7 @@ export default function LoginForm({ onSubmit, isLoading = false }: LoginFormProp
             disabled={isLoading}
             className={cn(
               "pr-10",
-              error ? "border-red-500 focus-visible:ring-red-500" : "focus-visible:ring-[#2F2FE4]",
+              error ? "border-red-500 focus-visible:ring-red-500" : "focus-visible:ring-ring",
             )}
           />
         </div>
@@ -95,9 +95,9 @@ export default function LoginForm({ onSubmit, isLoading = false }: LoginFormProp
           )}
         </div>
 
-        <Button
+        <Button 
           type="submit"
-          className="w-full bg-[#2F2FE4] hover:bg-[#162E93]"
+          className="w-full bg-foreground hover:bg-secondary"
           disabled={isLoading || !!error || password.length < 8}>
           {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Sign in"}
         </Button>

@@ -3,7 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "build:tokens": "node design_system/sd.config.mjs",
+    "predev": "npm run build:tokens",
     "dev": "next dev",
+    "prebuild": "npm run build:tokens",
     "build": "next build",
     "start": "next start -p 3000",
     "lint": "eslint"
@@ -28,6 +31,7 @@
     "eslint": "^9.39.4",
     "eslint-config-next": "^16.2.4",
     "eslint-config-prettier": "^10.1.8",
+    "style-dictionary": "^5.4.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
