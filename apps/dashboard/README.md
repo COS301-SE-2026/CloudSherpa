@@ -42,6 +42,41 @@ The production start script serves the built Next.js app on port `3000`.
 npm run lint
 ```
 
+## Testing
+
+From `apps/dashboard`:
+
+```bash
+npm test
+```
+
+Vitest runs unit tests from `__tests__/unit`.
+
+### Playwright
+
+Install browser binaries once:
+
+```bash
+npx playwright install
+```
+
+Build before e2e tests:
+
+```bash
+npm run build
+npm run test:e2e
+```
+
+Playwright runs specs from `__tests__/e2e`, starts `npm run start`, and uses `http://localhost:3000`.
+
+Useful local commands:
+
+```bash
+npx playwright test --ui
+npx playwright test --debug
+npx playwright show-report
+```
+
 ## Docker
 
 From the repository root:
