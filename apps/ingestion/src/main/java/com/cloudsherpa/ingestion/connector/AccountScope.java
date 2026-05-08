@@ -1,5 +1,7 @@
 package com.cloudsherpa.ingestion.connector;
 
+import java.util.List;
+
 public class AccountScope {
   private String provider;
   private String accountId; // AWS
@@ -7,6 +9,7 @@ public class AccountScope {
   private String projectId; // GCP
 
   private String billingAccountId;
+  private List<ServiceScope> serviceScopes;// the service and related metrics that will be fetched
 
   public String getProvider() {
     return provider;
@@ -47,4 +50,13 @@ public class AccountScope {
   public void setBillingAccountId(String billingAccountId) {
     this.billingAccountId = billingAccountId;
   }
+
+  public List<ServiceScope> getServiceScopes() {
+    return serviceScopes;
+  }
+
+  public void setServiceScopes(List<ServiceScope> scopes) {
+    this.serviceScopes = scopes;
+  }
+
 }
