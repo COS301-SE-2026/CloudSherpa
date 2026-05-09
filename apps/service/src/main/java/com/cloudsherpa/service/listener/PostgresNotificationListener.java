@@ -1,5 +1,6 @@
 package com.cloudsherpa.service.listener;
 
+import com.cloudsherpa.service.sse.SseService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
@@ -36,6 +37,12 @@ public class PostgresNotificationListener {
 
   // Jackson tool to parse raw JSON strings into Java objects
   private final ObjectMapper objectMapper = new ObjectMapper();
+
+  private final SseService sseService;
+
+  PostgresNotificationListener(SseService sseService) {
+    this.sseService = sseService;
+  }
 
   // @PostConstruct forces this method to run exactly once, immediately after Spring creates this
   // class.
@@ -123,6 +130,8 @@ public class PostgresNotificationListener {
     String currency = metric.path("currency").asText("unknown");
 
     // This is where we would call intelligence engine to do its thing
+
+    sseService.broadcast("metric", metric);
   }
 
   // @PreDestroy runs when the Spring Boot application is shutting down.
