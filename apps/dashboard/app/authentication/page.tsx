@@ -10,7 +10,7 @@ export default function Authentication() {
   const [isSignUp, setIsSignUp] = useState(false);
 
   return (
-    <div className="fixed inset-0 overflow-hidden bg-white font-sans">
+    <div className="fixed inset-0 overflow-hidden bg-background font-sans">
       <div className="relative w-full h-full">
         
         {/* login container */}
