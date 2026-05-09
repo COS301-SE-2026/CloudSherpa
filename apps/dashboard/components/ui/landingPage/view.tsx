@@ -1,5 +1,6 @@
 'use client';
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 interface forViewingItems{
   onDiscoverMoreClick: () => void; //this is the function that is called when the discover more button is clicked
@@ -30,11 +31,13 @@ export default function viewing({ onDiscoverMoreClick }: forViewingItems){
           AI-powered optimization for multi cloud environments
         </p>
 
+    <Link href="/authentication">
         <Button 
           className="bg-blue-600 hover:bg-blue-700 text-white px-7 py-3 text-base border border-black"
         >
           Start saving now
         </Button>
+    </Link>
 
       </div>
 
