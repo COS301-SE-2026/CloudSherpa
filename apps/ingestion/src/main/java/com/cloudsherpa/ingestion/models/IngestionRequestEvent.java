@@ -1,10 +1,9 @@
 package com.cloudsherpa.ingestion.models;
 
-import java.time.Instant;
-import java.util.List;
-
 import com.cloudsherpa.ingestion.connector.AccountScope;
 import com.cloudsherpa.ingestion.connector.CloudCredentials;
+import java.time.Instant;
+import java.util.List;
 
 public class IngestionRequestEvent {
 

@@ -24,5 +24,4 @@ public interface Record {
   String getSource();
 
   void setSource(String source);
-
 }
