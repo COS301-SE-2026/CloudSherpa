@@ -1,5 +1,5 @@
 'use client';
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/atoms/button";
 
 interface forViewingItems{
   onDiscoverMoreClick: () => void; //this is the function that is called when the discover more button is clicked

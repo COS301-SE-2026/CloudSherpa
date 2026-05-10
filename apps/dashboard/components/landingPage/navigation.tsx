@@ -1,5 +1,5 @@
 'use client';
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/atoms/button";
 
 interface forNavigationProps{
   clickOnFeatures?: () => void;

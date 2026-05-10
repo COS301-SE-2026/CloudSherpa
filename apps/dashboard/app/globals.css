@@ -17,14 +17,14 @@
   --color-secondary-foreground: var(--color-neutral-slate-50);
   --color-accent: var(--color-action-accent);
   --color-success: var(--color-utility-success);
-  --color-destructive: var(--color-utility-error); /* Commonly used for error/danger */
+  --color-destructive: var(--color-utility-error); 
   --color-accent-foreground: var(--color-neutral-void);
   --color-border: var(--color-neutral-navy-dusk);
   --color-ring: var(--color-action-primary);
 
   /* 
 
-  /* Typography - Linking to your typography.json */
+  
   --font-sans: var(--font-family-main);
   --font-mono: var(--font-family-mono);
   --font-weight-bold: var(--font-weight-bold);
@@ -45,18 +45,18 @@
   --secondary: var(--color-action-secondary);
   --accent: var(--color-action-accent);
   --success: var(--color-utility-success);
-  --destructive: var(--color-utility-error); /* Used by Shadcn for error states */
+  --destructive: var(--color-utility-error); 
   --border: var(--color-neutral-navy-dusk);
   --ring: var(--color-action-primary);
   --radius: var(--border-radius-md);
 
-  /* Chart Colors (Ensure these are in your semantic.json) */
+  
   --chart-1: var(--color-action-primary); 
   --chart-2: var(--color-utility-success);
   --chart-3: var(--color-action-accent);
 }
 
-/* Base setup to ensure the tokens actually paint the screen */
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -66,7 +66,7 @@
   }
 }
 
-/* Feature Card - Fully Tokenized */
+
 .feature-card {
   background: var(--color-bg-main);
   border: 1px solid transparent;
