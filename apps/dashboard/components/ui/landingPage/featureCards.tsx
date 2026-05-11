@@ -228,17 +228,29 @@ const forFeatureCards = forwardRef<HTMLElement, forFeatureBlocks>(
   ({showingFeatureCards}, containerRef) => {
     const [activeCardIndex,setActiveCardIndex] = useState<number | null>(null);
 
+    //this issue was that it could only be a RefObject or a callback func - not both
+    //typescript could not distinguish bet. them
     const handleCardClick = (forIndex: number) => {
       setActiveCardIndex(forIndex);
       setTimeout(() => {
-        // containerRef?.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const forReference = containerRef as React.RefObject<HTMLElement>;
+
+        if(forReference?.current){
+          forReference.current.scrollIntoView({ behavior:'smooth', block:'start' });
+        }
+
       }, 10);
     };
 
     const handleBack = () => {
       setActiveCardIndex(null);
       setTimeout(() => {
-        // containerRef?.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const forReference = containerRef as React.RefObject<HTMLElement>;
+
+        if(forReference?.current){
+          forReference.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
       }, 10);
     };
 
