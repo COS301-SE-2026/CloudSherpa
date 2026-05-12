@@ -2,7 +2,7 @@
 
 import { useMetricStream } from "@/services/sse/metric-stream";
 import { useMetricStore } from "@/stores/metric-store";
-import { LineChartWidget } from "@/components/ui/widgets/charts/LineChartWidget";
+import { LineChartWidget } from "@/components/widgets/charts/LineChartWidget";
 
 export default function Demo() {
     const { error } = useMetricStream();
