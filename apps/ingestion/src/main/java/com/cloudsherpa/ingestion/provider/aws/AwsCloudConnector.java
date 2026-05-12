@@ -42,7 +42,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
   }
 
   @Override
-  public List<UsageRecordModel> fetchUsage(IngestionRequestEvent request) {
+  public List<UsageRecordModel> fetchUsage(AccountScope accountScope, IngestionRequestEvent request) {
     UUID ingestionID = UUID.randomUUID();
     int period = request.getPeriod(); // contract: ensure that the request does not return over 1000 datapoints
                                       // ((to-from)/period)
@@ -53,50 +53,47 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
         .build();
 
     List<UsageRecordModel> result = new ArrayList<>();
-    for (AccountScope accScope : request.getScopes()) { // one user may have multiple aws accounts, these can be
-                                                        // monitored with one request
-      for (ServiceScope serviceScope : accScope.getServiceScopes()) { // these are for services such as EC2, RDS etc.
+    for (ServiceScope serviceScope : accountScope.getServiceScopes()) { // these are for services such as EC2, RDS etc.
 
-        for (InstanceScope instance : serviceScope.getInstances()) { // instances within a service with a name and value
-                                                                     // list e.g. i-23xxxxxxx
-          for (String instanceValue : instance.getValues()) { // the specific instance
-            Dimension dimension = Dimension.builder().name(instance.getIdentifierName()).value(instanceValue).build();
+      for (InstanceScope instance : serviceScope.getInstances()) { // instances within a service with a name and value
+                                                                   // list e.g. i-23xxxxxxx
+        for (String instanceValue : instance.getValues()) { // the specific instance
+          Dimension dimension = Dimension.builder().name(instance.getIdentifierName()).value(instanceValue).build();
 
-            for (String metric : serviceScope.getMetrics()) { // the metrics requested, e.g. CPUUtilisation, NetworkIn,
-                                                              // NetworkOut etc.
-              GetMetricStatisticsRequest req = GetMetricStatisticsRequest.builder()
-                  .namespace(serviceScope.getName())
-                  .metricName(metric)
-                  .startTime(request.getFrom())
-                  .endTime(request.getTo())
-                  .period(period)
-                  .dimensions(dimension)
-                  .statistics(Statistic.AVERAGE)
-                  .build();
+          for (String metric : serviceScope.getMetrics()) { // the metrics requested, e.g. CPUUtilisation, NetworkIn,
+                                                            // NetworkOut etc.
+            GetMetricStatisticsRequest req = GetMetricStatisticsRequest.builder()
+                .namespace(serviceScope.getName())
+                .metricName(metric)
+                .startTime(request.getFrom())
+                .endTime(request.getTo())
+                .period(period)
+                .dimensions(dimension)
+                .statistics(Statistic.AVERAGE)
+                .build();
 
-              for (Datapoint dp : client.getMetricStatistics(req).datapoints()) {
+            for (Datapoint dp : client.getMetricStatistics(req).datapoints()) {
 
-                UsageRecordModel r = new UsageRecordModel();
-                r.setProvider(accScope.getProvider());
-                r.setAccountId(accScope.getAccountId());
-                r.setServiceName(serviceScope.getName());
-                r.setMetricName(metric);
-                r.setValue(dp.average());
-                r.setUnit(dp.unit().name());
-                r.setTimestamp(dp.timestamp());
-                r.setIngestionTimestamp(Instant.now());
-                r.setRecordId(UUID.randomUUID());
-                r.setResourceId(instanceValue);
-                r.setResourceType(instance.getIdentifierName());
-                r.setRegion(Region.AF_SOUTH_1.toString());
-                r.setIngestionId(ingestionID.toString());
-                r.setServiceName(serviceScope.getName());
-                r.setSource("CloudWatch");
-                r.setPeriodStart(dp.timestamp().minusSeconds(period));
-                r.setPeriodEnd(dp.timestamp());
+              UsageRecordModel r = new UsageRecordModel();
+              r.setProvider(accountScope.getProvider());
+              r.setAccountId(accountScope.getAccountId());
+              r.setServiceName(serviceScope.getName());
+              r.setMetricName(metric);
+              r.setValue(dp.average());
+              r.setUnit(dp.unit().name());
+              r.setTimestamp(dp.timestamp());
+              r.setIngestionTimestamp(Instant.now());
+              r.setRecordId(UUID.randomUUID());
+              r.setResourceId(instanceValue);
+              r.setResourceType(instance.getIdentifierName());
+              r.setRegion(Region.AF_SOUTH_1.toString());
+              r.setIngestionId(ingestionID.toString());
+              r.setServiceName(serviceScope.getName());
+              r.setSource("CloudWatch");
+              r.setPeriodStart(dp.timestamp().minusSeconds(period));
+              r.setPeriodEnd(dp.timestamp());
 
-                result.add(r);
-              }
+              result.add(r);
             }
           }
         }
@@ -104,11 +101,17 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
     }
 
     return result;
+
   }
 
   @Override
-  public List<BillingRecordModel> fetchBilling(AccountScope scope, IngestionRequestEvent request) {
+  public List<BillingRecordModel> fetchBilling(AccountScope accountScope, IngestionRequestEvent request) {
     return List.of(); // mock for now
+  }
+
+  @Override
+  public List<BillingRecordModel> fetchMockBilling(AccountScope accountScope, IngestionRequestEvent request) {
+    return List.of();
   }
 
   @Override
@@ -125,5 +128,248 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
 
   public String getProviderName() {
     return "AWS";
+  }
+
+  public List<UsageRecordModel> fetchMockUsage(AccountScope accountScope, IngestionRequestEvent request) {
+
+    if (request.getPeriod() <= 0) {
+      throw new IllegalArgumentException("Period must be > 0");
+    }
+
+    final int maxDatapoints = 1440;
+    final int secondsPerHour = 3600;
+    final int secondsPerDay = 86400;
+
+    UUID ingestionID = UUID.randomUUID();
+    List<UsageRecordModel> result = new ArrayList<>();
+
+    long globalSeed = Objects.hash(
+        request.getFrom().toEpochMilli(),
+        request.getTo().toEpochMilli());
+
+    for (AccountScope accScope : request.getScopes()) {
+
+      long accountSeed = Objects.hash(globalSeed, accScope.getAccountId());
+
+      for (ServiceScope serviceScope : accScope.getServiceScopes()) {
+
+        ServiceType type = ServiceType.from(serviceScope.getName());
+
+        double serviceClusterState = 50.0 + new Random(accountSeed).nextGaussian() * 10; // services have partially
+                                                                                         // correlated usage data
+
+        for (InstanceScope instance : serviceScope.getInstances()) {
+
+          for (String instanceId : instance.getValues()) {
+
+            long resourceSeed = Objects.hash(accountSeed, serviceScope.getName(), instanceId);
+            SplittableRandom rng = new SplittableRandom(resourceSeed);
+
+            double mean = type.baseLoad + rng.nextDouble() * type.variance; // we create different resource
+                                                                            // personalities, such that EC2 metrics look
+                                                                            // different from RDS metrics for instance
+
+            double theta = 0.05 + rng.nextDouble() * 0.1;
+            double volatility = 1.0 + rng.nextDouble() * 5.0;
+
+            Map<String, Double> metricState = new HashMap<>(); // different metrics may have different trajectories and
+                                                               // mean loads
+            Map<String, Double> metricMean = new HashMap<>();
+
+            for (String metric : serviceScope.getMetrics()) {
+              metricState.put(metric, mean);
+              metricMean.put(metric, mean + rng.nextGaussian() * 5);
+            }
+
+            int count = 0;
+
+            for (Instant t = request.getFrom(); !t.isAfter(request.getTo()); t = t.plusSeconds(request.getPeriod())) {
+
+              if (++count > maxDatapoints)
+                break;
+
+              double seconds = t.getEpochSecond();
+
+              // Introducing daily and weekly periodicity to mimic seasonality for data usage
+              double daily = Math.sin(seconds / (double) secondsPerDay * 2 * Math.PI);
+              double weekly = Math.sin(seconds / (double) (secondsPerDay * 7) * 2 * Math.PI);
+
+              double seasonal = 12 * daily + 6 * weekly;
+
+              boolean maintenance = (seconds % secondsPerDay) < 2 * secondsPerHour;// first 2h of each day simulated as
+                                                                                   // maintenance period
+
+              double maintenancePenalty = maintenance ? -10 : 0; // less usage in a maintenance period
+
+              boolean burstEvent = rng.nextDouble() < type.burstChance; // low probability of a burst event with high
+                                                                        // usage. Metric dependent chance
+
+              double burst = burstEvent ? rng.nextDouble() * 50 : 0;
+
+              serviceClusterState += rng.nextGaussian() * 1.5 + burst * 0.05; // service level usage correlation (EC2
+                                                                              // metrics are related)
+
+              double clusterFactor = 1.0 + (serviceClusterState / 100.0);
+
+              for (String metric : serviceScope.getMetrics()) { // each metric has somewhat different behaviour
+                double state = metricState.get(metric);
+                double mMean = metricMean.get(metric);
+
+                double gaussian = rng.nextGaussian();
+
+                // Ornstein-Uhlenbeck per metric noise
+                double drift = theta * (mMean - state);
+
+                double noise = gaussian * volatility;
+
+                state = state
+                    + drift
+                    + noise
+                    + seasonal
+                    + maintenancePenalty;
+
+                // burst affects all metrics to different extents
+                state += burst * metricBurstWeight(type, metric);
+
+                state = Math.max(0, Math.min(100, state)); // clamp to between 0 and 100
+                metricState.put(metric, state);
+
+                double value = computeMetric(
+                    type,
+                    metric,
+                    state,
+                    clusterFactor,
+                    gaussian,
+                    burst);
+
+                UsageRecordModel r = new UsageRecordModel();
+
+                r.setProvider(accScope.getProvider());
+                r.setAccountId(accScope.getAccountId());
+                r.setServiceName(serviceScope.getName());
+                r.setMetricName(metric);
+                r.setValue(value);
+                r.setUnit("None");
+                r.setTimestamp(t);
+                r.setIngestionTimestamp(Instant.now());
+                r.setRecordId(UUID.randomUUID());
+                r.setResourceId(instanceId);
+                r.setResourceType(instance.getIdentifierName());
+                r.setRegion(Region.AF_SOUTH_1.toString());
+                r.setIngestionId(ingestionID.toString());
+                r.setSource("MockCloudWatch");
+
+                result.add(r);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return result;
+  }
+
+  enum ServiceType {
+
+    EC2(30, 50, 0.03),
+    LAMBDA(5, 80, 0.12),
+    RDS(20, 40, 0.02),
+    S3(2, 20, 0.01),
+    DYNAMODB(10, 60, 0.08),
+    ECS_EKS(25, 70, 0.05),
+    GPU_ML(15, 90, 0.02);
+
+    final double baseLoad;
+    final double variance;
+    final double burstChance;
+
+    ServiceType(double baseLoad, double variance, double burstChance) {
+      this.baseLoad = baseLoad;
+      this.variance = variance;
+      this.burstChance = burstChance;
+    }
+
+    static ServiceType from(String name) {
+      return switch (name.toUpperCase()) {
+        case "AWS/EC2" -> EC2;
+        case "AWS/LAMBDA" -> LAMBDA;
+        case "AWS/RDS" -> RDS;
+        case "AWS/S3" -> S3;
+        case "AWS/DYNAMODB" -> DYNAMODB;
+        case "AWS/ECS", "AWS/EKS" -> ECS_EKS;
+        case "AWS/GPU", "AWS/SAGEMAKER" -> GPU_ML;
+        default -> EC2;
+      };
+    }
+  }
+
+  private double metricBurstWeight(ServiceType type, String metric) {
+    return switch (type) {
+      case EC2 -> switch (metric) {
+        case "CPUUtilization" -> 0.8;
+        case "NetworkIn" -> 1.2;
+        case "NetworkOut" -> 1.0;
+        default -> 0.5;
+      };
+      case LAMBDA -> 1.0;
+      case RDS -> 0.7;
+      case DYNAMODB -> 1.3;
+      default -> 0.6;
+    };
+  }
+
+  private double computeMetric(
+      ServiceType type,
+      String metric,
+      double state,
+      double clusterFactor,
+      double gaussian,
+      double burst) {
+    return switch (type) {
+
+      case EC2 -> switch (metric) {
+        case "CPUUtilization" -> state + gaussian * 2;
+        case "NetworkIn" -> state * 1000 * clusterFactor + burst * 50;
+        case "NetworkOut" -> state * 800 * clusterFactor;
+        case "DiskReadOps" -> Math.abs(state - 50) * 30 + burst;
+        case "DiskWriteOps" -> Math.abs(state - 40) * 25 + burst * 0.5;
+        default -> state;
+      };
+
+      case LAMBDA -> switch (metric) {
+        case "Invocations" -> state * 2;
+        case "Duration" -> 100 + state * 5 + (burst > 20 ? 1000 : 0);
+        case "Errors" -> burst > 30 ? 1 : 0;
+        default -> state;
+      };
+
+      case RDS -> switch (metric) {
+        case "Latency" -> 10 + state * 3 + clusterFactor * 20 + burst;
+        case "CPUUtilization" -> state;
+        case "DatabaseConnections" -> state * 10;
+        default -> state;
+      };
+
+      case S3 -> switch (metric) {
+        case "RequestCount" -> state * 20 + burst * 5;
+        case "BytesUploaded" -> state * 500;
+        default -> state;
+      };
+
+      case DYNAMODB -> switch (metric) {
+        case "Throttles" -> burst > 25 ? 1 : 0;
+        default -> state;
+      };
+
+      case ECS_EKS -> state * clusterFactor;
+
+      case GPU_ML -> switch (metric) {
+        case "GPUUtilization" -> state;
+        case "TrainingLoss" -> 1.0 / (1 + state);
+        case "BatchTime" -> 100 + (100 - state) * 2;
+        default -> state;
+      };
+    };
   }
 }
