@@ -1,5 +1,5 @@
 // components/auth/social-auth.tsx
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/atoms/button";
 import { Cat, Globe, Cloud } from "lucide-react"; 
 
 export function SocialAuth() {

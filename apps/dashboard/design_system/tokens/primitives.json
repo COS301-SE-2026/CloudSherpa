@@ -1,0 +1,21 @@
+{
+  "color": {
+    "brand": {
+      "electric-blue": { "value": "#2F2FE4" },
+      "deep-navy": { "value": "#162E93" },
+      "gold": { "value": "#FFD700" }
+    },
+    "neutral": {
+      "void": { "value": "#080616" },
+      "navy-dusk": { "value": "#1A1953" },
+      "slate-50": { "value": "#F8FAFC" }
+    },
+    "utility": {
+      "success": { "value": "#10B981" },
+      "error": { "value": "#EF4444" }
+    }
+  },
+  "size": {
+    "base": { "value": "4" }
+  }
+}
