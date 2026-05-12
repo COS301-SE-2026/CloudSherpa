@@ -1,4 +1,4 @@
-export type MetricType = "cpu" | "memory" | "disk" | "cost";
+export type MetricType = "cpu" | "memory" | "disk" | "cost" | "anon";
 
 export type Metric = {
     resource_id: string,
