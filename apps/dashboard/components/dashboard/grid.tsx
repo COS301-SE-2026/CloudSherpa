@@ -58,7 +58,7 @@ const CloudSherpaGrid: React.FC = () => {
   }, []);
 
   return (
-    <div className="p-6 min-h-screen bg-slate-900">
+    <div className="p-6 min-h-screen">
 
       {/* grid */}
       <div ref={gridRef} className="grid-stack">

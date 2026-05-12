@@ -6,7 +6,6 @@ import { Label } from "@/components/atoms/label";
 import { Loader2, Eye, EyeOff, AlertCircle } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { SocialAuth } from "./social_auth";
 
 interface LoginFormProps {
   onSubmit?: (data: { password?: string }) => void;

@@ -5,7 +5,6 @@ import { Loader2 } from "lucide-react";
 import { Eye, EyeOff, AlertCircle } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { SocialAuth } from "./social_auth";
 
 interface RegisterFormProps {
   onSubmit?: (data: Record<string, FormDataEntryValue>) => void; //indicates form submission.

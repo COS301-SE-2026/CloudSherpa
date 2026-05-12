@@ -18,6 +18,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "gridstack": "^12.6.0",
+    "lint": "^1.2.2",
     "lucide-react": "^1.14.0",
     "next": "16.2.4",
     "radix-ui": "^1.4.3",

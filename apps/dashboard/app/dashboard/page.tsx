@@ -5,7 +5,7 @@ import Grid from "@/components/dashboard/grid";
 
 export default function Dashboard () {
     return(
-      <div>
+      <div className="w-full min-h-screen flex flex-col ">
         <Toolbar/>
         <Grid/>
       </div>
