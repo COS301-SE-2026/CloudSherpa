@@ -37,7 +37,7 @@ export function useMetricStream() {
                 addMetric(metric);
             };
     
-            eventSource.onerror = (error) => {
+            eventSource.onerror = () => {
                 setError(new Error(`Failed to open metric stream connection`));
                 eventSource.close();
             }
@@ -48,7 +48,7 @@ export function useMetricStream() {
                 eventSource.removeEventListener("metric", handleMetric);
                 eventSource.close();
             }
-        }, [])
+        }, [addMetric])
 
     return { error };
 }
