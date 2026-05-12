@@ -54,6 +54,19 @@ Purpose: store provider-specific credentials.
 
 Usage: connectors decrypt `credential_value` at runtime to call provider APIs.
 
+#### Credential payload format
+`credential_value` should store a single encrypted JSON object so multi-field credential sets stay together (for example, access key ID + secret + region). This keeps provider-specific shapes in one place while the database schema stays normalized.
+
+Example (unencrypted payload before encryption):
+
+```json
+{
+	"access_key_id": "someRandomSequence",
+	"secret_access_key": "someEncryptedSequence",
+	"region": "AF-SOUTH-1"
+}
+```
+
 ### cloud_accounts
 Purpose: the data boundary where usage/cost is billed and collected.
 
