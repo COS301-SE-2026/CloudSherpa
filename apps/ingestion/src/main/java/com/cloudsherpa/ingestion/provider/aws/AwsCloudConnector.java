@@ -43,48 +43,60 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
 
   @Override
   public List<UsageRecordModel> fetchUsage(IngestionRequestEvent request) {
+    UUID ingestionID = UUID.randomUUID();
+    int period = request.getPeriod(); // contract: ensure that the request does not return over 1000 datapoints
+                                      // ((to-from)/period)
     DefaultCredentialsProvider.create();
     Ec2Client ec2 = Ec2Client.builder()
         .region(Region.AF_SOUTH_1)
         .credentialsProvider(DefaultCredentialsProvider.create())
         .build();
 
-    List<String> instanceIds = getAllEC2InstanceIds(ec2);
-
     List<UsageRecordModel> result = new ArrayList<>();
     for (AccountScope accScope : request.getScopes()) { // one user may have multiple aws accounts, these can be
                                                         // monitored with one request
       for (ServiceScope serviceScope : accScope.getServiceScopes()) { // these are for services such as EC2, RDS etc.
 
-        for (String instanceId : instanceIds) { // instances within a service e.g. i-23xxxxxxx
-          Dimension dimension = Dimension.builder().name("InstanceId").value(instanceId).build();
+        for (InstanceScope instance : serviceScope.getInstances()) { // instances within a service with a name and value
+                                                                     // list e.g. i-23xxxxxxx
+          for (String instanceValue : instance.getValues()) { // the specific instance
+            Dimension dimension = Dimension.builder().name(instance.getIdentifierName()).value(instanceValue).build();
 
-          for (String metric : serviceScope.getMetrics()) { // the metrics requested, e.g. CPUUtilisation, NetworkIn,
-                                                            // NetworkOut etc.
-            GetMetricStatisticsRequest req = GetMetricStatisticsRequest.builder()
-                .namespace(serviceScope.getName())
-                .metricName(metric)
-                .startTime(request.getFrom())
-                .endTime(request.getTo())
-                .period(600)
-                .dimensions(dimension)
-                .statistics(Statistic.AVERAGE)
-                .build();
+            for (String metric : serviceScope.getMetrics()) { // the metrics requested, e.g. CPUUtilisation, NetworkIn,
+                                                              // NetworkOut etc.
+              GetMetricStatisticsRequest req = GetMetricStatisticsRequest.builder()
+                  .namespace(serviceScope.getName())
+                  .metricName(metric)
+                  .startTime(request.getFrom())
+                  .endTime(request.getTo())
+                  .period(period)
+                  .dimensions(dimension)
+                  .statistics(Statistic.AVERAGE)
+                  .build();
 
-            for (Datapoint dp : client.getMetricStatistics(req).datapoints()) {
+              for (Datapoint dp : client.getMetricStatistics(req).datapoints()) {
 
-              UsageRecordModel r = new UsageRecordModel();
-              r.setProvider(accScope.getProvider());
-              r.setAccountId(accScope.getAccountId());
-              r.setServiceName(serviceScope.getName());
-              r.setMetricName(metric);
-              r.setValue(dp.average());
-              r.setUnit(dp.unit().name());
-              r.setTimestamp(dp.timestamp());
-              r.setIngestionTimestamp(Instant.now());
-              r.setRecordId(UUID.randomUUID());
+                UsageRecordModel r = new UsageRecordModel();
+                r.setProvider(accScope.getProvider());
+                r.setAccountId(accScope.getAccountId());
+                r.setServiceName(serviceScope.getName());
+                r.setMetricName(metric);
+                r.setValue(dp.average());
+                r.setUnit(dp.unit().name());
+                r.setTimestamp(dp.timestamp());
+                r.setIngestionTimestamp(Instant.now());
+                r.setRecordId(UUID.randomUUID());
+                r.setResourceId(instanceValue);
+                r.setResourceType(instance.getIdentifierName());
+                r.setRegion(Region.AF_SOUTH_1.toString());
+                r.setIngestionId(ingestionID.toString());
+                r.setServiceName(serviceScope.getName());
+                r.setSource("CloudWatch");
+                r.setPeriodStart(dp.timestamp().minusSeconds(period));
+                r.setPeriodEnd(dp.timestamp());
 
-              result.add(r);
+                result.add(r);
+              }
             }
           }
         }
