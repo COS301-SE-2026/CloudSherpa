@@ -1,16 +1,16 @@
 "use client"; //use client indicates that the page will be rendered by the client browser and not the server
 
 import { useState } from "react";
-import { AuthOverlay } from "@/components/ui/authentication/auth_overlay";
-import { AuthPanel } from "@/components/ui/authentication/auth_panel";
-import LoginForm from "@/components/ui/authentication/login_form";
-import RegisterForm from "@/components/ui/authentication/register_form";
+import { AuthOverlay } from "@/components/authentication/auth_overlay";
+import { AuthPanel } from "@/components/authentication/auth_panel";
+import LoginForm from "@/components/authentication/login_form";
+import RegisterForm from "@/components/authentication/register_form";
 
 export default function Authentication() {
   const [isSignUp, setIsSignUp] = useState(false);
 
   return (
-    <div className="fixed inset-0 overflow-hidden bg-white font-sans">
+    <div className="fixed inset-0 overflow-hidden bg-background font-sans">
       <div className="relative w-full h-full">
         
         {/* login container */}

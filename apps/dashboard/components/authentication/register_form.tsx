@@ -1,11 +1,10 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/atoms/button";
+import { Input } from "@/components/atoms/input";
+import { Label } from "@/components/atoms/label";
 import { Loader2 } from "lucide-react";
 import { Eye, EyeOff, AlertCircle } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { SocialAuth } from "./social_auth";
 
 interface RegisterFormProps {
   onSubmit?: (data: Record<string, FormDataEntryValue>) => void; //indicates form submission.
@@ -20,7 +19,7 @@ export default function RegisterForm({ onSubmit, isLoading = false }: RegisterFo
   const [passwordError, setPasswordError] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
 
-  const togglePasswordVisibility = () => setIsPasswordVisible(!isPasswordVisible);
+  const togglePasswordVisibility = () => setIsPasswordVisible(!isPasswordVisible); //note I want to implement a spring loaded button instead of a togglable one for shoulder surfing.
   const toggleConfirmPasswordVisibility = () => setIsConfirmPasswordVisible(!isConfirmPasswordVisible);
 
   const validatePassword = (value: string) => {
@@ -60,10 +59,10 @@ export default function RegisterForm({ onSubmit, isLoading = false }: RegisterFo
   return (
     <div className="w-full max-w-sm space-y-8 p-4">
       <div className="text-center">
-        <h2 className="text-3xl font-bold tracking-tight text-foreground">Sign Up</h2>
+        <h2 className="text-3xl font-bold tracking-tight">Sign Up</h2>
       </div>
 
-      <form className="space-y-6" onSubmit={handleFormSubmit}>
+      <form className="space-y-6" onSubmit={handleFormSubmit} noValidate>
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
           <Input
@@ -75,7 +74,7 @@ export default function RegisterForm({ onSubmit, isLoading = false }: RegisterFo
             disabled={isLoading}
             className={cn(
               "pr-10",
-              confirmPasswordError ? "border-red-500 focus-visible:ring-red-500" : "focus-visible:ring-[#2F2FE4]",
+              confirmPasswordError ? "border-destructive focus-visible:ring-destructive" : "focus-visible:ring-ring",
             )}
           />
         </div>
@@ -95,7 +94,7 @@ export default function RegisterForm({ onSubmit, isLoading = false }: RegisterFo
               disabled={isLoading}
               className={cn(
                 "pr-10",
-                confirmPasswordError ? "border-red-500 focus-visible:ring-red-500" : "focus-visible:ring-[#2F2FE4]",
+                confirmPasswordError ? "border-destructive focus-visible:ring-destructive" : "focus-visible:ring-ring",
               )}
             />
             <button
@@ -109,7 +108,7 @@ export default function RegisterForm({ onSubmit, isLoading = false }: RegisterFo
             </button>
           </div>
           {passwordError && (
-            <div className="flex items-center gap-2 text-red-500 text-xs mt-1 animate-in fade-in duration-300">
+            <div className="flex items-center gap-2 text-destructive text-xs mt-1 animate-in fade-in duration-300">
               <AlertCircle size={14} />
               <span>{passwordError}</span>
             </div>
@@ -131,7 +130,7 @@ export default function RegisterForm({ onSubmit, isLoading = false }: RegisterFo
               disabled={isLoading}
               className={cn(
                 "pr-10",
-                confirmPasswordError ? "border-red-500 focus-visible:ring-red-500" : "focus-visible:ring-[#2F2FE4]",
+                confirmPasswordError ? "border-destructive focus-visible:ring-destructive" : "focus-visible:ring-ring",
               )}
             />
             <button
@@ -145,7 +144,7 @@ export default function RegisterForm({ onSubmit, isLoading = false }: RegisterFo
             </button>
           </div>
           {confirmPasswordError && (
-            <div className="flex items-center gap-2 text-red-500 text-xs mt-1 animate-in fade-in duration-300">
+            <div className="flex items-center gap-2 text-destructive text-xs mt-1 animate-in fade-in duration-300">
               <AlertCircle size={14} />
               <span>{confirmPasswordError}</span>
             </div>
@@ -155,14 +154,12 @@ export default function RegisterForm({ onSubmit, isLoading = false }: RegisterFo
         <Button
           type="submit"
           className="w-full"
-          disabled={isLoading || !!passwordError || !!confirmPasswordError || password.length < 8}>
+          disabled={isLoading || !!passwordError || !!confirmPasswordError || password.length < 8 || confirmPassword.length < 8 || password !== confirmPassword}>
           {" "}
-          {/*i know the disabled is a bit redundent, I'll fix it*/}
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {isLoading ? "Authenticating..." : "Sign Up"}
         </Button>
 
-        <SocialAuth />
       </form>
     </div>
   );
