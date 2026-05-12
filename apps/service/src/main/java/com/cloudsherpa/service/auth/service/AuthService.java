@@ -15,12 +15,14 @@ import org.springframework.web.server.ResponseStatusException;
 public class AuthService {
 
   private final UserRepository userRepository;
+  private final JwtService jwtService;
 
   // uses a strong hashing algorithm and automatic salting
   private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder(12);
 
-  public AuthService(UserRepository userRepository) {
+  public AuthService(UserRepository userRepository, JwtService jwtService) {
     this.userRepository = userRepository;
+    this.jwtService = jwtService;
   }
 
   // REGISTER
@@ -56,7 +58,9 @@ public class AuthService {
     // write the newly created user to SherpaDB in the users table
     User savedUser = userRepository.save(user);
 
-    return new AuthUserResponse(savedUser.getId(), savedUser.getEmail(), savedUser.getUsername());
+    String token = jwtService.generateToken(savedUser);
+    return new AuthUserResponse(
+        savedUser.getId(), savedUser.getEmail(), savedUser.getUsername(), token);
   }
 
   // LOGIN
@@ -76,7 +80,8 @@ public class AuthService {
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
     }
 
-    return new AuthUserResponse(user.getId(), user.getEmail(), user.getUsername());
+    String token = jwtService.generateToken(user);
+    return new AuthUserResponse(user.getId(), user.getEmail(), user.getUsername(), token);
   }
 
   // ---------------------------------------------- HELPERS
