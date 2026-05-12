@@ -25,7 +25,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
       .region(Region.AF_SOUTH_1)
       .build();
 
-  public List<String> getAllInstanceIds(Ec2Client ec2) {
+  public List<String> getAllEC2InstanceIds(Ec2Client ec2) {
     List<String> instanceIds = new ArrayList<>();
 
     DescribeInstancesRequest request = DescribeInstancesRequest.builder().build();
@@ -49,7 +49,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
         .credentialsProvider(DefaultCredentialsProvider.create())
         .build();
 
-    List<String> instanceIds = getAllInstanceIds(ec2);
+    List<String> instanceIds = getAllEC2InstanceIds(ec2);
 
     List<UsageRecordModel> result = new ArrayList<>();
     for (AccountScope accScope : request.getScopes()) { // one user may have multiple aws accounts, these can be
