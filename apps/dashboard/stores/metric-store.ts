@@ -1,3 +1,4 @@
+"use client"
 import { create } from 'zustand'
 import { MetricStore } from '@/types/metric'
 
