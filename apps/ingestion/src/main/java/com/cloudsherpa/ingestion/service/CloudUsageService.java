@@ -38,7 +38,7 @@ public class CloudUsageService {
       CloudConnector connector = factory.getConnector(scope.getProvider());
 
       if (request.isIncludeUsage() && connector instanceof UsageCapable usageCapable) {
-        List<UsageRecordModel> usageRecords = usageCapable.fetchUsage(scope, request);
+        List<UsageRecordModel> usageRecords = usageCapable.fetchUsage(request);
         usageResults.addAll(usageRecords);
         normalizeAndPersistUsage(usageRecords);
       }
@@ -66,7 +66,8 @@ public class CloudUsageService {
     return new IngestionResult(usageResults, billingResults);
   }
 
-  @Autowired private SherpaDbPersistenceService sherpaDbPersistenceService;
+  @Autowired
+  private SherpaDbPersistenceService sherpaDbPersistenceService;
 
   private final AwsNormalizer normalizer = new AwsNormalizer();
 
@@ -75,8 +76,7 @@ public class CloudUsageService {
       return;
     }
 
-    UUID environmentId =
-        UUID.fromString("550e8400-e29b-41d4-a716-446655440000"); // still mock for now
+    UUID environmentId = UUID.fromString("550e8400-e29b-41d4-a716-446655440000"); // still mock for now
 
     for (UsageRecordModel record : usageRecords) {
       NormalizedMetric normalized = normalizer.normalize(record);
@@ -97,23 +97,23 @@ public class CloudUsageService {
     String accountId = scope.getAccountId();
 
     String[] timestamps = {
-      "2026-05-02T18:17:00+02:00",
-      "2026-05-02T18:12:00+02:00",
-      "2026-05-02T18:07:00+02:00",
-      "2026-05-02T18:02:00+02:00",
-      "2026-05-02T17:57:00+02:00",
-      "2026-05-02T17:52:00+02:00",
-      "2026-05-02T17:47:00+02:00"
+        "2026-05-02T18:17:00+02:00",
+        "2026-05-02T18:12:00+02:00",
+        "2026-05-02T18:07:00+02:00",
+        "2026-05-02T18:02:00+02:00",
+        "2026-05-02T17:57:00+02:00",
+        "2026-05-02T17:52:00+02:00",
+        "2026-05-02T17:47:00+02:00"
     };
 
     double[] averages = {
-      1.9488974910916348,
-      1.8703353383091854,
-      2.524456273466404,
-      1.9650714832950267,
-      2.436655917725189,
-      13.769105242611008,
-      4.416415999768938
+        1.9488974910916348,
+        1.8703353383091854,
+        2.524456273466404,
+        1.9650714832950267,
+        2.436655917725189,
+        13.769105242611008,
+        4.416415999768938
     };
 
     for (int i = 0; i < timestamps.length; i++) {
