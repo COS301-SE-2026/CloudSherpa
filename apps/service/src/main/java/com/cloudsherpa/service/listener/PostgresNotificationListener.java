@@ -1,9 +1,8 @@
 package com.cloudsherpa.service.listener;
 
+import com.cloudsherpa.service.sse.SseService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -11,13 +10,14 @@ import java.sql.Statement;
 import org.postgresql.PGConnection;
 import org.postgresql.PGNotification;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.SmartLifecycle;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-// Its job is to maintain a direct line to Postgres and quietly ask if any new events have arrived.
-// Tells Spring Boot to create an instance of this class when the app starts.
+// Listens for Postgres NOTIFY events and forwards them to SSE clients.
+// Spring creates this component at startup and manages its lifecycle.
 @Component
-public class PostgresNotificationListener {
+public class PostgresNotificationListener implements SmartLifecycle {
   // These inject database credentials from application.properties
   @Value("${spring.datasource.url}")
   private String dbUrl;
@@ -28,20 +28,35 @@ public class PostgresNotificationListener {
   @Value("${spring.datasource.password}")
   private String dbPassword;
 
-  // The standard JDBC connection
+  // The standard JDBC connection used to talk to Postgres.
   private Connection connection;
 
-  // The Postgres-specific connection that understands notifications
+  // The Postgres-specific connection that supports LISTEN/NOTIFY.
   private PGConnection pgConnection;
 
   // Jackson tool to parse raw JSON strings into Java objects
   private final ObjectMapper objectMapper = new ObjectMapper();
 
-  // @PostConstruct forces this method to run exactly once, immediately after Spring creates this
-  // class.
-  @PostConstruct
-  public void initialize() {
+  private final SseService sseService;
+
+  private volatile boolean running;
+
+  PostgresNotificationListener(SseService sseService) {
+    this.sseService = sseService;
+  }
+
+  // Creates a long-lived connection and registers the LISTEN channel.
+  // This is called from start() and also used to reconnect if needed.
+  private void initialize() {
+    if (!running) {
+      return;
+    }
+
     try {
+      if (connection != null && !connection.isClosed()) {
+        return;
+      }
+
       // We use DriverManager to create a BRAND NEW, raw connection.
       // Listeners hold connections open forever
       connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword);
@@ -68,6 +83,10 @@ public class PostgresNotificationListener {
   // Spring Boot runs this method on a background thread every 2 seconds.
   @Scheduled(fixedRate = 2000)
   public void pollForNotifications() {
+    if (!running) {
+      return;
+    }
+
     // We check for any connection errors or database failures.
     try {
       if (connection == null || connection.isClosed()) {
@@ -114,6 +133,7 @@ public class PostgresNotificationListener {
     }
   }
 
+  // Parse and forward the metric to any connected SSE clients.
   private void processMetricForAnalytics(JsonNode metric) {
     // Now that the data is a JSON object, extract values defensively.
     String metricId = metric.path("metric_id").asText("unknown");
@@ -123,15 +143,44 @@ public class PostgresNotificationListener {
     String currency = metric.path("currency").asText("unknown");
 
     // This is where we would call intelligence engine to do its thing
+
+    sseService.broadcast("metric", metric);
   }
 
-  // @PreDestroy runs when the Spring Boot application is shutting down.
-  @PreDestroy
-  public void shutDown() {
+  // SmartLifecycle: called by Spring when the context starts.
+  @Override
+  public void start() {
+    running = true;
+    initialize();
+  }
+
+  // SmartLifecycle: called by Spring when the context stops.
+  @Override
+  public void stop() {
+    stop(() -> {});
+  }
+
+  // SmartLifecycle: stop with a callback so Spring can wait for cleanup.
+  @Override
+  public void stop(Runnable callback) {
+    running = false;
+    closeConnection();
+    callback.run();
+  }
+
+  @Override
+  public boolean isRunning() {
+    return running;
+  }
+
+  // Close the DB connection and clear references so we can reconnect later.
+  private void closeConnection() {
     try {
       if (connection != null && !connection.isClosed()) {
         connection.close();
       }
+      connection = null;
+      pgConnection = null;
     } catch (SQLException e) {
       System.err.println(e.getMessage());
     }
