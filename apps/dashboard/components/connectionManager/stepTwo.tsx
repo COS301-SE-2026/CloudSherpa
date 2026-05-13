@@ -101,6 +101,37 @@ export default function StepTwo({ onNext, onBack }: PropsForStepTwo){
               ))}
             </div>
           </div>
+
+          <div className="pt-4">
+
+            <h3 className="text-foreground text-sm font-semibold uppercase tracking-wider opacity-60 mb-3">
+              Grant IAM permissions
+            </h3>
+
+            <div className="bg-background rounded-lg p-4 border border-border">
+              <p className="text-foreground text-sm mb-3">
+                Paste the following into the permissions field:
+              </p>
+              <pre className="bg-card p-4 rounded-lg overflow-x-auto text-xs font-mono text-foreground whitespace-pre-wrap">
+{`{
+what needs to be pasted
+}`}
+              </pre>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const textToCopy = `{\n what needs to be pasted }`;
+                  navigator.clipboard.writeText(textToCopy);
+                }}
+                className="mt-3 text-primary hover:text-accent text-sm transition-colors"
+              >
+                Copy to clipboard
+              </button>
+
+            </div>
+          </div>
+
           <div className="flex justify-between pt-4">
             <Button
               type="button"
