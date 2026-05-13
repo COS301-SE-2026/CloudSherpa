@@ -1,31 +1,113 @@
 {
+  "_comment": "Semantic tokens reference primitives. Dark mode is the default; light mode tokens are namespaced under 'light'.",
+
   "color": {
-    "bg": {
-      "main": { "value": "{color.neutral.void}" },
-      "card": { "value": "{color.neutral.navy-dusk}" },
-      "light": { "value": "{color.neutral.slate-50}" }
+
+    "dark": {
+      "bg": {
+        "base":     { "value": "{color.neutral.dark.void}" },
+        "sunken":   { "value": "{color.neutral.dark.abyss}" },
+        "mid":      { "value": "{color.neutral.dark.midnight}" },
+        "card":     { "value": "{color.neutral.dark.navy-dusk}" },
+        "elevated": { "value": "{color.neutral.dark.indigo-deep}" },
+        "float":    { "value": "{color.neutral.dark.indigo-mid}" }
+      },
+      "text": {
+        "primary":   { "value": "{color.neutral.foreground}" },
+        "secondary": { "value": "{color.neutral.foreground}" },
+        "muted":     { "value": "{color.neutral.dark.indigo-mid}" },
+        "disabled":  { "value": "{color.neutral.dark.navy-dusk}" },
+        "inverse":   { "value": "{color.neutral.dark.void}" },
+        "on-accent": { "value": "{color.neutral.dark.void}" }
+      },
+      "border": {
+        "subtle":  { "value": "{color.neutral.dark.midnight}" },
+        "default": { "value": "{color.neutral.dark.navy-dusk}" },
+        "strong":  { "value": "{color.brand.electric-blue}" },
+        "focus":   { "value": "{color.brand.gold}" },
+        "focus-widget": { "value": "{color.brand.gold}" }
+      }
     },
-    "text": {
-      "primary": { "value": "{color.neutral.slate-50}" },
-      "muted": { "value": "{color.brand.deep-navy}" },
-      "inverse": { "value": "{color.neutral.void}" }
+
+    "light": {
+      "bg": {
+        "base":     { "value": "{color.neutral.light.slate-50}" },
+        "sunken":   { "value": "{color.neutral.light.periwinkle-50}" },
+        "mid":      { "value": "{color.neutral.light.white}" },
+        "card":     { "value": "{color.neutral.light.blue-wash}" },
+        "elevated": { "value": "{color.neutral.light.lavender-100}" },
+        "float":    { "value": "{color.neutral.light.white}" }
+      },
+      "text": {
+        "primary":   { "value": "{color.neutral.light.text-body}" },
+        "secondary": { "value": "{color.neutral.light.text-muted}" },
+        "muted":     { "value": "{color.neutral.light.text-muted}" },
+        "disabled":  { "value": "{color.neutral.light.text-disabled}" },
+        "inverse":   { "value": "{color.neutral.light.white}" },
+        "on-accent": { "value": "{color.neutral.light.white}" }
+      },
+      "border": {
+        "subtle":       { "value": "{color.neutral.light.border-subtle}" },
+        "default":      { "value": "{color.neutral.light.border-default}" },
+        "strong":       { "value": "{color.brand.electric-blue}" },
+        "focus":        { "value": "{color.brand.electric-blue}" },
+        "focus-widget": { "value": "{color.brand.electric-blue}" }
+      }
     },
+
     "action": {
-      "primary": { "value": "{color.brand.electric-blue}" },
+      "primary":   { "value": "{color.brand.electric-blue}" },
       "secondary": { "value": "{color.brand.deep-navy}" },
-      "accent": { "value": "{color.brand.gold}" }
+      "accent":    { "value": "{color.brand.gold}" }
     },
+
+    "state": {
+      "hover":        { "value": "{color.brand.gold}" },
+      "focus-dark":   { "value": "{color.brand.gold}" },
+      "focus-light":  { "value": "{color.brand.electric-blue}" },
+      "active":       { "value": "{color.brand.electric-blue}" },
+      "disabled-bg":  { "value": "{color.neutral.dark.navy-dusk}" },
+      "disabled-text":{ "value": "{color.neutral.foreground}" }
+    },
+
+    "status": {
+      "success": { "value": "{color.utility.success}" },
+      "error":   { "value": "{color.utility.error}" },
+      "warning": { "value": "{color.utility.warning}" }
+    },
+
     "finops": {
-      "savings": { "value": "{color.brand.gold}" },
-      "expense": { "value": "{color.brand.electric-blue}" },
-      "background-alt": { "value": "{color.neutral.navy-dusk}" }
+      "savings":        { "value": "{color.brand.gold}" },
+      "expense":        { "value": "{color.brand.electric-blue}" },
+      "warning":        { "value": "{color.utility.warning}" },
+      "background-alt": { "value": "{color.neutral.dark.navy-dusk}" }
+    },
+
+    "chart": {
+      "1":         { "value": "{color.brand.electric-blue}" },
+      "2":         { "value": "{color.utility.success}" },
+      "3":         { "value": "{color.brand.gold}" },
+      "4":         { "value": "{color.utility.warning}" },
+      "5":         { "value": "{color.utility.error}" },
+      "compute":   { "value": "{color.dataviz.compute}" },
+      "storage":   { "value": "{color.dataviz.storage}" },
+      "network":   { "value": "{color.dataviz.network}" },
+      "database":  { "value": "{color.dataviz.database}" },
+      "ancillary": { "value": "{color.dataviz.ancillary}" }
     }
   },
+
   "border": {
     "radius": {
-      "sm": { "value": "4px" },
-      "md": { "value": "8px" },
-      "lg": { "value": "12px" }
+      "sm":   { "value": "4px" },
+      "md":   { "value": "8px" },
+      "lg":   { "value": "12px" },
+      "xl":   { "value": "16px" },
+      "full": { "value": "9999px" }
+    },
+    "width": {
+      "default": { "value": "1px" },
+      "focus":   { "value": "2px" }
     }
   }
 }
