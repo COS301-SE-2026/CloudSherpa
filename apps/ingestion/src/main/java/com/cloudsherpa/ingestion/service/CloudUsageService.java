@@ -38,7 +38,7 @@ public class CloudUsageService {
       CloudConnector connector = factory.getConnector(scope.getProvider());
 
       if (request.isIncludeUsage() && connector instanceof UsageCapable usageCapable) {
-        List<UsageRecordModel> usageRecords = usageCapable.fetchUsage(scope, request);
+        List<UsageRecordModel> usageRecords = usageCapable.fetchUsage(request);
         usageResults.addAll(usageRecords);
         normalizeAndPersistUsage(usageRecords);
       }

@@ -13,6 +13,7 @@ public class IngestionRequestEvent {
 
   private Instant from;
   private Instant to;
+  private Integer period;
 
   private boolean includeBilling;
   private boolean includeUsage;
@@ -43,6 +44,14 @@ public class IngestionRequestEvent {
 
   public Instant getTo() {
     return to;
+  }
+
+  public void setPeriod(Integer period) {
+    this.period = period;
+  }
+
+  public Integer getPeriod() {
+    return period;
   }
 
   public void setTo(Instant to) {

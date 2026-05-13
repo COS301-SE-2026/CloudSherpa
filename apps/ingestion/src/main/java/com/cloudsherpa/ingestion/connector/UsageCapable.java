@@ -5,5 +5,5 @@ import java.util.List;
 
 public interface UsageCapable {
 
-  List<UsageRecordModel> fetchUsage(AccountScope scope, IngestionRequestEvent request);
+  List<UsageRecordModel> fetchUsage(IngestionRequestEvent request);
 }
