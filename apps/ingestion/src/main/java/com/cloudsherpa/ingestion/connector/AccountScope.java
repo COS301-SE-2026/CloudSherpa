@@ -9,7 +9,7 @@ public class AccountScope {
   private String projectId; // GCP
 
   private String billingAccountId;
-  private List<ServiceScope> serviceScopes;// the service and related metrics that will be fetched
+  private List<ServiceScope> serviceScopes; // the service and related metrics that will be fetched
 
   public String getProvider() {
     return provider;
@@ -58,5 +58,4 @@ public class AccountScope {
   public void setServiceScopes(List<ServiceScope> scopes) {
     this.serviceScopes = scopes;
   }
-
 }
