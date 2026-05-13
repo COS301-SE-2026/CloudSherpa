@@ -22,6 +22,10 @@ export default function StepOne({ onNext }: PropsForStepOne){
     onNext(formData);
   };
 
+  const regions = [
+    'regions'
+  ];
+
   return(
     <div className="min-h-screen bg-background flex items-center justify-center p-8">
       <div className="w-full max-w-2xl bg-card rounded-lg shadow-none p-8">
@@ -81,6 +85,29 @@ export default function StepOne({ onNext }: PropsForStepOne){
             />
 
           </div>
+
+          <div className="space-y-2">
+
+            <Label htmlFor="region" className="text-foreground text-sm font-medium">
+              Region
+            </Label>
+
+            <select
+              id="region"
+              value={formData.region}
+              onChange={(e) => setFormData({ ...formData, region: e.target.value })}
+              className="w-full bg-background border-border rounded-md px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all cursor-pointer"
+            >
+
+              {regions.map((region) => (
+                <option key={region} value={region} className="bg-card">
+                  {region}
+                </option>
+              ))}
+
+            </select>
+          </div>
+
           <div className="flex justify-end pt-4">
 
             <Button
