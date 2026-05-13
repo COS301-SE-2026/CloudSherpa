@@ -28,10 +28,6 @@ export default function Toolbar() {
         className="w-60 bg-card rounded-md" 
       />
       <div className="h-full flex flex-row justify-end items-center gap-2">
-        <Button className="bg-card">
-            <TriangleAlert />
-            Alerts
-        </Button>
         <Playlist className="h-max-full"/>
         <TimePeriodSelector />
         <Button className="bg-card">
