@@ -86,9 +86,9 @@ export function Playlist({ totalDashboards = 5, className }: AutoPlayProps) {
 
       <div className="flex items-center gap-3 ">
         <Progress value={progress} className="h-1 w-16" />
-        <div className="text-foreground w-10 text-right tabular-nums text-[11px] font-mono font-bold">
+        {/* <div className="text-foreground w-10 text-right tabular-nums text-[11px] font-mono font-bold">
           {Math.ceil(secondsRemaining)}s
-        </div>
+        </div> */}
       </div>
     </div>
   )

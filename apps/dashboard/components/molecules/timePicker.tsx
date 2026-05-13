@@ -27,10 +27,10 @@ export function TimePicker({ onDurationChange, initialSeconds = 10 }: TimePicker
       
       {/* hrs */}
       <Select value={hours.toString()} onValueChange={(val) => setHours(parseInt(val))}>
-        <SelectTrigger className="h-7 w-16.25 border-none bg-transparent focus:ring-0 text-xs">
+        <SelectTrigger className="h-7 w-16.25 border-none bg-card focus:ring-0 text-xs">
           <SelectValue />
         </SelectTrigger>
-        <SelectContent className="bg-card">
+        <SelectContent position="popper" className="bg-card">
           {[0, 1, 2, 3, 4, 5, 8, 12, 16, 24].map((h) => (
             <SelectItem key={h} value={h.toString()}>{h}h</SelectItem>
           ))}
@@ -41,10 +41,10 @@ export function TimePicker({ onDurationChange, initialSeconds = 10 }: TimePicker
 
       {/* mins */}
       <Select value={minutes.toString()} onValueChange={(val) => setMinutes(parseInt(val))}>
-        <SelectTrigger className="h-7 w-16.25 border-none bg-transparent focus:ring-0 text-xs">
+        <SelectTrigger className="h-7 w-16.25 border-none bg-card focus:ring-0 text-xs">
           <SelectValue />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent position="popper" className="bg-card">
           {[0, 1, 5, 10, 15, 30, 45].map((m) => (
             <SelectItem key={m} value={m.toString()}>{m}m</SelectItem>
           ))}
