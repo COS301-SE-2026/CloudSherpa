@@ -1,6 +1,8 @@
 'use client';
 import { useState } from 'react';
 import { Button } from '@/components/atoms/button';
+import { Input } from '@/components/atoms/input';
+import { Label } from '@/components/atoms/label';
 
 interface PropsForStepOne{
   onNext: (data: {
@@ -44,6 +46,41 @@ export default function StepOne({ onNext }: PropsForStepOne){
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-2">
+
+            <Label htmlFor="accessKeyId" className="text-foreground text-sm font-medium">
+              Access key ID
+            </Label>
+
+            <Input
+              id="accessKeyId"
+              type="text"
+              placeholder="EXAMPLE"
+              value={formData.accessKeyId}
+              onChange={(e) => setFormData({ ...formData, accessKeyId: e.target.value })}
+              className="bg-background border-border rounded-md px-4 py-3 text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all w-full"
+              required
+            />
+
+          </div>
+
+          <div className="space-y-2">
+
+            <Label htmlFor="secretAccessKey" className="text-foreground text-sm font-medium">
+              Secret access key
+            </Label>
+
+            <Input
+              id="secretAccessKey"
+              type="password"
+              placeholder="••••••••••••••••••••••••"
+              value={formData.secretAccessKey}
+              onChange={(e) => setFormData({ ...formData, secretAccessKey: e.target.value })}
+              className="bg-background border-border rounded-md px-4 py-3 text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all w-full"
+              required
+            />
+
+          </div>
           <div className="flex justify-end pt-4">
 
             <Button
