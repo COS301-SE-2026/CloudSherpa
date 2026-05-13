@@ -26,14 +26,14 @@ export function Dropdown<T>({
   placeholder = "Select an option",
   labelKey,
   valueKey,
-  className = "w-full" //used w-full since it's more generic
+  className = "w-full bg-card rounded-md" //used w-full since it's more generic
 }: DropdownProps<T>) {
   return (
     <Select value={value} onValueChange={onChange}>
       <SelectTrigger className={className}>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
-      <SelectContent position="popper"> {/*represents the lsit of items passed in, also not position=popper prevents content from overlaying on select trigger via alignment*/}
+      <SelectContent position="popper" className="bg-card rounded-md"> {/*represents the lsit of items passed in, also not position=popper prevents content from overlaying on select trigger via alignment*/}
         {options.map((option) => {
           const itemValue = String(option[valueKey])
           const itemLabel = String(option[labelKey])

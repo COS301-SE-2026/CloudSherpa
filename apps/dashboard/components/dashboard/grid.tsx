@@ -14,8 +14,8 @@ interface WidgetConfig {
 
 //widget stubs
 const WidgetStub = ({ type }: { type: string }) => (
-  <div className="grid-stack-item-content bg-slate-800 border border-slate-700 rounded-lg p-4 text-white shadow-lg">
-    <div className="flex justify-between items-center mb-2">
+  <div className="grid-stack-item-content bg-slate-800 border border-slate-700 rounded-lg  text-white shadow-lg">
+    <div className="flex justify-between items-center ">
       <div className="drag-handle cursor-move p-1 text-slate-500 hover:text-white">⋮⋮</div>
     </div>
   </div>
@@ -58,7 +58,7 @@ const CloudSherpaGrid: React.FC = () => {
   }, []);
 
   return (
-    <div className="p-6 min-h-screen">
+    <div className="w-full min-h-screen">
 
       {/* grid */}
       <div ref={gridRef} className="grid-stack">
