@@ -22,8 +22,8 @@ export function TimePeriodSelector() {
   ]
 
   return (
-    <div className="flex items-center gap-2 border rounded-md bg-card text-foreground">
-      <div className="flex items-center gap-1 border-r pr-2">
+    <div className="flex items-center h-9 gap-2 border rounded-md bg-card text-foreground">
+      <div className="flex items-center gap-1 border-r ">
         {quickRanges.map((range) => (
           <Button
             key={range.label}

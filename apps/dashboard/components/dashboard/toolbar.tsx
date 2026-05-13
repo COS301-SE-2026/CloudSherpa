@@ -32,7 +32,7 @@ export default function Toolbar() {
             <TriangleAlert />
             Alerts
         </Button>
-        <Playlist />
+        <Playlist className="h-max-full"/>
         <TimePeriodSelector />
         <Button className="bg-card">
             <Plus />
