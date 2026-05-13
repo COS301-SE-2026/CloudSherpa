@@ -2,6 +2,7 @@
 
 import { useMetricStream } from "@/services/sse/metric-stream";
 import { useMetricStore } from "@/stores/metric-store";
+import { LineChartWidget } from "@/components/widgets/charts/LineChartWidget";
 
 export default function Demo() {
     const { error } = useMetricStream();
@@ -19,7 +20,9 @@ export default function Demo() {
                         </p>
                     </div>
                 </div>
-
+                <div className="mx-auto w-full h-80 max-w-4xl">
+                    <LineChartWidget resourceId="mock-ec2-1" title="EC2 Mock" metricType="anon"></LineChartWidget>
+                </div>
                 {error ? (
                     <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
                         {error.message}
