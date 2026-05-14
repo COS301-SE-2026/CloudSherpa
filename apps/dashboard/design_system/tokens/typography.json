@@ -1,26 +1,110 @@
 {
+  "_comment": "Primary font is Geist (not Inter). Geist features tabular figures by default — critical for vertically-aligned cost metrics. Geist Mono used for resource IDs, code, and raw metric values.",
+
   "font": {
     "family": {
-      "main": { "value": "Inter, sans-serif" },
-      "mono": { "value": "JetBrains Mono, monospace" }
+      "main": { "value": "'Geist', sans-serif" },
+      "mono": { "value": "'Geist Mono', monospace" }
     },
-    "size": {
-      "xs": { "value": "0.75rem" },
-      "sm": { "value": "0.875rem" },
-      "base": { "value": "1rem" },
-      "lg": { "value": "1.25rem" },
-      "xl": { "value": "1.563rem" },
-      "2xl": { "value": "1.953rem" },
-      "3xl": { "value": "2.441rem" }
-    },
+
     "weight": {
-      "regular": { "value": "400" },
-      "medium": { "value": "500" },
-      "bold": { "value": "700" }
+      "regular":  { "value": "400" },
+      "medium":   { "value": "500" },
+      "semibold": { "value": "600" }
     },
+
+    "size": {
+      "xs":   { "value": "0.75rem" },
+      "sm":   { "value": "0.875rem" },
+      "base": { "value": "1rem" },
+      "lg":   { "value": "1.25rem" },
+      "xl":   { "value": "1.563rem" },
+      "2xl":  { "value": "1.953rem" },
+      "3xl":  { "value": "2.441rem" }
+    },
+
     "lineHeight": {
-      "tight": { "value": "1.2" },
-      "normal": { "value": "1.5" }
+      "tight":  { "value": "1.2" },
+      "snug":   { "value": "1.3" },
+      "normal": { "value": "1.5" },
+      "relaxed":{ "value": "1.7" }
+    },
+
+    "letterSpacing": {
+      "tight":   { "value": "-0.0625rem" },
+      "snug":    { "value": "-0.03125rem" },
+      "normal":  { "value": "0rem" },
+      "wide":    { "value": "0.0625rem" },
+      "wider":   { "value": "0.025rem" }
+    }
+  },
+
+  "type": {
+    "_comment": "semantic type roles — what should actually be referenced",
+
+    "h1": {
+      "size":          { "value": "3rem" },
+      "weight":        { "value": "{font.weight.semibold}" },
+      "lineHeight":    { "value": "{font.lineHeight.tight}" },
+      "letterSpacing": { "value": "{font.letterSpacing.tight}" },
+      "usage":         { "value": "Page titles — dashboard names, main landing view" }
+    },
+    "h2": {
+      "size":          { "value": "2rem" },
+      "weight":        { "value": "{font.weight.semibold}" },
+      "lineHeight":    { "value": "{font.lineHeight.tight}" },
+      "letterSpacing": { "value": "{font.letterSpacing.snug}" },
+      "usage":         { "value": "Section titles — major dashboard sections" }
+    },
+    "h3": {
+      "size":          { "value": "1.5rem" },
+      "weight":        { "value": "{font.weight.medium}" },
+      "lineHeight":    { "value": "{font.lineHeight.snug}" },
+      "letterSpacing": { "value": "{font.letterSpacing.normal}" },
+      "usage":         { "value": "Subsection titles — card headers, metric group labels" }
+    },
+    "body": {
+      "size":          { "value": "1rem" },
+      "weight":        { "value": "{font.weight.regular}" },
+      "lineHeight":    { "value": "{font.lineHeight.normal}" },
+      "letterSpacing": { "value": "{font.letterSpacing.wide}" },
+      "usage":         { "value": "Paragraph text — descriptions, resource names, most interface labels" }
+    },
+    "small": {
+      "size":          { "value": "0.875rem" },
+      "weight":        { "value": "{font.weight.regular}" },
+      "lineHeight":    { "value": "{font.lineHeight.snug}" },
+      "letterSpacing": { "value": "{font.letterSpacing.wider}" },
+      "usage":         { "value": "Helper text — timestamps, secondary information, tooltips" }
+    },
+    "caption": {
+      "size":          { "value": "0.875rem" },
+      "weight":        { "value": "{font.weight.medium}" },
+      "lineHeight":    { "value": "{font.lineHeight.snug}" },
+      "letterSpacing": { "value": "{font.letterSpacing.wider}" },
+      "usage":         { "value": "Resource IDs, fine print details — uses mono font in practice" }
+    },
+    "metric-lg": {
+      "size":          { "value": "2.25rem" },
+      "weight":        { "value": "{font.weight.semibold}" },
+      "lineHeight":    { "value": "{font.lineHeight.tight}" },
+      "letterSpacing": { "value": "{font.letterSpacing.snug}" },
+      "usage":         { "value": "Key cost figures — total spend, savings identified, anomaly values" }
+    },
+    "label": {
+      "size":          { "value": "0.875rem" },
+      "weight":        { "value": "{font.weight.medium}" },
+      "lineHeight":    { "value": "{font.lineHeight.normal}" },
+      "letterSpacing": { "value": "{font.letterSpacing.normal}" },
+      "usage":         { "value": "Form field labels, nav items, button text" }
+    },
+    "code": {
+      "family":        { "value": "{font.family.mono}" },
+      "size":          { "value": "0.875rem" },
+      "weight":        { "value": "{font.weight.regular}" },
+      "lineHeight":    { "value": "{font.lineHeight.relaxed}" },
+      "letterSpacing": { "value": "{font.letterSpacing.normal}" },
+      "usage":         { "value": "Resource IDs, API keys, raw metric values, code blocks" }
     }
   }
 }
