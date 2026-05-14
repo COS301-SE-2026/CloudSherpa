@@ -20,15 +20,17 @@ const presets = [
   { id: "30d", label: "30 days" },
 ];
 
-export function TimePeriodSelector() {
+export function TimePeriodSelector({
+  date,
+  onDateChange,
+}: {
+  date: DateRange | undefined;
+  onDateChange: (range: DateRange | undefined) => void;
+}) {
   const [open, setOpen] = useState(false);
   const [view, setView] = useState<"presets" | "custom">("presets");
   const [selectedPreset, setSelectedPreset] = useState<string>("7d");
-  const [date, setDate] = useState<DateRange | undefined>({
-    from: subDays(new Date(), 7),
-    to: new Date(),
-  });
-
+  
   const getDisplayLabel = () => {
     if (selectedPreset !== "custom") {
       return presets.find((p) => p.id === selectedPreset)?.label;
@@ -39,6 +41,14 @@ export function TimePeriodSelector() {
     return "Pick a date";
   };
 
+  const handlePresetClick = (pId: string) => {
+    setSelectedPreset(pId);
+    const days = parseInt(pId); // simplistic for 7d, 30d
+    if (!isNaN(days)) {
+      onDateChange({ from: subDays(new Date(), days), to: new Date() });
+    }
+    setOpen(false);
+  };
   return (
     <Popover
       open={open}
@@ -49,9 +59,9 @@ export function TimePeriodSelector() {
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          className="group md:min-w-40 w-fit justify-start text-left font-normal bg-card border-border hover:bg-hover transition-button">
+          className="group md:min-w-40 w-fit justify-start text-left font-normal bg-card border-border hover:bg-hover hover:text-secondary transition-button">
           <div className="w-full h-full flex flex-row items-center">
-            <CalendarIcon className="mr-2 h-4 w-4 text-foreground-secondary" />
+            <CalendarIcon className="mr-2 h-4 w-4 text-foreground-secondary hover:text-secondary" />
             <span className="text-foreground">Last {getDisplayLabel()}</span>
           </div>
           <ChevronDown className="ml-auto h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
@@ -73,7 +83,7 @@ export function TimePeriodSelector() {
                   "justify-start font-normal transition-button",
                   selectedPreset === p.id
                     ? "bg-active text-primary-foreground"
-                    : "text-foreground-secondary hover:bg-hover hover:text-foreground",
+                    : "text-foreground-secondary hover:bg-hover hover:text-secondary",
                 )}
                 onClick={() => {
                   setSelectedPreset(p.id);
@@ -83,11 +93,10 @@ export function TimePeriodSelector() {
               </Button>
             ))}
 
-            <div className="h-px bg-border-subtle my-1 w-full" />
-
+            <div className="h-px bg-border-subtle my-1 w-full flex flex-row" />
             <Button
               variant="ghost"
-              className="justify-start font-medium text-accent hover:bg-hover transition-button"
+              className="justify-start font-medium text-accent hover:bg-hover hover:text-secondary transition-button"
               onClick={() => setView("custom")}>
               Custom Range
             </Button>
@@ -111,7 +120,7 @@ export function TimePeriodSelector() {
               defaultMonth={date?.from}
               selected={date}
               onSelect={(range) => {
-                setDate(range);
+                onDateChange(range);
                 if (range?.from && range?.to) setSelectedPreset("custom");
               }}
               numberOfMonths={2}

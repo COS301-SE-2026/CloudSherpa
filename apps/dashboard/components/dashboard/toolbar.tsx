@@ -5,6 +5,7 @@ import { Dropdown } from "@/components/atoms/dropdown";
 import { TimePeriodSelector } from "@/components/molecules/timePeriodSelector";
 import { DashboardSelector } from "../molecules/dashboardSelector";
 import { Tooltip } from "@/components/molecules/tooltip";
+import { DateRange } from "react-day-picker";
 
 import { useState } from "react";
 import { Pencil } from "lucide-react";
@@ -14,27 +15,37 @@ interface DashboardStub {
   id: string;
   label: string;
 }
+interface ToolbarProps {
+  isEditMode: boolean;
+  setIsEditMode: (val: boolean) => void;
+  selectedDashboardId: string;
+  onDashboardChange: (id: string) => void;
+  dateRange: DateRange | undefined;
+  onDateRangeChange: (range: DateRange | undefined) => void;
+}
 
-export default function Toolbar() {
-  const dashboards: DashboardStub[] = [
+export default function Toolbar({
+  isEditMode,
+  setIsEditMode,
+  selectedDashboardId,
+  onDashboardChange,
+  dateRange,
+  onDateRangeChange,
+}: ToolbarProps) {
+  const dashboards = [
     { id: "ds-1", label: "Global Cost Overview" },
     { id: "ds-2", label: "AWS Production Metrics" },
     { id: "ds-3", label: "Azure Spending Forecast" },
   ];
-
-  const [selectedId, setSelectedId] = useState<string>(dashboards[0].id);
-  const [isEditMode, setIsEditMode] = useState(false);
-
-  function onDashboardCreate(name: string) {}
 
   return (
     <div className="w-full flex flex-row items-center justify-between gap-4 p-4 transition-card">
       <div className="flex items-center gap-3">
         <DashboardSelector
           dashboards={dashboards}
-          selectedId={selectedId}
-          onSelect={setSelectedId}
-          onCreate={onDashboardCreate}
+          selectedId={selectedDashboardId}
+          onSelect={onDashboardChange}
+          onCreate={(name) => console.log(name)}
         />
         <Tooltip content={isEditMode ? "Exit Edit Mode" : "Edit Dashboard Layout"}>
           <Button
@@ -53,7 +64,7 @@ export default function Toolbar() {
       </div>
 
       <div className="w-full flex flex-row items-center justify-end gap-3">
-        <TimePeriodSelector />
+        <TimePeriodSelector date={dateRange} onDateChange={onDateRangeChange} />
       </div>
     </div>
   );
