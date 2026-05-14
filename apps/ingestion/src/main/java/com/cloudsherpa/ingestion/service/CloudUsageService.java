@@ -63,7 +63,7 @@ public class CloudUsageService {
       if (request.isIncludeUsage() && connector instanceof UsageCapable usageCapable) {
         List<UsageRecordModel> usageRecords = usageCapable.fetchMockUsage(scope, request);
         usageResults.addAll(usageRecords);
-        // normalizeAndPersistUsage(usageRecords);
+        normalizeAndPersistUsage(usageRecords);
       }
 
       if (request.isIncludeBilling() && connector instanceof BillingCapable billingCapable) {
