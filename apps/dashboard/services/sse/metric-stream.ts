@@ -10,6 +10,10 @@ const MOCK_INTERVAL_MS = 5_000;
 
 let hasSeededMockMetrics = false;
 
+const API_BASE = process.env['NEXT_PUBLIC_API_URL'];
+
+const sseUrl = `${API_BASE}/stream`;
+
 function createMockMetrics(): Metric[] {
     const now = Date.now();
 
@@ -33,7 +37,7 @@ export function useMetricStream() {
                 hasSeededMockMetrics = true;
             }
 
-            const eventSource = new EventSource("http://localhost:8083/stream");
+            const eventSource = new EventSource(sseUrl);
     
             eventSource.onopen = () => {
                 console.log("SSE connected");
