@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useRef } from "react";
-import Navigation from "./navigation";
-import View from "./view";
+import Navigation from "@/components/landingPage/navigation";
+import View from "@/components/molecules/view";
 import FeatureCards from "./featureCards";
 
 //this is for the main landing page components

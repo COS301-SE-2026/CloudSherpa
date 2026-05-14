@@ -1,143 +1,446 @@
 @import "tailwindcss";
+@import "./tokens.css";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+
+/* surfaces,default dark mode values. Light mode overrides live in :root.light / [data-theme="light"]. */
+  --color-background:        var(--color-dark-bg-base);
+  --color-background-sunken: var(--color-dark-bg-sunken);
+  --color-background-mid:    var(--color-dark-bg-mid);
+  --color-card:              var(--color-dark-bg-card);
+  --color-card-elevated:     var(--color-dark-bg-elevated);
+  --color-popover:           var(--color-dark-bg-float);
+
+  /* foreground text */
+  --color-foreground:          var(--color-dark-text-primary);
+  --color-foreground-secondary:var(--color-dark-text-secondary);
+  --color-foreground-muted:    var(--color-dark-text-muted);
+  --color-foreground-disabled: var(--color-dark-text-disabled);
+  --color-card-foreground:     var(--color-dark-text-primary);
+  --color-popover-foreground:  var(--color-dark-text-primary);
+
+/* brand / action */
+  --color-primary:             var(--color-action-primary);
+  --color-primary-foreground:  var(--color-neutral-foreground);
+  --color-secondary:           var(--color-action-secondary);
+  --color-secondary-foreground:var(--color-neutral-foreground);
+  --color-accent:              var(--color-action-accent);
+  --color-accent-foreground:   var(--color-neutral-dark-void);
+
+/* states */
+  --color-hover:               var(--color-state-hover);
+  --color-active:              var(--color-action-primary);
+  --color-disabled-bg:         var(--color-neutral-dark-navy-dusk);
+  --color-disabled-text:       var(--color-neutral-foreground);
+
+/* statusses */
+  --color-success:             var(--color-status-success);
+  --color-warning:             var(--color-status-warning);
+  --color-destructive:         var(--color-status-error);
+  --color-destructive-foreground: var(--color-neutral-foreground);
+
+  /* borders n rings */
+  --color-border:              var(--color-dark-border-default);
+  --color-border-subtle:       var(--color-dark-border-subtle);
+  --color-border-strong:       var(--color-dark-border-strong);
+  --color-ring:                var(--color-dark-border-focus);
+
+  /* data visualization (mostly just a bunch of bright colors that should work together while maintainging accessibility) */
+  --color-chart-1:             var(--color-chart-1);
+  --color-chart-2:             var(--color-chart-2);
+  --color-chart-3:             var(--color-chart-3);
+  --color-chart-4:             var(--color-status-warning);
+  --color-chart-5:             var(--color-status-error);
+  --color-chart-compute:       var(--color-chart-compute);
+  --color-chart-storage:       var(--color-chart-storage);
+  --color-chart-network:       var(--color-chart-network);
+  --color-chart-database:      var(--color-chart-database);
+  --color-chart-ancillary:     var(--color-chart-ancillary);
+  --color-provider-aws:        var(--color-provider-aws);
+  --color-provider-azure:      var(--color-provider-azure);
+  --color-provider-gcp:        var(--color-provider-gcp);
+
+/* colors based on finops semantics */
+  --color-finops-savings:      var(--color-finops-savings);
+  --color-finops-expense:      var(--color-finops-expense);
+  --color-finops-warning:      var(--color-finops-warning);
+
+/* typography */
+  --font-sans:                 var(--font-family-main);
+  --font-mono:                 var(--font-family-mono);
+
+  --font-weight-regular:       var(--font-weight-regular);
+  --font-weight-medium:        var(--font-weight-medium);
+  --font-weight-semibold:      var(--font-weight-semibold);
+
+  --text-xs:                   var(--font-size-xs);
+  --text-sm:                   var(--font-size-sm);
+  --text-base:                 var(--font-size-base);
+  --text-lg:                   var(--font-size-lg);
+  --text-xl:                   var(--font-size-xl);
+  --text-2xl:                  var(--font-size-2xl);
+  --text-3xl:                  var(--font-size-3xl);
+
+  /* Semantic type role sizes (meant for components) */
+  --text-h1:                   var(--type-h1-size);
+  --text-h2:                   var(--type-h2-size);
+  --text-h3:                   var(--type-h3-size);
+  --text-body:                 var(--type-body-size);
+  --text-small:                var(--type-small-size);
+  --text-caption:              var(--type-caption-size);
+  --text-metric-lg:            var(--type-metric-lg-size);
+
+  --tracking-tight:            var(--font-letterSpacing-tight);
+  --tracking-snug:             var(--font-letterSpacing-snug);
+  --tracking-wide:             var(--font-letterSpacing-wide);
+  --tracking-wider:            var(--font-letterSpacing-wider);
+
+  --leading-tight:             var(--font-lineHeight-tight);
+  --leading-snug:              var(--font-lineHeight-snug);
+  --leading-normal:            var(--font-lineHeight-normal);
+  --leading-relaxed:           var(--font-lineHeight-relaxed);
+
+/* radii */
+  --radius-sm:                 var(--border-radius-sm);
+  --radius:                    var(--border-radius-md);
+  --radius-md:                 var(--border-radius-md);
+  --radius-lg:                 var(--border-radius-lg);
+  --radius-xl:                 var(--border-radius-xl);
+  --radius-full:               var(--border-radius-full);
+
+/* spacing - uses our spacing  */
+  --spacing-page-margin:       var(--layout-page-margin);
+  --spacing-page-margin-sm:    var(--layout-page-margin-sm);
+  --spacing-card:              var(--layout-card-padding);
+  --spacing-card-sm:           var(--layout-card-padding-sm);
+  
 }
 
+
+/* dark mode default */
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  color-scheme: dark;
+
+  /* Surfaces */
+  --background:        var(--color-dark-bg-base);
+  --card:              var(--color-dark-bg-card);
+  --popover:           var(--color-dark-bg-float);
+  --muted:             var(--color-dark-bg-mid);
+
+  /* Foregrounds */
+  --foreground:        var(--color-dark-text-primary);
+  --card-foreground:   var(--color-dark-text-primary);
+  --popover-foreground:var(--color-dark-text-primary);
+  --muted-foreground:  var(--color-dark-text-muted);
+
+  /* Brand */
+  --primary:           var(--color-action-primary);
+  --primary-foreground:var(--color-neutral-foreground);
+  --secondary:         var(--color-action-secondary);
+  --secondary-foreground: var(--color-neutral-foreground);
+  --accent:            var(--color-action-accent);
+  --accent-foreground: var(--color-neutral-dark-void);
+
+  /* Status */
+  --destructive:       var(--color-status-error);
+  --destructive-foreground: var(--color-neutral-foreground);
+
+  /* Borders & interaction */
+  --border:            var(--color-dark-border-default);
+  --input:             var(--color-dark-bg-base);
+  --ring:              var(--color-dark-border-focus);
+
+  /* Radius — shadcn reads --radius for its base rounding */
+  --radius:            var(--border-radius-md);
+
+  /* Charts — shadcn chart components read these */
+  --chart-1:           var(--color-chart-1);
+  --chart-2:           var(--color-chart-2);
+  --chart-3:           var(--color-chart-3);
+  --chart-4:           var(--color-status-warning);
+  --chart-5:           var(--color-status-error);
 }
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+
+/* light mode - override */
+:root.light,
+[data-theme="light"] {
+  color-scheme: light;
+
+  /* surfaces */
+  --background:        var(--color-light-bg-base);
+  --card:              var(--color-light-bg-card);
+  --popover:           var(--color-light-bg-float);
+  --muted:             var(--color-light-bg-mid);
+
+  /* foregrounds */
+  --foreground:        var(--color-light-text-primary);
+  --card-foreground:   var(--color-light-text-primary);
+  --popover-foreground:var(--color-light-text-primary);
+  --muted-foreground:  var(--color-light-text-muted);
+
+  /* Foreground on brand colours stays the same (still white/light) */
+  --primary-foreground:  var(--color-neutral-light-white);
+  --secondary-foreground:var(--color-neutral-light-white);
+  --accent-foreground:   var(--color-neutral-light-text-body);
+
+  /* Borders & interaction — focus ring flips to primary in light mode */
+  --border:            var(--color-light-border-default);
+  --input:             var(--color-light-bg-mid);
+  --ring:              var(--color-light-border-focus);
+
 }
 
+/* light mode */
+:root.light,
+[data-theme="light"] {
+  --color-background:         var(--color-light-bg-base);
+  --color-background-sunken:  var(--color-light-bg-sunken);
+  --color-background-mid:     var(--color-light-bg-mid);
+  --color-card:               var(--color-light-bg-card);
+  --color-card-elevated:      var(--color-light-bg-elevated);
+  --color-popover:            var(--color-light-bg-float);
+  --color-foreground:         var(--color-light-text-primary);
+  --color-foreground-secondary:var(--color-light-text-secondary);
+  --color-foreground-muted:   var(--color-light-text-muted);
+  --color-foreground-disabled:var(--color-light-text-disabled);
+  --color-card-foreground:    var(--color-light-text-primary);
+  --color-popover-foreground: var(--color-light-text-primary);
+  --color-border:             var(--color-light-border-default);
+  --color-border-subtle:      var(--color-light-border-subtle);
+  --color-border-strong:      var(--color-light-border-strong);
+  --color-ring:               var(--color-light-border-focus);
+}
+
+
+/* ============================================================
+   BASE LAYER — global element defaults
+   ============================================================ */
 @layer base {
+  /* Box-sizing reset */
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  /* Default border and focus ring on all elements */
   * {
     @apply border-border outline-ring/50;
   }
+
+  html {
+    font-size: 16px; /* 1rem base */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
+    font-size: var(--type-body-size);
+    line-height: var(--font-lineHeight-normal);
+    letter-spacing: var(--font-letterSpacing-wide);
+  }
+
+  /* Heading defaults using semantic type tokens */
+  h1 {
+    font-size: var(--type-h1-size);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--font-lineHeight-tight);
+    letter-spacing: var(--font-letterSpacing-tight);
+  }
+
+  h2 {
+    font-size: var(--type-h2-size);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--font-lineHeight-tight);
+    letter-spacing: var(--font-letterSpacing-snug);
+  }
+
+  h3 {
+    font-size: var(--type-h3-size);
+    font-weight: var(--font-weight-medium);
+    line-height: var(--font-lineHeight-snug);
+    letter-spacing: var(--font-letterSpacing-normal);
+  }
+
+  /* Monospace elements — resource IDs, code, metrics */
+  code, kbd, samp, pre {
+    font-family: var(--font-family-mono);
+    font-size: var(--type-caption-size);
+    line-height: var(--font-lineHeight-relaxed);
+  }
+
+  /* Focus ring — visible on keyboard nav, hidden on mouse click */
+  :focus-visible {
+    outline: var(--border-width-focus) solid var(--ring);
+    outline-offset: 2px;
+    border-radius: var(--border-radius-sm);
+  }
+
+  /* Remove default focus ring when not keyboard navigating */
+  :focus:not(:focus-visible) {
+    outline: none;
   }
 }
 
-@keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(5px); }
+
+/* ============================================================
+   COMPONENT LAYER — shared reusable component classes
+   These use semantic tokens only, never raw values.
+   ============================================================ */
+@layer components {
+
+  /* ----------------------------------------------------------
+     FEATURE CARD
+     Gradient border technique: outer border is a gradient,
+     inner fill is the background colour.
+     Used on the landing page features grid.
+  ---------------------------------------------------------- */
+  .feature-card {
+    background: var(--color-dark-bg-card);
+    border: 1px solid transparent;
+    border-radius: var(--border-radius-md);
+    background-image:
+      linear-gradient(var(--color-dark-bg-card), var(--color-dark-bg-card)),
+      linear-gradient(
+        135deg,
+        var(--color-action-primary) 0%,
+        var(--color-action-secondary) 100%
+      );
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+    transition: var(--transition-card-hover);
+  }
+
+  .light .feature-card,
+  [data-theme="light"] .feature-card {
+    background-color: var(--color-light-bg-card);
+    background-image:
+      linear-gradient(var(--color-light-bg-card), var(--color-light-bg-card)),
+      linear-gradient(
+        135deg,
+        var(--color-action-primary) 0%,
+        var(--color-action-secondary) 100%
+      );
+  }
+
+  /* ----------------------------------------------------------
+     METRIC VALUE
+     Large cost figures: total spend, savings, anomaly values.
+     Uses mono font for tabular alignment.
+  ---------------------------------------------------------- */
+  .metric-value {
+    font-family: var(--font-family-mono);
+    font-size: var(--type-metric-lg-size);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--font-lineHeight-tight);
+    letter-spacing: var(--font-letterSpacing-snug);
+  }
+
+  /* ----------------------------------------------------------
+     RESOURCE ID
+     Small monospace labels for cloud resource identifiers.
+  ---------------------------------------------------------- */
+  .resource-id {
+    font-family: var(--font-family-mono);
+    font-size: var(--type-caption-size);
+    font-weight: var(--font-weight-medium);
+    letter-spacing: var(--font-letterSpacing-wider);
+    color: var(--color-dark-text-muted);
+  }
+
+  .light .resource-id,
+  [data-theme="light"] .resource-id {
+    color: var(--color-light-text-muted);
+  }
+
+  /* ----------------------------------------------------------
+     SURFACE UTILITIES
+     Extra surface levels beyond bg-background and bg-card,
+     since Tailwind only generates classes for @theme tokens.
+  ---------------------------------------------------------- */
+  .bg-surface-sunken   { background-color: var(--color-background-sunken); }
+  .bg-surface-mid      { background-color: var(--color-background-mid); }
+  .bg-surface-elevated { background-color: var(--color-card-elevated); }
+  .bg-surface-float    { background-color: var(--color-popover); }
+
+  /* ----------------------------------------------------------
+     WIDGET DRAG HANDLE
+     Sits at the bottom of each widget. Hidden by default,
+     visible on card hover to avoid accidental drags.
+  ---------------------------------------------------------- */
+  .widget-handle {
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: grab;
+    opacity: 0;
+    transition: opacity var(--duration-fast) var(--easing-ease-out);
+    color: var(--color-dark-border-subtle);
+  }
+
+  .widget-handle:active {
+    cursor: grabbing;
+  }
+
+  *:hover > .widget-handle {
+    opacity: 1;
+  }
+
+  /* ----------------------------------------------------------
+     PROVIDER BADGES
+     Pill badges for AWS / Azure / GCP labels on charts.
+  ---------------------------------------------------------- */
+  .badge-aws   { background-color: var(--color-provider-aws);   color: var(--color-neutral-dark-void); border-radius: var(--border-radius-full); }
+  .badge-azure { background-color: var(--color-provider-azure); color: var(--color-neutral-light-white); border-radius: var(--border-radius-full); }
+  .badge-gcp   { background-color: var(--color-provider-gcp);   color: var(--color-neutral-light-white); border-radius: var(--border-radius-full); }
+
+  /* ----------------------------------------------------------
+     INSET WELL
+     Recessed surface for code blocks, table row backgrounds,
+     and widget config panels.
+  ---------------------------------------------------------- */
+  .inset-well {
+    background-color: var(--color-dark-bg-sunken);
+    border: 1px solid var(--color-dark-border-subtle);
+    border-radius: var(--border-radius-sm);
+  }
+
+  .light .inset-well,
+  [data-theme="light"] .inset-well {
+    background-color: var(--color-light-bg-sunken);
+    border-color: var(--color-light-border-subtle);
+  }
 }
 
-.animate-bounce {
-  animation: bounce 1.8s ease-in-out infinite;
-}
 
-.feature-card {
-  background: #030712;
-  border: 1px solid transparent;
-  background-image: linear-gradient(#030712, #030712), linear-gradient(135deg, #2F2FE4 0%, #162E93 100%);
-  background-origin: border-box;
-  background-clip: padding-box, border-box;
+/* ============================================================
+   UTILITY LAYER — one-off helpers
+   ============================================================ */
+@layer utilities {
+
+  /* Tabular numbers — force fixed-width digits for metric columns */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Widget focus ring — dashed gold border per design doc */
+  .widget-focus {
+    outline: var(--border-width-focus) dashed var(--color-dark-border-focus-widget);
+    outline-offset: 2px;
+  }
+
+  /* Transition shorthands using motion tokens */
+  .transition-button  { transition: var(--transition-button-color); }
+  .transition-input   { transition: var(--transition-input-focus); }
+  .transition-card    { transition: var(--transition-card-hover); }
+  .transition-tooltip { transition: var(--transition-tooltip); }
+  .transition-modal   { transition: var(--transition-modal); }
+  .transition-sidebar { transition: var(--transition-sidebar); }
+  .transition-toast   { transition: var(--transition-toast); }
 }

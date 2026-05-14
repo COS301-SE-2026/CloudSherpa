@@ -2,6 +2,14 @@
 -- It makes querying data over time much faster.
 CREATE EXTENSION IF NOT EXISTS timescaledb;
 
+CREATE TABLE users (
+  user_id UUID PRIMARY KEY,
+  email VARCHAR(320) NOT NULL UNIQUE,
+  username VARCHAR(100) NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 CREATE TABLE environment_reference (
     environment_id UUID PRIMARY KEY,
     provider VARCHAR(50) NOT NULL,

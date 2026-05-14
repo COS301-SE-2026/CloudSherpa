@@ -2,12 +2,10 @@ package com.cloudsherpa.ingestion.provider.aws;
 
 import com.cloudsherpa.ingestion.connector.*;
 import com.cloudsherpa.ingestion.models.*;
-
 import java.time.Instant;
 import java.util.*;
 import java.util.List;
 import org.springframework.stereotype.Component;
-
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
@@ -44,8 +42,9 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
   @Override
   public List<UsageRecordModel> fetchUsage(AccountScope accountScope, IngestionRequestEvent request) {
     UUID ingestionID = UUID.randomUUID();
-    int period = request.getPeriod(); // contract: ensure that the request does not return over 1000 datapoints
-                                      // ((to-from)/period)
+    int period = request
+        .getPeriod(); // contract: ensure that the request does not return over 1000 datapoints
+    // ((to-from)/period)
     DefaultCredentialsProvider.create();
     Ec2Client ec2 = Ec2Client.builder()
         .region(Region.AF_SOUTH_1)
@@ -125,7 +124,6 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
   }
 
   @Override
-
   public String getProviderName() {
     return "AWS";
   }
