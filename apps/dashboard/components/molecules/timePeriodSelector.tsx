@@ -59,10 +59,10 @@ export function TimePeriodSelector({
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          className="group md:min-w-40 w-fit justify-start text-left font-normal bg-card border-border hover:bg-hover hover:text-secondary transition-button">
+          className="group md:min-w-40 w-fit justify-start text-left font-normal bg-card text-foreground border-border hover:bg-hover hover:text-secondary data-[state=open]:text-secondary transition-button">
           <div className="w-full h-full flex flex-row items-center">
-            <CalendarIcon className="mr-2 h-4 w-4 text-foreground-secondary hover:text-secondary" />
-            <span className="text-foreground">Last {getDisplayLabel()}</span>
+            <CalendarIcon className="mr-2 h-4 w-4" />
+            <span className="">Last {getDisplayLabel()}</span>
           </div>
           <ChevronDown className="ml-auto h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
         </Button>
