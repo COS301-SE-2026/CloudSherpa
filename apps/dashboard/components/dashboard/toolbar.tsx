@@ -40,30 +40,33 @@ export default function Toolbar({
 
   return (
     <div className="w-full flex flex-row items-center justify-between gap-4 p-4 transition-card">
-      <div className="flex items-center gap-3">
-        <DashboardSelector
-          dashboards={dashboards}
-          selectedId={selectedDashboardId}
-          onSelect={onDashboardChange}
-          onCreate={(name) => console.log(name)}
-        />
-        <Tooltip content={isEditMode ? "Exit Edit Mode" : "Edit Dashboard Layout"}>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setIsEditMode(!isEditMode)}
-            className={cn(
-              "bg-card border-border text-foreground-secondary hover:text-primary hover:border-primary transition-all duration-200",
-              isEditMode && "bg-primary/10 border-primary text-primary shadow-inner ring-1 ring-primary/30",
-            )}>
-            <Pencil className={cn("h-4 w-4", isEditMode && "fill-current")} />
-          </Button>
-        </Tooltip>
-
-        {isEditMode && <span className="text-xs font-medium text-primary animate-pulse">Editing Layout...</span>}
+      <div className="w-fit h-full flex flex-col items-start justify-start">
+        <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold px-1">DASHBOARD</span>
+        <div className="flex items-center gap-3">
+          <DashboardSelector
+            dashboards={dashboards}
+            selectedId={selectedDashboardId}
+            onSelect={onDashboardChange}
+            onCreate={(name) => console.log(name)}
+          />
+          <Tooltip content={isEditMode ? "Exit Edit Mode" : "Edit Dashboard Layout"}>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setIsEditMode(!isEditMode)}
+              className={cn(
+                "bg-card border-border text-foreground-secondary hover:text-primary hover:border-primary transition-all duration-200",
+                isEditMode && "bg-primary/10 border-primary text-primary shadow-inner ring-1 ring-primary/30",
+              )}>
+              <Pencil className={cn("h-4 w-4", isEditMode && "fill-current")} />
+            </Button>
+          </Tooltip>
+          {isEditMode && <span className="text-xs font-medium text-primary animate-pulse">Editing Layout...</span>}
+        </div>
       </div>
 
-      <div className="w-full flex flex-row items-center justify-end gap-3">
+      <div className="w-fit h-full flex flex-col items-start justify-start">
+        <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold ">TIME PERIOD</span>
         <TimePeriodSelector date={dateRange} onDateChange={onDateRangeChange} />
       </div>
     </div>
