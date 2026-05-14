@@ -30,14 +30,14 @@ export function Dropdown<T>({
 }: DropdownProps<T>) {
   return (
     <Select value={value} onValueChange={onChange}>
-      <SelectTrigger 
-        className={cn(
-          "md:min-w-40 w-fit justify-start text-left font-normal bg-card border-border hover:bg-hover transition-button text-foreground",
-          className
-        )}
-      >
-        <SelectValue placeholder={placeholder} />
-      </SelectTrigger>
+<SelectTrigger 
+  className={cn(
+    "md:min-w-40 w-full justify-between text-left font-normal bg-card border-border hover:bg-hover transition-button text-foreground",
+    className
+  )}
+>
+  <SelectValue placeholder={placeholder} />
+</SelectTrigger>
 
       <SelectContent 
         position="popper" 
