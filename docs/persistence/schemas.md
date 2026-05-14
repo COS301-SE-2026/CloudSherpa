@@ -16,6 +16,18 @@ Source schema file:
 
 SherpaDB is backed by PostgreSQL with TimescaleDB enabled for time-series storage.
 
+#### `users`
+
+System users who own cloud connections.
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `user_id` | `UUID` | Primary key | Unique identifier for a user. |
+| `email` | `VARCHAR(320)` | `NOT NULL`, `UNIQUE` | Login identity (email address). |
+| `username` | `VARCHAR(100)` | `NOT NULL` | Display name. |
+| `password_hash` | `VARCHAR(255)` | `NOT NULL` | Hashed password. |
+| `created_at` | `TIMESTAMPTZ` | `DEFAULT NOW()` | Timestamp for when the user was created. |
+
 #### `environment_reference`
 
 Registry table for cloud environments/accounts known to SherpaDB.
