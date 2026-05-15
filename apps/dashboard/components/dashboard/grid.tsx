@@ -42,16 +42,13 @@ export default function Grid({ isEditMode, dashboardId, dateRange, onLayoutChang
     if (gridRef.current && !gridStackInstance.current) {
       gridStackInstance.current = GridStack.init({ /* ... same options ... */ }, gridRef.current);
 
-      // Listen for changes and propagate them up to the Dashboard page
       gridStackInstance.current.on("change", (event, items) => {
         if (!gridStackInstance.current) return;
         
-        // Extract the clean data GridStack gives us
         const fullLayout = gridStackInstance.current.save() as LayoutItem[];
         onLayoutChange(fullLayout);
       });
     }
-    // ... cleanup ...
   }, []);
 
 useEffect(() => {
@@ -73,7 +70,7 @@ useEffect(() => {
           cellHeight: 100,
           margin: 12,
           handle: ".drag-handle",
-          staticGrid: !isEditMode, // Start based on initial state
+          staticGrid: !isEditMode, 
           float: true,
           resizable: { handles: "se" },
         },
@@ -96,7 +93,6 @@ useEffect(() => {
       <div ref={gridRef} className="grid-stack">
         {widgets.map((w) => (
           <WidgetWrapper key={w.id} {...w} isEditMode={isEditMode}>
-            {/* Here you would eventually switch based on w.type */}
             <div className="flex items-center justify-center h-full text-muted-foreground italic text-sm">
               Chart Placeholder: {w.type}
             </div>
