@@ -8,6 +8,7 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
@@ -38,8 +39,13 @@ public class SecurityConfig {
           // If we do httponly to reduce XSS risk, we reintroduce CSRF risk, so mitigate by
           // including token
           .csrf(Customizer.withDefaults())
-          // unguarded endpoints for the moment
-          .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+          .authorizeHttpRequests(
+              auth -> auth.requestMatchers("/login").permitAll().anyRequest().authenticated())
+          .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
+          .exceptionHandling(
+              exception ->
+                  exception.authenticationEntryPoint(
+                      new LoginUrlAuthenticationEntryPoint("/login")))
           .build();
     }
   }
