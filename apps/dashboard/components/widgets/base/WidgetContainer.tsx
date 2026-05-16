@@ -88,6 +88,16 @@ export function WidgetContainer({
                 case 'left':
                     forNewWidth = Math.max(minWidth, startingWidthRef.current - deltaX);
                     break;
+
+                case 'bottom-right':
+                    forNewWidth = Math.max(minWidth, startingWidthRef.current + deltaX);
+                    forNewHeight = Math.max(minHeight, startingHeightRef.current + deltaY);
+                    break;
+
+                case 'bottom-left':
+                    forNewWidth = Math.max(minWidth, startingWidthRef.current - deltaX);
+                    forNewHeight = Math.max(minHeight, startingHeightRef.current + deltaY);
+                    break;
             }
             
             setWidth(forNewWidth);
