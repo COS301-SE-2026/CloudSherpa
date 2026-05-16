@@ -144,12 +144,28 @@ export function WidgetContainer({
                         <div className="absolute right-1 top-1/2 transform -translate-y-1/2 w-1 h-8 rounded-full bg-border group-hover:bg-primary transition-colors" />
                     </div>
                     
+                    {/*from the bottom right*/}
+                    <div
+                        className="absolute bottom-0 right-0 w-3 h-3 cursor-nw-resize group z-10"
+                        onMouseDown={(e) => handleResizeStart(e, 'bottom-right')}
+                    >
+                        <div className="absolute bottom-1 right-1 w-2 h-2 rounded-full bg-border group-hover:bg-primary transition-colors" />
+                    </div>
+                    
                     {/*from the left*/}
                     <div
                         className="absolute top-0 left-0 bottom-0 w-2 cursor-ew-resize group z-10"
                         onMouseDown={(e) => handleResizeStart(e, 'left')}
                     >
                         <div className="absolute left-1 top-1/2 transform -translate-y-1/2 w-1 h-8 rounded-full bg-border group-hover:bg-primary transition-colors" />
+                    </div>
+                    
+                    {/*from the bottom left*/}
+                    <div
+                        className="absolute bottom-0 left-0 w-3 h-3 cursor-sw-resize group z-10"
+                        onMouseDown={(e) => handleResizeStart(e, 'bottom-left')}
+                    >
+                        <div className="absolute bottom-1 left-1 w-2 h-2 rounded-full bg-border group-hover:bg-primary transition-colors" />
                     </div>
                 </>
             )}
