@@ -78,6 +78,28 @@ export function GaugeWidget({
                             color: [[1, 'rgba(47, 47, 228, 0.2)']]
                         }
                     },
+
+                    axisTick: {
+                        show: false
+                    },
+
+                    splitLine: {
+                        show: true,
+                        length: 8,
+                        lineStyle: {
+                            width: 2,
+                            color: 'var(--color-text-muted)',
+                        }
+                    },
+
+                    axisLabel: {
+                        show: true,
+                        distance: 18,
+                        color: 'var(--color-text-muted)',
+                        fontSize: 11,
+                        fontFamily: 'var(--font-family-main)',
+                        formatter: (value: number) => `${value}%`
+                    },
                 }
             ]
         };
