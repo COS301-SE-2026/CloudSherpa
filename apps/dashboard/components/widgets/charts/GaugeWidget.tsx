@@ -100,6 +100,36 @@ export function GaugeWidget({
                         fontFamily: 'var(--font-family-main)',
                         formatter: (value: number) => `${value}%`
                     },
+
+                    pointer: {
+                        show: true,
+                        length: '60%',
+                        width: 8,
+                        itemStyle: {
+                            color: 'var(--color-action-accent)',
+                        }
+                    },
+                    
+                    detail: {
+                        show: true,
+                        offsetCenter: [0, 30],
+                        valueAnimation: true,
+                        fontSize: 24,
+                        fontWeight: 'bold',
+                        color: 'var(--color-text-primary)',
+                        fontFamily: 'var(--font-family-main)',
+                        formatter: '{value}%'
+                    },
+
+                    title: {
+                        show: true,
+                        offsetCenter: [0, -35],
+                        fontSize: 13,
+                        color: 'var(--color-text-muted)',
+                        fontFamily: 'var(--font-family-main)',
+                    },
+                    
+                    data: [{ value: latestValue, name: title }]
                 }
             ]
         };
