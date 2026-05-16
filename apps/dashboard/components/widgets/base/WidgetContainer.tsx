@@ -3,7 +3,7 @@ import { ReactNode, useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 
 interface WidgetContainerProps{
-    childrenComponents: ReactNode;
+    children: ReactNode;
     forTitle?: string;
     className?: string;
 
@@ -17,7 +17,7 @@ interface WidgetContainerProps{
 }
 
 export function WidgetContainer({ 
-    childrenComponents, 
+    children, 
     forTitle, 
     className = '',
 
@@ -177,7 +177,7 @@ export function WidgetContainer({
 
             {/*this is for the widget content*/}
             <div className="p-4" style={{ height: forTitle ? 'calc(100% - 52px)' : 'calc(100% - 32px)' }}>
-                {childrenComponents}
+                {children}
             </div>
 
             {/*this is to handle the resizing from all drections*/}
