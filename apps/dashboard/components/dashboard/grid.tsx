@@ -3,17 +3,8 @@ import React, { useLayoutEffect, useRef, useEffect } from "react";
 import "gridstack/dist/gridstack.min.css";
 import { GridStack } from "gridstack";
 import { WidgetWrapper } from "@/components/molecules/widgetWrapper";
-import { DateRange } from "react-day-picker";
+import { type WidgetConfig } from "@/app/dashboard/page";
 
-interface WidgetConfig {
-  id: string;
-  type: string;
-  title: string;
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-}
 export interface LayoutItem {
   id: string;
   x: number;
@@ -25,43 +16,13 @@ export interface LayoutItem {
 interface GridProps {
   isEditMode: boolean;
   dashboardId: string;
-  dateRange: DateRange | undefined;
   onLayoutChange: (layout: LayoutItem[]) => void;
+  widgets: WidgetConfig[];
 }
 
-export default function Grid({ isEditMode, dashboardId, dateRange, onLayoutChange }: GridProps) {  
+export default function Grid({ isEditMode, onLayoutChange, widgets }: GridProps) {  
   const gridRef = useRef<HTMLDivElement>(null);
   const gridStackInstance = useRef<GridStack | null>(null);
-
-  const [widgets] = React.useState<WidgetConfig[]>([
-    { id: "1", type: "anomaly", title: "Cost Anomalies", x: 0, y: 0, w: 4, h: 2 },
-    { id: "2", type: "forecast", title: "Spending Forecast", x: 4, y: 0, w: 8, h: 4 },
-  ]);
-
-  useLayoutEffect(() => {
-    if (gridRef.current && !gridStackInstance.current) {
-      gridStackInstance.current = GridStack.init({ /* ... same options ... */ }, gridRef.current);
-
-      gridStackInstance.current.on("change", (event, items) => {
-        if (!gridStackInstance.current) return;
-        
-        const fullLayout = gridStackInstance.current.save() as LayoutItem[];
-        onLayoutChange(fullLayout);
-      });
-    }
-  }, []);
-
-useEffect(() => {
-  if (gridStackInstance.current) {
-    gridStackInstance.current.setStatic(!isEditMode);
-    
-    if (isEditMode) {
-      gridRef.current?.classList.add('is-editing');
-    } else {
-      gridRef.current?.classList.remove('is-editing');
-    }
-  }
-}, [isEditMode]);
 
   useLayoutEffect(() => {
     if (gridRef.current && !gridStackInstance.current) {
@@ -77,8 +38,10 @@ useEffect(() => {
         gridRef.current,
       );
 
-      gridStackInstance.current.on("change", (event, items) => {
-        console.log("Layout updated for CloudSherpa:", items);
+      gridStackInstance.current.on("change", () => {
+        if (!gridStackInstance.current) return;
+        const fullLayout = gridStackInstance.current.save() as LayoutItem[];
+        onLayoutChange(fullLayout);
       });
     }
 
@@ -87,6 +50,24 @@ useEffect(() => {
       gridStackInstance.current = null;
     };
   }, []);
+
+  useEffect(() => {
+    if (gridStackInstance.current && !isEditMode) {
+      gridStackInstance.current.load(widgets);
+    }
+  }, [widgets, isEditMode]);
+
+  useEffect(() => {
+    if (gridStackInstance.current) {
+      gridStackInstance.current.setStatic(!isEditMode);
+
+      if (isEditMode) {
+        gridRef.current?.classList.add("is-editing");
+      } else {
+        gridRef.current?.classList.remove("is-editing");
+      }
+    }
+  }, [isEditMode]);
 
   return (
     <div className="bg-background min-h-screen">
