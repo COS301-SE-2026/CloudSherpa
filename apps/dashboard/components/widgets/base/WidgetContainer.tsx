@@ -66,7 +66,7 @@ export function WidgetContainer({
                 return;
             }
             
-            const forNewWidth = width;
+            let forNewWidth = width;
             let forNewHeight = height;
 
             const deltaX = e.clientX-startingXRef.current;
@@ -79,6 +79,14 @@ export function WidgetContainer({
 
                 case 'top':
                     forNewHeight = Math.max(minHeight, startingHeightRef.current - deltaY);
+                    break;
+
+                case 'right':
+                    forNewWidth = Math.max(minWidth, startingWidthRef.current + deltaX);
+                    break;
+
+                case 'left':
+                    forNewWidth = Math.max(minWidth, startingWidthRef.current - deltaX);
                     break;
             }
             
