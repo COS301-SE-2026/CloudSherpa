@@ -15,7 +15,6 @@ import com.cloudsherpa.ingestion.normalization.persistence.service.SherpaDbPersi
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -98,14 +97,11 @@ public class CloudUsageService {
       return;
     }
 
-    UUID environmentId =
-        UUID.fromString("550e8400-e29b-41d4-a716-446655440000"); // still mock for now
-
     for (UsageRecordModel record : usageRecords) {
       NormalizedMetric normalized = normalizer.normalize(record);
 
       if (normalized != null) {
-        writeToSherpaDb(environmentId, normalized);
+        writeToSherpaDb(normalized);
       }
     }
   }
@@ -155,9 +151,9 @@ public class CloudUsageService {
     return results;
   }
 
-  private void writeToSherpaDb(UUID environmentId, NormalizedMetric metric) {
+  private void writeToSherpaDb(NormalizedMetric metric) {
     try {
-      sherpaDbPersistenceService.recordMetric(environmentId, metric);
+      sherpaDbPersistenceService.recordMetric(metric);
     } catch (Exception e) {
       System.err.println(e.getMessage());
     }

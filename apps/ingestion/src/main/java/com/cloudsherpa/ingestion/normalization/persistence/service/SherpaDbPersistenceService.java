@@ -22,7 +22,7 @@ public class SherpaDbPersistenceService {
   // Use @Transactional when we are modifying a database in more than 1 place
   // So that if 1 step succeeds and the other one fails, the data doesn't end up half-written
   @Transactional
-  public void recordMetric(UUID environmentId, NormalizedMetric metric) {
+  public void recordMetric(NormalizedMetric metric) {
 
     OffsetDateTime periodStart = null;
     OffsetDateTime periodEnd = null;
