@@ -18,10 +18,11 @@ import software.amazon.awssdk.services.ec2.model.Reservation;
 @Component("AWS")
 public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingCapable {
 
-  private final CloudWatchClient client = CloudWatchClient.builder()
-      .credentialsProvider(DefaultCredentialsProvider.create())
-      .region(Region.AF_SOUTH_1)
-      .build();
+  private final CloudWatchClient client =
+      CloudWatchClient.builder()
+          .credentialsProvider(DefaultCredentialsProvider.create())
+          .region(Region.AF_SOUTH_1)
+          .build();
 
   public List<String> getAllEC2InstanceIds(Ec2Client ec2) {
     List<String> instanceIds = new ArrayList<>();
@@ -30,7 +31,8 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
 
     for (DescribeInstancesResponse page : ec2.describeInstancesPaginator(request)) {
       for (Reservation reservation : page.reservations()) {
-        for (software.amazon.awssdk.services.ec2.model.Instance instance : reservation.instances()) {
+        for (software.amazon.awssdk.services.ec2.model.Instance instance :
+            reservation.instances()) {
           instanceIds.add(instance.instanceId());
         }
       }
@@ -40,36 +42,44 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
   }
 
   @Override
-  public List<UsageRecordModel> fetchUsage(AccountScope accountScope, IngestionRequestEvent request) {
+  public List<UsageRecordModel> fetchUsage(
+      AccountScope accountScope, IngestionRequestEvent request) {
     UUID ingestionID = UUID.randomUUID();
-    int period = request
-        .getPeriod(); // contract: ensure that the request does not return over 1000 datapoints
+    int period =
+        request
+            .getPeriod(); // contract: ensure that the request does not return over 1000 datapoints
     // ((to-from)/period)
     DefaultCredentialsProvider.create();
-    Ec2Client ec2 = Ec2Client.builder()
-        .region(Region.AF_SOUTH_1)
-        .credentialsProvider(DefaultCredentialsProvider.create())
-        .build();
+    Ec2Client ec2 =
+        Ec2Client.builder()
+            .region(Region.AF_SOUTH_1)
+            .credentialsProvider(DefaultCredentialsProvider.create())
+            .build();
 
     List<UsageRecordModel> result = new ArrayList<>();
-    for (ServiceScope serviceScope : accountScope.getServiceScopes()) { // these are for services such as EC2, RDS etc.
+    for (ServiceScope serviceScope :
+        accountScope.getServiceScopes()) { // these are for services such as EC2, RDS etc.
 
-      for (InstanceScope instance : serviceScope.getInstances()) { // instances within a service with a name and value
-                                                                   // list e.g. i-23xxxxxxx
+      for (InstanceScope instance :
+          serviceScope.getInstances()) { // instances within a service with a name and value
+        // list e.g. i-23xxxxxxx
         for (String instanceValue : instance.getValues()) { // the specific instance
-          Dimension dimension = Dimension.builder().name(instance.getIdentifierName()).value(instanceValue).build();
+          Dimension dimension =
+              Dimension.builder().name(instance.getIdentifierName()).value(instanceValue).build();
 
-          for (String metric : serviceScope.getMetrics()) { // the metrics requested, e.g. CPUUtilisation, NetworkIn,
-                                                            // NetworkOut etc.
-            GetMetricStatisticsRequest req = GetMetricStatisticsRequest.builder()
-                .namespace(serviceScope.getName())
-                .metricName(metric)
-                .startTime(request.getFrom())
-                .endTime(request.getTo())
-                .period(period)
-                .dimensions(dimension)
-                .statistics(Statistic.AVERAGE)
-                .build();
+          for (String metric :
+              serviceScope.getMetrics()) { // the metrics requested, e.g. CPUUtilisation, NetworkIn,
+            // NetworkOut etc.
+            GetMetricStatisticsRequest req =
+                GetMetricStatisticsRequest.builder()
+                    .namespace(serviceScope.getName())
+                    .metricName(metric)
+                    .startTime(request.getFrom())
+                    .endTime(request.getTo())
+                    .period(period)
+                    .dimensions(dimension)
+                    .statistics(Statistic.AVERAGE)
+                    .build();
 
             for (Datapoint dp : client.getMetricStatistics(req).datapoints()) {
 
@@ -100,16 +110,17 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
     }
 
     return result;
-
   }
 
   @Override
-  public List<BillingRecordModel> fetchBilling(AccountScope accountScope, IngestionRequestEvent request) {
+  public List<BillingRecordModel> fetchBilling(
+      AccountScope accountScope, IngestionRequestEvent request) {
     return List.of(); // mock for now
   }
 
   @Override
-  public List<BillingRecordModel> fetchMockBilling(AccountScope accountScope, IngestionRequestEvent request) {
+  public List<BillingRecordModel> fetchMockBilling(
+      AccountScope accountScope, IngestionRequestEvent request) {
     return List.of();
   }
 
@@ -129,7 +140,8 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
   }
 
   @Override
-  public List<UsageRecordModel> fetchMockUsage(AccountScope accountScope, IngestionRequestEvent request) {
+  public List<UsageRecordModel> fetchMockUsage(
+      AccountScope accountScope, IngestionRequestEvent request) {
 
     if (request.getPeriod() <= 0) {
       throw new IllegalArgumentException("Period must be > 0");
@@ -143,9 +155,8 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
     UUID ingestionID = UUID.randomUUID();
     List<UsageRecordModel> result = new ArrayList<>();
 
-    long globalSeed = Objects.hash(
-        request.getFrom().toEpochMilli(),
-        request.getTo().toEpochMilli());
+    long globalSeed =
+        Objects.hash(request.getFrom().toEpochMilli(), request.getTo().toEpochMilli());
 
     for (AccountScope accScope : request.getScopes()) {
 
@@ -155,8 +166,9 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
 
         ServiceType type = ServiceType.from(serviceScope.getName());
 
-        double serviceClusterState = 50.0 + new Random(accountSeed).nextGaussian() * 10; // services have partially
-                                                                                         // correlated usage data
+        double serviceClusterState =
+            50.0 + new Random(accountSeed).nextGaussian() * 10; // services have partially
+        // correlated usage data
 
         for (InstanceScope instance : serviceScope.getInstances()) {
 
@@ -165,15 +177,17 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
             long resourceSeed = Objects.hash(accountSeed, serviceScope.getName(), instanceId);
             SplittableRandom rng = new SplittableRandom(resourceSeed);
 
-            double mean = type.baseLoad + rng.nextDouble() * type.variance; // we create different resource
-                                                                            // personalities, such that EC2 metrics look
-                                                                            // different from RDS metrics for instance
+            double mean =
+                type.baseLoad + rng.nextDouble() * type.variance; // we create different resource
+            // personalities, such that EC2 metrics look
+            // different from RDS metrics for instance
 
             double theta = 0.05 + rng.nextDouble() * 0.1;
             double volatility = 1.0 + rng.nextDouble() * 5.0;
 
-            Map<String, Double> metricState = new HashMap<>(); // different metrics may have different trajectories and
-                                                               // mean loads
+            Map<String, Double> metricState =
+                new HashMap<>(); // different metrics may have different trajectories and
+            // mean loads
             Map<String, Double> metricMean = new HashMap<>();
 
             for (String metric : serviceScope.getMetrics()) {
@@ -183,10 +197,11 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
 
             int count = 0;
 
-            for (Instant t = request.getFrom(); !t.isAfter(request.getTo()); t = t.plusSeconds(request.getPeriod())) {
+            for (Instant t = request.getFrom();
+                !t.isAfter(request.getTo());
+                t = t.plusSeconds(request.getPeriod())) {
 
-              if (++count > maxDatapoints)
-                break;
+              if (++count > maxDatapoints) break;
 
               double seconds = t.getEpochSecond();
 
@@ -196,22 +211,28 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
 
               double seasonal = 8 * daily + 3 * weekly;
 
-              boolean maintenance = (seconds % secondsPerDay) < 2 * secondsPerHour;// first 2h of each day simulated as
-                                                                                   // maintenance period
+              boolean maintenance =
+                  (seconds % secondsPerDay)
+                      < 2 * secondsPerHour; // first 2h of each day simulated as
+              // maintenance period
 
-              double maintenancePenalty = maintenance ? -10 : 0; // less usage in a maintenance period
+              double maintenancePenalty =
+                  maintenance ? -10 : 0; // less usage in a maintenance period
 
-              boolean burstEvent = rng.nextDouble() < type.burstChance; // low probability of a burst event with high
-                                                                        // usage. Metric dependent chance
+              boolean burstEvent =
+                  rng.nextDouble() < type.burstChance; // low probability of a burst event with high
+              // usage. Metric dependent chance
 
               double burst = burstEvent ? rng.nextDouble() * 50 : 0;
 
-              serviceClusterState += rng.nextGaussian() * 1.5 + burst * 0.05; // service level usage correlation (EC2
-                                                                              // metrics are related)
+              serviceClusterState +=
+                  rng.nextGaussian() * 1.5 + burst * 0.05; // service level usage correlation (EC2
+              // metrics are related)
 
               double clusterFactor = 1.0 + (serviceClusterState / 100.0);
 
-              for (String metric : serviceScope.getMetrics()) { // each metric has somewhat different behaviour
+              for (String metric :
+                  serviceScope.getMetrics()) { // each metric has somewhat different behaviour
                 double state = metricState.get(metric);
                 double mMean = metricMean.get(metric);
 
@@ -222,24 +243,14 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
 
                 double noise = gaussian * volatility;
 
-                state = state
-                    + drift
-                    + noise
-                    + seasonal
-                    + maintenancePenalty;
+                state = state + drift + noise + seasonal + maintenancePenalty;
 
                 // burst affects all metrics to different extents
                 state += burst * metricBurstWeight(type, metric);
 
                 metricState.put(metric, state);
 
-                double value = computeMetric(
-                    type,
-                    metric,
-                    state,
-                    clusterFactor,
-                    gaussian,
-                    burst);
+                double value = computeMetric(type, metric, state, clusterFactor, gaussian, burst);
 
                 UsageRecordModel r = new UsageRecordModel();
 
@@ -272,7 +283,6 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
   }
 
   enum ServiceType {
-
     EC2(30, 50, 0.03),
     LAMBDA(5, 80, 0.12),
     RDS(20, 40, 0.02),
@@ -328,7 +338,6 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
       double gaussian,
       double burst) {
     return switch (type) {
-
       case EC2 -> switch (metric) {
         case "CPUUtilization" -> Math.max(0, Math.min(100, state + gaussian * 2));
         case "NetworkIn" -> Math.max(0, state * 1000 * clusterFactor + burst * 50);
@@ -383,90 +392,88 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
 
   public final class CloudWatchMetricUnits {
 
-    private CloudWatchMetricUnits() {
-    }
+    private CloudWatchMetricUnits() {}
 
-    public static final Map<ServiceType, Map<String, String>> UNITS = Map.of(
-
-        ServiceType.EC2, Map.ofEntries(
-            Map.entry("CPUUtilization", "Percent"),
-            Map.entry("DiskReadOps", "Count"),
-            Map.entry("DiskWriteOps", "Count"),
-            Map.entry("DiskReadBytes", "Bytes"),
-            Map.entry("DiskWriteBytes", "Bytes"),
-            Map.entry("NetworkIn", "Bytes"),
-            Map.entry("NetworkOut", "Bytes"),
-            Map.entry("NetworkPacketsIn", "Count"),
-            Map.entry("NetworkPacketsOut", "Count"),
-            Map.entry("StatusCheckFailed", "Count"),
-            Map.entry("StatusCheckFailed_Instance", "Count"),
-            Map.entry("StatusCheckFailed_System", "Count")),
-
-        ServiceType.LAMBDA, Map.ofEntries(
-            Map.entry("Invocations", "Count"),
-            Map.entry("Errors", "Count"),
-            Map.entry("Duration", "Milliseconds"),
-            Map.entry("Throttles", "Count"),
-            Map.entry("IteratorAge", "Milliseconds"),
-            Map.entry("ConcurrentExecutions", "Count"),
-            Map.entry("UnreservedConcurrentExecutions", "Count")),
-
-        ServiceType.RDS, Map.ofEntries(
-            Map.entry("CPUUtilization", "Percent"),
-            Map.entry("DatabaseConnections", "Count"),
-            Map.entry("FreeStorageSpace", "Bytes"),
-            Map.entry("ReadLatency", "Milliseconds"),
-            Map.entry("WriteLatency", "Milliseconds"),
-            Map.entry("ReadIOPS", "Count/Second"),
-            Map.entry("WriteIOPS", "Count/Second"),
-            Map.entry("NetworkReceiveThroughput", "Bytes/Second"),
-            Map.entry("NetworkTransmitThroughput", "Bytes/Second"),
-            Map.entry("FreeableMemory", "Bytes"),
-            Map.entry("SwapUsage", "Bytes")),
-
-        ServiceType.S3, Map.ofEntries(
-            Map.entry("NumberOfObjects", "Count"),
-            Map.entry("BucketSizeBytes", "Bytes"),
-            Map.entry("AllRequests", "Count"),
-            Map.entry("GetRequests", "Count"),
-            Map.entry("PutRequests", "Count"),
-            Map.entry("DeleteRequests", "Count"),
-            Map.entry("4xxErrors", "Count"),
-            Map.entry("5xxErrors", "Count"),
-            Map.entry("FirstByteLatency", "Milliseconds"),
-            Map.entry("TotalRequestLatency", "Milliseconds")),
-
-        ServiceType.DYNAMODB, Map.ofEntries(
-            Map.entry("ConsumedReadCapacityUnits", "Count"),
-            Map.entry("ConsumedWriteCapacityUnits", "Count"),
-            Map.entry("ReadThrottleEvents", "Count"),
-            Map.entry("WriteThrottleEvents", "Count"),
-            Map.entry("ThrottledRequests", "Count"),
-            Map.entry("SuccessfulRequestLatency", "Milliseconds"),
-            Map.entry("SystemErrors", "Count"),
-            Map.entry("UserErrors", "Count")),
-
-        ServiceType.ECS_EKS, Map.ofEntries(
-            Map.entry("CPUUtilization", "Percent"),
-            Map.entry("MemoryUtilization", "Percent"),
-            Map.entry("RunningTaskCount", "Count"),
-            Map.entry("PendingTaskCount", "Count"),
-            Map.entry("ServiceCount", "Count")),
-
-        ServiceType.GPU_ML, Map.ofEntries(
-            Map.entry("GPUUtilization", "Percent"),
-            Map.entry("GPUMemoryUtilization", "Percent"),
-            Map.entry("CPUUtilization", "Percent"),
-            Map.entry("MemoryUtilization", "Percent"),
-            Map.entry("DiskUtilization", "Percent"),
-            Map.entry("TrainingLoss", "None"),
-            Map.entry("BatchSize", "Count"),
-            Map.entry("IterationTime", "Milliseconds")));
+    public static final Map<ServiceType, Map<String, String>> UNITS =
+        Map.of(
+            ServiceType.EC2,
+                Map.ofEntries(
+                    Map.entry("CPUUtilization", "Percent"),
+                    Map.entry("DiskReadOps", "Count"),
+                    Map.entry("DiskWriteOps", "Count"),
+                    Map.entry("DiskReadBytes", "Bytes"),
+                    Map.entry("DiskWriteBytes", "Bytes"),
+                    Map.entry("NetworkIn", "Bytes"),
+                    Map.entry("NetworkOut", "Bytes"),
+                    Map.entry("NetworkPacketsIn", "Count"),
+                    Map.entry("NetworkPacketsOut", "Count"),
+                    Map.entry("StatusCheckFailed", "Count"),
+                    Map.entry("StatusCheckFailed_Instance", "Count"),
+                    Map.entry("StatusCheckFailed_System", "Count")),
+            ServiceType.LAMBDA,
+                Map.ofEntries(
+                    Map.entry("Invocations", "Count"),
+                    Map.entry("Errors", "Count"),
+                    Map.entry("Duration", "Milliseconds"),
+                    Map.entry("Throttles", "Count"),
+                    Map.entry("IteratorAge", "Milliseconds"),
+                    Map.entry("ConcurrentExecutions", "Count"),
+                    Map.entry("UnreservedConcurrentExecutions", "Count")),
+            ServiceType.RDS,
+                Map.ofEntries(
+                    Map.entry("CPUUtilization", "Percent"),
+                    Map.entry("DatabaseConnections", "Count"),
+                    Map.entry("FreeStorageSpace", "Bytes"),
+                    Map.entry("ReadLatency", "Milliseconds"),
+                    Map.entry("WriteLatency", "Milliseconds"),
+                    Map.entry("ReadIOPS", "Count/Second"),
+                    Map.entry("WriteIOPS", "Count/Second"),
+                    Map.entry("NetworkReceiveThroughput", "Bytes/Second"),
+                    Map.entry("NetworkTransmitThroughput", "Bytes/Second"),
+                    Map.entry("FreeableMemory", "Bytes"),
+                    Map.entry("SwapUsage", "Bytes")),
+            ServiceType.S3,
+                Map.ofEntries(
+                    Map.entry("NumberOfObjects", "Count"),
+                    Map.entry("BucketSizeBytes", "Bytes"),
+                    Map.entry("AllRequests", "Count"),
+                    Map.entry("GetRequests", "Count"),
+                    Map.entry("PutRequests", "Count"),
+                    Map.entry("DeleteRequests", "Count"),
+                    Map.entry("4xxErrors", "Count"),
+                    Map.entry("5xxErrors", "Count"),
+                    Map.entry("FirstByteLatency", "Milliseconds"),
+                    Map.entry("TotalRequestLatency", "Milliseconds")),
+            ServiceType.DYNAMODB,
+                Map.ofEntries(
+                    Map.entry("ConsumedReadCapacityUnits", "Count"),
+                    Map.entry("ConsumedWriteCapacityUnits", "Count"),
+                    Map.entry("ReadThrottleEvents", "Count"),
+                    Map.entry("WriteThrottleEvents", "Count"),
+                    Map.entry("ThrottledRequests", "Count"),
+                    Map.entry("SuccessfulRequestLatency", "Milliseconds"),
+                    Map.entry("SystemErrors", "Count"),
+                    Map.entry("UserErrors", "Count")),
+            ServiceType.ECS_EKS,
+                Map.ofEntries(
+                    Map.entry("CPUUtilization", "Percent"),
+                    Map.entry("MemoryUtilization", "Percent"),
+                    Map.entry("RunningTaskCount", "Count"),
+                    Map.entry("PendingTaskCount", "Count"),
+                    Map.entry("ServiceCount", "Count")),
+            ServiceType.GPU_ML,
+                Map.ofEntries(
+                    Map.entry("GPUUtilization", "Percent"),
+                    Map.entry("GPUMemoryUtilization", "Percent"),
+                    Map.entry("CPUUtilization", "Percent"),
+                    Map.entry("MemoryUtilization", "Percent"),
+                    Map.entry("DiskUtilization", "Percent"),
+                    Map.entry("TrainingLoss", "None"),
+                    Map.entry("BatchSize", "Count"),
+                    Map.entry("IterationTime", "Milliseconds")));
 
     public static String unit(ServiceType type, String metric) {
-      return UNITS
-          .getOrDefault(type, Map.of())
-          .getOrDefault(metric, "None");
+      return UNITS.getOrDefault(type, Map.of()).getOrDefault(metric, "None");
     }
   }
 }

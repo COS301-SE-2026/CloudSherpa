@@ -7,7 +7,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
@@ -17,12 +19,15 @@ public class SecurityConfig {
 
   private final String[] allowedOrigins;
   private final String mode;
+  private final String dashboardHost;
 
   SecurityConfig(
       @Value("${allowed_origins:http://localhost:3000}") String[] allowedOrigins,
-      @Value("${mode:prod}") String mode) {
+      @Value("${mode:prod}") String mode,
+      @Value("${dashboard-host:http://localhost:3000}") String dashboardHost) {
     this.allowedOrigins = allowedOrigins;
     this.mode = mode;
+    this.dashboardHost = dashboardHost;
   }
 
   @Bean
@@ -35,11 +40,22 @@ public class SecurityConfig {
           .build();
     } else {
       return http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
-          // If we do httponly to reduce XSS risk, we reintroduce CSRF risk, so mitigate by
-          // including token
-          .csrf(Customizer.withDefaults())
-          // unguarded endpoints for the moment
-          .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+          .csrf(csrf -> csrf.disable())
+          .sessionManagement(
+              session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+          .authorizeHttpRequests(
+              auth ->
+                  auth.requestMatchers("/auth/login", "/auth/register")
+                      .permitAll()
+                      .anyRequest()
+                      .authenticated())
+          .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
+          // redirect user to login
+          .exceptionHandling(
+              exception ->
+                  exception.authenticationEntryPoint(
+                      new LoginUrlAuthenticationEntryPoint(
+                          String.format("%s/login", dashboardHost))))
           .build();
     }
   }
