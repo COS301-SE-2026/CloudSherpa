@@ -5,40 +5,51 @@ import com.cloudsherpa.ingestion.normalization.model.NormalizedMetric;
 import java.util.UUID;
 
 public class AwsNormalizer implements Normalizer {
-  public NormalizedMetric normalize(UsageRecordModel record) {
-    if (record == null) {
+  public NormalizedMetric normalize(UsageRecordModel r) {
+    if (r == null) {
       return null;
     }
 
     String metricId = UUID.randomUUID().toString();
-    String provider = "unknown";
 
-    if (record.getProvider() != null) {
-      provider = record.getProvider();
+    String provider = "unknown";
+    if (r.getProvider() != null) {
+      provider = r.getProvider();
     }
 
     long usageStart = 0;
-    if (record.getPeriodStart() != null) {
-      usageStart = record.getPeriodStart().toEpochMilli();
-    } else if (record.getTimestamp() != null) {
-      usageStart = record.getTimestamp().toEpochMilli();
+    if (r.getPeriodStart() != null) {
+      usageStart = r.getPeriodStart().toEpochMilli();
+    } else if (r.getTimestamp() != null) {
+      usageStart = r.getTimestamp().toEpochMilli();
     }
 
     long usageEnd = 0;
-    if (record.getPeriodEnd() != null) {
-      usageEnd = record.getPeriodEnd().toEpochMilli();
-    } else if (record.getTimestamp() != null) {
-      usageEnd = record.getTimestamp().toEpochMilli();
+    if (r.getPeriodEnd() != null) {
+      usageEnd = r.getPeriodEnd().toEpochMilli();
+    } else if (r.getTimestamp() != null) {
+      usageEnd = r.getTimestamp().toEpochMilli();
     }
 
-    String resourceId = record.getResourceId();
-    String service = record.getServiceName();
-    String serviceCategory = normalizeCategory(service);
+    String service = "unknown";
+    if (r.getServiceName() != null) {
+      service = r.getServiceName();
+    }
 
-    double usageAmount = record.getValue();
-    String usageUnit = "unknown";
-    if (record.getUnit() != null) {
-      usageUnit = record.getUnit();
+    String shortService = service;
+    if (service.contains("/")) {
+      shortService = service.substring(service.indexOf('/') + 1);
+    }
+
+    String serviceCategory = normalizeCategory(shortService);
+
+    String resourceId = r.getResourceId();
+
+    double usageAmount = r.getValue();
+
+    String usageUnit = "None";
+    if (r.getUnit() != null) {
+      usageUnit = r.getUnit();
     }
 
     double effectiveCost = 0.0;
