@@ -98,6 +98,23 @@ export function LineChartWidget({
         chartInstance.current?.setOption(option);
     }, [title, resourceId, data])
 
+    useEffect(() => {
+        if(!chartInstance.current){
+            return;
+        }
+
+        //this will recalc its size
+        const handleResize = () => {
+            chartInstance.current?.resize();
+        };
+
+        window.addEventListener('resize', handleResize);
+        
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
+
     return (
         <div className="flex h-full flex-col rounded-xl border border-zinc-800 bg-zinc-900 p-4">
             <div className="mb-4 text-sm font-medium text-zinc-200">
