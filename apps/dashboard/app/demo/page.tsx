@@ -2,8 +2,8 @@
 
 import { useMetricStream } from "@/services/sse/metric-stream";
 import { useMetricStore } from "@/stores/metric-store";
-import { LineChartWidget } from "@/components/widgets/charts/LineChartWidget";
-import { GaugeWidget } from "@/components/widgets/charts/GaugeWidget";
+import { LineChartWidget } from "@/components/widgets/charts/LineChart";
+import { GaugeWidget } from "@/components/widgets/charts/GaugeChart";
 import { WidgetContainer } from "@/components/widgets/base/WidgetContainer";
 
 export default function Demo() {
