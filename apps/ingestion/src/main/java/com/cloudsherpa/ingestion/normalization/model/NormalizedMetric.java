@@ -7,90 +7,74 @@ package com.cloudsherpa.ingestion.normalization.model;
 // split the usage and billing
 public class NormalizedMetric {
   private String metricId;
-  private String provider;
-  private long usageStart;
-  private long usageEnd;
   private String resourceId;
-  private String service;
-  private String serviceCategory;
-  private double usageAmount;
-  private String usageUnit;
-  private double effectiveCost;
+  // account_id
+  private String metricType;
+  private String metricName;
+  private double metricValue;
+  private String unit;
   private String currency;
-  private String pricingModel;
+  private long periodStart;
+  private long periodEnd;
 
   public NormalizedMetric(
       String metricId,
-      String provider,
-      long usageStart,
-      long usageEnd,
       String resourceId,
-      String service,
-      String serviceCategory,
-      double usageAmount,
-      String usageUnit,
-      double effectiveCost,
+      // account_id
+      String metricType,
+      String metricName,
+      double metricValue,
+      String unit,
       String currency,
-      String pricingModel) {
+      long periodStart,
+      long periodEnd) {
     this.metricId = metricId;
-    this.provider = provider;
-    this.usageStart = usageStart;
-    this.usageEnd = usageEnd;
     this.resourceId = resourceId;
-    this.service = service;
-    this.serviceCategory = serviceCategory;
-    this.usageAmount = usageAmount;
-    this.usageUnit = usageUnit;
-    this.effectiveCost = effectiveCost;
+    // account_id
+    this.metricType = metricType;
+    this.metricName = metricName;
+    this.metricValue = metricValue;
+    this.unit = unit;
     this.currency = currency;
-    this.pricingModel = pricingModel;
+    this.periodStart = periodStart;
+    this.periodEnd = periodEnd;
   }
 
   public String getMetricId() {
     return metricId;
   }
 
-  public String getProvider() {
-    return provider;
-  }
-
-  public long getUsageStart() {
-    return usageStart;
-  }
-
-  public long getUsageEnd() {
-    return usageEnd;
-  }
-
   public String getResourceId() {
     return resourceId;
   }
 
-  public String getService() {
-    return service;
+  // account_id
+
+  public String getMetricType() {
+    return metricType;
   }
 
-  public String getServiceCategory() {
-    return serviceCategory;
+  public String getMetricName() {
+    return metricName;
   }
 
-  public double getUsageAmount() {
-    return usageAmount;
+  public double getMetricValue() {
+    return metricValue;
   }
 
-  public String getUsageUnit() {
-    return usageUnit;
-  }
-
-  public double getEffectiveCost() {
-    return effectiveCost;
+  public String getUnit() {
+    return unit;
   }
 
   public String getCurrency() {
     return currency;
   }
 
-  public String getPricingModel() {
-    return pricingModel;
+  public long getPeriodStart() {
+    return periodStart;
+  }
+
+  public long getPeriodEnd() {
+    return periodEnd;
   }
 }

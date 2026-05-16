@@ -51,6 +51,7 @@ CREATE TABLE cloud_credentials (
 
 CREATE TABLE normalized_metrics (
   metric_id UUID PRIMARY KEY,
+  account_id UUID NOT NULL REFERENCES cloud_accounts(account_id),
   recorded_at TIMESTAMPTZ NOT NULL,
   resource_id UUID REFERENCES resources(resource_id),
   metric_type metric_type_enum NOT NULL,
