@@ -13,6 +13,7 @@ import software.amazon.awssdk.services.cloudwatch.model.*;
 import software.amazon.awssdk.services.ec2.Ec2Client;
 import software.amazon.awssdk.services.ec2.model.DescribeInstancesRequest;
 import software.amazon.awssdk.services.ec2.model.DescribeInstancesResponse;
+import software.amazon.awssdk.services.ec2.model.Instance;
 import software.amazon.awssdk.services.ec2.model.Reservation;
 
 @Component("AWS")
@@ -23,19 +24,23 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
       .region(Region.AF_SOUTH_1)
       .build();
 
-  public List<String> getAllEC2InstanceIds(Ec2Client ec2) {
+  public List<String> getAllEC2InstanceIds(CloudCredentials credentials) {
+
     List<String> instanceIds = new ArrayList<>();
 
-    DescribeInstancesRequest request = DescribeInstancesRequest.builder().build();
+    try (Ec2Client ec2 = Ec2Client.builder()
+        .region(AwsClientFactory.region(credentials))
+        .credentialsProvider(
+            AwsClientFactory.credentialsProvider(credentials))
+        .build()) {
+      DescribeInstancesResponse response = ec2.describeInstances();
 
-    for (DescribeInstancesResponse page : ec2.describeInstancesPaginator(request)) {
-      for (Reservation reservation : page.reservations()) {
-        for (software.amazon.awssdk.services.ec2.model.Instance instance : reservation.instances()) {
+      for (Reservation reservation : response.reservations()) {
+        for (Instance instance : reservation.instances()) {
           instanceIds.add(instance.instanceId());
         }
       }
     }
-
     return instanceIds;
   }
 
@@ -106,6 +111,20 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
   @Override
   public List<BillingRecordModel> fetchBilling(AccountScope accountScope, IngestionRequestEvent request) {
     return List.of(); // mock for now
+  }
+
+  public List<String> getAllOfferedServices() {
+    List<String> services = new ArrayList<>();
+    services.add("AWS/EC2");
+    services.add("AWS/ECS");
+    services.add("AWS/EKS");
+    services.add("AWS/Lambda");
+    services.add("AWS/RDS");
+    services.add("AWS/ElastiCache");
+    services.add("AWS/OpenSearch");
+    services.add("AWS/MSK");
+
+    return services;
   }
 
   @Override
