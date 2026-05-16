@@ -65,6 +65,25 @@ export function WidgetContainer({
             if(!isResizing){
                 return;
             }
+            
+            const forNewWidth = width;
+            let forNewHeight = height;
+
+            const deltaX = e.clientX-startingXRef.current;
+            const deltaY = e.clientY-startingYRef.current;
+            
+            switch(resizeDirection){
+                case 'bottom':
+                    forNewHeight = Math.max(minHeight, startingHeightRef.current + deltaY);
+                    break;
+
+                case 'top':
+                    forNewHeight = Math.max(minHeight, startingHeightRef.current - deltaY);
+                    break;
+            }
+            
+            setWidth(forNewWidth);
+            setHeight(forNewHeight);
         };
 
         const handleMouseUp = () => {
