@@ -29,7 +29,7 @@ export default function DashboardPage() {
   };
   return (
     <>
-      <header className="sticky top-0 z-10 border-b bg-background/95">
+      <header className="sticky top-0 z-10 border-b bg-background/95 px-6 py-4">
         <Toolbar
           isEditMode={isEditMode}
           setIsEditMode={handleEditModeChange}
@@ -40,7 +40,7 @@ export default function DashboardPage() {
         />
       </header>
 
-      <main className="flex-1 overflow-y-auto overflow-x-hidden">
+      <main className="flex-1 overflow-y-auto overflow-x-hidden m-3">
         <Grid
           isEditMode={isEditMode}
           dashboardId={selectedDashboardId}

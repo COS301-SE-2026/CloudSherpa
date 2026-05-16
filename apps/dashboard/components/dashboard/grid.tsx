@@ -89,7 +89,7 @@ useEffect(() => {
   }, []);
 
   return (
-    <div className="p-4 bg-background min-h-screen">
+    <div className="bg-background min-h-screen">
       <div ref={gridRef} className="grid-stack">
         {widgets.map((w) => (
           <WidgetWrapper key={w.id} {...w} isEditMode={isEditMode}>
