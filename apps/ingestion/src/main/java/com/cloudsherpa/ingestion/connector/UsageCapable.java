@@ -5,5 +5,7 @@ import java.util.List;
 
 public interface UsageCapable {
 
-  List<UsageRecordModel> fetchUsage(IngestionRequestEvent request);
+  List<UsageRecordModel> fetchUsage(AccountScope accountScope, IngestionRequestEvent request);
+
+  List<UsageRecordModel> fetchMockUsage(AccountScope accountScope, IngestionRequestEvent request);
 }
