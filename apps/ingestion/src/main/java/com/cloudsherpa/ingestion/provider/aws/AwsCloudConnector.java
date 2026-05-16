@@ -22,6 +22,13 @@ import software.amazon.awssdk.services.lambda.LambdaClient;
 import software.amazon.awssdk.services.lambda.model.*;
 import software.amazon.awssdk.services.rds.RdsClient;
 import software.amazon.awssdk.services.rds.model.*;
+import software.amazon.awssdk.services.elasticache.ElastiCacheClient;
+import software.amazon.awssdk.services.elasticache.model.*;
+import software.amazon.awssdk.services.opensearch.OpenSearchClient;
+import software.amazon.awssdk.services.opensearch.model.*;
+import software.amazon.awssdk.services.redshift.RedshiftClient;
+import software.amazon.awssdk.services.redshift.model.*;
+import software.amazon.awssdk.services.redshift.RedshiftClient;
 
 @Component("AWS")
 public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingCapable {
@@ -31,7 +38,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
       .region(Region.AF_SOUTH_1)
       .build();
 
-  public List<String> getAllEc2InstanceIds(CloudCredentials credentials) {
+  public static List<String> getAllEc2InstanceIds(CloudCredentials credentials) {
 
     List<String> instanceIds = new ArrayList<>();
 
@@ -98,10 +105,10 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
     return names;
   }
 
-  public static List<String> listRdsInstances(
+  public static List<String> getAllRdsInstances(
       CloudCredentials credentials) {
 
-    List<String> ids = new ArrayList<>();
+    List<String> instanceIds = new ArrayList<>();
 
     try (RdsClient rds = RdsClient.builder()
         .region(AwsClientFactory.region(credentials))
@@ -112,11 +119,75 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
       DescribeDbInstancesResponse response = rds.describeDBInstances();
 
       for (DBInstance db : response.dbInstances()) {
-        ids.add(db.dbInstanceIdentifier());
+        instanceIds.add(db.dbInstanceIdentifier());
       }
     }
 
-    return ids;
+    return instanceIds;
+  }
+
+  public static List<String> getAllElastiCacheClusters(
+      CloudCredentials credentials) {
+
+    List<String> clusterIds = new ArrayList<>();
+
+    try (ElastiCacheClient client = ElastiCacheClient.builder()
+        .region(AwsClientFactory.region(credentials))
+        .credentialsProvider(
+            AwsClientFactory.credentialsProvider(credentials))
+        .build()) {
+
+      DescribeCacheClustersResponse response = client.describeCacheClusters();
+
+      for (CacheCluster cluster : response.cacheClusters()) {
+        clusterIds.add(cluster.cacheClusterId());
+      }
+    }
+
+    return clusterIds;
+  }
+
+  public static List<String> getAllOpenSearchDomains(
+      CloudCredentials credentials) {
+
+    List<String> domainNames = new ArrayList<>();
+
+    try (OpenSearchClient client = OpenSearchClient.builder()
+        .region(AwsClientFactory.region(credentials))
+        .credentialsProvider(
+            AwsClientFactory.credentialsProvider(credentials))
+        .build()) {
+
+      ListDomainNamesResponse response = client.listDomainNames(
+          ListDomainNamesRequest.builder().build());
+
+      for (DomainInfo info : response.domainNames()) {
+        domainNames.add(info.domainName());
+      }
+    }
+
+    return domainNames;
+  }
+
+  public static List<String> getAllRedshiftClusters(
+      CloudCredentials credentials) {
+
+    List<String> clusterIds = new ArrayList<>();
+
+    try (RedshiftClient client = RedshiftClient.builder()
+        .region(AwsClientFactory.region(credentials))
+        .credentialsProvider(
+            AwsClientFactory.credentialsProvider(credentials))
+        .build()) {
+
+      software.amazon.awssdk.services.redshift.model.DescribeClustersResponse response = client.describeClusters();
+
+      for (software.amazon.awssdk.services.redshift.model.Cluster cluster : response.clusters()) {
+        clusterIds.add(cluster.clusterIdentifier());
+      }
+    }
+
+    return clusterIds;
   }
 
   @Override
@@ -125,11 +196,6 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
     int period = request
         .getPeriod(); // contract: ensure that the request does not return over 1000 datapoints
     // ((to-from)/period)
-    DefaultCredentialsProvider.create();
-    Ec2Client ec2 = Ec2Client.builder()
-        .region(Region.AF_SOUTH_1)
-        .credentialsProvider(DefaultCredentialsProvider.create())
-        .build();
 
     List<UsageRecordModel> result = new ArrayList<>();
     for (ServiceScope serviceScope : accountScope.getServiceScopes()) { // these are for services such as EC2, RDS etc.
@@ -197,7 +263,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
     services.add("AWS/RDS");
     services.add("AWS/ElastiCache");
     services.add("AWS/OpenSearch");
-    services.add("AWS/MSK");
+    services.add("AWS/RedShift");
 
     return services;
   }
