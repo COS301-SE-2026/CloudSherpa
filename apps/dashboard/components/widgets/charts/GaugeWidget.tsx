@@ -137,6 +137,39 @@ export function GaugeWidget({
         forChartInstance.current.setOption(option);
     }, [title, latestValue]);
 
+    useEffect(() => {
+        if(!forChartInstance.current){
+            return;
+        }
+
+        const handleResize = () => {
+            forChartInstance.current?.resize();
+        };
+
+        const handleWidgetResize = () => {
+            setTimeout(() => {
+                forChartInstance.current?.resize();
+            }, 10);
+        };
+
+        window.addEventListener('resize', handleResize);
+        window.addEventListener('widget-resize', handleWidgetResize);
+        
+        const resizeObserver = new ResizeObserver(() => {
+            forChartInstance.current?.resize();
+        });
+
+        if(forChartReference.current){
+            resizeObserver.observe(forChartReference.current);
+        }
+
+        return () => {
+            window.removeEventListener('resize', handleResize);
+            window.removeEventListener('widget-resize', handleWidgetResize);
+            resizeObserver.disconnect();
+        };
+    }, []);
+
     return(
         <div className="flex h-full flex-col items-center justify-center">
             <div className="w-full h-full min-h-[280px]">
