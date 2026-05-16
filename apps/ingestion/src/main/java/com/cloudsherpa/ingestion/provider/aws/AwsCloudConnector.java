@@ -15,10 +15,13 @@ import software.amazon.awssdk.services.ecs.model.*;
 import software.amazon.awssdk.services.eks.EksClient;
 import software.amazon.awssdk.services.eks.model.*;
 import software.amazon.awssdk.services.ec2.Ec2Client;
-import software.amazon.awssdk.services.ec2.model.DescribeInstancesRequest;
 import software.amazon.awssdk.services.ec2.model.DescribeInstancesResponse;
 import software.amazon.awssdk.services.ec2.model.Instance;
 import software.amazon.awssdk.services.ec2.model.Reservation;
+import software.amazon.awssdk.services.lambda.LambdaClient;
+import software.amazon.awssdk.services.lambda.model.*;
+import software.amazon.awssdk.services.rds.RdsClient;
+import software.amazon.awssdk.services.rds.model.*;
 
 @Component("AWS")
 public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingCapable {
@@ -72,6 +75,48 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
 
       return eks.listClusters().clusters();
     }
+  }
+
+  public static List<String> getAllLambdaFunctions(
+      CloudCredentials credentials) {
+
+    List<String> names = new ArrayList<>();
+
+    try (LambdaClient lambda = LambdaClient.builder()
+        .region(AwsClientFactory.region(credentials))
+        .credentialsProvider(
+            AwsClientFactory.credentialsProvider(credentials))
+        .build()) {
+
+      ListFunctionsResponse response = lambda.listFunctions();
+
+      for (FunctionConfiguration fn : response.functions()) {
+        names.add(fn.functionName());
+      }
+    }
+
+    return names;
+  }
+
+  public static List<String> listRdsInstances(
+      CloudCredentials credentials) {
+
+    List<String> ids = new ArrayList<>();
+
+    try (RdsClient rds = RdsClient.builder()
+        .region(AwsClientFactory.region(credentials))
+        .credentialsProvider(
+            AwsClientFactory.credentialsProvider(credentials))
+        .build()) {
+
+      DescribeDbInstancesResponse response = rds.describeDBInstances();
+
+      for (DBInstance db : response.dbInstances()) {
+        ids.add(db.dbInstanceIdentifier());
+      }
+    }
+
+    return ids;
   }
 
   @Override
