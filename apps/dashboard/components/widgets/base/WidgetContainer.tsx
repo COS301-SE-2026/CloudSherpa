@@ -160,6 +160,22 @@ export function WidgetContainer({
                         <div className="absolute left-1 top-1/2 transform -translate-y-1/2 w-1 h-8 rounded-full bg-border group-hover:bg-primary transition-colors" />
                     </div>
                     
+                    {/*from the top left*/}
+                    <div
+                        className="absolute top-0 left-0 w-3 h-3 cursor-nw-resize group z-10"
+                        onMouseDown={(e) => handleResizeStart(e, 'top-left')}
+                    >
+                        <div className="absolute top-1 left-1 w-2 h-2 rounded-full bg-border group-hover:bg-primary transition-colors" />
+                    </div>
+                    
+                    {/*from the top right*/}
+                    <div
+                        className="absolute top-0 right-0 w-3 h-3 cursor-ne-resize group z-10"
+                        onMouseDown={(e) => handleResizeStart(e, 'top-right')}
+                    >
+                        <div className="absolute top-1 right-1 w-2 h-2 rounded-full bg-border group-hover:bg-primary transition-colors" />
+                    </div>
+                    
                     {/*from the bottom left*/}
                     <div
                         className="absolute bottom-0 left-0 w-3 h-3 cursor-sw-resize group z-10"
