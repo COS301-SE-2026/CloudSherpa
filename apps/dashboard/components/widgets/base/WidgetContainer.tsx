@@ -136,6 +136,14 @@ export function WidgetContainer({
             {/*this is to handle the resizing from all drections*/}
             {isResizable && (
                 <>
+                    {/*from the bottom*/}
+                    <div
+                        className="absolute bottom-0 left-0 right-0 h-2 cursor-ns-resize group z-10"
+                        onMouseDown={(e) => handleResizeStart(e, 'bottom')}
+                    >
+                        <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-8 h-1 rounded-full bg-border group-hover:bg-primary transition-colors" />
+                    </div>
+                    
                     {/*from the right*/}
                     <div
                         className="absolute top-0 right-0 bottom-0 w-2 cursor-ew-resize group z-10"
@@ -158,6 +166,14 @@ export function WidgetContainer({
                         onMouseDown={(e) => handleResizeStart(e, 'left')}
                     >
                         <div className="absolute left-1 top-1/2 transform -translate-y-1/2 w-1 h-8 rounded-full bg-border group-hover:bg-primary transition-colors" />
+                    </div>
+                    
+                    {/*from the top*/}
+                    <div
+                        className="absolute top-0 left-0 right-0 h-2 cursor-ns-resize group z-10"
+                        onMouseDown={(e) => handleResizeStart(e, 'top')}
+                    >
+                        <div className="absolute top-1 left-1/2 transform -translate-x-1/2 w-8 h-1 rounded-full bg-border group-hover:bg-primary transition-colors" />
                     </div>
                     
                     {/*from the top left*/}
