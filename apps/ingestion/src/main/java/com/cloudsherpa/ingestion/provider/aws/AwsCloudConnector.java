@@ -10,6 +10,10 @@ import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
 import software.amazon.awssdk.services.cloudwatch.model.*;
+import software.amazon.awssdk.services.ecs.EcsClient;
+import software.amazon.awssdk.services.ecs.model.*;
+import software.amazon.awssdk.services.eks.EksClient;
+import software.amazon.awssdk.services.eks.model.*;
 import software.amazon.awssdk.services.ec2.Ec2Client;
 import software.amazon.awssdk.services.ec2.model.DescribeInstancesRequest;
 import software.amazon.awssdk.services.ec2.model.DescribeInstancesResponse;
@@ -24,7 +28,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
       .region(Region.AF_SOUTH_1)
       .build();
 
-  public List<String> getAllEC2InstanceIds(CloudCredentials credentials) {
+  public List<String> getAllEc2InstanceIds(CloudCredentials credentials) {
 
     List<String> instanceIds = new ArrayList<>();
 
@@ -42,6 +46,32 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
       }
     }
     return instanceIds;
+  }
+
+  public static List<String> getAllEcsClusters(
+      CloudCredentials credentials) {
+
+    try (EcsClient ecs = EcsClient.builder()
+        .region(AwsClientFactory.region(credentials))
+        .credentialsProvider(
+            AwsClientFactory.credentialsProvider(credentials))
+        .build()) {
+
+      return ecs.listClusters().clusterArns();
+    }
+  }
+
+  public static List<String> getAllEksClusters(
+      CloudCredentials credentials) {
+
+    try (EksClient eks = EksClient.builder()
+        .region(AwsClientFactory.region(credentials))
+        .credentialsProvider(
+            AwsClientFactory.credentialsProvider(credentials))
+        .build()) {
+
+      return eks.listClusters().clusters();
+    }
   }
 
   @Override
