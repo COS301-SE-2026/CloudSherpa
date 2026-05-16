@@ -108,10 +108,18 @@ export function LineChartWidget({
             chartInstance.current?.resize();
         };
 
+        const handleWidgetResize = () => {
+            setTimeout(() => {
+                chartInstance.current?.resize();
+            }, 10);
+        };
+
         window.addEventListener('resize', handleResize);
+        window.addEventListener('widget-resize', handleWidgetResize);
         
         return () => {
             window.removeEventListener('resize', handleResize);
+            window.removeEventListener('widget-resize', handleWidgetResize);
         };
     }, []);
 
