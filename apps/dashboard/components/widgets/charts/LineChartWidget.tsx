@@ -116,10 +116,19 @@ export function LineChartWidget({
 
         window.addEventListener('resize', handleResize);
         window.addEventListener('widget-resize', handleWidgetResize);
+
+        const forResizing = new ResizeObserver(() => {
+            chartInstance.current?.resize();
+        });
+
+        if(chartRef.current){
+            forResizing.observe(chartRef.current);
+        }
         
         return () => {
             window.removeEventListener('resize', handleResize);
             window.removeEventListener('widget-resize', handleWidgetResize);
+            forResizing.disconnect();
         };
     }, []);
 
