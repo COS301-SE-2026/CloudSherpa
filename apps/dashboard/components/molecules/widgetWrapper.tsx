@@ -21,6 +21,7 @@ export const WidgetWrapper = ({ layout, isEditMode, onDeleteWidget }: WidgetWrap
     <div 
       className="grid-stack-item" 
       gs-id={id} gs-x={x} gs-y={y} gs-w={w} gs-h={h}
+      data-widget-id={widgetId}
       gs-auto-position={autoPosition ? "true" : undefined}
     >
       <div className="grid-stack-item-content relative overflow-visible rounded-md group">

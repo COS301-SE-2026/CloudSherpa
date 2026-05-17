@@ -1,8 +1,7 @@
 "use client";
 import React, { useLayoutEffect, useRef, useEffect } from "react";
 import "gridstack/dist/gridstack.min.css";
-import { GridStack } from "gridstack";
-import { GridItemHTMLElement } from "gridstack"; // Import GridItemHTMLElement
+import { GridStack, GridItemHTMLElement, GridStackWidget } from "gridstack";
 import { LayoutItem } from "@/types/widgets";
 import { WidgetWrapper } from "@/components/molecules/widgetWrapper";
 
@@ -16,7 +15,7 @@ interface GridProps {
 
 export default function Grid({
   isEditMode,
-  dashboardId,
+  dashboardId: _dashboardId,
   onLayoutChange,
   layouts,
   onDeleteWidget,
@@ -48,10 +47,13 @@ export default function Grid({
         },
         gridRef.current,
       );
-
-      gridStackInstance.current.on("change", () => {
-        if (gridStackInstance.current && isEditModeRef.current) {
-          const fullLayout = gridStackInstance.current.save() as LayoutItem[];
+      
+      gridStackInstance.current.on("change", (_event, nodes) => {
+        if (gridStackInstance.current && isEditModeRef.current && nodes) {
+          // Use the save callback to re-inject the widgetId from the DOM into the state update
+          const fullLayout = gridStackInstance.current.save(false, false, (node, w: GridStackWidget) => {
+            (w as LayoutItem).widgetId = node.el?.getAttribute("data-widget-id") || "";
+          }) as LayoutItem[];
           onLayoutChange(fullLayout);
         }
       });
@@ -69,7 +71,6 @@ export default function Grid({
     // Use batchUpdate to prevent multiple re-layouts during synchronization
     gridStackInstance.current.batchUpdate();
 
-    // 1. Sync Additions: find items React added but GridStack hasn't initialized yet
     // This needs to run in both edit and view mode so initial layouts position correctly
     const newItems = gridRef.current?.querySelectorAll<GridItemHTMLElement>(".grid-stack-item"); // Specify type here
     newItems?.forEach((el) => {
@@ -79,7 +80,7 @@ export default function Grid({
       }
     });
 
-    // 2. Sync Deletions: remove engine nodes that are no longer in the layouts prop
+
     const layoutIds = new Set(layouts.map((l) => l.id));
     const nodesToRemove = gridStackInstance.current.engine.nodes.filter(
       (n) => n.id && !layoutIds.has(n.id)

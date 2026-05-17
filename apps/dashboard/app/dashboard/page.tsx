@@ -77,9 +77,10 @@ export default function DashboardPage() {
     setSelectedDashboardId(newDashboard.id);
   }, []);
 
+  // use UUID's for widget and layout id's so in theory won't be a clash
   const handleAddWidget = useCallback(() => {
-    const widgetId = `widget-${Date.now()}`;
-    const layoutId = `layout-${Date.now()}`;
+    const widgetId = crypto.randomUUID();
+    const layoutId = crypto.randomUUID();
     const newConfig: WidgetConfig = {
       id: widgetId,
       chartType: "line", 
