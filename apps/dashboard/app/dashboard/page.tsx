@@ -70,7 +70,7 @@ export default function DashboardPage() {
 
   const handleCreateDashboard = useCallback((name: string) => {
     const newDashboard: DashboardStub = {
-      id: `ds-${Date.now()}`,
+      id: crypto.randomUUID(),
       label: name,
     };
     setDashboards((prev) => [...prev, newDashboard]);
