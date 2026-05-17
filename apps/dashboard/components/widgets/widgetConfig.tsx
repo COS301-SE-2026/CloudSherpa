@@ -75,6 +75,44 @@ export function WidgetConfig({
                             placeholder="Enter widget title"
                         />
                     </div>
+
+                    {/*this is for the resource id*/}
+                    <div>
+                        <label className="block text-sm font-medium text-foreground mb-2">
+                            Resource ID
+                        </label>
+
+                        <select
+                            value={forConfiguration.resourceId}
+                            onChange={(e) => setConfig({ ...forConfiguration, resourceId: e.target.value })}
+                            className="w-full bg-background border border-border rounded-lg px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                        >
+                            {forAvailableResources.map((resource) => (
+                                <option key={resource} value={resource}>
+                                    {resource}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/*this is for the metric type*/}
+                    <div>
+                        <label className="block text-sm font-medium text-foreground mb-2">
+                            Metric Type
+                        </label>
+
+                        <select
+                            value={forConfiguration.metricType}
+                            onChange={(e) => setConfig({ ...forConfiguration, metricType: e.target.value })}
+                            className="w-full bg-background border border-border rounded-lg px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                        >
+                            {forAvailableMetricTypes.map((type) => (
+                                <option key={type} value={type}>
+                                    {type.toUpperCase()}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
             </div>
         </>
