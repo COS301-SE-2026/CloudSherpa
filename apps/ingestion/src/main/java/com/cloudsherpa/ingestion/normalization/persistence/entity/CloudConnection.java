@@ -10,8 +10,8 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "cloud_connections")
-public class CloudConnections {
+@Table(name = "cloud_connection")
+public class CloudConnection {
 
   @Id
   @Column(name = "connection_id", nullable = false)
@@ -33,9 +33,9 @@ public class CloudConnections {
   @Column(name = "created_at")
   private OffsetDateTime createdAt;
 
-  protected CloudConnections() {}
+  protected CloudConnection() {}
 
-  public CloudConnections(
+  public CloudConnection(
       UUID id, UUID userId, String provider, String status, OffsetDateTime createdAt) {
     this.id = id;
     this.userId = userId;

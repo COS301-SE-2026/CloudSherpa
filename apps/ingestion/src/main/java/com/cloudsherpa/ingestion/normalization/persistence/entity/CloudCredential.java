@@ -10,8 +10,8 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "cloud_credentials")
-public class CloudCredentials {
+@Table(name = "cloud_credential")
+public class CloudCredential {
 
   @Id
   @Column(name = "credential_id", nullable = false)
@@ -22,7 +22,7 @@ public class CloudCredentials {
 
   @ManyToOne
   @JoinColumn(name = "connection_id", nullable = false, insertable = false, updatable = false)
-  private CloudConnections connection;
+  private CloudConnection connection;
 
   @Column(name = "provider", nullable = false, length = 50)
   private String provider;
@@ -36,9 +36,9 @@ public class CloudCredentials {
   @Column(name = "created_at")
   private OffsetDateTime createdAt;
 
-  protected CloudCredentials() {}
+  protected CloudCredential() {}
 
-  public CloudCredentials(
+  public CloudCredential(
       UUID id,
       UUID connectionId,
       String provider,
@@ -61,7 +61,7 @@ public class CloudCredentials {
     return connectionId;
   }
 
-  public CloudConnections getConnection() {
+  public CloudConnection getConnection() {
     return connection;
   }
 

@@ -10,8 +10,8 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "resources")
-public class Resources {
+@Table(name = "resource")
+public class Resource {
   @Id
   @Column(name = "resource_id", nullable = false)
   private UUID id;
@@ -32,9 +32,9 @@ public class Resources {
   @Column(name = "created_at")
   private OffsetDateTime createdAt;
 
-  protected Resources() {}
+  protected Resource() {}
 
-  public Resources(
+  public Resource(
       UUID id, UUID accountId, String resourceType, String tags, OffsetDateTime createdAt) {
     this.id = id;
     this.accountId = accountId;

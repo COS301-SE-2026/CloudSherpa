@@ -8,7 +8,7 @@ CREATE TYPE credential_type_enum AS ENUM ('access_key','oauth');
 CREATE TYPE account_type_enum AS ENUM ('aws_account','azure_subscription','gcp_project');
 CREATE TYPE metric_type_enum AS ENUM ('cost','usage','performance');
 
-CREATE TABLE users (
+CREATE TABLE user (
   user_id UUID PRIMARY KEY,
   email VARCHAR(320) NOT NULL UNIQUE,
   username VARCHAR(100) NOT NULL,
@@ -16,7 +16,7 @@ CREATE TABLE users (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE TABLE cloud_connections (
+CREATE TABLE cloud_connection (
   connection_id UUID PRIMARY KEY,
   user_id UUID NOT NULL REFERENCES users(user_id),
   provider provider_enum NOT NULL,
@@ -24,7 +24,7 @@ CREATE TABLE cloud_connections (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE TABLE cloud_accounts (
+CREATE TABLE cloud_account (
   account_id UUID PRIMARY KEY,
   connection_id UUID NOT NULL REFERENCES cloud_connections(connection_id),
   account_type account_type_enum NOT NULL,
@@ -32,7 +32,7 @@ CREATE TABLE cloud_accounts (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE TABLE resources (
+CREATE TABLE resource (
   resource_id UUID PRIMARY KEY,
   account_id UUID NOT NULL REFERENCES cloud_accounts(account_id),
   resource_type VARCHAR(255),
@@ -40,7 +40,7 @@ CREATE TABLE resources (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE TABLE cloud_credentials (
+CREATE TABLE cloud_credential (
   credential_id UUID PRIMARY KEY,
   connection_id UUID NOT NULL REFERENCES cloud_connections(connection_id),
   provider provider_enum NOT NULL,

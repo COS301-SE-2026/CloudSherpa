@@ -22,7 +22,7 @@ import jakarta.persistence.Table;
 import java.util.UUID;
 
 @Entity
-@Table(name = "users")
+@Table(name = "user")
 public class User {
 
   @Id

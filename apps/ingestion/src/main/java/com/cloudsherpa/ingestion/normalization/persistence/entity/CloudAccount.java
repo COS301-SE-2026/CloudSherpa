@@ -10,7 +10,7 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "cloud_accounts")
+@Table(name = "cloud_account")
 public class CloudAccount {
 
   @Id
@@ -22,7 +22,7 @@ public class CloudAccount {
 
   @ManyToOne
   @JoinColumn(name = "connection_id", nullable = false, insertable = false, updatable = false)
-  private CloudConnections connection;
+  private CloudConnection connection;
 
   @Column(name = "account_type", nullable = false, length = 255)
   private String accountType;
@@ -56,7 +56,7 @@ public class CloudAccount {
     return connectionId;
   }
 
-  public CloudConnections getConnection() {
+  public CloudConnection getConnection() {
     return connection;
   }
 
