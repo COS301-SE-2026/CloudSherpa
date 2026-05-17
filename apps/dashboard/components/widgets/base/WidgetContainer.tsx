@@ -14,6 +14,9 @@ interface WidgetContainerProps{
     minHeight?: number;
 
     isResizable?: boolean;
+
+    onSettingsClick?: () => void;
+    showConfig?: boolean;
 }
 
 export function WidgetContainer({ 
@@ -27,7 +30,10 @@ export function WidgetContainer({
     minWidth = 300,
     minHeight = 200,
     
-    isResizable = true
+    isResizable = true,
+
+    onSettingsClick,
+    showConfig = true
 
 }: WidgetContainerProps){
     const [width, setWidth] = useState(defaultWidth);
@@ -162,6 +168,20 @@ export function WidgetContainer({
             {forTitle && (
                 <div className="flex items-center justify-between border-b border-border px-4 py-3">
                     <h3 className="text-sm font-medium text-foreground">{forTitle}</h3>
+
+                    {showConfig && onSettingsClick && (
+                            <button
+                                onClick={onSettingsClick}
+                                className="text-muted-foreground hover:text-foreground transition-colors p-1"
+                                title="Configure Widget"
+                            >
+                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                    <circle cx="12" cy="6" r="2" />
+                                    <circle cx="12" cy="12" r="2" />
+                                    <circle cx="12" cy="18" r="2" />
+                                </svg>
+                            </button>
+                    )}
                     
                     <button
                         onClick={handleReset}
