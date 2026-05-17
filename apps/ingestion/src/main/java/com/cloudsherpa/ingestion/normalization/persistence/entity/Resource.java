@@ -26,7 +26,7 @@ public class Resource {
   @Column(name = "resource_type", length = 255)
   private String resourceType;
 
-  @Column(name = "tags", columnDefinition = "jsonb")
+  @Column(name = "tags")
   private String tags;
 
   @Column(name = "created_at")

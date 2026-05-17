@@ -24,22 +24,22 @@ public class NormalizedMetrics {
   @Column(name = "resource_id", nullable = false, length = 255)
   private UUID resourceId;
 
-  @Column(name = "recorded_at", nullable = false, updatable = false)
+  @Column(name = "recorded_at", updatable = false)
   private OffsetDateTime recordedAt;
 
-  @Column(name = "metric_type", nullable = false, length = 50)
+  @Column(name = "metric_type", length = 50)
   private String metricType;
 
-  @Column(name = "metric_name", nullable = false, length = 255)
+  @Column(name = "metric_name", length = 255)
   private String metricName;
 
-  @Column(name = "metric_value", nullable = false, precision = 19, scale = 6)
+  @Column(name = "metric_value", precision = 19, scale = 6)
   private BigDecimal metricValue;
 
-  @Column(name = "unit", nullable = false, length = 50)
+  @Column(name = "unit", length = 50)
   private String unit;
 
-  @Column(name = "currency", length = 10, nullable = false)
+  @Column(name = "currency", length = 10)
   private String currency;
 
   @Column(name = "period_start")

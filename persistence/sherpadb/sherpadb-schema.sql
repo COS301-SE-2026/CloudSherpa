@@ -26,7 +26,7 @@ CREATE TABLE cloud_connection (
 
 CREATE TABLE cloud_account (
   account_id UUID PRIMARY KEY,
-  connection_id UUID NOT NULL REFERENCES cloud_connections(connection_id),
+  connection_id UUID NOT NULL REFERENCES cloud_connection(connection_id),
   account_type account_type_enum NOT NULL,
   display_name VARCHAR(255),
   created_at TIMESTAMPTZ DEFAULT NOW()
@@ -34,15 +34,15 @@ CREATE TABLE cloud_account (
 
 CREATE TABLE resource (
   resource_id UUID PRIMARY KEY,
-  account_id UUID NOT NULL REFERENCES cloud_accounts(account_id),
+  account_id UUID NOT NULL REFERENCES cloud_account(account_id),
   resource_type VARCHAR(255),
-  tags JSONB,
+  tags VARCHAR(255),
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE TABLE cloud_credential (
   credential_id UUID PRIMARY KEY,
-  connection_id UUID NOT NULL REFERENCES cloud_connections(connection_id),
+  connection_id UUID NOT NULL REFERENCES cloud_connection(connection_id),
   provider provider_enum NOT NULL,
   credential_type credential_type_enum NOT NULL,
   credential_value TEXT NOT NULL,
@@ -50,17 +50,18 @@ CREATE TABLE cloud_credential (
 );
 
 CREATE TABLE normalized_metrics (
-  metric_id UUID PRIMARY KEY,
-  account_id UUID NOT NULL REFERENCES cloud_accounts(account_id),
+  metric_id UUID,
+  account_id UUID NOT NULL REFERENCES cloud_account(account_id),
   recorded_at TIMESTAMPTZ NOT NULL,
-  resource_id UUID REFERENCES resources(resource_id),
+  resource_id UUID REFERENCES resource(resource_id),
   metric_type metric_type_enum NOT NULL,
   metric_name VARCHAR(255) NOT NULL,
   metric_value NUMERIC NOT NULL,
   unit VARCHAR(50),
   currency VARCHAR(10),
   period_start TIMESTAMPTZ,
-  period_end TIMESTAMPTZ
+  period_end TIMESTAMPTZ,
+  PRIMARY KEY (recorded_at, metric_id)
 );
 
 -- Converts the standard Postgres table above into a TimescaleDB "hypertable".
