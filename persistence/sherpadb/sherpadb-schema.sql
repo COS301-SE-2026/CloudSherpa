@@ -8,7 +8,7 @@ CREATE TYPE credential_type_enum AS ENUM ('access_key','oauth');
 CREATE TYPE account_type_enum AS ENUM ('aws_account','azure_subscription','gcp_project');
 CREATE TYPE metric_type_enum AS ENUM ('cost','usage','performance');
 
-CREATE TABLE user (
+CREATE TABLE users (
   user_id UUID PRIMARY KEY,
   email VARCHAR(320) NOT NULL UNIQUE,
   username VARCHAR(100) NOT NULL,
