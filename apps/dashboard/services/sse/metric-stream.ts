@@ -65,7 +65,8 @@ export function useMetricStream() {
 
     useEffect(() => {
             if (!hasSeededMockMetrics) {
-                createMockMetrics().forEach(addMetric);
+                const forMockMetrics = createMockMetrics();
+                forMockMetrics.forEach(addMetric);
                 hasSeededMockMetrics = true;
             }
 
@@ -84,6 +85,12 @@ export function useMetricStream() {
 
                 if (metricDto.service_category == "CPUUtilization") {
                     metricType = "cpu";
+                } else if(metricDto.service_category == "MemoryUtilization"){
+                    metricType = "memory";
+                } else if(metricDto.service_category == "DiskUtilization"){
+                    metricType = "disk";
+                } else if(metricDto.service_category == "Cost"){
+                    metricType = "cost";
                 }
 
                 const metric: Metric = {
