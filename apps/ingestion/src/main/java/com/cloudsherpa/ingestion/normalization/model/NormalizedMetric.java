@@ -8,7 +8,7 @@ package com.cloudsherpa.ingestion.normalization.model;
 public class NormalizedMetric {
   private String metricId;
   private String resourceId;
-  // account_id
+  private String accountId;
   private String metricType;
   private String metricName;
   private double metricValue;
@@ -20,7 +20,7 @@ public class NormalizedMetric {
   public NormalizedMetric(
       String metricId,
       String resourceId,
-      // account_id
+      String accountId,
       String metricType,
       String metricName,
       double metricValue,
@@ -30,7 +30,7 @@ public class NormalizedMetric {
       long periodEnd) {
     this.metricId = metricId;
     this.resourceId = resourceId;
-    // account_id
+    this.accountId = accountId;
     this.metricType = metricType;
     this.metricName = metricName;
     this.metricValue = metricValue;
@@ -48,7 +48,9 @@ public class NormalizedMetric {
     return resourceId;
   }
 
-  // account_id
+  public String getAccountId() {
+    return accountId;
+  }
 
   public String getMetricType() {
     return metricType;

@@ -2,8 +2,10 @@
 // operations on the database.
 package com.cloudsherpa.ingestion.normalization.persistence.service;
 
+import com.cloudsherpa.ingestion.models.UsageRecordModel;
 import com.cloudsherpa.ingestion.normalization.model.NormalizedMetric;
 import com.cloudsherpa.ingestion.normalization.persistence.entity.NormalizedMetrics;
+import com.cloudsherpa.ingestion.normalization.persistence.entity.Resource;
 import com.cloudsherpa.ingestion.normalization.persistence.repository.NormalizedMetricsRepository;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -18,11 +20,15 @@ import org.springframework.transaction.annotation.Transactional;
 public class SherpaDbPersistenceService {
 
   @Autowired private NormalizedMetricsRepository metricsRepo;
+  @Autowired private CloudInfrastructureService infrastructureService;
 
   // Use @Transactional when we are modifying a database in more than 1 place
   // So that if 1 step succeeds and the other one fails, the data doesn't end up half-written
   @Transactional
-  public void recordMetric(NormalizedMetric metric) {
+  public void recordMetric(NormalizedMetric metric, UsageRecordModel record, UUID userId) {
+
+    Resource resource = infrastructureService.ensureInfrastructure(record, userId);
+    UUID accountId = resource.getAccountId();
 
     OffsetDateTime periodStart = null;
     OffsetDateTime periodEnd = null;
@@ -42,11 +48,10 @@ public class SherpaDbPersistenceService {
       resourceUuid = UUID.fromString(metric.getResourceId());
     }
 
-    // account_id
-
     // Create the new entity representing the row in the normalized_metrics table.
     NormalizedMetrics newMetric =
         new NormalizedMetrics(
+            accountId,
             OffsetDateTime.now(),
             resourceUuid,
             metric.getMetricType(),

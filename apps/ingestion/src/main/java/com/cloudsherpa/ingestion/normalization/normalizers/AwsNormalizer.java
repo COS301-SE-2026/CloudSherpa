@@ -12,7 +12,7 @@ public class AwsNormalizer implements Normalizer {
 
     String metricId = UUID.randomUUID().toString();
     String resourceId = r.getResourceId();
-    // account_id
+    String accountId = r.getAccountId();
     String metricType = "usage";
 
     String metricName = "unknown";
@@ -57,6 +57,7 @@ public class AwsNormalizer implements Normalizer {
     return new NormalizedMetric(
         metricId,
         resourceId,
+        accountId,
         metricType,
         metricName,
         metricValue,

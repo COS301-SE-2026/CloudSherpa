@@ -18,7 +18,8 @@ public class NormalizedMetrics {
   @Column(name = "metric_id", nullable = false, updatable = false)
   private UUID metricId;
 
-  // account_id
+  @Column(name = "account_id", nullable = false)
+  private UUID accountId;
 
   @Column(name = "resource_id", nullable = false, length = 255)
   private UUID resourceId;
@@ -52,7 +53,7 @@ public class NormalizedMetrics {
   }
 
   public NormalizedMetrics(
-      // account_id
+      UUID accountId,
       OffsetDateTime recordedAt,
       UUID resourceId,
       String metricType,
@@ -62,7 +63,7 @@ public class NormalizedMetrics {
       String currency,
       OffsetDateTime periodStart,
       OffsetDateTime periodEnd) {
-    // account_id
+    this.accountId = accountId;
     this.resourceId = resourceId;
     this.recordedAt = recordedAt;
     this.metricType = metricType;
@@ -78,7 +79,9 @@ public class NormalizedMetrics {
     return metricId;
   }
 
-  // account_id
+  public UUID getAccountId() {
+    return accountId;
+  }
 
   public UUID getResourceId() {
     return resourceId;
