@@ -1,7 +1,8 @@
 "use client";
 import React, { useLayoutEffect, useRef, useEffect } from "react";
 import "gridstack/dist/gridstack.min.css";
-import { GridStack, GridItemHTMLElement, GridStackWidget } from "gridstack";
+import { GridStack, GridItemHTMLElement, GridStackWidget, GridStackNode } from "gridstack";
+
 import { LayoutItem } from "@/types/widgets";
 import { WidgetWrapper } from "@/components/molecules/widgetWrapper";
 
@@ -68,31 +69,60 @@ export default function Grid({
   useEffect(() => {
     if (!gridStackInstance.current) return;
 
-    // Use batchUpdate to prevent multiple re-layouts during synchronization
+    //batchupdate prevent multiple re-layouts during synchronization
     gridStackInstance.current.batchUpdate();
 
-    // This needs to run in both edit and view mode so initial layouts position correctly
-    const newItems = gridRef.current?.querySelectorAll<GridItemHTMLElement>(".grid-stack-item"); // Specify type here
-    newItems?.forEach((el) => {
-      // el is already typed as GridItemHTMLElement due to querySelectorAll<GridItemHTMLElement>
-      if (!el.gridstackNode) {
-        gridStackInstance.current?.makeWidget(el);
+    const currentGridNodes = new Map<string, GridStackNode>();
+    gridStackInstance.current.engine.nodes.forEach(node => {
+      if (node.id) { // node.id is the layout.id (gs-id)
+        currentGridNodes.set(node.id, node);
       }
     });
 
+    // Add/Update widgets based on the layouts prop
+    layouts.forEach(layoutItem => {
+      const existingNode = currentGridNodes.get(layoutItem.id);
 
-    const layoutIds = new Set(layouts.map((l) => l.id));
-    const nodesToRemove = gridStackInstance.current.engine.nodes.filter(
-      (n) => n.id && !layoutIds.has(n.id)
-    );
-    nodesToRemove.forEach((node) => {
-      gridStackInstance.current?.removeWidget(node.el!, false, false); //tell dom to let gristack handle it
+      if (existingNode) {
+        // Update existing widget's layout if properties differ
+        if (
+          existingNode.x !== layoutItem.x ||
+          existingNode.y !== layoutItem.y ||
+          existingNode.w !== layoutItem.w ||
+          existingNode.h !== layoutItem.h ||
+          existingNode.autoPosition !== layoutItem.autoPosition // Also check autoPosition
+        ) {
+          gridStackInstance.current?.update(existingNode.el!, {
+            x: layoutItem.x,
+            y: layoutItem.y,
+            w: layoutItem.w,
+            h: layoutItem.h,
+            autoPosition: layoutItem.autoPosition
+          });
+        }
+      } else {
+        // This is a new widget in the layouts prop, make it a GridStack widget
+        const el = gridRef.current?.querySelector(`[gs-id="${layoutItem.id}"]`) as GridItemHTMLElement;
+        if (el && !el.gridstackNode) { // Only make widget if it's not already one
+          gridStackInstance.current?.makeWidget(el, layoutItem);
+        }
+      }
     });
 
+    // sync with gristack state with layouts prop
+    const layoutIdsInProps = new Set(layouts.map((l) => l.id));
+    const nodesToRemove = gridStackInstance.current.engine.nodes.filter(
+      (n) => n.id && !layoutIdsInProps.has(n.id)
+    );
+    nodesToRemove.forEach((node) => {
+      gridStackInstance.current?.removeWidget(node.el!, false, false);
+    });
+    //compact on change or load
     gridStackInstance.current.compact(); //.compact optimizes grid layout by reclaiming spaces, helps remove on page load layout inconsistencies
     gridStackInstance.current.batchUpdate(false);
   }, [layouts, isEditMode]);
 
+  //lock layouts outside edit mode
   useEffect(() => {
     if (gridStackInstance.current) {
       gridStackInstance.current.setStatic(!isEditMode);
