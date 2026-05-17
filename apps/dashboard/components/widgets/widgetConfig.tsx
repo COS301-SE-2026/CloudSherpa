@@ -113,6 +113,38 @@ export function WidgetConfig({
                             ))}
                         </select>
                     </div>
+
+                    {/*this is to chnange bet. the line chart or the gauge chart*/}
+                    <div>
+                        <label className="block text-sm font-medium text-foreground mb-2">
+                            Chart Type
+                        </label>
+
+                        <div className="flex gap-4">
+                            <label className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                    type="radio"
+                                    value="line"
+                                    checked={forConfiguration.forWidgetType === 'line'}
+                                    onChange={(e) => setConfig({ ...forConfiguration, forWidgetType: e.target.value as 'line' | 'gauge' })}
+                                    className="w-4 h-4 text-primary focus:ring-ring"
+                                />
+                                <span className="text-foreground">Line Chart</span>
+                            </label>
+
+                            <label className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                    type="radio"
+                                    value="gauge"
+                                    checked={forConfiguration.forWidgetType === 'gauge'}
+                                    onChange={(e) => setConfig({ ...forConfiguration, forWidgetType: e.target.value as 'line' | 'gauge' })}
+                                    className="w-4 h-4 text-primary focus:ring-ring"
+                                />
+                                <span className="text-foreground">Gauge Chart</span>
+                            </label>
+
+                        </div>
+                    </div>
                 </div>
             </div>
         </>
