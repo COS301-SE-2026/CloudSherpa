@@ -31,16 +31,22 @@ jobs:
                 path: ~/.m2/repository
                 key: ${{ runner.os }}-maven-${{ hashFiles('pom.xml') }}
                 restore-keys: ${{ runner.os }}-maven
-            
+
+            - name: Cache SonarQube packages
+              uses: actions/cache@v5
+              with:
+                path: ~/.sonar/cache
+                key: ${{ runner.os }}-sonar
+                restore-keys: ${{ runner.os }}-sonar
+
             - name: Make Maven Wrapper Executable
               run: chmod +x mvnw
               
             - name: Lint
               run: ./mvnw checkstyle:check
             
-            # Skip tests here but run them in next step for improved fault localization
-            - name: Build
-              run: ./mvnw clean package -DskipTests
-            
-            - name: Unit Tests
-              run: ./mvnw test
+            - name: Build, Unit Test and SonarQube Analysis
+              env:
+                SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+                SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+              run: ./mvnw -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=CloudSherpa -Dsonar.projectName='CloudSherpa'
