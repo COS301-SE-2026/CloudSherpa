@@ -43,5 +43,11 @@ jobs:
             - name: Build
               run: ./mvnw clean package -DskipTests
             
+            - name: SonarQube Analysis
+              env:
+                SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+                SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+              run: ./mvnw -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=CloudSherpa -Dsonar.projectName='CloudSherpa'
+
             - name: Unit Tests
               run: ./mvnw test
