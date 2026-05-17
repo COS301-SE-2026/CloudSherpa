@@ -15,6 +15,7 @@ export type LayoutItem = {
     y: number;
     w: number;
     h: number;
+    autoPosition?: boolean;
 }
 
 //idea when user moves widget without changing config, only perisist layout & vice verssa

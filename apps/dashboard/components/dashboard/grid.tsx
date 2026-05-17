@@ -2,33 +2,22 @@
 import React, { useLayoutEffect, useRef, useEffect } from "react";
 import "gridstack/dist/gridstack.min.css";
 import { GridStack } from "gridstack";
+import { GridItemHTMLElement } from "gridstack"; // Import GridItemHTMLElement
+import { LayoutItem } from "@/types/widgets";
 import { WidgetWrapper } from "@/components/molecules/widgetWrapper";
-import { type WidgetConfig } from "@/app/dashboard/page";
-import Widget from "@/components/widgets/base/Widget";
-
-export interface LayoutItem {
-  id: string;
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-  autoPosition?: boolean;
-}
 
 interface GridProps {
   isEditMode: boolean;
   dashboardId: string;
   onLayoutChange: (layout: LayoutItem[]) => void;
-  configs: WidgetConfig[];
   layouts: LayoutItem[];
-  onDeleteWidget: (widgetId: string) => void;
+  onDeleteWidget: (layoutId: string, widgetId: string) => void;
 }
 
 export default function Grid({
   isEditMode,
   dashboardId,
   onLayoutChange,
-  configs,
   layouts,
   onDeleteWidget,
 }: GridProps) {
@@ -74,35 +63,33 @@ export default function Grid({
     };
   }, []);
 
-  // handle dashboard switching - load the whole layout only once per dashboard
-  useEffect(() => {
-    if (gridStackInstance.current && layouts.length > 0) {
-      gridStackInstance.current.load(layouts);
-    }
-  }, [dashboardId]);
-
   useEffect(() => {
     if (!gridStackInstance.current) return;
 
-    if (isEditMode) {
-      gridStackInstance.current.batchUpdate();
+    // Use batchUpdate to prevent multiple re-layouts during synchronization
+    gridStackInstance.current.batchUpdate();
 
-      const newItems = gridRef.current?.querySelectorAll(".grid-stack-item:not(.ui-draggable)");
-      newItems?.forEach((el) => {
-        gridStackInstance.current?.makeWidget(el as HTMLElement);
-      });
+    // 1. Sync Additions: find items React added but GridStack hasn't initialized yet
+    // This needs to run in both edit and view mode so initial layouts position correctly
+    const newItems = gridRef.current?.querySelectorAll<GridItemHTMLElement>(".grid-stack-item"); // Specify type here
+    newItems?.forEach((el) => {
+      // el is already typed as GridItemHTMLElement due to querySelectorAll<GridItemHTMLElement>
+      if (!el.gridstackNode) {
+        gridStackInstance.current?.makeWidget(el);
+      }
+    });
 
-      const widgetIds = new Set(layouts.map((l) => l.id));
-      const nodesToRemove = gridStackInstance.current.engine.nodes.filter(
-        (n) => n.id && !widgetIds.has(n.id)
-      );
-      nodesToRemove.forEach((node) => {
-        gridStackInstance.current?.removeWidget(node.el!, false, false);
-      });
+    // 2. Sync Deletions: remove engine nodes that are no longer in the layouts prop
+    const layoutIds = new Set(layouts.map((l) => l.id));
+    const nodesToRemove = gridStackInstance.current.engine.nodes.filter(
+      (n) => n.id && !layoutIds.has(n.id)
+    );
+    nodesToRemove.forEach((node) => {
+      gridStackInstance.current?.removeWidget(node.el!, false, false); //tell dom to let gristack handle it
+    });
 
-      gridStackInstance.current.compact();
-      gridStackInstance.current.batchUpdate(false);
-    }
+    gridStackInstance.current.compact(); //.compact optimizes grid layout by reclaiming spaces, helps remove on page load layout inconsistencies
+    gridStackInstance.current.batchUpdate(false);
   }, [layouts, isEditMode]);
 
   useEffect(() => {
@@ -120,27 +107,14 @@ export default function Grid({
   return (
     <div className="bg-background min-h-screen">
       <div ref={gridRef} className="grid-stack">
-        {layouts.map((l) => {
-          const config = configs.find((c) => c.id === l.id);
-          if (!config) return null;
-          
-          return (
-            <WidgetWrapper 
-              key={l.id} 
-              {...l} 
-              title={config.title}
-              isEditMode={isEditMode} 
-              onDeleteWidget={onDeleteWidget}
-            >
-              <Widget
-                title={config.title || "Untitled Widget"}
-                chartType={config.type}
-                resourceId={config.resourceId}
-                metricType={config.metricType}
-              />
-            </WidgetWrapper>
-          );
-        })}
+        {layouts.map((l) => (
+          <WidgetWrapper 
+            key={l.id} 
+            layout={l} 
+            isEditMode={isEditMode} 
+            onDeleteWidget={onDeleteWidget}
+          />
+        ))}
       </div>
     </div>
   );

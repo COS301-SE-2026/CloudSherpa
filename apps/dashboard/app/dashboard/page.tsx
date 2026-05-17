@@ -1,21 +1,14 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { subDays } from "date-fns";
 import { DateRange } from "react-day-picker";
 
-import { MetricType } from "@/types/metric";
 import Toolbar from "@/components/dashboard/toolbar";
-import Grid, { LayoutItem } from "@/components/dashboard/grid";
+import Grid from "@/components/dashboard/grid";
+import { WidgetConfig, LayoutItem } from "@/types/widgets";
+import { useDashboardStore, DashboardStore } from "@/stores/dashboard-store";
 import { useMetricStream } from "@/services/sse/metric-stream";
-
-export interface WidgetConfig {
-  id: string;
-  type: string; // e.g., 'line', 'gauge'
-  title: string;
-  resourceId: string; // Identifier for the resource this widget monitors
-  metricType: MetricType;
-}
 
 export interface DashboardStub {
   id: string;
@@ -28,20 +21,30 @@ export default function DashboardPage() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedDashboardId, setSelectedDashboardId] = useState("ds-1");
   const [originalLayout, setOriginalLayout] = useState<LayoutItem[]>([]);
+  const [originalConfigs, setOriginalConfigs] = useState<WidgetConfig[]>([]);
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: subDays(new Date(), 7),
     to: new Date(),
   });
 
-  const [widgetConfigs, setWidgetConfigs] = useState<WidgetConfig[]>([
-    { id: "1", type: "line", title: "Live CPU Usage (Mock)", resourceId: "mock-ec2-1", metricType: "anon" },
-    { id: "2", type: "gauge", title: "Live Memory (Mock)", resourceId: "mock-ec2-1", metricType: "anon" },
-  ]);
+  const layoutsMap = useDashboardStore((state: DashboardStore) => state.layouts);
+  const widgetsMap = useDashboardStore((state: DashboardStore) => state.widgets);
+  const { setInitialState, addWidget, removeWidget, updateLayouts } = useDashboardStore((state: DashboardStore) => state.actions);
 
-  const [widgetLayouts, setWidgetLayouts] = useState<LayoutItem[]>([
-    { id: "1", x: 0, y: 0, w: 6, h: 4 },
-    { id: "2", x: 4, y: 0, w: 6, h: 4 },
-  ]);
+  // Initialize mock data into store
+  useEffect(() => {
+    const initialConfigs: WidgetConfig[] = [
+        { id: "w-1", title: "Live CPU Usage (Mock)", resourceId: "mock-ec2-1", metricType: "anon", chartType: "line" },
+        { id: "w-2", title: "Live Memory (Mock)", resourceId: "mock-ec2-1", metricType: "anon", chartType: "gauge" },
+    ];
+    const initialLayouts: LayoutItem[] = [
+        { id: "l-1", widgetId: "w-1", x: 0, y: 0, w: 6, h: 4 },
+        { id: "l-2", widgetId: "w-2", x: 4, y: 0, w: 6, h: 4 },
+    ];
+    setInitialState(initialLayouts, initialConfigs);
+  }, [setInitialState]);
+
+  const widgetLayouts = Object.values(layoutsMap);
 
   const [dashboards, setDashboards] = useState<DashboardStub[]>([
     { id: "ds-1", label: "Global Cost Overview" },
@@ -50,19 +53,20 @@ export default function DashboardPage() {
   ]);
 
   const handleStartEditing = useCallback(() => {
-    setOriginalLayout([...widgetLayouts]);
+    setOriginalLayout(Object.values(layoutsMap).map(l => ({ ...l })));
+    setOriginalConfigs(Object.values(widgetsMap).map(c => ({ ...c })));
     setIsEditMode(true);
-  }, [widgetLayouts]);
+  }, [layoutsMap, widgetsMap]);
 
   const handleSaveEdit = useCallback(() => {
-    console.log(`Saving layout for ${selectedDashboardId}...`, widgetLayouts);
+    console.log(`Saving layout for ${selectedDashboardId}...`, layoutsMap);
     setIsEditMode(false);
-  }, [widgetLayouts, selectedDashboardId]);
+  }, [layoutsMap, selectedDashboardId]);
 
   const handleCancelEdit = useCallback(() => {
-    setWidgetLayouts(originalLayout);
+    setInitialState(originalLayout, originalConfigs);
     setIsEditMode(false);
-  }, [originalLayout]);
+  }, [originalLayout, originalConfigs, setInitialState]);
 
   const handleCreateDashboard = useCallback((name: string) => {
     const newDashboard: DashboardStub = {
@@ -74,29 +78,28 @@ export default function DashboardPage() {
   }, []);
 
   const handleAddWidget = useCallback(() => {
-    const id = `widget-${Date.now()}`;
+    const widgetId = `widget-${Date.now()}`;
+    const layoutId = `layout-${Date.now()}`;
     const newConfig: WidgetConfig = {
-      id,
-      type: "line", 
+      id: widgetId,
+      chartType: "line", 
       title: "New Widget (Click to Customize)", 
       resourceId: "mock-ec2-1",
       metricType: "anon",
     };
-    const newLayout: LayoutItem = { id, x: 0, y: 0, w: 6, h: 4, autoPosition: true };
+    const newLayout: LayoutItem = { id: layoutId, widgetId, x: 0, y: 0, w: 6, h: 4, autoPosition: true };
 
-    setWidgetConfigs((prev) => [...prev, newConfig]);
-    setWidgetLayouts((prev) => [...prev, newLayout]);
+    addWidget(newLayout, newConfig);
     setIsEditMode(true);
-  }, []);
+  }, [addWidget]);
 
-  const handleDeleteWidget = useCallback((widgetId: string) => {
-    setWidgetConfigs((prev) => prev.filter((w) => w.id !== widgetId));
-    setWidgetLayouts((prev) => prev.filter((l) => l.id !== widgetId));
-  }, []);
+  const handleDeleteWidget = useCallback((layoutId: string, widgetId: string) => {
+    removeWidget(layoutId, widgetId);
+  }, [removeWidget]);
 
   const handleLayoutChange = useCallback((newLayout: LayoutItem[]) => {
-    setWidgetLayouts(newLayout);
-  }, []);
+    updateLayouts(newLayout);
+  }, [updateLayouts]);
 
   return (
     <>
@@ -127,7 +130,6 @@ export default function DashboardPage() {
           isEditMode={isEditMode}
           dashboardId={selectedDashboardId}
           onLayoutChange={handleLayoutChange}
-          configs={widgetConfigs}
           layouts={widgetLayouts}
           onDeleteWidget={handleDeleteWidget}
         />
