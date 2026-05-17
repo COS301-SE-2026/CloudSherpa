@@ -29,13 +29,32 @@ const sseUrl = `${API_BASE}/stream`;
 
 function createMockMetrics(): Metric[] {
     const now = Date.now();
+    const metrics: Metric[] = [];
 
-    return MOCK_VALUES.map((value, index) => ({
-        resource_id: MOCK_RESOURCE_ID,
-        metricType: MOCK_METRIC_TYPE,
-        timestamp: new Date(now - (MOCK_VALUES.length - 1 - index) * MOCK_INTERVAL_MS).toISOString(),
-        value,
-    }));
+    MOCK_RESOURCES.forEach((resource) => {
+        const metricValues = MOCK_VALUES[resource.metricType];
+
+        metricValues.forEach((values, index) => {
+            let forAdjustedValue = values;
+
+            if(resource.metricType === 'cost'){
+                forAdjustedValue = parseFloat(values.toFixed(2));
+            } else if(resource.metricType === 'disk'){
+                forAdjustedValue = Math.min(100, forAdjustedValue);
+            } else{
+                forAdjustedValue = Math.min(100, forAdjustedValue);
+            }
+
+            metrics.push({
+                resource_id: resource.id,
+                metricType: resource.metricType,
+                timestamp: new Date(now-(metricValues.length-1-index)*MOCK_INTERVAL_MS).toISOString(),
+                value: forAdjustedValue
+            });
+        });
+    });
+
+    return metrics;
 }
 
 export function useMetricStream() {
