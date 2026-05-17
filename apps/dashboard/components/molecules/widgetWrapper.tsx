@@ -18,31 +18,22 @@ export const WidgetWrapper = ({ id, x, y, w, h, isEditMode, children, title }: W
       className="grid-stack-item" 
       gs-id={id} gs-x={x} gs-y={y} gs-w={w} gs-h={h}
     >
-      <div className={cn(
-        "grid-stack-item-content rounded-xl border bg-card shadow-sm transition-colors overflow-hidden flex flex-col",
-        isEditMode ? "border-primary/40 ring-1 ring-primary/10" : "border-border"
-      )}>
-        {/* handle area */}
-        <div className="flex items-center justify-between p-3 border-b border-border/50 bg-muted/30">
-          <span className="text-xs font-semibold text-foreground-secondary uppercase tracking-tight truncate">
-            {title}
-          </span>
-          
-          {isEditMode && (
-            <div className="flex items-center gap-2">
-               <div className="drag-handle cursor-grab active:cursor-grabbing p-1 hover:bg-hover rounded transition-colors text-muted-foreground hover:text-primary">
-                <GripVertical className="h-4 w-4" />
-              </div>
-              <button className="p-1 hover:bg-destructive/10 hover:text-destructive rounded text-muted-foreground transition-colors">
-                <X className="h-3 w-3" />
-              </button>
+      <div className="grid-stack-item-content relative overflow-visible rounded-md group">
+        {/* handle area overlay */}
+       {isEditMode && ( 
+          <div className="absolute top-2 right-2 z-50 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+             <div className="drag-handle cursor-grab active:cursor-grabbing bg-background border border-border shadow-md p-1 rounded-md text-muted-foreground hover:text-primary transition-all">
+              <GripVertical className="h-3.5 w-3.5" />
             </div>
-          )}
-        </div>
+            <button className="bg-background border border-border shadow-md p-1 rounded-md text-muted-foreground hover:bg-destructive hover:text-destructive-foreground transition-all">
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        )}
 
         <div className={cn(
-          "flex-1 p-4",
-          isEditMode && "pointer-events-none opacity-50" 
+          "h-full w-full",
+          isEditMode && "pointer-events-none ring-2 ring-primary/20 rounded-xl transition-all" 
         )}>
           {children}
         </div>

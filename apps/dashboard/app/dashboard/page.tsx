@@ -5,16 +5,22 @@ import { subDays } from "date-fns";
 import { DateRange } from "react-day-picker";
 
 import Toolbar from "@/components/dashboard/toolbar";
-import Grid, { LayoutItem} from "@/components/dashboard/grid";
+import Grid, { LayoutItem } from "@/components/dashboard/grid";
+import { useMetricStream } from "@/services/sse/metric-stream";
 
-export interface WidgetConfig {
+export interface WidgetLayout {
   id: string;
-  type: string;
-  title: string;
   x: number;
   y: number;
   w: number;
   h: number;
+}
+
+export interface WidgetConfig extends WidgetLayout {
+  type: string; // e.g., 'line', 'gauge'
+  title: string;
+  resourceId: string; // Identifier for the resource this widget monitors
+  metricType: string;
 }
 
 export interface DashboardStub {
@@ -23,6 +29,8 @@ export interface DashboardStub {
 }
 
 export default function DashboardPage() {
+  const { error: streamError } = useMetricStream();
+
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedDashboardId, setSelectedDashboardId] = useState("ds-1");
   const [originalLayout, setOriginalLayout] = useState<LayoutItem[]>([]);
@@ -32,8 +40,28 @@ export default function DashboardPage() {
   });
 
   const [widgets, setWidgets] = useState<WidgetConfig[]>([
-    { id: "1", type: "anomaly", title: "Cost Anomalies", x: 0, y: 0, w: 4, h: 2 },
-    { id: "2", type: "forecast", title: "Spending Forecast", x: 4, y: 0, w: 8, h: 4 },
+    {
+      id: "1",
+      type: "line",
+      title: "Live CPU Usage (Mock)",
+      resourceId: "mock-ec2-1",
+      metricType: "anon",
+      x: 0,
+      y: 0,
+      w: 6,
+      h: 4,
+    },
+    {
+      id: "2",
+      type: "gauge",
+      title: "Live Memory (Mock)",
+      resourceId: "mock-ec2-1",
+      metricType: "anon",
+      x: 6,
+      y: 0,
+      w: 6,
+      h: 4,
+    },
   ]);
 
   const [dashboards, setDashboards] = useState<DashboardStub[]>([
@@ -41,9 +69,9 @@ export default function DashboardPage() {
     { id: "ds-2", label: "AWS Production Metrics" },
     { id: "ds-3", label: "Azure Spending Forecast" },
   ]);
-  
+
   const handleStartEditing = useCallback(() => {
-    setOriginalLayout(widgets.map(w => ({ id: w.id, x: w.x, y: w.y, w: w.w, h: w.h })));
+    setOriginalLayout(widgets.map((w) => ({ id: w.id, x: w.x, y: w.y, w: w.w, h: w.h })));
     setIsEditMode(true);
   }, [widgets]);
 
@@ -53,10 +81,12 @@ export default function DashboardPage() {
   }, [widgets, selectedDashboardId]);
 
   const handleCancelEdit = useCallback(() => {
-    setWidgets(prev => prev.map(w => {
-      const orig = originalLayout.find(o => o.id === w.id);
-      return orig ? { ...w, ...orig } : w;
-    }));
+    setWidgets((prev) =>
+      prev.map((w) => {
+        const orig = originalLayout.find((o) => o.id === w.id);
+        return orig ? { ...w, ...orig } : w;
+      }),
+    );
     setIsEditMode(false);
   }, [originalLayout]);
 
@@ -71,15 +101,15 @@ export default function DashboardPage() {
 
   const handleLayoutChange = (newLayout: LayoutItem[]) => {
     // update widget coords
-    setWidgets(prev => prev.map(w => { 
-      const match = newLayout.find(l => l.id === w.id);
-      return match ? { ...w, x: match.x, y: match.y, w: match.w, h: match.h } : w;
-    }));
+    setWidgets((prev) =>
+      prev.map((w) => {
+        const match = newLayout.find((l) => l.id === w.id);
+        return match ? { ...w, x: match.x, y: match.y, w: match.w, h: match.h } : w;
+      }),
+    );
   };
 
-  const handleAddWidget = () => {
-
-  }
+  const handleAddWidget = () => {};
   return (
     <>
       <header className="sticky top-0 z-10 border-b bg-background/95 px-6 py-4">
@@ -97,6 +127,12 @@ export default function DashboardPage() {
           onDateRangeChange={setDateRange}
         />
       </header>
+
+      {streamError && (
+        <div className="mx-6 mt-4 p-3 bg-destructive/10 border border-destructive/20 rounded-md text-destructive text-xs">
+          Stream Error: {streamError.message}. Real-time updates may be paused.
+        </div>
+      )}
 
       <main className="flex-1 overflow-y-auto overflow-x-hidden m-3">
         <Grid

@@ -28,8 +28,30 @@ export function GaugeWidget({
     useEffect(() => {
         if (!forChartReference.current) return;
         forChartInstance.current = echarts.init(forChartReference.current);
+        
+        const handleResize = () => {
+            forChartInstance.current?.resize();
+        };
+
+        const handleWidgetResize = () => {
+            setTimeout(() => {
+                forChartInstance.current?.resize();
+            }, 10);
+        };
+
+        window.addEventListener('resize', handleResize);
+        window.addEventListener('widget-resize', handleWidgetResize);
+        
+        const resizeObserver = new ResizeObserver(() => {
+            forChartInstance.current?.resize();
+        });
+
+        resizeObserver.observe(forChartReference.current);
 
         return () => {
+            window.removeEventListener('resize', handleResize);
+            window.removeEventListener('widget-resize', handleWidgetResize);
+            resizeObserver.disconnect();
             forChartInstance.current?.dispose();
         };
     }, []);
@@ -43,7 +65,7 @@ export function GaugeWidget({
             tooltip: {
                 formatter: '{b}: {c}%',
                 backgroundColor: 'var(--color-bg-main)',
-                borderColor: 'var(--color-action-primary)',
+                borderColor: 'var(--color-border)',
                 borderWidth: 1,
                 textStyle: {
                     color: 'var(--color-text-primary)',
@@ -67,7 +89,7 @@ export function GaugeWidget({
                         width: 15,
                         roundCap: true,
                         itemStyle: {
-                            color: 'var(--color-action-primary)',
+                            color: 'var(--color-action-primary, rgb(59, 130, 246))',
                         }
                     },
 
@@ -75,7 +97,7 @@ export function GaugeWidget({
                         roundCap: true,
                         lineStyle: {
                             width: 15,
-                            color: [[1, 'rgba(47, 47, 228, 0.2)']]
+                            color: [[1, 'var(--color-action-primary-muted)']]
                         }
                     },
 
@@ -122,7 +144,7 @@ export function GaugeWidget({
                     },
 
                     title: {
-                        show: true,
+                        show: false,
                         offsetCenter: [0, -35],
                         fontSize: 13,
                         color: 'var(--color-text-muted)',
@@ -171,13 +193,6 @@ export function GaugeWidget({
     }, []);
 
     return(
-        <div className="flex h-full flex-col items-center justify-center">
-            <div className="w-full h-full min-h-[280px]">
-                <div
-                    ref={forChartReference}
-                    className="h-full w-full"
-                />
-            </div>
-        </div>
+        <div ref={forChartReference} className="h-full w-full" />
     );
 }

@@ -4,6 +4,7 @@ import "gridstack/dist/gridstack.min.css";
 import { GridStack } from "gridstack";
 import { WidgetWrapper } from "@/components/molecules/widgetWrapper";
 import { type WidgetConfig } from "@/app/dashboard/page";
+import Widget from "@/components/widgets/base/Widget";
 
 export interface LayoutItem {
   id: string;
@@ -20,10 +21,10 @@ interface GridProps {
   widgets: WidgetConfig[];
 }
 
-export default function Grid({ isEditMode, onLayoutChange, widgets }: GridProps) {  
+export default function Grid({ isEditMode, onLayoutChange, widgets }: GridProps) {
   const gridRef = useRef<HTMLDivElement>(null);
   const gridStackInstance = useRef<GridStack | null>(null);
-  
+
   const isEditModeRef = useRef(isEditMode);
 
   useEffect(() => {
@@ -34,7 +35,7 @@ export default function Grid({ isEditMode, onLayoutChange, widgets }: GridProps)
     if (gridRef.current && !gridStackInstance.current) {
       gridStackInstance.current = GridStack.init(
         {
-          cellHeight: 100, //handles row heights that widgets snap to 
+          cellHeight: 100, //handles row heights that widgets snap to
           margin: 12, //layer around every widget. meaning there is 24px margin between every widget
           handle: ".drag-handle",
           staticGrid: !isEditMode, //lock grid not in edit mode
@@ -43,7 +44,7 @@ export default function Grid({ isEditMode, onLayoutChange, widgets }: GridProps)
 
           columnOpts: {
             breakpointForWindow: true,
-            breakpoints: [{ w: 768, c: 1 }], // at 768px (standard mobile/tablet) 
+            breakpoints: [{ w: 768, c: 1 }], // at 768px (standard mobile/tablet)
           },
         },
         gridRef.current,
@@ -87,9 +88,12 @@ export default function Grid({ isEditMode, onLayoutChange, widgets }: GridProps)
       <div ref={gridRef} className="grid-stack">
         {widgets.map((w) => (
           <WidgetWrapper key={w.id} {...w} isEditMode={isEditMode}>
-            <div className="flex items-center justify-center h-full text-muted-foreground italic text-sm">
-              Chart Placeholder: {w.type}
-            </div>
+            <Widget
+              title={w.title || "Untitled Widget"}
+              chartType={w.type}
+              resourceId={w.resourceId}
+              metricType={w.metricType}
+            />
           </WidgetWrapper>
         ))}
       </div>
