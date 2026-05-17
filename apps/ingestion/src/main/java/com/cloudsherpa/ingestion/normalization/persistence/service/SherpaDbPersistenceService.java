@@ -29,6 +29,7 @@ public class SherpaDbPersistenceService {
 
     Resource resource = infrastructureService.ensureInfrastructure(record, userId);
     UUID accountId = resource.getAccountId();
+    UUID resourceUuid = resource.getId();
 
     OffsetDateTime periodStart = null;
     OffsetDateTime periodEnd = null;
@@ -41,11 +42,6 @@ public class SherpaDbPersistenceService {
     if (metric.getPeriodEnd() > 0) {
       periodEnd =
           OffsetDateTime.ofInstant(Instant.ofEpochMilli(metric.getPeriodEnd()), ZoneOffset.UTC);
-    }
-
-    UUID resourceUuid = null;
-    if (metric.getResourceId() != null && !metric.getResourceId().isBlank()) {
-      resourceUuid = UUID.fromString(metric.getResourceId());
     }
 
     // Create the new entity representing the row in the normalized_metrics table.
