@@ -36,6 +36,8 @@ public class SecurityConfig {
     if (mode.equals("dev")) {
       return http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
           .csrf(csrf -> csrf.disable())
+          .sessionManagement(
+              session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
           .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
           .build();
     } else {
@@ -65,6 +67,7 @@ public class SecurityConfig {
     CorsConfiguration config = new CorsConfiguration();
 
     config.setAllowedOrigins(List.of(allowedOrigins));
+    config.setAllowCredentials(true);
     // Add methods as we need them, explicitly keep to methods we are actually using
     config.setAllowedMethods(List.of("GET", "POST"));
     config.setAllowedHeaders(List.of("*"));

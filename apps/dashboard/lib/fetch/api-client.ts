@@ -19,15 +19,14 @@ export default async function apiClient<T>(path: string, options?: RequestInit):
     const normalizedPath = path.startsWith("/") ? path : `/${path}`;
 
 
-    if (options) {
-        options.headers = { ...options.headers, "Content-Type": "application/json" };
-    } else {
-        options = {
-            headers: {
-                "Content-Type": "application/json"
-            }
-        };
-    }
+    options = {
+        ...options,
+        credentials: "include",
+        headers: {
+            ...options?.headers,
+            "Content-Type": "application/json",
+        },
+    };
     const response = await fetch(`${API_BASE}${normalizedPath}`, options);
 
     if (!response.ok) {

@@ -3,12 +3,11 @@
 import { Button } from "@/components/atoms/button";
 import { Input } from "@/components/atoms/input";
 import { Label } from "@/components/atoms/label";
-import { Loader2, Eye, EyeOff, AlertCircle } from "lucide-react";
+import { Loader2, Eye, EyeOff, AlertCircle, AlertCircleIcon } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useLogin } from "@/hooks/useLogin";
 import { LoginRequestDto } from "@/types/dtos/auth/LoginRequestDto";
-import { AlertCircleIcon } from "lucide-react"
 import { 
   Alert,
   AlertTitle,
