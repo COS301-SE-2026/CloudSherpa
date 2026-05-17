@@ -11,7 +11,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "cloud_connections")
-public class CloudConnection {
+public class CloudConnections {
 
   @Id
   @Column(name = "connection_id", nullable = false)
@@ -33,9 +33,9 @@ public class CloudConnection {
   @Column(name = "created_at")
   private OffsetDateTime createdAt;
 
-  protected CloudConnection() {}
+  protected CloudConnections() {}
 
-  public CloudConnection(
+  public CloudConnections(
       UUID id, UUID userId, String provider, String status, OffsetDateTime createdAt) {
     this.id = id;
     this.userId = userId;

@@ -22,7 +22,7 @@ public class CloudAccount {
 
   @ManyToOne
   @JoinColumn(name = "connection_id", nullable = false, insertable = false, updatable = false)
-  private CloudConnection connection;
+  private CloudConnections connection;
 
   @Column(name = "account_type", nullable = false, length = 255)
   private String accountType;
@@ -56,7 +56,7 @@ public class CloudAccount {
     return connectionId;
   }
 
-  public CloudConnection getConnection() {
+  public CloudConnections getConnection() {
     return connection;
   }
 
