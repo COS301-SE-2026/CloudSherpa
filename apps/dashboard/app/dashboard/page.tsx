@@ -4,23 +4,17 @@ import { useState, useCallback } from "react";
 import { subDays } from "date-fns";
 import { DateRange } from "react-day-picker";
 
+import { MetricType } from "@/types/metric";
 import Toolbar from "@/components/dashboard/toolbar";
 import Grid, { LayoutItem } from "@/components/dashboard/grid";
 import { useMetricStream } from "@/services/sse/metric-stream";
 
-export interface WidgetLayout {
+export interface WidgetConfig {
   id: string;
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-}
-
-export interface WidgetConfig extends WidgetLayout {
   type: string; // e.g., 'line', 'gauge'
   title: string;
   resourceId: string; // Identifier for the resource this widget monitors
-  metricType: string;
+  metricType: MetricType;
 }
 
 export interface DashboardStub {
@@ -39,29 +33,14 @@ export default function DashboardPage() {
     to: new Date(),
   });
 
-  const [widgets, setWidgets] = useState<WidgetConfig[]>([
-    {
-      id: "1",
-      type: "line",
-      title: "Live CPU Usage (Mock)",
-      resourceId: "mock-ec2-1",
-      metricType: "anon",
-      x: 0,
-      y: 0,
-      w: 6,
-      h: 4,
-    },
-    {
-      id: "2",
-      type: "gauge",
-      title: "Live Memory (Mock)",
-      resourceId: "mock-ec2-1",
-      metricType: "anon",
-      x: 6,
-      y: 0,
-      w: 6,
-      h: 4,
-    },
+  const [widgetConfigs, setWidgetConfigs] = useState<WidgetConfig[]>([
+    { id: "1", type: "line", title: "Live CPU Usage (Mock)", resourceId: "mock-ec2-1", metricType: "anon" },
+    { id: "2", type: "gauge", title: "Live Memory (Mock)", resourceId: "mock-ec2-1", metricType: "anon" },
+  ]);
+
+  const [widgetLayouts, setWidgetLayouts] = useState<LayoutItem[]>([
+    { id: "1", x: 0, y: 0, w: 6, h: 4 },
+    { id: "2", x: 4, y: 0, w: 6, h: 4 },
   ]);
 
   const [dashboards, setDashboards] = useState<DashboardStub[]>([
@@ -71,22 +50,17 @@ export default function DashboardPage() {
   ]);
 
   const handleStartEditing = useCallback(() => {
-    setOriginalLayout(widgets.map((w) => ({ id: w.id, x: w.x, y: w.y, w: w.w, h: w.h })));
+    setOriginalLayout([...widgetLayouts]);
     setIsEditMode(true);
-  }, [widgets]);
+  }, [widgetLayouts]);
 
   const handleSaveEdit = useCallback(() => {
-    console.log(`Saving widgets for ${selectedDashboardId} to CloudSherpa DB...`, widgets);
+    console.log(`Saving layout for ${selectedDashboardId}...`, widgetLayouts);
     setIsEditMode(false);
-  }, [widgets, selectedDashboardId]);
+  }, [widgetLayouts, selectedDashboardId]);
 
   const handleCancelEdit = useCallback(() => {
-    setWidgets((prev) =>
-      prev.map((w) => {
-        const orig = originalLayout.find((o) => o.id === w.id);
-        return orig ? { ...w, ...orig } : w;
-      }),
-    );
+    setWidgetLayouts(originalLayout);
     setIsEditMode(false);
   }, [originalLayout]);
 
@@ -99,17 +73,31 @@ export default function DashboardPage() {
     setSelectedDashboardId(newDashboard.id);
   }, []);
 
-  const handleLayoutChange = (newLayout: LayoutItem[]) => {
-    // update widget coords
-    setWidgets((prev) =>
-      prev.map((w) => {
-        const match = newLayout.find((l) => l.id === w.id);
-        return match ? { ...w, x: match.x, y: match.y, w: match.w, h: match.h } : w;
-      }),
-    );
-  };
+  const handleAddWidget = useCallback(() => {
+    const id = `widget-${Date.now()}`;
+    const newConfig: WidgetConfig = {
+      id,
+      type: "line", 
+      title: "New Widget (Click to Customize)", 
+      resourceId: "mock-ec2-1",
+      metricType: "anon",
+    };
+    const newLayout: LayoutItem = { id, x: 0, y: 0, w: 6, h: 4, autoPosition: true };
 
-  const handleAddWidget = () => {};
+    setWidgetConfigs((prev) => [...prev, newConfig]);
+    setWidgetLayouts((prev) => [...prev, newLayout]);
+    setIsEditMode(true);
+  }, []);
+
+  const handleDeleteWidget = useCallback((widgetId: string) => {
+    setWidgetConfigs((prev) => prev.filter((w) => w.id !== widgetId));
+    setWidgetLayouts((prev) => prev.filter((l) => l.id !== widgetId));
+  }, []);
+
+  const handleLayoutChange = useCallback((newLayout: LayoutItem[]) => {
+    setWidgetLayouts(newLayout);
+  }, []);
+
   return (
     <>
       <header className="sticky top-0 z-10 border-b bg-background/95 px-6 py-4">
@@ -129,7 +117,7 @@ export default function DashboardPage() {
       </header>
 
       {streamError && (
-        <div className="mx-6 mt-4 p-3 bg-destructive/10 border border-destructive/20 rounded-md text-destructive text-xs">
+        <div className="mx-6 mt-4 p-3 bg-destructive/10 border border-destructive/80 rounded-md text-destructive text-xs">
           Stream Error: {streamError.message}. Real-time updates may be paused.
         </div>
       )}
@@ -139,7 +127,9 @@ export default function DashboardPage() {
           isEditMode={isEditMode}
           dashboardId={selectedDashboardId}
           onLayoutChange={handleLayoutChange}
-          widgets={widgets}
+          configs={widgetConfigs}
+          layouts={widgetLayouts}
+          onDeleteWidget={handleDeleteWidget}
         />
       </main>
     </>

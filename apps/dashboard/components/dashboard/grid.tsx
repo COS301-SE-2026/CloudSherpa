@@ -12,16 +12,26 @@ export interface LayoutItem {
   y: number;
   w: number;
   h: number;
+  autoPosition?: boolean;
 }
 
 interface GridProps {
   isEditMode: boolean;
   dashboardId: string;
   onLayoutChange: (layout: LayoutItem[]) => void;
-  widgets: WidgetConfig[];
+  configs: WidgetConfig[];
+  layouts: LayoutItem[];
+  onDeleteWidget: (widgetId: string) => void;
 }
 
-export default function Grid({ isEditMode, onLayoutChange, widgets }: GridProps) {
+export default function Grid({
+  isEditMode,
+  dashboardId,
+  onLayoutChange,
+  configs,
+  layouts,
+  onDeleteWidget,
+}: GridProps) {
   const gridRef = useRef<HTMLDivElement>(null);
   const gridStackInstance = useRef<GridStack | null>(null);
 
@@ -64,12 +74,36 @@ export default function Grid({ isEditMode, onLayoutChange, widgets }: GridProps)
     };
   }, []);
 
+  // handle dashboard switching - load the whole layout only once per dashboard
   useEffect(() => {
-    if (gridStackInstance.current && !isEditMode) {
-      gridStackInstance.current.load(widgets);
-      gridStackInstance.current.compact();
+    if (gridStackInstance.current && layouts.length > 0) {
+      gridStackInstance.current.load(layouts);
     }
-  }, [widgets, isEditMode]);
+  }, [dashboardId]);
+
+  useEffect(() => {
+    if (!gridStackInstance.current) return;
+
+    if (isEditMode) {
+      gridStackInstance.current.batchUpdate();
+
+      const newItems = gridRef.current?.querySelectorAll(".grid-stack-item:not(.ui-draggable)");
+      newItems?.forEach((el) => {
+        gridStackInstance.current?.makeWidget(el as HTMLElement);
+      });
+
+      const widgetIds = new Set(layouts.map((l) => l.id));
+      const nodesToRemove = gridStackInstance.current.engine.nodes.filter(
+        (n) => n.id && !widgetIds.has(n.id)
+      );
+      nodesToRemove.forEach((node) => {
+        gridStackInstance.current?.removeWidget(node.el!, false, false);
+      });
+
+      gridStackInstance.current.compact();
+      gridStackInstance.current.batchUpdate(false);
+    }
+  }, [layouts, isEditMode]);
 
   useEffect(() => {
     if (gridStackInstance.current) {
@@ -86,16 +120,27 @@ export default function Grid({ isEditMode, onLayoutChange, widgets }: GridProps)
   return (
     <div className="bg-background min-h-screen">
       <div ref={gridRef} className="grid-stack">
-        {widgets.map((w) => (
-          <WidgetWrapper key={w.id} {...w} isEditMode={isEditMode}>
-            <Widget
-              title={w.title || "Untitled Widget"}
-              chartType={w.type}
-              resourceId={w.resourceId}
-              metricType={w.metricType}
-            />
-          </WidgetWrapper>
-        ))}
+        {layouts.map((l) => {
+          const config = configs.find((c) => c.id === l.id);
+          if (!config) return null;
+          
+          return (
+            <WidgetWrapper 
+              key={l.id} 
+              {...l} 
+              title={config.title}
+              isEditMode={isEditMode} 
+              onDeleteWidget={onDeleteWidget}
+            >
+              <Widget
+                title={config.title || "Untitled Widget"}
+                chartType={config.type}
+                resourceId={config.resourceId}
+                metricType={config.metricType}
+              />
+            </WidgetWrapper>
+          );
+        })}
       </div>
     </div>
   );
