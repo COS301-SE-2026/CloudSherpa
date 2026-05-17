@@ -98,6 +98,40 @@ export function LineChartWidget({
         chartInstance.current?.setOption(option);
     }, [title, resourceId, data])
 
+    useEffect(() => {
+        if(!chartInstance.current){
+            return;
+        }
+
+        //this will recalc its size
+        const handleResize = () => {
+            chartInstance.current?.resize();
+        };
+
+        const handleWidgetResize = () => {
+            setTimeout(() => {
+                chartInstance.current?.resize();
+            }, 10);
+        };
+
+        window.addEventListener('resize', handleResize);
+        window.addEventListener('widget-resize', handleWidgetResize);
+
+        const forResizing = new ResizeObserver(() => {
+            chartInstance.current?.resize();
+        });
+
+        if(chartRef.current){
+            forResizing.observe(chartRef.current);
+        }
+        
+        return () => {
+            window.removeEventListener('resize', handleResize);
+            window.removeEventListener('widget-resize', handleWidgetResize);
+            forResizing.disconnect();
+        };
+    }, []);
+
     return (
         <div className="flex h-full flex-col rounded-xl border border-zinc-800 bg-zinc-900 p-4">
             <div className="mb-4 text-sm font-medium text-zinc-200">
