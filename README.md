@@ -5,6 +5,14 @@
   <p><strong>An AI-Driven Multi-Cloud FinOps Platform</strong></p>
 </div>
 
+![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/COS301-SE-2026/CloudSherpa?label=open%20issues)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/COS301-SE-2026/CloudSherpa/dashboard-ci.yml?label=dashboard%20build)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/COS301-SE-2026/CloudSherpa/ingestion-ci.yml?label=ingestion%20build)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/COS301-SE-2026/CloudSherpa/service-ci.yml?label=service%20build)
+![Website](https://img.shields.io/website?url=http%3A//cloudsherpa.gjjcs.org&label=cloudsherpa%20site)
+[![CloudSherpa service coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fsherpa-coverage.gjjcs.org%2Fbadges%2Fservice)](https://sherpa-coverage.gjjcs.org/badges/service)
+[![CloudSherpa dashboard coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fsherpa-coverage.gjjcs.org%2Fbadges%2Fdashboard)](https://sherpa-coverage.gjjcs.org/badges/dashboard)
+[![CloudSherpa ingestion coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fsherpa-coverage.gjjcs.org%2Fbadges%2Fingestion)](https://sherpa-coverage.gjjcs.org/badges/ingestion)
 ## Documentation
 
 For a comprehensive overview of CloudSherpa, visit our [official documentation site](https://cos301-se-2026.github.io/CloudSherpa/).
