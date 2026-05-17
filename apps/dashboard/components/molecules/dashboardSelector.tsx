@@ -45,7 +45,7 @@ export function DashboardSelector({ dashboards, selectedId, onSelect, onCreate }
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          className="group md:min-w-40 w-fit justify-start text-left font-normal bg-card text-foreground border-border hover:bg-hover hover:text-secondary data-[state=open]:text-foreground data-[state=open]:hover:text-secondary transition-button">
+          className="group md:min-w-40 w-fit justify-start text-left font-normal bg-card text-foreground border-border hover:bg-hover/80 hover:text-secondary data-[state=open]:text-foreground data-[state=open]:hover:text-secondary transition-button">
           <div className="flex flex-row items-center overflow-hidden">
             <LayoutDashboard className="mr-2 h-4 w-4 shrink-0" />
             <span className="truncate">{selectedDashboard?.label || "Select Dashboard"}</span>
@@ -68,7 +68,7 @@ export function DashboardSelector({ dashboards, selectedId, onSelect, onCreate }
                   "justify-start font-normal transition-button mb-0.5 last:mb-0",
                   selectedId === d.id
                     ? "bg-active text-primary-foreground"
-                    : "text-foreground-secondary hover:bg-hover hover:text-secondary",
+                    : "text-foreground-secondary hover:bg-hover/80 hover:text-secondary",
                 )}
                 onClick={() => {
                   onSelect(d.id);

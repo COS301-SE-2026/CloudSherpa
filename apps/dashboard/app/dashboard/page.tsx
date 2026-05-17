@@ -76,12 +76,17 @@ export default function DashboardPage() {
       return match ? { ...w, x: match.x, y: match.y, w: match.w, h: match.h } : w;
     }));
   };
+
+  const handleAddWidget = () => {
+
+  }
   return (
     <>
       <header className="sticky top-0 z-10 border-b bg-background/95 px-6 py-4">
         <Toolbar
           dashboards={dashboards}
           isEditMode={isEditMode}
+          handleAddWidget={handleAddWidget}
           handleStartEditing={handleStartEditing}
           handleSaveEdit={handleSaveEdit}
           handleCancelEdit={handleCancelEdit}

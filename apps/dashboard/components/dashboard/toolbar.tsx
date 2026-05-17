@@ -7,13 +7,15 @@ import { Tooltip } from "@/components/molecules/tooltip";
 import { DateRange } from "react-day-picker";
 import { SidebarTrigger } from "@/components/atoms/sidebar";
 import { type DashboardStub } from "@/app/dashboard/page";
+import EditButton from "@/components/dashboard/editButton";
 
-import { Pencil } from "lucide-react";
+import { Edit, Pencil } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ToolbarProps {
   dashboards: DashboardStub[];
   isEditMode: boolean;
+  handleAddWidget: () => void;
   handleStartEditing: () => void;
   handleSaveEdit: () => void;
   handleCancelEdit: () => void;
@@ -27,6 +29,7 @@ interface ToolbarProps {
 export default function Toolbar({
   dashboards,
   isEditMode,
+  handleAddWidget,
   handleStartEditing,
   handleSaveEdit,
   handleCancelEdit,
@@ -71,29 +74,13 @@ export default function Toolbar({
             {!isEditMode && (
               <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold px-1">Edit</span>
             )}
-
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size={isEditMode ? "sm" : "icon"}
-                onClick={isEditMode ? handleCancelEdit : handleStartEditing}
-                className={cn(
-                  "bg-card border-border text-foreground hover:text-primary hover:border-primary transition-all duration-200",
-                  isEditMode &&
-                    "bg-destructive/10 border-destructive text-destructive hover:bg-destructive/20 hover:text-destructive hover:border-destructive",
-                )}>
-                {isEditMode ? "Cancel" : <Pencil className="h-4 w-4" />}
-              </Button>
-
-              {isEditMode && (
-                <Button
-                  size="sm"
-                  onClick={handleSaveEdit}
-                  className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm">
-                  Save
-                </Button>
-              )}
-            </div>
+            <EditButton
+              isEditMode={isEditMode}
+              handleStartEditing={handleStartEditing}
+              handleSaveEdit={handleSaveEdit}
+              handleCancelEdit={handleCancelEdit}
+              handleAddWidget={handleAddWidget}
+            />
             {/* </Tooltip> */}
           </div>
         </div>

@@ -23,25 +23,37 @@ interface GridProps {
 export default function Grid({ isEditMode, onLayoutChange, widgets }: GridProps) {  
   const gridRef = useRef<HTMLDivElement>(null);
   const gridStackInstance = useRef<GridStack | null>(null);
+  
+  const isEditModeRef = useRef(isEditMode);
+
+  useEffect(() => {
+    isEditModeRef.current = isEditMode;
+  }, [isEditMode]);
 
   useLayoutEffect(() => {
     if (gridRef.current && !gridStackInstance.current) {
       gridStackInstance.current = GridStack.init(
         {
-          cellHeight: 100,
-          margin: 12,
+          cellHeight: 100, //handles row heights that widgets snap to 
+          margin: 12, //layer around every widget. meaning there is 24px margin between every widget
           handle: ".drag-handle",
-          staticGrid: !isEditMode, 
-          float: true,
-          resizable: { handles: "se" },
+          staticGrid: !isEditMode, //lock grid not in edit mode
+          float: false,
+          resizable: { handles: "se" }, // part of library handles widget resizing from "south-east"/bottom-right corner
+
+          columnOpts: {
+            breakpointForWindow: true,
+            breakpoints: [{ w: 768, c: 1 }], // at 768px (standard mobile/tablet) 
+          },
         },
         gridRef.current,
       );
 
       gridStackInstance.current.on("change", () => {
-        if (!gridStackInstance.current) return;
-        const fullLayout = gridStackInstance.current.save() as LayoutItem[];
-        onLayoutChange(fullLayout);
+        if (gridStackInstance.current && isEditModeRef.current) {
+          const fullLayout = gridStackInstance.current.save() as LayoutItem[];
+          onLayoutChange(fullLayout);
+        }
       });
     }
 
@@ -54,6 +66,7 @@ export default function Grid({ isEditMode, onLayoutChange, widgets }: GridProps)
   useEffect(() => {
     if (gridStackInstance.current && !isEditMode) {
       gridStackInstance.current.load(widgets);
+      gridStackInstance.current.compact();
     }
   }, [widgets, isEditMode]);
 
