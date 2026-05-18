@@ -3,77 +3,368 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:is([data-theme="dark"] *));
 
 @theme inline {
-  /* Colors */
-  --color-background: var(--color-bg-main);
-  --color-foreground: var(--color-text-primary);
-  --color-card: var(--color-bg-card);
-  --color-card-foreground: var(--color-text-primary);
-  --color-primary: var(--color-action-primary);
-  --color-primary-foreground: var(--color-neutral-slate-50);
-  --color-secondary: var(--color-action-secondary);
-  --color-secondary-foreground: var(--color-neutral-slate-50);
-  --color-accent: var(--color-action-accent);
-  --color-success: var(--color-utility-success);
-  --color-destructive: var(--color-utility-error); 
-  --color-accent-foreground: var(--color-neutral-void);
-  --color-border: var(--color-neutral-navy-dusk);
-  --color-ring: var(--color-action-primary);
 
-  /* 
+/* surfaces,default dark mode values. Light mode overrides live in :root.light / [data-theme="light"]. */
+  --color-background:        var(--background);
+  --color-background-sunken: var(--color-dark-bg-sunken);
+  --color-background-mid:    var(--muted);
+  --color-card:              var(--card);
+  --color-card-elevated:     var(--color-dark-bg-elevated);
+  --color-popover:           var(--popover);
 
+  /* foreground text */
+  --color-foreground:          var(--foreground);
+  /* need to add value for secondary foreground */
+  --color-foreground-secondary:var(--color-dark-text-secondary); 
+  --color-foreground-muted:    var(--muted-foreground);
+  --color-foreground-disabled: var(--color-dark-text-disabled);
+  --color-card-foreground:     var(--card-foreground);
+  --color-popover-foreground:  var(--popover-foreground);
   
-  --font-sans: var(--font-family-main);
-  --font-mono: var(--font-family-mono);
-  --font-weight-bold: var(--font-weight-bold);
+/* brand / action */
+  --color-primary:             var(--primary);
+  --color-primary-foreground:  var(--primary-foreground);
+  --color-secondary:           var(--secondary);
+  --color-secondary-foreground:var(--secondary-foreground);
+  --color-accent:              var(--accent);
+  --color-accent-foreground:   var(--accent-foreground);
+
+/* states */
+  --color-hover:               var(--color-state-hover);
+  --color-active:              var(--color-action-primary);
+  --color-disabled-bg:         var(--color-neutral-dark-navy-dusk);
+  --color-disabled-text:       var(--color-neutral-foreground);
+
+/* statusses */
+  --color-success:             var(--color-status-success);
+  --color-warning:             var(--color-status-warning);
+  --color-destructive:         var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  /* borders n rings */
+  --color-border:              var(--border);
+  --color-border-subtle:       var(--color-dark-border-subtle);
+  --color-border-strong:       var(--color-dark-border-strong);
+  --color-ring:                var(--ring);
+
+  /* data visualization (mostly just a bunch of bright colors that should work together while maintainging accessibility) */
+  --color-chart-1:             var(--color-chart-1);
+  --color-chart-2:             var(--color-chart-2);
+  --color-chart-3:             var(--color-chart-3);
+  --color-chart-4:             var(--color-status-warning);
+  --color-chart-5:             var(--color-status-error);
+  --color-chart-compute:       var(--color-chart-compute);
+  --color-chart-storage:       var(--color-chart-storage);
+  --color-chart-network:       var(--color-chart-network);
+  --color-chart-database:      var(--color-chart-database);
+  --color-chart-ancillary:     var(--color-chart-ancillary);
+  --color-provider-aws:        var(--color-provider-aws);
+  --color-provider-azure:      var(--color-provider-azure);
+  --color-provider-gcp:        var(--color-provider-gcp);
+
+/* colors based on finops semantics */
+  --color-finops-savings:      var(--color-finops-savings);
+  --color-finops-expense:      var(--color-finops-expense);
+  --color-finops-warning:      var(--color-finops-warning);
+
+/* typography */
+  --font-sans:                 var(--font-family-main);
+  --font-mono:                 var(--font-family-mono);
+
+  --font-weight-regular:       var(--font-weight-regular);
+  --font-weight-medium:        var(--font-weight-medium);
+  --font-weight-semibold:      var(--font-weight-semibold);
+
+  --text-xs:                   var(--font-size-xs);
+  --text-sm:                   var(--font-size-sm);
+  --text-base:                 var(--font-size-base);
+  --text-lg:                   var(--font-size-lg);
+  --text-xl:                   var(--font-size-xl);
+  --text-2xl:                  var(--font-size-2xl);
+  --text-3xl:                  var(--font-size-3xl);
+
+  /* Semantic type role sizes (meant for components) */
+  --text-h1:                   var(--type-h1-size);
+  --text-h2:                   var(--type-h2-size);
+  --text-h3:                   var(--type-h3-size);
+  --text-body:                 var(--type-body-size);
+  --text-small:                var(--type-small-size);
+  --text-caption:              var(--type-caption-size);
+  --text-metric-lg:            var(--type-metric-lg-size);
+
+  --tracking-tight:            var(--font-letterSpacing-tight);
+  --tracking-snug:             var(--font-letterSpacing-snug);
+  --tracking-wide:             var(--font-letterSpacing-wide);
+  --tracking-wider:            var(--font-letterSpacing-wider);
+
+  --leading-tight:             var(--font-lineHeight-tight);
+  --leading-snug:              var(--font-lineHeight-snug);
+  --leading-normal:            var(--font-lineHeight-normal);
+  --leading-relaxed:           var(--font-lineHeight-relaxed);
+
+/* radii */
+  --radius-sm:                 var(--border-radius-sm);
+  --radius:                    var(--border-radius-md);
+  --radius-md:                 var(--border-radius-md);
+  --radius-lg:                 var(--border-radius-lg);
+  --radius-xl:                 var(--border-radius-xl);
+  --radius-full:               var(--border-radius-full);
+
+/* spacing - uses our spacing  */
+  --spacing-page-margin:       var(--layout-page-margin);
+  --spacing-page-margin-sm:    var(--layout-page-margin-sm);
+  --spacing-card:              var(--layout-card-padding);
+  --spacing-card-sm:           var(--layout-card-padding-sm);
   
-  /* Radii */
-  --radius-md: var(--border-radius-md);
-  --radius-lg: var(--border-radius-lg);
 }
 
+
+/* dark mode default */
 :root {
-  /* Shadcn Variables */
-  --background: var(--color-bg-main);
-  --foreground: var(--color-text-primary);
-  --card: var(--color-bg-card);
-  --card-foreground: var(--color-text-primary);
-  --primary: var(--color-action-primary);
-  --primary-foreground: var(--color-neutral-slate-50);
-  --secondary: var(--color-action-secondary);
-  --accent: var(--color-action-accent);
-  --success: var(--color-utility-success);
-  --destructive: var(--color-utility-error); 
-  --border: var(--color-neutral-navy-dusk);
-  --ring: var(--color-action-primary);
-  --radius: var(--border-radius-md);
+  color-scheme: dark;
 
-  
-  --chart-1: var(--color-action-primary); 
-  --chart-2: var(--color-utility-success);
-  --chart-3: var(--color-action-accent);
+  /* Surfaces */
+  --background:        var(--color-dark-bg-base);
+  --card:              var(--color-dark-bg-card);
+  --popover:           var(--color-dark-bg-float);
+  --muted:             var(--color-dark-bg-mid);
+
+  /* Foregrounds */
+  --foreground:        var(--color-dark-text-primary);
+  --card-foreground:   var(--color-dark-text-primary);
+  --popover-foreground:var(--color-dark-text-primary);
+  --muted-foreground:  var(--color-dark-text-muted);
+
+  /* Brand */
+  --primary:           var(--color-action-primary);
+  --primary-foreground:var(--color-neutral-foreground);
+  --secondary:         var(--color-action-secondary);
+  --secondary-foreground: var(--color-neutral-foreground);
+  --accent:            var(--color-action-accent);
+  --accent-foreground: var(--color-neutral-dark-void);
+
+  /* Status */
+  --destructive:       var(--color-status-error);
+  --destructive-foreground: var(--color-neutral-foreground);
+
+  /* Borders & interaction */
+  --border:            var(--color-dark-border-default);
+  --input:             var(--color-dark-bg-base);
+  --ring:              var(--color-dark-border-focus);
+
+  /* Radius — shadcn reads --radius for its base rounding */
+  --radius:            var(--border-radius-md);
+
+  /* Charts — shadcn chart components read these */
+  --chart-1:           var(--color-chart-1);
+  --chart-2:           var(--color-chart-2);
+  --chart-3:           var(--color-chart-3);
+  --chart-4:           var(--color-status-warning);
+  --chart-5:           var(--color-status-error);
 }
 
+
+/* light mode - override */
+:root.light,
+[data-theme="light"] {
+  color-scheme: light;
+
+  /* surfaces */
+  --background:        var(--color-light-bg-base);
+  --card:              var(--color-light-bg-card);
+  --popover:           var(--color-light-bg-float);
+  --muted:             var(--color-light-bg-mid);
+
+  /* foregrounds */
+  --foreground:        var(--color-light-text-primary);
+  --card-foreground:   var(--color-light-text-primary);
+  --popover-foreground:var(--color-light-text-primary);
+  --muted-foreground:  var(--color-light-text-muted);
+
+  /* Foreground on brand colours stays the same (still white/light) */
+  --primary-foreground:  var(--color-neutral-light-white);
+  --secondary-foreground:var(--color-neutral-light-white);
+  --accent-foreground:   var(--color-neutral-light-text-body);
+
+  /* Borders & interaction — focus ring flips to primary in light mode */
+  --border:            var(--color-light-border-default);
+  --input:             var(--color-light-bg-mid);
+  --ring:              var(--color-light-border-focus);
+
+}
 
 @layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
   * {
     @apply border-border outline-ring/50;
   }
+
+  html {
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
   body {
     @apply bg-background text-foreground font-sans;
+    font-size: var(--type-body-size);
+    line-height: var(--font-lineHeight-normal);
+    letter-spacing: var(--font-letterSpacing-wide);
+  }
+
+  h1 {
+    font-size: var(--type-h1-size);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--font-lineHeight-tight);
+    letter-spacing: var(--font-letterSpacing-tight);
+  }
+
+  h2 {
+    font-size: var(--type-h2-size);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--font-lineHeight-tight);
+    letter-spacing: var(--font-letterSpacing-snug);
+  }
+
+  h3 {
+    font-size: var(--type-h3-size);
+    font-weight: var(--font-weight-medium);
+    line-height: var(--font-lineHeight-snug);
+    letter-spacing: var(--font-letterSpacing-normal);
+  }
+
+  code, kbd, samp, pre {
+    font-family: var(--font-family-mono);
+    font-size: var(--type-caption-size);
+    line-height: var(--font-lineHeight-relaxed);
+  }
+
+  :focus-visible {
+    outline: var(--border-width-focus) solid var(--ring);
+    outline-offset: 2px;
+    border-radius: var(--border-radius-sm);
+  }
+
+  /* Remove default focus ring when not keyboard navigating */
+  :focus:not(:focus-visible) {
+    outline: none;
   }
 }
 
 
-.feature-card {
-  background: var(--color-bg-main);
-  border: 1px solid transparent;
-  background-image: 
-    linear-gradient(var(--color-bg-main), var(--color-bg-main)), 
-    linear-gradient(135deg, var(--color-action-primary) 0%, var(--color-action-secondary) 100%);
-  background-origin: border-box;
-  background-clip: padding-box, border-box;
+@layer components {
+
+  .feature-card {
+    background: var(--color-dark-bg-card);
+    border: 1px solid transparent;
+    border-radius: var(--border-radius-md);
+    background-image:
+      linear-gradient(var(--color-dark-bg-card), var(--color-dark-bg-card)),
+      linear-gradient(
+        135deg,
+        var(--color-action-primary) 0%,
+        var(--color-action-secondary) 100%
+      );
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+    transition: var(--transition-card-hover);
+  }
+
+  .light .feature-card,
+  [data-theme="light"] .feature-card {
+    background-color: var(--color-light-bg-card);
+    background-image:
+      linear-gradient(var(--color-light-bg-card), var(--color-light-bg-card)),
+      linear-gradient(
+        135deg,
+        var(--color-action-primary) 0%,
+        var(--color-action-secondary) 100%
+      );
+  }
+
+  .metric-value {
+    font-family: var(--font-family-mono);
+    font-size: var(--type-metric-lg-size);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--font-lineHeight-tight);
+    letter-spacing: var(--font-letterSpacing-snug);
+  }
+
+  .resource-id {
+    font-family: var(--font-family-mono);
+    font-size: var(--type-caption-size);
+    font-weight: var(--font-weight-medium);
+    letter-spacing: var(--font-letterSpacing-wider);
+    color: var(--color-dark-text-muted);
+  }
+
+  .light .resource-id,
+  [data-theme="light"] .resource-id {
+    color: var(--color-light-text-muted);
+  }
+
+  .bg-surface-sunken   { background-color: var(--color-background-sunken); }
+  .bg-surface-mid      { background-color: var(--color-background-mid); }
+  .bg-surface-elevated { background-color: var(--color-card-elevated); }
+  .bg-surface-float    { background-color: var(--color-popover); }
+
+  .widget-handle {
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: grab;
+    opacity: 0;
+    transition: opacity var(--duration-fast) var(--easing-ease-out);
+    color: var(--color-dark-border-subtle);
+  }
+
+  .widget-handle:active {
+    cursor: grabbing;
+  }
+
+  *:hover > .widget-handle {
+    opacity: 1;
+  }
+
+  .badge-aws   { background-color: var(--color-provider-aws);   color: var(--color-neutral-dark-void); border-radius: var(--border-radius-full); }
+  .badge-azure { background-color: var(--color-provider-azure); color: var(--color-neutral-light-white); border-radius: var(--border-radius-full); }
+  .badge-gcp   { background-color: var(--color-provider-gcp);   color: var(--color-neutral-light-white); border-radius: var(--border-radius-full); }
+
+  .inset-well {
+    background-color: var(--color-dark-bg-sunken);
+    border: 1px solid var(--color-dark-border-subtle);
+    border-radius: var(--border-radius-sm);
+  }
+
+  .light .inset-well,
+  [data-theme="light"] .inset-well {
+    background-color: var(--color-light-bg-sunken);
+    border-color: var(--color-light-border-subtle);
+  }
 }
 
+@layer utilities {
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+  .widget-focus {
+    outline: var(--border-width-focus) dashed var(--color-dark-border-focus-widget);
+    outline-offset: 2px;
+  }
+
+  .transition-button  { transition: var(--transition-button-color); }
+  .transition-input   { transition: var(--transition-input-focus); }
+  .transition-card    { transition: var(--transition-card-hover); }
+  .transition-tooltip { transition: var(--transition-tooltip); }
+  .transition-modal   { transition: var(--transition-modal); }
+  .transition-sidebar { transition: var(--transition-sidebar); }
+  .transition-toast   { transition: var(--transition-toast); }
+}

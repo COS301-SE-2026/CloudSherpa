@@ -3,25 +3,31 @@
 import { Button } from "@/components/atoms/button";
 import { Input } from "@/components/atoms/input";
 import { Label } from "@/components/atoms/label";
-import { Loader2, Eye, EyeOff, AlertCircle } from "lucide-react";
+import { Loader2, Eye, EyeOff, AlertCircle, AlertCircleIcon } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { useLogin } from "@/hooks/useLogin";
+import { LoginRequestDto } from "@/types/dtos/auth/LoginRequestDto";
+import { 
+  Alert,
+  AlertTitle,
+  AlertDescription
+} from "../atoms/alert";
 
 interface LoginFormProps {
-  onSubmit?: (data: { password?: string }) => void;
   isLoading?: boolean;
 }
 
-export default function LoginForm({ onSubmit, isLoading = false }: LoginFormProps) {
+export default function LoginForm({ isLoading = false }: LoginFormProps) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const { login, loginFailure } = useLogin();
 
   const togglePasswordVisibility = () => setIsPasswordVisible(!isPasswordVisible);
 
   const validatePassword = (value: string) => {
-    setPassword(value);
-
     // at least 8 characters
     //  alphanumeric
     const minLength = value.length >= 8;
@@ -34,11 +40,20 @@ export default function LoginForm({ onSubmit, isLoading = false }: LoginFormProp
     } else {
       setError("");
     }
+
+    setPassword(value);
   };
 
-  const handleFormSubmit = (e: React.FormEvent) => {
+  const handleFormSubmit = (e: React.SubmitEvent) => {
     e.preventDefault();
-    if (!error && onSubmit) onSubmit({ password });
+    if (!error) {
+      const loginPayload: LoginRequestDto = {
+        email: email,
+        password: password
+      }
+
+      login(loginPayload);
+    }
   };
 
   return (
@@ -47,12 +62,27 @@ export default function LoginForm({ onSubmit, isLoading = false }: LoginFormProp
         <h2 className="text-3xl font-bold tracking-tight">Sign in</h2>
       </div>
 
+      {loginFailure && (
+        <div className="text-center">
+          <Alert variant="destructive">
+            <AlertCircleIcon/>
+            <AlertTitle>Failed To Log In</AlertTitle>
+            <AlertDescription>
+              Incorrect Username or Password.
+            </AlertDescription>
+          </Alert>
+        </div>)
+      }
+
+
       <form className="space-y-6" onSubmit={handleFormSubmit} noValidate>
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
           <Input
             id="email"
             type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             placeholder="name@company.com"
             required
             disabled={isLoading}
@@ -101,7 +131,7 @@ export default function LoginForm({ onSubmit, isLoading = false }: LoginFormProp
           {" "}
           {/*i know the disabled is a bit redundent, I'll fix it*/}
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {isLoading ? "Authenticating..." : "Sign Up"}
+          {isLoading ? "Authenticating..." : "Log In"}
         </Button>
 
       </form>

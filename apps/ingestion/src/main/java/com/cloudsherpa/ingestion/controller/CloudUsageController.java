@@ -23,6 +23,11 @@ public class CloudUsageController {
     return cloudUsageService.ingest(request);
   }
 
+  @PostMapping("/ingest/mockNoise")
+  public IngestionResult ingestMockWithNoise(@RequestBody IngestionRequestEvent request) {
+    return cloudUsageService.ingestMockWithNoise(request);
+  }
+
   @PostMapping("/ingest/mock")
   public IngestionResult ingestMock(@RequestBody IngestionRequestEvent request) {
     return cloudUsageService.ingestMock(request);

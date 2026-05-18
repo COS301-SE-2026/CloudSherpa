@@ -137,10 +137,12 @@ public class PostgresNotificationListener implements SmartLifecycle {
   private void processMetricForAnalytics(JsonNode metric) {
     // Now that the data is a JSON object, extract values defensively.
     String metricId = metric.path("metric_id").asText("unknown");
-    String environmentId = metric.path("environment_id").asText("unknown");
-    double usageAmount = metric.path("usage_amount").asDouble(0.0);
-    double costAmount = metric.path("cost_amount").asDouble(0.0);
-    String currency = metric.path("currency").asText("unknown");
+    String accountId = metric.path("account_id").asText("unknown");
+    String resourceId = metric.path("resource_id").asText("unknown");
+    String metricType = metric.path("metric_type").asText("unknown");
+    String metricName = metric.path("metric_name").asText("unknown");
+    double metricValue = metric.path("metric_value").asDouble(0.0);
+    String unit = metric.path("unit").asText("unknown");
 
     // This is where we would call intelligence engine to do its thing
 

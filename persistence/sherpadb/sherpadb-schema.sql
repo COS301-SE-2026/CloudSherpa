@@ -2,29 +2,67 @@
 -- It makes querying data over time much faster.
 CREATE EXTENSION IF NOT EXISTS timescaledb;
 
-CREATE TABLE environment_reference (
-    environment_id UUID PRIMARY KEY,
-    provider VARCHAR(50) NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+CREATE TYPE provider_enum AS ENUM ('AWS','AZURE','GCP');
+CREATE TYPE status_enum AS ENUM ('active','disabled');
+CREATE TYPE credential_type_enum AS ENUM ('access_key','oauth');
+CREATE TYPE account_type_enum AS ENUM ('aws_account','azure_subscription','gcp_project');
+CREATE TYPE metric_type_enum AS ENUM ('cost','usage','performance');
+
+CREATE TABLE users (
+  user_id UUID PRIMARY KEY,
+  email VARCHAR(320) NOT NULL UNIQUE,
+  username VARCHAR(100) NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Where the Ingestion service saves normalized data.
+CREATE TABLE cloud_connection (
+  connection_id UUID PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES users(user_id),
+  provider provider_enum NOT NULL,
+  status status_enum NOT NULL DEFAULT 'active',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE cloud_account (
+  account_id UUID PRIMARY KEY,
+  connection_id UUID NOT NULL REFERENCES cloud_connection(connection_id),
+  account_type account_type_enum NOT NULL,
+  display_name VARCHAR(255),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE resource (
+  resource_id UUID PRIMARY KEY,
+  account_id UUID NOT NULL REFERENCES cloud_account(account_id),
+  resource_type VARCHAR(255),
+  tags VARCHAR(255),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE cloud_credential (
+  credential_id UUID PRIMARY KEY,
+  connection_id UUID NOT NULL REFERENCES cloud_connection(connection_id),
+  provider provider_enum NOT NULL,
+  credential_type credential_type_enum NOT NULL,
+  credential_value TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 CREATE TABLE normalized_metrics (
-    metric_id UUID NOT NULL,
-    recorded_at TIMESTAMPTZ NOT NULL,
-    environment_id UUID REFERENCES environment_reference(environment_id),
-    resource_id VARCHAR(255) NOT NULL,
-    service_category VARCHAR(100) NOT NULL,
-    usage_amount NUMERIC NOT NULL,
-    usage_unit VARCHAR(50) NOT NULL,
-    cost_amount NUMERIC NOT NULL,
-    currency VARCHAR(10) DEFAULT 'ZAR'
+  metric_id UUID,
+  account_id UUID NOT NULL REFERENCES cloud_account(account_id),
+  recorded_at TIMESTAMPTZ NOT NULL,
+  resource_id UUID REFERENCES resource(resource_id),
+  metric_type metric_type_enum NOT NULL,
+  metric_name VARCHAR(255) NOT NULL,
+  metric_value NUMERIC NOT NULL,
+  unit VARCHAR(50),
+  currency VARCHAR(10),
+  period_start TIMESTAMPTZ,
+  period_end TIMESTAMPTZ,
+  PRIMARY KEY (recorded_at, metric_id)
 );
-
--- Mock environment_reference for mock testing
-INSERT INTO environment_reference (environment_id, provider, created_at)
-VALUES ('550e8400-e29b-41d4-a716-446655440000', 'AWS', NOW())
-ON CONFLICT (environment_id) DO NOTHING;
 
 -- Converts the standard Postgres table above into a TimescaleDB "hypertable".
 -- This partitions the data behind the scenes based on 'recorded_at', 
@@ -33,7 +71,7 @@ SELECT create_hypertable('normalized_metrics', 'recorded_at');
 
 -- Creates an index to speed up lookups when you filter by a specific environment 
 -- and order the results from newest to oldest.
-CREATE INDEX ix_environment_time ON normalized_metrics (environment_id, recorded_at DESC);
+CREATE INDEX ix_resource_time ON normalized_metrics (resource_id, recorded_at DESC);
 
 -- Defines the custom function that will do the broadcasting.
 -- "RETURNS TRIGGER" restricts this function so it can only be executed by a table trigger. (Like INSERT)
