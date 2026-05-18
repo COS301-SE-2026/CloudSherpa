@@ -14,6 +14,36 @@ const API_BASE = process.env['NEXT_PUBLIC_API_URL'];
 
 const sseUrl = `${API_BASE}/stream`;
 
+type MetricStreamEvent = {
+    metric_id: string;
+    account_id: string;
+    currency: string | null;
+    resource_id: string;
+    metric_type: string;
+    metric_name: string;
+    metric_value: number;
+    period_start: string;
+    period_end: string;
+    recorded_at: string;
+    unit: string;
+};
+
+function toMetricDto(event: MetricStreamEvent): MetricDTO {
+    return {
+        metricId: event.metric_id,
+        accountId: event.account_id,
+        currency: event.currency,
+        resourceId: event.resource_id,
+        metricType: event.metric_type,
+        metricName: event.metric_name,
+        metricValue: event.metric_value,
+        periodStart: event.period_start,
+        periodEnd: event.period_end,
+        recordedAt: event.recorded_at,
+        unit: event.unit,
+    };
+}
+
 function createMockMetrics(): Metric[] {
     const now = Date.now();
 
@@ -46,8 +76,7 @@ export function useMetricStream() {
             };
     
             const handleMetric = (event: MessageEvent<string>) => {
-                const metricDto = JSON.parse(event.data) as MetricDTO;
-
+                const metricDto = toMetricDto(JSON.parse(event.data) as MetricStreamEvent);
                 addMetricFromDto(metricDto);
             };
     
