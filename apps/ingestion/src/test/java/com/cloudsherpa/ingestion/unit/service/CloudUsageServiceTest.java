@@ -30,8 +30,7 @@ class CloudUsageServiceTest {
 
     service = new CloudUsageService(factory);
 
-    Field field = CloudUsageService.class
-        .getDeclaredField("sherpaDbPersistenceService");
+    Field field = CloudUsageService.class.getDeclaredField("sherpaDbPersistenceService");
 
     field.setAccessible(true);
     field.set(service, persistenceService);
@@ -42,14 +41,11 @@ class CloudUsageServiceTest {
 
     TestConnector connector = spy(new TestConnector());
 
-    when(factory.getConnector("AWS"))
-        .thenReturn(connector);
+    when(factory.getConnector("AWS")).thenReturn(connector);
 
     UsageRecordModel record = buildUsageRecord();
 
-    doReturn(List.of(record))
-        .when(connector)
-        .fetchUsage(any(), any());
+    doReturn(List.of(record)).when(connector).fetchUsage(any(), any());
 
     IngestionRequestEvent request = buildRequest(true, false);
 
@@ -58,8 +54,7 @@ class CloudUsageServiceTest {
     assertEquals(1, result.getUsage().size());
     assertEquals(0, result.getBilling().size());
 
-    verify(connector, times(1))
-        .fetchUsage(any(), any());
+    verify(connector, times(1)).fetchUsage(any(), any());
   }
 
   @Test
@@ -67,14 +62,11 @@ class CloudUsageServiceTest {
 
     TestConnector connector = spy(new TestConnector());
 
-    when(factory.getConnector("AWS"))
-        .thenReturn(connector);
+    when(factory.getConnector("AWS")).thenReturn(connector);
 
     BillingRecordModel billing = new BillingRecordModel();
 
-    doReturn(List.of(billing))
-        .when(connector)
-        .fetchBilling(any(), any());
+    doReturn(List.of(billing)).when(connector).fetchBilling(any(), any());
 
     IngestionRequestEvent request = buildRequest(false, true);
 
@@ -83,8 +75,7 @@ class CloudUsageServiceTest {
     assertEquals(0, result.getUsage().size());
     assertEquals(1, result.getBilling().size());
 
-    verify(connector, times(1))
-        .fetchBilling(any(), any());
+    verify(connector, times(1)).fetchBilling(any(), any());
   }
 
   @Test
@@ -92,16 +83,11 @@ class CloudUsageServiceTest {
 
     TestConnector connector = spy(new TestConnector());
 
-    when(factory.getConnector("AWS"))
-        .thenReturn(connector);
+    when(factory.getConnector("AWS")).thenReturn(connector);
 
-    doReturn(List.of(buildUsageRecord()))
-        .when(connector)
-        .fetchUsage(any(), any());
+    doReturn(List.of(buildUsageRecord())).when(connector).fetchUsage(any(), any());
 
-    doReturn(List.of(new BillingRecordModel()))
-        .when(connector)
-        .fetchBilling(any(), any());
+    doReturn(List.of(new BillingRecordModel())).when(connector).fetchBilling(any(), any());
 
     IngestionRequestEvent request = buildRequest(true, true);
 
@@ -116,19 +102,15 @@ class CloudUsageServiceTest {
 
     TestConnector connector = spy(new TestConnector());
 
-    when(factory.getConnector("AWS"))
-        .thenReturn(connector);
+    when(factory.getConnector("AWS")).thenReturn(connector);
 
-    doReturn(List.of())
-        .when(connector)
-        .fetchUsage(any(), any());
+    doReturn(List.of()).when(connector).fetchUsage(any(), any());
 
     IngestionResult result = service.ingest(buildRequest(true, false));
 
     assertTrue(result.getUsage().isEmpty());
 
-    verify(connector, times(1))
-        .fetchUsage(any(), any());
+    verify(connector, times(1)).fetchUsage(any(), any());
   }
 
   @Test
@@ -136,20 +118,17 @@ class CloudUsageServiceTest {
 
     TestConnector connector = spy(new TestConnector());
 
-    when(factory.getConnector("AWS"))
-        .thenReturn(connector);
+    when(factory.getConnector("AWS")).thenReturn(connector);
 
     service.ingest(buildRequest(false, false));
 
-    verify(connector, never())
-        .fetchUsage(any(), any());
+    verify(connector, never()).fetchUsage(any(), any());
   }
 
   @Test
   void ingestMockShouldGenerateMockUsage() {
 
-    IngestionResult result = service.ingestMock(
-        buildRequest(true, false));
+    IngestionResult result = service.ingestMock(buildRequest(true, false));
 
     assertNotNull(result);
     assertNotNull(result.getUsage());
@@ -158,8 +137,7 @@ class CloudUsageServiceTest {
   @Test
   void ingestMockShouldNotGenerateUsageWhenDisabled() {
 
-    IngestionResult result = service.ingestMock(
-        buildRequest(false, false));
+    IngestionResult result = service.ingestMock(buildRequest(false, false));
 
     assertTrue(result.getUsage().isEmpty());
   }
@@ -169,17 +147,13 @@ class CloudUsageServiceTest {
 
     TestConnector connector = spy(new TestConnector());
 
-    when(factory.getConnector("AWS"))
-        .thenReturn(connector);
+    when(factory.getConnector("AWS")).thenReturn(connector);
 
-    doReturn(List.of(buildUsageRecord()))
-        .when(connector)
-        .fetchUsage(any(), any());
+    doReturn(List.of(buildUsageRecord())).when(connector).fetchUsage(any(), any());
 
     assertDoesNotThrow(() -> service.ingest(buildRequest(true, false)));
 
-    verify(connector, times(1))
-        .fetchUsage(any(), any());
+    verify(connector, times(1)).fetchUsage(any(), any());
   }
 
   @Test
@@ -187,12 +161,9 @@ class CloudUsageServiceTest {
 
     TestConnector connector = spy(new TestConnector());
 
-    when(factory.getConnector("AWS"))
-        .thenReturn(connector);
+    when(factory.getConnector("AWS")).thenReturn(connector);
 
-    doReturn(List.of(buildUsageRecord()))
-        .when(connector)
-        .fetchUsage(any(), any());
+    doReturn(List.of(buildUsageRecord())).when(connector).fetchUsage(any(), any());
 
     doThrow(new RuntimeException("DB Failure"))
         .when(persistenceService)
@@ -206,12 +177,9 @@ class CloudUsageServiceTest {
 
     TestConnector connector = spy(new TestConnector());
 
-    when(factory.getConnector(anyString()))
-        .thenReturn(connector);
+    when(factory.getConnector(anyString())).thenReturn(connector);
 
-    doReturn(List.of(buildUsageRecord()))
-        .when(connector)
-        .fetchUsage(any(), any());
+    doReturn(List.of(buildUsageRecord())).when(connector).fetchUsage(any(), any());
 
     IngestionRequestEvent request = buildRequest(true, false);
 
@@ -243,9 +211,7 @@ class CloudUsageServiceTest {
     return record;
   }
 
-  private IngestionRequestEvent buildRequest(
-      boolean usage,
-      boolean billing) {
+  private IngestionRequestEvent buildRequest(boolean usage, boolean billing) {
 
     IngestionRequestEvent request = new IngestionRequestEvent();
 
@@ -262,9 +228,7 @@ class CloudUsageServiceTest {
     return request;
   }
 
-  static class TestConnector implements CloudConnector,
-      UsageCapable,
-      BillingCapable {
+  static class TestConnector implements CloudConnector, UsageCapable, BillingCapable {
 
     @Override
     public boolean testConnection(CloudCredentials credentials) {
@@ -278,29 +242,25 @@ class CloudUsageServiceTest {
 
     @Override
     public List<UsageRecordModel> fetchUsage(
-        AccountScope accountScope,
-        IngestionRequestEvent request) {
+        AccountScope accountScope, IngestionRequestEvent request) {
       return List.of();
     }
 
     @Override
     public List<UsageRecordModel> fetchMockUsage(
-        AccountScope accountScope,
-        IngestionRequestEvent request) {
+        AccountScope accountScope, IngestionRequestEvent request) {
       return List.of(buildMockRecord());
     }
 
     @Override
     public List<BillingRecordModel> fetchBilling(
-        AccountScope accountScope,
-        IngestionRequestEvent request) {
+        AccountScope accountScope, IngestionRequestEvent request) {
       return List.of();
     }
 
     @Override
     public List<BillingRecordModel> fetchMockBilling(
-        AccountScope accountScope,
-        IngestionRequestEvent request) {
+        AccountScope accountScope, IngestionRequestEvent request) {
       return List.of(new BillingRecordModel());
     }
 

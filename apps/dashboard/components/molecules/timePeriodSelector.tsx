@@ -9,8 +9,12 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/atoms/button";
 import { Calendar } from "@/components/atoms/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/atoms/popover";
+import { useWindowStore } from "@/stores/window-store";
+import { TimeWindowPreset } from "@/types/timewindow";
 
-const presets = [
+type DurationPreset = Exclude<TimeWindowPreset, "custom">;
+
+const presets: {id: DurationPreset, label: string }[] = [
   { id: "1m", label: "1 min" },
   { id: "2m", label: "2 min" },
   { id: "5m", label: "5 min" },
@@ -19,6 +23,28 @@ const presets = [
   { id: "7d", label: "7 days" },
   { id: "30d", label: "30 days" },
 ];
+
+function getPresetRange(presetId: DurationPreset): DateRange {
+  const to = new Date();
+  const minuteMs = 60 * 1000;
+  const hourMs = 60 * minuteMs;
+  const dayMs = 24 * hourMs;
+
+  const durationByPreset: Record<DurationPreset, number> = {
+    "1m": minuteMs,
+    "2m": 2 * minuteMs,
+    "5m": 5 * minuteMs,
+    "1h": hourMs,
+    "24h": 24 * hourMs,
+    "7d": 7 * dayMs,
+    "30d": 30 * dayMs,
+  };
+
+  return {
+    from: new Date(to.getTime() - (durationByPreset[presetId] ?? 7 * dayMs)),
+    to,
+  };
+}
 
 export function TimePeriodSelector({
   date,
@@ -29,8 +55,9 @@ export function TimePeriodSelector({
 }) {
   const [open, setOpen] = useState(false);
   const [view, setView] = useState<"presets" | "custom">("presets");
-  const [selectedPreset, setSelectedPreset] = useState<string>("7d");
-  
+  const setSelectedPreset = useWindowStore((state) => state.setPreset);
+  const selectedPreset = useWindowStore((state) => state.selectedPreset);
+
   const getDisplayLabel = () => {
     if (selectedPreset !== "custom") {
       return presets.find((p) => p.id === selectedPreset)?.label;
@@ -79,6 +106,7 @@ export function TimePeriodSelector({
                 )}
                 onClick={() => {
                   setSelectedPreset(p.id);
+                  onDateChange(getPresetRange(p.id));
                   setOpen(false);
                 }}>
                 {p.label}

@@ -13,7 +13,7 @@ interface ConfigurableWidgetProps{
     availableMetricTypes: string[];
 }
 
-type MetricType = 'cpu'| 'memory' | 'disk' | 'cost' | 'anon';
+type MetricType = 'cpu'| 'memory' | 'disk' | 'anon';
 
 export function ConfigurableWidget({ 
     forInitialConfiguration, 

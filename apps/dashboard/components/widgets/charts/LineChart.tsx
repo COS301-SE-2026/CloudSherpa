@@ -2,6 +2,7 @@
 
 import { echarts } from "@/lib/charts/echarts";
 import { useMetricStore } from "@/stores/metric-store";
+import { useWindowStore } from "@/stores/window-store";
 import { Metric, MetricType } from "@/types/metric";
 import type { EChartsOption } from "echarts";
 import { useEffect, useRef } from "react";
@@ -14,7 +15,7 @@ type LineChartWidgetProps = {
 
 const EMPTY_METRICS: Metric[] = [];
 // This will be replaced by zustand store for dashboard window
-const VISIBLE_WINDOW_MS = 60_000;
+
 // The tick should sync with the ingestion intervals, still need to do system-wide
 // investigation regarding this
 const AXIS_TICK_MS = 5_000;
@@ -26,6 +27,10 @@ export function LineChartWidget({
 }: Readonly<LineChartWidgetProps>) {
     const chartRef = useRef<HTMLDivElement>(null);
     const data = useMetricStore((state) => (state.seriesByKey[`${resourceId}:${metricType}`] ?? EMPTY_METRICS));
+    const fromMs = useWindowStore((state) => state.fromMs);
+    const toMs = useWindowStore((state) => state.toMs);
+    const visibleWindowMs = toMs - fromMs;
+
     const chartInstance = useRef<echarts.ECharts | null>(null);
 
     useEffect(() => {
@@ -71,7 +76,7 @@ export function LineChartWidget({
             // setting to time, series data has to be [number, number], with [timestamp, value]
             xAxis: {
                 type: "time",
-                min: axisMax - VISIBLE_WINDOW_MS,
+                min: axisMax - visibleWindowMs,
                 max: axisMax,
                 interval: AXIS_TICK_MS,
             },
@@ -96,7 +101,7 @@ export function LineChartWidget({
         };
 
         chartInstance.current?.setOption(option);
-    }, [title, resourceId, data])
+    }, [title, resourceId, data, visibleWindowMs])
 
     useEffect(() => {
         if(!chartInstance.current){

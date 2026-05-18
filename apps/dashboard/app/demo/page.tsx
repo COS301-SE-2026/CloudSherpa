@@ -2,17 +2,16 @@
 
 import { useMetricStream } from "@/services/sse/metric-stream";
 import { useMetricStore } from "@/stores/metric-store";
-import { LineChartWidget } from "@/components/widgets/charts/LineChart";
-import { GaugeWidget } from "@/components/widgets/charts/GaugeChart";
-import { WidgetContainer } from "@/components/widgets/base/WidgetContainer";
+import { useFetchMetrics } from "@/hooks/useFetchMetrics";
 import { ConfigurableWidget } from "@/components/widgets/changeChart";
 
 export default function Demo() {
     const { error } = useMetricStream();
     const metrics = useMetricStore((state) => (state.seriesByKey));
 
-    const forCpuData = metrics['mock-ec2-1:anon'] || [];
+    const forCpuData = metrics['2a6bf77c-722d-3eb5-8cb6-1607ca517d6b:cpu'] || [];
     const latestCpuValue = forCpuData.length > 0 ? forCpuData[forCpuData.length-1].value : 0;
+    useFetchMetrics();
 
     const availableResources = ['mock-ec2-1'];
     const availableMetricTypes = ['cpu', 'memory', 'disk', 'cost', 'anon'];

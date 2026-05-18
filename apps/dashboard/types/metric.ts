@@ -1,4 +1,22 @@
-export type MetricType = "cpu" | "memory" | "disk" | "cost" | "anon";
+import { MetricDTO } from "./dtos/metrics/MetricDto";
+
+export type MetricType =
+    | "cpu"
+    | "memory"
+    | "storage-used"
+    | "storage-available"
+    | "object-count"
+    | "duration"
+    | "throttles"
+    | "disk"
+    | "network"
+    | "capacity"
+    | "latency"
+    | "errors"
+    | "requests"
+    | "connections"
+    | "invocations"
+    | "anon";
 
 export type Metric = {
     resource_id: string,
@@ -11,4 +29,6 @@ export type MetricStore = {
     seriesByKey: Record<string, Metric[]>;
 
     addMetric: (metric: Metric) => void;
+    addMetricFromDto: (metricDto : MetricDTO) => void;
+    clearStore: () => void;
 }
