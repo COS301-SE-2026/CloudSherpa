@@ -46,11 +46,8 @@ export function ConfigurableWidget({
         <>
             <WidgetContainer 
                 forTitle={config.forTitle}
-                defaultWidth={config.forWidgetType === 'line' ? 700 : 400}
-                defaultHeight={config.forWidgetType === 'line' ? 400 : 350}
-                minWidth={300}
-                minHeight={250}
-                isResizable={true}
+                className="h-full w-full"
+                isResizable={false}
                 onSettingsClick={() => setIsConfigOpen(true)}
                 showConfig={true}
             >

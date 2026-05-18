@@ -1,5 +1,6 @@
 'use client';
 
+import { useDashboardStore } from '@/stores/dashboard-store';
 import { MetricType } from '@/types/metric';
 import { useState, useEffect, useRef } from 'react';
 
@@ -15,11 +16,14 @@ interface WidgetConfigProps{
     forAvailableMetricTypes: Record<string, MetricType[]>;
 }
 
+// This is shared (used for dashboard store), perhaps we can move it to types
+// Also need to confirm that interface is more appropriate than type
 export interface WidgetConfigData{
+    id: string;
     forTitle: string;
     resourceId: string;
 
-    metricType: string;
+    metricType: MetricType;
     forWidgetType: 'line' | 'gauge';
 }
 
@@ -35,6 +39,7 @@ export function WidgetConfig({
 
 }: WidgetConfigProps){
     const [forConfiguration, setConfig] = useState<WidgetConfigData>(forExistingConfig);
+    const registerWidgetConfigUpdate = useDashboardStore((state) => state.actions.updateWidgetConfig);
 
     const forFirstRender = useRef(true);
     useEffect(() => {
@@ -55,6 +60,12 @@ export function WidgetConfig({
     }
 
     const metricTypesForSelectedResource = forAvailableMetricTypes[forConfiguration.resourceId] ?? [];
+
+    // Registers config update with dashboard store
+    function setConfigAndRegisterUpdate(newConfig: WidgetConfigData) {
+        setConfig(newConfig);
+        registerWidgetConfigUpdate(newConfig);
+    }
 
     return (
         <>
@@ -78,7 +89,7 @@ export function WidgetConfig({
                         <input
                             type="text"
                             value={forConfiguration.forTitle}
-                            onChange={(e) => setConfig({ ...forConfiguration, forTitle: e.target.value })}
+                            onChange={(e) => setConfigAndRegisterUpdate({ ...forConfiguration, forTitle: e.target.value })}
                             className="w-full bg-background border border-border rounded-lg px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                             placeholder="Enter widget title"
                         />
@@ -96,7 +107,7 @@ export function WidgetConfig({
                                     const resourceId = e.target.value;
                                     const metricType = forAvailableMetricTypes[resourceId]?.[0] ?? "";
 
-                                    setConfig({ ...forConfiguration, resourceId: resourceId, metricType: metricType })
+                                    setConfigAndRegisterUpdate({ ...forConfiguration, resourceId: resourceId, metricType: metricType })
                                 }
                             }
                             className="w-full bg-background border border-border rounded-lg px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
@@ -119,7 +130,7 @@ export function WidgetConfig({
 
                                 <select
                                     value={forConfiguration.metricType}
-                                    onChange={(e) => setConfig({ ...forConfiguration, metricType: e.target.value })}
+                                    onChange={(e) => setConfigAndRegisterUpdate({ ...forConfiguration, metricType: e.target.value as MetricType })}
                                     className="w-full bg-background border border-border rounded-lg px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                                 >
                                     {metricTypesForSelectedResource.map((type) => (

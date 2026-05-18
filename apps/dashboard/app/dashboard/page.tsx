@@ -11,6 +11,7 @@ import { useDashboardStore, DashboardStore } from "@/stores/dashboard-store";
 import { useMetricStream } from "@/services/sse/metric-stream";
 import { useFetchMetrics } from "@/hooks/useFetchMetrics";
 import { useWindowStore } from "@/stores/window-store";
+import { WidgetConfigData } from "@/components/widgets/widgetConfig";
 
 function DashboardContent() {
   const { error: streamError } = useMetricStream();
@@ -20,7 +21,7 @@ function DashboardContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [isEditMode, setIsEditMode] = useState(false);
   const [originalLayout, setOriginalLayout] = useState<LayoutItem[]>([]);
-  const [originalConfigs, setOriginalConfigs] = useState<WidgetConfig[]>([]);
+  const [originalConfigs, setOriginalConfigs] = useState<WidgetConfigData[]>([]);
   const fromMs = useWindowStore((state) => state.fromMs);
   const toMs = useWindowStore((state) => state.toMs);
   const from = new Date(fromMs);
@@ -33,7 +34,7 @@ function DashboardContent() {
   const layoutsMap = useDashboardStore((state: DashboardStore) => state.layouts);
   const widgetsMap = useDashboardStore((state: DashboardStore) => state.widgets);
 
-  useFetchMetrics();
+  const { fetchMetrics } = useFetchMetrics();
 
   const { 
     setInitialState, 
@@ -47,12 +48,17 @@ function DashboardContent() {
   useEffect(() => {
     const loadDashboardData = async () => {
       // only initialize if we don't have any dashboards in the store yet make full use of zustand caching. 
+      setIsLoading(true);
+
+      // Leverage fact that dashboards need to be loaded into mem to trigger initial metric fetch
+      // ? Is this robust?
+      await fetchMetrics();
+
       if (Object.keys(dashboards).length === 0) {
-        setIsLoading(true);
         // simulate API Fetch: const response = await fetch('/api/dashboards');
-        const initialConfigs: WidgetConfig[] = [
-          { id: "w-1", title: "Live CPU Usage (Mock)", resourceId: "74266597-141c-3ecc-8f68-8667ff7163a7", metricType: "cpu", chartType: "line" },
-          { id: "w-2", title: "Live Memory (Mock)", resourceId: "74266597-141c-3ecc-8f68-8667ff7163a7", metricType: "cpu", chartType: "gauge" },
+        const initialConfigs: WidgetConfigData[] = [
+          { id: "w-1", forTitle: "Live CPU Usage (Mock)", resourceId: "74266597-141c-3ecc-8f68-8667ff7163a7", metricType: "cpu", forWidgetType: "line" },
+          { id: "w-2", forTitle: "Live Memory (Mock)", resourceId: "74266597-141c-3ecc-8f68-8667ff7163a7", metricType: "cpu", forWidgetType: "gauge" },
         ];
         const initialLayouts: LayoutItem[] = [
           { id: "l-1", widgetId: "w-1", x: 0, y: 0, w: 6, h: 4 },
@@ -142,10 +148,10 @@ function DashboardContent() {
   const handleAddWidget = useCallback(() => {
     const widgetId = crypto.randomUUID();
     const layoutId = crypto.randomUUID();
-    const newConfig: WidgetConfig = {
+    const newConfig: WidgetConfigData = {
       id: widgetId,
-      chartType: "line", 
-      title: "New Widget (Click to Customize)", 
+      forWidgetType: "line", 
+      forTitle: "New Widget (Click to Customize)", 
       resourceId: "mock-ec2-1",
       metricType: "anon", 
     };

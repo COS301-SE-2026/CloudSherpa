@@ -1,17 +1,19 @@
 import { create } from 'zustand';
-import { LayoutItem, WidgetConfig, DashboardConfig } from '@/types/widgets';
+import { LayoutItem, DashboardConfig } from '@/types/widgets';
+import { WidgetConfigData } from '@/components/widgets/widgetConfig';
 
 interface DashboardActions {
     setActiveDashboard: (id: string | null) => void;
     addDashboard: (dashboard: DashboardConfig) => void;
     removeDashboard: (id: string) => void;
-    addWidget: (layout: LayoutItem, widget: WidgetConfig) => void;
+    addWidget: (layout: LayoutItem, widget: WidgetConfigData) => void;
+    updateWidgetConfig: (widget: WidgetConfigData) => void;
     removeWidget: (layoutId: string, widgetId: string) => void;
     updateLayouts: (newLayouts: LayoutItem[]) => void;
     setInitialState: (
         dashboards: Record<string, DashboardConfig>,
         layouts: LayoutItem[],
-        widgets: WidgetConfig[]
+        widgets: WidgetConfigData[]
     ) => void;
 }
 
@@ -19,7 +21,7 @@ export interface DashboardStore {
     activeDashboardId: string | null;
     dashboards: Record<string, DashboardConfig>;
     layouts: Record<string, LayoutItem>;
-    widgets: Record<string, WidgetConfig>;
+    widgets: Record<string, WidgetConfigData>;
     actions: DashboardActions;
 }
 
@@ -65,6 +67,12 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
                 },
             };
         }),
+        updateWidgetConfig: (widget) => set((state) => ({
+            widgets: {
+                ...state.widgets,
+                [widget.id]: widget,
+            },
+        })),
         removeWidget: (layoutId, widgetId) => set((state) => {
             const newLayouts = { ...state.layouts };
             delete newLayouts[layoutId];
@@ -101,7 +109,7 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
             const widgetsMap = widgetsArray.reduce((acc, item) => {
                 acc[item.id] = item;
                 return acc;
-            }, {} as Record<string, WidgetConfig>);
+            }, {} as Record<string, WidgetConfigData>);
             set({
                 dashboards: dashboards,
                 layouts: layoutsMap,
