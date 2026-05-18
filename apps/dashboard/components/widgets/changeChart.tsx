@@ -5,15 +5,14 @@ import { WidgetContainer } from './base/WidgetContainer';
 import { LineChartWidget } from './charts/LineChart';
 import { GaugeWidget } from './charts/GaugeChart';
 import { WidgetConfig, WidgetConfigData } from './widgetConfig';
+import { MetricType } from '@/types/metric';
 
 interface ConfigurableWidgetProps{
     forInitialConfiguration: WidgetConfigData;
 
     availableResources: string[];
-    availableMetricTypes: string[];
+    availableMetricTypes: Record<string, MetricType[]>;
 }
-
-type MetricType = 'cpu'| 'memory' | 'disk' | 'anon';
 
 export function ConfigurableWidget({ 
     forInitialConfiguration, 

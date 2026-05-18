@@ -1,5 +1,6 @@
 'use client';
 
+import { MetricType } from '@/types/metric';
 import { useState, useEffect, useRef } from 'react';
 
 interface WidgetConfigProps{
@@ -11,7 +12,7 @@ interface WidgetConfigProps{
     forExistingConfig: WidgetConfigData;
 
     forAvailableResources: string[];
-    forAvailableMetricTypes: string[];
+    forAvailableMetricTypes: Record<string, MetricType[]>;
 }
 
 export interface WidgetConfigData{
@@ -53,6 +54,8 @@ export function WidgetConfig({
         return null;
     }
 
+    const metricTypesForSelectedResource = forAvailableMetricTypes[forConfiguration.resourceId] ?? [];
+
     return (
         <>
             <div 
@@ -89,7 +92,13 @@ export function WidgetConfig({
 
                         <select
                             value={forConfiguration.resourceId}
-                            onChange={(e) => setConfig({ ...forConfiguration, resourceId: e.target.value })}
+                            onChange={(e) => {
+                                    const resourceId = e.target.value;
+                                    const metricType = forAvailableMetricTypes[resourceId]?.[0] ?? "";
+
+                                    setConfig({ ...forConfiguration, resourceId: resourceId, metricType: metricType })
+                                }
+                            }
                             className="w-full bg-background border border-border rounded-lg px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                         >
                             {forAvailableResources.map((resource) => (
@@ -102,21 +111,29 @@ export function WidgetConfig({
 
                     {/*this is for the metric type*/}
                     <div>
-                        <label className="block text-sm font-medium text-foreground mb-2">
-                            Metric Type
-                        </label>
+                        {forConfiguration.resourceId ? (
+                            <>
+                                <label className="block text-sm font-medium text-foreground mb-2">
+                                    Metric Type
+                                </label>
 
-                        <select
-                            value={forConfiguration.metricType}
-                            onChange={(e) => setConfig({ ...forConfiguration, metricType: e.target.value })}
-                            className="w-full bg-background border border-border rounded-lg px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                        >
-                            {forAvailableMetricTypes.map((type) => (
-                                <option key={type} value={type}>
-                                    {type.toUpperCase()}
-                                </option>
-                            ))}
-                        </select>
+                                <select
+                                    value={forConfiguration.metricType}
+                                    onChange={(e) => setConfig({ ...forConfiguration, metricType: e.target.value })}
+                                    className="w-full bg-background border border-border rounded-lg px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                                >
+                                    {metricTypesForSelectedResource.map((type) => (
+                                        <option key={type} value={type}>
+                                            {type.toUpperCase()}
+                                        </option>
+                                    ))}
+                                </select>
+                            </>
+                        ) : (
+                            <p className="text-sm text-muted-foreground">
+                                Select resource first
+                            </p>
+                        )}
                     </div>
 
                     {/*this is to chnange bet. the line chart or the gauge chart*/}
