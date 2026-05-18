@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@/components/atoms/button";
-import { type DashboardStub } from "@/app/dashboard/page";
 
 import { Pencil } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -28,7 +27,7 @@ export default function EditButton({
                 size={isEditMode ? "sm" : "icon"}
                 onClick={isEditMode ? handleCancelEdit : handleStartEditing}
                 className={cn(
-                  "bg-card border-border text-foreground hover:text-primary hover:border-primary transition-all duration-200",
+                  "bg-card border-border text-foreground hover:text-foreground hover:bg-primary transition-all duration-200",
                   isEditMode &&
                     "bg-destructive/10 border-destructive text-destructive hover:bg-destructive/20 hover:text-destructive hover:border-destructive",
                 )}>

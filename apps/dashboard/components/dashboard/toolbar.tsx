@@ -6,7 +6,7 @@ import { DashboardSelector } from "@/components/molecules/dashboardSelector";
 import { Tooltip } from "@/components/molecules/tooltip";
 import { DateRange } from "react-day-picker";
 import { SidebarTrigger } from "@/components/atoms/sidebar";
-import { type DashboardStub } from "@/app/dashboard/page";
+import { DashboardStub } from "@/types/widgets";
 import EditButton from "@/components/dashboard/editButton";
 
 import { Edit, Pencil } from "lucide-react";
@@ -44,7 +44,7 @@ export default function Toolbar({
       <div className="flex flex-row items-end gap-2">
         {/* Toggle Group */}
         <div className="flex flex-col items-start">
-          <SidebarTrigger className="bg-card border-border hover:bg-hover hover:text-secondary h-9 w-9 border" />
+          <SidebarTrigger className="bg-card border-border hover:bg-hover hover:text-foreground h-9 w-9 border" />
         </div>
         {/* vertical seperator as to not confuse user of sidebar trigger functionality */}
         <div className="h-9 w-px bg-border self-end mb-0" />

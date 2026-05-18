@@ -1,24 +1,31 @@
-import { MetricType } from "@/types/metric";
-
-export type WidgetConfig = {
-    id: string;
-    title: string;
-    metricType: MetricType;
-    resourceId: string;
-    chartType: 'gauge' | 'line' | 'bar';
-}
+import { MetricType } from "./metric";
 
 export type LayoutItem = {
-    id: string; // Layout ID
-    widgetId: string; // Foreign key to WidgetConfig/depends on how we want to use it
+    id: string;
+    widgetId: string;
     x: number;
     y: number;
     w: number;
     h: number;
     autoPosition?: boolean;
-}
+};
 
-//idea when user moves widget without changing config, only perisist layout & vice verssa
-// dt, POST /api/widgets to create the configuration and 
-// get the new widgetId from the server thenPOST /api/dashboards/{id}/layouts or something
-//  with the generated widgetId and the default grid coordinates.
+export type WidgetConfig = {
+    id: string;
+    chartType: string;
+    title: string;
+    resourceId: string;
+    metricType: MetricType;
+};
+
+export type DashboardConfig = {
+    id: string;
+    name: string;
+    description?: string;
+    layoutItemIds: string[];
+};
+
+export type DashboardStub = {
+    id: string;
+    label: string;
+};
