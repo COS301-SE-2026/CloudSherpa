@@ -14,6 +14,9 @@ interface WidgetContainerProps{
     minHeight?: number;
 
     isResizable?: boolean;
+
+    onSettingsClick?: () => void;
+    showConfig?: boolean;
 }
 
 export function WidgetContainer({ 
@@ -27,7 +30,10 @@ export function WidgetContainer({
     minWidth = 300,
     minHeight = 200,
     
-    isResizable = true
+    isResizable = true,
+
+    onSettingsClick,
+    showConfig = true
 
 }: WidgetContainerProps){
     const [width, setWidth] = useState(defaultWidth);
@@ -162,16 +168,32 @@ export function WidgetContainer({
             {forTitle && (
                 <div className="flex items-center justify-between border-b border-border px-4 py-3">
                     <h3 className="text-sm font-medium text-foreground">{forTitle}</h3>
-                    
-                    <button
-                        onClick={handleReset}
-                        className="text-muted-foreground hover:text-foreground transition-colors"
-                        title="Reset size"
-                    >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                        </svg>
-                    </button>
+
+                <div className="flex items-center gap-2">
+                        {showConfig && onSettingsClick && (
+                                <button
+                                    onClick={onSettingsClick}
+                                    className="text-muted-foreground hover:text-foreground transition-colors p-1"
+                                    title="Configure Widget"
+                                >
+                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                        <circle cx="12" cy="6" r="2" />
+                                        <circle cx="12" cy="12" r="2" />
+                                        <circle cx="12" cy="18" r="2" />
+                                    </svg>
+                                </button>
+                        )}
+                        
+                        <button
+                            onClick={handleReset}
+                            className="text-muted-foreground hover:text-foreground transition-colors"
+                            title="Reset size"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             )}
 
