@@ -21,8 +21,10 @@ function DashboardContent() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [originalLayout, setOriginalLayout] = useState<LayoutItem[]>([]);
   const [originalConfigs, setOriginalConfigs] = useState<WidgetConfig[]>([]);
-  const from = useWindowStore((state) => state.from);
-  const to = useWindowStore((state) => state.to);
+  const fromMs = useWindowStore((state) => state.fromMs);
+  const toMs = useWindowStore((state) => state.toMs);
+  const from = new Date(fromMs);
+  const to = new Date(toMs);
   const setWindow = useWindowStore((state) => state.setWindow);
   const dateRange: DateRange = { from, to };
 
