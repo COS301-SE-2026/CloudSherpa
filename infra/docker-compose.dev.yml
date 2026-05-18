@@ -66,7 +66,20 @@ services:
       interval: 5s
       timeout: 3s
       retries: 20
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    depends_on:
+      - sherpa-db
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
   
 volumes:
   sherpa_db_data: 
-  # Ensures that the data is persistent across docker compose down / up 
+  pgadmin_data:

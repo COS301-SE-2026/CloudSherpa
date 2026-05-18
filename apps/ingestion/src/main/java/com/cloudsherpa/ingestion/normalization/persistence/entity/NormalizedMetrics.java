@@ -5,8 +5,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -20,92 +18,104 @@ public class NormalizedMetrics {
   @Column(name = "metric_id", nullable = false, updatable = false)
   private UUID metricId;
 
-  @Column(name = "recorded_at", nullable = false, updatable = false)
-  private OffsetDateTime recordedAt;
-
-  // This is the foreign key mapping to environment_reference table
-  // Many-to-one because: One AWS environment will have multiple of individual metric records
-  // associated with it.
-  @ManyToOne(optional = false)
-  @JoinColumn(name = "environment_id", nullable = false)
-  private EnvironmentReference environmentReference;
+  @Column(name = "account_id", nullable = false)
+  private UUID accountId;
 
   @Column(name = "resource_id", nullable = false, length = 255)
-  private String resourceId;
+  private UUID resourceId;
 
-  @Column(name = "service_category", nullable = false, length = 100)
-  private String serviceCategory;
+  @Column(name = "recorded_at", updatable = false)
+  private OffsetDateTime recordedAt;
 
-  @Column(name = "usage_unit", nullable = false, length = 50)
-  private String usageUnit;
+  @Column(name = "metric_type", length = 50)
+  private String metricType;
 
-  @Column(name = "currency", length = 10, nullable = false)
+  @Column(name = "metric_name", length = 255)
+  private String metricName;
+
+  @Column(name = "metric_value", precision = 19, scale = 6)
+  private BigDecimal metricValue;
+
+  @Column(name = "unit", length = 50)
+  private String unit;
+
+  @Column(name = "currency", length = 10)
   private String currency;
 
-  // Use BigDecimal when working with financial data or measurement data
-  // This is for better accuracy
-  @Column(name = "usage_amount", nullable = false, precision = 19, scale = 6)
-  private BigDecimal usageAmount;
+  @Column(name = "period_start")
+  private OffsetDateTime periodStart;
 
-  @Column(name = "cost_amount", nullable = false, precision = 19, scale = 6)
-  private BigDecimal costAmount;
+  @Column(name = "period_end")
+  private OffsetDateTime periodEnd;
 
   public NormalizedMetrics() {
     // Default constructor
   }
 
   public NormalizedMetrics(
+      UUID accountId,
       OffsetDateTime recordedAt,
-      EnvironmentReference environmentReference,
-      String resourceId,
-      String serviceCategory,
-      BigDecimal usageAmount,
-      String usageUnit,
-      BigDecimal costAmount,
-      String currency) {
-    this.recordedAt = recordedAt;
-    this.environmentReference = environmentReference;
+      UUID resourceId,
+      String metricType,
+      String metricName,
+      BigDecimal metricValue,
+      String unit,
+      String currency,
+      OffsetDateTime periodStart,
+      OffsetDateTime periodEnd) {
+    this.accountId = accountId;
     this.resourceId = resourceId;
-    this.serviceCategory = serviceCategory;
-    this.usageAmount = usageAmount;
-    this.usageUnit = usageUnit;
-    this.costAmount = costAmount;
+    this.recordedAt = recordedAt;
+    this.metricType = metricType;
+    this.metricName = metricName;
+    this.metricValue = metricValue;
+    this.unit = unit;
     this.currency = currency;
+    this.periodStart = periodStart;
+    this.periodEnd = periodEnd;
   }
 
   public UUID getMetricId() {
     return metricId;
   }
 
+  public UUID getAccountId() {
+    return accountId;
+  }
+
+  public UUID getResourceId() {
+    return resourceId;
+  }
+
   public OffsetDateTime getRecordedAt() {
     return recordedAt;
   }
 
-  public EnvironmentReference getEnvironmentReference() {
-    return environmentReference;
+  public String getMetricType() {
+    return metricType;
   }
 
-  public String getResourceId() {
-    return resourceId;
+  public String getMetricName() {
+    return metricName;
   }
 
-  public String getServiceCategory() {
-    return serviceCategory;
+  public BigDecimal getMetricValue() {
+    return metricValue;
   }
 
-  public String getUsageUnit() {
-    return usageUnit;
+  public String getUnit() {
+    return unit;
   }
 
   public String getCurrency() {
     return currency;
   }
 
-  public BigDecimal getUsageAmount() {
-    return usageAmount;
+  public OffsetDateTime getPeriodStart() {
+    return periodStart;
   }
 
-  public BigDecimal getCostAmount() {
-    return costAmount;
+  public OffsetDateTime getPeriodEnd() {
+    return periodEnd;
   }
 }

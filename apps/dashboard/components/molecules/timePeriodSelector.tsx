@@ -41,14 +41,6 @@ export function TimePeriodSelector({
     return "Pick a date";
   };
 
-  const handlePresetClick = (pId: string) => {
-    setSelectedPreset(pId);
-    const days = parseInt(pId); // simplistic for 7d, 30d
-    if (!isNaN(days)) {
-      onDateChange({ from: subDays(new Date(), days), to: new Date() });
-    }
-    setOpen(false);
-  };
   return (
     <Popover
       open={open}
@@ -59,7 +51,7 @@ export function TimePeriodSelector({
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          className="group md:min-w-40 w-fit justify-start text-left font-normal bg-card text-foreground border-border hover:bg-hover hover:text-secondary data-[state=open]:text-secondary transition-button">
+          className="group md:min-w-40 w-fit justify-start text-left font-normal bg-card text-foreground border-border hover:bg-hover hover:text-foreground data-[state=open]:text-foreground data-[state=open]:hover:text-foreground transition-button">
           <div className="w-full h-full flex flex-row items-center">
             <CalendarIcon className="mr-2 h-4 w-4" />
             <span className="">Last {getDisplayLabel()}</span>
@@ -83,7 +75,7 @@ export function TimePeriodSelector({
                   "justify-start font-normal transition-button",
                   selectedPreset === p.id
                     ? "bg-active text-primary-foreground"
-                    : "text-foreground-secondary hover:bg-hover hover:text-secondary",
+                    : "text-foreground-secondary hover:bg-hover hover:text-foreground",
                 )}
                 onClick={() => {
                   setSelectedPreset(p.id);
@@ -93,10 +85,10 @@ export function TimePeriodSelector({
               </Button>
             ))}
 
-            <div className="h-px bg-border-subtle my-1 w-full flex flex-row" />
+            <div className="h-px bg-border-subtle my-1 w-full" />
             <Button
               variant="ghost"
-              className="justify-start font-medium text-accent hover:bg-hover hover:text-secondary transition-button"
+              className="justify-start font-medium text-accent hover:bg-accent hover:text-secondary transition-button"
               onClick={() => setView("custom")}>
               Custom Range
             </Button>

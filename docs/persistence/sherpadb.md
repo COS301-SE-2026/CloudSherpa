@@ -20,7 +20,7 @@ Use enums for these fields to keep values consistent:
 
 ## Tables
 
-### users
+### user
 Purpose: system users who own cloud connections.
 
 - user_id (UUID): primary key; UUID avoids collisions across distributed services.
@@ -31,7 +31,7 @@ Purpose: system users who own cloud connections.
 
 Usage: owner and access control for connections and their data.
 
-### cloud_connections
+### cloud_connection
 Purpose: a logical link between a user and a cloud provider.
 
 - connection_id (UUID): primary key; stable identifier for the connection.
@@ -42,7 +42,7 @@ Purpose: a logical link between a user and a cloud provider.
 
 Usage: selects which provider connector to use for ingestion.
 
-### cloud_credentials
+### cloud_credential
 Purpose: store provider-specific credentials.
 
 - credential_id (UUID): primary key; unique credential record.
@@ -67,7 +67,7 @@ Example (unencrypted payload before encryption):
 }
 ```
 
-### cloud_accounts
+### cloud_account
 Purpose: the data boundary where usage/cost is billed and collected.
 
 - account_id (UUID): primary key for the boundary.
@@ -78,7 +78,7 @@ Purpose: the data boundary where usage/cost is billed and collected.
 
 Usage: accounts group resources and metrics for attribution and filtering.
 
-### resources
+### resource
 Purpose: individual cloud assets measured (instances, buckets, disks, etc.).
 
 - resource_id (UUID): primary key for the resource record.
@@ -89,7 +89,7 @@ Purpose: individual cloud assets measured (instances, buckets, disks, etc.).
 
 Usage: metrics are recorded against resources to support per-asset views.
 
-### metrics
+### normalized_metrics
 Purpose: normalized time-series measurements for cost, usage, and performance.
 
 - metric_id (UUID): primary key for a metric record.

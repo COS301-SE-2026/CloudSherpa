@@ -62,7 +62,7 @@
     },
 
     "state": {
-      "hover":        { "value": "{color.brand.gold}" },
+      "hover":        { "value": "{color.brand.electric-blue}" },
       "focus-dark":   { "value": "{color.brand.gold}" },
       "focus-light":  { "value": "{color.brand.electric-blue}" },
       "active":       { "value": "{color.brand.electric-blue}" },

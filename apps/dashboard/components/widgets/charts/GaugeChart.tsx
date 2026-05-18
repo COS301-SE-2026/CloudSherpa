@@ -28,8 +28,30 @@ export function GaugeWidget({
     useEffect(() => {
         if (!forChartReference.current) return;
         forChartInstance.current = echarts.init(forChartReference.current);
+        
+        const handleResize = () => {
+            forChartInstance.current?.resize();
+        };
+
+        const handleWidgetResize = () => {
+            setTimeout(() => {
+                forChartInstance.current?.resize();
+            }, 10);
+        };
+
+        window.addEventListener('resize', handleResize);
+        window.addEventListener('widget-resize', handleWidgetResize);
+        
+        const resizeObserver = new ResizeObserver(() => {
+            forChartInstance.current?.resize();
+        });
+
+        resizeObserver.observe(forChartReference.current);
 
         return () => {
+            window.removeEventListener('resize', handleResize);
+            window.removeEventListener('widget-resize', handleWidgetResize);
+            resizeObserver.disconnect();
             forChartInstance.current?.dispose();
         };
     }, []);
@@ -42,13 +64,13 @@ export function GaugeWidget({
         const option: EChartsOption = {
             tooltip: {
                 formatter: '{b}: {c}%',
-                backgroundColor: 'var(--color-bg-main)',
-                borderColor: 'var(--color-action-primary)',
+                backgroundColor: 'rgb(15, 23, 42)',
+                borderColor: 'rgb(51, 65, 85)',
                 borderWidth: 1,
                 textStyle: {
-                    color: 'var(--color-text-primary)',
+                    color: 'rgb(255, 255, 255)',
                     fontSize: 12,
-                    fontFamily: 'var(--font-family-main)',
+                    fontFamily: 'sans-serif',
                 },
             },
             series: [
@@ -67,7 +89,7 @@ export function GaugeWidget({
                         width: 15,
                         roundCap: true,
                         itemStyle: {
-                            color: 'var(--color-action-primary)',
+                            color: 'rgb(59, 130, 246)',
                         }
                     },
 
@@ -75,7 +97,7 @@ export function GaugeWidget({
                         roundCap: true,
                         lineStyle: {
                             width: 15,
-                            color: [[1, 'rgba(47, 47, 228, 0.2)']]
+                            color: [[1, 'rgb(30, 41, 59)']]
                         }
                     },
 
@@ -88,16 +110,16 @@ export function GaugeWidget({
                         length: 8,
                         lineStyle: {
                             width: 2,
-                            color: 'var(--color-text-muted)',
+                            color: 'rgb(148, 163, 184)',
                         }
                     },
 
                     axisLabel: {
                         show: true,
                         distance: 18,
-                        color: 'var(--color-text-muted)',
+                        color: 'rgb(148, 163, 184)',
                         fontSize: 11,
-                        fontFamily: 'var(--font-family-main)',
+                        fontFamily: 'sans-serif',
                         formatter: (value: number) => `${value}%`
                     },
 
@@ -106,7 +128,7 @@ export function GaugeWidget({
                         length: '60%',
                         width: 8,
                         itemStyle: {
-                            color: 'var(--color-action-accent)',
+                            color: 'rgb(249, 115, 22)',
                         }
                     },
                     
@@ -116,17 +138,17 @@ export function GaugeWidget({
                         valueAnimation: true,
                         fontSize: 24,
                         fontWeight: 'bold',
-                        color: 'var(--color-text-primary)',
-                        fontFamily: 'var(--font-family-main)',
+                        color: 'rgb(255, 255, 255)',
+                        fontFamily: 'sans-serif',
                         formatter: '{value}%'
                     },
 
                     title: {
-                        show: true,
+                        show: false,
                         offsetCenter: [0, -35],
                         fontSize: 13,
-                        color: 'var(--color-text-muted)',
-                        fontFamily: 'var(--font-family-main)',
+                        color: 'rgb(148, 163, 184)',
+                        fontFamily: 'sans-serif',
                     },
                     
                     data: [{ value: latestValue, name: title }]
@@ -171,13 +193,6 @@ export function GaugeWidget({
     }, []);
 
     return(
-        <div className="flex h-full flex-col items-center justify-center">
-            <div className="w-full h-full min-h-[280px]">
-                <div
-                    ref={forChartReference}
-                    className="h-full w-full"
-                />
-            </div>
-        </div>
+        <div ref={forChartReference} className="h-full w-full" />
     );
 }
