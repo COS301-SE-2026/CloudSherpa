@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { LayoutItem, WidgetConfig, DashboardConfig } from '@/types/widgets';
 
-// Define the actions interface
 interface DashboardActions {
     setActiveDashboard: (id: string | null) => void;
     addDashboard: (dashboard: DashboardConfig) => void;
@@ -16,7 +15,6 @@ interface DashboardActions {
     ) => void;
 }
 
-// Define the store interface
 export interface DashboardStore {
     activeDashboardId: string | null;
     dashboards: Record<string, DashboardConfig>;
@@ -43,8 +41,6 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
         removeDashboard: (id) => set((state) => {
             const newDashboards = { ...state.dashboards };
             delete newDashboards[id];
-            // also remove associated layouts and widgets if they are exclusive to this dashboard
-            // for now, just removing the dashboard entry
             return { dashboards: newDashboards };
         }),
         addWidget: (layout, widget) => set((state) => {

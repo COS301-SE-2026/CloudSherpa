@@ -1,5 +1,6 @@
 'use client';
 import { Button } from "@/components/atoms/button";
+import Link from "next/link";
 
 interface forNavigationProps{
   clickOnFeatures?: () => void;
@@ -25,11 +26,14 @@ export default function forNavigation({ clickOnFeatures }: forNavigationProps){
           features
         </a>
 
-        <Button 
-          className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 border border-black"
-        >
-          Get Started
-        </Button>
+{/* navigate to login/register page */}
+        <Link href="/login">
+          <Button 
+            className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 border border-black"
+          >
+            Get Started
+          </Button>
+        </Link>
 
       </div>
     </nav>

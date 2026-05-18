@@ -40,13 +40,12 @@ export default function DashboardPage() {
     addDashboard 
   } = useDashboardStore((state: DashboardStore) => state.actions);
 
-  // Integrated initialization flow
   useEffect(() => {
     const loadDashboardData = async () => {
       // only initialize if we don't have any dashboards in the store yet make full use of zustand caching. 
       if (Object.keys(dashboards).length === 0) {
         setIsLoading(true);
-        // Simulate API Fetch: const response = await fetch('/api/dashboards');
+        // simulate API Fetch: const response = await fetch('/api/dashboards');
         const initialConfigs: WidgetConfig[] = [
           { id: "w-1", title: "Live CPU Usage (Mock)", resourceId: "mock-ec2-1", metricType: "anon", chartType: "line" },
           { id: "w-2", title: "Live Memory (Mock)", resourceId: "mock-ec2-1", metricType: "anon", chartType: "gauge" },
@@ -79,6 +78,8 @@ export default function DashboardPage() {
         setIsLoading(false);
       }
     };
+
+    //note: reactMemo is an option for components that re-render a lot (apparently)
 
     loadDashboardData();
   }, [setInitialState, setActiveDashboard, router, dashboards]);
