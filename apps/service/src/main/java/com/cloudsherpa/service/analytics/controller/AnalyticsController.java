@@ -48,4 +48,9 @@ public class AnalyticsController {
       return ResponseEntity.badRequest().build();
     }
   }
+
+  @GetMapping("/resource-names")
+  public Map<String, String> getResourceNames() {
+    return normalizedMetricService.fetchResourceNames();
+  }
 }
