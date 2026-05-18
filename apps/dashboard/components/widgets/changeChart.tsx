@@ -57,6 +57,15 @@ export function ConfigurableWidget({
             >
                 {forRenderingChart()}
             </WidgetContainer>
+
+            <WidgetConfig
+                isOpen={isConfigOpen}
+                onClose={() => setIsConfigOpen(false)}
+                onSave={handleSave}
+                forExistingConfig={config}
+                forAvailableResources={availableResources}
+                forAvailableMetricTypes={availableMetricTypes}
+            />
         </>
     );
 }
