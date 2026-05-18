@@ -220,13 +220,15 @@ flowchart TD
 
     D --> F[Build UsageRecordModel]
 
-    F --> G[Normalize Metrics]
+    F --> G[Build IngestionResult]
 
-    G --> H[Persist Metrics]
+    E --> H[Build BillingRecordModel]
 
-    H --> I[Build IngestionResult]
+    H --> G
+    G --> I[Normalize Metrics]
 
-    E --> I
+    I --> J[Persist Metrics]
+
 ```
 
 ---
@@ -269,13 +271,9 @@ Example future providers:
 
 The service layer does not need to know implementation details of AWS SDK calls.
 
----
-
 ### Maintainability
 
 Provider-specific code is isolated inside connector implementations.
-
----
 
 ## Connector Hierarchy
 
@@ -319,8 +317,6 @@ The AWS connector is responsible for interacting with AWS services through the A
 `UsageRecordModel` represents a provider-specific usage metric returned from a cloud provider connector.
 
 It acts as the intermediate representation between provider-specific APIs and the normalization layer.
-
----
 
 ---
 
