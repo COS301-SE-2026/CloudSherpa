@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@/components/atoms/button";
-import { type DashboardStub } from "@/app/dashboard/page";
 
 import { Pencil } from "lucide-react";
 import { cn } from "@/lib/utils";

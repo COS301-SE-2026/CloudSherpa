@@ -1,51 +1,116 @@
-import { create } from "zustand";
-import { WidgetConfig, LayoutItem } from "@/types/widgets";
+import { create } from 'zustand';
+import { LayoutItem, WidgetConfig, DashboardConfig } from '@/types/widgets';
 
-export interface DashboardState {
-    //layout and widgets are keyed by id
-    layouts: Record<string, LayoutItem>;
-    widgets: Record<string, WidgetConfig>; 
-}
-
-export interface DashboardActions {
-    updateLayoutGeometry: (id: string, x: number, y: number, w: number, h: number) => void;
-    updateLayouts: (newLayouts: LayoutItem[]) => void;
-    updateWidgetConfig: (id: string, config: Partial<WidgetConfig>) => void;
-    setInitialState: (layouts: LayoutItem[], widgets: WidgetConfig[]) => void;
-    addWidget: (layout: LayoutItem, config: WidgetConfig) => void;
+// Define the actions interface
+interface DashboardActions {
+    setActiveDashboard: (id: string | null) => void;
+    addDashboard: (dashboard: DashboardConfig) => void;
+    removeDashboard: (id: string) => void;
+    addWidget: (layout: LayoutItem, widget: WidgetConfig) => void;
     removeWidget: (layoutId: string, widgetId: string) => void;
+    updateLayouts: (newLayouts: LayoutItem[]) => void;
+    setInitialState: (
+        dashboards: Record<string, DashboardConfig>,
+        layouts: LayoutItem[],
+        widgets: WidgetConfig[]
+    ) => void;
 }
 
-export type DashboardStore = DashboardState & { actions: DashboardActions };
+// Define the store interface
+export interface DashboardStore {
+    activeDashboardId: string | null;
+    dashboards: Record<string, DashboardConfig>;
+    layouts: Record<string, LayoutItem>;
+    widgets: Record<string, WidgetConfig>;
+    actions: DashboardActions;
+}
 
-export const useDashboardStore = create<DashboardStore>((set) => ({
+export const useDashboardStore = create<DashboardStore>((set, get) => ({
+    activeDashboardId: null,
+    dashboards: {},
     layouts: {},
     widgets: {},
+
     actions: {
-        updateLayoutGeometry: (id, x, y, w, h) => set((state) => ({
-            layouts: { ...state.layouts, [id]: { ...state.layouts[id], x, y, w, h } }
+        setActiveDashboard: (id) => set({ activeDashboardId: id }),
+        addDashboard: (dashboard) => set((state) => ({
+            dashboards: {
+                ...state.dashboards,
+                [dashboard.id]: dashboard,
+            },
+            activeDashboardId: dashboard.id, // optionally set active
         })),
-        updateLayouts: (newLayouts) => set((state) => ({
-            layouts: {
-                ...state.layouts,
-                ...Object.fromEntries(newLayouts.map(l => [l.id, { ...state.layouts[l.id], ...l }]))
-            }
-        })),
-        updateWidgetConfig: (id, config) => set((state) => ({
-            widgets: { ...state.widgets, [id]: { ...state.widgets[id], ...config } }
-        })),
-        setInitialState: (layouts, widgets) => set({
-            layouts: Object.fromEntries(layouts.map(l => [l.id, l])),
-            widgets: Object.fromEntries(widgets.map(w => [w.id, w]))
+        removeDashboard: (id) => set((state) => {
+            const newDashboards = { ...state.dashboards };
+            delete newDashboards[id];
+            // also remove associated layouts and widgets if they are exclusive to this dashboard
+            // for now, just removing the dashboard entry
+            return { dashboards: newDashboards };
         }),
-        addWidget: (layout, config) => set((state) => ({
-            layouts: { ...state.layouts, [layout.id]: layout },
-            widgets: { ...state.widgets, [config.id]: config }
-        })),
+        addWidget: (layout, widget) => set((state) => {
+            const activeDashboard = state.activeDashboardId ? state.dashboards[state.activeDashboardId] : undefined;
+            if (!activeDashboard) return state; 
+
+            return {
+                layouts: {
+                    ...state.layouts,
+                    [layout.id]: layout,
+                },
+                widgets: {
+                    ...state.widgets,
+                    [widget.id]: widget,
+                },
+                dashboards: {
+                    ...state.dashboards,
+                    [activeDashboard.id]: {
+                        ...activeDashboard,
+                        layoutItemIds: [...activeDashboard.layoutItemIds, layout.id],
+                    },
+                },
+            };
+        }),
         removeWidget: (layoutId, widgetId) => set((state) => {
-            const { [layoutId]: _, ...remainingLayouts } = state.layouts;
-            const { [widgetId]: __, ...remainingWidgets } = state.widgets;
-            return { layouts: remainingLayouts, widgets: remainingWidgets };
+            const newLayouts = { ...state.layouts };
+            delete newLayouts[layoutId];
+
+            const newWidgets = { ...state.widgets };
+            delete newWidgets[widgetId];
+
+            const newDashboards = { ...state.dashboards };
+            if (state.activeDashboardId && newDashboards[state.activeDashboardId]) {
+                newDashboards[state.activeDashboardId] = {
+                    ...newDashboards[state.activeDashboardId],
+                    layoutItemIds: newDashboards[state.activeDashboardId].layoutItemIds.filter(id => id !== layoutId),
+                };
+            }
+
+            return {
+                layouts: newLayouts,
+                widgets: newWidgets,
+                dashboards: newDashboards,
+            };
         }),
-    }
+        updateLayouts: (newLayouts) => set((state) => {
+            const updatedLayouts = { ...state.layouts };
+            newLayouts.forEach(layout => {
+                updatedLayouts[layout.id] = layout;
+            });
+            return { layouts: updatedLayouts };
+        }),
+        setInitialState: (dashboards, layoutsArray, widgetsArray) => {
+            const layoutsMap = layoutsArray.reduce((acc, item) => {
+                acc[item.id] = item;
+                return acc;
+            }, {} as Record<string, LayoutItem>);
+            const widgetsMap = widgetsArray.reduce((acc, item) => {
+                acc[item.id] = item;
+                return acc;
+            }, {} as Record<string, WidgetConfig>);
+            set({
+                dashboards: dashboards,
+                layouts: layoutsMap,
+                widgets: widgetsMap,
+            });
+        },
+    },
 }));
