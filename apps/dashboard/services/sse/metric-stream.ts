@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useMetricStore } from "@/stores/metric-store";
-import { MetricDTO } from "@/types/metric-dto";
+import { MetricDTO } from "@/types/dtos/metrics/MetricDto";
 import { Metric, MetricType } from "@/types/metric";
 
 const MOCK_RESOURCE_ID = "mock-ec2-1";
@@ -28,6 +28,7 @@ function createMockMetrics(): Metric[] {
 export function useMetricStream() {
 
     const addMetric = useMetricStore((state) => state.addMetric);
+    const addMetricFromDto = useMetricStore((state) => state.addMetricFromDto);
     // String or bool?
     const [error, setError] = useState<Error | null>(null);
 
@@ -46,22 +47,8 @@ export function useMetricStream() {
     
             const handleMetric = (event: MessageEvent<string>) => {
                 const metricDto = JSON.parse(event.data) as MetricDTO;
-                
-                // metric preprocessing, needs to be minimal
-                let metricType: MetricType = "anon";
 
-                if (metricDto.service_category == "CPUUtilization") {
-                    metricType = "cpu";
-                }
-
-                const metric: Metric = {
-                    resource_id: metricDto.resource_id,
-                    metricType: metricType,
-                    timestamp: metricDto.recorded_at,
-                    value: metricDto.usage_amount
-                }
-
-                addMetric(metric);
+                addMetricFromDto(metricDto);
             };
     
             eventSource.onerror = () => {
@@ -75,7 +62,7 @@ export function useMetricStream() {
                 eventSource.removeEventListener("metric", handleMetric);
                 eventSource.close();
             }
-        }, [addMetric])
+        }, [addMetric, addMetricFromDto])
 
     return { error };
 }

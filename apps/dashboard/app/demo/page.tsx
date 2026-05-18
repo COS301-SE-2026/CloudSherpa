@@ -5,13 +5,15 @@ import { useMetricStore } from "@/stores/metric-store";
 import { LineChartWidget } from "@/components/widgets/charts/LineChart";
 import { GaugeWidget } from "@/components/widgets/charts/GaugeChart";
 import { WidgetContainer } from "@/components/widgets/base/WidgetContainer";
+import { useFetchMetrics } from "@/hooks/useFetchMetrics";
 
 export default function Demo() {
     const { error } = useMetricStream();
     const metrics = useMetricStore((state) => (state.seriesByKey));
 
-    const forCpuData = metrics['mock-ec2-1:anon'] || [];
+    const forCpuData = metrics['2a6bf77c-722d-3eb5-8cb6-1607ca517d6b:cpu'] || [];
     const latestCpuValue = forCpuData.length > 0 ? forCpuData[forCpuData.length-1].value : 0;
+    useFetchMetrics();
 
     return (
         <main className="min-h-screen bg-slate-50 p-6 text-slate-950">
@@ -40,9 +42,9 @@ export default function Demo() {
                         isResizable={true}
                     >
                         <LineChartWidget 
-                            resourceId="mock-ec2-1" 
+                            resourceId="2a6bf77c-722d-3eb5-8cb6-1607ca517d6b" 
                             title="" 
-                            metricType="anon"
+                            metricType="cpu"
                         />
                     </WidgetContainer>
 

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useCallback, useEffect, Suspense } from "react";
-import { subDays } from "date-fns";
 import { DateRange } from "react-day-picker";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -10,26 +9,29 @@ import Grid from "@/components/dashboard/grid";
 import { WidgetConfig, LayoutItem, DashboardConfig, DashboardStub } from "@/types/widgets";
 import { useDashboardStore, DashboardStore } from "@/stores/dashboard-store";
 import { useMetricStream } from "@/services/sse/metric-stream";
+import { useFetchMetrics } from "@/hooks/useFetchMetrics";
+import { useWindowStore } from "@/stores/window-store";
 
 function DashboardContent() {
   const { error: streamError } = useMetricStream();
   const router = useRouter();
   const searchParams = useSearchParams();
   const urlId = searchParams.get("id");
-
   const [isLoading, setIsLoading] = useState(true);
   const [isEditMode, setIsEditMode] = useState(false);
   const [originalLayout, setOriginalLayout] = useState<LayoutItem[]>([]);
   const [originalConfigs, setOriginalConfigs] = useState<WidgetConfig[]>([]);
-  const [dateRange, setDateRange] = useState<DateRange | undefined>({
-    from: subDays(new Date(), 7),
-    to: new Date(),
-  });
+  const from = useWindowStore((state) => state.from);
+  const to = useWindowStore((state) => state.to);
+  const setWindow = useWindowStore((state) => state.setWindow);
+  const dateRange: DateRange = { from, to };
 
   const dashboards = useDashboardStore((state: DashboardStore) => state.dashboards);
   const activeDashboardId = useDashboardStore((state: DashboardStore) => state.activeDashboardId);
   const layoutsMap = useDashboardStore((state: DashboardStore) => state.layouts);
   const widgetsMap = useDashboardStore((state: DashboardStore) => state.widgets);
+
+  useFetchMetrics();
 
   const { 
     setInitialState, 
@@ -47,8 +49,8 @@ function DashboardContent() {
         setIsLoading(true);
         // simulate API Fetch: const response = await fetch('/api/dashboards');
         const initialConfigs: WidgetConfig[] = [
-          { id: "w-1", title: "Live CPU Usage (Mock)", resourceId: "mock-ec2-1", metricType: "anon", chartType: "line" },
-          { id: "w-2", title: "Live Memory (Mock)", resourceId: "mock-ec2-1", metricType: "anon", chartType: "gauge" },
+          { id: "w-1", title: "Live CPU Usage (Mock)", resourceId: "2a6bf77c-722d-3eb5-8cb6-1607ca517d6b", metricType: "cpu", chartType: "line" },
+          { id: "w-2", title: "Live Memory (Mock)", resourceId: "2a6bf77c-722d-3eb5-8cb6-1607ca517d6b", metricType: "cpu", chartType: "gauge" },
         ];
         const initialLayouts: LayoutItem[] = [
           { id: "l-1", widgetId: "w-1", x: 0, y: 0, w: 6, h: 4 },
@@ -59,7 +61,6 @@ function DashboardContent() {
           "ds-2": { id: "ds-2", name: "AWS Production Metrics", layoutItemIds: [] },
           "ds-3": { id: "ds-3", name: "Azure Spending Forecast", layoutItemIds: [] },
         };
-
         setInitialState(initialDashboards, initialLayouts, initialConfigs);
 
         const dashboardIds = Object.keys(initialDashboards);
@@ -160,6 +161,12 @@ function DashboardContent() {
     updateLayouts(newLayout);
   }, [updateLayouts]);
 
+  const handleDateRangeChange = useCallback((range: DateRange | undefined) => {
+    if (range?.from && range?.to) {
+      setWindow(range.from, range.to);
+    }
+  }, [setWindow]);
+
   return (
     <>
       <header className="sticky top-0 z-10 border-b bg-background/95 px-6 py-4">
@@ -174,7 +181,7 @@ function DashboardContent() {
           onDashboardChange={handleDashboardChange}
           onCreateDashboard={handleCreateDashboard}
           dateRange={dateRange}
-          onDateRangeChange={setDateRange}
+          onDateRangeChange={handleDateRangeChange}
         />
       </header>
 
