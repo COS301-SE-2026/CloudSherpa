@@ -21,6 +21,406 @@ and pass through the ingestion and normalization pipeline for downstream service
 
 ---
 
+## Data Flow and Component Overview
+
+## High-Level Architecture
+
+```mermaid
+flowchart TD
+
+    A[REST API Request] --> B[CloudUsageController]
+
+    B --> C[CloudUsageService]
+
+    C --> D[CloudConnectorFactory]
+
+    D --> E[AwsCloudConnector]
+
+    E --> F[AWS SDK APIs]
+    F --> G[CloudWatch]
+    F --> H[EC2]
+
+    E --> I[UsageRecordModel]
+
+    I --> J[AwsNormalizer]
+
+    J --> K[NormalizedMetric]
+
+    K --> L[SherpaDbPersistenceService]
+
+    L --> M[(SherpaDB)]
+```
+
+---
+
+## Request Flow
+
+### 1. API Request
+
+A client sends an ingestion request to one of the REST endpoints:
+
+```text
+POST /api/events/ingest
+POST /api/events/ingest/mock
+POST /api/events/ingest/mockNoise
+```
+
+The request includes:
+
+- provider scopes
+- requested services
+- metrics
+- time ranges
+- aggregation periods
+
+Example:
+
+```json
+{
+  "userId": "11111111-2222-3333-4444-555555555555",
+  "from": "2026-05-04T22:00:00Z",
+  "to": "2026-05-06T00:00:00Z",
+  "period": 14400,
+  "includeUsage": true,
+  "includeBilling": false,
+  "scopes": [
+    {
+      "provider": "AWS",
+      "accountId": "test-account",
+      "serviceScopes": [
+        {
+          "name": "AWS/EC2",
+          "instances": [
+            {
+              "identifierName": "InstanceId",
+              "values": ["i-0ec321a1c8ed4915c", "i-0123456789abcdef0"]
+            }
+          ],
+          "metrics": [
+            "CPUUtilization",
+            "NetworkIn",
+            "NetworkOut",
+            "DiskReadBytes",
+            "DiskWriteBytes"
+          ]
+        },
+        {
+          "name": "AWS/RDS",
+          "instances": [
+            {
+              "identifierName": "DBInstanceIdentifier",
+              "values": ["prod-orders-db", "analytics-db"]
+            }
+          ],
+          "metrics": [
+            "CPUUtilization",
+            "DatabaseConnections",
+            "ReadLatency",
+            "WriteLatency",
+            "FreeStorageSpace"
+          ]
+        },
+        {
+          "name": "AWS/LAMBDA",
+          "instances": [
+            {
+              "identifierName": "FunctionName",
+              "values": ["payment-service", "email-processor"]
+            }
+          ],
+          "metrics": ["Invocations", "Errors", "Duration", "Throttles"]
+        },
+        {
+          "name": "AWS/DYNAMODB",
+          "instances": [
+            {
+              "identifierName": "TableName",
+              "values": ["UsersTable", "OrdersTable"]
+            }
+          ],
+          "metrics": [
+            "ConsumedReadCapacityUnits",
+            "ConsumedWriteCapacityUnits",
+            "ReadThrottleEvents",
+            "WriteThrottleEvents"
+          ]
+        },
+        {
+          "name": "AWS/S3",
+          "instances": [
+            {
+              "identifierName": "BucketName",
+              "values": ["cloudsherpa-prod-data", "cloudsherpa-logs"]
+            }
+          ],
+          "metrics": [
+            "BucketSizeBytes",
+            "NumberOfObjects",
+            "AllRequests",
+            "FirstByteLatency"
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+---
+
+## Core Components
+
+## CloudUsageController
+
+The controller exposes REST endpoints for ingestion operations.
+
+### Responsibilities
+
+- Accept HTTP requests
+- Validate request bodies
+- Delegate processing to `CloudUsageService`
+- Return ingestion results
+
+### Endpoints
+
+| Endpoint                       | Purpose                           |
+| ------------------------------ | --------------------------------- |
+| `/api/events/ingest`           | Real cloud ingestion              |
+| `/api/events/ingest/mock`      | Limited fixed synthetic test data |
+| `/api/events/ingest/mockNoise` | Dynamic synthetic noisy data      |
+
+---
+
+## CloudUsageService
+
+This is the orchestration layer of the ingestion system.
+
+### Responsibilities
+
+- Process ingestion requests
+- Resolve the correct cloud connector
+- Fetch usage and billing records
+- Normalize metrics
+- Persist normalized metrics
+- Aggregate results
+
+### Service Workflow
+
+```mermaid
+flowchart TD
+
+    A[Receive IngestionRequestEvent]
+        --> B[Loop Through Account Scopes]
+
+    B --> C[Resolve Connector From Factory]
+
+    C --> D[Fetch Usage Metrics]
+
+    C --> E[Fetch Billing Metrics]
+
+    D --> F[Build UsageRecordModel]
+
+    F --> G[Normalize Metrics]
+
+    G --> H[Persist Metrics]
+
+    H --> I[Build IngestionResult]
+
+    E --> I
+```
+
+---
+
+## ConnectorFactory
+
+The `CloudConnectorFactory` is one of the most important extensibility points in the ingestion architecture.
+
+### Purpose
+
+It dynamically resolves the correct connector implementation for a cloud provider.
+
+Instead of hardcoding AWS-specific logic into the service layer, the service requests a connector by provider name.
+
+Example:
+
+```java
+CloudConnector connector =
+    connectorFactory.getConnector("AWS");
+```
+
+This allows the ingestion service to remain provider-agnostic.
+
+---
+
+## Factory Pattern Benefits
+
+### Extensibility
+
+New providers can be added without changing the ingestion logic.
+
+Example future providers:
+
+- Azure
+- Google Cloud
+
+---
+
+### Decoupling
+
+The service layer does not need to know implementation details of AWS SDK calls.
+
+---
+
+### Maintainability
+
+Provider-specific code is isolated inside connector implementations.
+
+---
+
+## Connector Hierarchy
+
+```mermaid
+flowchart TD
+
+    A[CloudConnector]
+
+    A --> B[UsageCapable]
+
+    A --> C[BillingCapable]
+
+    B --> D[AwsCloudConnector]
+
+    C --> D
+```
+
+---
+
+## AwsCloudConnector
+
+The AWS connector is responsible for interacting with AWS services through the AWS SDK.
+
+### Responsibilities
+
+- Connect to AWS APIs
+- Retrieve EC2, EKS, and other service metrics
+- Retrieve CloudWatch metrics
+- Generate mock data
+- Generate noisy synthetic data
+
+### Key AWS Integrations
+
+- EC2
+- CloudWatch
+
+---
+
+## UsageRecordModel
+
+`UsageRecordModel` represents a provider-specific usage metric returned from a cloud provider connector.
+
+It acts as the intermediate representation between provider-specific APIs and the normalization layer.
+
+---
+
+---
+
+## Normalization Layer
+
+Different cloud providers expose metrics in different formats.
+
+The normalization layer converts provider-specific metrics into a unified internal schema.
+
+Example:
+
+```text
+AWS CPUUtilization
+        ↓
+NormalizedMetric
+```
+
+### Benefits
+
+- Cross-provider analytics
+- Standardized anomaly detection
+- Unified dashboard queries
+- Easier ML feature engineering
+
+---
+
+## AwsNormalizer
+
+The AWS normalizer converts AWS-specific usage records into normalized metrics.
+
+### Responsibilities
+
+- Unit normalization
+- Standard naming
+- Metric formatting
+- Schema consistency
+
+---
+
+## Persistence Layer
+
+Normalized metrics are stored using:
+
+```text
+SherpaDbPersistenceService
+```
+
+### Responsibilities
+
+- Persist normalized metrics
+- Store ingestion records
+- Support analytics queries
+- Support anomaly detection pipelines
+
+---
+
+## Mock Ingestion System
+
+The ingestion service includes a synthetic data generation system for testing and demonstrations. This data is produced in the
+same format as is returned by the normal ingestion endpoint, allowing seamless switching between development testing and real
+endpoint queries.
+
+### Features
+
+- Mock metric generation
+- Noise injection
+- Trend simulation
+- Controlled anomalies
+- Time-series generation
+
+This is especially useful for:
+
+- frontend development and visualization
+- anomaly testing
+- demos
+- performance testing
+- integration testing
+
+---
+
+## Error Handling Strategy
+
+The ingestion service is designed to be resilient.
+
+### Examples
+
+#### Persistence Failures
+
+Persistence errors do not necessarily stop ingestion processing.
+
+#### Empty Metrics
+
+Empty provider responses are handled gracefully.
+
+#### Provider Isolation
+
+Failures in one provider connector do not affect connector resolution architecture.
+
+---
+
 ## 2. Design Principles
 
 ### 2.1 Provider-Agnostic
@@ -135,11 +535,11 @@ the consumer.
 
 ### Pipeline Metadata
 
-| Field                | Description                         |
-| -------------------- | ----------------------------------- |
-| `ingestionTimestamp` | When the record was ingested        |
-| `ingestionId`        | Identifier for ingestion job/event  |
-| `source`             | Data source (e.g. CUR, API, Export) |
+| Field                | Description                        |
+| -------------------- | ---------------------------------- |
+| `ingestionTimestamp` | When the record was ingested       |
+| `ingestionId`        | Identifier for ingestion job/event |
+| `source`             | Data source (e.g. CUR, CloudWatch) |
 
 ---
 
@@ -155,8 +555,8 @@ Examples:
 - Network throughput
 - Disk I/O
 
-For some APIs such as CloudWatch, one API request may only fetch up
-to a certain amount of metrics in the free tier, so multiple requests may need to be made to retrieve
+For some APIs such as CloudWatch, one API request may only fetch
+a single metric per request in the free tier, so multiple requests may need to be made to retrieve
 all relevant usage data.
 
 ---
@@ -216,12 +616,6 @@ all relevant usage data.
 | Field        | Description                         |
 | ------------ | ----------------------------------- |
 | `dimensions` | Provider-specific metric dimensions |
-
-Examples:
-
-- AWS: `InstanceId`
-- Azure: `resourceId`
-- GCP: `labels`
 
 ---
 
