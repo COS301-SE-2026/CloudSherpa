@@ -13,6 +13,8 @@ interface ConfigurableWidgetProps{
     availableMetricTypes: string[];
 }
 
+type MetricType = 'cpu'| 'memory' | 'disk' | 'cost' | 'anon';
+
 export function ConfigurableWidget({ 
     forInitialConfiguration, 
 
@@ -26,4 +28,35 @@ export function ConfigurableWidget({
     const handleSave = (newConfig: WidgetConfigData) => {
         setConfig(newConfig);
     };
+
+    const forRenderingChart = () => {
+        const commonPropsForCharts = {
+            resourceId: config.resourceId,
+            title: config.forTitle,
+            metricType: config.metricType as MetricType,
+        };
+
+        if(config.forWidgetType === 'gauge'){
+            return <GaugeWidget {...commonPropsForCharts} />;
+        }
+        
+        return <LineChartWidget {...commonPropsForCharts} />;
+    };
+
+    return(
+        <>
+            <WidgetContainer 
+                forTitle={config.forTitle}
+                defaultWidth={config.forWidgetType === 'line' ? 700 : 400}
+                defaultHeight={config.forWidgetType === 'line' ? 400 : 350}
+                minWidth={300}
+                minHeight={250}
+                isResizable={true}
+                onSettingsClick={() => setIsConfigOpen(true)}
+                showConfig={true}
+            >
+                {forRenderingChart()}
+            </WidgetContainer>
+        </>
+    );
 }
