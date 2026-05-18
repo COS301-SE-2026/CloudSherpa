@@ -31,7 +31,7 @@ export default function viewing({ onDiscoverMoreClick }: forViewingItems){
           AI-powered optimization for multi cloud environments
         </p>
 
-    <Link href="/authentication">
+    <Link href="/login">
         <Button 
           className="bg-blue-600 hover:bg-blue-700 text-white px-7 py-3 text-base border border-black"
         >
