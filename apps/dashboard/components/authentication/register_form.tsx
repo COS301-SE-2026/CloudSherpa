@@ -2,22 +2,31 @@ import { Button } from "@/components/atoms/button";
 import { Input } from "@/components/atoms/input";
 import { Label } from "@/components/atoms/label";
 import { Loader2 } from "lucide-react";
-import { Eye, EyeOff, AlertCircle } from "lucide-react";
+import { Eye, EyeOff, AlertCircle, CheckCircle2Icon } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { useRegistration } from "@/hooks/useRegistration";
+import { RegisterRequestDto } from "@/types/dtos/auth/RegisterRequestDto";
+import { 
+  Alert,
+  AlertTitle,
+  AlertDescription
+} from "../atoms/alert";
 
 interface RegisterFormProps {
-  onSubmit?: (data: Record<string, FormDataEntryValue>) => void; //indicates form submission.
   isLoading?: boolean; //indicates loading state of form for asynchronous events.
 }
 
-export default function RegisterForm({ onSubmit, isLoading = false }: RegisterFormProps) {
+export default function RegisterForm({ isLoading = false }: RegisterFormProps) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false);
   const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
+
+  const { register, registrationFailure, registrationSuccess, redirectCountdown } = useRegistration();
 
   const togglePasswordVisibility = () => setIsPasswordVisible(!isPasswordVisible); //note I want to implement a spring loaded button instead of a togglable one for shoulder surfing.
   const toggleConfirmPasswordVisibility = () => setIsConfirmPasswordVisible(!isConfirmPasswordVisible);
@@ -48,12 +57,16 @@ export default function RegisterForm({ onSubmit, isLoading = false }: RegisterFo
     }
   };
 
-  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleFormSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (onSubmit && !passwordError && !confirmPasswordError) {
-      const formData = new FormData(e.currentTarget);
-      const data = Object.fromEntries(formData.entries());
-      onSubmit(data);
+    if (!passwordError && !confirmPasswordError) {
+      const registerPayload: RegisterRequestDto = {
+        email: email,
+        username: email,
+        password: password
+      }
+
+      register(registerPayload);
     }
   };
   return (
@@ -62,6 +75,28 @@ export default function RegisterForm({ onSubmit, isLoading = false }: RegisterFo
         <h2 className="text-3xl font-bold tracking-tight">Sign Up</h2>
       </div>
 
+      {registrationSuccess && (
+        <Alert>
+          <CheckCircle2Icon />
+          <AlertTitle>Successful Registration</AlertTitle>
+          <AlertDescription>
+            You will be redirected to the dashboard in {redirectCountdown} seconds
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {registrationFailure && (
+        <div className="text-center">
+          <Alert variant="destructive">
+            <AlertCircle/>
+            <AlertTitle>Failed To Register</AlertTitle>
+            <AlertDescription>
+              Incorrect Username or Password.
+            </AlertDescription>
+          </Alert>
+        </div>)
+      }
+
       <form className="space-y-6" onSubmit={handleFormSubmit} noValidate>
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
@@ -69,6 +104,8 @@ export default function RegisterForm({ onSubmit, isLoading = false }: RegisterFo
             id="email"
             name="email"
             type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             placeholder="name@company.com"
             required
             disabled={isLoading}

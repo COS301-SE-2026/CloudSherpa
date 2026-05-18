@@ -133,18 +133,6 @@ export function LineChartWidget({
     }, []);
 
     return (
-        <div className="flex h-full flex-col rounded-xl border border-zinc-800 bg-zinc-900 p-4">
-            <div className="mb-4 text-sm font-medium text-zinc-200">
-                {title}
-            </div>
-
-            <div className="min-h-0 flex-1">
-                <div
-                ref={chartRef}
-                className="h-full w-full"
-                />
-            </div>
-            
-        </div>
+        <div ref={chartRef} className="h-full w-full" />
     );
 }

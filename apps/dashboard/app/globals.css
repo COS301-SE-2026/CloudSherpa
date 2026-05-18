@@ -3,33 +3,34 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:is([data-theme="dark"] *));
 
 @theme inline {
 
 /* surfaces,default dark mode values. Light mode overrides live in :root.light / [data-theme="light"]. */
-  --color-background:        var(--color-dark-bg-base);
+  --color-background:        var(--background);
   --color-background-sunken: var(--color-dark-bg-sunken);
-  --color-background-mid:    var(--color-dark-bg-mid);
-  --color-card:              var(--color-dark-bg-card);
+  --color-background-mid:    var(--muted);
+  --color-card:              var(--card);
   --color-card-elevated:     var(--color-dark-bg-elevated);
-  --color-popover:           var(--color-dark-bg-float);
+  --color-popover:           var(--popover);
 
   /* foreground text */
-  --color-foreground:          var(--color-dark-text-primary);
-  --color-foreground-secondary:var(--color-dark-text-secondary);
-  --color-foreground-muted:    var(--color-dark-text-muted);
+  --color-foreground:          var(--foreground);
+  /* need to add value for secondary foreground */
+  --color-foreground-secondary:var(--color-dark-text-secondary); 
+  --color-foreground-muted:    var(--muted-foreground);
   --color-foreground-disabled: var(--color-dark-text-disabled);
-  --color-card-foreground:     var(--color-dark-text-primary);
-  --color-popover-foreground:  var(--color-dark-text-primary);
-
+  --color-card-foreground:     var(--card-foreground);
+  --color-popover-foreground:  var(--popover-foreground);
+  
 /* brand / action */
-  --color-primary:             var(--color-action-primary);
-  --color-primary-foreground:  var(--color-neutral-foreground);
-  --color-secondary:           var(--color-action-secondary);
-  --color-secondary-foreground:var(--color-neutral-foreground);
-  --color-accent:              var(--color-action-accent);
-  --color-accent-foreground:   var(--color-neutral-dark-void);
+  --color-primary:             var(--primary);
+  --color-primary-foreground:  var(--primary-foreground);
+  --color-secondary:           var(--secondary);
+  --color-secondary-foreground:var(--secondary-foreground);
+  --color-accent:              var(--accent);
+  --color-accent-foreground:   var(--accent-foreground);
 
 /* states */
   --color-hover:               var(--color-state-hover);
@@ -40,14 +41,14 @@
 /* statusses */
   --color-success:             var(--color-status-success);
   --color-warning:             var(--color-status-warning);
-  --color-destructive:         var(--color-status-error);
-  --color-destructive-foreground: var(--color-neutral-foreground);
+  --color-destructive:         var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
 
   /* borders n rings */
-  --color-border:              var(--color-dark-border-default);
+  --color-border:              var(--border);
   --color-border-subtle:       var(--color-dark-border-subtle);
   --color-border-strong:       var(--color-dark-border-strong);
-  --color-ring:                var(--color-dark-border-focus);
+  --color-ring:                var(--ring);
 
   /* data visualization (mostly just a bunch of bright colors that should work together while maintainging accessibility) */
   --color-chart-1:             var(--color-chart-1);
@@ -195,44 +196,17 @@
 
 }
 
-/* light mode */
-:root.light,
-[data-theme="light"] {
-  --color-background:         var(--color-light-bg-base);
-  --color-background-sunken:  var(--color-light-bg-sunken);
-  --color-background-mid:     var(--color-light-bg-mid);
-  --color-card:               var(--color-light-bg-card);
-  --color-card-elevated:      var(--color-light-bg-elevated);
-  --color-popover:            var(--color-light-bg-float);
-  --color-foreground:         var(--color-light-text-primary);
-  --color-foreground-secondary:var(--color-light-text-secondary);
-  --color-foreground-muted:   var(--color-light-text-muted);
-  --color-foreground-disabled:var(--color-light-text-disabled);
-  --color-card-foreground:    var(--color-light-text-primary);
-  --color-popover-foreground: var(--color-light-text-primary);
-  --color-border:             var(--color-light-border-default);
-  --color-border-subtle:      var(--color-light-border-subtle);
-  --color-border-strong:      var(--color-light-border-strong);
-  --color-ring:               var(--color-light-border-focus);
-}
-
-
-/* ============================================================
-   BASE LAYER — global element defaults
-   ============================================================ */
 @layer base {
-  /* Box-sizing reset */
   *, *::before, *::after {
     box-sizing: border-box;
   }
 
-  /* Default border and focus ring on all elements */
   * {
     @apply border-border outline-ring/50;
   }
 
   html {
-    font-size: 16px; /* 1rem base */
+    font-size: 16px;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
@@ -245,7 +219,6 @@
     letter-spacing: var(--font-letterSpacing-wide);
   }
 
-  /* Heading defaults using semantic type tokens */
   h1 {
     font-size: var(--type-h1-size);
     font-weight: var(--font-weight-semibold);
@@ -267,14 +240,12 @@
     letter-spacing: var(--font-letterSpacing-normal);
   }
 
-  /* Monospace elements — resource IDs, code, metrics */
   code, kbd, samp, pre {
     font-family: var(--font-family-mono);
     font-size: var(--type-caption-size);
     line-height: var(--font-lineHeight-relaxed);
   }
 
-  /* Focus ring — visible on keyboard nav, hidden on mouse click */
   :focus-visible {
     outline: var(--border-width-focus) solid var(--ring);
     outline-offset: 2px;
@@ -288,18 +259,8 @@
 }
 
 
-/* ============================================================
-   COMPONENT LAYER — shared reusable component classes
-   These use semantic tokens only, never raw values.
-   ============================================================ */
 @layer components {
 
-  /* ----------------------------------------------------------
-     FEATURE CARD
-     Gradient border technique: outer border is a gradient,
-     inner fill is the background colour.
-     Used on the landing page features grid.
-  ---------------------------------------------------------- */
   .feature-card {
     background: var(--color-dark-bg-card);
     border: 1px solid transparent;
@@ -328,11 +289,6 @@
       );
   }
 
-  /* ----------------------------------------------------------
-     METRIC VALUE
-     Large cost figures: total spend, savings, anomaly values.
-     Uses mono font for tabular alignment.
-  ---------------------------------------------------------- */
   .metric-value {
     font-family: var(--font-family-mono);
     font-size: var(--type-metric-lg-size);
@@ -341,10 +297,6 @@
     letter-spacing: var(--font-letterSpacing-snug);
   }
 
-  /* ----------------------------------------------------------
-     RESOURCE ID
-     Small monospace labels for cloud resource identifiers.
-  ---------------------------------------------------------- */
   .resource-id {
     font-family: var(--font-family-mono);
     font-size: var(--type-caption-size);
@@ -358,21 +310,11 @@
     color: var(--color-light-text-muted);
   }
 
-  /* ----------------------------------------------------------
-     SURFACE UTILITIES
-     Extra surface levels beyond bg-background and bg-card,
-     since Tailwind only generates classes for @theme tokens.
-  ---------------------------------------------------------- */
   .bg-surface-sunken   { background-color: var(--color-background-sunken); }
   .bg-surface-mid      { background-color: var(--color-background-mid); }
   .bg-surface-elevated { background-color: var(--color-card-elevated); }
   .bg-surface-float    { background-color: var(--color-popover); }
 
-  /* ----------------------------------------------------------
-     WIDGET DRAG HANDLE
-     Sits at the bottom of each widget. Hidden by default,
-     visible on card hover to avoid accidental drags.
-  ---------------------------------------------------------- */
   .widget-handle {
     height: 20px;
     display: flex;
@@ -392,19 +334,10 @@
     opacity: 1;
   }
 
-  /* ----------------------------------------------------------
-     PROVIDER BADGES
-     Pill badges for AWS / Azure / GCP labels on charts.
-  ---------------------------------------------------------- */
   .badge-aws   { background-color: var(--color-provider-aws);   color: var(--color-neutral-dark-void); border-radius: var(--border-radius-full); }
   .badge-azure { background-color: var(--color-provider-azure); color: var(--color-neutral-light-white); border-radius: var(--border-radius-full); }
   .badge-gcp   { background-color: var(--color-provider-gcp);   color: var(--color-neutral-light-white); border-radius: var(--border-radius-full); }
 
-  /* ----------------------------------------------------------
-     INSET WELL
-     Recessed surface for code blocks, table row backgrounds,
-     and widget config panels.
-  ---------------------------------------------------------- */
   .inset-well {
     background-color: var(--color-dark-bg-sunken);
     border: 1px solid var(--color-dark-border-subtle);
@@ -418,24 +351,15 @@
   }
 }
 
-
-/* ============================================================
-   UTILITY LAYER — one-off helpers
-   ============================================================ */
 @layer utilities {
-
-  /* Tabular numbers — force fixed-width digits for metric columns */
   .tabular-nums {
     font-variant-numeric: tabular-nums;
   }
-
-  /* Widget focus ring — dashed gold border per design doc */
   .widget-focus {
     outline: var(--border-width-focus) dashed var(--color-dark-border-focus-widget);
     outline-offset: 2px;
   }
 
-  /* Transition shorthands using motion tokens */
   .transition-button  { transition: var(--transition-button-color); }
   .transition-input   { transition: var(--transition-input-focus); }
   .transition-card    { transition: var(--transition-card-hover); }

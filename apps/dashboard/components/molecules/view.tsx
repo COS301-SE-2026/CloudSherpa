@@ -17,12 +17,12 @@ export default function viewing({ onDiscoverMoreClick }: forViewingItems){
                 radial-gradient(ellipse 70% 50% at 50% 50%, #0D1633 0%, #030712 100%)`
       }}
     >
-      <div className="relative z-20 max-w-[560px] flex-1 flex flex-col items-center justify-center">
+      <div className="relative z-20 max-w-140 flex-1 flex flex-col items-center justify-center">
         
 
         <h1 className="text-5xl font-bold text-white leading-tight mb-3 tracking-tight">
           Cloud Costs
-          <span className="block text-4xl bg-gradient-to-r from-[#2F2FE4] to-[#162E93] bg-clip-text text-transparent">
+          <span className="block text-4xl bg-linear-to-r from-[#2F2FE4] to-[#162E93] bg-clip-text text-transparent">
             Eliminated
           </span>
         </h1>
@@ -31,7 +31,7 @@ export default function viewing({ onDiscoverMoreClick }: forViewingItems){
           AI-powered optimization for multi cloud environments
         </p>
 
-    <Link href="/authentication">
+    <Link href="/login">
         <Button 
           className="bg-blue-600 hover:bg-blue-700 text-white px-7 py-3 text-base border border-black"
         >
