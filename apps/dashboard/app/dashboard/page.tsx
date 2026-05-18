@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, Suspense } from "react";
 import { subDays } from "date-fns";
 import { DateRange } from "react-day-picker";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -11,7 +11,7 @@ import { WidgetConfig, LayoutItem, DashboardConfig, DashboardStub } from "@/type
 import { useDashboardStore, DashboardStore } from "@/stores/dashboard-store";
 import { useMetricStream } from "@/services/sse/metric-stream";
 
-export default function DashboardPage() {
+function DashboardContent() {
   const { error: streamError } = useMetricStream();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -135,7 +135,7 @@ export default function DashboardPage() {
     router.push(`?id=${newId}`); //push new id search params to url to redirect user to new dash
   }, [addDashboard, router]);
 
-  // use UUID's for widget and layout id's so in theory won't be a clash
+  //  UUID's for widget and layout id's so in theory won't be an id clash
   const handleAddWidget = useCallback(() => {
     const widgetId = crypto.randomUUID();
     const layoutId = crypto.randomUUID();
@@ -144,7 +144,7 @@ export default function DashboardPage() {
       chartType: "line", 
       title: "New Widget (Click to Customize)", 
       resourceId: "mock-ec2-1",
-      metricType: "anon", // This will now be checked against MetricType
+      metricType: "anon", 
     };
     const newLayout: LayoutItem = { id: layoutId, widgetId, x: 0, y: 0, w: 6, h: 4, autoPosition: true };
 
@@ -205,5 +205,16 @@ export default function DashboardPage() {
         )}
       </main>
     </>
+  );
+}
+
+// this part of the page depends on runtime info (like searchparams) that isn't available during the static build.
+// still prerender the static parts of your dashboard
+// fixes lighthouse issues hopefully 
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={<div className="flex-1 flex items-center justify-center text-muted-foreground animate-pulse">Loading dashboard...</div>}>
+      <DashboardContent />
+    </Suspense>
   );
 }
