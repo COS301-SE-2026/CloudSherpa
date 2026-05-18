@@ -16,6 +16,7 @@ This directory contains scripts intended for configuring the repo, installing de
 | **spring-init.sh**      | Script used for initializing Spring Boot services, currently `service` and `ingestion`. This script is not meant for repeated runs. It captures configuration in a structured format that can be reused for additional Spring Boot services. |
 | **dev-dependencies.sh**      | Work in progress. **DO NOT EXECUTE**|
 | **mkdocs-local.sh**      | Creates Python venv, installs required mkdocs pip packages, serves mkdocs locally. Run from root directory. |
+| **mock-noise-stream.sh**      | Posts a finite sequence of non-overlapping mock AWS usage noise windows to the ingestion service for dashboard/SSE testing. |
 
 ## Environment Initialization
 

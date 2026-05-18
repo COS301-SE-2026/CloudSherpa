@@ -51,8 +51,8 @@ function DashboardContent() {
         setIsLoading(true);
         // simulate API Fetch: const response = await fetch('/api/dashboards');
         const initialConfigs: WidgetConfig[] = [
-          { id: "w-1", title: "Live CPU Usage (Mock)", resourceId: "2a6bf77c-722d-3eb5-8cb6-1607ca517d6b", metricType: "cpu", chartType: "line" },
-          { id: "w-2", title: "Live Memory (Mock)", resourceId: "2a6bf77c-722d-3eb5-8cb6-1607ca517d6b", metricType: "cpu", chartType: "gauge" },
+          { id: "w-1", title: "Live CPU Usage (Mock)", resourceId: "74266597-141c-3ecc-8f68-8667ff7163a7", metricType: "cpu", chartType: "line" },
+          { id: "w-2", title: "Live Memory (Mock)", resourceId: "74266597-141c-3ecc-8f68-8667ff7163a7", metricType: "cpu", chartType: "gauge" },
         ];
         const initialLayouts: LayoutItem[] = [
           { id: "l-1", widgetId: "w-1", x: 0, y: 0, w: 6, h: 4 },

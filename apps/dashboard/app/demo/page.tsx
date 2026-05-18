@@ -9,7 +9,7 @@ export default function Demo() {
     const { error } = useMetricStream();
     const metrics = useMetricStore((state) => (state.seriesByKey));
 
-    const forCpuData = metrics['2a6bf77c-722d-3eb5-8cb6-1607ca517d6b:cpu'] || [];
+    const forCpuData = metrics['74266597-141c-3ecc-8f68-8667ff7163a7:cpu'] || [];
     const latestCpuValue = forCpuData.length > 0 ? forCpuData[forCpuData.length-1].value : 0;
     useFetchMetrics();
 
