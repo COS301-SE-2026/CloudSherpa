@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="docs/assets/team-photos/TeamLogo.png" alt="CloudSherpa Logo" width="250"/>
+  <img src="docs/assets/team-photos/BitFlipLogoTransparent.png" alt="CloudSherpa Logo" width="300"/>
 
   <p><strong><span style="font-size: 56px; line-height: 1.1;">CloudSherpa</span></strong></p>
   <p><strong>An AI-Driven Multi-Cloud FinOps Platform</strong></p>
@@ -68,6 +68,51 @@ For development workflows, individual service commands, ports, and troubleshooti
 </div>
 
 Team BitFlip is a cross-functional group of dedicated software engineering students committed to transparency, accountability, and quality-focused delivery. We utilize an Agile delivery framework to ensure continuous alignment with our stakeholders' vision. 
+
+### Meet the Team
+
+**Megan Norval**
+
+[LinkedIn](www.linkedin.com/in/megan-norval)
+
+I am a dedicated problem solver with a strong background in Computer Science. As the Team Lead and Core Backend Architect for CloudSherpa, I designed and implemented the database schema, normalization logic, and some backend workflows. My focus is on building reliable, scalable systems that form the backbone of our platform. I thrive on tackling complex challenges and ensuring the team delivers high-quality solutions.
+
+---
+
+**Gerard Jordaan**
+
+---
+
+**Karishma Boodhoo**
+
+[LinkedIn](www.linkedin.com/in/karishmaboodhoo)
+
+I am a passionate developer who thrives on turning complex data into clean, usable interfaces. With a Computer Science background, I combine technical problem-solving with a keen eye for design to create seamless experiences that users would enjoy working with.
+In our BitFlip team, while working on CloudSherpa for BBD, I acted as the UI/UX Engineer and focused on translating complex FinOps data into intuitive visual layouts. I drove the implementation of responsive, interactive features that prioritize clarity and usability.
+
+---
+
+**Cherise Heyl**
+
+[LinkedIn](http://www.linkedin.com/in/cherise-heyl-5464211ba)
+
+I am a results-driven software developer with experience across frontend, back-
+end, and systems-level development. With a background in electronic engineering
+and computer science, I bring strong analytical thinking and a solid understanding of
+hardware–software integration to modern software design.
+In our BitFlip team working on CloudSherpa for BBD, I am acting as our API & Systems Integration Engineer and co-tester, where I have been primarily focused on the Connector logic and endpoints associated with retrieving CloudMetrics from providers such as AWS, GCP and Azure.
+
+---
+
+**Flip Venter**
+
+[LinkedIn](http://www.linkedin.com/in/flippie-venter-3a0356341)
+
+I am a developer with a deep interest in the intersection of technical architecture and UI/UX design. My background in Information and Knowledge Systems has given me a strong foundation in how users interact with data. I’m not just looking to build a functional tool, but a reliable, high-performance solution that users genuinely enjoy engaging with.
+In our BitFlip team, while working on CloudSherpa for BBD I acted as Frontend Application Developer and focused on implementing login and registration ui, as well dashboard state handling and grid layout and resizing logic.
+
+---
+
 
 **Role Allocations:**
 * **Megan Norval** - *Team Lead & Core Backend Architect*
