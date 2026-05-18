@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 import Toolbar from "@/components/dashboard/toolbar";
 import Grid from "@/components/dashboard/grid";
-import { WidgetConfig, LayoutItem, DashboardConfig, DashboardStub } from "@/types/widgets";
+import { LayoutItem, DashboardConfig, DashboardStub } from "@/types/widgets";
 import { useDashboardStore, DashboardStore } from "@/stores/dashboard-store";
 import { useMetricStream } from "@/services/sse/metric-stream";
 import { useFetchMetrics } from "@/hooks/useFetchMetrics";

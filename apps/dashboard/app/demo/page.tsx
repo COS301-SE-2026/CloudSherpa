@@ -37,6 +37,7 @@ export default function Demo() {
                 <div className="flex flex-wrap gap-6 justify-center">
                     <ConfigurableWidget 
                         forInitialConfiguration={{
+                            id: crypto.randomUUID(),
                             forTitle: "EC2 mock",
                             resourceId: "mock-ec2-1",
                             metricType: "anon",
@@ -48,6 +49,7 @@ export default function Demo() {
                     
                     <ConfigurableWidget 
                         forInitialConfiguration={{
+                            id: crypto.randomUUID(),
                             forTitle: "Name",
                             resourceId: "mock-ec2-1",
                             metricType: "anon",
