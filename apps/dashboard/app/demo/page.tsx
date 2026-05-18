@@ -2,10 +2,8 @@
 
 import { useMetricStream } from "@/services/sse/metric-stream";
 import { useMetricStore } from "@/stores/metric-store";
-import { LineChartWidget } from "@/components/widgets/charts/LineChart";
-import { GaugeWidget } from "@/components/widgets/charts/GaugeChart";
-import { WidgetContainer } from "@/components/widgets/base/WidgetContainer";
 import { useFetchMetrics } from "@/hooks/useFetchMetrics";
+import { ConfigurableWidget } from "@/components/widgets/changeChart";
 
 export default function Demo() {
     const { error } = useMetricStream();
@@ -14,6 +12,9 @@ export default function Demo() {
     const forCpuData = metrics['74266597-141c-3ecc-8f68-8667ff7163a7:cpu'] || [];
     const latestCpuValue = forCpuData.length > 0 ? forCpuData[forCpuData.length-1].value : 0;
     useFetchMetrics();
+
+    const availableResources = ['mock-ec2-1'];
+    const availableMetricTypes = ['cpu', 'memory', 'disk', 'cost', 'anon'];
 
     return (
         <main className="min-h-screen bg-slate-50 p-6 text-slate-950">
@@ -32,37 +33,27 @@ export default function Demo() {
 
                 {/*added widgets that will be adjusted from all sides*/}
                 <div className="flex flex-wrap gap-6 justify-center">
-                    {/*this is the line chart widget*/}
-                    <WidgetContainer 
-                        forTitle="EC2 mock" 
-                        defaultWidth={700}
-                        defaultHeight={400}
-                        minWidth={400}
-                        minHeight={300}
-                        isResizable={true}
-                    >
-                        <LineChartWidget 
-                            resourceId="74266597-141c-3ecc-8f68-8667ff7163a7" 
-                            title="" 
-                            metricType="cpu"
-                        />
-                    </WidgetContainer>
-
-                    {/*this is for the gauge chart*/}
-                    <WidgetContainer 
-                        forTitle="Name" 
-                        defaultWidth={400}
-                        defaultHeight={350}
-                        minWidth={300}
-                        minHeight={300}
-                        isResizable={true}
-                    >
-                        <GaugeWidget 
-                            resourceId="mock-ec2-1" 
-                            title="" 
-                            metricType="anon"
-                        />
-                    </WidgetContainer>
+                    <ConfigurableWidget 
+                        forInitialConfiguration={{
+                            forTitle: "EC2 mock",
+                            resourceId: "mock-ec2-1",
+                            metricType: "anon",
+                            forWidgetType: "line"
+                        }}
+                        availableResources={availableResources}
+                        availableMetricTypes={availableMetricTypes}
+                    />
+                    
+                    <ConfigurableWidget 
+                        forInitialConfiguration={{
+                            forTitle: "Name",
+                            resourceId: "mock-ec2-1",
+                            metricType: "anon",
+                            forWidgetType: "gauge"
+                        }}
+                        availableResources={availableResources}
+                        availableMetricTypes={availableMetricTypes}
+                    />
                 </div>
 
                 {error ? (
