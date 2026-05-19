@@ -77,6 +77,7 @@ export default function RegisterForm({ isLoading = false }: RegisterFormProps) {
     const isAlphanumericPlus = /^[a-zA-Z0-9!@#$%^&*()_+={}\[\]:;"'<>,.?/|\\~`-]*$/.test(value);
     const hasUpperCase = /[A-Z]/.test(value); //checks for specific error
     const hasNumber = /[0-9]/.test(value); //checks for specific error
+    const hasSymbol = /[!@#$%^&*()_+={}\[\]:;"'<>,.?/|\\~`-]/.test(value); //checks if password has symbols
 
     if (!isAlphanumericPlus) {
       setPasswordError("Password contains invalid characters");
@@ -86,6 +87,8 @@ export default function RegisterForm({ isLoading = false }: RegisterFormProps) {
       setPasswordError("Must contain at least one uppercase letter (A-Z)");
     } else if (!hasNumber) {
       setPasswordError("Must contain at least one number (0-9)");
+    } else if (!hasSymbol) {
+      setPasswordError("Must contain at least one symbol (!, @, #, $, etc.)");
     } else {
       setPasswordError("");
     }
@@ -249,6 +252,7 @@ export default function RegisterForm({ isLoading = false }: RegisterFormProps) {
             password.length < 8 || 
             !/[A-Z]/.test(password) || 
             !/[0-9]/.test(password) || 
+            !/[!@#$%^&*()_+={}\[\]:;"'<>,.?/|\\~`-]/.test(password) || // some regex that contains all allowed symobols. 
             confirmPassword.length < 8 || 
             password !== confirmPassword
           }>
