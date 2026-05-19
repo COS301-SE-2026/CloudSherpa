@@ -1,7 +1,7 @@
 <div align="center">
   <img src="docs/assets/team-photos/BitFlipLogoTransparent.png" alt="CloudSherpa Logo" width="300"/>
 
-  <p><strong><span style="font-size: 56px; line-height: 1.1;">CloudSherpa</span></strong></p>
+  <p style="font-size: 50px"><strong>CloudSherpa</storng></p>
   <p><strong>An AI-Driven Multi-Cloud FinOps Platform</strong></p>
 </div>
 
