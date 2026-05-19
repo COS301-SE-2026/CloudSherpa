@@ -1,6 +1,7 @@
 'use client';
 
 import { useDashboardStore } from '@/stores/dashboard-store';
+import { useResourceNameStore } from '@/stores/resource-store';
 import { MetricType } from '@/types/metric';
 import { useState, useEffect, useRef } from 'react';
 
@@ -40,6 +41,7 @@ export function WidgetConfig({
 }: WidgetConfigProps){
     const [forConfiguration, setConfig] = useState<WidgetConfigData>(forExistingConfig);
     const registerWidgetConfigUpdate = useDashboardStore((state) => state.actions.updateWidgetConfig);
+    const resourceNamesById = useResourceNameStore((state) => state.resourcesById);
 
     const forFirstRender = useRef(true);
     useEffect(() => {
@@ -114,7 +116,7 @@ export function WidgetConfig({
                         >
                             {forAvailableResources.map((resource) => (
                                 <option key={resource} value={resource}>
-                                    {resource}
+                                    {resourceNamesById[resource] ?? "Unknown Resource"}
                                 </option>
                             ))}
                         </select>

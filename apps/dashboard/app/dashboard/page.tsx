@@ -12,6 +12,7 @@ import { useMetricStream } from "@/services/sse/metric-stream";
 import { useFetchMetrics } from "@/hooks/useFetchMetrics";
 import { useWindowStore } from "@/stores/window-store";
 import { WidgetConfigData } from "@/components/widgets/widgetConfig";
+import { useResourceNameStore } from "@/stores/resource-store";
 
 function DashboardContent() {
   const { error: streamError } = useMetricStream();
@@ -22,6 +23,7 @@ function DashboardContent() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [originalLayout, setOriginalLayout] = useState<LayoutItem[]>([]);
   const [originalConfigs, setOriginalConfigs] = useState<WidgetConfigData[]>([]);
+
   const fromMs = useWindowStore((state) => state.fromMs);
   const toMs = useWindowStore((state) => state.toMs);
   const from = new Date(fromMs);
@@ -35,6 +37,8 @@ function DashboardContent() {
   const widgetsMap = useDashboardStore((state: DashboardStore) => state.widgets);
 
   const { fetchMetrics } = useFetchMetrics();
+
+  const fetchResourceNames = useResourceNameStore((state) => state.fetchResources);
 
   const { 
     setInitialState, 
@@ -53,7 +57,7 @@ function DashboardContent() {
       // Leverage fact that dashboards need to be loaded into mem to trigger initial metric fetch
       // ? Is this robust?
       await fetchMetrics();
-
+      await fetchResourceNames();
       if (Object.keys(dashboards).length === 0) {
         // simulate API Fetch: const response = await fetch('/api/dashboards');
         const initialConfigs: WidgetConfigData[] = [
