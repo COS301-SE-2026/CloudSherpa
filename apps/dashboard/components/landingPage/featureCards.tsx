@@ -1,5 +1,6 @@
 'use client';
 import { forwardRef, useState } from "react";
+import { BrainCircuit, ChartBar, Wallet, Cloud, BellRing, Zap } from "lucide-react";
 
 interface forFeatureBlocks{
   showingFeatureCards: boolean;
@@ -8,6 +9,7 @@ interface forFeatureBlocks{
 //these cards explain the features in more detail and it gives he benefits for them
 const forFeatureItems = [
   { heading: 'AI - powered forecasting',
+    icon: BrainCircuit,
     subHeading: 'Predict costs before they spike',
     desc: 'Stop reacting to cloud bills. Our ML models give your team a 30-day window to act — shifting you to proactive financial control.',
     benefits: [
@@ -23,6 +25,7 @@ const forFeatureItems = [
   },
 
   { heading: 'Deep Analytics',
+    icon: ChartBar,
     subHeading: 'Know where money goes',
     desc: "Cloud spend is invisible until it isn't. Deep Analytics gives every team the exact view they need to make smarter decisions.",
     benefits: [
@@ -38,6 +41,7 @@ const forFeatureItems = [
   },
 
   { heading: 'Budget Control',
+    icon: Wallet,
     subHeading: 'Never overspend again',
     desc: 'CloudSherpa enforces your limits automatically — scaling back resources before a breach, not after.',
     benefits: [
@@ -53,6 +57,7 @@ const forFeatureItems = [
   },
 
   { heading: 'Multi - cloud',
+    icon: Cloud,
     subHeading: 'AWS, Azure & GCP',
     desc: 'Managing three cloud bills, three dashboards, and three pricing models is a full-time job. CloudSherpa collapses it into one clear, unified picture.',
     benefits: [
@@ -68,6 +73,7 @@ const forFeatureItems = [
   },
 
   { heading: 'Smart Alerts',
+    icon: BellRing,
     subHeading: 'Instant notification',
     desc: 'Alert fatigue is real. CloudSherpa only alerts you when something genuinely needs your attention',
     benefits: [
@@ -83,6 +89,7 @@ const forFeatureItems = [
   },
 
   { heading: '5min Setup',
+    icon: Zap,
     subHeading: 'Start saving today',
     desc: "Most cost tools take weeks to deploy and need a dedicated engineer. CloudSherpa is live in five minutes.",
     benefits: [
@@ -106,6 +113,7 @@ function DetailedFeatures({
   card: typeof forFeatureItems[0]; 
   onBack: () => void;
 }) {
+  const Icon = card.icon;
   return(
     <div style={{ width: '100%', maxWidth: 1100, animation: 'slideInRight 0.3s ease' }}>
 
@@ -157,7 +165,9 @@ function DetailedFeatures({
 
         {/*this is for the heading of the details page*/}
         <div style={{ display: 'flex', alignItems: 'center', gap: 18, marginBottom: 24 }}>
-          <div style={{ width: 60, height: 60, background: '#374151', borderRadius: 14, flexShrink: 0 }} />
+          <div style={{ width: 60, height: 60, borderRadius: 14, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Icon size={32} color="#ffffff" />
+          </div>
           <div>
             <h2 style={{ fontSize: 24, fontWeight: 700, color: '#ffffff', marginBottom: 5, letterSpacing: '-0.01em' }}>
               {card.heading}
@@ -297,8 +307,10 @@ const forFeatureCards = forwardRef<HTMLElement, forFeatureBlocks>(
                   }}
                 >
 
-                  {/*this is the placeholder for the icon*/}
-                  <div className="w-15 h-15 rounded-lg mb-6 flex-shrink-0 bg-[#374151]" />
+                  {/*this is the icon*/}
+                  <div className="w-15 h-15 rounded-lg mb-6 flex-shrink-0 flex items-center justify-center">
+                    <forFeature.icon className="w-8 h-8 text-white" />
+                  </div>
 
                   <div>
                     <h3 className="text-[15px] font-semibold text-white mb-1.5">{forFeature.heading}</h3>
