@@ -2,6 +2,13 @@ package com.cloudsherpa.service.analytics.controller;
 
 import com.cloudsherpa.service.analytics.entities.NormalizedMetrics;
 import com.cloudsherpa.service.analytics.service.NormalizedMetricService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/analytics")
+@Tag(name = "CloudSherpa Analytics", description = "CloudSherpa Analytics endpoints")
 public class AnalyticsController {
 
   private final NormalizedMetricService normalizedMetricService;
@@ -21,13 +29,28 @@ public class AnalyticsController {
     this.normalizedMetricService = normalizedMetricService;
   }
 
+  @Operation(summary = "Get authoratative metric data")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "204",
+            description = "No metrics found for selected time window"),
+        @ApiResponse(
+            responseCode = "200",
+            description = "Return metrics found",
+            content =
+                @Content(
+                    array =
+                        @ArraySchema(schema = @Schema(implementation = NormalizedMetrics.class))))
+      })
   @GetMapping("/historical")
   /*
    * Request params
-   *   - fromDate: ISO-8601 String, fetch metrics from
-   *   - toDate: ISO-8601 String, fetch metrics to
-   *  Curl example:
-   *   curl "localhost:8083/analytics/historical?from=2026-05-01T10:44:33.000Z&to=2026-05-02T10:44:33.106Z"
+   * - fromDate: ISO-8601 String, fetch metrics from
+   * - toDate: ISO-8601 String, fetch metrics to
+   * Curl example:
+   * curl
+   * "localhost:8083/analytics/historical?from=2026-05-01T10:44:33.000Z&to=2026-05-02T10:44:33.106Z"
    */
   public ResponseEntity<?> getHistoricalData(
       @RequestParam("from") String fromDate, @RequestParam("to") String toDate) {
