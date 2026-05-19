@@ -61,8 +61,8 @@ function toMetricType(metricName: string): MetricType {
     return AWS_METRIC_TYPE_BY_NAME[metricName as AwsMetricName] ?? "anon";
 }
 
- export const useMetricStore = create<MetricStore>(
-    (set) => ({
+export const useMetricStore = create<MetricStore>(
+    (set, get) => ({
         seriesByKey: {},
 
         addMetric: (metric) => {
@@ -89,7 +89,7 @@ function toMetricType(metricName: string): MetricType {
                 timestamp: metricDto.periodStart,
                 value: metricDto.metricValue
             }
-            
+
             const key = `${metric.resource_id}:${metric.metricType}`;
 
             set((state) => ({
@@ -108,6 +108,41 @@ function toMetricType(metricName: string): MetricType {
             set(() => ({
                 seriesByKey: {}
             }));
+        },
+
+        getResourceList: () => {
+            const { seriesByKey } = get();
+
+            return Array.from(
+                // set removes duplicates
+                new Set(
+                    Object.keys(seriesByKey).map((key) => key.split(":")[0])
+                )
+            );
+        },
+
+        getMetricList: () => {
+            const { seriesByKey } = get();
+
+            const mapMetricTypes: Record<string, Set<MetricType>> = {};
+
+            Object.keys(seriesByKey).forEach((key) => {
+                const resourceId = key.split(":")[0];
+
+                if (!mapMetricTypes[resourceId]) {
+                    mapMetricTypes[resourceId] = new Set<MetricType>();
+                }
+
+                mapMetricTypes[resourceId].add(key.split(":")[1] as MetricType);
+            });
+
+            const finalArray: Record<string, MetricType[]> = {};
+
+            for (const [key, value] of Object.entries(mapMetricTypes)) {
+                finalArray[key] = Array.from(value);
+            }
+
+            return finalArray;
         }
     })
- )
+)

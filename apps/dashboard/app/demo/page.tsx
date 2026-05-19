@@ -8,13 +8,15 @@ import { ConfigurableWidget } from "@/components/widgets/changeChart";
 export default function Demo() {
     const { error } = useMetricStream();
     const metrics = useMetricStore((state) => (state.seriesByKey));
+    const getResourceList = useMetricStore((state) => state.getResourceList);
+    const getMetricList = useMetricStore((state) => state.getMetricList);
 
     const forCpuData = metrics['74266597-141c-3ecc-8f68-8667ff7163a7:cpu'] || [];
     const latestCpuValue = forCpuData.length > 0 ? forCpuData[forCpuData.length-1].value : 0;
     useFetchMetrics();
 
-    const availableResources = ['mock-ec2-1'];
-    const availableMetricTypes = ['cpu', 'memory', 'disk', 'cost', 'anon'];
+    const availableResources = getResourceList();
+    const availableMetricTypes = getMetricList();
 
     return (
         <main className="min-h-screen bg-slate-50 p-6 text-slate-950">
@@ -35,6 +37,7 @@ export default function Demo() {
                 <div className="flex flex-wrap gap-6 justify-center">
                     <ConfigurableWidget 
                         forInitialConfiguration={{
+                            id: crypto.randomUUID(),
                             forTitle: "EC2 mock",
                             resourceId: "mock-ec2-1",
                             metricType: "anon",
@@ -46,6 +49,7 @@ export default function Demo() {
                     
                     <ConfigurableWidget 
                         forInitialConfiguration={{
+                            id: crypto.randomUUID(),
                             forTitle: "Name",
                             resourceId: "mock-ec2-1",
                             metricType: "anon",

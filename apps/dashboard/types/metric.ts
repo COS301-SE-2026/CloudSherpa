@@ -31,4 +31,7 @@ export type MetricStore = {
     addMetric: (metric: Metric) => void;
     addMetricFromDto: (metricDto : MetricDTO) => void;
     clearStore: () => void;
+    getResourceList: () => string[];
+    // Maps resource id to its available metrics
+    getMetricList: () => Record<string, MetricType[]>;
 }

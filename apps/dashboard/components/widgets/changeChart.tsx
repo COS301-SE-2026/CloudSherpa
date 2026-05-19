@@ -5,15 +5,14 @@ import { WidgetContainer } from './base/WidgetContainer';
 import { LineChartWidget } from './charts/LineChart';
 import { GaugeWidget } from './charts/GaugeChart';
 import { WidgetConfig, WidgetConfigData } from './widgetConfig';
+import { MetricType } from '@/types/metric';
 
 interface ConfigurableWidgetProps{
     forInitialConfiguration: WidgetConfigData;
 
     availableResources: string[];
-    availableMetricTypes: string[];
+    availableMetricTypes: Record<string, MetricType[]>;
 }
-
-type MetricType = 'cpu'| 'memory' | 'disk' | 'anon';
 
 export function ConfigurableWidget({ 
     forInitialConfiguration, 
@@ -47,11 +46,8 @@ export function ConfigurableWidget({
         <>
             <WidgetContainer 
                 forTitle={config.forTitle}
-                defaultWidth={config.forWidgetType === 'line' ? 700 : 400}
-                defaultHeight={config.forWidgetType === 'line' ? 400 : 350}
-                minWidth={300}
-                minHeight={250}
-                isResizable={true}
+                className="h-full w-full"
+                isResizable={false}
                 onSettingsClick={() => setIsConfigOpen(true)}
                 showConfig={true}
             >

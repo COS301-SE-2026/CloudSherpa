@@ -3,7 +3,8 @@ import { GripVertical, X , Trash} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LayoutItem } from "@/types/widgets";
 import { useDashboardStore, DashboardStore } from "@/stores/dashboard-store";
-import Widget from "@/components/widgets/base/Widget";
+import { ConfigurableWidget } from "../widgets/changeChart";
+import { useMetricStore } from "@/stores/metric-store";
 
 interface WidgetWrapperProps {
   layout: LayoutItem;
@@ -14,6 +15,10 @@ interface WidgetWrapperProps {
 export const WidgetWrapper = ({ layout, isEditMode, onDeleteWidget }: WidgetWrapperProps) => {
   const { id, widgetId, x, y, w, h, autoPosition } = layout;
   const config = useDashboardStore((state: DashboardStore) => state.widgets[widgetId]);
+  const getResourceList = useMetricStore((state) => state.getResourceList);
+  const getMetricList = useMetricStore((state) => state.getMetricList);
+  const availableResources = getResourceList();
+  const availableMetricTypes = getMetricList();
 
   if (!config) return null;
 
@@ -41,11 +46,10 @@ export const WidgetWrapper = ({ layout, isEditMode, onDeleteWidget }: WidgetWrap
           "h-full w-full",
           isEditMode && "pointer-events-none ring-2 ring-primary/20 rounded-xl transition-all" 
         )}>
-          <Widget
-            title={config.title || "Untitled Widget"}
-            chartType={config.chartType}
-            resourceId={config.resourceId}
-            metricType={config.metricType}
+          <ConfigurableWidget 
+            forInitialConfiguration={config}
+            availableResources={availableResources}
+            availableMetricTypes={availableMetricTypes}
           />
         </div>
       </div>
