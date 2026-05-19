@@ -75,11 +75,16 @@ Team BitFlip is a cross-functional group of dedicated software engineering stude
 
 [LinkedIn](www.linkedin.com/in/megan-norval)
 
-I am a dedicated problem solver with a strong background in Computer Science. As the Team Lead and Core Backend Architect for CloudSherpa, I designed and implemented the database schema, normalization logic, and some backend workflows. My focus is on building reliable, scalable systems that form the backbone of our platform. I thrive on tackling complex challenges and ensuring the team delivers high-quality solutions.
+I am a dedicated problem solver with a strong background in Computer Science and a passion for building reliable software systems. I enjoy tackling complex technical challenges and designing solutions. My approach combines analytical thinking with strong leadership and collaboration skills to ensure high-quality outcomes across the entire development process. As the Team Lead and Core Backend Architect for CloudSherpa, I designed and implemented the database schema, normalization logic, and key backend workflows that form the foundation of our platform. I was responsible for structuring and integrating backend components to support efficient data processing and storage.
 
 ---
 
 **Gerard Jordaan**
+
+[LinkedIn](https://www.linkedin.com/in/gerard-jordaan/)
+
+I am a process-oriented software engineering student with interests in DevOps and full stack development. I enjoy solving complex problems by leveraging problem decomposition and developing robust, performant, and maintainable solutions.
+In our BitFlip team working on CloudSherpa for BBD, I acted as our DevOps Engineer, Full Stack Contributor, and Co-Tester, where I focused on configuring consistent development and production environments, setting up CI pipelines, implementing the SSE subsystem for streaming metrics, integrating Spring Security with JWT infrastructure, and ensuring the team could move forward efficiently at all times.
 
 ---
 
