@@ -36,7 +36,7 @@ function DashboardContent() {
   const layoutsMap = useDashboardStore((state: DashboardStore) => state.layouts);
   const widgetsMap = useDashboardStore((state: DashboardStore) => state.widgets);
 
-  const { fetchMetrics } = useFetchMetrics();
+  useFetchMetrics();
 
   const fetchResourceNames = useResourceNameStore((state) => state.fetchResources);
 
@@ -54,9 +54,7 @@ function DashboardContent() {
       // only initialize if we don't have any dashboards in the store yet make full use of zustand caching. 
       setIsLoading(true);
 
-      // Leverage fact that dashboards need to be loaded into mem to trigger initial metric fetch
-      // ? Is this robust?
-      await fetchMetrics();
+      // Leverage fact that dashboards need to be loaded into mem to trigger initial resource fetch
       await fetchResourceNames();
       if (Object.keys(dashboards).length === 0) {
         // simulate API Fetch: const response = await fetch('/api/dashboards');
