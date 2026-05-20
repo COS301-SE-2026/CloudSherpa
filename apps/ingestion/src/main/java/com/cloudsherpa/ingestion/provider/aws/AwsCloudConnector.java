@@ -21,7 +21,7 @@ import software.amazon.awssdk.services.ec2.model.Reservation;
 @Component("AWS")
 public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingCapable {
 
-  private CloudWatchClient client = CloudWatchClient.builder()
+  private CloudWatchClient defaultClient = CloudWatchClient.builder()
       .credentialsProvider(DefaultCredentialsProvider.create())
       .region(Region.AF_SOUTH_1)
       .build();
@@ -55,6 +55,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
     if ((Duration.between(request.getFrom(), request.getTo()).getSeconds()) / period > 1440) {
       throw new IllegalArgumentException("AWS will not return over 1440 datapoints per metric");
     }
+    CloudWatchClient client = defaultClient;
     if (request.getCredentials() != null) {
       AwsBasicCredentials credentials = AwsBasicCredentials.create(request.getCredentials().getAccessKey(),
           request.getCredentials().getSecretKey());
@@ -131,7 +132,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
   @Override
   public boolean testConnection(CloudCredentials credentials) {
     try {
-      client.listMetrics();
+      defaultClient.listMetrics();
       return true;
     } catch (Exception e) {
       return false;
