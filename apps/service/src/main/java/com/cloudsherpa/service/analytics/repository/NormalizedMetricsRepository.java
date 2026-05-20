@@ -10,5 +10,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface NormalizedMetricsRepository extends JpaRepository<NormalizedMetrics, UUID> {
   // Spring translates this method name into:
   // SELECT * FROM normalized_metrics WHERE recorded_at BETWEEN ? AND ?
-  List<NormalizedMetrics> findByRecordedAtBetween(OffsetDateTime startTime, OffsetDateTime endTime);
+  List<NormalizedMetrics> findByPeriodStartBetween(
+      OffsetDateTime startTime, OffsetDateTime endTime);
 }

@@ -43,7 +43,7 @@ public class NormalizedMetricService {
       throw new Exception("Invalid interval");
     }
 
-    return normalizedMetricsRepository.findByRecordedAtBetween(parsedFromDate, parsedToDate);
+    return normalizedMetricsRepository.findByPeriodStartBetween(parsedFromDate, parsedToDate);
   }
 
   public Map<String, String> fetchResourceNames() throws ResponseStatusException {
