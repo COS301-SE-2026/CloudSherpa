@@ -21,6 +21,8 @@ ENTRYPOINT ["./mvnw", "spring-boot:run"]
 FROM base AS build
 
 COPY src src
+COPY config/checkstyle/checkstyle.xml config/checkstyle/checkstyle.xml
+
 RUN ./mvnw clean package -DskipTests
 
 
