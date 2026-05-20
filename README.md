@@ -7,7 +7,7 @@
 
 <div style="display: flex; justify-content: center; align-items: center; flex-direction: column;">
 
-<div style="align-items: center; justify-content: center;">
+<div align="center">
 
 ![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/COS301-SE-2026/CloudSherpa?label=open%20issues)
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/COS301-SE-2026/CloudSherpa/dashboard-ci.yml?label=dashboard%20build)
