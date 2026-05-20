@@ -7,7 +7,7 @@
 
 <div style="display: flex; justify-content: center; align-items: center; flex-direction: column;">
 
-<div style="align-items: center; justify-content: center;">
+<div align="center">
 
 ![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/COS301-SE-2026/CloudSherpa?label=open%20issues)
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/COS301-SE-2026/CloudSherpa/dashboard-ci.yml?label=dashboard%20build)
@@ -16,7 +16,7 @@
 
 </div>
 
-<div>
+<div align="center">
 
 ![Website](https://img.shields.io/website?url=http%3A//cloudsherpa.gjjcs.org&label=cloudsherpa%20site)
 [![CloudSherpa service coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fsherpa-coverage.gjjcs.org%2Fbadges%2Fservice)](https://sherpa-coverage.gjjcs.org/badges/service)
