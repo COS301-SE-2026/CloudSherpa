@@ -34,6 +34,10 @@ For a comprehensive overview of CloudSherpa, visit our [official documentation s
 
 Follow our active development, feature tracking, and issue management on our [CloudSherpa Project](https://github.com/orgs/COS301-SE-2026/projects/39).
 
+## Design System
+
+Explore our [CloudSherpa Design System](https://bitflip301.gjjcs.org/design-system/designSystem.html)
+
 ## Project Overview
 
 CloudSherpa is an AI-driven cloud cost optimization platform designed to analyze infrastructure usage and spending patterns across major cloud providers, including Amazon Web Services, Microsoft Azure, and Google Cloud Platform. 
