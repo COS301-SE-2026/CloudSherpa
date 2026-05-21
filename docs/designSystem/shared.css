@@ -1,7 +1,7 @@
 :root{
   --color-brand-electric-blue: #2f2fe4;
   --color-brand-deep-navy: #162e93;
-  --color-brand-gold: #ffd700;
+  --color-brand-gold: #c9a13b;
   --color-dark-bg-base: #080616;
   --color-dark-bg-sunken: #0d0f2e;
   --color-dark-bg-mid: #141450;
@@ -53,7 +53,7 @@
 html, body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
 
 .nav-link{
-  font-size: 10px; font-weight: 500; color: var(--text-muted);
+  font-size: 10px; font-weight: 500; color: var(--text);
   padding: 5px 10px; border-radius: 6px; white-space: nowrap;
   cursor: pointer; font-family: 'DM Mono', monospace;
   letter-spacing: 0.04em; text-decoration: none;
