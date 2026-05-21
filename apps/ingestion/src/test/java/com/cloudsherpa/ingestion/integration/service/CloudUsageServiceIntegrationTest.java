@@ -1,12 +1,10 @@
-
 package com.cloudsherpa.ingestion.integration.service;
 
 import static org.junit.jupiter.api.Assertions.*;
-
 import static org.mockito.Mockito.*;
 
-import com.cloudsherpa.ingestion.connector.CloudConnectorFactory;
 import com.cloudsherpa.ingestion.connector.AccountScope;
+import com.cloudsherpa.ingestion.connector.CloudConnectorFactory;
 import com.cloudsherpa.ingestion.models.IngestionRequestEvent;
 import com.cloudsherpa.ingestion.models.IngestionResult;
 import com.cloudsherpa.ingestion.models.UsageRecordModel;
@@ -29,8 +27,7 @@ class CloudUsageServiceIntegrationTest {
 
     connector = spy(new AwsCloudConnector());
 
-    when(factory.getConnector("AWS"))
-        .thenReturn(connector);
+    when(factory.getConnector("AWS")).thenReturn(connector);
 
     service = new CloudUsageService(factory);
   }
@@ -38,9 +35,7 @@ class CloudUsageServiceIntegrationTest {
   @Test
   void ingestShouldIntegrateWithAwsConnector() {
 
-    doReturn(List.of(new UsageRecordModel()))
-        .when(connector)
-        .fetchMockUsage(any(), any());
+    doReturn(List.of(new UsageRecordModel())).when(connector).fetchMockUsage(any(), any());
 
     IngestionRequestEvent request = new IngestionRequestEvent();
 
@@ -55,7 +50,6 @@ class CloudUsageServiceIntegrationTest {
 
     assertEquals(1, result.getUsage().size());
 
-    verify(connector)
-        .fetchMockUsage(any(), any());
+    verify(connector).fetchMockUsage(any(), any());
   }
 }

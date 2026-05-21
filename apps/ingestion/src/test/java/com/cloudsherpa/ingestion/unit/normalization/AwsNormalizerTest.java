@@ -10,33 +10,33 @@ import org.junit.jupiter.api.Test;
 
 class AwsNormalizerTest {
 
-    private final AwsNormalizer normalizer = new AwsNormalizer();
+  private final AwsNormalizer normalizer = new AwsNormalizer();
 
-    @Test
-    void normalizeShouldReturnNormalizedMetric() {
+  @Test
+  void normalizeShouldReturnNormalizedMetric() {
 
-        UsageRecordModel record = new UsageRecordModel();
-        record.setProvider("AWS");
-        record.setMetricName("CPUUtilization");
-        record.setValue(75.0);
-        record.setTimestamp(Instant.now());
+    UsageRecordModel record = new UsageRecordModel();
+    record.setProvider("AWS");
+    record.setMetricName("CPUUtilization");
+    record.setValue(75.0);
+    record.setTimestamp(Instant.now());
 
-        NormalizedMetric result = normalizer.normalize(record);
+    NormalizedMetric result = normalizer.normalize(record);
 
-        assertNotNull(result);
-    }
+    assertNotNull(result);
+  }
 
-    @Test
-    void normalizeShouldHandleNullRecord() {
+  @Test
+  void normalizeShouldHandleNullRecord() {
 
-        assertDoesNotThrow(() -> normalizer.normalize(null));
-    }
+    assertDoesNotThrow(() -> normalizer.normalize(null));
+  }
 
-    @Test
-    void normalizeShouldHandleMissingFields() {
+  @Test
+  void normalizeShouldHandleMissingFields() {
 
-        UsageRecordModel record = new UsageRecordModel();
+    UsageRecordModel record = new UsageRecordModel();
 
-        assertDoesNotThrow(() -> normalizer.normalize(record));
-    }
+    assertDoesNotThrow(() -> normalizer.normalize(record));
+  }
 }
