@@ -24,7 +24,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
   private CloudWatchClient defaultClient =
       CloudWatchClient.builder()
           .credentialsProvider(DefaultCredentialsProvider.create())
-          .region(Region.AF_SOUTH_1)
+          .region(Region.EU_NORTH_1)
           .build();
 
   public List<String> getAllEC2InstanceIds(Ec2Client ec2) {
@@ -66,23 +66,26 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
       client =
           CloudWatchClient.builder()
               .credentialsProvider(StaticCredentialsProvider.create(credentials))
-              .region(Region.AF_SOUTH_1)
+              .region(Region.of(request.getCredentials().getRegion()))
               .build();
     }
 
     List<UsageRecordModel> result = new ArrayList<>();
     for (ServiceScope serviceScope :
-        accountScope.getServiceScopes()) { // these are for services such as EC2, RDS etc.
+        accountScope.getServiceScopes()) { // these are for services such as EC2, RDS
+      // etc.
 
       for (InstanceScope instance :
-          serviceScope.getInstances()) { // instances within a service with a name and value
+          serviceScope.getInstances()) { // instances within a service with a name and
+        // value
         // list e.g. i-23xxxxxxx
         for (String instanceValue : instance.getValues()) { // the specific instance
           Dimension dimension =
               Dimension.builder().name(instance.getIdentifierName()).value(instanceValue).build();
 
           for (String metric :
-              serviceScope.getMetrics()) { // the metrics requested, e.g. CPUUtilisation, NetworkIn,
+              serviceScope.getMetrics()) { // the metrics requested, e.g. CPUUtilisation,
+            // NetworkIn,
             // NetworkOut etc.
             GetMetricStatisticsRequest req =
                 GetMetricStatisticsRequest.builder()
@@ -181,7 +184,8 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
         ServiceType type = ServiceType.from(serviceScope.getName());
 
         double serviceClusterState =
-            50.0 + new Random(accountSeed).nextGaussian() * 10; // services have partially
+            50.0 + new Random(accountSeed).nextGaussian() * 10; // services have
+        // partially
         // correlated usage data
 
         for (InstanceScope instance : serviceScope.getInstances()) {
@@ -200,7 +204,8 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
             double volatility = 1.0 + rng.nextDouble() * 5.0;
 
             Map<String, Double> metricState =
-                new HashMap<>(); // different metrics may have different trajectories and
+                new HashMap<>(); // different metrics may have different
+            // trajectories and
             // mean loads
             Map<String, Double> metricMean = new HashMap<>();
 
@@ -226,27 +231,29 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
               double seasonal = 8 * daily + 3 * weekly;
 
               boolean maintenance =
-                  (seconds % secondsPerDay)
-                      < 2 * secondsPerHour; // first 2h of each day simulated as
+                  (seconds % secondsPerDay) < 2 * secondsPerHour; // first 2h of each
+              // day simulated as
               // maintenance period
 
               double maintenancePenalty =
                   maintenance ? -10 : 0; // less usage in a maintenance period
 
               boolean burstEvent =
-                  rng.nextDouble() < type.burstChance; // low probability of a burst event with high
+                  rng.nextDouble() < type.burstChance; // low probability of a burst
+              // event with high
               // usage. Metric dependent chance
 
               double burst = burstEvent ? rng.nextDouble() * 50 : 0;
 
-              serviceClusterState +=
-                  rng.nextGaussian() * 1.5 + burst * 0.05; // service level usage correlation (EC2
+              serviceClusterState += rng.nextGaussian() * 1.5 + burst * 0.05; // service level usage
+              // correlation (EC2
               // metrics are related)
 
               double clusterFactor = 1.0 + (serviceClusterState / 100.0);
 
               for (String metric :
-                  serviceScope.getMetrics()) { // each metric has somewhat different behaviour
+                  serviceScope.getMetrics()) { // each metric has somewhat different
+                // behaviour
                 double state = metricState.get(metric);
                 double mMean = metricMean.get(metric);
 
