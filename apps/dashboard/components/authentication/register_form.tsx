@@ -24,6 +24,7 @@ export default function RegisterForm({ isLoading = false }: RegisterFormProps) {
   const [email, setEmail] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  const [emailError, setEmailError] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
 
   const { register, registrationFailure, registrationSuccess, redirectCountdown } = useRegistration();
@@ -31,18 +32,63 @@ export default function RegisterForm({ isLoading = false }: RegisterFormProps) {
   const togglePasswordVisibility = () => setIsPasswordVisible(!isPasswordVisible); //note I want to implement a spring loaded button instead of a togglable one for shoulder surfing.
   const toggleConfirmPasswordVisibility = () => setIsConfirmPasswordVisible(!isConfirmPasswordVisible);
 
+  const validateEmail = (value: string) => {
+    setEmail(value);
+    
+    if (value.length === 0) {
+      setEmailError("");
+      return;
+    }
+
+    if (value.includes(" ")) {
+      setEmailError("Email cannot contain spaces");
+    } else if (!value.includes("@")) {
+      setEmailError("Email must contain an '@' symbol");
+    } else {
+      const parts = value.split("@");
+      if (parts[0].length === 0) {
+        setEmailError("Email must have a username before '@'");
+      } else if (parts[1].length === 0) {
+        setEmailError("Email must have a domain after '@'");
+      } else if (!parts[1].includes(".")) {
+        setEmailError("Domain must contain a '.' (e.g., .com)");
+      } else {
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!emailRegex.test(value)) {
+          setEmailError("Please enter a valid email address");
+        } else {
+          setEmailError("");
+        }
+      }
+    }
+  };
+
   const validatePassword = (value: string) => {
     setPassword(value);
+
+    if (value.length === 0) {
+      setPasswordError("");
+      return;
+    }
 
     // at least 8 characters
     //  alphanumeric
     const minLength = value.length >= 8;
     const isAlphanumericPlus = /^[a-zA-Z0-9!@#$%^&*()_+={}\[\]:;"'<>,.?/|\\~`-]*$/.test(value);
+    const hasUpperCase = /[A-Z]/.test(value); //checks for specific error
+    const hasNumber = /[0-9]/.test(value); //checks for specific error
+    const hasSymbol = /[!@#$%^&*()_+={}\[\]:;"'<>,.?/|\\~`-]/.test(value); //checks if password has symbols
 
     if (!isAlphanumericPlus) {
       setPasswordError("Password contains invalid characters");
-    } else if (!minLength && value.length > 0) {
+    } else if (!minLength) {
       setPasswordError("Must be at least 8 characters");
+    } else if (!hasUpperCase) {
+      setPasswordError("Must contain at least one uppercase letter (A-Z)");
+    } else if (!hasNumber) {
+      setPasswordError("Must contain at least one number (0-9)");
+    } else if (!hasSymbol) {
+      setPasswordError("Must contain at least one symbol (!, @, #, $, etc.)");
     } else {
       setPasswordError("");
     }
@@ -59,7 +105,7 @@ export default function RegisterForm({ isLoading = false }: RegisterFormProps) {
 
   const handleFormSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!passwordError && !confirmPasswordError) {
+    if (!emailError && !passwordError && !confirmPasswordError && email.length > 0) {
       const registerPayload: RegisterRequestDto = {
         email: email,
         username: email,
@@ -105,15 +151,21 @@ export default function RegisterForm({ isLoading = false }: RegisterFormProps) {
             name="email"
             type="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => validateEmail(e.target.value)}
             placeholder="name@company.com"
             required
             disabled={isLoading}
             className={cn(
               "pr-10",
-              confirmPasswordError ? "border-destructive focus-visible:ring-destructive" : "focus-visible:ring-ring",
+              emailError ? "border-destructive focus-visible:ring-destructive" : "focus-visible:ring-ring",
             )}
           />
+          {emailError && (
+            <div className="flex items-center gap-2 text-destructive text-xs mt-1 animate-in fade-in duration-300">
+              <AlertCircle size={14} />
+              <span>{emailError}</span>
+            </div>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -191,7 +243,19 @@ export default function RegisterForm({ isLoading = false }: RegisterFormProps) {
         <Button
           type="submit"
           className="w-full"
-          disabled={isLoading || !!passwordError || !!confirmPasswordError || password.length < 8 || confirmPassword.length < 8 || password !== confirmPassword}>
+          disabled={
+            isLoading || 
+            !!emailError ||
+            !!passwordError || 
+            !!confirmPasswordError || 
+            email.length === 0 ||
+            password.length < 8 || 
+            !/[A-Z]/.test(password) || 
+            !/[0-9]/.test(password) || 
+            !/[!@#$%^&*()_+={}\[\]:;"'<>,.?/|\\~`-]/.test(password) || // some regex that contains all allowed symobols. 
+            confirmPassword.length < 8 || 
+            password !== confirmPassword
+          }>
           {" "}
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {isLoading ? "Authenticating..." : "Sign Up"}

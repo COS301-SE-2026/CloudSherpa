@@ -13,6 +13,7 @@ import { useFetchMetrics } from "@/hooks/useFetchMetrics";
 import { useWindowStore } from "@/stores/window-store";
 import { WidgetConfigData } from "@/components/widgets/widgetConfig";
 import { useResourceNameStore } from "@/stores/resource-store";
+import { useMetricStore } from "@/stores/metric-store";
 
 function DashboardContent() {
   const { error: streamError } = useMetricStream();
@@ -39,6 +40,7 @@ function DashboardContent() {
   // Metrics and resource name stores
   const { metricFetchError, metricFetchLoad } = useFetchMetrics();
   const fetchResourceNames = useResourceNameStore((state) => state.fetchResources);
+  const getMetricList = useMetricStore((state) => state.getMetricList);
 
   const { 
     setInitialState, 
@@ -49,6 +51,19 @@ function DashboardContent() {
     addDashboard 
   } = useDashboardStore((state: DashboardStore) => state.actions);
 
+  const createDefaultWidgetConfig = useCallback((id: string, title: string, widgetType: "line" | "gauge"): WidgetConfigData => {
+    const metricsByResource = getMetricList();
+    const resourceId = Object.keys(metricsByResource)[0];
+
+    return {
+      id,
+      title,
+      widgetType,
+      resourceId,
+      metricType: resourceId ? metricsByResource[resourceId]?.[0] ?? "anon" : "anon",
+    };
+  }, [getMetricList]);
+
   useEffect(() => {
     const loadDashboardData = async () => {
       // only initialize if we don't have any dashboards in the store yet make full use of zustand caching. 
@@ -56,13 +71,23 @@ function DashboardContent() {
 
       // Leverage fact that dashboards need to be loaded into mem to trigger initial metric fetch
       await fetchResourceNames();
+
+      if (metricFetchLoad) {
+        return;
+      }
+
+      if (metricFetchError) {
+        setIsLoading(false);
+        return;
+      }
+
       if (Object.keys(dashboards).length === 0) {
 
         // Some info that helped me whilst debugging, this is so that there are mock widgets
         // once the dashboard loads
         const initialConfigs: WidgetConfigData[] = [
-          { id: "w-1", title: "Live CPU Usage (Mock)", widgetType: "line"},
-          { id: "w-2", title: "Live Memory (Mock)", widgetType: "gauge" },
+          createDefaultWidgetConfig("w-1", "Live CPU Usage (Mock)", "line"),
+          createDefaultWidgetConfig("w-2", "Live Memory (Mock)", "gauge"),
         ];
         const initialLayouts: LayoutItem[] = [
           { id: "l-1", widgetId: "w-1", x: 0, y: 0, w: 6, h: 4 },
@@ -93,7 +118,7 @@ function DashboardContent() {
     //note: reactMemo is an option for components that re-render a lot (apparently)
 
     loadDashboardData();
-  }, [setInitialState, setActiveDashboard, router, dashboards, fetchResourceNames, urlId]);
+  }, [setInitialState, setActiveDashboard, router, dashboards, fetchResourceNames, urlId, createDefaultWidgetConfig, metricFetchLoad, metricFetchError]);
 
   // sync Zustand store when the URL changes (i.e browser back/forward buttons)
   useEffect(() => {
@@ -150,16 +175,12 @@ function DashboardContent() {
   const handleAddWidget = useCallback(() => {
     const widgetId = crypto.randomUUID();
     const layoutId = crypto.randomUUID();
-    const newConfig: WidgetConfigData = {
-      id: widgetId,
-      widgetType: "line",
-      title: "New Widget (Click to Customize)"
-    };
+    const newConfig = createDefaultWidgetConfig(widgetId, "New Widget (Click to Customize)", "line");
     const newLayout: LayoutItem = { id: layoutId, widgetId, x: 0, y: 0, w: 6, h: 4, autoPosition: true };
 
     addWidget(newLayout, newConfig);
     setIsEditMode(true);
-  }, [addWidget]);
+  }, [addWidget, createDefaultWidgetConfig]);
 
   const handleDeleteWidget = useCallback((layoutId: string, widgetId: string) => {
     removeWidget(layoutId, widgetId);

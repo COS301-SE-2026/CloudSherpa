@@ -1,6 +1,7 @@
 'use client';
 import { Button } from "@/components/atoms/button";
 import Link from "next/link";
+import Image from "next/image";
 
 interface forNavigationProps{
   clickOnFeatures?: () => void;
@@ -9,8 +10,9 @@ interface forNavigationProps{
 export default function forNavigation({ clickOnFeatures }: forNavigationProps){
   return(
     <nav className="flex justify-between items-center px-10 py-[18px] relative z-10">
+      {/* icon place holder */}
       <div className="flex items-center gap-2.5 text-[15px] font-semibold">
-        <div className="w-7 h-7 rounded-md bg-[#374151]" />
+        <Image src="/CloudSherpaFavicon.svg" alt="CloudSherpa Logo" width={28} height={28} className="rounded-md mb-2" />
         CloudSherpa
       </div>
 

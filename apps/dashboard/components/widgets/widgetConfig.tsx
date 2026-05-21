@@ -39,28 +39,12 @@ export function WidgetConfig({
     const registerWidgetConfigUpdate = useDashboardStore((state) => state.actions.updateWidgetConfig);
     const resourceNamesById = useResourceNameStore((state) => state.resourcesById);
     const allAvailableMetrics = useMetricStore((state) => state.getMetricList);
-    
-    if (!configuration.resourceId) {
-        setConfiguration((prevConfiguration) => {
-
-            const defaultResource = Object.keys(resourceNamesById)[0];
-            const defaultMetric = allAvailableMetrics()[defaultResource][0];
-
-            return {
-            ...prevConfiguration,
-            resourceId: defaultResource,
-            metricType: defaultMetric
-            };
-        }
-    )
-    }
 
     const availableMetrics = configuration.resourceId ? allAvailableMetrics()[configuration.resourceId] ?? []: [];
 
     const availableResources = Object.keys(resourceNamesById);
 
     const isFirstRender = useRef(true);
-
 
     useEffect(() => {
         if(!isFirstRender.current){

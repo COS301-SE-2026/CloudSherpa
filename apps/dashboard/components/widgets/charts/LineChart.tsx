@@ -5,7 +5,7 @@ import { useMetricStore } from "@/stores/metric-store";
 import { useWindowStore } from "@/stores/window-store";
 import { Metric, MetricType } from "@/types/metric";
 import type { EChartsOption } from "echarts";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type LineChartWidgetProps = {
     title: string,
@@ -32,6 +32,30 @@ export function LineChartWidget({
     const visibleWindowMs = toMs - fromMs;
 
     const chartInstance = useRef<echarts.ECharts | null>(null);
+    const [lineColor, setLineColor] = useState<string>('#3b82f6'); // fallback blue
+    const [gridOpacity, setGridOpacity] = useState<number>(0.15);
+
+    // Extract color token and listen for theme changes
+    //note: echarts does not have built in support for css tokens and stuff so we have to use workaround 
+    useEffect(() => {
+        const updateThemeStyles = () => {
+            const style = getComputedStyle(document.documentElement);
+            const tokenColor = style.getPropertyValue('--primary').trim();
+            
+            if (tokenColor) {
+                setLineColor(tokenColor);
+            }
+
+            // Adjust horizontal grid line opacity based on active theme(just added on logic for theme swapping)
+            const isLightMode = document.documentElement.getAttribute('data-theme') === 'light';
+            setGridOpacity(isLightMode ? 0.70 : 0.10);
+        };
+
+        updateThemeStyles();
+        const observer = new MutationObserver(updateThemeStyles);
+        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'class'] });
+        return () => observer.disconnect();
+    }, []);
 
     useEffect(() => {
         if (!chartRef.current) return;
@@ -54,6 +78,7 @@ export function LineChartWidget({
         const axisMax = Math.ceil(Date.now() / AXIS_TICK_MS) * AXIS_TICK_MS;
 
         const option: EChartsOption = {
+            color: [lineColor],
             tooltip: {
                 trigger: "axis"
             },
@@ -79,12 +104,20 @@ export function LineChartWidget({
                 min: axisMax - visibleWindowMs,
                 max: axisMax,
                 interval: AXIS_TICK_MS,
+                  axisLabel: {
+    hideOverlap: true
+  }
             },
 
             yAxis: {
                 type: "value",
                 axisLabel: {
                     formatter: '{value} %'
+                },
+                splitLine: {
+                    lineStyle: {
+                        opacity: gridOpacity // Dynamic opacity based on theme
+                    }
                 }
             },
 
@@ -101,7 +134,7 @@ export function LineChartWidget({
         };
 
         chartInstance.current?.setOption(option);
-    }, [title, resourceId, data, visibleWindowMs])
+    }, [title, resourceId, data, visibleWindowMs, lineColor, gridOpacity])
 
     useEffect(() => {
         if(!chartInstance.current){

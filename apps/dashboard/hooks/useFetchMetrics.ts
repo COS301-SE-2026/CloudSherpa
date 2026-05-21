@@ -11,31 +11,43 @@ export function useFetchMetrics() {
 
     const addMetricFromDto = useMetricStore((state) => state.addMetricFromDto);
     const clearMetricStore = useMetricStore((state) => state.clearStore);
+
     const fromMs = useWindowStore((state) => state.fromMs);
     const toMs = useWindowStore((state) => state.toMs);
 
     const fetchMetrics = useCallback(async () => {
-            setMetricFetchLoad(true);
-            setMetricFetchError(null);
-            clearMetricStore();
+        setMetricFetchLoad(true);
+        setMetricFetchError(null);
 
-            const from = new Date(fromMs);
-            const to = new Date(toMs);
+        clearMetricStore();
 
-            try {
-                const metrics: MetricDTO[] = await apiClient(`/analytics/historical?from=${from.toISOString()}&to=${to.toISOString()}`);
+        const from = new Date(fromMs);
+        const to = new Date(toMs);
 
-                // Need to insert metrics in order of period start
-                for (const metric of metrics) {
-                    addMetricFromDto(metric);
-                }
-            } catch (error) {
-                console.warn(`Failed to fetch metrics: ${error}`);
-                setMetricFetchError(error instanceof Error ? error : new Error(String(error)));
-            } finally {
-                setMetricFetchLoad(false);
+        try {
+            const metrics: MetricDTO[] = await apiClient(
+                `/analytics/historical?from=${from.toISOString()}&to=${to.toISOString()}`
+            );
+
+            // Need to insert metrics in order of period start
+            for (const metric of metrics) {
+                addMetricFromDto(metric);
             }
-        }, [addMetricFromDto, clearMetricStore, fromMs, toMs]);
+
+        } catch (error) {
+            console.warn(`Failed to fetch metrics: ${error}`);
+
+            setMetricFetchError(
+                error instanceof Error
+                    ? error
+                    : new Error(String(error))
+            );
+
+        } finally {
+            setMetricFetchLoad(false);
+        }
+
+    }, [addMetricFromDto, clearMetricStore, fromMs, toMs]);
 
     useEffect(() => {
         queueMicrotask(() => {
