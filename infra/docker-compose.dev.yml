@@ -1,0 +1,85 @@
+services:
+  # TODO: add explicit container names 
+  ingestion:
+    build:
+      context: ../apps/ingestion
+      dockerfile: Dockerfile
+      target: dev
+    image: cloudsherpa-ingestion:dev
+    container_name: ingestion
+    ports:
+      - "8081:8080"
+    env_file:
+      - ../apps/ingestion/.env
+    volumes:
+      - ../apps/ingestion:/app
+    depends_on:
+      sherpa-db:
+        condition: service_healthy
+    
+  service:
+    build:
+      context: ../apps/service
+      dockerfile: Dockerfile
+      target: dev
+    image: cloudsherpa-service:dev
+    container_name: service
+    ports:
+      - "8083:8080"
+    env_file:
+      - ../apps/service/.env
+    volumes:
+      - ../apps/service:/app
+    depends_on:
+      sherpa-db:
+        condition: service_healthy
+  
+  dashboard:
+    build:
+      context: ../apps/dashboard
+      dockerfile: Dockerfile
+      target: dev
+    image: cloudsherpa-dashboard:latest
+    container_name: dashboard
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../apps/dashboard:/app
+      - /app/node_modules
+      - /app/.next
+    env_file:
+      - ../apps/dashboard/.env
+
+  sherpa-db:
+    image: timescale/timescaledb:2.16.1-pg16
+    container_name: sherpa-db
+    restart: unless-stopped
+    env_file:
+      - ../persistence/sherpadb/.env
+    ports:
+      - "5432:5432"
+    volumes:
+      - sherpa_db_data:/var/lib/postgresql/data
+      - ../persistence/sherpadb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    depends_on:
+      - sherpa-db
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+  
+volumes:
+  sherpa_db_data: 
+  pgadmin_data:

@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Components · CloudSherpa Design System</title>
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="mobileFriendly.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+  <style>
+    .btn { padding:8px 16px; border-radius:6px; font-size:13px; font-weight:500; cursor:pointer; border:none; font-family:'DM Sans',sans-serif; transition:opacity 0.15s, background 0.15s; }
+    .input-field { width:100%; padding:8px 12px; border-radius:6px; border:1px solid #1e1e6a; background:#0d0f2e; color:#cbd5e1; font-size:13px; font-family:'DM Sans',sans-serif; outline:none; }
+    .input-field::placeholder { color:#4a4a9a; }
+    .input-field:focus { border-color:#ffd700; box-shadow:0 0 0 2px rgba(255,215,0,0.15); }
+  </style>
+  
+</head>
+<body>
+  <div id="nav-mount"></div>
+
+  <div class="page-wrap">
+    <div class="page-header">
+      <h1 class="page-title">Components</h1>
+      <p class="page-sub">Patterns · State </p>
+    </div>
+
+    <p class="section-label" style="margin-bottom:16px;">Buttons</p>
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:24px;display:flex;flex-wrap:wrap;gap:10px;margin-bottom:32px;">
+      <button class="btn" style="background:#2f2fe4;color:white;">Primary</button>
+      <button class="btn" style="background:#162e93;color:white;">Secondary</button>
+      <button class="btn" style="background:#ffd700;color:#080616;">Accent</button>
+      <button class="btn" style="background:transparent;color:#cbd5e1;border:1px solid #1e1e6a;">Ghost</button>
+      <button class="btn" style="background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid #ef4444;">Destructive</button>
+      <button class="btn" style="background:#222270;color:#4a4a9a;cursor:not-allowed;opacity:0.4;" disabled>Disabled</button>
+    </div>
+
+    <p class="section-label" style="margin-bottom:16px;">Badges</p>
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:24px;display:flex;flex-wrap:wrap;gap:8px;margin-bottom:32px;">
+      <span style="padding:4px 12px;border-radius:20px;background:#2f2fe4;color:white;font-size:12px;font-weight:500;">Primary</span>
+      <span style="padding:4px 12px;border-radius:20px;background:rgba(16,185,129,0.12);color:#10b981;font-size:12px;font-weight:500;border:1px solid rgba(16,185,129,0.3);">Success</span>
+      <span style="padding:4px 12px;border-radius:20px;background:rgba(239,68,68,0.12);color:#ef4444;font-size:12px;font-weight:500;border:1px solid rgba(239,68,68,0.3);">Error</span>
+      <span style="padding:4px 12px;border-radius:20px;background:rgba(234,88,12,0.12);color:#ea580c;font-size:12px;font-weight:500;border:1px solid rgba(234,88,12,0.3);">Warning</span>
+      <span style="padding:4px 12px;border-radius:20px;background:rgba(255,153,0,0.12);color:#ff9900;font-size:12px;font-weight:500;border:1px solid rgba(255,153,0,0.3);">AWS</span>
+      <span style="padding:4px 12px;border-radius:20px;background:rgba(0,120,212,0.12);color:#0078d4;font-size:12px;font-weight:500;border:1px solid rgba(0,120,212,0.3);">Azure</span>
+      <span style="padding:4px 12px;border-radius:20px;background:rgba(234,67,53,0.12);color:#ea4335;font-size:12px;font-weight:500;border:1px solid rgba(234,67,53,0.3);">GCP</span>
+    </div>
+
+    <p class="section-label" style="margin-bottom:16px;">Cards</p>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:32px;">
+      
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:20px;position:relative;overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#2f2fe4,#162e93);"></div>
+        <p style="font-family:'DM Mono',monospace;font-size:9px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;">Total Spend</p>
+        <p style="font-size:32px;font-weight:600;font-family:'DM Mono',monospace;letter-spacing:-0.02em;color:var(--text);margin-bottom:10px;font-variant-numeric:tabular-nums;">$48,291</p>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div style="width:6px;height:6px;border-radius:50%;background:#10b981;"></div>
+          <p style="font-size:12px;color:#10b981;font-weight:500;">+12.4% vs last month</p>
+        </div>
+      </div>
+
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:20px;">
+        <p style="font-family:'DM Mono',monospace;font-size:9px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;">Savings Identified</p>
+        <p style="font-size:32px;font-weight:600;font-family:'DM Mono',monospace;letter-spacing:-0.02em;color:#ffd700;margin-bottom:10px;font-variant-numeric:tabular-nums;">$6,140</p>
+        <p style="font-size:12px;color:var(--text-muted);">Across 3 recommendations</p>
+      </div>
+
+      <div style="background:var(--bg-card);border:1px solid rgba(234,88,12,0.3);border-radius:10px;padding:20px;">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;">
+          <div style="width:6px;height:6px;border-radius:50%;background:#ea580c;box-shadow:0 0 0 4px rgba(234,88,12,0.15);"></div>
+          <p style="font-family:'DM Mono',monospace;font-size:9px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:#ea580c;">Anomaly Detected</p>
+        </div>
+        <p style="font-size:13px;color:var(--text);margin-bottom:8px;">Spend spiked 340% in <code style="font-family:'DM Mono',monospace;font-size:11px;background:var(--bg-mid);padding:2px 6px;border-radius:4px;border:1px solid var(--border);">us-east-1</code></p>
+        <p style="font-size:12px;color:var(--text-muted);">2 hours ago</p>
+      </div>
+    </div>
+
+    <p class="section-label" style="margin-bottom:16px;">Form Elements</p>
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:24px;display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <label style="font-family:'DM Mono',monospace;font-size:9px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);">Text input</label>
+        <input type="text" placeholder="e.g. i-0a1b2c3d…" class="input-field" />
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <label style="font-family:'DM Mono',monospace;font-size:9px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);">Select</label>
+        <div style="position:relative;">
+          <select class="input-field" style="appearance:none;padding-right:36px;cursor:pointer;">
+            <option style="background:#0d0f2e;">All regions</option>
+            <option style="background:#0d0f2e;">us-east-1</option>
+            <option style="background:#0d0f2e;">eu-west-1</option>
+          </select>
+          <div style="pointer-events:none;position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--text-muted);">
+            <i data-lucide="chevron-down" style="width:14px;height:14px;"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="navBar.js"></script>
+
+  <script>
+    renderingNavBar('Components');
+    lucide.createIcons();
+  </script>
+  
+</body>
+</html>

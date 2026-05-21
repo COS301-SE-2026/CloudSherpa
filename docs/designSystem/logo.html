@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Logo & Story · CloudSherpa Design System</title>
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="mobileFriendly.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body>
+  <div id="nav-mount"></div>
+
+  <div class="page-wrap">
+    <div class="page-header">
+      <h1 class="page-title">Logo & Story</h1>
+      <p class="page-sub">Brand mark · Origination · Usage</p>
+    </div>
+
+    <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:24px;">
+      <div style="width:100%;max-width:400px;height:auto;margin-bottom:32px;">
+        <img src="CloudSherpaLogo.png" alt="CloudSherpa Logo" style="width:100%;height:auto;object-fit:contain;" onerror="this.parentElement.innerHTML='<div style=&quot;width:100%;max-width:400px;height:auto;display:flex;align-items:center;justify-content:center;background:rgba(47,47,228,0.1);border-radius:50%;&quot;><span style=&quot;font-size:88px;font-weight:600;color:#2f2fe4;font-family:\'DM Mono\',monospace;&quot;>CS</span></div>'" />
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:24px;">
+      <div class="card-header">
+        <span class="card-label">#Brand Story — why CloudSherpa?</span>
+      </div>
+      <p style="margin-bottom:20px;">A <strong>Sherpa</strong> is a trusted, expert guide who walks alongside you through dangerous and unfamiliar terrain — making sure you reach the summit safely. That's exactly what this platform was built to be: not a tool that hands you a spreadsheet, but a trusted partner that walks alongside you through the complexity of cloud spending.</p>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div style="display:flex;gap:12px;align-items:flex-start;padding:14px;background:rgba(13,15,46,0.5);border:1px solid var(--border-subtle);border-radius:8px;">
+          <div style="width:8px;height:8px;border-radius:50%;background:var(--blue);margin-top:5px;flex-shrink:0;"></div>
+          <div>
+            <p style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;">Soft Geometry for Psychological Safety</p>
+            <p style="font-size:12px;color:var(--text-muted);line-height:1.6;">Rounded vertices, bar charts, and soft cloud silhouette avoid harsh edges — aligning with calm communication and preventing bill shock.</p>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:12px;align-items:flex-start;padding:14px;background:rgba(13,15,46,0.5);border:1px solid var(--border-subtle);border-radius:8px;">
+          <div style="width:8px;height:8px;border-radius:50%;background:var(--gold);margin-top:5px;flex-shrink:0;"></div>
+          <div>
+            <p style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;">Minimalist Integration</p>
+            <p style="font-size:12px;color:var(--text-muted);line-height:1.6;">The cloud flows directly into overlapping area charts — symbolizing that deep analytics are inseparable from the cloud journey.</p>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:12px;align-items:flex-start;padding:14px;background:rgba(13,15,46,0.5);border:1px solid var(--border-subtle);border-radius:8px;">
+          <div style="width:8px;height:8px;border-radius:50%;background:rgba(47,47,228,0.6);margin-top:5px;flex-shrink:0;"></div>
+          <div>
+            <p style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;">Transparency as a Metric</p>
+            <p style="font-size:12px;color:var(--text-muted);line-height:1.6;">Semi-transparent overlays represent clear visibility into hidden costs and AI-driven forecasting.</p>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:12px;align-items:flex-start;padding:14px;background:rgba(13,15,46,0.5);border:1px solid var(--border-subtle);border-radius:8px;">
+          <div style="width:8px;height:8px;border-radius:50%;background:var(--navy);margin-top:5px;flex-shrink:0;"></div>
+          <div>
+            <p style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;">The Path to Optimization</p>
+            <p style="font-size:12px;color:var(--text-muted);line-height:1.6;">The final area chart is the smallest, depicting continuous AI-driven reduction of cloud footprint.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="border:1px solid var(--border-subtle);border-radius:10px;padding:16px 24px;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;">
+      <span class="pill pill-blue">safety</span>
+      <span class="pill pill-gold">transparency</span>
+      <span class="pill pill-green">reliability</span>
+      <span class="pill pill-blue">trust</span>
+    </div>
+  </div>
+
+  <script src="navBar.js"></script>
+  <script>renderingNavBar('Logo');</script>
+  
+</body>
+</html>

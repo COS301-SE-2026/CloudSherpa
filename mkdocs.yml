@@ -1,0 +1,74 @@
+site_name: CloudSherpa Docs
+site_description: Developer documentation for the CloudSherpa monorepo
+repo_name: CloudSherpa
+docs_dir: docs
+site_dir: site
+
+theme:
+  name: material
+  logo: assets/team-photos/TeamLogo.png
+  palette:
+    - scheme: slate
+      primary: blue
+      accent: green
+
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+
+nav:
+  - Home: index.md
+
+  - Developer Guides:
+      - Cheat Sheet: dev/CheatSheet.md
+      - Monorepo Madness: dev/MonorepoMadness.md
+      - Development Scripts: scripts/README.md
+
+  - Services:
+      - Data Flow: services/data-flow.md
+      - Service: services/service.md
+      - Dashboard: services/dashboard.md
+      - Ingestion: services/ingestion.md
+      - Intelligence: services/README.md
+
+  - Persistence:
+      - Schema Reference: persistence/schemas.md
+      - SherpaDB Overview: persistence/sherpadb.md
+
+  - Software Design: design/design.md
+  # - API Documentation:
+  #     - Placeholder: api/api-placeholder.md
+  
+  # - Doxygen:
+  #     - Placeholder: doxygen/doxygen-placeholder.md
+
+extra_css:
+  - stylesheets/extra.css
+
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+  - tables
+  - fenced_code
+  - codehilite
+  - pymdownx.superfences
+  - pymdownx.details
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+
+plugins:
+  - search
+  - glightbox:
+      touchNavigation: true
+      loop: false
+      effect: zoom
+      width: 100%
+      height: auto
+      zoomable: true
+      draggable: true
