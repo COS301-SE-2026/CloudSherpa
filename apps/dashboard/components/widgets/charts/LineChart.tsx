@@ -3,9 +3,9 @@
 import { echarts } from "@/lib/charts/echarts";
 import { useMetricStore } from "@/stores/metric-store";
 import { useWindowStore } from "@/stores/window-store";
-import { Metric, MetricType } from "@/types/metric";
+import { metricSeriesToArray, MetricType } from "@/types/metric";
 import type { EChartsOption } from "echarts";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type LineChartWidgetProps = {
     title: string,
@@ -13,7 +13,6 @@ type LineChartWidgetProps = {
     metricType?: MetricType,
 }
 
-const EMPTY_METRICS: Metric[] = [];
 // This will be replaced by zustand store for dashboard window
 
 // The tick should sync with the ingestion intervals, still need to do system-wide
@@ -26,7 +25,8 @@ export function LineChartWidget({
     metricType,
 }: Readonly<LineChartWidgetProps>) {
     const chartRef = useRef<HTMLDivElement>(null);
-    const data = useMetricStore((state) => (state.seriesByKey[`${resourceId}:${metricType}`] ?? EMPTY_METRICS));
+    const series = useMetricStore((state) => state.seriesByKey[`${resourceId}:${metricType}`]);
+    const data = useMemo(() => metricSeriesToArray(series), [series]);
     const fromMs = useWindowStore((state) => state.fromMs);
     const toMs = useWindowStore((state) => state.toMs);
     const visibleWindowMs = toMs - fromMs;

@@ -1,17 +1,15 @@
 "use client"
 import { echarts } from "@/lib/charts/echarts";
 import { useMetricStore } from "@/stores/metric-store";
-import { Metric, MetricType } from "@/types/metric";
+import { metricSeriesToArray, MetricType } from "@/types/metric";
 import type { EChartsOption } from "echarts";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type GaugeWidgetProps = {
     title: string,
     resourceId?: string,
     metricType?: MetricType,
 }
-
-const EMPTY_METRICS: Metric[] = [];
 
 export function GaugeWidget({
     title,
@@ -20,7 +18,8 @@ export function GaugeWidget({
 
 }: Readonly<GaugeWidgetProps>){
     const chartRef = useRef<HTMLDivElement>(null);
-    const data = useMetricStore((state) => (state.seriesByKey[`${resourceId}:${metricType}`] ?? EMPTY_METRICS));
+    const series = useMetricStore((state) => state.seriesByKey[`${resourceId}:${metricType}`]);
+    const data = useMemo(() => metricSeriesToArray(series), [series]);
     const chartInstance = useRef<echarts.ECharts | null>(null);
 
     const latestValue = data.length > 0 ? Math.round(data[data.length - 1].value) : 0;
