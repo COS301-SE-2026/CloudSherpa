@@ -89,7 +89,7 @@ export function useMetricStream() {
                 hasSeededMockMetrics = true;
             }
 
-            const eventSource = new EventSource(sseUrl);
+            const eventSource = new EventSource(sseUrl, { withCredentials: true });
     
             eventSource.onopen = () => {
                 console.log("SSE connected");
