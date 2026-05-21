@@ -36,8 +36,8 @@ function DashboardContent() {
   const layoutsMap = useDashboardStore((state: DashboardStore) => state.layouts);
   const widgetsMap = useDashboardStore((state: DashboardStore) => state.widgets);
 
-  const { fetchMetrics } = useFetchMetrics();
-
+  // Metrics and resource name stores
+  const { metricFetchError, metricFetchLoad } = useFetchMetrics();
   const fetchResourceNames = useResourceNameStore((state) => state.fetchResources);
 
   const { 
@@ -55,14 +55,14 @@ function DashboardContent() {
       setIsLoading(true);
 
       // Leverage fact that dashboards need to be loaded into mem to trigger initial metric fetch
-      // ? Is this robust?
-      await fetchMetrics();
       await fetchResourceNames();
       if (Object.keys(dashboards).length === 0) {
-        // simulate API Fetch: const response = await fetch('/api/dashboards');
+
+        // Some info that helped me whilst debugging, this is so that there are mock widgets
+        // once the dashboard loads
         const initialConfigs: WidgetConfigData[] = [
-          { id: "w-1", forTitle: "Live CPU Usage (Mock)", resourceId: "74266597-141c-3ecc-8f68-8667ff7163a7", metricType: "cpu", forWidgetType: "line" },
-          { id: "w-2", forTitle: "Live Memory (Mock)", resourceId: "74266597-141c-3ecc-8f68-8667ff7163a7", metricType: "cpu", forWidgetType: "gauge" },
+          { id: "w-1", title: "Live CPU Usage (Mock)", widgetType: "line"},
+          { id: "w-2", title: "Live Memory (Mock)", widgetType: "gauge" },
         ];
         const initialLayouts: LayoutItem[] = [
           { id: "l-1", widgetId: "w-1", x: 0, y: 0, w: 6, h: 4 },
@@ -76,10 +76,8 @@ function DashboardContent() {
         setInitialState(initialDashboards, initialLayouts, initialConfigs);
 
         const dashboardIds = Object.keys(initialDashboards);
-        const currentUrlId = searchParams.get("id");
-
-        if (currentUrlId && initialDashboards[currentUrlId]) {
-          setActiveDashboard(currentUrlId);
+        if (urlId && initialDashboards[urlId]) {
+          setActiveDashboard(urlId);
         } else if (dashboardIds.length > 0) {
           const defaultId = dashboardIds[0];
           setActiveDashboard(defaultId);
@@ -95,7 +93,7 @@ function DashboardContent() {
     //note: reactMemo is an option for components that re-render a lot (apparently)
 
     loadDashboardData();
-  }, [setInitialState, setActiveDashboard, router, dashboards]);
+  }, [setInitialState, setActiveDashboard, router, dashboards, fetchResourceNames, urlId]);
 
   // sync Zustand store when the URL changes (i.e browser back/forward buttons)
   useEffect(() => {
@@ -154,10 +152,8 @@ function DashboardContent() {
     const layoutId = crypto.randomUUID();
     const newConfig: WidgetConfigData = {
       id: widgetId,
-      forWidgetType: "line", 
-      forTitle: "New Widget (Click to Customize)", 
-      resourceId: "mock-ec2-1",
-      metricType: "anon", 
+      widgetType: "line",
+      title: "New Widget (Click to Customize)"
     };
     const newLayout: LayoutItem = { id: layoutId, widgetId, x: 0, y: 0, w: 6, h: 4, autoPosition: true };
 
@@ -203,10 +199,21 @@ function DashboardContent() {
         </div>
       )}
 
+      {metricFetchError && (
+        <div className="mx-6 mt-4 p-3 bg-destructive/10 border border-destructive/80 rounded-md text-destructive text-xs">
+          Metric Error: {metricFetchError.message}. Widgets will render once historical metrics are available.
+        </div>
+      )}
+
       <main className="flex-1 overflow-y-auto overflow-x-hidden m-3 flex flex-col">
-        {isLoading ? (
+        {isLoading || metricFetchLoad ? (
           <div className="flex-1 flex items-center justify-center text-muted-foreground animate-pulse">
-            Loading dashboards...
+            {metricFetchLoad ? "Loading metrics..." : "Loading dashboards..."}
+          </div>
+        ) : metricFetchError ? (
+          <div className="flex-1 flex flex-col items-center justify-center text-center p-10">
+            <h2 className="text-xl font-semibold mb-2">Unable to Load Metrics</h2>
+            <p className="text-muted-foreground mb-6">Widgets are paused until historical metrics are available.</p>
           </div>
         ) : activeDashboard ? (
           <Grid

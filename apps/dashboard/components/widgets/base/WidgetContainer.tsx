@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 
 interface WidgetContainerProps{
     children: ReactNode;
-    forTitle?: string;
+    title?: string;
     className?: string;
 
     defaultWidth?: number;
@@ -19,9 +19,9 @@ interface WidgetContainerProps{
     showConfig?: boolean;
 }
 
-export function WidgetContainer({ 
-    children, 
-    forTitle, 
+export function WidgetContainer({
+    children,
+    title,
     className = '',
 
     defaultWidth = 800,
@@ -158,16 +158,16 @@ export function WidgetContainer({
     };
 
     return(
-        <div 
+        <div
             className={cn(
                 "relative rounded-xl border border-border bg-card transition-shadow duration-200 hover:shadow-lg hover:shadow-primary/5",
                 className
             )}
             style={isResizable ? { width: `${width}px`, height: `${height}px` } : undefined}
         >
-            {forTitle && (
+            {title && (
                 <div className="flex items-center justify-between border-b border-border px-4 py-3">
-                    <h3 className="text-sm font-medium text-foreground">{forTitle}</h3>
+                    <h3 className="text-sm font-medium text-foreground">{title}</h3>
 
                 <div className="flex items-center gap-2">
                         {showConfig && onSettingsClick && (
@@ -200,7 +200,7 @@ export function WidgetContainer({
             )}
 
             {/*this is for the widget content*/}
-            <div className="p-4" style={{ height: forTitle ? 'calc(100% - 52px)' : 'calc(100% - 32px)' }}>
+            <div className="p-4" style={{ height: title ? 'calc(100% - 52px)' : 'calc(100% - 32px)' }}>
                 {children}
             </div>
 

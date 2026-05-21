@@ -7,8 +7,8 @@ import { useEffect, useRef } from "react";
 
 type GaugeWidgetProps = {
     title: string,
-    resourceId: string,
-    metricType: MetricType,
+    resourceId?: string,
+    metricType?: MetricType,
 }
 
 const EMPTY_METRICS: Metric[] = [];
@@ -19,45 +19,45 @@ export function GaugeWidget({
     metricType,
 
 }: Readonly<GaugeWidgetProps>){
-    const forChartReference = useRef<HTMLDivElement>(null);
-    const forData = useMetricStore((state) => (state.seriesByKey[`${resourceId}:${metricType}`] ?? EMPTY_METRICS));
-    const forChartInstance = useRef<echarts.ECharts | null>(null);
+    const chartRef = useRef<HTMLDivElement>(null);
+    const data = useMetricStore((state) => (state.seriesByKey[`${resourceId}:${metricType}`] ?? EMPTY_METRICS));
+    const chartInstance = useRef<echarts.ECharts | null>(null);
 
-    const latestValue = forData.length > 0 ? forData[forData.length - 1].value : 0;
+    const latestValue = data.length > 0 ? data[data.length - 1].value : 0;
 
     useEffect(() => {
-        if (!forChartReference.current) return;
-        forChartInstance.current = echarts.init(forChartReference.current);
-        
+        if (!chartRef.current) return;
+        chartInstance.current = echarts.init(chartRef.current);
+
         const handleResize = () => {
-            forChartInstance.current?.resize();
+            chartInstance.current?.resize();
         };
 
         const handleWidgetResize = () => {
             setTimeout(() => {
-                forChartInstance.current?.resize();
+                chartInstance.current?.resize();
             }, 10);
         };
 
         window.addEventListener('resize', handleResize);
         window.addEventListener('widget-resize', handleWidgetResize);
-        
+
         const resizeObserver = new ResizeObserver(() => {
-            forChartInstance.current?.resize();
+            chartInstance.current?.resize();
         });
 
-        resizeObserver.observe(forChartReference.current);
+        resizeObserver.observe(chartRef.current);
 
         return () => {
             window.removeEventListener('resize', handleResize);
             window.removeEventListener('widget-resize', handleWidgetResize);
             resizeObserver.disconnect();
-            forChartInstance.current?.dispose();
+            chartInstance.current?.dispose();
         };
     }, []);
 
     useEffect(() => {
-        if(!forChartInstance.current){
+        if(!chartInstance.current){
             return;
         }
 
@@ -156,33 +156,33 @@ export function GaugeWidget({
             ]
         };
 
-        forChartInstance.current.setOption(option);
+        chartInstance.current.setOption(option);
     }, [title, latestValue]);
 
     useEffect(() => {
-        if(!forChartInstance.current){
+        if(!chartInstance.current){
             return;
         }
 
         const handleResize = () => {
-            forChartInstance.current?.resize();
+            chartInstance.current?.resize();
         };
 
         const handleWidgetResize = () => {
             setTimeout(() => {
-                forChartInstance.current?.resize();
+                chartInstance.current?.resize();
             }, 10);
         };
 
         window.addEventListener('resize', handleResize);
         window.addEventListener('widget-resize', handleWidgetResize);
-        
+
         const resizeObserver = new ResizeObserver(() => {
-            forChartInstance.current?.resize();
+            chartInstance.current?.resize();
         });
 
-        if(forChartReference.current){
-            resizeObserver.observe(forChartReference.current);
+        if(chartRef.current){
+            resizeObserver.observe(chartRef.current);
         }
 
         return () => {
@@ -193,6 +193,6 @@ export function GaugeWidget({
     }, []);
 
     return(
-        <div ref={forChartReference} className="h-full w-full" />
+        <div ref={chartRef} className="h-full w-full" />
     );
 }

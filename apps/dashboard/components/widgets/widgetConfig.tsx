@@ -1,6 +1,7 @@
 'use client';
 
 import { useDashboardStore } from '@/stores/dashboard-store';
+import { useMetricStore } from '@/stores/metric-store';
 import { useResourceNameStore } from '@/stores/resource-store';
 import { MetricType } from '@/types/metric';
 import { useState, useEffect, useRef } from 'react';
@@ -11,21 +12,18 @@ interface WidgetConfigProps{
     onClose: () => void;
     onSave: (config: WidgetConfigData) => void;
 
-    forExistingConfig: WidgetConfigData;
-
-    forAvailableResources: string[];
-    forAvailableMetricTypes: Record<string, MetricType[]>;
+    existingConfig: WidgetConfigData;
 }
 
 // This is shared (used for dashboard store), perhaps we can move it to types
 // Also need to confirm that interface is more appropriate than type
 export interface WidgetConfigData{
     id: string;
-    forTitle: string;
-    resourceId: string;
+    title: string;
+    resourceId?: string;
 
-    metricType: MetricType;
-    forWidgetType: 'line' | 'gauge';
+    metricType?: MetricType;
+    widgetType: 'line' | 'gauge';
 }
 
 export function WidgetConfig({ 
@@ -34,39 +32,56 @@ export function WidgetConfig({
     onClose, 
     onSave, 
 
-    forExistingConfig,
-    forAvailableResources,
-    forAvailableMetricTypes
+    existingConfig,
 
 }: WidgetConfigProps){
-    const [forConfiguration, setConfig] = useState<WidgetConfigData>(forExistingConfig);
+    const [configuration, setConfiguration] = useState<WidgetConfigData>(existingConfig);
     const registerWidgetConfigUpdate = useDashboardStore((state) => state.actions.updateWidgetConfig);
     const resourceNamesById = useResourceNameStore((state) => state.resourcesById);
+    const allAvailableMetrics = useMetricStore((state) => state.getMetricList);
+    
+    if (!configuration.resourceId) {
+        setConfiguration((prevConfiguration) => {
 
-    const forFirstRender = useRef(true);
+            const defaultResource = Object.keys(resourceNamesById)[0];
+            const defaultMetric = allAvailableMetrics()[defaultResource][0];
+
+            return {
+            ...prevConfiguration,
+            resourceId: defaultResource,
+            metricType: defaultMetric
+            };
+        }
+    )
+    }
+
+    const availableMetrics = configuration.resourceId ? allAvailableMetrics()[configuration.resourceId] ?? []: [];
+
+    const availableResources = Object.keys(resourceNamesById);
+
+    const isFirstRender = useRef(true);
+
+
     useEffect(() => {
-        if(!forFirstRender.current){
-            setConfig(forExistingConfig);
+        if(!isFirstRender.current){
+            setConfiguration(existingConfig);
         }
 
-        forFirstRender.current = false;
-    }, [forExistingConfig]);
+        isFirstRender.current = false;
+    }, [existingConfig]);
 
     const handleSave = () => {
-        onSave(forConfiguration);
+        onSave(configuration);
         onClose();
     };
 
-    if(!isOpen){
-        return null;
+    function setConfigAndRegisterUpdate(newConfig: WidgetConfigData) {
+        setConfiguration(newConfig);
+        registerWidgetConfigUpdate(newConfig);
     }
 
-    const metricTypesForSelectedResource = forAvailableMetricTypes[forConfiguration.resourceId] ?? [];
-
-    // Registers config update with dashboard store
-    function setConfigAndRegisterUpdate(newConfig: WidgetConfigData) {
-        setConfig(newConfig);
-        registerWidgetConfigUpdate(newConfig);
+    if(!isOpen){
+        return null;
     }
 
     return (
@@ -90,8 +105,8 @@ export function WidgetConfig({
 
                         <input
                             type="text"
-                            value={forConfiguration.forTitle}
-                            onChange={(e) => setConfigAndRegisterUpdate({ ...forConfiguration, forTitle: e.target.value })}
+                            value={configuration.title}
+                            onChange={(e) => setConfigAndRegisterUpdate({ ...configuration, title: e.target.value })}
                             className="w-full bg-background border border-border rounded-lg px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                             placeholder="Enter widget title"
                         />
@@ -104,17 +119,17 @@ export function WidgetConfig({
                         </label>
 
                         <select
-                            value={forConfiguration.resourceId}
+                            value={configuration.resourceId}
                             onChange={(e) => {
                                     const resourceId = e.target.value;
-                                    const metricType = forAvailableMetricTypes[resourceId]?.[0] ?? "";
+                                    const metricType = availableMetrics[0] ?? "anon";
 
-                                    setConfigAndRegisterUpdate({ ...forConfiguration, resourceId: resourceId, metricType: metricType })
+                                    setConfigAndRegisterUpdate({ ...configuration, resourceId, metricType })
                                 }
                             }
                             className="w-full bg-background border border-border rounded-lg px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                         >
-                            {forAvailableResources.map((resource) => (
+                            {availableResources.map((resource) => (
                                 <option key={resource} value={resource}>
                                     {resourceNamesById[resource] ?? "Unknown Resource"}
                                 </option>
@@ -124,18 +139,18 @@ export function WidgetConfig({
 
                     {/*this is for the metric type*/}
                     <div>
-                        {forConfiguration.resourceId ? (
+                        {configuration.resourceId ? (
                             <>
                                 <label className="block text-sm font-medium text-foreground mb-2">
                                     Metric Type
                                 </label>
 
                                 <select
-                                    value={forConfiguration.metricType}
-                                    onChange={(e) => setConfigAndRegisterUpdate({ ...forConfiguration, metricType: e.target.value as MetricType })}
+                                    value={configuration.metricType}
+                                    onChange={(e) => setConfigAndRegisterUpdate({ ...configuration, metricType: e.target.value as MetricType })}
                                     className="w-full bg-background border border-border rounded-lg px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                                 >
-                                    {metricTypesForSelectedResource.map((type) => (
+                                    {availableMetrics.map((type) => (
                                         <option key={type} value={type}>
                                             {type.toUpperCase()}
                                         </option>
@@ -160,8 +175,8 @@ export function WidgetConfig({
                                 <input
                                     type="radio"
                                     value="line"
-                                    checked={forConfiguration.forWidgetType === 'line'}
-                                    onChange={(e) => setConfig({ ...forConfiguration, forWidgetType: e.target.value as 'line' | 'gauge' })}
+                                    checked={configuration.widgetType === 'line'}
+                                    onChange={(e) => setConfiguration({ ...configuration, widgetType: e.target.value as 'line' | 'gauge' })}
                                     className="w-4 h-4 text-primary focus:ring-ring"
                                 />
                                 <span className="text-foreground">Line Chart</span>
@@ -171,8 +186,8 @@ export function WidgetConfig({
                                 <input
                                     type="radio"
                                     value="gauge"
-                                    checked={forConfiguration.forWidgetType === 'gauge'}
-                                    onChange={(e) => setConfig({ ...forConfiguration, forWidgetType: e.target.value as 'line' | 'gauge' })}
+                                    checked={configuration.widgetType === 'gauge'}
+                                    onChange={(e) => setConfiguration({ ...configuration, widgetType: e.target.value as 'line' | 'gauge' })}
                                     className="w-4 h-4 text-primary focus:ring-ring"
                                 />
                                 <span className="text-foreground">Gauge Chart</span>

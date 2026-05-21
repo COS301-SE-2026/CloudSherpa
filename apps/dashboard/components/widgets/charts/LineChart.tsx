@@ -9,8 +9,8 @@ import { useEffect, useRef } from "react";
 
 type LineChartWidgetProps = {
     title: string,
-    resourceId: string,
-    metricType: MetricType,
+    resourceId?: string,
+    metricType?: MetricType,
 }
 
 const EMPTY_METRICS: Metric[] = [];

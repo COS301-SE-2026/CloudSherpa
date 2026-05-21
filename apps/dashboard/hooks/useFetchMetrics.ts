@@ -2,22 +2,21 @@ import apiClient from "@/lib/fetch/api-client";
 import { useMetricStore } from "@/stores/metric-store";
 import { useWindowStore } from "@/stores/window-store";
 import { MetricDTO } from "@/types/dtos/metrics/MetricDto";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export function useFetchMetrics() {
+
+    const [metricFetchError, setMetricFetchError] = useState<Error | null>(null);
+    const [metricFetchLoad, setMetricFetchLoad] = useState(true);
 
     const addMetricFromDto = useMetricStore((state) => state.addMetricFromDto);
     const clearMetricStore = useMetricStore((state) => state.clearStore);
     const fromMs = useWindowStore((state) => state.fromMs);
     const toMs = useWindowStore((state) => state.toMs);
 
-    const ignore = useRef(false);
-
-    async function fetchMetrics() {
-            if (ignore.current) {
-                return;
-            }
-
+    const fetchMetrics = useCallback(async () => {
+            setMetricFetchLoad(true);
+            setMetricFetchError(null);
             clearMetricStore();
 
             const from = new Date(fromMs);
@@ -32,16 +31,17 @@ export function useFetchMetrics() {
                 }
             } catch (error) {
                 console.warn(`Failed to fetch metrics: ${error}`);
+                setMetricFetchError(error instanceof Error ? error : new Error(String(error)));
+            } finally {
+                setMetricFetchLoad(false);
             }
-        }
+        }, [addMetricFromDto, clearMetricStore, fromMs, toMs]);
 
     useEffect(() => {
-        fetchMetrics();
+        queueMicrotask(() => {
+            void fetchMetrics();
+        });
+    }, [fetchMetrics]);
 
-        return () => {
-            ignore.current = true;
-        };
-    }, [addMetricFromDto, clearMetricStore, fromMs, toMs]);
-
-    return { fetchMetrics };
+    return { fetchMetrics, metricFetchError, metricFetchLoad };
 }

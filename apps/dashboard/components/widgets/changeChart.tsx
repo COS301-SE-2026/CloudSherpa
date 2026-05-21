@@ -5,37 +5,29 @@ import { WidgetContainer } from './base/WidgetContainer';
 import { LineChartWidget } from './charts/LineChart';
 import { GaugeWidget } from './charts/GaugeChart';
 import { WidgetConfig, WidgetConfigData } from './widgetConfig';
-import { MetricType } from '@/types/metric';
 
 interface ConfigurableWidgetProps{
-    forInitialConfiguration: WidgetConfigData;
-
-    availableResources: string[];
-    availableMetricTypes: Record<string, MetricType[]>;
+    readonly initialConfig: WidgetConfigData;
 }
 
-export function ConfigurableWidget({ 
-    forInitialConfiguration, 
-
-    availableResources, 
-    availableMetricTypes 
-
+export function ConfigurableWidget({
+    initialConfig,
 }: ConfigurableWidgetProps){
     const [isConfigOpen, setIsConfigOpen] = useState(false);
-    const [config, setConfig] = useState<WidgetConfigData>(forInitialConfiguration);
+    const [config, setConfig] = useState<WidgetConfigData>(initialConfig);
 
     const handleSave = (newConfig: WidgetConfigData) => {
         setConfig(newConfig);
     };
 
-    const forRenderingChart = () => {
+    const renderChart = () => {
         const commonPropsForCharts = {
             resourceId: config.resourceId,
-            title: config.forTitle,
-            metricType: config.metricType as MetricType,
+            title: config.title,
+            metricType: config.metricType,
         };
 
-        if(config.forWidgetType === 'gauge'){
+        if(config.widgetType === 'gauge'){
             return <GaugeWidget {...commonPropsForCharts} />;
         }
         
@@ -44,23 +36,21 @@ export function ConfigurableWidget({
 
     return(
         <>
-            <WidgetContainer 
-                forTitle={config.forTitle}
+            <WidgetContainer
+                title={config.title}
                 className="h-full w-full"
                 isResizable={false}
                 onSettingsClick={() => setIsConfigOpen(true)}
                 showConfig={true}
             >
-                {forRenderingChart()}
+                {renderChart()}
             </WidgetContainer>
 
             <WidgetConfig
                 isOpen={isConfigOpen}
                 onClose={() => setIsConfigOpen(false)}
                 onSave={handleSave}
-                forExistingConfig={config}
-                forAvailableResources={availableResources}
-                forAvailableMetricTypes={availableMetricTypes}
+                existingConfig={config}
             />
         </>
     );
