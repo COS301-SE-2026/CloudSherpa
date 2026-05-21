@@ -29,7 +29,7 @@ export default async function apiClient<T>(path: string, options?: RequestInit):
     };
     const response = await fetch(`${API_BASE}${normalizedPath}`, options);
 
-    if (response.status === 400 || response.status === 204) {
+    if (response.status === 204) {
         return [] as T;
     }
 
