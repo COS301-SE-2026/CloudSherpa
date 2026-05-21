@@ -25,6 +25,7 @@ export function useFetchMetrics() {
         const to = new Date(toMs);
 
         try {
+            console.log("Attempting fetch");
             const metrics: MetricDTO[] = await apiClient(
                 `/analytics/historical?from=${from.toISOString()}&to=${to.toISOString()}`
             );

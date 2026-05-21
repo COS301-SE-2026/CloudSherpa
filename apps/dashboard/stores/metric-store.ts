@@ -5,7 +5,7 @@ import { MetricStore, MetricType, Metric } from '@/types/metric'
     ====EXAMPLE USAGE====
     const cpuMetrics = useMetricStore(
         (state) => {
-            state.seriesByKey[`${resourceId}:cpu`] ?? []
+            metricSeriesToArray(state.seriesByKey[`${resourceId}:cpu`])
         }
     );
 */
@@ -61,22 +61,32 @@ function toMetricType(metricName: string): MetricType {
     return AWS_METRIC_TYPE_BY_NAME[metricName as AwsMetricName] ?? "anon";
 }
 
+function metricSeriesKey(metric: Metric): string {
+    return `${metric.resource_id}:${metric.metricType}`;
+}
+
+function upsertMetric(
+    seriesByKey: MetricStore["seriesByKey"],
+    metric: Metric
+): MetricStore["seriesByKey"] {
+    const key = metricSeriesKey(metric);
+
+    return {
+        ...seriesByKey,
+        [key]: {
+            ...(seriesByKey[key] ?? {}),
+            [metric.timestamp]: metric,
+        },
+    };
+}
+
 export const useMetricStore = create<MetricStore>(
     (set, get) => ({
         seriesByKey: {},
 
         addMetric: (metric) => {
-            const key = `${metric.resource_id}:${metric.metricType}`;
-
             set((state) => ({
-                seriesByKey: {
-                    ...state.seriesByKey,
-
-                    [key]: [
-                        ...(state.seriesByKey[key] ?? []),
-                        metric,
-                    ]
-                },
+                seriesByKey: upsertMetric(state.seriesByKey, metric),
             }));
         },
 
@@ -90,17 +100,8 @@ export const useMetricStore = create<MetricStore>(
                 value: metricDto.metricValue
             }
 
-            const key = `${metric.resource_id}:${metric.metricType}`;
-
             set((state) => ({
-                seriesByKey: {
-                    ...state.seriesByKey,
-
-                    [key]: [
-                        ...(state.seriesByKey[key] ?? []),
-                        metric,
-                    ]
-                },
+                seriesByKey: upsertMetric(state.seriesByKey, metric),
             }));
         },
 
