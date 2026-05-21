@@ -29,6 +29,7 @@ public class ApiSecurity {
       throws Exception {
     if (mode.equals("dev")) {
       return http.cors(cors -> cors.configurationSource(corsConfigurationSource))
+          .securityMatcher("/**")
           .csrf(csrf -> csrf.disable())
           .sessionManagement(
               session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

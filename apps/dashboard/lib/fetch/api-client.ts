@@ -29,10 +29,19 @@ export default async function apiClient<T>(path: string, options?: RequestInit):
     };
     const response = await fetch(`${API_BASE}${normalizedPath}`, options);
 
+    if (response.status === 204) {
+        return [] as T;
+    }
+
     if (!response.ok) {
         throw new Error(`Request failed with status code ${response.status}`);
     }
 
-    const result = await response.json() as T;
+    const text = await response.text();
+    if (!text) {
+        return [] as T;
+    }
+
+    const result = JSON.parse(text) as T;
     return result;
 }
