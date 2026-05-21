@@ -1,6 +1,6 @@
 "use client";
-// useMemo memoizes (caches) result of a calculation between re-renders
-import { useState, useCallback, useEffect, Suspense, useMemo } from "react";
+
+import { useState, useCallback, useEffect, Suspense } from "react";
 import { DateRange } from "react-day-picker";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -11,10 +11,8 @@ import { useDashboardStore, DashboardStore } from "@/stores/dashboard-store";
 import { useMetricStream } from "@/services/sse/metric-stream";
 import { useFetchMetrics } from "@/hooks/useFetchMetrics";
 import { useWindowStore } from "@/stores/window-store";
-import { WidgetConfig, WidgetConfigData } from "@/components/widgets/widgetConfig";
+import { WidgetConfigData } from "@/components/widgets/widgetConfig";
 import { useResourceNameStore } from "@/stores/resource-store";
-import { Button } from "@/components/atoms/button";
-import { MetricType } from "@/types/metric";
 
 function DashboardContent() {
   const { error: streamError } = useMetricStream();
@@ -25,7 +23,6 @@ function DashboardContent() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [originalLayout, setOriginalLayout] = useState<LayoutItem[]>([]);
   const [originalConfigs, setOriginalConfigs] = useState<WidgetConfigData[]>([]);
-  const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
 
   const fromMs = useWindowStore((state) => state.fromMs);
   const toMs = useWindowStore((state) => state.toMs);
@@ -39,32 +36,9 @@ function DashboardContent() {
   const layoutsMap = useDashboardStore((state: DashboardStore) => state.layouts);
   const widgetsMap = useDashboardStore((state: DashboardStore) => state.widgets);
 
-  // Disable real fetch to use completely mocked state
-  // useFetchMetrics();
+  useFetchMetrics();
 
-  const resourcesById = useResourceNameStore((state) => state.resourcesById);
   const fetchResourceNames = useResourceNameStore((state) => state.fetchResources);
-
-  const availableResources = useMemo(() => Object.keys(resourcesById), [resourcesById]);
-  const availableMetricTypes = useMemo(() => {
-    const types: Record<string, MetricType[]> = {};
-    availableResources.forEach(id => {
-      if (id.includes('db')) types[id] = ['connections', 'latency'] as MetricType[];
-      else if (id.includes('data')) types[id] = ['storage-used'] as MetricType[];
-      else types[id] = ['cpu', 'disk'] as MetricType[];
-    });
-    return types;
-  }, [availableResources]);
-
-  // Memoize the initial configuration so it doesn't change reference on every render,
-  // preventing the WidgetConfig's useEffect from overwriting user input during configuration.
-  const defaultNewWidgetConfig = useMemo<WidgetConfigData>(() => ({
-    id: "new-widget-temp-id",
-    forTitle: "New Widget",
-    resourceId: availableResources[0] || "",
-    metricType: (availableResources[0] && availableMetricTypes[availableResources[0]]?.[0]) || "cpu" as MetricType,
-    forWidgetType: "line"
-  }), [availableResources, availableMetricTypes]);
 
   const { 
     setInitialState, 
@@ -77,12 +51,6 @@ function DashboardContent() {
 
   useEffect(() => {
     const loadDashboardData = async () => {
-      // Guard: prevent infinite re-renders and artificial mock delays
-      if (Object.keys(dashboards).length > 0) {
-        setIsLoading(false);
-        return;
-      }
-
       // only initialize if we don't have any dashboards in the store yet make full use of zustand caching. 
       setIsLoading(true);
 
@@ -91,17 +59,15 @@ function DashboardContent() {
       if (Object.keys(dashboards).length === 0) {
         // simulate API Fetch: const response = await fetch('/api/dashboards');
         const initialConfigs: WidgetConfigData[] = [
-          { id: "w-1", forTitle: "Web Server CPU", resourceId: "i-0ec321a1c8ed4915c", metricType: "cpu", forWidgetType: "line" },
-          { id: "w-2", forTitle: "Orders DB Connections", resourceId: "prod-orders-db", metricType: "connections", forWidgetType: "line" },
-          { id: "w-3", forTitle: "S3 Bucket Storage", resourceId: "cloudsherpa-prod-data", metricType: "storage-used", forWidgetType: "gauge" },
+          { id: "w-1", forTitle: "Live CPU Usage (Mock)", resourceId: "74266597-141c-3ecc-8f68-8667ff7163a7", metricType: "cpu", forWidgetType: "line" },
+          { id: "w-2", forTitle: "Live Memory (Mock)", resourceId: "74266597-141c-3ecc-8f68-8667ff7163a7", metricType: "cpu", forWidgetType: "gauge" },
         ];
         const initialLayouts: LayoutItem[] = [
           { id: "l-1", widgetId: "w-1", x: 0, y: 0, w: 6, h: 4 },
-          { id: "l-2", widgetId: "w-2", x: 6, y: 0, w: 6, h: 4 },
-          { id: "l-3", widgetId: "w-3", x: 0, y: 4, w: 6, h: 4 },
+          { id: "l-2", widgetId: "w-2", x: 4, y: 0, w: 6, h: 4 },
         ];
         const initialDashboards: Record<string, DashboardConfig> = {
-          "ds-1": { id: "ds-1", name: "Global Infrastructure", layoutItemIds: ["l-1", "l-2", "l-3"] },
+          "ds-1": { id: "ds-1", name: "Global Cost Overview", layoutItemIds: ["l-1", "l-2"] },
           "ds-2": { id: "ds-2", name: "AWS Production Metrics", layoutItemIds: [] },
           "ds-3": { id: "ds-3", name: "Azure Spending Forecast", layoutItemIds: [] },
         };
@@ -181,22 +147,20 @@ function DashboardContent() {
   }, [addDashboard, router]);
 
   //  UUID's for widget and layout id's so in theory won't be an id clash
-  const handleInitiateAddWidget = useCallback(() => {
-    setIsConfigModalOpen(true);
-  }, []);
-
-  const handleConfirmAddWidget = useCallback((customConfig: WidgetConfigData) => {
+  const handleAddWidget = useCallback(() => {
     const widgetId = crypto.randomUUID();
     const layoutId = crypto.randomUUID();
-    const newConfig: WidgetConfigData = { //intercept addwidget to trigger widget config before adding it to grid 
-      ...customConfig,
+    const newConfig: WidgetConfigData = {
       id: widgetId,
+      forWidgetType: "line", 
+      forTitle: "New Widget (Click to Customize)", 
+      resourceId: "mock-ec2-1",
+      metricType: "anon", 
     };
     const newLayout: LayoutItem = { id: layoutId, widgetId, x: 0, y: 0, w: 6, h: 4, autoPosition: true };
 
     addWidget(newLayout, newConfig);
     setIsEditMode(true);
-    setIsConfigModalOpen(false);
   }, [addWidget]);
 
   const handleDeleteWidget = useCallback((layoutId: string, widgetId: string) => {
@@ -219,7 +183,7 @@ function DashboardContent() {
         <Toolbar
           dashboards={dashboardStubs}
           isEditMode={isEditMode}
-          handleAddWidget={handleInitiateAddWidget}
+          handleAddWidget={handleAddWidget}
           handleStartEditing={handleStartEditing}
           handleSaveEdit={handleSaveEdit}
           handleCancelEdit={handleCancelEdit}
@@ -242,20 +206,7 @@ function DashboardContent() {
           <div className="flex-1 flex items-center justify-center text-muted-foreground animate-pulse">
             Loading dashboards...
           </div>
-        ) : !activeDashboard ? (
-          <div className="flex-1 flex flex-col items-center justify-center text-center p-10">
-            <h2 className="text-xl font-semibold mb-2">No Dashboards Found</h2>
-            <p className="text-muted-foreground mb-6">Create your first dashboard to start monitoring your cloud resources.</p>
-          </div>
-        ) : widgetLayouts.length === 0 ? (
-          <div className="flex-1 flex flex-col items-center justify-center text-center p-10">
-            <h2 className="text-xl font-semibold mb-2">This Dashboard is Empty</h2>
-            <p className="text-muted-foreground mb-6">Start building your layout by adding a new widget.</p>
-            <Button onClick={handleInitiateAddWidget}>
-              Add Your First Widget
-            </Button>
-          </div>
-        ) : (
+        ) : activeDashboard ? (
           <Grid
             isEditMode={isEditMode}
             dashboardId={activeDashboardId || ""}
@@ -263,17 +214,11 @@ function DashboardContent() {
             layouts={widgetLayouts}
             onDeleteWidget={handleDeleteWidget}
           />
-        )}
-        
-        {isConfigModalOpen && (
-          <WidgetConfig
-            isOpen={isConfigModalOpen}
-            onClose={() => setIsConfigModalOpen(false)}
-            onSave={handleConfirmAddWidget}
-            forExistingConfig={defaultNewWidgetConfig}
-            forAvailableResources={availableResources}
-            forAvailableMetricTypes={availableMetricTypes}
-          />
+        ) : (
+          <div className="flex-1 flex flex-col items-center justify-center text-center p-10">
+            <h2 className="text-xl font-semibold mb-2">No Dashboards Found</h2>
+            <p className="text-muted-foreground mb-6">Create your first dashboard to start monitoring your cloud resources.</p>
+          </div>
         )}
       </main>
     </>
