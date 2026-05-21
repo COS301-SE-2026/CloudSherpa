@@ -2,57 +2,58 @@ import apiClient from "@/lib/fetch/api-client";
 import { useMetricStore } from "@/stores/metric-store";
 import { useWindowStore } from "@/stores/window-store";
 import { MetricDTO } from "@/types/dtos/metrics/MetricDto";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export function useFetchMetrics() {
 
+    const [metricFetchError, setMetricFetchError] = useState<Error | null>(null);
+    const [metricFetchLoad, setMetricFetchLoad] = useState(true);
+
     const addMetricFromDto = useMetricStore((state) => state.addMetricFromDto);
     const clearMetricStore = useMetricStore((state) => state.clearStore);
+
     const fromMs = useWindowStore((state) => state.fromMs);
     const toMs = useWindowStore((state) => state.toMs);
 
-    const ignore = useRef(false);
-    const busy = useRef(false);
+    const fetchMetrics = useCallback(async () => {
+        setMetricFetchLoad(true);
+        setMetricFetchError(null);
 
-    const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+        clearMetricStore();
 
-    async function fetchMetrics() {
-            // Abort if unmounted
-            if (ignore.current) {
-                return;
+        const from = new Date(fromMs);
+        const to = new Date(toMs);
+
+        try {
+            const metrics: MetricDTO[] = await apiClient(
+                `/analytics/historical?from=${from.toISOString()}&to=${to.toISOString()}`
+            );
+
+            // Need to insert metrics in order of period start
+            for (const metric of metrics) {
+                addMetricFromDto(metric);
             }
 
-            while(busy.current) {
-                await sleep(500);
-            }
+        } catch (error) {
+            console.warn(`Failed to fetch metrics: ${error}`);
 
-            clearMetricStore();
+            setMetricFetchError(
+                error instanceof Error
+                    ? error
+                    : new Error(String(error))
+            );
 
-            const from = new Date(fromMs);
-            const to = new Date(toMs);
-
-            try {
-                busy.current = true;
-                const metrics: MetricDTO[] = await apiClient(`/analytics/historical?from=${from.toISOString()}&to=${to.toISOString()}`);
-                
-                // Need to insert metrics in order of period start
-                for (const metric of metrics) {
-                    addMetricFromDto(metric);
-                }
-                busy.current = false;
-                
-            } catch (error) {
-                console.warn(`Failed to fetch metrics: ${error}`);
-            }
+        } finally {
+            setMetricFetchLoad(false);
         }
 
+    }, [addMetricFromDto, clearMetricStore, fromMs, toMs]);
+
     useEffect(() => {
-        fetchMetrics();
+        queueMicrotask(() => {
+            void fetchMetrics();
+        });
+    }, [fetchMetrics]);
 
-        return () => {
-            ignore.current = true;
-        };
-    }, [fromMs, toMs]);
-
-    return { fetchMetrics };
+    return { fetchMetrics, metricFetchError, metricFetchLoad };
 }
