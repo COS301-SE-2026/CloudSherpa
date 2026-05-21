@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wireframes · CloudSherpa Design System</title>
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="mobileFriendly.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  
+  <script src="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.8/dist/medium-zoom.min.js"></script>
+  
+  <style>
+    .wireframe-section{
+      margin-bottom: 60px;
+    }
+
+    .wireframe-title{
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .wireframe-sub{
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 28px;
+      letter-spacing: 0.05em;
+    }
+    
+    .images-grid{
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 30px;
+    }
+    
+    .full-width{
+      grid-column: span 2;
+    }
+    
+    .wireframe-image{
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 12px;
+      cursor: pointer;
+    }
+
+    .image-label{
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--blue);
+      margin-bottom: 12px;
+      font-weight: 500;
+    }
+    
+    .info-card{
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .info-title{
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gold);
+      margin-bottom: 16px;
+      letter-spacing: 0.05em;
+    }
+
+    .info-content{
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text-secondary);
+    }
+
+    .info-content p{
+      margin-bottom: 12px;
+    }
+
+    .info-content ul, .info-content ol{
+      margin-left: 20px;
+      margin-bottom: 12px;
+    }
+
+    .info-content li{
+      margin-bottom: 6px;
+    }
+    
+    .subheading{
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text);
+      margin: 20px 0 16px 0;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .subheading:first-of-type{
+      margin-top: 0;
+    }
+
+    hr{
+      border-color: var(--border-subtle);
+      margin: 40px 0;
+    }
+
+    .section-header{
+      margin-bottom: 24px;
+    }
+
+    .section-header h2{
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .section-header p{
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    @media (max-width: 700px){
+      .images-grid {
+        grid-template-columns: 1fr;
+        gap: 32px;
+      }
+      .full-width {
+        grid-column: span 1;
+      }
+      .info-card {
+        padding: 18px;
+      }
+      .subheading {
+        font-size: 16px;
+      }
+    }
+
+    .images-row-3{
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .images-grid-start-left{
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 30px;
+    }
+
+    .component-item{
+      margin-bottom: 32px;
+    }
+
+    .component-item:last-child{
+      margin-bottom: 0;
+    }
+
+    .image-label{
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      color: var(--blue);
+      margin-bottom: 12px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    .image-description{
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--text-secondary);
+      margin: 0;
+      padding: 0;
+    }
+    
+    .medium-zoom-overlay{
+      background: rgba(0, 0, 0, 0.95) !important;
+      backdrop-filter: blur(4px);
+      z-index: 9999 !important;
+    }
+    
+    .medium-zoom-image{
+      border-radius: 12px !important;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8) !important;
+      z-index: 10000 !important;
+    }
+    
+    .wireframe-section > div:not(.section-header):not(.subheading){
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 30px;
+      margin-bottom: 30px;
+    }
+    
+    .wireframe-section > div:has(> .image-label){
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 30px;
+    }
+    
+    .wireframe-section > div > div{
+      display: block;
+    }
+    
+    @media (max-width: 700px){
+      .wireframe-section > div:not(.section-header):not(.subheading){
+        grid-template-columns: 1fr;
+        gap: 32px;
+      }
+      .wireframe-section > div:has(> .image-label){
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="nav-mount"></div>
+
+  <div class="page-wrap">
+
+    <div class="wireframe-section">
+      <div class="section-header">
+        <h2>Screen Layout</h2>
+        <p>Visual arrangement and positioning of UI elements</p>
+        <p style="color: red; margin-top: 8px;">Click on the wireframe to get a clearer view (zoom in)</p>
+      </div>
+      
+      <div class="subheading">Landing Page</div>
+      <div class="images-grid">
+        <div>
+          <div class="image-label">Landing Page</div>
+          <img class="wireframe-image" src="wireframes/landing page.png" alt="Hero" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=&quot;padding:60px 40px; background:#141450; border-radius:12px; text-align:center;&quot;>Image not found</div>'">
+        </div>
+
+        <div>
+          <div class="image-label">Overview of features</div>
+          <img class="wireframe-image" src="wireframes/features of cloudSherpa.png" alt="Features" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=&quot;padding:60px 40px; background:#141450; border-radius:12px; text-align:center;&quot;>Image not found</div>'">
+        </div>
+
+        <div>
+          <div class="image-label">Detailed feature</div>
+          <img class="wireframe-image" src="wireframes/detialed faeture.png" alt="Detail" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=&quot;padding:60px 40px; background:#141450; border-radius:12px; text-align:center;&quot;>Image not found</div>'">
+        </div>
+      </div>
+
+      <div class="subheading">Authentication</div>
+      <div class="images-grid">
+        <div>
+          <div class="image-label">Login Page</div>
+          <img class="wireframe-image" src="wireframes/login.png" alt="Login" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=&quot;padding:60px 40px; background:#141450; border-radius:12px; text-align:center;&quot;>Image not found</div>'">
+        </div>
+
+        <div>
+          <div class="image-label">Register Page</div>
+          <img class="wireframe-image" src="wireframes/register.png" alt="Register" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=&quot;padding:60px 40px; background:#141450; border-radius:12px; text-align:center;&quot;>Image not found</div>'">
+        </div>
+      </div>
+      
+      <div class="subheading">Dashboard</div>
+      <div class="images-grid">
+        <div>
+          <div class="image-label">Dashboard View 1</div>
+          <img class="wireframe-image" src="wireframes/dashboard1.png" alt="Dashboard 1" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=&quot;padding:60px 40px; background:#141450; border-radius:12px; text-align:center;&quot;>Image not found</div>'">
+        </div>
+
+        <div>
+          <div class="image-label">Dashboard View 2</div>
+          <img class="wireframe-image" src="wireframes/dashboard2.png" alt="Dashboard 2" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=&quot;padding:60px 40px; background:#141450; border-radius:12px; text-align:center;&quot;>Image not found</div>'">
+        </div>
+
+        <div>
+          <div class="image-label">Dashboard View 3</div>
+          <img class="wireframe-image" src="wireframes/dashboard3.png" alt="Dashboard 3" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=&quot;padding:60px 40px; background:#141450; border-radius:12px; text-align:center;&quot;>Image not found</div>'">
+        </div>
+
+        <div>
+          <div class="image-label">Dashboard View 4</div>
+          <img class="wireframe-image" src="wireframes/dashboard4.png" alt="Dashboard 4" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=&quot;padding:60px 40px; background:#141450; border-radius:12px; text-align:center;&quot;>Image not found</div>'">
+        </div>
+
+        <div>
+          <div class="image-label">Dashboard View 5</div>
+          <img class="wireframe-image" src="wireframes/dashboard5.png" alt="Dashboard 4" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=&quot;padding:60px 40px; background:#141450; border-radius:12px; text-align:center;&quot;>Image not found</div>'">
+        </div>
+
+        <div>
+          <div class="image-label">Dashboard View </div>
+          <img class="wireframe-image" src="wireframes/dashboard6.png" alt="Dashboard 4" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=&quot;padding:60px 40px; background:#141450; border-radius:12px; text-align:center;&quot;>Image not found</div>'">
+        </div>
+      </div>
+    </div>
+
+    <hr />
+
+    <div class="wireframe-section">
+      <div class="section-header">
+        <h2>Navigation Flow</h2>
+        <p>User journey and page transition logic</p>
+      </div>
+
+      <div class="images-grid">
+        <div>
+          <div class="image-label">Landing Page</div>
+          <img class="wireframe-image" src="navigation flow/landing page.png" alt="Landing Page" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=&quot;padding:60px 40px; background:#141450; border-radius:12px; text-align:center;&quot;>Image not found</div>'">
+        </div>
+
+        <div>
+          <div class="image-label">Authentication</div>
+          <img class="wireframe-image" src="navigation flow/auth.png" alt="Authentication" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=&quot;padding:60px 40px; background:#141450; border-radius:12px; text-align:center;&quot;>Image not found</div>'">
+        </div>
+
+        <div>
+          <div class="image-label">Dashboard</div>
+          <img class="wireframe-image" src="navigation flow/dashboard.png" alt="Dashboard" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=&quot;padding:60px 40px; background:#141450; border-radius:12px; text-align:center;&quot;>Image not found</div>'">
+        </div>
+
+        <div>
+          <div class="image-label">Dashboard</div>
+          <img class="wireframe-image" src="navigation flow/dashboard2.png" alt="Dashboard" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=&quot;padding:60px 40px; background:#141450; border-radius:12px; text-align:center;&quot;>Image not found</div>'">
+        </div>
+      </div>
+    </div>
+
+    <hr />
+
+    <div class="wireframe-section">
+      <div class="section-header">
+        <h2>Component Placement</h2>
+        <p>Positioning of interactive and informational elements</p>
+      </div>
+
+      <div class="image-label">Landing Page</div>
+      <p class="image-description" style="margin-bottom: 32px;">Across the three wireframe screens, the interface elements are positioned consistently. On the landing screen, the logo sits on the top-left, navigation links and "Get Started" button on the top-right, with the headline and subhead centered, followed by the "Start saving now" button and then the "Discover more" link. On the features grid screen, the title "Powerful. Simple." appears on the top-center, with six cards (with each of them containing an icon and short title) arranged below in grids. On the multi-cloud details screen, a "Back to features" link sits on the top-left, followed by the main title, a descriptive paragraph, and a bulleted list of four benefits.</p>
+
+      <div class="image-label">Authentication</div>
+      <p class="image-description" style="margin-bottom: 32px;">The authentication page utilizes a dual-purpose card layout. The Login Form and Registration Form are housed within a single container. A dynamic Sliding Overlay (the "sliding div") occupies 50% of the container's width. On the Login state, the form occupies the left side while the overlay providing brand context sits on the right. When toggled to Registration, the overlay slides to the left, revealing the registration fields on the right. This maintains a fixed focal point for the user while providing a fluid transition.</p>
+
+      <div class="image-label">Dashboard</div>
+      <p class="image-description">The dashboard utilizes a Persistent Sidebar Navigation on the left for top-level module switching. The Contextual Toolbar at the top provides dashboard-specific controls: a selection dropdown for switching between custom views, alert configuration, a playback controller (play/skip/backtrack) for automated dashboard rotation, a temporal range picker (Calendar), and a "Plus" button for injecting new widgets. The central workspace features a Dynamic CSS Grid that maps over the active dashboard layout to render individual widget components.</p>
+    </div>
+
+    <hr />
+
+    <div class="wireframe-section">
+      <div class="section-header">
+        <h2>User Interaction Points</h2>
+        <p>Where and how users engage with the interface</p>
+      </div>
+
+      <div class="subheading">Landing Page</div>
+      <div class="images-grid">
+        <div>
+          <div class="image-label">Landing Page</div>
+          <img class="wireframe-image" src="user interaction points/landingPage.png" alt="Landing" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=&quot;padding:60px 40px; background:#141450; border-radius:12px; text-align:center;&quot;>Image not found</div>'">
+        </div>
+
+        <div>
+          <div class="image-label">Overview of features</div>
+          <img class="wireframe-image" src="user interaction points/features.png" alt="Features" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=&quot;padding:60px 40px; background:#141450; border-radius:12px; text-align:center;&quot;>Image not found</div>'">
+        </div>
+
+        <div>
+          <div class="image-label">Detailed feature</div>
+          <img class="wireframe-image" src="user interaction points/detailedFeature.png" alt="Detail" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=&quot;padding:60px 40px; background:#141450; border-radius:12px; text-align:center;&quot;>Image not found</div>'">
+        </div>
+      </div>
+      
+      <div class="subheading">Authentication</div>
+      <div class="images-grid">
+        <div>
+          <div class="image-label">Login</div>
+          <img class="wireframe-image" src="user interaction points/login.png" alt="Login" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=&quot;padding:60px 40px; background:#141450; border-radius:12px; text-align:center;&quot;>Image not found</div>'">
+        </div>
+
+        <div>
+          <div class="image-label">Register</div>
+          <img class="wireframe-image" src="user interaction points/register.png" alt="Register" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=&quot;padding:60px 40px; background:#141450; border-radius:12px; text-align:center;&quot;>Image not found</div>'">
+        </div>
+      </div>
+      
+      <div class="subheading">Dashboard</div>
+      <div class="images-grid">
+        <div>
+          <div class="image-label">Dashboard</div>
+          <img class="wireframe-image" src="user interaction points/dashboard.png" alt="Dashboard" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=&quot;padding:60px 40px; background:#141450; border-radius:12px; text-align:center;&quot;>Image not found</div>'">
+        </div>
+
+        <div>
+          <div class="image-label">Dashboard view 2</div>
+          <img class="wireframe-image" src="user interaction points/dashboard2.png" alt="Dashboard" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=&quot;padding:60px 40px; background:#141450; border-radius:12px; text-align:center;&quot;>Image not found</div>'">
+        </div>
+      </div>
+    </div>
+
+    <hr />
+
+    <div class="wireframe-section">
+      <div class="section-header">
+        <h2>Annotations</h2>
+        <p>Design rationale and user experience notes</p>
+      </div>
+
+      <div class="subheading">Landing Page</div>
+      <div class="images-grid">
+        <div>
+          <div class="image-label">Landing Page</div>
+          <img class="wireframe-image" src="annotation/image.png" alt="Hero" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=&quot;padding:60px 40px; background:#141450; border-radius:12px; text-align:center;&quot;>Image not found</div>'">
+        </div>
+
+        <div>
+          <div class="image-label">Overview of features</div>
+          <img class="wireframe-image" src="annotation/featureCard.png" alt="Features" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=&quot;padding:60px 40px; background:#141450; border-radius:12px; text-align:center;&quot;>Image not found</div>'">
+        </div>
+
+        <div>
+          <div class="image-label">Detailed feature</div>
+          <img class="wireframe-image" src="annotation/detailedFeature.png" alt="Detail" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=&quot;padding:60px 40px; background:#141450; border-radius:12px; text-align:center;&quot;>Image not found</div>'">
+        </div>
+      </div>
+      
+      <div class="subheading">Authentication</div>
+      <div class="images-grid">
+        <div>
+          <div class="image-label">Login</div>
+          <img class="wireframe-image" src="annotation/login.png" alt="Login" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=&quot;padding:60px 40px; background:#141450; border-radius:12px; text-align:center;&quot;>Image not found</div>'">
+        </div>
+
+        <div>
+          <div class="image-label">Register</div>
+          <img class="wireframe-image" src="annotation/register.png" alt="Register" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=&quot;padding:60px 40px; background:#141450; border-radius:12px; text-align:center;&quot;>Image not found</div>'">
+        </div>
+      </div>
+      
+      <div class="subheading">Dashboard</div>
+      <div class="images-grid">
+        <div>
+          <div class="image-label">Dashboard</div>
+          <img class="wireframe-image" src="annotation/dashboard.png" alt="Dashboard" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=&quot;padding:60px 40px; background:#141450; border-radius:12px; text-align:center;&quot;>Image not found</div>'">
+        </div>
+
+        <div>
+          <div class="image-label">Dashboard</div>
+          <img class="wireframe-image" src="annotation/dashboard2.png" alt="Dashboard" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=&quot;padding:60px 40px; background:#141450; border-radius:12px; text-align:center;&quot;>Image not found</div>'">
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="navBar.js"></script>
+
+  <script>
+    if(typeof renderNav === 'function'){
+      renderingNavBar('Wireframes');
+    }
+    
+    if(typeof mediumZoom !== 'undefined'){
+
+      mediumZoom('.wireframe-image', {
+        margin: 24,
+        background: 'rgba(0, 0, 0, 0.96)',
+        scrollOffset: 0,
+        transition: 'ease-out',
+        duration: 300
+      });
+
+    }
+  </script>
+
+</body>
+</html>
