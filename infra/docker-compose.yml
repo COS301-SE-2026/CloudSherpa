@@ -5,7 +5,7 @@ services:
       context: ../apps/ingestion
       dockerfile: Dockerfile
       target: prod
-    image: cloudsherpa-ingestion:prod
+    image: grard835/cloudsherpa-ingestion:prod
     container_name: ingestion
     ports:
       - "8081:8080"
@@ -20,7 +20,7 @@ services:
       context: ../apps/service
       dockerfile: Dockerfile
       target: prod
-    image: cloudsherpa-service:prod
+    image: grard835/cloudsherpa-service:prod
     container_name: service
     ports:
       - "8083:8080"
@@ -35,7 +35,7 @@ services:
       context: ../apps/dashboard
       dockerfile: Dockerfile
       target: prod
-    image: cloudsherpa-dashboard:prod
+    image: grard835/cloudsherpa-dashboard:prod
     container_name: dashboard
     ports:
       - "3000:3000"
