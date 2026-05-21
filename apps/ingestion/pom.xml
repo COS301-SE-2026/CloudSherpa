@@ -54,7 +54,6 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
@@ -93,7 +92,7 @@
 			<artifactId>commons-math3</artifactId>
 			<version>3.6.1</version>
 		</dependency>
-				<!-- OpenAPI Docs 	-->
+		<!-- OpenAPI Docs 	-->
 		<dependency>
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
@@ -161,24 +160,24 @@
 				<version>0.8.14</version>
 				<executions>
 					<execution>
-					<id>prepare-agent</id>
-					<goals>
-						<goal>prepare-agent</goal>
-					</goals>
+						<id>prepare-agent</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
 					</execution>
 					<execution>
-					<id>report</id>
-					<goals>
-						<goal>report</goal>
-					</goals>
-					<configuration>
-						<formats>
-						<format>XML</format>
-						</formats>
-					</configuration>
+						<id>report</id>
+						<goals>
+							<goal>report</goal>
+						</goals>
+						<configuration>
+							<formats>
+								<format>XML</format>
+							</formats>
+						</configuration>
 					</execution>
 				</executions>
-				</plugin>
+			</plugin>
 		</plugins>
 	</build>
 
