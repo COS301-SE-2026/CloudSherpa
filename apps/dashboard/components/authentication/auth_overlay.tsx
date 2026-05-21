@@ -11,11 +11,12 @@ interface OverlayProps {
 export function AuthOverlay({ isSignUp, toggle }: OverlayProps) {
   return (
     <div className={cn(
-      "absolute top-0 left-1/2 w-1/2 h-full overflow-hidden transition-transform duration-700 ease-in-out z-100",
+      // Hidden on mobile, visible and 50% width on medium screens and larger
+      "hidden md:block absolute top-0 left-1/2 w-1/2 h-full overflow-hidden transition-transform duration-700 ease-in-out z-100",
       isSignUp ? "-translate-x-full" : ""
     )}>
       <div className={cn(
-        "relative -left-full h-full w-[200%] transform transition-transform duration-700 ease-in-out bg-primary",
+        "relative -left-full h-full w-[200%] transform transition-transform duration-700 ease-in-out bg-secondary",
         isSignUp ? "translate-x-1/2" : "translate-x-0"
       )}>
         

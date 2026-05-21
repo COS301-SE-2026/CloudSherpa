@@ -47,12 +47,12 @@ export default function Toolbar({
           <SidebarTrigger className="bg-card border-border hover:bg-hover hover:text-foreground h-9 w-9 border" />
         </div>
         {/* vertical seperator as to not confuse user of sidebar trigger functionality */}
-        <div className="h-9 w-px bg-border self-end mb-0" />
+        <div className="hidden md:flex h-9 w-px bg-border self-end mb-0" />
 
         {/* Dashboard Group */}
         <div className="w-fit h-full flex flex-row items-start justify-start gap-4">
           <div className="w-full h-full flex flex-col">
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold px-1">DASHBOARD</span>
+            <span className="hidden md:flex text-[10px] uppercase tracking-wider text-muted-foreground font-bold px-1">DASHBOARD</span>
             <div className="flex items-center gap-3">
               <DashboardSelector
                 dashboards={dashboards}
@@ -64,31 +64,31 @@ export default function Toolbar({
           </div>
 
           {/* Edit Group */}
-          <div className="w-fit h-full flex flex-col">
-            {/* <Tooltip content={isEditMode ? "Exit Edit Mode" : "Edit Dashboard Layout"}> */}
+          <div className="fixed bottom-6 right-6 z-[100] flex w-fit flex-col items-end md:static md:h-full md:items-start md:z-auto">
             {isEditMode && (
-              <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold px-1 animate-pulse whitespace-nowrap">
+              <span className="mb-2 rounded-md bg-background/95 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground shadow-sm animate-pulse whitespace-nowrap md:mb-0 md:bg-transparent md:px-1 md:py-0 md:shadow-none">
                 Editing Layout...
               </span>
             )}
             {!isEditMode && (
-              <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold px-1">Edit</span>
+              <span className="hidden md:block text-[10px] uppercase tracking-wider text-muted-foreground font-bold px-1">Edit</span>
             )}
-            <EditButton
-              isEditMode={isEditMode}
-              handleStartEditing={handleStartEditing}
-              handleSaveEdit={handleSaveEdit}
-              handleCancelEdit={handleCancelEdit}
-              handleAddWidget={handleAddWidget}
-            />
-            {/* </Tooltip> */}
+            <div className="rounded-md shadow-2xl md:shadow-none">
+              <EditButton
+                isEditMode={isEditMode}
+                handleStartEditing={handleStartEditing}
+                handleSaveEdit={handleSaveEdit}
+                handleCancelEdit={handleCancelEdit}
+                handleAddWidget={handleAddWidget}
+              />
+            </div>
           </div>
         </div>
       </div>
 
       {/* Time Period Group */}
       <div className="w-fit h-full flex flex-col items-start justify-start">
-        <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold px-1">TIME PERIOD</span>
+        <span className="hidden md:block text-[10px] uppercase tracking-wider text-muted-foreground font-bold px-1">TIME PERIOD</span>
         <TimePeriodSelector date={dateRange} onDateChange={onDateRangeChange} />
       </div>
     </div>

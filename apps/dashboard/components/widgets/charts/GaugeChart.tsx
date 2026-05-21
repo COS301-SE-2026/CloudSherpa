@@ -145,7 +145,7 @@ export function GaugeWidget({
                     axisLabel: {
                         show: true,
                         distance: 18,
-                        color: 'rgb(148, 163, 184)',
+                        color: textColor,
                         fontSize: 11,
                         fontFamily: 'sans-serif',
                         formatter: (value: number) => `${value}%`

@@ -17,12 +17,12 @@ export default function Authentication() {
         {/* if isActive is false react unmounts the component which resets the state so it feels like you are navigating to a fresh page, 
         also removes previous errors in state of the components */}
         <AuthPanel isActive={!isSignUp} isSignUpState={isSignUp}>
-          <LoginForm key={isSignUp ? "hidden" : "active"} />
+          <LoginForm key={isSignUp ? "hidden" : "active"} onToggle={() => setIsSignUp(true)} />
         </AuthPanel>
 
         {/* register container */}
         <AuthPanel isActive={isSignUp} isSignUpState={isSignUp}>
-          <RegisterForm key={isSignUp ? "active" : "hidden"} />
+          <RegisterForm key={isSignUp ? "active" : "hidden"} onToggle={() => setIsSignUp(false)} />
         </AuthPanel>
 
         {/* sliding overlay */}

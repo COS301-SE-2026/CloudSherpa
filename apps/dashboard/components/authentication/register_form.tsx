@@ -15,9 +15,10 @@ import {
 
 interface RegisterFormProps {
   isLoading?: boolean; //indicates loading state of form for asynchronous events.
+  onToggle?: () => void;
 }
 
-export default function RegisterForm({ isLoading = false }: RegisterFormProps) {
+export default function RegisterForm({ isLoading = false, onToggle }: RegisterFormProps) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false);
   const [password, setPassword] = useState("");
@@ -262,6 +263,19 @@ export default function RegisterForm({ isLoading = false }: RegisterFormProps) {
         </Button>
 
       </form>
+
+      <div className="mt-6 text-center md:hidden">
+        <div className="text-sm text-muted-foreground">
+          Already have an account?{" "}
+          <button
+            type="button"
+            onClick={onToggle}
+            className="font-medium text-primary hover:underline"
+          >
+            Log in
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

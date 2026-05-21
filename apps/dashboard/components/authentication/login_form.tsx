@@ -16,9 +16,10 @@ import {
 
 interface LoginFormProps {
   isLoading?: boolean;
+  onToggle?: () => void;
 }
 
-export default function LoginForm({ isLoading = false }: LoginFormProps) {
+export default function LoginForm({ isLoading = false, onToggle }: LoginFormProps) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -195,6 +196,19 @@ export default function LoginForm({ isLoading = false }: LoginFormProps) {
         </Button>
 
       </form>
+
+      <div className="mt-6 text-center md:hidden">
+        <div className="text-sm text-muted-foreground">
+          Don&apos;t have an account?{" "}
+          <button
+            type="button"
+            onClick={onToggle}
+            className="font-medium text-primary hover:underline"
+          >
+            Sign up
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
