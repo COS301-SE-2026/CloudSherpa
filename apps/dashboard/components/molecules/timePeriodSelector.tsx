@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useState } from "react";
 import { format, subDays } from "date-fns";
-import { Calendar as CalendarIcon, ChevronLeft, ChevronDown } from "lucide-react";
+import { Calendar as CalendarIcon, ChevronLeft, ChevronDown, Filter } from "lucide-react";
 import { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/atoms/button";
@@ -78,12 +78,17 @@ export function TimePeriodSelector({
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          className="group md:min-w-40 w-fit justify-start text-left font-normal bg-card text-foreground border-border hover:bg-hover hover:text-foreground data-[state=open]:text-foreground data-[state=open]:hover:text-foreground transition-button">
-          <div className="w-full h-full flex flex-row items-center">
+          className="group md:min-w-40 w-9 md:w-fit px-0 md:px-4 justify-center md:justify-start text-left font-normal bg-card text-foreground border-border hover:bg-hover hover:text-foreground data-[state=open]:text-foreground data-[state=open]:hover:text-foreground transition-button">
+          
+          {/* Mobile View */}
+          <Filter className="h-4 w-4 block md:hidden" />
+          
+          {/* Desktop View */}
+          <div className="hidden md:flex w-full h-full flex-row items-center">
             <CalendarIcon className="mr-2 h-4 w-4" />
             <span className="">Last {getDisplayLabel()}</span>
           </div>
-          <ChevronDown className="ml-auto h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
+          <ChevronDown className="hidden md:block ml-auto h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
         </Button>
       </PopoverTrigger>
 

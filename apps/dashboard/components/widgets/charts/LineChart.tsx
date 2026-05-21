@@ -34,6 +34,7 @@ export function LineChartWidget({
     const chartInstance = useRef<echarts.ECharts | null>(null);
     const [lineColor, setLineColor] = useState<string>('#3b82f6'); // fallback blue
     const [gridOpacity, setGridOpacity] = useState<number>(0.15);
+    const [textColor, setTextColor] = useState<string>('rgb(255, 255, 255)');
 
     // Extract color token and listen for theme changes
     //note: echarts does not have built in support for css tokens and stuff so we have to use workaround 
@@ -41,13 +42,20 @@ export function LineChartWidget({
         const updateThemeStyles = () => {
             const style = getComputedStyle(document.documentElement);
             const tokenColor = style.getPropertyValue('--primary').trim();
+            const foregroundToken = style.getPropertyValue('--foreground').trim();
             
             if (tokenColor) {
                 setLineColor(tokenColor);
             }
 
-            // Adjust horizontal grid line opacity based on active theme(just added on logic for theme swapping)
             const isLightMode = document.documentElement.getAttribute('data-theme') === 'light';
+            if (foregroundToken) {
+                setTextColor(foregroundToken);
+            } else {
+                setTextColor(isLightMode ? '#020617' : 'rgb(255, 255, 255)');
+            }
+
+            // Adjust horizontal grid line opacity based on active theme(just added on logic for theme swapping)
             setGridOpacity(isLightMode ? 0.70 : 0.10);
         };
 
@@ -87,8 +95,6 @@ export function LineChartWidget({
             animationDuration: 600,
             animationDurationUpdate: 0,
             
-            // controls the spacing around the actual plotting area.
-            // containLabel makes ECharts reserve space so axis labels are not clipped.
             grid: {
                 left: 20,
                 right: 20,
@@ -98,21 +104,23 @@ export function LineChartWidget({
                 containLabel: true,
             },
 
-            // setting to time, series data has to be [number, number], with [timestamp, value]
             xAxis: {
                 type: "time",
                 min: axisMax - visibleWindowMs,
                 max: axisMax,
                 interval: AXIS_TICK_MS,
-                  axisLabel: {
-    hideOverlap: true
-  }
+                axisLabel: {
+                    hideOverlap: true,
+                    formatter: '{HH}:{mm}', //makes it look less cluttered
+                    color: textColor
+                }
             },
 
             yAxis: {
                 type: "value",
                 axisLabel: {
-                    formatter: '{value} %'
+                    formatter: '{value} %',
+                    color: textColor
                 },
                 splitLine: {
                     lineStyle: {
@@ -134,7 +142,7 @@ export function LineChartWidget({
         };
 
         chartInstance.current?.setOption(option);
-    }, [title, resourceId, data, visibleWindowMs, lineColor, gridOpacity])
+    }, [title, resourceId, data, visibleWindowMs, lineColor, gridOpacity, textColor])
 
     useEffect(() => {
         if(!chartInstance.current){

@@ -19,7 +19,6 @@ import { useSyncExternalStore } from "react";
 
 const navItems = [
   { title: "Dashboard", icon: LayoutDashboard, url: "/dashboard" },
-  { title: "Connection Manager", icon: Cloud, url: "/inventory" },
 ];
 
 export function AppSidebar() {

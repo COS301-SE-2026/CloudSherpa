@@ -29,26 +29,26 @@ export default function EditButton({
                 className={cn(
                   "bg-card border-border text-foreground hover:text-foreground hover:bg-primary transition-all duration-200",
                   isEditMode &&
-                    "bg-destructive/10 border-destructive text-destructive hover:bg-destructive/20 hover:text-destructive hover:border-destructive",
+                    "bg-destructive/10 border-destructive text-destructive hover:bg-destructive/20 hover:text-destructive hover:border-destructive order-3 md:order-1",
                 )}>
                 {isEditMode ? "Cancel" : <Pencil className="h-4 w-4" />}
               </Button>
 
               {isEditMode && (
-                <div className="flex items-center gap-2">
+                <>
                   <Button
                     size="sm"
                     onClick={handleSaveEdit}
-                    className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm">
+                    className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm order-2">
                     Save
                   </Button>
                   <Button
                     size="sm"
                     onClick={() => handleAddWidget()} 
-                    className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm">
+                    className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm order-1 md:order-3">
                     Add Widget
                   </Button>
-                </div>
+                </>
               )}
             </div>
   );
