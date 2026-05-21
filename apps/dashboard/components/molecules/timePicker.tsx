@@ -19,7 +19,7 @@ export function TimePicker({ onDurationChange, initialSeconds = 10 }: TimePicker
     const total = (hours * 3600) + (minutes * 60)
     // potential division by 0 problem. will sort it . 
     onDurationChange(total > 0 ? total : 10) 
-  }, [hours, minutes])
+  }, [hours, minutes, onDurationChange])
 
   return (
     <div className="flex items-center gap-1 bg-card h-full p-1 rounded-md border border-input">

@@ -9,8 +9,12 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/atoms/button";
 import { Calendar } from "@/components/atoms/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/atoms/popover";
+import { useWindowStore } from "@/stores/window-store";
+import { TimeWindowPreset } from "@/types/timewindow";
 
-const presets = [
+type DurationPreset = Exclude<TimeWindowPreset, "custom">;
+
+const presets: {id: DurationPreset, label: string }[] = [
   { id: "1m", label: "1 min" },
   { id: "2m", label: "2 min" },
   { id: "5m", label: "5 min" },
@@ -19,6 +23,28 @@ const presets = [
   { id: "7d", label: "7 days" },
   { id: "30d", label: "30 days" },
 ];
+
+function getPresetRange(presetId: DurationPreset): DateRange {
+  const to = new Date();
+  const minuteMs = 60 * 1000;
+  const hourMs = 60 * minuteMs;
+  const dayMs = 24 * hourMs;
+
+  const durationByPreset: Record<DurationPreset, number> = {
+    "1m": minuteMs,
+    "2m": 2 * minuteMs,
+    "5m": 5 * minuteMs,
+    "1h": hourMs,
+    "24h": 24 * hourMs,
+    "7d": 7 * dayMs,
+    "30d": 30 * dayMs,
+  };
+
+  return {
+    from: new Date(to.getTime() - (durationByPreset[presetId] ?? 7 * dayMs)),
+    to,
+  };
+}
 
 export function TimePeriodSelector({
   date,
@@ -29,8 +55,9 @@ export function TimePeriodSelector({
 }) {
   const [open, setOpen] = useState(false);
   const [view, setView] = useState<"presets" | "custom">("presets");
-  const [selectedPreset, setSelectedPreset] = useState<string>("7d");
-  
+  const setSelectedPreset = useWindowStore((state) => state.setPreset);
+  const selectedPreset = useWindowStore((state) => state.selectedPreset);
+
   const getDisplayLabel = () => {
     if (selectedPreset !== "custom") {
       return presets.find((p) => p.id === selectedPreset)?.label;
@@ -41,14 +68,6 @@ export function TimePeriodSelector({
     return "Pick a date";
   };
 
-  const handlePresetClick = (pId: string) => {
-    setSelectedPreset(pId);
-    const days = parseInt(pId); // simplistic for 7d, 30d
-    if (!isNaN(days)) {
-      onDateChange({ from: subDays(new Date(), days), to: new Date() });
-    }
-    setOpen(false);
-  };
   return (
     <Popover
       open={open}
@@ -59,7 +78,7 @@ export function TimePeriodSelector({
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          className="group md:min-w-40 w-fit justify-start text-left font-normal bg-card text-foreground border-border hover:bg-hover hover:text-secondary data-[state=open]:text-secondary transition-button">
+          className="group md:min-w-40 w-fit justify-start text-left font-normal bg-card text-foreground border-border hover:bg-hover hover:text-foreground data-[state=open]:text-foreground data-[state=open]:hover:text-foreground transition-button">
           <div className="w-full h-full flex flex-row items-center">
             <CalendarIcon className="mr-2 h-4 w-4" />
             <span className="">Last {getDisplayLabel()}</span>
@@ -83,20 +102,21 @@ export function TimePeriodSelector({
                   "justify-start font-normal transition-button",
                   selectedPreset === p.id
                     ? "bg-active text-primary-foreground"
-                    : "text-foreground-secondary hover:bg-hover hover:text-secondary",
+                    : "text-foreground-secondary hover:bg-hover hover:text-foreground",
                 )}
                 onClick={() => {
                   setSelectedPreset(p.id);
+                  onDateChange(getPresetRange(p.id));
                   setOpen(false);
                 }}>
                 {p.label}
               </Button>
             ))}
 
-            <div className="h-px bg-border-subtle my-1 w-full flex flex-row" />
+            <div className="h-px bg-border-subtle my-1 w-full" />
             <Button
               variant="ghost"
-              className="justify-start font-medium text-accent hover:bg-hover hover:text-secondary transition-button"
+              className="justify-start font-medium text-accent hover:bg-accent hover:text-secondary transition-button"
               onClick={() => setView("custom")}>
               Custom Range
             </Button>

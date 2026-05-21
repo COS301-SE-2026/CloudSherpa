@@ -3,12 +3,12 @@ import { echarts } from "@/lib/charts/echarts";
 import { useMetricStore } from "@/stores/metric-store";
 import { Metric, MetricType } from "@/types/metric";
 import type { EChartsOption } from "echarts";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type GaugeWidgetProps = {
     title: string,
-    resourceId: string,
-    metricType: MetricType,
+    resourceId?: string,
+    metricType?: MetricType,
 }
 
 const EMPTY_METRICS: Metric[] = [];
@@ -19,36 +19,87 @@ export function GaugeWidget({
     metricType,
 
 }: Readonly<GaugeWidgetProps>){
-    const forChartReference = useRef<HTMLDivElement>(null);
-    const forData = useMetricStore((state) => (state.seriesByKey[`${resourceId}:${metricType}`] ?? EMPTY_METRICS));
-    const forChartInstance = useRef<echarts.ECharts | null>(null);
+    const chartRef = useRef<HTMLDivElement>(null);
+    const data = useMetricStore((state) => (state.seriesByKey[`${resourceId}:${metricType}`] ?? EMPTY_METRICS));
+    const chartInstance = useRef<echarts.ECharts | null>(null);
 
-    const latestValue = forData.length > 0 ? forData[forData.length - 1].value : 0;
+    const latestValue = data.length > 0 ? Math.round(data[data.length - 1].value) : 0;
+
+    const [textColor, setTextColor] = useState<string>('rgb(255, 255, 255)');
+    const [primaryColor, setPrimaryColor] = useState<string>('rgb(59, 130, 246)');
+    const [trackColor, setTrackColor] = useState<string>('rgb(30, 41, 59)');
+
+    // Extract color tokens and listen for theme changes
+    useEffect(() => {
+        const updateThemeStyles = () => {
+            const style = getComputedStyle(document.documentElement);
+            const foregroundToken = style.getPropertyValue('--foreground').trim();
+            const primaryToken = style.getPropertyValue('--primary').trim();
+            const mutedToken = style.getPropertyValue('--muted').trim();
+            
+            const isLightMode = document.documentElement.getAttribute('data-theme') === 'light';
+            
+            if (foregroundToken) setTextColor(foregroundToken);
+            else setTextColor(isLightMode ? '#020617' : 'rgb(255, 255, 255)');
+            
+            if (primaryToken) setPrimaryColor(primaryToken);
+            
+            if (mutedToken) setTrackColor(mutedToken);
+            else setTrackColor(isLightMode ? '#e2e8f0' : 'rgb(30, 41, 59)');
+        };
+
+        updateThemeStyles();
+        const observer = new MutationObserver(updateThemeStyles);
+        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'class'] });
+        return () => observer.disconnect();
+    }, []);
 
     useEffect(() => {
-        if (!forChartReference.current) return;
-        forChartInstance.current = echarts.init(forChartReference.current);
+        if (!chartRef.current) return;
+        chartInstance.current = echarts.init(chartRef.current);
+
+        const handleResize = () => {
+            chartInstance.current?.resize();
+        };
+
+        const handleWidgetResize = () => {
+            setTimeout(() => {
+                chartInstance.current?.resize();
+            }, 10);
+        };
+
+        window.addEventListener('resize', handleResize);
+        window.addEventListener('widget-resize', handleWidgetResize);
+
+        const resizeObserver = new ResizeObserver(() => {
+            chartInstance.current?.resize();
+        });
+
+        resizeObserver.observe(chartRef.current);
 
         return () => {
-            forChartInstance.current?.dispose();
+            window.removeEventListener('resize', handleResize);
+            window.removeEventListener('widget-resize', handleWidgetResize);
+            resizeObserver.disconnect();
+            chartInstance.current?.dispose();
         };
     }, []);
 
     useEffect(() => {
-        if(!forChartInstance.current){
+        if(!chartInstance.current){
             return;
         }
 
         const option: EChartsOption = {
             tooltip: {
                 formatter: '{b}: {c}%',
-                backgroundColor: 'var(--color-bg-main)',
-                borderColor: 'var(--color-action-primary)',
+                backgroundColor: trackColor,
+                borderColor: trackColor,
                 borderWidth: 1,
                 textStyle: {
-                    color: 'var(--color-text-primary)',
+                    color: textColor,
                     fontSize: 12,
-                    fontFamily: 'var(--font-family-main)',
+                    fontFamily: 'sans-serif',
                 },
             },
             series: [
@@ -67,7 +118,7 @@ export function GaugeWidget({
                         width: 15,
                         roundCap: true,
                         itemStyle: {
-                            color: 'var(--color-action-primary)',
+                            color: primaryColor,
                         }
                     },
 
@@ -75,7 +126,7 @@ export function GaugeWidget({
                         roundCap: true,
                         lineStyle: {
                             width: 15,
-                            color: [[1, 'rgba(47, 47, 228, 0.2)']]
+                            color: [[1, trackColor]]
                         }
                     },
 
@@ -88,16 +139,16 @@ export function GaugeWidget({
                         length: 8,
                         lineStyle: {
                             width: 2,
-                            color: 'var(--color-text-muted)',
+                            color: 'rgb(148, 163, 184)',
                         }
                     },
 
                     axisLabel: {
                         show: true,
                         distance: 18,
-                        color: 'var(--color-text-muted)',
+                        color: 'rgb(148, 163, 184)',
                         fontSize: 11,
-                        fontFamily: 'var(--font-family-main)',
+                        fontFamily: 'sans-serif',
                         formatter: (value: number) => `${value}%`
                     },
 
@@ -106,7 +157,7 @@ export function GaugeWidget({
                         length: '60%',
                         width: 8,
                         itemStyle: {
-                            color: 'var(--color-action-accent)',
+                            color: 'rgb(249, 115, 22)',
                         }
                     },
                     
@@ -116,17 +167,17 @@ export function GaugeWidget({
                         valueAnimation: true,
                         fontSize: 24,
                         fontWeight: 'bold',
-                        color: 'var(--color-text-primary)',
-                        fontFamily: 'var(--font-family-main)',
-                        formatter: '{value}%'
+                        color: textColor,
+                        fontFamily: 'sans-serif',
+                        formatter: (value: number) => `${Math.round(value)}%`
                     },
 
                     title: {
-                        show: true,
+                        show: false,
                         offsetCenter: [0, -35],
                         fontSize: 13,
-                        color: 'var(--color-text-muted)',
-                        fontFamily: 'var(--font-family-main)',
+                        color: 'rgb(148, 163, 184)',
+                        fontFamily: 'sans-serif',
                     },
                     
                     data: [{ value: latestValue, name: title }]
@@ -134,33 +185,33 @@ export function GaugeWidget({
             ]
         };
 
-        forChartInstance.current.setOption(option);
-    }, [title, latestValue]);
+        chartInstance.current.setOption(option);
+    }, [title, latestValue, textColor, primaryColor, trackColor]);
 
     useEffect(() => {
-        if(!forChartInstance.current){
+        if(!chartInstance.current){
             return;
         }
 
         const handleResize = () => {
-            forChartInstance.current?.resize();
+            chartInstance.current?.resize();
         };
 
         const handleWidgetResize = () => {
             setTimeout(() => {
-                forChartInstance.current?.resize();
+                chartInstance.current?.resize();
             }, 10);
         };
 
         window.addEventListener('resize', handleResize);
         window.addEventListener('widget-resize', handleWidgetResize);
-        
+
         const resizeObserver = new ResizeObserver(() => {
-            forChartInstance.current?.resize();
+            chartInstance.current?.resize();
         });
 
-        if(forChartReference.current){
-            resizeObserver.observe(forChartReference.current);
+        if(chartRef.current){
+            resizeObserver.observe(chartRef.current);
         }
 
         return () => {
@@ -171,13 +222,6 @@ export function GaugeWidget({
     }, []);
 
     return(
-        <div className="flex h-full flex-col items-center justify-center">
-            <div className="w-full h-full min-h-[280px]">
-                <div
-                    ref={forChartReference}
-                    className="h-full w-full"
-                />
-            </div>
-        </div>
+        <div ref={chartRef} className="h-full w-full" />
     );
 }

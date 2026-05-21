@@ -24,9 +24,7 @@ class AwsCloudConnectorTest {
 
     IngestionRequestEvent request = buildRequest(300);
 
-    List<UsageRecordModel> result = connector.fetchMockUsage(
-        request.getScopes().get(0),
-        request);
+    List<UsageRecordModel> result = connector.fetchMockUsage(request.getScopes().get(0), request);
 
     assertFalse(result.isEmpty());
   }
@@ -36,11 +34,10 @@ class AwsCloudConnectorTest {
 
     IngestionRequestEvent request = buildRequest(0);
 
-    IllegalArgumentException ex = assertThrows(
-        IllegalArgumentException.class,
-        () -> connector.fetchMockUsage(
-            request.getScopes().get(0),
-            request));
+    IllegalArgumentException ex =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> connector.fetchMockUsage(request.getScopes().get(0), request));
 
     assertTrue(ex.getMessage().contains("Period must be > 0"));
   }
@@ -50,9 +47,7 @@ class AwsCloudConnectorTest {
 
     IngestionRequestEvent request = buildRequest(300);
 
-    List<UsageRecordModel> result = connector.fetchMockUsage(
-        request.getScopes().get(0),
-        request);
+    List<UsageRecordModel> result = connector.fetchMockUsage(request.getScopes().get(0), request);
 
     UsageRecordModel record = result.get(0);
 

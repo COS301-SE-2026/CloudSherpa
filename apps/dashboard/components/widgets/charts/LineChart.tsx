@@ -2,19 +2,20 @@
 
 import { echarts } from "@/lib/charts/echarts";
 import { useMetricStore } from "@/stores/metric-store";
+import { useWindowStore } from "@/stores/window-store";
 import { Metric, MetricType } from "@/types/metric";
 import type { EChartsOption } from "echarts";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type LineChartWidgetProps = {
     title: string,
-    resourceId: string,
-    metricType: MetricType,
+    resourceId?: string,
+    metricType?: MetricType,
 }
 
 const EMPTY_METRICS: Metric[] = [];
 // This will be replaced by zustand store for dashboard window
-const VISIBLE_WINDOW_MS = 60_000;
+
 // The tick should sync with the ingestion intervals, still need to do system-wide
 // investigation regarding this
 const AXIS_TICK_MS = 5_000;
@@ -26,7 +27,35 @@ export function LineChartWidget({
 }: Readonly<LineChartWidgetProps>) {
     const chartRef = useRef<HTMLDivElement>(null);
     const data = useMetricStore((state) => (state.seriesByKey[`${resourceId}:${metricType}`] ?? EMPTY_METRICS));
+    const fromMs = useWindowStore((state) => state.fromMs);
+    const toMs = useWindowStore((state) => state.toMs);
+    const visibleWindowMs = toMs - fromMs;
+
     const chartInstance = useRef<echarts.ECharts | null>(null);
+    const [lineColor, setLineColor] = useState<string>('#3b82f6'); // fallback blue
+    const [gridOpacity, setGridOpacity] = useState<number>(0.15);
+
+    // Extract color token and listen for theme changes
+    //note: echarts does not have built in support for css tokens and stuff so we have to use workaround 
+    useEffect(() => {
+        const updateThemeStyles = () => {
+            const style = getComputedStyle(document.documentElement);
+            const tokenColor = style.getPropertyValue('--primary').trim();
+            
+            if (tokenColor) {
+                setLineColor(tokenColor);
+            }
+
+            // Adjust horizontal grid line opacity based on active theme(just added on logic for theme swapping)
+            const isLightMode = document.documentElement.getAttribute('data-theme') === 'light';
+            setGridOpacity(isLightMode ? 0.70 : 0.10);
+        };
+
+        updateThemeStyles();
+        const observer = new MutationObserver(updateThemeStyles);
+        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'class'] });
+        return () => observer.disconnect();
+    }, []);
 
     useEffect(() => {
         if (!chartRef.current) return;
@@ -49,6 +78,7 @@ export function LineChartWidget({
         const axisMax = Math.ceil(Date.now() / AXIS_TICK_MS) * AXIS_TICK_MS;
 
         const option: EChartsOption = {
+            color: [lineColor],
             tooltip: {
                 trigger: "axis"
             },
@@ -71,15 +101,23 @@ export function LineChartWidget({
             // setting to time, series data has to be [number, number], with [timestamp, value]
             xAxis: {
                 type: "time",
-                min: axisMax - VISIBLE_WINDOW_MS,
+                min: axisMax - visibleWindowMs,
                 max: axisMax,
                 interval: AXIS_TICK_MS,
+                  axisLabel: {
+    hideOverlap: true
+  }
             },
 
             yAxis: {
                 type: "value",
                 axisLabel: {
                     formatter: '{value} %'
+                },
+                splitLine: {
+                    lineStyle: {
+                        opacity: gridOpacity // Dynamic opacity based on theme
+                    }
                 }
             },
 
@@ -96,7 +134,7 @@ export function LineChartWidget({
         };
 
         chartInstance.current?.setOption(option);
-    }, [title, resourceId, data])
+    }, [title, resourceId, data, visibleWindowMs, lineColor, gridOpacity])
 
     useEffect(() => {
         if(!chartInstance.current){
@@ -133,18 +171,6 @@ export function LineChartWidget({
     }, []);
 
     return (
-        <div className="flex h-full flex-col rounded-xl border border-zinc-800 bg-zinc-900 p-4">
-            <div className="mb-4 text-sm font-medium text-zinc-200">
-                {title}
-            </div>
-
-            <div className="min-h-0 flex-1">
-                <div
-                ref={chartRef}
-                className="h-full w-full"
-                />
-            </div>
-            
-        </div>
+        <div ref={chartRef} className="h-full w-full" />
     );
 }

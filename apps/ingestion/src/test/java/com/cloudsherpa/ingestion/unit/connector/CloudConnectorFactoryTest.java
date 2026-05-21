@@ -18,8 +18,7 @@ class CloudConnectorFactoryTest {
   void setUp() {
     awsConnector = mock(CloudConnector.class);
 
-    factory = new CloudConnectorFactory(
-        Map.of("AWS", awsConnector));
+    factory = new CloudConnectorFactory(Map.of("AWS", awsConnector));
   }
 
   @Test
@@ -47,17 +46,15 @@ class CloudConnectorFactoryTest {
 
   @Test
   void shouldThrowExceptionForUnknownProvider() {
-    IllegalArgumentException ex = assertThrows(
-        IllegalArgumentException.class,
-        () -> factory.getConnector("NoProviderLikeThis"));
+    IllegalArgumentException ex =
+        assertThrows(
+            IllegalArgumentException.class, () -> factory.getConnector("NoProviderLikeThis"));
 
     assertTrue(ex.getMessage().contains("No connector found"));
   }
 
   @Test
   void shouldThrowExceptionForNullProvider() {
-    assertThrows(
-        NullPointerException.class,
-        () -> factory.getConnector(null));
+    assertThrows(NullPointerException.class, () -> factory.getConnector(null));
   }
 }

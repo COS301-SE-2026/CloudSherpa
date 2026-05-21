@@ -45,6 +45,14 @@ jobs:
             - name: Build
               run: npm run build
             
+            - name: SonarQube Scan
+              uses: SonarSource/sonarqube-scan-action@v8
+              with:
+                projectBaseDir: apps/dashboard
+              env:
+                SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+                SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
             - name: Archive build
               uses: actions/upload-artifact@v4
               with:

@@ -12,30 +12,28 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(CloudUsageController.class)
 class CloudUsageControllerTest {
 
-  @Autowired
-  private MockMvc mockMvc;
+  @Autowired private MockMvc mockMvc;
 
-  @MockitoBean
-  private CloudUsageService service;
+  @MockitoBean private CloudUsageService service;
 
   @Test
   void ingestEndpointShouldReturn200() throws Exception {
 
-    when(service.ingest(any()))
-        .thenReturn(new IngestionResult(
-            List.of(),
-            List.of()));
+    when(service.ingest(any())).thenReturn(new IngestionResult(List.of(), List.of()));
 
-    mockMvc.perform(post("/api/events/ingest")
-        .contentType(MediaType.APPLICATION_JSON)
-        .content("""
+    mockMvc
+        .perform(
+            post("/api/events/ingest")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
             {
               "includeUsage": true,
               "includeBilling": false,
@@ -48,14 +46,14 @@ class CloudUsageControllerTest {
   @Test
   void ingestMockEndpointShouldReturn200() throws Exception {
 
-    when(service.ingestMock(any()))
-        .thenReturn(new IngestionResult(
-            List.of(),
-            List.of()));
+    when(service.ingestMock(any())).thenReturn(new IngestionResult(List.of(), List.of()));
 
-    mockMvc.perform(post("/api/events/ingest/mock")
-        .contentType(MediaType.APPLICATION_JSON)
-        .content("""
+    mockMvc
+        .perform(
+            post("/api/events/ingest/mock")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
             {
               "includeUsage": true,
               "includeBilling": false,
@@ -68,14 +66,14 @@ class CloudUsageControllerTest {
   @Test
   void ingestMockNoiseEndpointShouldReturn200() throws Exception {
 
-    when(service.ingestMockWithNoise(any()))
-        .thenReturn(new IngestionResult(
-            List.of(),
-            List.of()));
+    when(service.ingestMockWithNoise(any())).thenReturn(new IngestionResult(List.of(), List.of()));
 
-    mockMvc.perform(post("/api/events/ingest/mockNoise")
-        .contentType(MediaType.APPLICATION_JSON)
-        .content("""
+    mockMvc
+        .perform(
+            post("/api/events/ingest/mockNoise")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
             {
               "includeUsage": true,
               "includeBilling": false,
@@ -88,9 +86,11 @@ class CloudUsageControllerTest {
   @Test
   void ingestEndpointShouldRejectInvalidJson() throws Exception {
 
-    mockMvc.perform(post("/api/events/ingest")
-        .contentType(MediaType.APPLICATION_JSON)
-        .content("INVALID_JSON"))
+    mockMvc
+        .perform(
+            post("/api/events/ingest")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("INVALID_JSON"))
         .andExpect(status().isBadRequest());
   }
 }
