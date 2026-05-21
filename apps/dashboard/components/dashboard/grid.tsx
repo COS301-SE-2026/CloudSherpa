@@ -12,6 +12,7 @@ interface GridProps {
   onLayoutChange: (layout: LayoutItem[]) => void;
   layouts: LayoutItem[];
   onDeleteWidget: (layoutId: string, widgetId: string) => void;
+  metricFetchLoad: boolean;
 }
 
 export default function Grid({
@@ -20,6 +21,7 @@ export default function Grid({
   onLayoutChange,
   layouts,
   onDeleteWidget,
+  metricFetchLoad,
 }: GridProps) {
   const gridRef = useRef<HTMLDivElement>(null);
   const gridStackInstance = useRef<GridStack | null>(null);
@@ -144,6 +146,7 @@ export default function Grid({
             layout={l} 
             isEditMode={isEditMode} 
             onDeleteWidget={onDeleteWidget}
+            metricFetchLoad={metricFetchLoad}
           />
         ))}
       </div>

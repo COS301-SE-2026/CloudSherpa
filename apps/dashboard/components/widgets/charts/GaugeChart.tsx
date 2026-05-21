@@ -1,4 +1,5 @@
 "use client"
+import { Spinner } from "@/components/atoms/spinner";
 import { echarts } from "@/lib/charts/echarts";
 import { useMetricStore } from "@/stores/metric-store";
 import { metricSeriesToArray, MetricType } from "@/types/metric";
@@ -9,12 +10,14 @@ type GaugeWidgetProps = {
     title: string,
     resourceId?: string,
     metricType?: MetricType,
+    metricFetchLoad?: boolean,
 }
 
 export function GaugeWidget({
     title,
     resourceId,
     metricType,
+    metricFetchLoad = false,
 
 }: Readonly<GaugeWidgetProps>){
     const chartRef = useRef<HTMLDivElement>(null);
@@ -221,6 +224,13 @@ export function GaugeWidget({
     }, []);
 
     return(
-        <div ref={chartRef} className="h-full w-full" />
+        <div className="relative h-full w-full">
+            <div ref={chartRef} className="h-full w-full" />
+            {metricFetchLoad && (
+                <div className="absolute inset-0 z-10 flex items-center justify-center bg-card/60 backdrop-blur-[1px]">
+                    <Spinner className="size-8" />
+                </div>
+            )}
+        </div>
     );
 }
