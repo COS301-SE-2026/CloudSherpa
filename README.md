@@ -1,8 +1,7 @@
 <div align="center">
-  <img src="docs/assets/team-photos/BitFlipLogoTransparent.png" alt="CloudSherpa Logo" width="300"/>
+  <img src="docs/assets/team-photos/bitflip.svg" alt="CloudSherpa Logo" width="300"/>
 
-  <p style="font-size: 50px"><strong>CloudSherpa</storng></p>
-  <p><strong>An AI-Driven Multi-Cloud FinOps Platform</strong></p>
+  # CloudSherpa
 </div>
 
 <div style="display: flex; justify-content: center; align-items: center; flex-direction: column;">
@@ -26,17 +25,17 @@
 </div>
 </div>
 
-## Documentation
+## Important Links
 
-For a comprehensive overview of CloudSherpa, visit our [official documentation site](https://cos301-se-2026.github.io/CloudSherpa/).
+🚀 [CloudSherpa Deployed](https://cloudsherpa.gjjcs.org)
 
-## GitHub Project
+🔗 [GitHub Project](https://github.com/orgs/COS301-SE-2026/projects/39)
 
-Follow our active development, feature tracking, and issue management on our [CloudSherpa Project](https://github.com/orgs/COS301-SE-2026/projects/39).
+📚 [Developer Documentation](https://bitflip301.gjjcs.org/docs/)
 
-## Design System
+⚙️ [System Requirements Documentation]()
 
-Explore our [CloudSherpa Design System](https://bitflip301.gjjcs.org/design-system/designSystem.html)
+🎨 [Design System](https://bitflip301.gjjcs.org/design-system/designSystem.html)
 
 ## Project Overview
 
