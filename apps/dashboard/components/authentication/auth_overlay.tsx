@@ -15,7 +15,7 @@ export function AuthOverlay({ isSignUp, toggle }: OverlayProps) {
       isSignUp ? "-translate-x-full" : ""
     )}>
       <div className={cn(
-        "relative -left-full h-full w-[200%] transform transition-transform duration-700 ease-in-out bg-primary",
+        "relative -left-full h-full w-[200%] transform transition-transform duration-700 ease-in-out bg-secondary",
         isSignUp ? "translate-x-1/2" : "translate-x-0"
       )}>
         
