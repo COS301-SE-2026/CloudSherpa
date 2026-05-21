@@ -17,7 +17,7 @@
 
 <div align="center">
 
-![Website](https://img.shields.io/website?url=http%3A//cloudsherpa.gjjcs.org&label=cloudsherpa%20site)
+![Website](https://img.shields.io/website?url=https%3A%2F%2Fcloudsherpa.gjjcs.org%2Fhi%2F&label=cloudsherpa%20site)
 [![CloudSherpa service coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fsherpa-coverage.gjjcs.org%2Fbadges%2Fservice)](https://sherpa-coverage.gjjcs.org/badges/service)
 [![CloudSherpa dashboard coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fsherpa-coverage.gjjcs.org%2Fbadges%2Fdashboard)](https://sherpa-coverage.gjjcs.org/badges/dashboard)
 [![CloudSherpa ingestion coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fsherpa-coverage.gjjcs.org%2Fbadges%2Fingestion)](https://sherpa-coverage.gjjcs.org/badges/ingestion)
