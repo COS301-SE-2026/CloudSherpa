@@ -1,5 +1,6 @@
 "use client"
 
+import { Spinner } from "@/components/atoms/spinner";
 import { echarts } from "@/lib/charts/echarts";
 import { useMetricStore } from "@/stores/metric-store";
 import { useWindowStore } from "@/stores/window-store";
@@ -11,6 +12,7 @@ type LineChartWidgetProps = {
     title: string,
     resourceId?: string,
     metricType?: MetricType,
+    metricFetchLoad?: boolean,
 }
 
 // This will be replaced by zustand store for dashboard window
@@ -23,6 +25,7 @@ export function LineChartWidget({
     title,
     resourceId,
     metricType,
+    metricFetchLoad = false,
 }: Readonly<LineChartWidgetProps>) {
     const chartRef = useRef<HTMLDivElement>(null);
     const series = useMetricStore((state) => state.seriesByKey[`${resourceId}:${metricType}`]);
@@ -179,6 +182,13 @@ export function LineChartWidget({
     }, []);
 
     return (
-        <div ref={chartRef} className="h-full w-full" />
+        <div className="relative h-full w-full">
+            <div ref={chartRef} className="h-full w-full" />
+            {metricFetchLoad && (
+                <div className="absolute inset-0 z-10 flex items-center justify-center bg-card/60 backdrop-blur-[1px]">
+                    <Spinner className="size-8" />
+                </div>
+            )}
+        </div>
     );
 }
