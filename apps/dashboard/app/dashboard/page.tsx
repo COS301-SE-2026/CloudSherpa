@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect, Suspense } from "react";
+import { useState, useCallback, useEffect, Suspense, useMemo } from "react";
 import { DateRange } from "react-day-picker";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -11,8 +11,11 @@ import { useDashboardStore, DashboardStore } from "@/stores/dashboard-store";
 import { useMetricStream } from "@/services/sse/metric-stream";
 import { useFetchMetrics } from "@/hooks/useFetchMetrics";
 import { useWindowStore } from "@/stores/window-store";
-import { WidgetConfigData } from "@/components/widgets/widgetConfig";
+import { WidgetConfig, WidgetConfigData } from "@/components/widgets/widgetConfig";
 import { useResourceNameStore } from "@/stores/resource-store";
+import { useMetricStore } from "@/stores/metric-store";
+import { MetricType } from "@/types/metric";
+import { Button } from "@/components/atoms/button";
 
 function DashboardContent() {
   const { error: streamError } = useMetricStream();
@@ -23,6 +26,7 @@ function DashboardContent() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [originalLayout, setOriginalLayout] = useState<LayoutItem[]>([]);
   const [originalConfigs, setOriginalConfigs] = useState<WidgetConfigData[]>([]);
+  const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
 
   const fromMs = useWindowStore((state) => state.fromMs);
   const toMs = useWindowStore((state) => state.toMs);
@@ -39,6 +43,26 @@ function DashboardContent() {
   useFetchMetrics();
 
   const fetchResourceNames = useResourceNameStore((state) => state.fetchResources);
+
+  // Dynamically extract all available resources and metrics directly from the store memory
+  const getResourceList = useMetricStore((state) => state.getResourceList);
+  const getMetricList = useMetricStore((state) => state.getMetricList);
+  const availableResources = getResourceList();
+  const availableMetricTypes = getMetricList();
+
+  // Prepare a dynamic fallback default configuration for new widgets/ensures no empty fields in config to break stuff
+  const defaultResource = availableResources.length > 0 ? availableResources[0] : "";
+  const defaultMetric = defaultResource && availableMetricTypes[defaultResource]?.length > 0
+    ? availableMetricTypes[defaultResource][0]
+    : "anon" as MetricType;
+
+  const defaultNewWidgetConfig = useMemo<WidgetConfigData>(() => ({
+    id: "new-widget-temp-id",
+    forTitle: "New Widget",
+    resourceId: defaultResource,
+    metricType: defaultMetric,
+    forWidgetType: "line"
+  }), [defaultResource, defaultMetric]);
 
   const { 
     setInitialState, 
@@ -148,19 +172,21 @@ function DashboardContent() {
 
   //  UUID's for widget and layout id's so in theory won't be an id clash
   const handleAddWidget = useCallback(() => {
+    setIsConfigModalOpen(true);
+  }, []);
+
+  const handleConfirmAddWidget = useCallback((customConfig: WidgetConfigData) => {
     const widgetId = crypto.randomUUID();
     const layoutId = crypto.randomUUID();
     const newConfig: WidgetConfigData = {
+      ...customConfig,
       id: widgetId,
-      forWidgetType: "line", 
-      forTitle: "New Widget (Click to Customize)", 
-      resourceId: "mock-ec2-1",
-      metricType: "anon", 
     };
     const newLayout: LayoutItem = { id: layoutId, widgetId, x: 0, y: 0, w: 6, h: 4, autoPosition: true };
 
     addWidget(newLayout, newConfig);
-    setIsEditMode(true);
+    setIsEditMode(true); 
+    setIsConfigModalOpen(false);
   }, [addWidget]);
 
   const handleDeleteWidget = useCallback((layoutId: string, widgetId: string) => {
@@ -206,7 +232,21 @@ function DashboardContent() {
           <div className="flex-1 flex items-center justify-center text-muted-foreground animate-pulse">
             Loading dashboards...
           </div>
-        ) : activeDashboard ? (
+        ) : !activeDashboard ? (
+          <div className="flex-1 flex flex-col items-center justify-center text-center p-10">
+            <h2 className="text-xl font-semibold mb-2">No Dashboards Found</h2>
+            <p className="text-muted-foreground mb-6">Create your first dashboard to start monitoring your cloud resources.</p>
+          </div>
+        ) : widgetLayouts.length === 0 ? //display if dashboard doesnt contain any widgets
+        (
+          <div className="flex-1 flex flex-col items-center justify-center text-center p-10">
+            <h2 className="text-xl font-semibold mb-2">This Dashboard is Empty</h2>
+            <p className="text-muted-foreground mb-6">Start building your layout by adding a new widget.</p>
+            <Button onClick={handleAddWidget}>
+              Add Your First Widget
+            </Button>
+          </div>
+        ) : (
           <Grid
             isEditMode={isEditMode}
             dashboardId={activeDashboardId || ""}
@@ -214,11 +254,17 @@ function DashboardContent() {
             layouts={widgetLayouts}
             onDeleteWidget={handleDeleteWidget}
           />
-        ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-center p-10">
-            <h2 className="text-xl font-semibold mb-2">No Dashboards Found</h2>
-            <p className="text-muted-foreground mb-6">Create your first dashboard to start monitoring your cloud resources.</p>
-          </div>
+        )}
+
+        {isConfigModalOpen && (
+          <WidgetConfig
+            isOpen={isConfigModalOpen}
+            onClose={() => setIsConfigModalOpen(false)}
+            onSave={handleConfirmAddWidget}
+            forExistingConfig={defaultNewWidgetConfig}
+            forAvailableResources={availableResources}
+            forAvailableMetricTypes={availableMetricTypes}
+          />
         )}
       </main>
     </>
