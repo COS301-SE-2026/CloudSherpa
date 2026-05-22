@@ -185,7 +185,6 @@ function DashboardContent() {
     const newLayout: LayoutItem = { id: layoutId, widgetId, x: 0, y: 0, w: 6, h: 4, autoPosition: true };
 
     addWidget(newLayout, newConfig);
-    setIsEditMode(true); 
     setIsConfigModalOpen(false);
   }, [addWidget]);
 
