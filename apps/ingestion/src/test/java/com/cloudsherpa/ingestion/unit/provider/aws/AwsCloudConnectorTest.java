@@ -16,7 +16,7 @@ class AwsCloudConnectorTest {
 
   @Test
   void getProviderNameShouldReturnAws() {
-    assertEquals("AWS", connector.getProviderName());
+    assertEquals("aws", connector.getProviderName());
   }
 
   @Test
