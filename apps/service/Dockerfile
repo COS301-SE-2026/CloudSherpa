@@ -32,5 +32,8 @@ FROM eclipse-temurin:21-jre AS prod
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 
+RUN useradd serviceuser
+USER serviceuser 
+
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
