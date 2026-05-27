@@ -52,6 +52,46 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
     return instanceIds;
   }
 
+  private List<UsageRecordModel> buildRequestResult(
+      CloudWatchClient client,
+      GetMetricStatisticsRequest req,
+      AccountScope accountScope,
+      ServiceScope serviceScope,
+      InstanceScope instance,
+      String instanceValue,
+      String metric,
+      int period,
+      UUID ingestionID) {
+
+    List<UsageRecordModel> records = new ArrayList<>();
+
+    for (Datapoint dp : client.getMetricStatistics(req).datapoints()) {
+
+      UsageRecordModel r = new UsageRecordModel();
+
+      r.setProvider(accountScope.getProvider());
+      r.setAccountId(accountScope.getAccountId());
+      r.setServiceName(serviceScope.getName());
+      r.setMetricName(metric);
+      r.setValue(dp.average());
+      r.setUnit(dp.unit().name());
+      r.setTimestamp(dp.timestamp());
+      r.setIngestionTimestamp(Instant.now());
+      r.setRecordId(UUID.randomUUID());
+      r.setResourceId(instanceValue);
+      r.setResourceType(instance.getIdentifierName());
+      r.setRegion(Region.AF_SOUTH_1.toString());
+      r.setIngestionId(ingestionID.toString());
+      r.setSource("CloudWatch");
+      r.setPeriodStart(dp.timestamp().minusSeconds(period));
+      r.setPeriodEnd(dp.timestamp());
+
+      records.add(r);
+    }
+
+    return records;
+  }
+
   @Override
   public List<UsageRecordModel> fetchUsage(
       AccountScope accountScope, IngestionRequestEvent request) {
@@ -106,29 +146,17 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
                     .statistics(Statistic.AVERAGE)
                     .build();
 
-            for (Datapoint dp : client.getMetricStatistics(req).datapoints()) {
-
-              UsageRecordModel r = new UsageRecordModel();
-              r.setProvider(accountScope.getProvider());
-              r.setAccountId(accountScope.getAccountId());
-              r.setServiceName(serviceScope.getName());
-              r.setMetricName(metric);
-              r.setValue(dp.average());
-              r.setUnit(dp.unit().name());
-              r.setTimestamp(dp.timestamp());
-              r.setIngestionTimestamp(Instant.now());
-              r.setRecordId(UUID.randomUUID());
-              r.setResourceId(instanceValue);
-              r.setResourceType(instance.getIdentifierName());
-              r.setRegion(Region.AF_SOUTH_1.toString());
-              r.setIngestionId(ingestionID.toString());
-              r.setServiceName(serviceScope.getName());
-              r.setSource("CloudWatch");
-              r.setPeriodStart(dp.timestamp().minusSeconds(period));
-              r.setPeriodEnd(dp.timestamp());
-
-              result.add(r);
-            }
+            result.addAll(
+                buildRequestResult(
+                    client,
+                    req,
+                    accountScope,
+                    serviceScope,
+                    instance,
+                    instanceValue,
+                    metric,
+                    period,
+                    ingestionID));
           }
         }
       }

@@ -140,16 +140,16 @@ public class CloudUsageService {
     };
 
     for (int i = 0; i < timestamps.length; i++) {
-      UsageRecordModel record = new UsageRecordModel();
-      record.setProvider(provider);
-      record.setAccountId(accountId);
-      record.setServiceName("EC2");
-      record.setMetricName("CPUUtilization");
-      record.setResourceId("mock-ec2-" + (i + 1));
-      record.setValue(averages[i]);
-      record.setUnit("Percent");
-      record.setTimestamp(OffsetDateTime.parse(timestamps[i]).toInstant());
-      results.add(record);
+      UsageRecordModel usageRecord = new UsageRecordModel();
+      usageRecord.setProvider(provider);
+      usageRecord.setAccountId(accountId);
+      usageRecord.setServiceName("EC2");
+      usageRecord.setMetricName("CPUUtilization");
+      usageRecord.setResourceId("mock-ec2-" + (i + 1));
+      usageRecord.setValue(averages[i]);
+      usageRecord.setUnit("Percent");
+      usageRecord.setTimestamp(OffsetDateTime.parse(timestamps[i]).toInstant());
+      results.add(usageRecord);
     }
 
     return results;
