@@ -18,7 +18,7 @@ export function useLogin() {
                 body: JSON.stringify(loginPayload)
             })
 
-            router.push('/app/dashboard');
+            router.push('/dashboard');
         } catch (error) {
             if (!(error instanceof Error)) {
                 console.error("Unknown error has occured");

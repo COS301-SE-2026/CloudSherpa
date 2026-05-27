@@ -30,7 +30,7 @@ export function useRegistration() {
 
             setTimeout(() => {
                 clearInterval(countDownId);
-                router.push("/app/dashboard");
+                router.push("/dashboard");
             }, redirectCountdown * 1000)
             
         } catch (error) {
