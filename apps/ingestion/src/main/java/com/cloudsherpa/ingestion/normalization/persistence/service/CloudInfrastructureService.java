@@ -11,7 +11,6 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,11 +19,18 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class CloudInfrastructureService {
 
-  @Autowired private CloudConnectionRepository connectionRepo;
-  @Autowired private CloudAccountRepository accountRepo;
-  @Autowired private ResourceRepository resourceRepo;
+  private final CloudConnectionRepository connectionRepo;
+  private final CloudAccountRepository accountRepo;
+  private final ResourceRepository resourceRepo;
 
-  // Ensures all cloud infrastructure entities exist for the given usage record.
+  public CloudInfrastructureService(
+      CloudConnectionRepository connectionRepo,
+      CloudAccountRepository accountRepo,
+      ResourceRepository resourceRepo) {
+    this.connectionRepo = connectionRepo;
+    this.accountRepo = accountRepo;
+    this.resourceRepo = resourceRepo;
+  }
 
   // Creates missing entities in the hierarchy:
   // CloudConnection -> CloudAccount -> Resource

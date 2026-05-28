@@ -12,22 +12,27 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.UUID;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class SherpaDbPersistenceService {
 
-  @Autowired private NormalizedMetricsRepository metricsRepo;
-  @Autowired private CloudInfrastructureService infrastructureService;
+  private final NormalizedMetricsRepository metricsRepo;
+  private final CloudInfrastructureService infrastructureService;
+
+  public SherpaDbPersistenceService(
+      NormalizedMetricsRepository metricsRepo, CloudInfrastructureService infrastructureService) {
+    this.metricsRepo = metricsRepo;
+    this.infrastructureService = infrastructureService;
+  }
 
   // Use @Transactional when we are modifying a database in more than 1 place
   // So that if 1 step succeeds and the other one fails, the data doesn't end up half-written
   @Transactional
-  public void recordMetric(NormalizedMetric metric, UsageRecordModel record, UUID userId) {
+  public void recordMetric(NormalizedMetric metric, UsageRecordModel r, UUID userId) {
 
-    Resource resource = infrastructureService.ensureInfrastructure(record, userId);
+    Resource resource = infrastructureService.ensureInfrastructure(r, userId);
     UUID accountId = resource.getAccountId();
     UUID resourceUuid = resource.getId();
 
