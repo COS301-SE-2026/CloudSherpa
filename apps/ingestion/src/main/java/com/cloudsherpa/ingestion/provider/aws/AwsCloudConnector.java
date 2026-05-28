@@ -167,13 +167,13 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
 
   @Override
   public List<BillingRecordModel> fetchBilling(
-      AccountScope acCOUNTScope, IngestionRequestEvent request) {
+      AccountScope accountScope, IngestionRequestEvent request) {
     return List.of(); // mock for now
   }
 
   @Override
   public List<BillingRecordModel> fetchMockBilling(
-      AccountScope acCOUNTScope, IngestionRequestEvent request) {
+      AccountScope accountScope, IngestionRequestEvent request) {
     return List.of();
   }
 
@@ -287,11 +287,11 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
     long resourceSeed = Objects.hash(accountSeed, serviceScope.getName(), instanceId);
     SplittableRandom rng = new SplittableRandom(resourceSeed);
     MetricSimulationContext context = createSimulationContext(type, rng, serviceScope);
-    int COUNT = 0;
+    int count = 0;
     for (Instant t = request.getFrom();
         !t.isAfter(request.getTo());
         t = t.plusSeconds(request.getPeriod())) {
-      if (++COUNT > 1440) {
+      if (++count > 1440) {
         break;
       }
       result.addAll(
