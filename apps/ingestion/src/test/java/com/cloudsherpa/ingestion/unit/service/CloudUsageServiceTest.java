@@ -8,7 +8,6 @@ import com.cloudsherpa.ingestion.connector.*;
 import com.cloudsherpa.ingestion.models.*;
 import com.cloudsherpa.ingestion.normalization.persistence.service.SherpaDbPersistenceService;
 import com.cloudsherpa.ingestion.service.CloudUsageService;
-import java.lang.reflect.Field;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,12 +27,7 @@ class CloudUsageServiceTest {
     factory = mock(CloudConnectorFactory.class);
     persistenceService = mock(SherpaDbPersistenceService.class);
 
-    service = new CloudUsageService(factory);
-
-    Field field = CloudUsageService.class.getDeclaredField("sherpaDbPersistenceService");
-
-    field.setAccessible(true);
-    field.set(service, persistenceService);
+    service = new CloudUsageService(factory, persistenceService);
   }
 
   @Test

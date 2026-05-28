@@ -52,27 +52,17 @@ public class NormalizedMetrics {
     // Default constructor
   }
 
-  public NormalizedMetrics(
-      UUID accountId,
-      OffsetDateTime recordedAt,
-      UUID resourceId,
-      String metricType,
-      String metricName,
-      BigDecimal metricValue,
-      String unit,
-      String currency,
-      OffsetDateTime periodStart,
-      OffsetDateTime periodEnd) {
-    this.accountId = accountId;
-    this.resourceId = resourceId;
-    this.recordedAt = recordedAt;
-    this.metricType = metricType;
-    this.metricName = metricName;
-    this.metricValue = metricValue;
-    this.unit = unit;
-    this.currency = currency;
-    this.periodStart = periodStart;
-    this.periodEnd = periodEnd;
+  private NormalizedMetrics(Builder builder) {
+    this.accountId = builder.accountId;
+    this.resourceId = builder.resourceId;
+    this.recordedAt = builder.recordedAt;
+    this.metricType = builder.metricType;
+    this.metricName = builder.metricName;
+    this.metricValue = builder.metricValue;
+    this.unit = builder.unit;
+    this.currency = builder.currency;
+    this.periodStart = builder.periodStart;
+    this.periodEnd = builder.periodEnd;
   }
 
   public UUID getMetricId() {
@@ -117,5 +107,72 @@ public class NormalizedMetrics {
 
   public OffsetDateTime getPeriodEnd() {
     return periodEnd;
+  }
+
+  public static class Builder {
+    private UUID accountId;
+    private UUID resourceId;
+    private OffsetDateTime recordedAt;
+    private String metricType;
+    private String metricName;
+    private BigDecimal metricValue;
+    private String unit;
+    private String currency;
+    private OffsetDateTime periodStart;
+    private OffsetDateTime periodEnd;
+
+    public Builder accountId(UUID accountId) {
+      this.accountId = accountId;
+      return this;
+    }
+
+    public Builder resourceId(UUID resourceId) {
+      this.resourceId = resourceId;
+      return this;
+    }
+
+    public Builder recordedAt(OffsetDateTime recordedAt) {
+      this.recordedAt = recordedAt;
+      return this;
+    }
+
+    public Builder metricType(String metricType) {
+      this.metricType = metricType;
+      return this;
+    }
+
+    public Builder metricName(String metricName) {
+      this.metricName = metricName;
+      return this;
+    }
+
+    public Builder metricValue(BigDecimal metricValue) {
+      this.metricValue = metricValue;
+      return this;
+    }
+
+    public Builder unit(String unit) {
+      this.unit = unit;
+      return this;
+    }
+
+    public Builder currency(String currency) {
+      this.currency = currency;
+      return this;
+    }
+
+    public Builder periodStart(OffsetDateTime periodStart) {
+      this.periodStart = periodStart;
+      return this;
+    }
+
+    public Builder periodEnd(OffsetDateTime periodEnd) {
+      this.periodEnd = periodEnd;
+      return this;
+    }
+
+    public NormalizedMetrics build() {
+      return new NormalizedMetrics(this);
+    }
   }
 }
