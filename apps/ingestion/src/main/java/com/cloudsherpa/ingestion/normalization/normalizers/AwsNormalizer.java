@@ -54,16 +54,17 @@ public class AwsNormalizer implements Normalizer {
       periodEnd = r.getTimestamp().toEpochMilli();
     }
 
-    return new NormalizedMetric(
-        metricId,
-        resourceId,
-        accountId,
-        metricType,
-        metricName,
-        metricValue,
-        unit,
-        currency,
-        periodStart,
-        periodEnd);
+    return new NormalizedMetric.Builder()
+        .metricId(metricId)
+        .resourceId(resourceId)
+        .accountId(accountId)
+        .metricType(metricType)
+        .metricName(metricName)
+        .metricValue(metricValue)
+        .unit(unit)
+        .currency(currency)
+        .periodStart(periodStart)
+        .periodEnd(periodEnd)
+        .build();
   }
 }
