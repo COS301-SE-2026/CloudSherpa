@@ -8,15 +8,15 @@ on:
         paths:
             - apps/dashboard/**
             - .github/workflows/dashboard-ci.yml
-            
-permissions:
-  contents: read
-  pull-requests: write
-  checks: write
 
 jobs:
     dashboard-validate:
         runs-on: ubuntu-latest
+
+        permissions:
+          contents: read
+          pull-requests: write
+          checks: write
 
         defaults:
             run:
@@ -66,6 +66,12 @@ jobs:
             
     lighthouseci:
         runs-on: ubuntu-latest
+
+        permissions:
+            contents: read
+            pull-requests: write
+            checks: write
+
         needs: dashboard-validate
         defaults:
             run:
