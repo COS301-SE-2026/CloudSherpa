@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect, Suspense } from "react";
 import { DateRange } from "react-day-picker";
 import { useRouter, useSearchParams } from "next/navigation";
 
+import { Spinner } from "@/components/atoms/spinner";
 import Toolbar from "@/features/dashboard/components/toolbar/toolbar";
 import Grid from "@/features/dashboard/components/widgetGrid/grid";
 import { LayoutItem, DashboardConfig, DashboardStub } from "@/features/dashboard/types/widgets";
@@ -227,9 +228,9 @@ function DashboardContent() {
       )}
 
       <main className="flex-1 overflow-y-auto overflow-x-hidden m-3 flex flex-col">
-        {isLoading || metricFetchLoad ? (
-          <div className="flex-1 flex items-center justify-center text-muted-foreground animate-pulse">
-            {metricFetchLoad ? "Loading metrics..." : "Loading dashboards..."}
+        {isLoading ? (
+          <div className="flex-1 flex items-center justify-center">
+            <Spinner className="size-8" />
           </div>
         ) : metricFetchError ? (
           <div className="flex-1 flex flex-col items-center justify-center text-center p-10">
@@ -243,6 +244,7 @@ function DashboardContent() {
             onLayoutChange={handleLayoutChange}
             layouts={widgetLayouts}
             onDeleteWidget={handleDeleteWidget}
+            metricFetchLoad={metricFetchLoad}
           />
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-center p-10">

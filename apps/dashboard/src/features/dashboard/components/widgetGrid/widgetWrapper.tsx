@@ -9,9 +9,10 @@ interface WidgetWrapperProps {
   layout: LayoutItem;
   isEditMode: boolean;
   onDeleteWidget: (layoutId: string, widgetId: string) => void;
+  metricFetchLoad: boolean;
 }
 
-export const WidgetWrapper = ({ layout, isEditMode, onDeleteWidget }: WidgetWrapperProps) => {
+export const WidgetWrapper = ({ layout, isEditMode, onDeleteWidget, metricFetchLoad }: WidgetWrapperProps) => {
   const { id, widgetId, x, y, w, h, autoPosition } = layout;
   const config = useDashboardStore((state: DashboardStore) => state.widgets[widgetId]);
 
@@ -43,6 +44,7 @@ export const WidgetWrapper = ({ layout, isEditMode, onDeleteWidget }: WidgetWrap
         )}>
           <ConfigurableWidget 
             initialConfig={config}
+            metricFetchLoad={metricFetchLoad}
           />
         </div>
       </div>
