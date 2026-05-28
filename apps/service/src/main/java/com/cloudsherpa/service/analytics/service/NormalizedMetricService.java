@@ -25,7 +25,8 @@ public class NormalizedMetricService {
     this.resourceRepository = resourceRepository;
   }
 
-  public List<NormalizedMetrics> fetchHistoricalData(String from, String to) throws Exception {
+  public List<NormalizedMetrics> fetchHistoricalData(String from, String to)
+      throws ResponseStatusException {
 
     OffsetDateTime parsedFromDate;
     OffsetDateTime parsedToDate;
@@ -35,12 +36,13 @@ public class NormalizedMetricService {
       parsedToDate = OffsetDateTime.parse(to);
     } catch (DateTimeParseException e) {
       // Still need to log for server-side visibility
-      throw new Exception("Date Strings do not conform to ISO-8601 standard");
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST, "Date Strings do not conform to ISO-8601 standard");
     }
 
     if (parsedFromDate.isAfter(parsedToDate)) {
       // from after to
-      throw new Exception("Invalid interval");
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid interval");
     }
 
     return normalizedMetricsRepository.findByPeriodStartBetween(parsedFromDate, parsedToDate);
