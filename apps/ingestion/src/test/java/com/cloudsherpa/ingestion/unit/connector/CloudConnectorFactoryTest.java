@@ -18,7 +18,7 @@ class CloudConnectorFactoryTest {
   void setUp() {
     awsConnector = mock(CloudConnector.class);
 
-    factory = new CloudConnectorFactory(Map.of("AWS", awsConnector));
+    factory = new CloudConnectorFactory(Map.of("aws", awsConnector));
   }
 
   @Test
