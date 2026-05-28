@@ -17,27 +17,17 @@ public class NormalizedMetric {
   private long periodStart;
   private long periodEnd;
 
-  public NormalizedMetric(
-      String metricId,
-      String resourceId,
-      String accountId,
-      String metricType,
-      String metricName,
-      double metricValue,
-      String unit,
-      String currency,
-      long periodStart,
-      long periodEnd) {
-    this.metricId = metricId;
-    this.resourceId = resourceId;
-    this.accountId = accountId;
-    this.metricType = metricType;
-    this.metricName = metricName;
-    this.metricValue = metricValue;
-    this.unit = unit;
-    this.currency = currency;
-    this.periodStart = periodStart;
-    this.periodEnd = periodEnd;
+  private NormalizedMetric(Builder builder) {
+    this.metricId = builder.metricId;
+    this.resourceId = builder.resourceId;
+    this.accountId = builder.accountId;
+    this.metricType = builder.metricType;
+    this.metricName = builder.metricName;
+    this.metricValue = builder.metricValue;
+    this.unit = builder.unit;
+    this.currency = builder.currency;
+    this.periodStart = builder.periodStart;
+    this.periodEnd = builder.periodEnd;
   }
 
   public String getMetricId() {
@@ -78,5 +68,72 @@ public class NormalizedMetric {
 
   public long getPeriodEnd() {
     return periodEnd;
+  }
+
+  public static class Builder {
+    private String metricId;
+    private String resourceId;
+    private String accountId;
+    private String metricType;
+    private String metricName;
+    private double metricValue;
+    private String unit;
+    private String currency;
+    private long periodStart;
+    private long periodEnd;
+
+    public Builder metricId(String metricId) {
+      this.metricId = metricId;
+      return this;
+    }
+
+    public Builder resourceId(String resourceId) {
+      this.resourceId = resourceId;
+      return this;
+    }
+
+    public Builder accountId(String accountId) {
+      this.accountId = accountId;
+      return this;
+    }
+
+    public Builder metricType(String metricType) {
+      this.metricType = metricType;
+      return this;
+    }
+
+    public Builder metricName(String metricName) {
+      this.metricName = metricName;
+      return this;
+    }
+
+    public Builder metricValue(double metricValue) {
+      this.metricValue = metricValue;
+      return this;
+    }
+
+    public Builder unit(String unit) {
+      this.unit = unit;
+      return this;
+    }
+
+    public Builder currency(String currency) {
+      this.currency = currency;
+      return this;
+    }
+
+    public Builder periodStart(long periodStart) {
+      this.periodStart = periodStart;
+      return this;
+    }
+
+    public Builder periodEnd(long periodEnd) {
+      this.periodEnd = periodEnd;
+      return this;
+    }
+
+    public NormalizedMetric build() {
+      return new NormalizedMetric(this);
+    }
   }
 }
