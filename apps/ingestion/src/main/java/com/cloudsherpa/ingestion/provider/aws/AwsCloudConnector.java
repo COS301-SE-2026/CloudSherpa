@@ -53,34 +53,41 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
     private List<UsageRecordModel> buildRequestResult(
             CloudWatchClient client,
             GetMetricStatisticsRequest req,
-            UsageRequestContext context) {
+            AccountScope accountScope,
+            ServiceScope serviceScope,
+            InstanceScope instance,
+            String instanceValue,
+            String metric,
+            int period,
+            UUID ingestionID) {
 
-        List<UsageRecordModel> usageRecords = new ArrayList<>();
+        List<UsageRecordModel> records = new ArrayList<>();
 
         for (Datapoint dp : client.getMetricStatistics(req).datapoints()) {
 
             UsageRecordModel r = new UsageRecordModel();
-            r.setProvider(context.accountScope().getProvider());
-            r.setAccountId(context.accountScope().getAccountId());
-            r.setServiceName(context.serviceScope().getName());
-            r.setMetricName(context.metric());
+
+            r.setProvider(accountScope.getProvider());
+            r.setAccountId(accountScope.getAccountId());
+            r.setServiceName(serviceScope.getName());
+            r.setMetricName(metric);
             r.setValue(dp.average());
             r.setUnit(dp.unit().name());
             r.setTimestamp(dp.timestamp());
             r.setIngestionTimestamp(Instant.now());
             r.setRecordId(UUID.randomUUID());
-            r.setResourceId(context.instanceValue());
-            r.setResourceType(context.instance().getIdentifierName());
+            r.setResourceId(instanceValue);
+            r.setResourceType(instance.getIdentifierName());
             r.setRegion(Region.AF_SOUTH_1.toString());
-            r.setIngestionId(context.ingestionID().toString());
+            r.setIngestionId(ingestionID.toString());
             r.setSource("CloudWatch");
-            r.setPeriodStart(dp.timestamp().minusSeconds(context.period()));
+            r.setPeriodStart(dp.timestamp().minusSeconds(period));
             r.setPeriodEnd(dp.timestamp());
 
-            usageRecords.add(r);
+            records.add(r);
         }
 
-        return usageRecords;
+        return records;
     }
 
     @Override
@@ -129,16 +136,18 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
                                 .dimensions(dimension)
                                 .statistics(Statistic.AVERAGE)
                                 .build();
-                        UsageRequestContext context = new UsageRequestContext(
-                                accountScope,
-                                serviceScope,
-                                instance,
-                                instanceValue,
-                                metric,
-                                period,
-                                ingestionID);
 
-                        result.addAll(buildRequestResult(client, req, context));
+                        result.addAll(
+                                buildRequestResult(
+                                        client,
+                                        req,
+                                        accountScope,
+                                        serviceScope,
+                                        instance,
+                                        instanceValue,
+                                        metric,
+                                        period,
+                                        ingestionID));
                     }
                 }
             }
@@ -544,16 +553,6 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
         MutableDouble(double value) {
             this.value = value;
         }
-    }
-
-    private record UsageRequestContext(
-            AccountScope accountScope,
-            ServiceScope serviceScope,
-            InstanceScope instance,
-            String instanceValue,
-            String metric,
-            int period,
-            UUID ingestionID) {
     }
 
     private double computeMetric(
