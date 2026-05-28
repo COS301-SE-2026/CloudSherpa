@@ -8,10 +8,12 @@ import { WidgetConfig, WidgetConfigData } from './widgetConfig';
 
 interface ConfigurableWidgetProps{
     readonly initialConfig: WidgetConfigData;
+    readonly metricFetchLoad?: boolean;
 }
 
 export function ConfigurableWidget({
     initialConfig,
+    metricFetchLoad = false,
 }: ConfigurableWidgetProps){
     const [isConfigOpen, setIsConfigOpen] = useState(false);
     const [config, setConfig] = useState<WidgetConfigData>(initialConfig);
@@ -25,6 +27,7 @@ export function ConfigurableWidget({
             resourceId: config.resourceId,
             title: config.title,
             metricType: config.metricType,
+            metricFetchLoad,
         };
 
         if(config.widgetType === 'gauge'){

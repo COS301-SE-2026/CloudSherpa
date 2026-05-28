@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect, Suspense } from "react";
 import { DateRange } from "react-day-picker";
 import { useRouter, useSearchParams } from "next/navigation";
 
+import { Spinner } from "@/components/atoms/spinner";
 import Toolbar from "@/components/dashboard/toolbar";
 import Grid from "@/components/dashboard/grid";
 import { LayoutItem, DashboardConfig, DashboardStub } from "@/types/widgets";
@@ -72,10 +73,6 @@ function DashboardContent() {
       // Leverage fact that dashboards need to be loaded into mem to trigger initial metric fetch
       await fetchResourceNames();
 
-      if (metricFetchLoad) {
-        return;
-      }
-
       if (metricFetchError) {
         setIsLoading(false);
         return;
@@ -118,7 +115,7 @@ function DashboardContent() {
     //note: reactMemo is an option for components that re-render a lot (apparently)
 
     loadDashboardData();
-  }, [setInitialState, setActiveDashboard, router, dashboards, fetchResourceNames, urlId, createDefaultWidgetConfig, metricFetchLoad, metricFetchError]);
+  }, [setInitialState, setActiveDashboard, router, dashboards, fetchResourceNames, urlId, createDefaultWidgetConfig, metricFetchError]);
 
   // sync Zustand store when the URL changes (i.e browser back/forward buttons)
   useEffect(() => {
@@ -227,9 +224,9 @@ function DashboardContent() {
       )}
 
       <main className="flex-1 overflow-y-auto overflow-x-hidden m-3 flex flex-col">
-        {isLoading || metricFetchLoad ? (
-          <div className="flex-1 flex items-center justify-center text-muted-foreground animate-pulse">
-            {metricFetchLoad ? "Loading metrics..." : "Loading dashboards..."}
+        {isLoading ? (
+          <div className="flex-1 flex items-center justify-center">
+            <Spinner className="size-8" />
           </div>
         ) : metricFetchError ? (
           <div className="flex-1 flex flex-col items-center justify-center text-center p-10">
@@ -243,6 +240,7 @@ function DashboardContent() {
             onLayoutChange={handleLayoutChange}
             layouts={widgetLayouts}
             onDeleteWidget={handleDeleteWidget}
+            metricFetchLoad={metricFetchLoad}
           />
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-center p-10">
