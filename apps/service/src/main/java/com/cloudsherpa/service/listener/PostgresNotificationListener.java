@@ -118,17 +118,9 @@ public class PostgresNotificationListener implements SmartLifecycle {
           // This retrieves the actual text payload we sent from the database trigger
           // Thanks to row_to_json(NEW), it should be a JSON string representing a database row.
           String payload = notification.getParameter();
-          logger.info("NOTIFIED metric_events: " + payload);
+          logger.info("NOTIFIED metric_events");
 
-          try {
-            // Parse the raw string back into a JSON object
-            JsonNode event = objectMapper.readTree(payload);
-
-            // Pass the parsed JSON to the business logic
-            processMetricForAnalytics(event);
-          } catch (Exception e) {
-            logger.info(e.getMessage());
-          }
+          processMetricForAnalytics(payload);
         }
       }
     } catch (SQLException e) {
@@ -137,12 +129,17 @@ public class PostgresNotificationListener implements SmartLifecycle {
   }
 
   // Parse and forward the metric to any connected SSE clients.
-  private void processMetricForAnalytics(JsonNode metric) {
-    // Now that the data is a JSON object, extract values defensively.
+  private void processMetricForAnalytics(String payload) {
+    try {
+      // Parse the raw string back into a JSON object
+      JsonNode event = objectMapper.readTree(payload);
 
-    // This is where we would call intelligence engine to do its thing
+      // This is where we would call intelligence engine to do its thing
 
-    sseService.broadcast("metric", metric);
+      sseService.broadcast("metric", event);
+    } catch (Exception e) {
+      logger.info("Failed to parse metric payload: " + e.getMessage());
+    }
   }
 
   // SmartLifecycle: called by Spring when the context starts.
