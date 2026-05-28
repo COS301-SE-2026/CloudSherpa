@@ -16,16 +16,19 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /** Intermediary between the CloudUsageController and the ingestion pipeline. */
 @Service
 public class CloudUsageService {
   private final CloudConnectorFactory factory;
+  private final SherpaDbPersistenceService sherpaDbPersistenceService;
+  private final AwsNormalizer normalizer = new AwsNormalizer();
 
-  public CloudUsageService(CloudConnectorFactory factory) {
+  public CloudUsageService(
+      CloudConnectorFactory factory, SherpaDbPersistenceService sherpaDbPersistenceService) {
     this.factory = factory;
+    this.sherpaDbPersistenceService = sherpaDbPersistenceService;
   }
 
   public IngestionResult ingest(IngestionRequestEvent request) {
@@ -91,10 +94,6 @@ public class CloudUsageService {
 
     return new IngestionResult(usageResults, billingResults);
   }
-
-  @Autowired private SherpaDbPersistenceService sherpaDbPersistenceService;
-
-  private final AwsNormalizer normalizer = new AwsNormalizer();
 
   private void normalizeAndPersistUsage(List<UsageRecordModel> usageRecords, UUID userId) {
     if (usageRecords == null || usageRecords.isEmpty()) {
