@@ -12,7 +12,7 @@ export type LayoutItem = {
 
 export type WidgetConfig = {
     id: string;
-    chartType: string;
+    chartType: ChartType;
     title: string;
     resourceId: string;
     metricType: MetricType;
@@ -28,4 +28,13 @@ export type DashboardConfig = {
 export type DashboardStub = {
     id: string;
     label: string;
+};
+
+// update every time a new chart is added
+export type ChartType = 'line' | 'gauge'
+
+export const CHART_COMPONENTS: Record<string, React.ComponentType<BaseChartProps>> = {
+  line: LineChart,
+  gauge: GaugeChart,
+  // 'bar': BarChart,
 };

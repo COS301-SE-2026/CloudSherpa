@@ -8,7 +8,6 @@ import type { EChartsOption } from "echarts";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 type LineChartWidgetProps = {
-    title: string,
     resourceId?: string,
     metricType?: MetricType,
 }
@@ -19,8 +18,7 @@ type LineChartWidgetProps = {
 // investigation regarding this
 const AXIS_TICK_MS = 5_000;
 
-export function LineChartWidget({
-    title,
+export function LineChart({
     resourceId,
     metricType,
 }: Readonly<LineChartWidgetProps>) {
@@ -131,7 +129,6 @@ export function LineChartWidget({
 
             series: [
                 {
-                    name: title,
                     type: "line",
                     data: points,
                     // symbol = visual marker
@@ -142,7 +139,7 @@ export function LineChartWidget({
         };
 
         chartInstance.current?.setOption(option);
-    }, [title, resourceId, data, visibleWindowMs, lineColor, gridOpacity, textColor])
+    }, [resourceId, data, visibleWindowMs, lineColor, gridOpacity, textColor])
 
     useEffect(() => {
         if(!chartInstance.current){
