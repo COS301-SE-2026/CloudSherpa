@@ -46,17 +46,18 @@ public class SherpaDbPersistenceService {
 
     // Create the new entity representing the row in the normalized_metrics table.
     NormalizedMetrics newMetric =
-        new NormalizedMetrics(
-            accountId,
-            OffsetDateTime.now(),
-            resourceUuid,
-            metric.getMetricType(),
-            metric.getMetricName(),
-            BigDecimal.valueOf(metric.getMetricValue()),
-            metric.getUnit(),
-            metric.getCurrency(),
-            periodStart,
-            periodEnd);
+        new NormalizedMetrics.Builder()
+            .accountId(accountId)
+            .recordedAt(OffsetDateTime.now())
+            .resourceId(resourceUuid)
+            .metricType(metric.getMetricType())
+            .metricName(metric.getMetricName())
+            .metricValue(BigDecimal.valueOf(metric.getMetricValue()))
+            .unit(metric.getUnit())
+            .currency(metric.getCurrency())
+            .periodStart(periodStart)
+            .periodEnd(periodEnd)
+            .build();
 
     // SQL insert statement
     // The actual database insertion. Spring Data JPA translates this into:
