@@ -14,7 +14,7 @@ public class CloudConnectorFactory {
 
   public CloudConnector getConnector(String provider) {
 
-    CloudConnector connector = connectors.get(provider.toUpperCase());
+    CloudConnector connector = connectors.get(provider.toLowerCase());
 
     if (connector == null) {
       throw new IllegalArgumentException("No connector found for provider: " + provider);

@@ -36,10 +36,10 @@ export default function Widget({ config }: WidgetProps) {
 
   return (
     <>
-      <Card className="flex flex-col items-start justify-between h-full w-full overflow-hidden border border-border rounded-md shadow-sm bg-card">
-        <CardHeader className="flex flex-row items-center justify-start border-b border-border  px-4 py-2 space-y-0 h-12">
+      <Card className="flex  h-full w-full overflow-hidden border border-border rounded-md shadow-sm bg-card">
+        <CardHeader className="flex flex-row items-center justify-between border-b border-border  px-4 py-2 space-y-0 h-12">
           <CardTitle className="text-sm font-semibold text-foreground">{title}</CardTitle>
-          <Button onClick={() => setIsConfigOpen(true)} className="bg-none">
+          <Button onClick={() => setIsConfigOpen(true)} className="bg-transparent">
             <EllipsisVertical />
           </Button>
         </CardHeader>
