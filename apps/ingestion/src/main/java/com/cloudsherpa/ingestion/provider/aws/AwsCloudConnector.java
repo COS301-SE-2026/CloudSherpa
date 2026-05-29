@@ -26,7 +26,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
   private static final String MEMORY_UTILIZATION = "MemoryUtilization";
   private static final String COUNT = "Count";
   private static final String MILLISECONDS = "Milliseconds";
-  private static final String bytes = "Bytes";
+  private static final String BYTES = "Bytes";
   private static final String PERCENT = "Percent";
 
   private CloudWatchClient defaultClient =
@@ -635,17 +635,17 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
 
     private CloudWatchMetricUnits() {}
 
-    public static final Map<ServiceType, Map<String, String>> UNITS =
+    public static final Map<ServiceType, Map<String, String>> units =
         Map.of(
             ServiceType.EC2,
             Map.ofEntries(
                 Map.entry(CPU_UTILIZATION, PERCENT),
                 Map.entry("DiskReadOps", COUNT),
                 Map.entry("DiskWriteOps", COUNT),
-                Map.entry("DiskReadBytes", bytes),
-                Map.entry("DiskWriteBytes", bytes),
-                Map.entry(NETWORK_IN, bytes),
-                Map.entry(NETWORK_OUT, bytes),
+                Map.entry("DiskReadBytes", BYTES),
+                Map.entry("DiskWriteBytes", BYTES),
+                Map.entry(NETWORK_IN, BYTES),
+                Map.entry(NETWORK_OUT, BYTES),
                 Map.entry("NetworkPacketsIn", COUNT),
                 Map.entry("NetworkPacketsOut", COUNT),
                 Map.entry("StatusCheckFailed", COUNT),
@@ -664,19 +664,19 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
             Map.ofEntries(
                 Map.entry(CPU_UTILIZATION, PERCENT),
                 Map.entry("DatabaseConnections", COUNT),
-                Map.entry("FreeStorageSpace", bytes),
+                Map.entry("FreeStorageSpace", BYTES),
                 Map.entry("ReadLatency", MILLISECONDS),
                 Map.entry("WriteLatency", MILLISECONDS),
                 Map.entry("ReadIOPS", "Count/Second"),
                 Map.entry("WriteIOPS", "Count/Second"),
                 Map.entry("NetworkReceiveThroughput", "Bytes/Second"),
                 Map.entry("NetworkTransmitThroughput", "Bytes/Second"),
-                Map.entry("FreeableMemory", bytes),
-                Map.entry("SwapUsage", bytes)),
+                Map.entry("FreeableMemory", BYTES),
+                Map.entry("SwapUsage", BYTES)),
             ServiceType.S3,
             Map.ofEntries(
                 Map.entry("NumberOfObjects", COUNT),
-                Map.entry("BucketSizeBytes", bytes),
+                Map.entry("BucketSizeBytes", BYTES),
                 Map.entry("AllRequests", COUNT),
                 Map.entry("GetRequests", COUNT),
                 Map.entry("PutRequests", COUNT),
@@ -714,7 +714,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
                 Map.entry("IterationTime", MILLISECONDS)));
 
     public static String unit(ServiceType type, String metric) {
-      return UNITS.getOrDefault(type, Map.of()).getOrDefault(metric, "None");
+      return units.getOrDefault(type, Map.of()).getOrDefault(metric, "None");
     }
   }
 }
