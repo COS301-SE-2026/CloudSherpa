@@ -7,14 +7,14 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Spinner } from "@/components/atoms/spinner";
 import Toolbar from "@/features/dashboard/components/toolbar/toolbar";
 import Grid from "@/features/dashboard/components/widgetGrid/grid";
-import { LayoutItem, DashboardConfig, DashboardStub } from "@/features/dashboard/types/widgets";
+import { LayoutItem, DashboardConfig, DashboardStub, WidgetConfig, ChartType } from "@/features/dashboard/types/widgets";
 import { useDashboardStore, DashboardStore } from "@/features/dashboard/stores/dashboard-store";
 import { useMetricStream } from "@/features/dashboard/services/sse/metric-stream";
 import { useFetchMetrics } from "@/features/dashboard/hooks/useFetchMetrics";
 import { useWindowStore } from "@/features/dashboard/stores/window-store";
-import { WidgetConfigData } from "@/features/dashboard/components/widgetGrid/widgets/widgetConfig";
 import { useResourceNameStore } from "@/features/dashboard/stores/resource-store";
 import { useMetricStore } from "@/features/dashboard/stores/metric-store";
+
 
 function DashboardContent() {
   const { error: streamError } = useMetricStream()
@@ -24,7 +24,7 @@ function DashboardContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [isEditMode, setIsEditMode] = useState(false);
   const [originalLayout, setOriginalLayout] = useState<LayoutItem[]>([]);
-  const [originalConfigs, setOriginalConfigs] = useState<WidgetConfigData[]>([]);
+  const [originalConfigs, setOriginalConfigs] = useState<WidgetConfig[]>([]);
 
   const fromMs = useWindowStore((state) => state.fromMs);
   const toMs = useWindowStore((state) => state.toMs);
@@ -52,14 +52,14 @@ function DashboardContent() {
     addDashboard 
   } = useDashboardStore((state: DashboardStore) => state.actions);
 
-  const createDefaultWidgetConfig = useCallback((id: string, title: string, widgetType: "line" | "gauge"): WidgetConfigData => {
+  const createDefaultWidgetConfig = useCallback((id: string, title: string, chartType: ChartType): WidgetConfig => {
     const metricsByResource = getMetricList();
     const resourceId = Object.keys(metricsByResource)[0];
 
     return {
       id,
       title,
-      widgetType,
+      chartType,
       resourceId,
       metricType: resourceId ? metricsByResource[resourceId]?.[0] ?? "anon" : "anon",
     };
@@ -86,7 +86,7 @@ function DashboardContent() {
 
         // Some info that helped me whilst debugging, this is so that there are mock widgets
         // once the dashboard loads
-        const initialConfigs: WidgetConfigData[] = [
+        const initialConfigs: WidgetConfig[] = [
           createDefaultWidgetConfig("w-1", "Live CPU Usage (Mock)", "line"),
           createDefaultWidgetConfig("w-2", "Live Memory (Mock)", "gauge"),
         ];

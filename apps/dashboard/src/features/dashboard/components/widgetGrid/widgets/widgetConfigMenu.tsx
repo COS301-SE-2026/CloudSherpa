@@ -5,28 +5,20 @@ import { useMetricStore } from '@/features/dashboard/stores/metric-store';
 import { useResourceNameStore } from '@/features/dashboard/stores/resource-store';
 import { MetricType } from '@/features/dashboard/types/metric';
 import { useState, useEffect, useRef } from 'react';
+import { WidgetConfig } from '@/features/dashboard/types/widgets';
 
-interface WidgetConfigProps{
+interface WidgetConfigMenuProps{
     isOpen: boolean;
 
     onClose: () => void;
-    onSave: (config: WidgetConfigData) => void;
+    onSave: (config: WidgetConfig) => void;
 
-    existingConfig: WidgetConfigData;
+    existingConfig: WidgetConfig;
 }
 
 // This is shared (used for dashboard store), perhaps we can move it to types
 // Also need to confirm that interface is more appropriate than type
-export interface WidgetConfigData{
-    id: string;
-    title: string;
-    resourceId?: string;
-
-    metricType?: MetricType;
-    widgetType: 'line' | 'gauge';
-}
-
-export function WidgetConfig({ 
+export function WidgetConfigMenu({ 
     isOpen, 
 
     onClose, 
@@ -34,8 +26,8 @@ export function WidgetConfig({
 
     existingConfig,
 
-}: WidgetConfigProps){
-    const [configuration, setConfiguration] = useState<WidgetConfigData>(existingConfig);
+}: WidgetConfigMenuProps){
+    const [configuration, setConfiguration] = useState<WidgetConfig>(existingConfig);
     const registerWidgetConfigUpdate = useDashboardStore((state) => state.actions.updateWidgetConfig);
     const resourceNamesById = useResourceNameStore((state) => state.resourcesById);
     const allAvailableMetrics = useMetricStore((state) => state.getMetricList);
@@ -59,7 +51,7 @@ export function WidgetConfig({
         onClose();
     };
 
-    function setConfigAndRegisterUpdate(newConfig: WidgetConfigData) {
+    function setConfigAndRegisterUpdate(newConfig: WidgetConfig) {
         setConfiguration(newConfig);
         registerWidgetConfigUpdate(newConfig);
     }
@@ -159,8 +151,8 @@ export function WidgetConfig({
                                 <input
                                     type="radio"
                                     value="line"
-                                    checked={configuration.widgetType === 'line'}
-                                    onChange={(e) => setConfiguration({ ...configuration, widgetType: e.target.value as 'line' | 'gauge' })}
+                                    checked={configuration.chartType === 'line'}
+                                    onChange={(e) => setConfiguration({ ...configuration, chartType: e.target.value as 'line' | 'gauge' })}
                                     className="w-4 h-4 text-primary focus:ring-ring"
                                 />
                                 <span className="text-foreground">Line Chart</span>
@@ -170,8 +162,8 @@ export function WidgetConfig({
                                 <input
                                     type="radio"
                                     value="gauge"
-                                    checked={configuration.widgetType === 'gauge'}
-                                    onChange={(e) => setConfiguration({ ...configuration, widgetType: e.target.value as 'line' | 'gauge' })}
+                                    checked={configuration.chartType === 'gauge'}
+                                    onChange={(e) => setConfiguration({ ...configuration, chartType: e.target.value as 'line' | 'gauge' })}
                                     className="w-4 h-4 text-primary focus:ring-ring"
                                 />
                                 <span className="text-foreground">Gauge Chart</span>

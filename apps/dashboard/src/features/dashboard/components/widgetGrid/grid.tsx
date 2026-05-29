@@ -4,7 +4,7 @@ import "gridstack/dist/gridstack.min.css";
 import { GridStack, GridItemHTMLElement, GridStackWidget, GridStackNode } from "gridstack";
 
 import { LayoutItem } from "@/features/dashboard/types/widgets";
-import { WidgetWrapper } from "@/features/dashboard/components/widgetGrid/widgetWrapper";
+import { WidgetWrapper } from "@/features/dashboard/components/widgetGrid/widgets/widgetWrapper";
 
 interface GridProps {
   isEditMode: boolean;

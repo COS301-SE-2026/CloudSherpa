@@ -3,7 +3,7 @@ import { GripVertical, X , Trash} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LayoutItem } from "@/features/dashboard/types/widgets";
 import { useDashboardStore, DashboardStore } from "@/features/dashboard/stores/dashboard-store";
-import { ConfigurableWidget } from "@/features/dashboard/components/widgetGrid/widgets/changeChart";
+import Widget from "@/features/dashboard/components/widgetGrid/widgets/widget";
 
 interface WidgetWrapperProps {
   layout: LayoutItem;
@@ -42,9 +42,8 @@ export const WidgetWrapper = ({ layout, isEditMode, onDeleteWidget, metricFetchL
           "h-full w-full",
           isEditMode && "pointer-events-none ring-2 ring-primary/20 rounded-xl transition-all" 
         )}>
-          <ConfigurableWidget 
-            initialConfig={config}
-            metricFetchLoad={metricFetchLoad}
+          <Widget 
+            config={config}
           />
         </div>
       </div>
