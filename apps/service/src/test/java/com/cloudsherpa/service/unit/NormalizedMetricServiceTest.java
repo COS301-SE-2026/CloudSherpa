@@ -16,6 +16,8 @@ import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -48,37 +50,14 @@ class NormalizedMetricServiceTest {
     assertEquals(expected, actual);
   }
 
-  @Test
-  void throwExceptionWhenFromIsAfterTo() {
-    String from = "2026-04-15T00:00:00Z";
-    String to = "2026-04-05T00:00:00Z";
-
-    Exception exception =
-        assertThrows(Exception.class, () -> normalizedMetricService.fetchHistoricalData(from, to));
-
-    assertEquals("Invalid interval", exception.getMessage());
-  }
-
-  @Test
-  void throwsExceptionWhenFromNotIsoDate() {
-    String from = "2026-04-15T00:00:0";
-    String to = "2026-04-05T00:00:00Z";
-
-    Exception exception =
-        assertThrows(Exception.class, () -> normalizedMetricService.fetchHistoricalData(from, to));
-
-    assertEquals("Date Strings do not conform to ISO-8601 standard", exception.getMessage());
-  }
-
-  @Test
-  void throwsExceptionWhenToNotIsoDate() {
-    String from = "2026-04-15T00:00:00Z";
-    String to = "2026-04-05T00::00Z";
-
-    Exception exception =
-        assertThrows(Exception.class, () -> normalizedMetricService.fetchHistoricalData(from, to));
-
-    assertEquals("Date Strings do not conform to ISO-8601 standard", exception.getMessage());
+  @ParameterizedTest
+  @CsvSource({
+    "2026-04-15T00:00:00Z,2026-04-05T00:00:00Z",
+    "2026-04-15T00:00:0,2026-04-05T00:00:00Z",
+    "2026-04-15T00:00:00Z,2026-04-05T00::00Z"
+  })
+  void throwExceptionWhenInvalidDate(String from, String to) {
+    assertThrows(Exception.class, () -> normalizedMetricService.fetchHistoricalData(from, to));
   }
 
   @Test

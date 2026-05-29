@@ -12,22 +12,27 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.UUID;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class SherpaDbPersistenceService {
 
-  @Autowired private NormalizedMetricsRepository metricsRepo;
-  @Autowired private CloudInfrastructureService infrastructureService;
+  private final NormalizedMetricsRepository metricsRepo;
+  private final CloudInfrastructureService infrastructureService;
+
+  public SherpaDbPersistenceService(
+      NormalizedMetricsRepository metricsRepo, CloudInfrastructureService infrastructureService) {
+    this.metricsRepo = metricsRepo;
+    this.infrastructureService = infrastructureService;
+  }
 
   // Use @Transactional when we are modifying a database in more than 1 place
   // So that if 1 step succeeds and the other one fails, the data doesn't end up half-written
   @Transactional
-  public void recordMetric(NormalizedMetric metric, UsageRecordModel record, UUID userId) {
+  public void recordMetric(NormalizedMetric metric, UsageRecordModel r, UUID userId) {
 
-    Resource resource = infrastructureService.ensureInfrastructure(record, userId);
+    Resource resource = infrastructureService.ensureInfrastructure(r, userId);
     UUID accountId = resource.getAccountId();
     UUID resourceUuid = resource.getId();
 
@@ -46,17 +51,18 @@ public class SherpaDbPersistenceService {
 
     // Create the new entity representing the row in the normalized_metrics table.
     NormalizedMetrics newMetric =
-        new NormalizedMetrics(
-            accountId,
-            OffsetDateTime.now(),
-            resourceUuid,
-            metric.getMetricType(),
-            metric.getMetricName(),
-            BigDecimal.valueOf(metric.getMetricValue()),
-            metric.getUnit(),
-            metric.getCurrency(),
-            periodStart,
-            periodEnd);
+        new NormalizedMetrics.Builder()
+            .accountId(accountId)
+            .recordedAt(OffsetDateTime.now())
+            .resourceId(resourceUuid)
+            .metricType(metric.getMetricType())
+            .metricName(metric.getMetricName())
+            .metricValue(BigDecimal.valueOf(metric.getMetricValue()))
+            .unit(metric.getUnit())
+            .currency(metric.getCurrency())
+            .periodStart(periodStart)
+            .periodEnd(periodEnd)
+            .build();
 
     // SQL insert statement
     // The actual database insertion. Spring Data JPA translates this into:

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build:tokens": "node design_system/sd.config.mjs",
+    "build:tokens": "node src/design_system/sd.config.mjs",
     "predev": "npm run build:tokens",
     "dev": "next dev",
     "prebuild": "npm run build:tokens",
