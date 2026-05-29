@@ -1,0 +1,90 @@
+/* this is the styling for the logo and the logo story */
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body{
+    line-height: 1.6;
+    color: #1a1a2e;
+    background: #ffffff;
+}
+
+.logoContainer{
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+
+/* this is to centralize the logo */
+.logoCenter-section{
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.logo-section image{
+    max-width: 100%;
+    height: auto;
+}
+
+
+/* this is for the alignent of the headings of the story */
+.story-header{
+    text-align: left;
+    margin-bottom: 24px;
+}
+
+.story-header h1{
+    font-size: 36px;
+    margin-bottom: 8px;
+}
+
+.story-header p{
+    font-size: 16px;
+    color: #666;
+}
+
+
+/* these are for the cards */
+.card{
+    border: 2px solid #ccc;
+    padding: 24px;
+}
+
+.card-title{
+    font-weight: bold;
+    font-size: 18px;
+    margin-bottom: 12px;
+}
+
+.card-text{
+    font-size: 16px;
+    color: #333;
+    line-height: 1.6;
+}
+
+
+/* this is for the brand story styling */
+.brand-story{
+    max-width: 800px;
+    margin: 0 0 48px 0;
+    text-align: left;
+}
+
+.brand-story-text{
+    font-size: 18px;
+    line-height: 1.8;
+    color: #333;
+}
+
+
+/* this is for the grids */
+.grid-columns{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 48px;
+}
+

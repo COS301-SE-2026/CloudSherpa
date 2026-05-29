@@ -1,0 +1,91 @@
+<!--
+
+this is the design principles page
+
+what does it need to include?
+consistency, accessibility, simplicity, responsiveness
+
+need to ensure everything for demo 2 specs is included for accessibility
+
+idea for this page?
+display each principle in a block with its info and aa title
+
+-->
+
+<!doctype html>
+<html lang = "en">
+
+<head>
+    <meta charset = "UTF-8" />
+    <meta name = "viewport" content = "width=device-width, initial-scale=1.0" />
+
+    <title> Design Principles </title>
+
+    <link rel = "stylesheet" href = "styling/designPrinciples.css" />
+    
+</head>
+
+<body>
+    <div class = "designPrinciple-grid">
+        <div class = "designPrinciple-header" >
+            <h1> Design Principles </h1>
+        </div>
+
+        <!-- this is for consistency -->
+        <div class = "designPrinciple-card" >
+            <div class = "designPrinciple-card-header" >
+                <span class = "designPrinciple-label" > Consistency </span>
+            </div>
+
+            <p class = "designPrinciple-text" >
+                One source of truth, one voice and one product. Every screen, component
+                and intersection follows the same rules. Enforced across visually (same colour tokens),
+                behavioural (hover always gold, focus rings 2px), spatial (8px base unit) and typographic
+                (H1 always 48px Geist) consistency
+            </p>
+        </div>
+
+
+        <!-- this is for accessibility -->
+        <div class = "designPrinciple-card" >
+            <div class = "designPrinciple-card-header" >
+                <span class = "designPrinciple-label" > Accessibility </span>
+            </div>
+
+            <p class = "designPrinciple-text" >
+                Accessibility is a system property. Embedded in every token, component and guideline from
+                day one. Adheres to WCAG 2.2 AA across four areas: Perceivable (4.5:1 contrast), Operable
+                (keyboard reachable), Understandable (plain-language errors) and Robust (screen reader tested)
+            </p>
+        </div>
+
+
+        <!-- this is for simplicity -->
+        <div class = "designPrinciple-card" >
+            <div class = "designPrinciple-card-header" >
+                <span class = "designPrinciple-label" > Simplicity </span>
+            </div>
+
+            <p class = "designPrinciple-text" >
+                Reduce cognitive load. Every element earns its place. No shadows by default, only three font weights
+                (400, 500, 600), a limited colour palette and clean typography. The simpler the interface, the longer
+                the analyst can work effectively
+            </p>
+        </div>
+
+
+        <!-- this is for responsiveness -->
+        <div class = "designPrinciple-card" >
+            <div class = "designPrinciple-card-header" >
+                <span class = "designPrinciple-label" > Responsiveness </span>
+            </div>
+
+            <p class = "designPrinciple-text" >
+                Seamless adaptation across all screen sizes. On mobile: sidebar hides behind hamburger menu, the cards
+                stack vertically, tables scroll horizontally. On desktop: full sidebar, cards display three to four per row.
+                Same content, same insights but different layouts.
+            </p>
+        </div>
+    </div>
+</body>
+</html>
