@@ -3,7 +3,6 @@
 import { useMetricStream } from "@/features/dashboard/services/sse/metric-stream";
 import { useMetricStore } from "@/features/dashboard/stores/metric-store";
 import { useFetchMetrics } from "@/features/dashboard/hooks/useFetchMetrics";
-import { ConfigurableWidget } from "@/features/dashboard/components/widgetGrid/widgets/changeChart";
 import { metricSeriesToArray } from "@/features/dashboard/types/metric";
 import { useMemo } from "react";
 
@@ -33,7 +32,7 @@ export default function Demo() {
 
                 {/*added widgets that will be adjusted from all sides*/}
                 <div className="flex flex-wrap gap-6 justify-center">
-                    <ConfigurableWidget
+                    {/* <ConfigurableWidget
                         initialConfig={{
                             id: crypto.randomUUID(),
                             title: "EC2 mock",
@@ -41,8 +40,8 @@ export default function Demo() {
                             metricType: "anon",
                             widgetType: "line"
                         }}
-                    />
-
+                    /> */}
+{/* 
                     <ConfigurableWidget
                         initialConfig={{
                             id: crypto.randomUUID(),
@@ -51,7 +50,7 @@ export default function Demo() {
                             metricType: "anon",
                             widgetType: "gauge"
                         }}
-                    />
+                    /> */}
                 </div>
 
                 {error ? (

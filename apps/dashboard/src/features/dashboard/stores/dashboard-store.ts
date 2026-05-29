@@ -1,19 +1,18 @@
 import { create } from 'zustand';
-import { LayoutItem, DashboardConfig } from '@/features/dashboard/types/widgets';
-import { WidgetConfigData } from '@/features/dashboard/components/widgetGrid/widgets/widgetConfig';
+import { LayoutItem, DashboardConfig, WidgetConfig} from '@/features/dashboard/types/widgets';
 
 interface DashboardActions {
     setActiveDashboard: (id: string | null) => void;
     addDashboard: (dashboard: DashboardConfig) => void;
     removeDashboard: (id: string) => void;
-    addWidget: (layout: LayoutItem, widget: WidgetConfigData) => void;
-    updateWidgetConfig: (widget: WidgetConfigData) => void;
+    addWidget: (layout: LayoutItem, widget: WidgetConfig) => void;
+    updateWidgetConfig: (widget: WidgetConfig) => void;
     removeWidget: (layoutId: string, widgetId: string) => void;
     updateLayouts: (newLayouts: LayoutItem[]) => void;
     setInitialState: (
         dashboards: Record<string, DashboardConfig>,
         layouts: LayoutItem[],
-        widgets: WidgetConfigData[]
+        widgets: WidgetConfig[]
     ) => void;
 }
 
@@ -21,7 +20,7 @@ export interface DashboardStore {
     activeDashboardId: string | null;
     dashboards: Record<string, DashboardConfig>;
     layouts: Record<string, LayoutItem>;
-    widgets: Record<string, WidgetConfigData>;
+    widgets: Record<string, WidgetConfig>;
     actions: DashboardActions;
 }
 
@@ -109,7 +108,7 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
             const widgetsMap = widgetsArray.reduce((acc, item) => {
                 acc[item.id] = item;
                 return acc;
-            }, {} as Record<string, WidgetConfigData>);
+            }, {} as Record<string, WidgetConfig>);
             set({
                 dashboards: dashboards,
                 layouts: layoutsMap,
