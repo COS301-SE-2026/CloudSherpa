@@ -5,11 +5,10 @@ import { GaugeChart } from "@/features/dashboard/components/widgetGrid/widgets/c
 import { MetricType } from "@/features/dashboard/types/metric";
 import { Button } from "@/components/atoms/button";
 import { WidgetConfigMenu } from "@/features/dashboard/components/widgetGrid/widgets/widgetConfigMenu";
-import { WidgetConfig } from "@/features/dashboard/types/widgets";
+import { WidgetConfig, ChartType } from "@/features/dashboard/types/widgets";
 import { EllipsisVertical } from "lucide-react";
-import { useState } from "react";
-import { ChartType } from "@/features/dashboard/types/widgets";
 import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
+import { useState } from "react";
 
 interface BaseChartProps {
   resourceId: string;
@@ -25,7 +24,7 @@ interface WidgetProps {
   config: WidgetConfig;
 }
 
-export default function Widget({ config }: WidgetProps) {
+export default function Widget({ config }: Readonly<WidgetProps>) {
   const { chartType, title, resourceId, metricType } = config;
   const ChartComponent = CHART_COMPONENTS[chartType];
   const [isConfigOpen, setIsConfigOpen] = useState(false);

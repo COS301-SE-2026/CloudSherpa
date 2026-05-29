@@ -26,7 +26,7 @@ export function WidgetConfigMenu({
 
     existingConfig,
 
-}: WidgetConfigMenuProps){
+}: Readonly<WidgetConfigMenuProps>) {
     const [configuration, setConfiguration] = useState<WidgetConfig>(existingConfig);
     const registerWidgetConfigUpdate = useDashboardStore((state) => state.actions.updateWidgetConfig);
     const resourceNamesById = useResourceNameStore((state) => state.resourcesById);

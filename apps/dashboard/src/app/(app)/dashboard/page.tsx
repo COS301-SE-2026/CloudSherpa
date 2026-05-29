@@ -14,6 +14,7 @@ import { useFetchMetrics } from "@/features/dashboard/hooks/useFetchMetrics";
 import { useWindowStore } from "@/features/dashboard/stores/window-store";
 import { useResourceNameStore } from "@/features/dashboard/stores/resource-store";
 import { useMetricStore } from "@/features/dashboard/stores/metric-store";
+import { useMemo } from "react";
 
 
 function DashboardContent() {
@@ -134,9 +135,12 @@ function DashboardContent() {
 
   // compute the layouts array for the active dashboard
   const activeDashboard = activeDashboardId ? dashboards[activeDashboardId] : undefined;
-  const widgetLayouts = activeDashboard?.layoutItemIds
-    .map((id: string) => layoutsMap[id])
+const widgetLayouts = useMemo(() => {
+  return activeDashboard?.layoutItemIds
+    ?.map((id: string) => layoutsMap[id])
     .filter((l): l is LayoutItem => !!l) ?? [];
+}, [activeDashboard, layoutsMap]); // Only re-run if these change
+
 
   // maps normalized dashboards back to stub format for thetoollbar dropdown
   const dashboardStubs: DashboardStub[] = Object.values(dashboards).map((d: DashboardConfig) => ({
