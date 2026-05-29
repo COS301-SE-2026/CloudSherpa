@@ -22,7 +22,7 @@ export default function Grid({
   layouts,
   onDeleteWidget,
   metricFetchLoad,
-}: GridProps) {
+}: Readonly<GridProps>) {
   const gridRef = useRef<HTMLDivElement>(null);
   const gridStackInstance = useRef<GridStack | null>(null);
 
@@ -55,7 +55,7 @@ export default function Grid({
         if (gridStackInstance.current && isEditModeRef.current && nodes) {
           // Use the save callback to re-inject the widgetId from the DOM into the state update
           const fullLayout = gridStackInstance.current.save(false, false, (node, w: GridStackWidget) => {
-            (w as LayoutItem).widgetId = node.el?.getAttribute("data-widget-id") || "";
+            (w as LayoutItem).widgetId = node.el?.dataset.widgetId || "";
           }) as LayoutItem[];
           onLayoutChange(fullLayout);
         }

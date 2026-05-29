@@ -62,8 +62,8 @@ export function WidgetConfigMenu({
 
     return (
         <>
-            <div 
-                className="fixed inset-0 bg-black/50 z-40"
+            <button
+                className="fixed inset-0 z-40"
                 onClick={onClose}
             />
             
@@ -75,11 +75,12 @@ export function WidgetConfigMenu({
                 <div className="p-6 space-y-4">
                     {/*this is for the widget title*/}
                     <div>
-                        <label className="block text-sm font-medium text-foreground mb-2">
+                        <label className="block text-sm font-medium text-foreground mb-2" htmlFor="title">
                             Title
                         </label>
 
                         <input
+                            id="title"
                             type="text"
                             value={configuration.title}
                             onChange={(e) => setConfigAndRegisterUpdate({ ...configuration, title: e.target.value })}
@@ -90,11 +91,12 @@ export function WidgetConfigMenu({
 
                     {/*this is for the resource id*/}
                     <div>
-                        <label className="block text-sm font-medium text-foreground mb-2">
+                        <label className="block text-sm font-medium text-foreground mb-2" htmlFor="resource-id">
                             Resource ID
                         </label>
 
                         <select
+                            id="resource-id"
                             value={configuration.resourceId}
                             onChange={(e) => {
                                     const resourceId = e.target.value;
@@ -117,11 +119,12 @@ export function WidgetConfigMenu({
                     <div>
                         {configuration.resourceId ? (
                             <>
-                                <label className="block text-sm font-medium text-foreground mb-2">
+                                <label className="block text-sm font-medium text-foreground mb-2" htmlFor="metric-type">
                                     Metric Type
                                 </label>
 
                                 <select
+                                    id="metric-type"
                                     value={configuration.metricType}
                                     onChange={(e) => setConfigAndRegisterUpdate({ ...configuration, metricType: e.target.value as MetricType })}
                                     className="w-full bg-background border border-border rounded-lg px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
@@ -142,11 +145,11 @@ export function WidgetConfigMenu({
 
                     {/*this is to chnange bet. the line chart or the gauge chart*/}
                     <div>
-                        <label className="block text-sm font-medium text-foreground mb-2">
+                        <label className="block text-sm font-medium text-foreground mb-2" htmlFor="chart-type">
                             Chart Type
                         </label>
 
-                        <div className="flex gap-4">
+                        <div className="flex gap-4" id="chart-type">
                             <label className="flex items-center gap-2 cursor-pointer">
                                 <input
                                     type="radio"
@@ -158,7 +161,7 @@ export function WidgetConfigMenu({
                                 <span className="text-foreground">Line Chart</span>
                             </label>
 
-                            <label className="flex items-center gap-2 cursor-pointer">
+                            <label className="flex items-center gap-2 cursor-pointer ">
                                 <input
                                     type="radio"
                                     value="gauge"

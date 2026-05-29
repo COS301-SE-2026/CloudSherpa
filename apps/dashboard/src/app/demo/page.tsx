@@ -12,7 +12,7 @@ export default function Demo() {
 
     const cpuSeries = metrics['74266597-141c-3ecc-8f68-8667ff7163a7:cpu'];
     const forCpuData = useMemo(() => metricSeriesToArray(cpuSeries), [cpuSeries]);
-    const latestCpuValue = forCpuData.length > 0 ? forCpuData[forCpuData.length-1].value : 0;
+    const latestCpuValue = forCpuData.length > 0 ? forCpuData.at(-1)?.value : 0;
     useFetchMetrics();
 
     return (
