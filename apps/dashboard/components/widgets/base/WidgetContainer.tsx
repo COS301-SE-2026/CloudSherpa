@@ -35,7 +35,7 @@ export function WidgetContainer({
     onSettingsClick,
     showConfig = true
 
-}: WidgetContainerProps){
+}: Readonly<WidgetContainerProps>){
     const [width, setWidth] = useState(defaultWidth);
     const [height, setHeight] = useState(defaultHeight);
 
@@ -128,17 +128,17 @@ export function WidgetContainer({
                 detail: { width, height }
             });
 
-            window.dispatchEvent(resizeEvent);
+            globalThis.dispatchEvent(resizeEvent);
         };
 
         if(isResizing){
-            window.addEventListener('mousemove', handleMouseMove);
-            window.addEventListener('mouseup', handleMouseUp);
+            globalThis.addEventListener('mousemove', handleMouseMove);
+            globalThis.addEventListener('mouseup', handleMouseUp);
         }
 
         return () => {
-            window.removeEventListener('mousemove', handleMouseMove);
-            window.removeEventListener('mouseup', handleMouseUp);
+            globalThis.removeEventListener('mousemove', handleMouseMove);
+            globalThis.removeEventListener('mouseup', handleMouseUp);
         };
 
     }, [isResizing, resizeDirection, width, height, minWidth, minHeight]);
@@ -148,7 +148,7 @@ export function WidgetContainer({
             detail: { width, height }
         });
 
-        window.dispatchEvent(resizeEvent);
+        globalThis.dispatchEvent(resizeEvent);
 
     }, [width, height]);
 

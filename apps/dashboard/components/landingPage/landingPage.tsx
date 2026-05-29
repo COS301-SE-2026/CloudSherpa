@@ -31,15 +31,7 @@ export default function LandingPage(){
   }, [hasAnimated]);
 
   //this is called when the user clicks on the discover more button
-  const handlesDiscoverMoreClick = () => {
-    setShowFeatures(true);
-    setHasAnimated(true);
-
-    featuresRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
-
-  //will scroll down to the features of CloudSherpa when the features button is pressed
-  const handlesFeaturesClick = () => {
+  const handlesScrollToFeatures = () => {
     setShowFeatures(true);
     setHasAnimated(true);
 
@@ -48,8 +40,8 @@ export default function LandingPage(){
 
   return(
     <div className="min-h-screen bg-[#030712] text-[#CBD5E1]">
-      <Navigation clickOnFeatures={handlesFeaturesClick} />
-      <View onDiscoverMoreClick={handlesDiscoverMoreClick} />
+      <Navigation clickOnFeatures={handlesScrollToFeatures} />
+      <View onDiscoverMoreClick={handlesScrollToFeatures} />
       <FeatureCards 
         ref={featuresRef}
         showingFeatureCards={showFeatures} 

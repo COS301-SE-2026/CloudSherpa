@@ -34,7 +34,7 @@ export function WidgetConfig({
 
     existingConfig,
 
-}: WidgetConfigProps){
+}: Readonly<WidgetConfigProps>){
     const [configuration, setConfiguration] = useState<WidgetConfigData>(existingConfig);
     const registerWidgetConfigUpdate = useDashboardStore((state) => state.actions.updateWidgetConfig);
     const resourceNamesById = useResourceNameStore((state) => state.resourcesById);
@@ -70,7 +70,7 @@ export function WidgetConfig({
 
     return (
         <>
-            <div 
+            <button 
                 className="fixed inset-0 bg-black/50 z-40"
                 onClick={onClose}
             />

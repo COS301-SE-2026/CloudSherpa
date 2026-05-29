@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/atoms/button';
 import { Input } from '@/components/atoms/input';
 import { Label } from '@/components/atoms/label';
@@ -12,12 +12,12 @@ interface PropsForStepOne{
   }) => void;
 }
 
-export default function StepOne({ onNext }: PropsForStepOne){
+export default function StepOne({ onNext }: Readonly<PropsForStepOne>){
   const [formData, setFormData] = useState({
     accessKeyId: '', secretAccessKey: '', region: 'region',
   });
 
-  const handleSubmit = (forHandlingSubmit: React.FormEvent) => {
+  const handleSubmit = (forHandlingSubmit: React.SubmitEvent<HTMLFormElement>) => {
     forHandlingSubmit.preventDefault();
     onNext(formData);
   };

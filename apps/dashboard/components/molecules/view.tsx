@@ -21,7 +21,7 @@ export default function viewing({ onDiscoverMoreClick }: forViewingItems){
         
 
         <h1 className="text-5xl font-bold text-white leading-tight mb-3 tracking-tight">
-          Cloud Costs
+          Cloud Costs {/**/}
           <span className="block text-4xl bg-linear-to-r from-[#2F2FE4] to-[#162E93] bg-clip-text text-transparent">
             Eliminated
           </span>
@@ -42,7 +42,7 @@ export default function viewing({ onDiscoverMoreClick }: forViewingItems){
       </div>
 
       {/*this is for the discover more button (scrolls)*/}
-      <div
+      <button
         onClick={onDiscoverMoreClick}
         className="flex flex-col items-center gap-1.5 text-sm cursor-pointer pb-8 transition-opacity duration-200 z-20 opacity-60 hover:opacity-100"
       >
@@ -59,7 +59,7 @@ export default function viewing({ onDiscoverMoreClick }: forViewingItems){
 
           <path d="M8 3v10M3 8l5 5 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
-      </div>
+      </button>
     </section>
   );
 }

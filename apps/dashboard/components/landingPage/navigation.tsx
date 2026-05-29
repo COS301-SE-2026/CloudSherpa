@@ -3,11 +3,11 @@ import { Button } from "@/components/atoms/button";
 import Link from "next/link";
 import Image from "next/image";
 
-interface forNavigationProps{
+interface ForNavigationProps{
   clickOnFeatures?: () => void;
 }
 
-export default function forNavigation({ clickOnFeatures }: forNavigationProps){
+export default function forNavigation({ clickOnFeatures }: ForNavigationProps){
   return(
     <nav className="flex justify-between items-center px-10 py-[18px] relative z-10">
       {/* icon place holder */}
@@ -17,8 +17,7 @@ export default function forNavigation({ clickOnFeatures }: forNavigationProps){
       </div>
 
       <div className="flex items-center gap-8">
-        <a 
-          href="#"
+        <button 
           onClick={(click) => {
             click.preventDefault();
             clickOnFeatures?.();
@@ -26,7 +25,7 @@ export default function forNavigation({ clickOnFeatures }: forNavigationProps){
           className="text-[#CBD5E1] no-underline text-sm opacity-80 hover:opacity-100 transition cursor-pointer"
         >
           features
-        </a>
+        </button>
 
 {/* navigate to login/register page */}
         <Link href="/login">

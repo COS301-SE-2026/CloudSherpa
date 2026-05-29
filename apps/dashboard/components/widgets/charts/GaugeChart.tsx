@@ -22,7 +22,7 @@ export function GaugeWidget({
     const data = useMemo(() => metricSeriesToArray(series), [series]);
     const chartInstance = useRef<echarts.ECharts | null>(null);
 
-    const latestValue = data.length > 0 ? Math.round(data[data.length - 1].value) : 0;
+    const latestValue = data.length > 0 ? Math.round(data.at(-1)?.value ?? 0) : 0;
 
     const [textColor, setTextColor] = useState<string>('rgb(255, 255, 255)');
     const [primaryColor, setPrimaryColor] = useState<string>('rgb(59, 130, 246)');
@@ -36,7 +36,7 @@ export function GaugeWidget({
             const primaryToken = style.getPropertyValue('--primary').trim();
             const mutedToken = style.getPropertyValue('--muted').trim();
             
-            const isLightMode = document.documentElement.getAttribute('data-theme') === 'light';
+            const isLightMode = document.documentElement.dataset.theme === 'light';
             
             if (foregroundToken) setTextColor(foregroundToken);
             else setTextColor(isLightMode ? '#020617' : 'rgb(255, 255, 255)');
@@ -68,7 +68,7 @@ export function GaugeWidget({
         };
 
         window.addEventListener('resize', handleResize);
-        window.addEventListener('widget-resize', handleWidgetResize);
+        globalThis.addEventListener('widget-resize', handleWidgetResize);
 
         const resizeObserver = new ResizeObserver(() => {
             chartInstance.current?.resize();
@@ -78,7 +78,7 @@ export function GaugeWidget({
 
         return () => {
             window.removeEventListener('resize', handleResize);
-            window.removeEventListener('widget-resize', handleWidgetResize);
+            globalThis.removeEventListener('widget-resize', handleWidgetResize);
             resizeObserver.disconnect();
             chartInstance.current?.dispose();
         };
@@ -203,7 +203,7 @@ export function GaugeWidget({
         };
 
         window.addEventListener('resize', handleResize);
-        window.addEventListener('widget-resize', handleWidgetResize);
+        globalThis.addEventListener('widget-resize', handleWidgetResize);
 
         const resizeObserver = new ResizeObserver(() => {
             chartInstance.current?.resize();
@@ -215,7 +215,7 @@ export function GaugeWidget({
 
         return () => {
             window.removeEventListener('resize', handleResize);
-            window.removeEventListener('widget-resize', handleWidgetResize);
+            globalThis.removeEventListener('widget-resize', handleWidgetResize);
             resizeObserver.disconnect();
         };
     }, []);

@@ -48,7 +48,7 @@ export function LineChartWidget({
                 setLineColor(tokenColor);
             }
 
-            const isLightMode = document.documentElement.getAttribute('data-theme') === 'light';
+            const isLightMode = document.documentElement.dataset.theme === 'light';
             if (foregroundToken) {
                 setTextColor(foregroundToken);
             } else {
@@ -56,7 +56,7 @@ export function LineChartWidget({
             }
 
             // Adjust horizontal grid line opacity based on active theme(just added on logic for theme swapping)
-            setGridOpacity(isLightMode ? 0.70 : 0.10);
+            setGridOpacity(isLightMode ? 0.7 : 0.1);
         };
 
         updateThemeStyles();
@@ -161,7 +161,7 @@ export function LineChartWidget({
         };
 
         window.addEventListener('resize', handleResize);
-        window.addEventListener('widget-resize', handleWidgetResize);
+        globalThis.addEventListener('widget-resize', handleWidgetResize);
 
         const forResizing = new ResizeObserver(() => {
             chartInstance.current?.resize();
@@ -173,7 +173,7 @@ export function LineChartWidget({
         
         return () => {
             window.removeEventListener('resize', handleResize);
-            window.removeEventListener('widget-resize', handleWidgetResize);
+            globalThis.removeEventListener('widget-resize', handleWidgetResize);
             forResizing.disconnect();
         };
     }, []);
