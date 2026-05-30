@@ -26,7 +26,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
   private static final String MEMORY_UTILIZATION = "MemoryUtilization";
   private static final String COUNT = "Count";
   private static final String MILLISECONDS = "Milliseconds";
-  private static final String bytes = "Bytes";
+  private static final String BYTES = "Bytes";
   private static final String PERCENT = "Percent";
 
   private CloudWatchClient defaultClient =
@@ -50,46 +50,6 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
     }
 
     return instanceIds;
-  }
-
-  private List<UsageRecordModel> buildRequestResult(
-      CloudWatchClient client,
-      GetMetricStatisticsRequest req,
-      AccountScope accountScope,
-      ServiceScope serviceScope,
-      InstanceScope instance,
-      String instanceValue,
-      String metric,
-      int period,
-      UUID ingestionID) {
-
-    List<UsageRecordModel> records = new ArrayList<>();
-
-    for (Datapoint dp : client.getMetricStatistics(req).datapoints()) {
-
-      UsageRecordModel r = new UsageRecordModel();
-
-      r.setProvider(accountScope.getProvider());
-      r.setAccountId(accountScope.getAccountId());
-      r.setServiceName(serviceScope.getName());
-      r.setMetricName(metric);
-      r.setValue(dp.average());
-      r.setUnit(dp.unit().name());
-      r.setTimestamp(dp.timestamp());
-      r.setIngestionTimestamp(Instant.now());
-      r.setRecordId(UUID.randomUUID());
-      r.setResourceId(instanceValue);
-      r.setResourceType(instance.getIdentifierName());
-      r.setRegion(Region.AF_SOUTH_1.toString());
-      r.setIngestionId(ingestionID.toString());
-      r.setSource("CloudWatch");
-      r.setPeriodStart(dp.timestamp().minusSeconds(period));
-      r.setPeriodEnd(dp.timestamp());
-
-      records.add(r);
-    }
-
-    return records;
   }
 
   @Override
@@ -146,17 +106,17 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
                     .statistics(Statistic.AVERAGE)
                     .build();
 
-            result.addAll(
-                buildRequestResult(
-                    client,
-                    req,
+            AwsMetricRequestContext context =
+                new AwsMetricRequestContext(
                     accountScope,
                     serviceScope,
                     instance,
                     instanceValue,
                     metric,
                     period,
-                    ingestionID));
+                    ingestionID);
+
+            result.addAll(buildRequestResult(client, req, context));
           }
         }
       }
@@ -192,19 +152,29 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
     return "AWS";
   }
 
-  @Override
-  public List<UsageRecordModel> fetchMockUsage(
-      AccountScope accountScope, IngestionRequestEvent request) {
-    validateRequest(request);
-    UUID ingestionID = UUID.randomUUID();
-    long globalSeed =
-        Objects.hash(request.getFrom().toEpochMilli(), request.getTo().toEpochMilli());
-    List<UsageRecordModel> result = new ArrayList<>();
-    for (AccountScope accScope : request.getScopes()) {
-      result.addAll(processAccountScope(accScope, request, ingestionID, globalSeed));
-    }
-    return result;
-  }
+  private record UsageRequestContext(
+      AccountScope accountScope,
+      IngestionRequestEvent request,
+      UUID ingestionId,
+      long accountSeed) {}
+
+  private record ServiceSimulationContext(
+      ServiceScope serviceScope, ServiceType serviceType, MutableDouble serviceClusterState) {}
+
+  private record InstanceProcessingContext(
+      InstanceScope instanceScope,
+      String instanceId,
+      SplittableRandom rng,
+      MetricSimulationContext metricContext) {}
+
+  private record AwsMetricRequestContext(
+      AccountScope accountScope,
+      ServiceScope serviceScope,
+      InstanceScope instanceScope,
+      String instanceValue,
+      String metric,
+      int period,
+      UUID ingestionId) {}
 
   private void validateRequest(IngestionRequestEvent request) {
     if (request.getPeriod() <= 0) {
@@ -212,137 +182,221 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
     }
   }
 
-  private List<UsageRecordModel> processAccountScope(
-      AccountScope accScope, IngestionRequestEvent request, UUID ingestionID, long globalSeed) {
+  @Override
+  public List<UsageRecordModel> fetchMockUsage(
+      AccountScope accountScope, IngestionRequestEvent request) {
+
+    validateRequest(request);
+
+    UUID ingestionID = UUID.randomUUID();
+
+    long globalSeed =
+        Objects.hash(request.getFrom().toEpochMilli(), request.getTo().toEpochMilli());
+
     List<UsageRecordModel> result = new ArrayList<>();
-    long accountSeed = Objects.hash(globalSeed, accScope.getAccountId());
-    for (ServiceScope serviceScope : accScope.getServiceScopes()) {
-      result.addAll(processServiceScope(accScope, serviceScope, request, ingestionID, accountSeed));
+
+    for (AccountScope accScope : request.getScopes()) {
+
+      UsageRequestContext context = new UsageRequestContext(accScope, request, ingestionID, 0);
+
+      result.addAll(processAccountScope(context, globalSeed));
     }
+
+    return result;
+  }
+
+  private List<UsageRecordModel> processAccountScope(
+      UsageRequestContext requestContext, long globalSeed) {
+
+    List<UsageRecordModel> result = new ArrayList<>();
+
+    long accountSeed = Objects.hash(globalSeed, requestContext.accountScope().getAccountId());
+
+    UsageRequestContext updatedContext =
+        new UsageRequestContext(
+            requestContext.accountScope(),
+            requestContext.request(),
+            requestContext.ingestionId(),
+            accountSeed);
+
+    for (ServiceScope serviceScope : requestContext.accountScope().getServiceScopes()) {
+
+      result.addAll(processServiceScope(updatedContext, serviceScope));
+    }
+
     return result;
   }
 
   private List<UsageRecordModel> processServiceScope(
-      AccountScope accScope,
-      ServiceScope serviceScope,
-      IngestionRequestEvent request,
-      UUID ingestionID,
-      long accountSeed) {
+      UsageRequestContext requestContext, ServiceScope serviceScope) {
+
     List<UsageRecordModel> result = new ArrayList<>();
+
     ServiceType type = ServiceType.from(serviceScope.getName());
-    MutableDouble serviceClusterState =
-        new MutableDouble(50.0 + new Random(accountSeed).nextGaussian() * 10);
+
+    MutableDouble clusterState =
+        new MutableDouble(50.0 + new Random(requestContext.accountSeed()).nextGaussian() * 10);
+
+    ServiceSimulationContext simulationContext =
+        new ServiceSimulationContext(serviceScope, type, clusterState);
+
     for (InstanceScope instance : serviceScope.getInstances()) {
-      result.addAll(
-          processInstanceScope(
-              accScope,
-              serviceScope,
-              instance,
-              request,
-              ingestionID,
-              accountSeed,
-              type,
-              serviceClusterState));
+
+      result.addAll(processInstanceScope(requestContext, simulationContext, instance));
     }
+
     return result;
   }
 
   private List<UsageRecordModel> processInstanceScope(
-      AccountScope accScope,
-      ServiceScope serviceScope,
-      InstanceScope instance,
-      IngestionRequestEvent request,
-      UUID ingestionID,
-      long accountSeed,
-      ServiceType type,
-      MutableDouble serviceClusterState) {
+      UsageRequestContext requestContext,
+      ServiceSimulationContext simulationContext,
+      InstanceScope instance) {
+
     List<UsageRecordModel> result = new ArrayList<>();
+
     for (String instanceId : instance.getValues()) {
-      result.addAll(
-          processInstance(
-              accScope,
-              serviceScope,
-              instance,
-              instanceId,
-              request,
-              ingestionID,
-              accountSeed,
-              type,
-              serviceClusterState));
+
+      result.addAll(processInstance(requestContext, simulationContext, instance, instanceId));
     }
+
     return result;
   }
 
   private List<UsageRecordModel> processInstance(
-      AccountScope accScope,
-      ServiceScope serviceScope,
+      UsageRequestContext requestContext,
+      ServiceSimulationContext simulationContext,
       InstanceScope instance,
-      String instanceId,
-      IngestionRequestEvent request,
-      UUID ingestionID,
-      long accountSeed,
-      ServiceType type,
-      MutableDouble serviceClusterState) {
+      String instanceId) {
+
     List<UsageRecordModel> result = new ArrayList<>();
-    long resourceSeed = Objects.hash(accountSeed, serviceScope.getName(), instanceId);
+
+    long resourceSeed =
+        Objects.hash(
+            requestContext.accountSeed(), simulationContext.serviceScope().getName(), instanceId);
+
     SplittableRandom rng = new SplittableRandom(resourceSeed);
-    MetricSimulationContext context = createSimulationContext(type, rng, serviceScope);
+
+    MetricSimulationContext metricContext =
+        createSimulationContext(
+            simulationContext.serviceType(), rng, simulationContext.serviceScope());
+
+    InstanceProcessingContext processingContext =
+        new InstanceProcessingContext(instance, instanceId, rng, metricContext);
+
     int count = 0;
-    for (Instant t = request.getFrom();
-        !t.isAfter(request.getTo());
-        t = t.plusSeconds(request.getPeriod())) {
+
+    for (Instant t = requestContext.request().getFrom();
+        !t.isAfter(requestContext.request().getTo());
+        t = t.plusSeconds(requestContext.request().getPeriod())) {
+
       if (++count > 1440) {
         break;
       }
-      result.addAll(
-          processTimestamp(
-              accScope,
-              serviceScope,
-              instance,
-              instanceId,
-              request,
-              ingestionID,
-              type,
-              rng,
-              context,
-              t,
-              serviceClusterState));
+
+      result.addAll(processTimestamp(requestContext, simulationContext, processingContext, t));
     }
+
     return result;
   }
 
   private List<UsageRecordModel> processTimestamp(
-      AccountScope accScope,
-      ServiceScope serviceScope,
-      InstanceScope instance,
-      String instanceId,
-      IngestionRequestEvent request,
-      UUID ingestionID,
-      ServiceType type,
-      SplittableRandom rng,
-      MetricSimulationContext context,
-      Instant t,
-      MutableDouble serviceClusterState) {
+      UsageRequestContext requestContext,
+      ServiceSimulationContext simulationContext,
+      InstanceProcessingContext processingContext,
+      Instant timestamp) {
+
     List<UsageRecordModel> result = new ArrayList<>();
-    SeasonalFactors seasonalFactors = calculateSeasonalFactors(t, rng, type);
+
+    SeasonalFactors seasonalFactors =
+        calculateSeasonalFactors(
+            timestamp, processingContext.rng(), simulationContext.serviceType());
+
     double clusterFactor =
-        updateClusterFactor(rng, seasonalFactors.getBurst(), serviceClusterState);
-    for (String metric : serviceScope.getMetrics()) {
-      double value = computeMetricValue(metric, type, rng, context, seasonalFactors, clusterFactor);
+        updateClusterFactor(
+            processingContext.rng(),
+            seasonalFactors.getBurst(),
+            simulationContext.serviceClusterState());
+
+    for (String metric : simulationContext.serviceScope().getMetrics()) {
+
+      double value =
+          computeMetricValue(
+              metric,
+              simulationContext.serviceType(),
+              processingContext.rng(),
+              processingContext.metricContext(),
+              seasonalFactors,
+              clusterFactor);
+
       result.add(
           buildUsageRecord(
-              accScope,
-              serviceScope,
-              instance,
-              instanceId,
-              request,
-              ingestionID,
-              metric,
-              value,
-              type,
-              t));
+              requestContext, simulationContext, processingContext, metric, value, timestamp));
     }
+
     return result;
+  }
+
+  private UsageRecordModel buildUsageRecord(
+      UsageRequestContext requestContext,
+      ServiceSimulationContext simulationContext,
+      InstanceProcessingContext processingContext,
+      String metric,
+      double value,
+      Instant timestamp) {
+
+    UsageRecordModel r = new UsageRecordModel();
+
+    r.setProvider(requestContext.accountScope().getProvider());
+    r.setAccountId(requestContext.accountScope().getAccountId());
+    r.setServiceName(simulationContext.serviceScope().getName());
+    r.setMetricName(metric);
+    r.setValue(value);
+    r.setUnit(CloudWatchMetricUnits.unit(simulationContext.serviceType(), metric));
+    r.setTimestamp(timestamp);
+    r.setPeriodStart(timestamp.minusSeconds(requestContext.request().getPeriod()));
+    r.setPeriodEnd(timestamp);
+    r.setIngestionTimestamp(Instant.now());
+    r.setRecordId(UUID.randomUUID());
+    r.setResourceId(processingContext.instanceId());
+    r.setResourceType(processingContext.instanceScope().getIdentifierName());
+    r.setRegion(Region.AF_SOUTH_1.toString());
+    r.setIngestionId(requestContext.ingestionId().toString());
+    r.setSource("MockCloudWatch");
+
+    return r;
+  }
+
+  private List<UsageRecordModel> buildRequestResult(
+      CloudWatchClient client, GetMetricStatisticsRequest req, AwsMetricRequestContext context) {
+
+    List<UsageRecordModel> records = new ArrayList<>();
+
+    for (Datapoint dp : client.getMetricStatistics(req).datapoints()) {
+
+      UsageRecordModel r = new UsageRecordModel();
+
+      r.setProvider(context.accountScope().getProvider());
+      r.setAccountId(context.accountScope().getAccountId());
+      r.setServiceName(context.serviceScope().getName());
+      r.setMetricName(context.metric());
+      r.setValue(dp.average());
+      r.setUnit(dp.unit().name());
+      r.setTimestamp(dp.timestamp());
+      r.setIngestionTimestamp(Instant.now());
+      r.setRecordId(UUID.randomUUID());
+      r.setResourceId(context.instanceValue());
+      r.setResourceType(context.instanceScope().getIdentifierName());
+      r.setRegion(Region.AF_SOUTH_1.toString());
+      r.setIngestionId(context.ingestionId().toString());
+      r.setSource("CloudWatch");
+      r.setPeriodStart(dp.timestamp().minusSeconds(context.period()));
+      r.setPeriodEnd(dp.timestamp());
+
+      records.add(r);
+    }
+
+    return records;
   }
 
   public class SeasonalFactors {
@@ -382,37 +436,6 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
     boolean burstEvent = rng.nextDouble() < type.burstChance;
     double burst = burstEvent ? rng.nextDouble() * 50 : 0;
     return new SeasonalFactors(seasonal, maintenancePenalty, burst);
-  }
-
-  private UsageRecordModel buildUsageRecord(
-      AccountScope accScope,
-      ServiceScope serviceScope,
-      InstanceScope instance,
-      String instanceId,
-      IngestionRequestEvent request,
-      UUID ingestionID,
-      String metric,
-      double value,
-      ServiceType type,
-      Instant t) {
-    UsageRecordModel r = new UsageRecordModel();
-    r.setProvider(accScope.getProvider());
-    r.setAccountId(accScope.getAccountId());
-    r.setServiceName(serviceScope.getName());
-    r.setMetricName(metric);
-    r.setValue(value);
-    r.setUnit(CloudWatchMetricUnits.unit(type, metric));
-    r.setTimestamp(t);
-    r.setPeriodStart(t.minusSeconds(request.getPeriod()));
-    r.setPeriodEnd(t);
-    r.setIngestionTimestamp(Instant.now());
-    r.setRecordId(UUID.randomUUID());
-    r.setResourceId(instanceId);
-    r.setResourceType(instance.getIdentifierName());
-    r.setRegion(Region.AF_SOUTH_1.toString());
-    r.setIngestionId(ingestionID.toString());
-    r.setSource("MockCloudWatch");
-    return r;
   }
 
   public class MetricSimulationContext {
@@ -456,18 +479,14 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
       ServiceType type, SplittableRandom rng, ServiceScope serviceScope) {
 
     double mean = type.baseLoad + rng.nextDouble() * type.variance;
-
     double theta = 0.05 + rng.nextDouble() * 0.1;
-
     double volatility = 1.0 + rng.nextDouble() * 5.0;
 
     Map<String, Double> metricState = new HashMap<>();
     Map<String, Double> metricMean = new HashMap<>();
 
     for (String metric : serviceScope.getMetrics()) {
-
       metricState.put(metric, mean);
-
       metricMean.put(metric, mean + rng.nextGaussian() * 5);
     }
 
@@ -483,13 +502,9 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
       double clusterFactor) {
 
     double state = context.getMetricState().get(metric);
-
     double mean = context.getMetricMean().get(metric);
-
     double gaussian = rng.nextGaussian();
-
     double drift = context.getTheta() * (mean - state);
-
     double noise = gaussian * context.getVolatility();
 
     state =
@@ -635,17 +650,17 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
 
     private CloudWatchMetricUnits() {}
 
-    public static final Map<ServiceType, Map<String, String>> UNITS =
+    public static final Map<ServiceType, Map<String, String>> units =
         Map.of(
             ServiceType.EC2,
             Map.ofEntries(
                 Map.entry(CPU_UTILIZATION, PERCENT),
                 Map.entry("DiskReadOps", COUNT),
                 Map.entry("DiskWriteOps", COUNT),
-                Map.entry("DiskReadBytes", bytes),
-                Map.entry("DiskWriteBytes", bytes),
-                Map.entry(NETWORK_IN, bytes),
-                Map.entry(NETWORK_OUT, bytes),
+                Map.entry("DiskReadBytes", BYTES),
+                Map.entry("DiskWriteBytes", BYTES),
+                Map.entry(NETWORK_IN, BYTES),
+                Map.entry(NETWORK_OUT, BYTES),
                 Map.entry("NetworkPacketsIn", COUNT),
                 Map.entry("NetworkPacketsOut", COUNT),
                 Map.entry("StatusCheckFailed", COUNT),
@@ -664,19 +679,19 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
             Map.ofEntries(
                 Map.entry(CPU_UTILIZATION, PERCENT),
                 Map.entry("DatabaseConnections", COUNT),
-                Map.entry("FreeStorageSpace", bytes),
+                Map.entry("FreeStorageSpace", BYTES),
                 Map.entry("ReadLatency", MILLISECONDS),
                 Map.entry("WriteLatency", MILLISECONDS),
                 Map.entry("ReadIOPS", "Count/Second"),
                 Map.entry("WriteIOPS", "Count/Second"),
                 Map.entry("NetworkReceiveThroughput", "Bytes/Second"),
                 Map.entry("NetworkTransmitThroughput", "Bytes/Second"),
-                Map.entry("FreeableMemory", bytes),
-                Map.entry("SwapUsage", bytes)),
+                Map.entry("FreeableMemory", BYTES),
+                Map.entry("SwapUsage", BYTES)),
             ServiceType.S3,
             Map.ofEntries(
                 Map.entry("NumberOfObjects", COUNT),
-                Map.entry("BucketSizeBytes", bytes),
+                Map.entry("BucketSizeBytes", BYTES),
                 Map.entry("AllRequests", COUNT),
                 Map.entry("GetRequests", COUNT),
                 Map.entry("PutRequests", COUNT),
@@ -714,7 +729,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
                 Map.entry("IterationTime", MILLISECONDS)));
 
     public static String unit(ServiceType type, String metric) {
-      return UNITS.getOrDefault(type, Map.of()).getOrDefault(metric, "None");
+      return units.getOrDefault(type, Map.of()).getOrDefault(metric, "None");
     }
   }
 }

@@ -8,8 +8,7 @@ import { metricSeriesToArray, MetricType } from "@/features/dashboard/types/metr
 import type { EChartsOption } from "echarts";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-type LineChartWidgetProps = {
-    title: string,
+type LineChartProps = {
     resourceId?: string,
     metricType?: MetricType,
     metricFetchLoad?: boolean,
@@ -21,12 +20,11 @@ type LineChartWidgetProps = {
 // investigation regarding this
 const AXIS_TICK_MS = 5_000;
 
-export function LineChartWidget({
-    title,
+export function LineChart({
     resourceId,
     metricType,
     metricFetchLoad = false,
-}: Readonly<LineChartWidgetProps>) {
+}: Readonly<LineChartProps>) {
     const chartRef = useRef<HTMLDivElement>(null);
     const series = useMetricStore((state) => state.seriesByKey[`${resourceId}:${metricType}`]);
     const data = useMemo(() => metricSeriesToArray(series), [series]);
@@ -134,7 +132,6 @@ export function LineChartWidget({
 
             series: [
                 {
-                    name: title,
                     type: "line",
                     data: points,
                     // symbol = visual marker
@@ -145,7 +142,7 @@ export function LineChartWidget({
         };
 
         chartInstance.current?.setOption(option);
-    }, [title, resourceId, data, visibleWindowMs, lineColor, gridOpacity, textColor])
+    }, [ resourceId, data, visibleWindowMs, lineColor, gridOpacity, textColor])
 
     useEffect(() => {
         if(!chartInstance.current){
@@ -163,7 +160,7 @@ export function LineChartWidget({
             }, 10);
         };
 
-        window.addEventListener('resize', handleResize);
+        globalThis.addEventListener('resize', handleResize);
         globalThis.addEventListener('widget-resize', handleWidgetResize);
 
         const forResizing = new ResizeObserver(() => {
@@ -175,7 +172,7 @@ export function LineChartWidget({
         }
         
         return () => {
-            window.removeEventListener('resize', handleResize);
+            globalThis.removeEventListener('resize', handleResize);
             globalThis.removeEventListener('widget-resize', handleWidgetResize);
             forResizing.disconnect();
         };

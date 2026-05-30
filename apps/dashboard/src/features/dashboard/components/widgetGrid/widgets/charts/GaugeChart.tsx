@@ -6,20 +6,18 @@ import { metricSeriesToArray, MetricType } from "@/features/dashboard/types/metr
 import type { EChartsOption } from "echarts";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-type GaugeWidgetProps = {
-    title: string,
+type GaugeChartProps = {
     resourceId?: string,
     metricType?: MetricType,
     metricFetchLoad?: boolean,
 }
 
-export function GaugeWidget({
-    title,
+export function GaugeChart({
     resourceId,
     metricType,
     metricFetchLoad = false,
 
-}: Readonly<GaugeWidgetProps>){
+}: Readonly<GaugeChartProps>){
     const chartRef = useRef<HTMLDivElement>(null);
     const series = useMetricStore((state) => state.seriesByKey[`${resourceId}:${metricType}`]);
     const data = useMemo(() => metricSeriesToArray(series), [series]);
@@ -106,7 +104,6 @@ export function GaugeWidget({
             },
             series: [
                 {
-                    name: title,
                     type: 'gauge',
                     startAngle: 180,
                     endAngle: 0,
@@ -173,22 +170,14 @@ export function GaugeWidget({
                         fontFamily: 'sans-serif',
                         formatter: (value: number) => `${Math.round(value)}%`
                     },
-
-                    title: {
-                        show: false,
-                        offsetCenter: [0, -35],
-                        fontSize: 13,
-                        color: 'rgb(148, 163, 184)',
-                        fontFamily: 'sans-serif',
-                    },
                     
-                    data: [{ value: latestValue, name: title }]
+                    data: [{ value: latestValue }]
                 }
             ]
         };
 
         chartInstance.current.setOption(option);
-    }, [title, latestValue, textColor, primaryColor, trackColor]);
+    }, [latestValue, textColor, primaryColor, trackColor]);
 
     useEffect(() => {
         if(!chartInstance.current){
