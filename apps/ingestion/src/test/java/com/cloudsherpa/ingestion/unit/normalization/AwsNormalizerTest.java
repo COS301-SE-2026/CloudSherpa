@@ -15,13 +15,13 @@ class AwsNormalizerTest {
   @Test
   void normalizeShouldReturnNormalizedMetric() {
 
-    UsageRecordModel record = new UsageRecordModel();
-    record.setProvider("AWS");
-    record.setMetricName("CPUUtilization");
-    record.setValue(75.0);
-    record.setTimestamp(Instant.now());
+    UsageRecordModel ingestionRecord = new UsageRecordModel();
+    ingestionRecord.setProvider("AWS");
+    ingestionRecord.setMetricName("CPUUtilization");
+    ingestionRecord.setValue(75.0);
+    ingestionRecord.setTimestamp(Instant.now());
 
-    NormalizedMetric result = normalizer.normalize(record);
+    NormalizedMetric result = normalizer.normalize(ingestionRecord);
 
     assertNotNull(result);
   }
@@ -35,8 +35,8 @@ class AwsNormalizerTest {
   @Test
   void normalizeShouldHandleMissingFields() {
 
-    UsageRecordModel record = new UsageRecordModel();
+    UsageRecordModel ingestionRecord = new UsageRecordModel();
 
-    assertDoesNotThrow(() -> normalizer.normalize(record));
+    assertDoesNotThrow(() -> normalizer.normalize(ingestionRecord));
   }
 }
