@@ -22,7 +22,7 @@ class CloudUsageServiceTest {
   private CloudUsageService service;
 
   @BeforeEach
-  void setUp() throws Exception {
+  void setUp() {
 
     factory = mock(CloudConnectorFactory.class);
     persistenceService = mock(SherpaDbPersistenceService.class);
