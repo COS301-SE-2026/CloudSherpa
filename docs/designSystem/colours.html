@@ -1,0 +1,557 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+  </head>
+  <body class="bg-[#121114] flex items-center justify-center min-h-screen w-screen flex-col overflow-scroll">
+    <div class="flex flex-col items-start justify-center">
+      <!-- brand colours - main theme -->
+      <section class="flex flex-col gap-4">
+        <h2 class="text-white text-[32px]">Brand Colors</h2>
+        <section class="flex flex-row gap-4">
+          <div class="flex-col items-start justify-start md:py-4 md:min-w-40">
+            <h3 class="text-[#E5E52E] text-[20px]">Electric Blue</h3>
+            <p class="text-[#B9B9B9] text-[16px]">Token - primary</p>
+          </div>
+
+          <div class="flex flex-row gap-4">
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">100</div>
+              <div class="bg-[#E1E1FA] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#E1E1FA</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">200</div>
+              <div class="bg-[#A8A8F7] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#A8A8F7</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">300</div>
+              <div class="bg-[#8484F0] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#8484F0</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">400</div>
+              <div class="bg-[#5E5EEB] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#5E5EEB</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">500</div>
+              <div class="bg-[#2F2FE4] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#2F2FE4</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">600</div>
+              <div class="bg-[#1D1DBF] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#1D1DBF</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">700</div>
+              <div class="bg-[#0E0E8C] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#0E0E8C</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">800</div>
+              <div class="bg-[#050559] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#050559</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">900</div>
+              <div class="bg-[#000033] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#000033</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="flex flex-row gap-4">
+          <div class="flex-col items-start justify-start md:py-4 md:min-w-40">
+            <h3 class="text-[#E5E52E] text-[20px]">Telemetry Yellow</h3>
+            <p class="text-[#B9B9B9] text-[16px]">Token - accent</p>
+          </div>
+
+          <div class="flex flex-row gap-4">
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">100</div>
+              <div class="bg-[#FFFFE5] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#FFFFE5</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">200</div>
+              <div class="bg-[#F7F7A1] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#F7F7A1</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">300</div>
+              <div class="bg-[#F2F272] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#F2F272</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">400</div>
+              <div class="bg-[#EDED3B] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#EDED3B</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">500</div>
+              <div class="bg-[#E5E52E] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#E5E52E</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">600</div>
+              <div class="bg-[#BFBF1D] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#BFBF1D</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">700</div>
+              <div class="bg-[#8C8C0E] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#8C8C0E</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">800</div>
+              <div class="bg-[#616105] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#616105</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">900</div>
+              <div class="bg-[#333300] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#333300</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <!-- supporting colours - semantic colours like error/destructive for indicating things that need to be addressed urgently, warnings for indicating potential problems etc.  -->
+      <section class="flex flex-col gap-2">
+        <h2 class="text-white text-[32px]">Supporting Colors</h2>
+
+        <section class="flex flex-row gap-3 justify-center items-start ">
+          <div class="flex-col items-start justify-start md:py-4 md:min-w-40">
+            <h3 class="text-[#E5E52E] text-[20px]">Destructive/Error</h3>
+            <p class="text-[#B9B9B9] text-[16px]">Token - destructive</p>
+          </div>
+
+          <div class="flex flex-row gap-4">
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">100</div>
+              <div class="bg-[#FAE1E1] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#FAE1E1</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">200</div>
+              <div class="bg-[#F7A8A8] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#F7A8A8</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">300</div>
+              <div class="bg-[#F08484] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#F08484</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">400</div>
+              <div class="bg-[#EB5959] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#EB5959</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">500</div>
+              <div class="bg-[#E53232] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#E53232</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">600</div>
+              <div class="bg-[#BF1D1D] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#BF1D1D</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">700</div>
+              <div class="bg-[#8C0E0E] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#8C0E0E</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">800</div>
+              <div class="bg-[#590505] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#590505</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">900</div>
+              <div class="bg-[#330000] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#330000</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section class="flex flex-row gap-2">
+          <div class="flex-col items-start justify-start md:py-4 md:min-w-40">
+            <h3 class="text-[#E5E52E] text-[20px]">Warning</h3>
+            <p class="text-[#B9B9B9] text-[16px]">Token - caution</p>
+          </div>
+
+          <div class="flex flex-row gap-4">
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">100</div>
+              <div class="bg-[#FAEAE1] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#FAEAE1</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">200</div>
+              <div class="bg-[#F7C7A8] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#F7C7A8</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">300</div>
+              <div class="bg-[#F0AD84] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#F0AD84</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">400</div>
+              <div class="bg-[#EB945E] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#EB945E</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">500</div>
+              <div class="bg-[#E56D22] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#E56D22</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">600</div>
+              <div class="bg-[#BF5B1D] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#BF5B1D</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">700</div>
+              <div class="bg-[#8C3E0E] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#8C3E0E</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">800</div>
+              <div class="bg-[#592605] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#592605</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">900</div>
+              <div class="bg-[#331400] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#331400</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section class="flex flex-row gap-2">
+          <div class="flex-col items-start justify-start md:py-4 md:min-w-40">
+            <h3 class="text-[#E5E52E] text-[20px]">Success</h3>
+            <p class="text-[#B9B9B9] text-[16px]">Token - primary</p>
+          </div>
+
+          <div class="flex flex-row gap-4">
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">100</div>
+              <div class="bg-[#E3FAE1] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#E3FAE1</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">200</div>
+              <div class="bg-[#AFF7A8] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#AFF7A8</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">300</div>
+              <div class="bg-[#8DF084] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#8DF084</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">400</div>
+              <div class="bg-[#8DF084] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#8DF084</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">500</div>
+              <div class="bg-[#3CCC29] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#3CCC29</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">600</div>
+              <div class="bg-[#2ABF1D] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#2ABF1D</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">700</div>
+              <div class="bg-[#198C0E] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#198C0E</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">800</div>
+              <div class="bg-[#0C5905] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#0C5905</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">900</div>
+              <div class="bg-[#043300] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#043300</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="flex flex-row gap-2">
+          <div class="flex-col items-start justify-start md:py-4 md:min-w-40">
+            <h3 class="text-[#E5E52E] text-[20px]">Electric Blue</h3>
+            <p class="text-[#B9B9B9] text-[16px]">Token - primary</p>
+          </div>
+
+          <div class="flex flex-row gap-4">
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">100</div>
+              <div class="bg-[#E1E1FA] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#E1E1FA</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">200</div>
+              <div class="bg-[#A8A8F7] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#A8A8F7</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">300</div>
+              <div class="bg-[#8484F0] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#8484F0</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">400</div>
+              <div class="bg-[#5E5EEB] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#5E5EEB</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">500</div>
+              <div class="bg-[#2F2FE4] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#2F2FE4</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">600</div>
+              <div class="bg-[#1D1DBF] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#1D1DBF</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">700</div>
+              <div class="bg-[#0E0E8C] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#0E0E8C</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">800</div>
+              <div class="bg-[#050559] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#050559</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+
+            <div class="w-25 flex-col items-center justify-end group">
+              <div class="text-[#B9B9B9] text-[16px] w-full flex flex-row items-center justify-center">900</div>
+              <div class="bg-[#000033] w-full h-25 rounded-md"></div>
+              <div class="w-full h-20 flex flex-col justify-start items-start p-2">
+                <div class="text-[#B9B9B9] text-[12px]">#000033</div>
+                <div class="text-[#B9B9B9] text-[12px]">hsl</div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </section>
+    </div>
+  </body>
+</html>
