@@ -1,9 +1,9 @@
 import React from "react";
-import { GripVertical, X , Trash} from "lucide-react";
+import { GripVertical, Trash} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LayoutItem } from "@/features/dashboard/types/widgets";
 import { useDashboardStore, DashboardStore } from "@/features/dashboard/stores/dashboard-store";
-import { ConfigurableWidget } from "@/features/dashboard/components/widgetGrid/widgets/changeChart";
+import Widget from "@/features/dashboard/components/widgetGrid/widgets/widget";
 
 interface WidgetWrapperProps {
   layout: LayoutItem;
@@ -11,6 +11,7 @@ interface WidgetWrapperProps {
   onDeleteWidget: (layoutId: string, widgetId: string) => void;
   metricFetchLoad: boolean;
 }
+
 
 export const WidgetWrapper = ({ layout, isEditMode, onDeleteWidget, metricFetchLoad }: WidgetWrapperProps) => {
   const { id, widgetId, x, y, w, h, autoPosition } = layout;
@@ -42,9 +43,8 @@ export const WidgetWrapper = ({ layout, isEditMode, onDeleteWidget, metricFetchL
           "h-full w-full",
           isEditMode && "pointer-events-none ring-2 ring-primary/20 rounded-xl transition-all" 
         )}>
-          <ConfigurableWidget 
-            initialConfig={config}
-            metricFetchLoad={metricFetchLoad}
+          <Widget 
+            config={config}
           />
         </div>
       </div>

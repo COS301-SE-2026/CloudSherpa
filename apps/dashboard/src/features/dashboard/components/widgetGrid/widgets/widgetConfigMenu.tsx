@@ -5,28 +5,20 @@ import { useMetricStore } from '@/features/dashboard/stores/metric-store';
 import { useResourceNameStore } from '@/features/dashboard/stores/resource-store';
 import { MetricType } from '@/features/dashboard/types/metric';
 import { useState, useEffect, useRef } from 'react';
+import { WidgetConfig } from '@/features/dashboard/types/widgets';
 
-interface WidgetConfigProps{
+interface WidgetConfigMenuProps{
     isOpen: boolean;
 
     onClose: () => void;
-    onSave: (config: WidgetConfigData) => void;
+    onSave: (config: WidgetConfig) => void;
 
-    existingConfig: WidgetConfigData;
+    existingConfig: WidgetConfig;
 }
 
 // This is shared (used for dashboard store), perhaps we can move it to types
 // Also need to confirm that interface is more appropriate than type
-export interface WidgetConfigData{
-    id: string;
-    title: string;
-    resourceId?: string;
-
-    metricType?: MetricType;
-    widgetType: 'line' | 'gauge';
-}
-
-export function WidgetConfig({ 
+export function WidgetConfigMenu({ 
     isOpen, 
 
     onClose, 
@@ -34,8 +26,8 @@ export function WidgetConfig({
 
     existingConfig,
 
-}: WidgetConfigProps){
-    const [configuration, setConfiguration] = useState<WidgetConfigData>(existingConfig);
+}: Readonly<WidgetConfigMenuProps>) {
+    const [configuration, setConfiguration] = useState<WidgetConfig>(existingConfig);
     const registerWidgetConfigUpdate = useDashboardStore((state) => state.actions.updateWidgetConfig);
     const resourceNamesById = useResourceNameStore((state) => state.resourcesById);
     const allAvailableMetrics = useMetricStore((state) => state.getMetricList);
@@ -59,7 +51,7 @@ export function WidgetConfig({
         onClose();
     };
 
-    function setConfigAndRegisterUpdate(newConfig: WidgetConfigData) {
+    function setConfigAndRegisterUpdate(newConfig: WidgetConfig) {
         setConfiguration(newConfig);
         registerWidgetConfigUpdate(newConfig);
     }
@@ -70,8 +62,8 @@ export function WidgetConfig({
 
     return (
         <>
-            <div 
-                className="fixed inset-0 bg-black/50 z-40"
+            <button
+                className="fixed inset-0 z-40"
                 onClick={onClose}
             />
             
@@ -83,11 +75,12 @@ export function WidgetConfig({
                 <div className="p-6 space-y-4">
                     {/*this is for the widget title*/}
                     <div>
-                        <label className="block text-sm font-medium text-foreground mb-2">
+                        <label className="block text-sm font-medium text-foreground mb-2" htmlFor="title">
                             Title
                         </label>
 
                         <input
+                            id="title"
                             type="text"
                             value={configuration.title}
                             onChange={(e) => setConfigAndRegisterUpdate({ ...configuration, title: e.target.value })}
@@ -98,11 +91,12 @@ export function WidgetConfig({
 
                     {/*this is for the resource id*/}
                     <div>
-                        <label className="block text-sm font-medium text-foreground mb-2">
+                        <label className="block text-sm font-medium text-foreground mb-2" htmlFor="resource-id">
                             Resource ID
                         </label>
 
                         <select
+                            id="resource-id"
                             value={configuration.resourceId}
                             onChange={(e) => {
                                     const resourceId = e.target.value;
@@ -125,11 +119,12 @@ export function WidgetConfig({
                     <div>
                         {configuration.resourceId ? (
                             <>
-                                <label className="block text-sm font-medium text-foreground mb-2">
+                                <label className="block text-sm font-medium text-foreground mb-2" htmlFor="metric-type">
                                     Metric Type
                                 </label>
 
                                 <select
+                                    id="metric-type"
                                     value={configuration.metricType}
                                     onChange={(e) => setConfigAndRegisterUpdate({ ...configuration, metricType: e.target.value as MetricType })}
                                     className="w-full bg-background border border-border rounded-lg px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
@@ -150,28 +145,28 @@ export function WidgetConfig({
 
                     {/*this is to chnange bet. the line chart or the gauge chart*/}
                     <div>
-                        <label className="block text-sm font-medium text-foreground mb-2">
+                        <label className="block text-sm font-medium text-foreground mb-2" htmlFor="chart-type">
                             Chart Type
                         </label>
 
-                        <div className="flex gap-4">
+                        <div className="flex gap-4" id="chart-type">
                             <label className="flex items-center gap-2 cursor-pointer">
                                 <input
                                     type="radio"
                                     value="line"
-                                    checked={configuration.widgetType === 'line'}
-                                    onChange={(e) => setConfiguration({ ...configuration, widgetType: e.target.value as 'line' | 'gauge' })}
+                                    checked={configuration.chartType === 'line'}
+                                    onChange={(e) => setConfiguration({ ...configuration, chartType: e.target.value as 'line' | 'gauge' })}
                                     className="w-4 h-4 text-primary focus:ring-ring"
                                 />
                                 <span className="text-foreground">Line Chart</span>
                             </label>
 
-                            <label className="flex items-center gap-2 cursor-pointer">
+                            <label className="flex items-center gap-2 cursor-pointer ">
                                 <input
                                     type="radio"
                                     value="gauge"
-                                    checked={configuration.widgetType === 'gauge'}
-                                    onChange={(e) => setConfiguration({ ...configuration, widgetType: e.target.value as 'line' | 'gauge' })}
+                                    checked={configuration.chartType === 'gauge'}
+                                    onChange={(e) => setConfiguration({ ...configuration, chartType: e.target.value as 'line' | 'gauge' })}
                                     className="w-4 h-4 text-primary focus:ring-ring"
                                 />
                                 <span className="text-foreground">Gauge Chart</span>

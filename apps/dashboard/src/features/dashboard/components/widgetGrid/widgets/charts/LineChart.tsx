@@ -8,8 +8,7 @@ import { metricSeriesToArray, MetricType } from "@/features/dashboard/types/metr
 import type { EChartsOption } from "echarts";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-type LineChartWidgetProps = {
-    title: string,
+type LineChartProps = {
     resourceId?: string,
     metricType?: MetricType,
     metricFetchLoad?: boolean,
@@ -21,12 +20,11 @@ type LineChartWidgetProps = {
 // investigation regarding this
 const AXIS_TICK_MS = 5_000;
 
-export function LineChartWidget({
-    title,
+export function LineChart({
     resourceId,
     metricType,
     metricFetchLoad = false,
-}: Readonly<LineChartWidgetProps>) {
+}: Readonly<LineChartProps>) {
     const chartRef = useRef<HTMLDivElement>(null);
     const series = useMetricStore((state) => state.seriesByKey[`${resourceId}:${metricType}`]);
     const data = useMemo(() => metricSeriesToArray(series), [series]);
@@ -51,7 +49,7 @@ export function LineChartWidget({
                 setLineColor(tokenColor);
             }
 
-            const isLightMode = document.documentElement.getAttribute('data-theme') === 'light';
+            const isLightMode = document.documentElement.dataset.theme === 'light';
             if (foregroundToken) {
                 setTextColor(foregroundToken);
             } else {
@@ -59,7 +57,7 @@ export function LineChartWidget({
             }
 
             // Adjust horizontal grid line opacity based on active theme(just added on logic for theme swapping)
-            setGridOpacity(isLightMode ? 0.70 : 0.10);
+            setGridOpacity(isLightMode ? 0.7 : 0.1);
         };
 
         updateThemeStyles();
@@ -134,7 +132,6 @@ export function LineChartWidget({
 
             series: [
                 {
-                    name: title,
                     type: "line",
                     data: points,
                     // symbol = visual marker
@@ -145,7 +142,7 @@ export function LineChartWidget({
         };
 
         chartInstance.current?.setOption(option);
-    }, [title, resourceId, data, visibleWindowMs, lineColor, gridOpacity, textColor])
+    }, [ resourceId, data, visibleWindowMs, lineColor, gridOpacity, textColor])
 
     useEffect(() => {
         if(!chartInstance.current){
@@ -163,8 +160,8 @@ export function LineChartWidget({
             }, 10);
         };
 
-        window.addEventListener('resize', handleResize);
-        window.addEventListener('widget-resize', handleWidgetResize);
+        globalThis.addEventListener('resize', handleResize);
+        globalThis.addEventListener('widget-resize', handleWidgetResize);
 
         const forResizing = new ResizeObserver(() => {
             chartInstance.current?.resize();
@@ -175,8 +172,8 @@ export function LineChartWidget({
         }
         
         return () => {
-            window.removeEventListener('resize', handleResize);
-            window.removeEventListener('widget-resize', handleWidgetResize);
+            globalThis.removeEventListener('resize', handleResize);
+            globalThis.removeEventListener('widget-resize', handleWidgetResize);
             forResizing.disconnect();
         };
     }, []);
