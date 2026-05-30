@@ -20,14 +20,14 @@ import software.amazon.awssdk.services.ec2.model.Reservation;
 
 @Component("aws")
 public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingCapable {
-  private static final String cpuUtilization = "CPUUtilization";
-  private static final String networkIn = "NetworkIn";
-  private static final String networkOut = "NetworkOut";
-  private static final String memoryUtilization = "MemoryUtilization";
-  private static final String count = "Count";
-  private static final String milliseconds = "Milliseconds";
+  private static final String CPU_UTILIZATION = "CPUUtilization";
+  private static final String NETWORK_IN = "NetworkIn";
+  private static final String NETWORK_OUT = "NetworkOut";
+  private static final String MEMORY_UTILIZATION = "MemoryUtilization";
+  private static final String COUNT = "Count";
+  private static final String MILLISECONDS = "Milliseconds";
   private static final String bytes = "Bytes";
-  private static final String percent = "Percent";
+  private static final String PERCENT = "Percent";
 
   private CloudWatchClient defaultClient =
       CloudWatchClient.builder()
@@ -550,9 +550,9 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
   private double metricBurstWeight(ServiceType type, String metric) {
     return switch (type) {
       case EC2 -> switch (metric) {
-        case cpuUtilization -> 0.8;
-        case networkIn -> 1.2;
-        case networkOut -> 1.0;
+        case CPU_UTILIZATION -> 0.8;
+        case NETWORK_IN -> 1.2;
+        case NETWORK_OUT -> 1.0;
         default -> 0.5;
       };
       case LAMBDA -> 1.0;
@@ -580,9 +580,9 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
 
     return switch (type) {
       case EC2 -> switch (metric) {
-        case cpuUtilization -> Math.clamp(state + gaussian * 2, 0, 100);
-        case networkIn -> Math.max(0, state * 1000 * clusterFactor + burst * 50);
-        case networkOut -> Math.max(0, state * 800 * clusterFactor);
+        case CPU_UTILIZATION -> Math.clamp(state + gaussian * 2, 0, 100);
+        case NETWORK_IN -> Math.max(0, state * 1000 * clusterFactor + burst * 50);
+        case NETWORK_OUT -> Math.max(0, state * 800 * clusterFactor);
         case "DiskReadOps" -> Math.max(0, Math.abs(state - 50) * 30 + burst);
         case "DiskWriteOps" -> Math.max(0, Math.abs(state - 40) * 25 + burst * 0.5);
         case "DiskReadBytes" -> Math.max(0, state * 1024 * clusterFactor);
@@ -599,7 +599,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
 
       case RDS -> switch (metric) {
         case "Latency" -> Math.max(0, 10 + state * 3 + clusterFactor * 20 + burst);
-        case cpuUtilization -> Math.clamp(state, 0, 100);
+        case CPU_UTILIZATION -> Math.clamp(state, 0, 100);
         case "DatabaseConnections" -> Math.max(0, state * 10);
         default -> Math.max(0, state);
       };
@@ -616,13 +616,13 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
       };
 
       case ECS_EKS -> switch (metric) {
-        case cpuUtilization -> Math.clamp(state, 0, 100);
-        case memoryUtilization -> Math.clamp(state, 0, 100);
+        case CPU_UTILIZATION -> Math.clamp(state, 0, 100);
+        case MEMORY_UTILIZATION -> Math.clamp(state, 0, 100);
         default -> Math.max(0, state * clusterFactor);
       };
 
       case GPU_ML -> switch (metric) {
-        case memoryUtilization -> Math.clamp(state, 0, 100);
+        case MEMORY_UTILIZATION -> Math.clamp(state, 0, 100);
         case "GPUUtilization" -> Math.clamp(state, 0, 100);
         case "TrainingLoss" -> 1.0 / (1 + state);
         case "BatchTime" -> 100 + (100 - state) * 2;
@@ -639,34 +639,34 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
         Map.of(
             ServiceType.EC2,
             Map.ofEntries(
-                Map.entry(cpuUtilization, percent),
-                Map.entry("DiskReadOps", count),
-                Map.entry("DiskWriteOps", count),
+                Map.entry(CPU_UTILIZATION, PERCENT),
+                Map.entry("DiskReadOps", COUNT),
+                Map.entry("DiskWriteOps", COUNT),
                 Map.entry("DiskReadBytes", bytes),
                 Map.entry("DiskWriteBytes", bytes),
-                Map.entry(networkIn, bytes),
-                Map.entry(networkOut, bytes),
-                Map.entry("NetworkPacketsIn", count),
-                Map.entry("NetworkPacketsOut", count),
-                Map.entry("StatusCheckFailed", count),
-                Map.entry("StatusCheckFailed_Instance", count),
-                Map.entry("StatusCheckFailed_System", count)),
+                Map.entry(NETWORK_IN, bytes),
+                Map.entry(NETWORK_OUT, bytes),
+                Map.entry("NetworkPacketsIn", COUNT),
+                Map.entry("NetworkPacketsOut", COUNT),
+                Map.entry("StatusCheckFailed", COUNT),
+                Map.entry("StatusCheckFailed_Instance", COUNT),
+                Map.entry("StatusCheckFailed_System", COUNT)),
             ServiceType.LAMBDA,
             Map.ofEntries(
-                Map.entry("Invocations", count),
-                Map.entry("Errors", count),
-                Map.entry("Duration", milliseconds),
-                Map.entry("Throttles", count),
-                Map.entry("IteratorAge", milliseconds),
-                Map.entry("ConcurrentExecutions", count),
-                Map.entry("UnreservedConcurrentExecutions", count)),
+                Map.entry("Invocations", COUNT),
+                Map.entry("Errors", COUNT),
+                Map.entry("Duration", MILLISECONDS),
+                Map.entry("Throttles", COUNT),
+                Map.entry("IteratorAge", MILLISECONDS),
+                Map.entry("ConcurrentExecutions", COUNT),
+                Map.entry("UnreservedConcurrentExecutions", COUNT)),
             ServiceType.RDS,
             Map.ofEntries(
-                Map.entry(cpuUtilization, percent),
-                Map.entry("DatabaseConnections", count),
+                Map.entry(CPU_UTILIZATION, PERCENT),
+                Map.entry("DatabaseConnections", COUNT),
                 Map.entry("FreeStorageSpace", bytes),
-                Map.entry("ReadLatency", milliseconds),
-                Map.entry("WriteLatency", milliseconds),
+                Map.entry("ReadLatency", MILLISECONDS),
+                Map.entry("WriteLatency", MILLISECONDS),
                 Map.entry("ReadIOPS", "Count/Second"),
                 Map.entry("WriteIOPS", "Count/Second"),
                 Map.entry("NetworkReceiveThroughput", "Bytes/Second"),
@@ -675,43 +675,43 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
                 Map.entry("SwapUsage", bytes)),
             ServiceType.S3,
             Map.ofEntries(
-                Map.entry("NumberOfObjects", count),
+                Map.entry("NumberOfObjects", COUNT),
                 Map.entry("BucketSizeBytes", bytes),
-                Map.entry("AllRequests", count),
-                Map.entry("GetRequests", count),
-                Map.entry("PutRequests", count),
-                Map.entry("DeleteRequests", count),
-                Map.entry("4xxErrors", count),
-                Map.entry("5xxErrors", count),
-                Map.entry("FirstByteLatency", milliseconds),
-                Map.entry("TotalRequestLatency", milliseconds)),
+                Map.entry("AllRequests", COUNT),
+                Map.entry("GetRequests", COUNT),
+                Map.entry("PutRequests", COUNT),
+                Map.entry("DeleteRequests", COUNT),
+                Map.entry("4xxErrors", COUNT),
+                Map.entry("5xxErrors", COUNT),
+                Map.entry("FirstByteLatency", MILLISECONDS),
+                Map.entry("TotalRequestLatency", MILLISECONDS)),
             ServiceType.DYNAMODB,
             Map.ofEntries(
-                Map.entry("ConsumedReadCapacityUnits", count),
-                Map.entry("ConsumedWriteCapacityUnits", count),
-                Map.entry("ReadThrottleEvents", count),
-                Map.entry("WriteThrottleEvents", count),
-                Map.entry("ThrottledRequests", count),
-                Map.entry("SuccessfulRequestLatency", milliseconds),
-                Map.entry("SystemErrors", count),
-                Map.entry("UserErrors", count)),
+                Map.entry("ConsumedReadCapacityUnits", COUNT),
+                Map.entry("ConsumedWriteCapacityUnits", COUNT),
+                Map.entry("ReadThrottleEvents", COUNT),
+                Map.entry("WriteThrottleEvents", COUNT),
+                Map.entry("ThrottledRequests", COUNT),
+                Map.entry("SuccessfulRequestLatency", MILLISECONDS),
+                Map.entry("SystemErrors", COUNT),
+                Map.entry("UserErrors", COUNT)),
             ServiceType.ECS_EKS,
             Map.ofEntries(
-                Map.entry(cpuUtilization, percent),
-                Map.entry(memoryUtilization, percent),
-                Map.entry("RunningTaskCount", count),
-                Map.entry("PendingTaskCount", count),
-                Map.entry("ServiceCount", count)),
+                Map.entry(CPU_UTILIZATION, PERCENT),
+                Map.entry(MEMORY_UTILIZATION, PERCENT),
+                Map.entry("RunningTaskCount", COUNT),
+                Map.entry("PendingTaskCount", COUNT),
+                Map.entry("ServiceCount", COUNT)),
             ServiceType.GPU_ML,
             Map.ofEntries(
-                Map.entry("GPUUtilization", percent),
-                Map.entry("GPUMemoryUtilization", percent),
-                Map.entry(cpuUtilization, percent),
-                Map.entry(memoryUtilization, percent),
-                Map.entry("DiskUtilization", percent),
+                Map.entry("GPUUtilization", PERCENT),
+                Map.entry("GPUMemoryUtilization", PERCENT),
+                Map.entry(CPU_UTILIZATION, PERCENT),
+                Map.entry(MEMORY_UTILIZATION, PERCENT),
+                Map.entry("DiskUtilization", PERCENT),
                 Map.entry("TrainingLoss", "None"),
-                Map.entry("BatchSize", count),
-                Map.entry("IterationTime", milliseconds)));
+                Map.entry("BatchSize", COUNT),
+                Map.entry("IterationTime", MILLISECONDS)));
 
     public static String unit(ServiceType type, String metric) {
       return UNITS.getOrDefault(type, Map.of()).getOrDefault(metric, "None");

@@ -16,6 +16,7 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.logging.Logger;
 import org.springframework.stereotype.Service;
 
 /** Intermediary between the CloudUsageController and the ingestion pipeline. */
@@ -24,6 +25,8 @@ public class CloudUsageService {
   private final CloudConnectorFactory factory;
   private final SherpaDbPersistenceService sherpaDbPersistenceService;
   private final AwsNormalizer normalizer = new AwsNormalizer();
+
+  Logger logger = Logger.getLogger(getClass().getName());
 
   public CloudUsageService(
       CloudConnectorFactory factory, SherpaDbPersistenceService sherpaDbPersistenceService) {
@@ -158,7 +161,7 @@ public class CloudUsageService {
     try {
       sherpaDbPersistenceService.recordMetric(metric, r, userId);
     } catch (Exception e) {
-      System.err.println(e.getMessage());
+      logger.info(e.getMessage());
     }
   }
 }
