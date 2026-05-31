@@ -6,6 +6,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
@@ -19,6 +21,7 @@ import software.amazon.awssdk.services.ec2.Ec2Client;
 import software.amazon.awssdk.services.ec2.model.DescribeInstancesResponse;
 import software.amazon.awssdk.services.ec2.model.Instance;
 import software.amazon.awssdk.services.ec2.model.Reservation;
+import software.amazon.awssdk.services.ec2.model.Tag;
 import software.amazon.awssdk.services.lambda.LambdaClient;
 import software.amazon.awssdk.services.lambda.model.*;
 import software.amazon.awssdk.services.rds.RdsClient;
@@ -45,10 +48,10 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
             .region(Region.EU_NORTH_1)
             .build();
 
-    public static List<String> listAllEc2Instances(
+    public static List<ResourceDetail> listAllEc2Instances(
             CloudCredentials credentials) {
 
-        List<String> ids = new ArrayList<>();
+        List<ResourceDetail> resources = new ArrayList<>();
 
         try (Ec2Client ec2 = Ec2Client.builder()
                 .region(AwsClientFactory.region(credentials))
@@ -60,12 +63,27 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
 
             for (Reservation reservation : response.reservations()) {
                 for (Instance instance : reservation.instances()) {
-                    ids.add(instance.instanceId());
+
+                    Map<String, String> tags = instance.tags()
+                            .stream()
+                            .collect(Collectors.toMap(
+                                    Tag::key,
+                                    Tag::value,
+                                    (a, b) -> b));
+                    String instanceName = ResourceDetail.resolveName(
+                            instance.instanceId(),
+                            null,
+                            tags);
+                    resources.add(
+                            new ResourceDetail(
+                                    instance.instanceId(),
+                                    instanceName,
+                                    tags));
                 }
             }
         }
 
-        return ids;
+        return resources;
     }
 
     public static List<String> getAllEcsClusters(
