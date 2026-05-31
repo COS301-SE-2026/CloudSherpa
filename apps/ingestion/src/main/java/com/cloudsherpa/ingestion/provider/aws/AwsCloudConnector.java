@@ -70,7 +70,8 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
           Map<String, String> tags =
               instance.tags().stream().collect(Collectors.toMap(Tag::key, Tag::value, (a, b) -> b));
           String instanceName = ResourceDetail.resolveName(instance.instanceId(), null, tags);
-          resources.add(new ResourceDetail(instance.instanceId(), instanceName, tags));
+          resources.add(
+              new ResourceDetail(instance.instanceId(), instanceName, "InstanceId", tags));
         }
       }
     }
@@ -102,8 +103,8 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
                                 software.amazon.awssdk.services.ecs.model.Tag::value,
                                 (a, b) -> b));
                 String name =
-                    ResourceDetail.resolveName(cluster.clusterArn(), cluster.clusterName(), tags);
-                return new ResourceDetail(cluster.clusterArn(), name, tags);
+                    ResourceDetail.resolveName(cluster.clusterName(), cluster.clusterName(), tags);
+                return new ResourceDetail(cluster.clusterArn(), name, "ClusterName", tags);
               })
           .toList();
     }
@@ -123,7 +124,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
 
         Cluster cluster = eks.describeCluster(r -> r.name(clusterName)).cluster();
         String name = ResourceDetail.resolveName(clusterName, cluster.name(), cluster.tags());
-        resources.add(new ResourceDetail(clusterName, name, cluster.tags()));
+        resources.add(new ResourceDetail(clusterName, name, "ClusterName", cluster.tags()));
       }
     }
 
@@ -146,7 +147,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
 
         Map<String, String> tags = lambda.listTags(r -> r.resource(fn.functionArn())).tags();
         String name = ResourceDetail.resolveName(fn.functionName(), fn.functionName(), tags);
-        resources.add(new ResourceDetail(fn.functionName(), name, tags));
+        resources.add(new ResourceDetail(fn.functionName(), name, "FunctionName", tags));
       }
     }
 
@@ -176,7 +177,8 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
                         (a, b) -> b));
         String name =
             ResourceDetail.resolveName(db.dbInstanceIdentifier(), db.dbInstanceIdentifier(), tags);
-        resources.add(new ResourceDetail(db.dbInstanceIdentifier(), name, tags));
+        resources.add(
+            new ResourceDetail(db.dbInstanceIdentifier(), name, "DBInstanceIdentifier", tags));
       }
     }
 
@@ -210,7 +212,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
         }
         String name =
             ResourceDetail.resolveName(cluster.cacheClusterId(), cluster.cacheClusterId(), tags);
-        resources.add(new ResourceDetail(cluster.cacheClusterId(), name, tags));
+        resources.add(new ResourceDetail(cluster.cacheClusterId(), name, "CacheClusterId", tags));
       }
     }
 
@@ -246,7 +248,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
                         software.amazon.awssdk.services.opensearch.model.Tag::value,
                         (a, b) -> b));
         String name = ResourceDetail.resolveName(domain.domainName(), domain.domainName(), tags);
-        resources.add(new ResourceDetail(domain.domainName(), name, tags));
+        resources.add(new ResourceDetail(domain.domainName(), name, "DomainName", tags));
       }
     }
 
@@ -278,7 +280,8 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
         String name =
             ResourceDetail.resolveName(
                 cluster.clusterIdentifier(), cluster.clusterIdentifier(), tags);
-        resources.add(new ResourceDetail(cluster.clusterIdentifier(), name, tags));
+        resources.add(
+            new ResourceDetail(cluster.clusterIdentifier(), name, "ClusterIdentifier", tags));
       }
     }
 
