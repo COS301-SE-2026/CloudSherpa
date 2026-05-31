@@ -146,10 +146,19 @@ A list of every single cloud asset (servers, databases, hard drives) we found in
 | **resource_id** | UUID | Primary Key | Our unique ID for this specific server or bucket. |
 | **account_id** | UUID | Cross-Schema FK | Links back up to the `cloud_account` in the public schema. |
 | **resource_type** | VARCHAR(255) | Not Null | What the asset actually is (e.g., `AWS::EC2::Instance`). |
+| **resource_name** | VARCHAR(255) | Not Null | The standardized display name for the asset, resolved by the backend. |
 | **status** | status_enum | Nullable | Is the server currently running (`active`) or stopped (`disabled`)? |
 | **tags** | JSONB | GIN Index | User-defined cloud labels saved as a flexible JSON object. |
 | **last_updated** | TIMESTAMPTZ | Default NOW() | The last time our system checked on this resource. |
 | **created_at** | TIMESTAMPTZ | Default NOW() | When our system first discovered this resource. |
+
+#### Resource Naming Logic
+Cloud providers are inconsistent with how they name assets. To prevent the frontend from running complex conditional logic just to display a chart title, the backend resolves a universal `resource_name` before saving it to the database.
+
+The backend resolves the name using this priority fallback:
+1. **Dedicated Name Field:** If the cloud provider provides a specific name property.
+2. **Tag Search:** If no dedicated field exists, it searches the `JSONB` tags for a key matching `"Name"`.
+3. **ID Fallback:** If neither exists, it defaults to using the `resource_id` (e.g., `i-0abcd1234efgh5678`).
 
 #### Schema Performance Tuning (JSONB Tags)
 Users add wild, unpredictable tags to their cloud resources. Instead of trying to fit them into strict rows and columns, we save them exactly as they are in a `JSONB` column. 
