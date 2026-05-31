@@ -1,14 +1,26 @@
 package com.cloudsherpa.ingestion.unit.provider.aws;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
 import com.cloudsherpa.ingestion.connector.*;
 import com.cloudsherpa.ingestion.models.IngestionRequestEvent;
+import com.cloudsherpa.ingestion.models.ResourceDetail;
 import com.cloudsherpa.ingestion.models.UsageRecordModel;
 import com.cloudsherpa.ingestion.provider.aws.AwsCloudConnector;
 import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+import software.amazon.awssdk.services.ec2.Ec2Client;
+import software.amazon.awssdk.services.ec2.Ec2ClientBuilder;
+import software.amazon.awssdk.services.ec2.model.DescribeInstancesResponse;
+import software.amazon.awssdk.services.ec2.model.Instance;
+import software.amazon.awssdk.services.ec2.model.Reservation;
+import software.amazon.awssdk.services.ec2.model.Tag;
 
 class AwsCloudConnectorTest {
 
@@ -95,5 +107,53 @@ class AwsCloudConnectorTest {
     request.setScopes(List.of(scope));
 
     return request;
+  }
+
+  // The following "listAll" tests are unfortunately brittle due to static
+  // mocking, I do not want to change the
+  // code being tested to make testing more convenient as that makes the rel usage
+  // of the class functions more complicated for the user
+  @Test
+  void listAllEc2InstancesShouldReturnResources() {
+
+    CloudCredentials credentials = new CloudCredentials();
+    credentials.setAccessKey("accessKey");
+    credentials.setSecretKey("secretKey");
+    credentials.setAwsRegion("region");
+
+    Ec2Client ec2Client = mock(Ec2Client.class);
+    Ec2ClientBuilder builder = mock(Ec2ClientBuilder.class);
+
+    Tag nameTag = Tag.builder().key("Name").value("WebServer").build();
+
+    Instance instance = Instance.builder().instanceId("i-123").tags(nameTag).build();
+
+    Reservation reservation = Reservation.builder().instances(instance).build();
+
+    DescribeInstancesResponse response =
+        DescribeInstancesResponse.builder().reservations(reservation).build();
+
+    when(ec2Client.describeInstances()).thenReturn(response);
+
+    when(builder.region(any())).thenReturn(builder);
+    when(builder.credentialsProvider(any())).thenReturn(builder);
+    when(builder.build()).thenReturn(ec2Client);
+
+    try (MockedStatic<Ec2Client> mocked = mockStatic(Ec2Client.class)) {
+
+      mocked.when(Ec2Client::builder).thenReturn(builder);
+
+      List<ResourceDetail> result = AwsCloudConnector.listAllEc2Instances(credentials);
+
+      assertEquals(1, result.size());
+
+      ResourceDetail resource = result.get(0);
+
+      assertEquals("i-123", resource.getResourceId());
+      assertEquals("WebServer", resource.getName());
+      assertEquals("InstanceId", resource.getResourceType());
+
+      assertEquals("WebServer", resource.getTags().get("Name"));
+    }
   }
 }
