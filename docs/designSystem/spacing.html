@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://googleapis.com" rel="stylesheet" />
+
+    <title>CloudSherpa Typography</title>
+    <style type="text/tailwindcss">
+      @theme {
+        --font-geist: "Geist", sans-serif;
+        --font-geist-mono: "Geist Mono", monospace;
+      }
+    </style>
+  </head>
+  <body
+    class="bg-[#101014] flex items-center justify-center w-screen flex-col font-geist min-h-screen overflow-y-auto overflow-x-hidden py-[48px]">
+    <section class="flex flex-col gap-4 flex items-start justify-center h-auto">
+      <h1 class="text-[#F1F1F4] text-[48px] h-[56px]">Sizes and spacing</h1>
+      <div class="h-[32px]"></div>
+
+      <section class="p-4 w-[70vw] bg-[#17161D] rounded-md flex flex-col border border-[1.5px] border-white/12">
+        <h2 class="text-[#F1F1F4] text-[32px] h-[42px]">Screen Breakpoints</h2>
+        <div class="h-[24px]"></div>
+        <div class="text-[14px] leading-[16px] text-[#C6C5D3] block">
+          Some description of what breakpoints are and why they are inmportant in making our program responsive
+        </div>
+        <div class="h-[16px]"></div>
+        <div class="flex flex-row justify-between">
+          <div class="text-[#F1F1F4] flex flex-col justify-center items-center gap-2">
+            <div class="text-[20px] leading-[24px] tracking-[2%]">(default mobile)</div>
+            <div class="text-[14px] leading-[24px] tracking-[4%] text-[#C6C5D3]">0px</div>
+          </div>
+          <div class="border border-white/12 border-1.5 my-4"></div>
+
+          <div class="text-[#F1F1F4] flex flex-col justify-center items-center gap-2">
+            <div class="text-[20px] leading-[24px] tracking-[2%]">sm (tablets)</div>
+            <div class="text-[14px] leading-[24px] tracking-[4%] text-[#C6C5D3]">640px</div>
+          </div>
+          <div class="border border-white/12 border-1.5 my-4"></div>
+
+          <div class="text-[#F1F1F4] flex flex-col justify-center items-center gap-2">
+            <div class="text-[20px] leading-[24px] tracking-[2%]">md (laptops)</div>
+            <div class="text-[14px] leading-[24px] tracking-[4%] text-[#C6C5D3]">768px</div>
+          </div>
+          <div class="border border-white/12 border-1.5 my-4"></div>
+
+          <div class="text-[#F1F1F4] flex flex-col justify-center items-center gap-2">
+            <div class="text-[20px] leading-[24px] tracking-[2%]">lg (larger monitors)</div>
+            <div class="text-[14px] leading-[24px] tracking-[4%] text-[#C6C5D3]">1024px</div>
+          </div>
+          <div class="border border-white/12 border-1.5 my-4"></div>
+
+          <div class="text-[#F1F1F4] flex flex-col justify-center items-center gap-2">
+            <div class="text-[20px] leading-[24px] tracking-[2%]">xl</div>
+            <div class="text-[14px] leading-[24px] tracking-[4%] text-[#C6C5D3]">1280px</div>
+          </div>
+          <div class="border border-white/12 border-1.5 my-4"></div>
+
+          <div class="text-[#F1F1F4] flex flex-col justify-center items-center gap-2">
+            <div class="text-[20px] leading-[24px] tracking-[2%]">2xl</div>
+            <div class="text-[14px] leading-[24px] tracking-[4%] text-[#C6C5D3]">1536px</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="p-4 w-[70vw] bg-[#17161D] rounded-md flex flex-col border border-[1.5px] border-white/12">
+        <h2 class="text-[#F1F1F4] text-[32px] h-[42px]">Spaces</h2>
+        <div class="h-[24px]"></div>
+        <div class="text-[14px] leading-[16px] text-[#C6C5D3] block">
+          Some description of what spacing is, why it's important and how we want to handle it to make it dynamic and
+          not clunky with the responsive design
+        </div>
+        <div class="h-[16px]"></div>
+        <div class="flex flex-col justify-center">
+          <div class="text-[#F1F1F4] flex flex-row items-center gap-2">
+            <div class="text-[20px] leading-[24px] tracking-[2%] flex-1">sm</div>
+            <div class="text-[14px] leading-[24px] tracking-[4%] text-[#C6C5D3] flex-1 flex items-center justify-center">8px</div>
+            <div class="flex-1 flex items-center justify-end">
+              <div class="h-2 w-[8px] bg-[#1C1CE3] rounded-md"></div>
+            </div>
+          </div>
+          <div class="border border-white/12 border-1.5 my-4"></div>
+
+          <div class="text-[#F1F1F4] flex flex-row items-center gap-2">
+            <div class="text-[20px] leading-[24px] flex-1 tracking-[2%]">md</div>
+            <div class="text-[14px] leading-[24px] flex-1 tracking-[4%] text-[#C6C5D3] flex items-center justify-center">16px</div>
+            <div class="flex-1 flex items-center justify-end">
+              <div class="h-2 w-[16px] bg-[#1C1CE3] rounded-md"></div>
+            </div>
+          </div>
+          <div class="border border-white/12 border-1.5 my-4"></div>
+
+          <div class="text-[#F1F1F4] flex flex-row items-center gap-2">
+            <div class="text-[20px] leading-[24px] flex-1 tracking-[2%]">lg</div>
+            <div class="text-[14px] leading-[24px] flex-1 tracking-[4%] text-[#C6C5D3] flex items-center justify-center">32px</div>
+            <div class="flex-1 flex items-center justify-end">
+              <div class="h-2 w-[32px] bg-[#1C1CE3] rounded-md"></div>
+            </div>
+          </div>
+          <div class="border border-white/12 border-1.5 my-4"></div>
+
+          <div class="text-[#F1F1F4] flex flex-row items-center gap-2">
+            <div class="text-[20px] leading-[24px] flex-1 tracking-[2%]">xl</div>
+            <div class="text-[14px] leading-[24px] flex-1 tracking-[4%] text-[#C6C5D3] flex items-center justify-center">48px</div>
+            <div class="flex-1 flex items-center justify-end">
+              <div class="h-2 w-[48px] bg-[#1C1CE3] rounded-md"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </section>
+  </body>
+</html>
