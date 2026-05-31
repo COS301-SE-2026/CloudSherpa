@@ -2,72 +2,72 @@ package com.cloudsherpa.ingestion.connector;
 
 public class CloudCredentials {
 
-    // AWS
-    private String accessKey;
-    private String secretKey;
-    private String awsRegion;
+  // AWS
+  private String accessKey;
+  private String secretKey;
+  private String awsRegion;
 
-    // Azure
-    private String tenantId;
-    private String clientId;
-    private String clientSecret;
+  // Azure
+  private String tenantId;
+  private String clientId;
+  private String clientSecret;
 
-    // GCP
-    private String projectId;
+  // GCP
+  private String projectId;
 
-    public String getAccessKey() {
-        return accessKey;
-    }
+  public String getAccessKey() {
+    return accessKey;
+  }
 
-    public void setAccessKey(String accessKey) {
-        this.accessKey = accessKey;
-    }
+  public void setAccessKey(String accessKey) {
+    this.accessKey = accessKey;
+  }
 
-    public String getSecretKey() {
-        return secretKey;
-    }
+  public String getSecretKey() {
+    return secretKey;
+  }
 
-    public void setSecretKey(String secretKey) {
-        this.secretKey = secretKey;
-    }
+  public void setSecretKey(String secretKey) {
+    this.secretKey = secretKey;
+  }
 
-    public String getAwsRegion() {
-        return awsRegion;
-    }
+  public String getAwsRegion() {
+    return awsRegion;
+  }
 
-    public void setAwsRegion(String region) {
-        this.awsRegion = region;
-    }
+  public void setAwsRegion(String region) {
+    this.awsRegion = region;
+  }
 
-    public String getTenantId() {
-        return tenantId;
-    }
+  public String getTenantId() {
+    return tenantId;
+  }
 
-    public void setTenantId(String tenantId) {
-        this.tenantId = tenantId;
-    }
+  public void setTenantId(String tenantId) {
+    this.tenantId = tenantId;
+  }
 
-    public String getClientId() {
-        return clientId;
-    }
+  public String getClientId() {
+    return clientId;
+  }
 
-    public void setClientId(String clientId) {
-        this.clientId = clientId;
-    }
+  public void setClientId(String clientId) {
+    this.clientId = clientId;
+  }
 
-    public String getClientSecret() {
-        return clientSecret;
-    }
+  public String getClientSecret() {
+    return clientSecret;
+  }
 
-    public void setClientSecret(String clientSecret) {
-        this.clientSecret = clientSecret;
-    }
+  public void setClientSecret(String clientSecret) {
+    this.clientSecret = clientSecret;
+  }
 
-    public String getProjectId() {
-        return projectId;
-    }
+  public String getProjectId() {
+    return projectId;
+  }
 
-    public void setProjectId(String projectId) {
-        this.projectId = projectId;
-    }
+  public void setProjectId(String projectId) {
+    this.projectId = projectId;
+  }
 }
