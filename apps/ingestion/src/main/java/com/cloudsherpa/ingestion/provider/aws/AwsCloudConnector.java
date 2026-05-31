@@ -129,9 +129,9 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
     return resources;
   }
 
-  public static List<String> getAllLambdaFunctions(CloudCredentials credentials) {
+  public static List<ResourceDetail> getAllLambdaFunctions(CloudCredentials credentials) {
 
-    List<String> names = new ArrayList<>();
+    List<ResourceDetail> resources = new ArrayList<>();
 
     try (LambdaClient lambda =
         LambdaClient.builder()
@@ -142,16 +142,19 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
       ListFunctionsResponse response = lambda.listFunctions();
 
       for (FunctionConfiguration fn : response.functions()) {
-        names.add(fn.functionName());
+
+        Map<String, String> tags = lambda.listTags(r -> r.resource(fn.functionArn())).tags();
+        String name = ResourceDetail.resolveName(fn.functionName(), fn.functionName(), tags);
+        resources.add(new ResourceDetail(fn.functionName(), name, tags));
       }
     }
 
-    return names;
+    return resources;
   }
 
-  public static List<String> getAllRdsInstances(CloudCredentials credentials) {
+  public static List<ResourceDetail> getAllRdsInstances(CloudCredentials credentials) {
 
-    List<String> instanceIds = new ArrayList<>();
+    List<ResourceDetail> resources = new ArrayList<>();
 
     try (RdsClient rds =
         RdsClient.builder()
@@ -162,11 +165,21 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
       DescribeDbInstancesResponse response = rds.describeDBInstances();
 
       for (DBInstance db : response.dbInstances()) {
-        instanceIds.add(db.dbInstanceIdentifier());
+
+        Map<String, String> tags =
+            rds.listTagsForResource(r -> r.resourceName(db.dbInstanceArn())).tagList().stream()
+                .collect(
+                    Collectors.toMap(
+                        software.amazon.awssdk.services.rds.model.Tag::key,
+                        software.amazon.awssdk.services.rds.model.Tag::value,
+                        (a, b) -> b));
+        String name =
+            ResourceDetail.resolveName(db.dbInstanceIdentifier(), db.dbInstanceIdentifier(), tags);
+        resources.add(new ResourceDetail(db.dbInstanceIdentifier(), name, tags));
       }
     }
 
-    return instanceIds;
+    return resources;
   }
 
   public static List<String> getAllElastiCacheClusters(CloudCredentials credentials) {
