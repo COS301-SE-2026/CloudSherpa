@@ -5,32 +5,32 @@ import java.util.Map;
 
 public class ResourceDetail {
 
-  private final String RESOURCE_ID;
-  private final String NAME;
-  private final String RESOURCE_TYPE;
-  private final Map<String, String> TAGS;
+  private final String resourceId;
+  private final String name;
+  private final String resourceType;
+  private final Map<String, String> tags;
 
   public ResourceDetail(String resourceId, String name, String type, Map<String, String> tags) {
-    this.RESOURCE_ID = resourceId;
-    this.NAME = name;
-    this.RESOURCE_TYPE = type;
-    this.TAGS = tags == null ? Collections.emptyMap() : tags;
+    this.resourceId = resourceId;
+    this.name = name;
+    this.resourceType = type;
+    this.tags = tags == null ? Collections.emptyMap() : tags;
   }
 
   public String getResourceId() {
-    return RESOURCE_ID;
+    return resourceId;
   }
 
   public String getName() {
-    return NAME;
+    return name;
   }
 
   public String getResourceType() {
-    return RESOURCE_TYPE;
+    return resourceType;
   }
 
   public Map<String, String> getTags() {
-    return TAGS;
+    return tags;
   }
 
   public static String resolveName(

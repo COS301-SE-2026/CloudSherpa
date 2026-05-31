@@ -14,6 +14,7 @@ import com.cloudsherpa.ingestion.provider.aws.AwsCloudConnector;
 import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 import org.mockito.MockedStatic;
 import software.amazon.awssdk.services.ec2.Ec2Client;
 import software.amazon.awssdk.services.ec2.Ec2ClientBuilder;
@@ -21,6 +22,12 @@ import software.amazon.awssdk.services.ec2.model.DescribeInstancesResponse;
 import software.amazon.awssdk.services.ec2.model.Instance;
 import software.amazon.awssdk.services.ec2.model.Reservation;
 import software.amazon.awssdk.services.ec2.model.Tag;
+import software.amazon.awssdk.services.ecs.EcsClient;
+import software.amazon.awssdk.services.ecs.EcsClientBuilder;
+import software.amazon.awssdk.services.ecs.model.Cluster;
+import software.amazon.awssdk.services.ecs.model.DescribeClustersRequest;
+import software.amazon.awssdk.services.ecs.model.DescribeClustersResponse;
+import software.amazon.awssdk.services.ecs.model.ListClustersResponse;
 
 class AwsCloudConnectorTest {
 
@@ -154,6 +161,52 @@ class AwsCloudConnectorTest {
       assertEquals("InstanceId", resource.getResourceType());
 
       assertEquals("WebServer", resource.getTags().get("Name"));
+    }
+  }
+
+  @Test
+  void getAllEcsClustersShouldReturnClusters() {
+
+    CloudCredentials credentials = new CloudCredentials();
+    credentials.setAccessKey("accessKey");
+    credentials.setSecretKey("secretKey");
+    credentials.setAwsRegion("region");
+
+    EcsClient client = mock(EcsClient.class);
+    EcsClientBuilder builder = mock(EcsClientBuilder.class);
+
+    software.amazon.awssdk.services.ecs.model.Tag tag =
+        software.amazon.awssdk.services.ecs.model.Tag.builder()
+            .key("Name")
+            .value("ProdCluster")
+            .build();
+
+    Cluster cluster =
+        Cluster.builder().clusterArn("arn:cluster").clusterName("cluster1").tags(tag).build();
+
+    when(client.listClusters())
+        .thenReturn(ListClustersResponse.builder().clusterArns("arn:cluster").build());
+
+    when(client.describeClusters(
+            ArgumentMatchers.<java.util.function.Consumer<DescribeClustersRequest.Builder>>any()))
+        .thenReturn(DescribeClustersResponse.builder().clusters(cluster).build());
+    when(builder.region(any())).thenReturn(builder);
+    when(builder.credentialsProvider(any())).thenReturn(builder);
+    when(builder.build()).thenReturn(client);
+
+    try (MockedStatic<EcsClient> mocked = mockStatic(EcsClient.class)) {
+
+      mocked.when(EcsClient::builder).thenReturn(builder);
+
+      List<ResourceDetail> result = AwsCloudConnector.getAllEcsClusters(credentials);
+
+      assertEquals(1, result.size());
+
+      ResourceDetail resource = result.get(0);
+
+      assertEquals("arn:cluster", resource.getResourceId());
+      assertEquals("cluster1", resource.getName());
+      assertEquals("ClusterName", resource.getResourceType());
     }
   }
 }
