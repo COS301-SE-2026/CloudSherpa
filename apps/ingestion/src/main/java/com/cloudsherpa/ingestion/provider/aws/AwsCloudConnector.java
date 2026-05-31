@@ -30,6 +30,7 @@ import software.amazon.awssdk.services.lambda.LambdaClient;
 import software.amazon.awssdk.services.lambda.model.*;
 import software.amazon.awssdk.services.opensearch.OpenSearchClient;
 import software.amazon.awssdk.services.opensearch.model.*;
+import software.amazon.awssdk.services.opensearch.model.ListTagsRequest;
 import software.amazon.awssdk.services.rds.RdsClient;
 import software.amazon.awssdk.services.rds.model.*;
 import software.amazon.awssdk.services.redshift.RedshiftClient;
@@ -182,9 +183,9 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
     return resources;
   }
 
-  public static List<String> getAllElastiCacheClusters(CloudCredentials credentials) {
+  public static List<ResourceDetail> getAllElastiCacheClusters(CloudCredentials credentials) {
 
-    List<String> clusterIds = new ArrayList<>();
+    List<ResourceDetail> resources = new ArrayList<>();
 
     try (ElastiCacheClient client =
         ElastiCacheClient.builder()
@@ -195,16 +196,30 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
       DescribeCacheClustersResponse response = client.describeCacheClusters();
 
       for (CacheCluster cluster : response.cacheClusters()) {
-        clusterIds.add(cluster.cacheClusterId());
+
+        Map<String, String> tags = Collections.emptyMap();
+
+        if (cluster.arn() != null) {
+          tags =
+              client.listTagsForResource(r -> r.resourceName(cluster.arn())).tagList().stream()
+                  .collect(
+                      Collectors.toMap(
+                          software.amazon.awssdk.services.elasticache.model.Tag::key,
+                          software.amazon.awssdk.services.elasticache.model.Tag::value,
+                          (a, b) -> b));
+        }
+        String name =
+            ResourceDetail.resolveName(cluster.cacheClusterId(), cluster.cacheClusterId(), tags);
+        resources.add(new ResourceDetail(cluster.cacheClusterId(), name, tags));
       }
     }
 
-    return clusterIds;
+    return resources;
   }
 
-  public static List<String> getAllOpenSearchDomains(CloudCredentials credentials) {
+  public static List<ResourceDetail> getAllOpenSearchDomains(CloudCredentials credentials) {
 
-    List<String> domainNames = new ArrayList<>();
+    List<ResourceDetail> resources = new ArrayList<>();
 
     try (OpenSearchClient client =
         OpenSearchClient.builder()
@@ -215,17 +230,32 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
       ListDomainNamesResponse response =
           client.listDomainNames(ListDomainNamesRequest.builder().build());
 
-      for (DomainInfo info : response.domainNames()) {
-        domainNames.add(info.domainName());
+      for (DomainInfo domainInfo : response.domainNames()) {
+
+        DescribeDomainResponse domainResponse =
+            client.describeDomain(
+                DescribeDomainRequest.builder().domainName(domainInfo.domainName()).build());
+
+        DomainStatus domain = domainResponse.domainStatus();
+
+        Map<String, String> tags =
+            client.listTags(ListTagsRequest.builder().arn(domain.arn()).build()).tagList().stream()
+                .collect(
+                    Collectors.toMap(
+                        software.amazon.awssdk.services.opensearch.model.Tag::key,
+                        software.amazon.awssdk.services.opensearch.model.Tag::value,
+                        (a, b) -> b));
+        String name = ResourceDetail.resolveName(domain.domainName(), domain.domainName(), tags);
+        resources.add(new ResourceDetail(domain.domainName(), name, tags));
       }
     }
 
-    return domainNames;
+    return resources;
   }
 
-  public static List<String> getAllRedshiftClusters(CloudCredentials credentials) {
+  public static List<ResourceDetail> getAllRedshiftClusters(CloudCredentials credentials) {
 
-    List<String> clusterIds = new ArrayList<>();
+    List<ResourceDetail> resources = new ArrayList<>();
 
     try (RedshiftClient client =
         RedshiftClient.builder()
@@ -237,11 +267,22 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
           client.describeClusters();
 
       for (software.amazon.awssdk.services.redshift.model.Cluster cluster : response.clusters()) {
-        clusterIds.add(cluster.clusterIdentifier());
+
+        Map<String, String> tags =
+            cluster.tags().stream()
+                .collect(
+                    Collectors.toMap(
+                        software.amazon.awssdk.services.redshift.model.Tag::key,
+                        software.amazon.awssdk.services.redshift.model.Tag::value,
+                        (a, b) -> b));
+        String name =
+            ResourceDetail.resolveName(
+                cluster.clusterIdentifier(), cluster.clusterIdentifier(), tags);
+        resources.add(new ResourceDetail(cluster.clusterIdentifier(), name, tags));
       }
     }
 
-    return clusterIds;
+    return resources;
   }
 
   @Override
