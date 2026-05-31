@@ -45,7 +45,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
   private static final String BYTES = "Bytes";
   private static final String PERCENT = "Percent";
 
-  private CloudWatchClient defaultClient =
+  private final CloudWatchClient DEFAULT_CLIENT =
       CloudWatchClient.builder()
           .credentialsProvider(DefaultCredentialsProvider.create())
           .region(Region.EU_NORTH_1)
@@ -258,7 +258,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
     if ((Duration.between(request.getFrom(), request.getTo()).getSeconds()) / period > 1440) {
       throw new IllegalArgumentException("AWS will not return over 1440 datapoints per metric");
     }
-    CloudWatchClient client = defaultClient;
+    CloudWatchClient client = DEFAULT_CLIENT;
     if (request.getCredentials() != null) {
       AwsBasicCredentials credentials =
           AwsBasicCredentials.create(
@@ -345,8 +345,19 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
 
   @Override
   public boolean testConnection(CloudCredentials credentials) {
+    CloudWatchClient client = DEFAULT_CLIENT;
+    if (credentials != null) {
+      AwsBasicCredentials awsCredentials =
+          AwsBasicCredentials.create(credentials.getAccessKey(), credentials.getSecretKey());
+      client =
+          CloudWatchClient.builder()
+              .credentialsProvider(StaticCredentialsProvider.create(awsCredentials))
+              .region(Region.of(credentials.getAwsRegion()))
+              .build();
+    }
+
     try {
-      defaultClient.listMetrics();
+      client.listMetrics();
       return true;
     } catch (Exception e) {
       return false;

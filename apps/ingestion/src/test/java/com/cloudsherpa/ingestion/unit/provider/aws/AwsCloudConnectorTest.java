@@ -61,8 +61,11 @@ class AwsCloudConnectorTest {
 
   @Test
   void testConnectionShouldReturnBoolean() {
-
-    boolean result = connector.testConnection(new CloudCredentials());
+    CloudCredentials credentials = new CloudCredentials();
+    credentials.setAccessKey("accessKey");
+    credentials.setAwsRegion("region");
+    credentials.setSecretKey("secretKey");
+    boolean result = connector.testConnection(credentials);
 
     assertTrue(result || !result);
   }
