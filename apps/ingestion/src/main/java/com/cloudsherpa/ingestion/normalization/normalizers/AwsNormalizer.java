@@ -5,83 +5,66 @@ import com.cloudsherpa.ingestion.normalization.model.NormalizedMetric;
 import java.util.UUID;
 
 public class AwsNormalizer implements Normalizer {
-  public NormalizedMetric normalize(UsageRecordModel record) {
-    if (record == null) {
+  public NormalizedMetric normalize(UsageRecordModel r) {
+    if (r == null) {
       return null;
     }
 
     String metricId = UUID.randomUUID().toString();
-    String provider = "unknown";
+    String resourceId = r.getResourceId();
+    String accountId = r.getAccountId();
+    String metricType = "usage";
 
-    if (record.getProvider() != null) {
-      provider = record.getProvider();
+    String metricName = "unknown";
+
+    if (r.getMetricName() != null) {
+      metricName = r.getMetricName();
     }
 
-    long usageStart = 0;
-    if (record.getPeriodStart() != null) {
-      usageStart = record.getPeriodStart().toEpochMilli();
-    } else if (record.getTimestamp() != null) {
-      usageStart = record.getTimestamp().toEpochMilli();
+    String mnLower = metricName.toLowerCase();
+    if (mnLower.contains("cost") || mnLower.contains("charge") || mnLower.contains("billing")) {
+      metricType = "cost";
+    } else if (mnLower.contains("latency")
+        || mnLower.contains("duration")
+        || mnLower.contains("error")
+        || mnLower.contains("throttle")) {
+      metricType = "performance";
     }
 
-    long usageEnd = 0;
-    if (record.getPeriodEnd() != null) {
-      usageEnd = record.getPeriodEnd().toEpochMilli();
-    } else if (record.getTimestamp() != null) {
-      usageEnd = record.getTimestamp().toEpochMilli();
+    double metricValue = r.getValue();
+    String unit = r.getUnit();
+
+    String currency = null;
+
+    if (metricType.equals("cost")) {
+      currency = "ZAR";
     }
 
-    String resourceId = record.getResourceId();
-    String service = record.getServiceName();
-    String serviceCategory = normalizeCategory(service);
-
-    double usageAmount = record.getValue();
-    String usageUnit = "unknown";
-    if (record.getUnit() != null) {
-      usageUnit = record.getUnit();
+    long periodStart = 0;
+    if (r.getPeriodStart() != null) {
+      periodStart = r.getPeriodStart().toEpochMilli();
+    } else if (r.getTimestamp() != null) {
+      periodStart = r.getTimestamp().toEpochMilli();
     }
 
-    double effectiveCost = 0.0;
-    String currency = "ZAR";
-    String pricingModel = "on_demand";
-
-    return new NormalizedMetric(
-        metricId,
-        provider,
-        usageStart,
-        usageEnd,
-        resourceId,
-        service,
-        serviceCategory,
-        usageAmount,
-        usageUnit,
-        effectiveCost,
-        currency,
-        pricingModel);
-  }
-
-  private static String normalizeCategory(String category) {
-    if (category == null) {
-      return "other";
+    long periodEnd = 0;
+    if (r.getPeriodEnd() != null) {
+      periodEnd = r.getPeriodEnd().toEpochMilli();
+    } else if (r.getTimestamp() != null) {
+      periodEnd = r.getTimestamp().toEpochMilli();
     }
 
-    String value = category.toLowerCase();
-
-    if (value.equals("ec2")
-        || value.equals("ecs")
-        || value.equals("eks")
-        || value.equals("lambda")) {
-      return "compute";
-    }
-
-    if (value.equals("s3") || value.equals("ebs") || value.equals("efs")) {
-      return "storage";
-    }
-
-    if (value.equals("rds") || value.equals("dynamodb") || value.equals("aurora")) {
-      return "database";
-    }
-
-    return "other";
+    return new NormalizedMetric.Builder()
+        .metricId(metricId)
+        .resourceId(resourceId)
+        .accountId(accountId)
+        .metricType(metricType)
+        .metricName(metricName)
+        .metricValue(metricValue)
+        .unit(unit)
+        .currency(currency)
+        .periodStart(periodStart)
+        .periodEnd(periodEnd)
+        .build();
   }
 }

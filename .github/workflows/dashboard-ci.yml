@@ -8,15 +8,15 @@ on:
         paths:
             - apps/dashboard/**
             - .github/workflows/dashboard-ci.yml
-            
-permissions:
-  contents: read
-  pull-requests: write
-  checks: write
 
 jobs:
     dashboard-validate:
         runs-on: ubuntu-latest
+
+        permissions:
+          contents: read
+          pull-requests: write
+          checks: write
 
         defaults:
             run:
@@ -45,6 +45,14 @@ jobs:
             - name: Build
               run: npm run build
             
+            - name: SonarQube Scan
+              uses: SonarSource/sonarqube-scan-action@v8
+              with:
+                projectBaseDir: apps/dashboard
+              env:
+                SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+                SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
             - name: Archive build
               uses: actions/upload-artifact@v4
               with:
@@ -58,6 +66,12 @@ jobs:
             
     lighthouseci:
         runs-on: ubuntu-latest
+
+        permissions:
+            contents: read
+            pull-requests: write
+            checks: write
+
         needs: dashboard-validate
         defaults:
             run:

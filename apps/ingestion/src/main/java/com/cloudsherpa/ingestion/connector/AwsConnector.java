@@ -1,6 +1,5 @@
 package com.cloudsherpa.ingestion.connector;
 
-import com.cloudsherpa.ingestion.models.IngestionRequestEvent;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -16,8 +15,6 @@ public class AwsConnector implements CloudConnector {
   public String getProviderName() {
     return "AWS";
   }
-
-  public void ingest(IngestionRequestEvent request) {} // Mock implementation
 
   @Override
   public boolean testConnection(CloudCredentials credentials) {

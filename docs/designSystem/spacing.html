@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Spacing · CloudSherpa Design System</title>
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="mobileFriendly.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body>
+  <div id="nav-mount"></div>
+
+  <div class="page-wrap">
+    <div class="page-header">
+      <h1 class="page-title">Spacing</h1>
+      <p class="page-sub">8pt base grid </p>
+    </div>
+
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:40px;display:flex;flex-direction:column;align-items:center;">
+      <div style="display:flex;align-items:flex-end;justify-content:center;gap:20px;padding-bottom:24px;border-bottom:1px solid var(--border);margin-bottom:20px;flex-wrap:wrap;">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+          <div style="width:8px;height:1px;border-bottom:1px dashed rgba(47,47,228,0.4);"></div>
+          <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);">0</span>
+        </div>
+
+        <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+          <div style="width:8px;height:8px;background:rgba(47,47,228,0.15);border:1px solid rgba(47,47,228,0.4);border-radius:2px;"></div>
+          <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);">8px</span>
+        </div>
+
+        <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+          <div style="width:16px;height:16px;background:rgba(47,47,228,0.15);border:1px solid rgba(47,47,228,0.4);border-radius:2px;"></div>
+          <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);">16px</span>
+        </div>
+
+        <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+          <div style="width:24px;height:24px;background:rgba(47,47,228,0.15);border:1px solid rgba(47,47,228,0.4);border-radius:2px;"></div>
+          <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);">24px</span>
+        </div>
+
+        <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+          <div style="width:32px;height:32px;background:rgba(47,47,228,0.15);border:1px solid rgba(47,47,228,0.4);border-radius:2px;"></div>
+          <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);">32px</span>
+        </div>
+
+        <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+          <div style="width:40px;height:40px;background:rgba(47,47,228,0.15);border:1px solid rgba(47,47,228,0.4);border-radius:2px;"></div>
+          <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);">40px</span>
+        </div>
+
+        <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+          <div style="width:48px;height:48px;background:rgba(47,47,228,0.15);border:1px solid rgba(47,47,228,0.4);border-radius:2px;"></div>
+          <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);">48px</span>
+        </div>
+
+        <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+          <div style="width:56px;height:56px;background:rgba(47,47,228,0.15);border:1px solid rgba(47,47,228,0.4);border-radius:2px;"></div>
+          <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);">56px</span>
+        </div>
+
+        <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+          <div style="width:64px;height:64px;background:rgba(47,47,228,0.15);border:1px solid rgba(47,47,228,0.4);border-radius:2px;"></div>
+          <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);">64px</span>
+        </div>
+
+      </div>
+      <p style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text-muted);text-align:center;">All values are multiples of 8px — --spacing-1 (8) through --spacing-8 (64).</p>
+    </div>
+  </div>
+
+  <script src="navBar.js"></script>
+
+  <script>
+    renderingNavBar('Spacing');
+    const tokens = [
+      ['--spacing-1', '8px', 'Icon gaps, tight internal padding'], ['--spacing-2', '16px', 'Card padding, form element gaps'],
+      ['--spacing-3', '24px', 'Section internal spacing'], ['--spacing-4', '32px', 'Component separation'],
+      ['--spacing-5', '40px', 'Large component padding'], ['--spacing-6', '48px', 'Section headers, nav height'],
+      ['--spacing-7', '56px', 'Page section gaps'], ['--spacing-8', '64px', 'Major layout divisions'],
+    ];
+
+    const container = document.getElementById('token-rows');
+    tokens.forEach(([token, val, usage], i) => {
+      const row = document.createElement('div');
+      row.style.cssText = `display:grid;grid-template-columns:1fr 1fr 1fr;${i < tokens.length - 1 ? 'border-bottom:1px solid var(--border-subtle);' : ''}`;
+      row.innerHTML = `
+        <div style="padding:12px 20px;background:var(--bg-card);"><code style="font-family:'DM Mono',monospace;font-size:11px;color:#2f2fe4;">${token}</code></div>
+        <div style="padding:12px 20px;background:var(--bg-card);border-left:1px solid var(--border-subtle);"><span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--text);">${val}</span></div>
+        <div style="padding:12px 20px;background:var(--bg-card);border-left:1px solid var(--border-subtle);"><span style="font-size:12px;color:var(--text-muted);">${usage}</span></div>
+      `;
+      container.appendChild(row);
+    });
+    
+  </script>
+
+</body>
+</html>

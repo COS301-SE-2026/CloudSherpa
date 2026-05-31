@@ -16,22 +16,29 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.logging.Logger;
 import org.springframework.stereotype.Service;
 
 /** Intermediary between the CloudUsageController and the ingestion pipeline. */
 @Service
 public class CloudUsageService {
   private final CloudConnectorFactory factory;
+  private final SherpaDbPersistenceService sherpaDbPersistenceService;
+  private final AwsNormalizer normalizer = new AwsNormalizer();
 
-  public CloudUsageService(CloudConnectorFactory factory) {
+  Logger logger = Logger.getLogger(getClass().getName());
+
+  public CloudUsageService(
+      CloudConnectorFactory factory, SherpaDbPersistenceService sherpaDbPersistenceService) {
     this.factory = factory;
+    this.sherpaDbPersistenceService = sherpaDbPersistenceService;
   }
 
   public IngestionResult ingest(IngestionRequestEvent request) {
 
     List<UsageRecordModel> usageResults = new ArrayList<>();
     List<BillingRecordModel> billingResults = new ArrayList<>();
+    UUID userId = request.getUserId();
 
     for (AccountScope scope : request.getScopes()) {
 
@@ -40,7 +47,7 @@ public class CloudUsageService {
       if (request.isIncludeUsage() && connector instanceof UsageCapable usageCapable) {
         List<UsageRecordModel> usageRecords = usageCapable.fetchUsage(scope, request);
         usageResults.addAll(usageRecords);
-        normalizeAndPersistUsage(usageRecords);
+        normalizeAndPersistUsage(usageRecords, userId);
       }
 
       if (request.isIncludeBilling() && connector instanceof BillingCapable billingCapable) {
@@ -55,6 +62,7 @@ public class CloudUsageService {
 
     List<UsageRecordModel> usageResults = new ArrayList<>();
     List<BillingRecordModel> billingResults = new ArrayList<>();
+    UUID userId = request.getUserId();
 
     for (AccountScope scope : request.getScopes()) {
 
@@ -63,7 +71,7 @@ public class CloudUsageService {
       if (request.isIncludeUsage() && connector instanceof UsageCapable usageCapable) {
         List<UsageRecordModel> usageRecords = usageCapable.fetchMockUsage(scope, request);
         usageResults.addAll(usageRecords);
-        normalizeAndPersistUsage(usageRecords);
+        normalizeAndPersistUsage(usageRecords, userId);
       }
 
       if (request.isIncludeBilling() && connector instanceof BillingCapable billingCapable) {
@@ -77,35 +85,29 @@ public class CloudUsageService {
   public IngestionResult ingestMock(IngestionRequestEvent request) {
     List<UsageRecordModel> usageResults = new ArrayList<>();
     List<BillingRecordModel> billingResults = new ArrayList<>();
+    UUID userId = request.getUserId();
 
     for (AccountScope scope : request.getScopes()) {
       if (request.isIncludeUsage()) {
         List<UsageRecordModel> usageRecords = buildMockUsage(scope);
         usageResults.addAll(usageRecords);
-        normalizeAndPersistUsage(usageRecords);
+        normalizeAndPersistUsage(usageRecords, userId);
       }
     }
 
     return new IngestionResult(usageResults, billingResults);
   }
 
-  @Autowired private SherpaDbPersistenceService sherpaDbPersistenceService;
-
-  private final AwsNormalizer normalizer = new AwsNormalizer();
-
-  private void normalizeAndPersistUsage(List<UsageRecordModel> usageRecords) {
+  private void normalizeAndPersistUsage(List<UsageRecordModel> usageRecords, UUID userId) {
     if (usageRecords == null || usageRecords.isEmpty()) {
       return;
     }
 
-    UUID environmentId =
-        UUID.fromString("550e8400-e29b-41d4-a716-446655440000"); // still mock for now
-
-    for (UsageRecordModel record : usageRecords) {
-      NormalizedMetric normalized = normalizer.normalize(record);
+    for (UsageRecordModel r : usageRecords) {
+      NormalizedMetric normalized = normalizer.normalize(r);
 
       if (normalized != null) {
-        writeToSherpaDb(environmentId, normalized);
+        writeToSherpaDb(normalized, r, userId);
       }
     }
   }
@@ -140,26 +142,26 @@ public class CloudUsageService {
     };
 
     for (int i = 0; i < timestamps.length; i++) {
-      UsageRecordModel record = new UsageRecordModel();
-      record.setProvider(provider);
-      record.setAccountId(accountId);
-      record.setServiceName("EC2");
-      record.setMetricName("CPUUtilization");
-      record.setResourceId("mock-ec2-" + (i + 1));
-      record.setValue(averages[i]);
-      record.setUnit("Percent");
-      record.setTimestamp(OffsetDateTime.parse(timestamps[i]).toInstant());
-      results.add(record);
+      UsageRecordModel usageRecord = new UsageRecordModel();
+      usageRecord.setProvider(provider);
+      usageRecord.setAccountId(accountId);
+      usageRecord.setServiceName("EC2");
+      usageRecord.setMetricName("CPUUtilization");
+      usageRecord.setResourceId("mock-ec2-" + (i + 1));
+      usageRecord.setValue(averages[i]);
+      usageRecord.setUnit("Percent");
+      usageRecord.setTimestamp(OffsetDateTime.parse(timestamps[i]).toInstant());
+      results.add(usageRecord);
     }
 
     return results;
   }
 
-  private void writeToSherpaDb(UUID environmentId, NormalizedMetric metric) {
+  private void writeToSherpaDb(NormalizedMetric metric, UsageRecordModel r, UUID userId) {
     try {
-      sherpaDbPersistenceService.recordMetric(environmentId, metric);
+      sherpaDbPersistenceService.recordMetric(metric, r, userId);
     } catch (Exception e) {
-      System.err.println(e.getMessage());
+      logger.info(e.getMessage());
     }
   }
 }

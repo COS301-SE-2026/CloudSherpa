@@ -4,6 +4,7 @@ import com.cloudsherpa.ingestion.connector.AccountScope;
 import com.cloudsherpa.ingestion.connector.CloudCredentials;
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 public class IngestionRequestEvent {
 
@@ -17,6 +18,16 @@ public class IngestionRequestEvent {
 
   private boolean includeBilling;
   private boolean includeUsage;
+
+  private UUID userId;
+
+  public UUID getUserId() {
+    return userId;
+  }
+
+  public void setUserId(UUID userId) {
+    this.userId = userId;
+  }
 
   public List<AccountScope> getScopes() {
     return scopes;

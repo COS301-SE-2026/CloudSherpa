@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Borders & Radius · CloudSherpa Design System</title>
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="mobileFriendly.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body>
+  <div id="nav-mount"></div>
+
+  <div class="page-wrap">
+    <div class="page-header">
+      <h1 class="page-title">Borders & Radius</h1>
+      <p class="page-sub">4-step radius scale </p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+
+      <div class="card">
+        <p class="section-label" style="margin-bottom:28px;">Radius scale</p>
+        <div style="display:flex;align-items:flex-end;gap:20px;padding-bottom:20px;border-bottom:1px solid var(--border-subtle);margin-bottom:16px;flex-wrap:wrap;">
+
+          <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+            <div style="width:40px;height:40px;background:rgba(47,47,228,0.1);border:1px solid rgba(47,47,228,0.3);border-radius:4px;"></div>
+            <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);">sm · 4px</span>
+          </div>
+
+          <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+            <div style="width:48px;height:48px;background:rgba(47,47,228,0.1);border:1px solid rgba(47,47,228,0.3);border-radius:8px;"></div>
+            <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);">md · 8px</span>
+          </div>
+
+          <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+            <div style="width:52px;height:52px;background:rgba(47,47,228,0.1);border:1px solid rgba(47,47,228,0.3);border-radius:12px;"></div>
+            <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);">lg · 12px</span>
+          </div>
+
+          <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+            <div style="width:52px;height:52px;background:rgba(47,47,228,0.1);border:1px solid rgba(47,47,228,0.3);border-radius:16px;"></div>
+            <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);">xl · 16px</span>
+          </div>
+
+          <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+            <div style="width:52px;height:52px;background:rgba(47,47,228,0.1);border:1px solid rgba(47,47,228,0.3);border-radius:9999px;"></div>
+            <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);">full</span>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="card">
+        <p class="section-label" style="margin-bottom:20px;">Border tokens</p>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:6px;border:1px solid #141450;background:var(--bg-sunken);">
+            <span style="font-size:13px;color:var(--text-secondary);">Subtle</span>
+            <code style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);">border-border-subtle</code>
+          </div>
+
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:6px;border:1px solid #1e1e6a;background:var(--bg-sunken);">
+            <span style="font-size:13px;color:var(--text-secondary);">Default</span>
+            <code style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);">border-border-default</code>
+          </div>
+
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:6px;border:1px solid #2f2fe4;background:var(--bg-sunken);">
+            <span style="font-size:13px;color:var(--text-secondary);">Strong</span>
+            <code style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);">border-border-strong</code>
+          </div>
+
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:6px;border:2px solid #ffd700;background:var(--bg-sunken);">
+            <span style="font-size:13px;color:var(--text-secondary);">Focus <span style="font-size:11px;color:var(--text-muted);">(2px)</span></span>
+            <code style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);">border-border-focus</code>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="navBar.js"></script>
+  <script>renderingNavBar('Borders');</script>
+  
+</body>
+</html>

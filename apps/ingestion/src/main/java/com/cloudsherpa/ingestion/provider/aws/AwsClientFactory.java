@@ -8,17 +8,17 @@ import software.amazon.awssdk.regions.Region;
 
 public class AwsClientFactory {
 
-  public static StaticCredentialsProvider credentialsProvider(
-      CloudCredentials credentials) {
+    public static StaticCredentialsProvider credentialsProvider(
+            CloudCredentials credentials) {
 
-    AwsBasicCredentials awsCreds = AwsBasicCredentials.create(
-        credentials.getAccessKey(),
-        credentials.getSecretKey());
+        AwsBasicCredentials awsCredentials = AwsBasicCredentials.create(
+                credentials.getAccessKey(),
+                credentials.getSecretKey());
 
-    return StaticCredentialsProvider.create(awsCreds);
-  }
+        return StaticCredentialsProvider.create(awsCredentials);
+    }
 
-  public static Region region(CloudCredentials creds) {
-    return Region.of(creds.getAwsRegion());
-  }
+    public static Region region(CloudCredentials credentials) {
+        return Region.of(credentials.getAwsRegion());
+    }
 }
