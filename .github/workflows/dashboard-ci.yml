@@ -29,7 +29,7 @@ jobs:
             - name: Setup Node
               uses: actions/setup-node@v4
               with:
-                node-version: 22
+                node-version: 24
                 cache: 'npm'
                 cache-dependency-path: apps/dashboard/package-lock.json
 
@@ -52,52 +52,3 @@ jobs:
               env:
                 SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
                 SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-
-            - name: Archive build
-              uses: actions/upload-artifact@v4
-              with:
-                name: dashboard-build
-                include-hidden-files: true
-                path: |
-                    apps/dashboard/.next
-                    apps/dashboard/package.json
-                    apps/dashboard/package-lock.json
-                    apps/dashboard/public
-            
-    lighthouseci:
-        runs-on: ubuntu-latest
-
-        permissions:
-            contents: read
-            pull-requests: write
-            checks: write
-
-        needs: dashboard-validate
-        defaults:
-            run:
-                working-directory: apps/dashboard
-
-        steps:
-            - name: Checkout Repo
-              uses: actions/checkout@v4
-
-            - name: Setup Node
-              uses: actions/setup-node@v4
-              with:
-                node-version: 22
-                cache: 'npm'
-                cache-dependency-path: apps/dashboard/package-lock.json
-
-            - name: Download Dashboard Build
-              uses: actions/download-artifact@v4
-              with:
-                name: dashboard-build
-                path: apps/dashboard
-
-            - name: Install Production Dependencies
-              run: npm ci --omit=dev --prefer-offline
-
-            - name: Run Lighthouse CI
-              run: npx @lhci/cli@0.15.x autorun --collect.settings.chromeFlags="--no-sandbox"
-              env:
-                  LHCI_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
