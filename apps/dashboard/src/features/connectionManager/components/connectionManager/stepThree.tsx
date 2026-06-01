@@ -1,14 +1,14 @@
 'use client';
 import { Button } from '@/components/atoms/button';
-
+import React from 'react';
 interface PropsForStepThree {
   selectedServices: string[];
   onComplete: (selectedInstances: string[]) => void;
   onBack: () => void;
 }
 
-export default function StepThree({ selectedServices, onComplete, onBack }: PropsForStepThree) {
-  const handleSubmit = (forHandlingSubmit: React.FormEvent) => {
+export default function StepThree({ selectedServices, onComplete, onBack }: Readonly<PropsForStepThree>) {
+  const handleSubmit = (forHandlingSubmit: React.SubmitEvent<HTMLFormElement>) => {
     forHandlingSubmit.preventDefault();
     onComplete([]);
   };

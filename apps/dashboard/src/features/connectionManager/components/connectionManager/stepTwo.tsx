@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/atoms/button';
 
 interface PropsForStepTwo{
@@ -11,28 +11,28 @@ const availableServices = [
   { id: 'ec2', name: 'EC2'}, { id: 'rds', name: 'RDS'}, { id: 'lambda', name: 'Lambda'}, { id: 'ecs', name: 'ECS'}, { id: 'eks', name: 'EKS'},
 ];
 
-export default function StepTwo({ onNext, onBack }: PropsForStepTwo){
+export default function StepTwo({ onNext, onBack }: Readonly<PropsForStepTwo>){
     
-  const [servicesSelected, setSelectedServices] = useState<string[]>([]);
+  const [servicesSelected, setServicesSelected] = useState<string[]>([]);
 
   const toggleService = (serviceId: string) => {
-    setSelectedServices(prev =>
+    setServicesSelected(prev =>
       prev.includes(serviceId)
         ? prev.filter(id => id !== serviceId)
         : [...prev, serviceId]
     );
   };
 
-  const handleSubmit = (forHandlingSubmit: React.FormEvent) => {
+  const handleSubmit = (forHandlingSubmit: React.SubmitEvent<HTMLFormElement>) => {
     forHandlingSubmit.preventDefault();
     onNext(servicesSelected);
   };
 
   const forHandlingAllSelected = () => {
     if(servicesSelected.length === availableServices.length){
-      setSelectedServices([]);
+      setServicesSelected([]);
     } else{
-      setSelectedServices(availableServices.map(s => s.id));
+      setServicesSelected(availableServices.map(s => s.id));
     }
   };
 
