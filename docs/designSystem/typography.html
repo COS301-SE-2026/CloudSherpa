@@ -2,11 +2,20 @@
 <html lang="en">
   <head>
     <title>CloudSherpa Typography</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.0.11/dist/index.global.js"
+      integrity="sha384-/x+RQmkSXI5L/8pn9aNf7I7V+KMGNnRkKKksBNkHDXLxH6S3Tn3jNBXKH7qKUuS3"
+      crossorigin="anonymous"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"
+      integrity="sha384-pW+DdBbWpHEF4g8fJ8ubOlXc1r2fkVqQa1e+kTvjfVkABXzGAOA9sNrgm9N8N7Yx"
+      crossorigin="anonymous"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://googleapis.com" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;700&display=swap"
+      rel="stylesheet"
+      crossorigin="anonymous"/>
 
     <style type="text/tailwindcss">
       @theme {
@@ -16,265 +25,278 @@
     </style>
   </head>
   <body
-    class="bg-[#101014] flex items-center justify-center w-screen flex-col font-geist min-h-screen overflow-y-auto overflow-x-hidden py-[48px]">
+    class="bg-[#0B0E14] flex items-center justify-center w-screen flex-col font-geist min-h-screen overflow-y-auto overflow-x-hidden py-[48px]">
     <!-- brand colorus -->
     <div class="flex flex-col items-start justify-center">
-      <h1 class="text-[#F1F1F4] text-[48px] h-[56px]">Typography</h1>
+      <h1 class="text-[#C4CDDA] group-hover:text-[#E6EAF2] text-[48px] h-[56px]">Typography</h1>
       <div class="h-[56px]"></div>
 
       <section class="flex flex-col gap-2">
-        <h2 class="text-[#F1F1F4] text-[32px] h-[42px]">Fonts</h2>
+        <h2 class="text-[#C4CDDA] group-hover:text-[#E6EAF2] text-[32px] h-[42px]">Fonts</h2>
         <div class="h-[24px]"></div>
         <div class="flex flex-row gap-4">
-          <div class="bg-[#E3E2E9] text-[48px] px-4 rounded-md text-[#101014]">Geist</div>
-          <div class="bg-[#E3E2E9] text-[48px] font-geist-mono px-4 rounded-md text-[#101014]">Geist Mono</div>
+          <div class="bg-[#E3E2E9]/90 text-[48px] px-4 rounded-md text-[#101014] hover:bg-[#BFBF1D]">Geist</div>
+          <div class="bg-[#E3E2E9]/90 text-[48px] font-geist-mono px-4 rounded-md text-[#101014] hover:bg-[#BFBF1D]">
+            Geist Mono
+          </div>
         </div>
         <div class="h-[24px]"></div>
       </section>
 
       <section class="flex flex-col gap-4">
-        <h2 class="text-[#F1F1F4] text-[32px] h-[42px]">Sizes</h2>
+        <h2 class="text-[#C4CDDA] group-hover:text-[#E6EAF2] text-[32px] h-[42px]">Sizes</h2>
         <div class="h-[24px]"></div>
 
-        <section class="flex flex-col gap-2 border-[1.5px] rounded-md border-white/12 bg-[#17161D]">
-          <div class="w-[70vw] h-full flex flex-row gap-2 text-[#F1F1F4] gap-4 rounded-md px-4 py-2 items-stretch">
+        <section class="flex flex-col gap-2 border-[1.5px] rounded-md border-[#2A3343] bg-[#0E1219] group group">
+          <div
+            class="w-[70vw] h-full flex flex-row gap-2 text-[#C4CDDA] group-hover:text-[#E6EAF2] gap-4 rounded-md px-4 py-2 items-stretch">
             <div class="flex flex-row gap-4 w-[37vw]">
               <div class="flex flex-col items-center gap-2">
                 <h3 class="text-[16px] h-[24px]">Token</h3>
-                <div class="text-[#C6C5D3]">2xl</div>
+                <div class="text-[#9DA4B2]">2xl</div>
               </div>
-              <div class="border border-white/12 border-1.5 my-4"></div>
+              <div class="border border-[#2A3343] border-1.5 my-4"></div>
               <div class="flex flex-col items-center gap-2">
                 <h3 class="text-[16px] h-[24px]">Size</h3>
-                <div class="text-[#C6C5D3]">48px</div>
+                <div class="text-[#9DA4B2]">48px</div>
               </div>
-              <div class="border border-white/12 border-1.5 my-4"></div>
+              <div class="border border-[#2A3343] border-1.5 my-4"></div>
               <div class="flex flex-col items-center gap-2">
                 <h3 class="text-[16px] h-[24px]">Line Height</h3>
-                <div class="text-[#C6C5D3]">48px</div>
+                <div class="text-[#9DA4B2]">48px</div>
               </div>
-              <div class="border border-white/12 border-1.5 my-4"></div>
+              <div class="border border-[#2A3343] border-1.5 my-4"></div>
               <div class="flex flex-col items-center gap-2">
                 <h3 class="text-[16px] h-[24px]">Letter Spacing</h3>
-                <div class="text-[#C6C5D3]">0%</div>
+                <div class="text-[#9DA4B2]">0%</div>
               </div>
-              <div class="border border-white/12 border-1.5 my-4"></div>
+              <div class="border border-[#2A3343] border-1.5 my-4"></div>
               <div class="flex flex-col items-center gap-2">
                 <h3 class="text-[16px] h-[24px]">Font</h3>
-                <div class="text-[#C6C5D3]">Geist</div>
+                <div class="text-[#9DA4B2]">Geist</div>
               </div>
             </div>
             <div
-              class="text-[48px] leading-[48px] text-[#7777EE] flex grow items-center justify-center ">
+              class="text-[48px] leading-[48px] text-[#E6EAF2] flex grow items-center justify-center group-hover:text-[#BFBF1D]">
               CloudSherpa
             </div>
           </div>
-          <div class="border border-white/12 border-1.5 mx-4"></div>
-          <div class="px-4 block  pb-2">
-            <div class="text-[14px] leading-[16px] text-[#C6C5D3]">
+          <div class="border border-[#2A3343] border-1.5 mx-4"></div>
+          <div class="px-4 block pb-2">
+            <div class="text-[14px] leading-[16px] text-[#9DA4B2]">
               larger text for more bold and creative designs like splash pages and not found pages
             </div>
           </div>
         </section>
 
-        <section class="flex flex-col gap-2 border-[1.5px] rounded-md border-white/12 bg-[#17161D]">
+        <section class="flex flex-col gap-2 border-[1.5px] rounded-md border-[#2A3343] bg-[#0E1219] group group">
           <div
-            class="w-[70vw] h-full flex flex-row gap-4 text-[#F1F1F4] gap-2 rounded-md px-4 py-2 items-center justify-between">
+            class="w-[70vw] h-full flex flex-row gap-4 text-[#C4CDDA] group-hover:text-[#E6EAF2] gap-2 rounded-md px-4 py-2 items-center justify-between">
             <div class="flex flex-row gap-4 w-[37vw]">
               <div class="flex flex-col items-center gap-2">
                 <h3 class="text-[16px] h-[24px]">Token</h3>
-                <div class="text-[#C6C5D3]">xl</div>
+                <div class="text-[#9DA4B2]">xl</div>
               </div>
-              <div class="border border-white/12 border-1.5 my-4"></div>
+              <div class="border border-[#2A3343] border-1.5 my-4"></div>
               <div class="flex flex-col items-center gap-2">
                 <h3 class="text-[16px] h-[24px]">Size</h3>
-                <div class="text-[#C6C5D3]">32px</div>
+                <div class="text-[#9DA4B2]">32px</div>
               </div>
-              <div class="border border-white/12 border-1.5 my-4"></div>
+              <div class="border border-[#2A3343] border-1.5 my-4"></div>
               <div class="flex flex-col items-center gap-2">
                 <h3 class="text-[16px] h-[24px]">Line Height</h3>
-                <div class="text-[#C6C5D3]">42px</div>
+                <div class="text-[#9DA4B2]">42px</div>
               </div>
-              <div class="border border-white/12 border-1.5 my-4"></div>
+              <div class="border border-[#2A3343] border-1.5 my-4"></div>
               <div class="flex flex-col items-center gap-2">
                 <h3 class="text-[16px] h-[24px]">Letter Spacing</h3>
-                <div class="text-[#C6C5D3]">0%</div>
+                <div class="text-[#9DA4B2]">0%</div>
               </div>
-              <div class="border border-white/12 border-1.5 my-4"></div>
+              <div class="border border-[#2A3343] border-1.5 my-4"></div>
               <div class="flex flex-col items-center gap-2">
                 <h3 class="text-[16px] h-[24px]">Font</h3>
-                <div class="text-[#C6C5D3]">Geist</div>
+                <div class="text-[#9DA4B2]">Geist</div>
               </div>
             </div>
-            <div class="text-[32px] leading-[42px] text-[#7777EE] flex grow items-center justify-center ">CloudSherpa</div>
+            <div
+              class="text-[32px] leading-[42px] text-[#E6EAF2] flex grow items-center justify-center group-hover:text-[#BFBF1D]">
+              CloudSherpa
+            </div>
           </div>
-          <div class="border border-white/12 border-1.5 mx-4"></div>
-          <div class="px-4 block text-[#F1F1F4] pb-2">
-            <div class="text-[14px] leading-[16px] text-[#C6C5D3]">
+          <div class="border border-[#2A3343] border-1.5 mx-4"></div>
+          <div class="px-4 block text-[#9DA4B2] pb-2">
+            <div class="text-[14px] leading-[16px]">
               larger text for more bold and creative designs like splash pages and not found pages
             </div>
           </div>
         </section>
 
-        <section class="flex flex-col gap-2 border-[1.5px] rounded-md border-white/12 bg-[#17161D]">
+        <section class="flex flex-col gap-2 border-[1.5px] rounded-md border-[#2A3343] bg-[#0E1219] group group">
           <div
-            class="w-[70vw] h-full flex flex-row gap-4 text-[#F1F1F4] gap-2 rounded-md px-4 py-2 items-center justify-between">
+            class="w-[70vw] h-full flex flex-row gap-4 text-[#C4CDDA] group-hover:text-[#E6EAF2] gap-2 rounded-md px-4 py-2 items-center justify-between">
             <div class="flex flex-row gap-4 w-[37vw]">
               <div class="flex flex-col items-center gap-2">
                 <h3 class="text-[16px] h-[24px]">Token</h3>
-                <div class="text-[#C6C5D3]">lg</div>
+                <div class="text-[#9DA4B2]">lg</div>
               </div>
-              <div class="border border-white/12 border-1.5 my-4"></div>
+              <div class="border border-[#2A3343] border-1.5 my-4"></div>
               <div class="flex flex-col items-center gap-2">
                 <h3 class="text-[16px] h-[24px]">Size</h3>
-                <div class="text-[#C6C5D3]">16px</div>
+                <div class="text-[#9DA4B2]">16px</div>
               </div>
-              <div class="border border-white/12 border-1.5 my-4"></div>
+              <div class="border border-[#2A3343] border-1.5 my-4"></div>
               <div class="flex flex-col items-center gap-2">
                 <h3 class="text-[16px] h-[24px]">Line Height</h3>
-                <div class="text-[#C6C5D3]">24px</div>
+                <div class="text-[#9DA4B2]">24px</div>
               </div>
-              <div class="border border-white/12 border-1.5 my-4"></div>
+              <div class="border border-[#2A3343] border-1.5 my-4"></div>
               <div class="flex flex-col items-center gap-2">
                 <h3 class="text-[16px] h-[24px]">Letter Spacing</h3>
-                <div class="text-[#C6C5D3]">0%</div>
+                <div class="text-[#9DA4B2]">0%</div>
               </div>
-              <div class="border border-white/12 border-1.5 my-4"></div>
+              <div class="border border-[#2A3343] border-1.5 my-4"></div>
               <div class="flex flex-col items-center gap-2">
                 <h3 class="text-[16px] h-[24px]">Font</h3>
-                <div class="text-[#C6C5D3]">Geist</div>
+                <div class="text-[#9DA4B2]">Geist</div>
               </div>
             </div>
-            <div class="text-[16px] leading-[24px] text-[#7777EE] flex grow items-center justify-center ">CloudSherpa</div>
+            <div
+              class="text-[16px] leading-[24px] text-[#E6EAF2] flex grow items-center justify-center group-hover:text-[#BFBF1D]">
+              CloudSherpa
+            </div>
           </div>
-          <div class="border border-white/12 border-1.5 mx-4"></div>
-          <div class="px-4 block text-[#F1F1F4] pb-2">
-            <div class="text-[14px] leading-[16px] text-[#C6C5D3]">
+          <div class="border border-[#2A3343] border-1.5 mx-4"></div>
+          <div class="px-4 block text-[#9DA4B2] pb-2">
+            <div class="text-[14px] leading-[16px]">
               larger text for more bold and creative designs like splash pages and not found pages
             </div>
           </div>
         </section>
 
-        <section class="flex flex-col gap-2 border-[1.5px] rounded-md border-white/12 bg-[#17161D]">
+        <section class="flex flex-col gap-2 border-[1.5px] rounded-md border-[#2A3343] bg-[#0E1219] group group">
           <div
-            class="w-[70vw] h-full flex flex-row gap-4 text-[#F1F1F4] gap-2 rounded-md px-4 py-2 items-center justify-between">
+            class="w-[70vw] h-full flex flex-row gap-4 text-[#C4CDDA] group-hover:text-[#E6EAF2] gap-2 rounded-md px-4 py-2 items-center justify-between">
             <div class="flex flex-row gap-4 w-[37vw]">
               <div class="flex flex-col items-center gap-2">
                 <h3 class="text-[16px] h-[24px]">Token</h3>
-                <div class="text-[#C6C5D3]">md</div>
+                <div class="text-[#9DA4B2]">md</div>
               </div>
-              <div class="border border-white/12 border-1.5 my-4"></div>
+              <div class="border border-[#2A3343] border-1.5 my-4"></div>
               <div class="flex flex-col items-center gap-2">
                 <h3 class="text-[16px] h-[24px]">Size</h3>
-                <div class="text-[#C6C5D3]">16px</div>
+                <div class="text-[#9DA4B2]">16px</div>
               </div>
-              <div class="border border-white/12 border-1.5 my-4"></div>
+              <div class="border border-[#2A3343] border-1.5 my-4"></div>
               <div class="flex flex-col items-center gap-2">
                 <h3 class="text-[16px] h-[24px]">Line Height</h3>
-                <div class="text-[#C6C5D3]">24px</div>
+                <div class="text-[#9DA4B2]">24px</div>
               </div>
-              <div class="border border-white/12 border-1.5 my-4"></div>
+              <div class="border border-[#2A3343] border-1.5 my-4"></div>
               <div class="flex flex-col items-center gap-2">
                 <h3 class="text-[16px] h-[24px]">Letter Spacing</h3>
-                <div class="text-[#C6C5D3]">2%</div>
+                <div class="text-[#9DA4B2]">2%</div>
               </div>
-              <div class="border border-white/12 border-1.5 my-4"></div>
+              <div class="border border-[#2A3343] border-1.5 my-4"></div>
               <div class="flex flex-col items-center gap-2">
                 <h3 class="text-[16px] h-[24px]">Font</h3>
-                <div class="text-[#C6C5D3]">Geist Mono</div>
+                <div class="text-[#9DA4B2]">Geist Mono</div>
               </div>
             </div>
-            <div class="text-[16px] leading-[24px] tracking-[4%] flex flex-row gap-4 font-geist-mono text-[#E1E1FA] flex grow items-center justify-center ">
+            <div
+              class="text-[16px] leading-[24px] tracking-[2%] flex flex-row gap-4 font-geist-mono text-[#E6EAF2] flex grow items-center justify-center group-hover:text-[#BFBF1D]">
               <div class="font-bold">Cloud</div>
               <div>Sherpa</div>
             </div>
           </div>
-          <div class="border border-white/12 border-1.5 mx-4"></div>
-          <div class="px-4 block text-[#F1F1F4] pb-2">
-            <div class="text-[14px] leading-[16px] text-[#C6C5D3]">
+          <div class="border border-[#2A3343] border-1.5 mx-4"></div>
+          <div class="px-4 block text-[#9DA4B2] pb-2">
+            <div class="text-[14px] leading-[16px]">
               larger text for more bold and creative designs like splash pages and not found pages
             </div>
           </div>
         </section>
 
-        <section class="flex flex-col gap-2 border-[1.5px] rounded-md border-white/12 bg-[#17161D]">
+        <section class="flex flex-col gap-2 border-[1.5px] rounded-md border-[#2A3343] bg-[#0E1219] group group">
           <div
-            class="w-[70vw] h-full flex flex-row gap-4 text-[#F1F1F4] gap-2 rounded-md px-4 py-2 items-center justify-between">
+            class="w-[70vw] h-full flex flex-row gap-4 text-[#C4CDDA] group-hover:text-[#E6EAF2] gap-2 rounded-md px-4 py-2 items-center justify-between">
             <div class="flex flex-row gap-4 w-[37vw]">
               <div class="flex flex-col items-center gap-2">
                 <h3 class="text-[16px] h-[24px]">Token</h3>
-                <div class="text-[#C6C5D3]">sm</div>
+                <div class="text-[#9DA4B2]">sm</div>
               </div>
-              <div class="border border-white/12 border-1.5 my-4"></div>
+              <div class="border border-[#2A3343] border-1.5 my-4"></div>
               <div class="flex flex-col items-center gap-2">
                 <h3 class="text-[16px] h-[24px]">Size</h3>
-                <div class="text-[#C6C5D3]">14px</div>
+                <div class="text-[#9DA4B2]">14px</div>
               </div>
-              <div class="border border-white/12 border-1.5 my-4"></div>
+              <div class="border border-[#2A3343] border-1.5 my-4"></div>
               <div class="flex flex-col items-center gap-2">
                 <h3 class="text-[16px] h-[24px]">Line Height</h3>
-                <div class="text-[#C6C5D3]">16px</div>
+                <div class="text-[#9DA4B2]">16px</div>
               </div>
-              <div class="border border-white/12 border-1.5 my-4"></div>
+              <div class="border border-[#2A3343] border-1.5 my-4"></div>
               <div class="flex flex-col items-center gap-2">
                 <h3 class="text-[16px] h-[24px]">Letter Spacing</h3>
-                <div class="text-[#C6C5D3]">4%</div>
+                <div class="text-[#9DA4B2]">4%</div>
               </div>
-              <div class="border border-white/12 border-1.5 my-4"></div>
+              <div class="border border-[#2A3343] border-1.5 my-4"></div>
               <div class="flex flex-col items-center gap-2">
                 <h3 class="text-[16px] h-[24px]">Font</h3>
-                <div class="text-[#C6C5D3]">Geist Mono</div>
+                <div class="text-[#9DA4B2]">Geist Mono</div>
               </div>
             </div>
-            <div class="text-[14px] leading-[16px] font-geist-mono tracking-[6%] flex flex-row gap-4 text-[#E1E1FA] flex grow items-center justify-center ">
+            <div
+              class="text-[14px] leading-[16px] font-geist-mono tracking-[6%] flex flex-row gap-4 text-[#E6EAF2] flex grow items-center justify-center group-hover:text-[#BFBF1D]">
               <div class="font-bold">Cloud</div>
               <div>Sherpa</div>
             </div>
           </div>
-          <div class="border border-white/12 border-1.5 mx-4"></div>
-          <div class="px-4 block text-[#F1F1F4] pb-2">
-            <div class="text-[14px] leading-[16px] text-[#C6C5D3]">
+          <div class="border border-[#2A3343] border-1.5 mx-4"></div>
+          <div class="px-4 block text-[#9DA4B2] pb-2">
+            <div class="text-[14px] leading-[16px]">
               larger text for more bold and creative designs like splash pages and not found pages
             </div>
           </div>
         </section>
 
-        <section class="w-[70vw] flex flex-col gap-2 border-[1.5px] rounded-md border-white/12 bg-[#17161D]">
+        <section
+          class="w-[70vw] flex flex-col gap-2 border-[1.5px] rounded-md border-[#2A3343] bg-[#0E1219] group group">
           <div
-            class="w-[70vw] h-full flex flex-row gap-4 text-[#F1F1F4] gap-2 rounded-md px-4 py-2 items-center justify-between">
+            class="w-[70vw] h-full flex flex-row gap-4 text-[#C4CDDA] group-hover:text-[#E6EAF2] gap-2 rounded-md px-4 py-2 items-center justify-between">
             <div class="flex flex-row gap-4 w-[37vw]">
               <div class="flex flex-col items-center gap-2">
                 <h3 class="text-[16px] h-[24px]">Token</h3>
-                <div class="text-[#C6C5D3]">xsm</div>
+                <div class="text-[#9DA4B2]">xsm</div>
               </div>
-              <div class="border border-white/12 border-1.5 my-4"></div>
+              <div class="border border-[#2A3343] border-1.5 my-4"></div>
               <div class="flex flex-col items-center gap-2">
                 <h3 class="text-[16px] h-[24px]">Size</h3>
-                <div class="text-[#C6C5D3]">12px</div>
+                <div class="text-[#9DA4B2]">12px</div>
               </div>
-              <div class="border border-white/12 border-1.5 my-4"></div>
+              <div class="border border-[#2A3343] border-1.5 my-4"></div>
               <div class="flex flex-col items-center gap-2">
                 <h3 class="text-[16px] h-[24px]">Line Height</h3>
-                <div class="text-[#C6C5D3]">16px</div>
+                <div class="text-[#9DA4B2]">16px</div>
               </div>
-              <div class="border border-white/12 border-1.5 my-4"></div>
+              <div class="border border-[#2A3343] border-1.5 my-4"></div>
               <div class="flex flex-col items-center gap-2">
                 <h3 class="text-[16px] h-[24px]">Letter Spacing</h3>
-                <div class="text-[#C6C5D3]">6%</div>
+                <div class="text-[#9DA4B2]">6%</div>
               </div>
-              <div class="border border-white/12 border-1.5 my-4"></div>
+              <div class="border border-[#2A3343] border-1.5 my-4"></div>
               <div class="flex flex-col items-center gap-2">
                 <h3 class="text-[16px] h-[24px]">Font</h3>
-                <div class="text-[#C6C5D3]">Geist Mono</div>
+                <div class="text-[#9DA4B2]">Geist Mono</div>
               </div>
             </div>
-            <div class="text-[12px] leading-[16px] font-geist-mono tracking-[8%] flex flex-row gap-4 text-[#E1E1FA] flex grow items-center justify-center ">
+            <div
+              class="text-[12px] leading-[16px] font-geist-mono tracking-[10%] flex flex-row gap-4 text-[#E6EAF2] flex grow items-center justify-center group-hover:text-[#BFBF1D]">
               <div>CloudSherpa</div>
             </div>
           </div>
-          <div class="border border-white/12 border-1.5 mx-4"></div>
-          <div class="px-4 block text-[#F1F1F4] pb-2">
-            <div class="text-[14px] leading-[16px] text-[#C6C5D3]">
+          <div class="border border-[#2A3343] border-1.5 mx-4"></div>
+          <div class="px-4 block text-[#9DA4B2] pb-2">
+            <div class="text-[14px] leading-[16px]">
               this size is specifically geared toward space efficiency for both x- and y-axis in the graphs. The 6
               percent letter spacing and geist-mono font are specifically for it more legible while maintaining a small
               footprint on the screen.
