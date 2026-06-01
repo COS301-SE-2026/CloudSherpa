@@ -52,7 +52,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
           .region(Region.EU_NORTH_1)
           .build();
 
-  public static List<ResourceDetail> listAllEc2Instances(CloudCredentials credentials) {
+  public List<ResourceDetail> getAllEc2Instances(CloudCredentials credentials) {
 
     List<ResourceDetail> resources = new ArrayList<>();
 
@@ -79,7 +79,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
     return resources;
   }
 
-  public static List<ResourceDetail> getAllEcsClusters(CloudCredentials credentials) {
+  public List<ResourceDetail> getAllEcsClusters(CloudCredentials credentials) {
 
     try (EcsClient ecs =
         EcsClient.builder()
@@ -110,7 +110,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
     }
   }
 
-  public static List<ResourceDetail> getAllEksClusters(CloudCredentials credentials) {
+  public List<ResourceDetail> getAllEksClusters(CloudCredentials credentials) {
 
     List<ResourceDetail> resources = new ArrayList<>();
 
@@ -131,7 +131,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
     return resources;
   }
 
-  public static List<ResourceDetail> getAllLambdaFunctions(CloudCredentials credentials) {
+  public List<ResourceDetail> getAllLambdaFunctions(CloudCredentials credentials) {
 
     List<ResourceDetail> resources = new ArrayList<>();
 
@@ -154,7 +154,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
     return resources;
   }
 
-  public static List<ResourceDetail> getAllRdsInstances(CloudCredentials credentials) {
+  public List<ResourceDetail> getAllRdsInstances(CloudCredentials credentials) {
 
     List<ResourceDetail> resources = new ArrayList<>();
 
@@ -185,7 +185,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
     return resources;
   }
 
-  public static List<ResourceDetail> getAllElastiCacheClusters(CloudCredentials credentials) {
+  public List<ResourceDetail> getAllElastiCacheClusters(CloudCredentials credentials) {
 
     List<ResourceDetail> resources = new ArrayList<>();
 
@@ -219,7 +219,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
     return resources;
   }
 
-  public static List<ResourceDetail> getAllOpenSearchDomains(CloudCredentials credentials) {
+  public List<ResourceDetail> getAllOpenSearchDomains(CloudCredentials credentials) {
 
     List<ResourceDetail> resources = new ArrayList<>();
 
@@ -255,7 +255,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
     return resources;
   }
 
-  public static List<ResourceDetail> getAllRedshiftClusters(CloudCredentials credentials) {
+  public List<ResourceDetail> getAllRedshiftClusters(CloudCredentials credentials) {
 
     List<ResourceDetail> resources = new ArrayList<>();
 
@@ -367,6 +367,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
     return List.of(); // mock for now
   }
 
+  @Override
   public List<String> getAllOfferedServices() {
     List<String> services = new ArrayList<>();
     services.add("AWS/EC2");
@@ -379,6 +380,20 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
     services.add("AWS/RedShift");
 
     return services;
+  }
+
+  @Override
+  public List<ResourceDetail> getAllResources(CloudCredentials credentials) {
+    List<ResourceDetail> resources = new ArrayList<>();
+    resources.addAll(getAllEc2Instances(credentials));
+    resources.addAll(getAllEcsClusters(credentials));
+    resources.addAll(getAllEksClusters(credentials));
+    resources.addAll(getAllElastiCacheClusters(credentials));
+    resources.addAll(getAllLambdaFunctions(credentials));
+    resources.addAll(getAllOpenSearchDomains(credentials));
+    resources.addAll(getAllRdsInstances(credentials));
+    resources.addAll(getAllRedshiftClusters(credentials));
+    return resources;
   }
 
   @Override

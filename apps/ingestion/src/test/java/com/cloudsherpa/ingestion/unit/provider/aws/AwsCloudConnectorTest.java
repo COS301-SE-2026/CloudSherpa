@@ -121,7 +121,7 @@ class AwsCloudConnectorTest {
   // code being tested to make testing more convenient as that makes the rel usage
   // of the class functions more complicated for the user
   @Test
-  void listAllEc2InstancesShouldReturnResources() {
+  void getAllEc2InstancesShouldReturnResources() {
 
     CloudCredentials credentials = new CloudCredentials();
     credentials.setAccessKey("accessKey");
@@ -150,7 +150,7 @@ class AwsCloudConnectorTest {
 
       mocked.when(Ec2Client::builder).thenReturn(builder);
 
-      List<ResourceDetail> result = AwsCloudConnector.listAllEc2Instances(credentials);
+      List<ResourceDetail> result = connector.getAllEc2Instances(credentials);
 
       assertEquals(1, result.size());
 
@@ -198,7 +198,7 @@ class AwsCloudConnectorTest {
 
       mocked.when(EcsClient::builder).thenReturn(builder);
 
-      List<ResourceDetail> result = AwsCloudConnector.getAllEcsClusters(credentials);
+      List<ResourceDetail> result = connector.getAllEcsClusters(credentials);
 
       assertEquals(1, result.size());
 
