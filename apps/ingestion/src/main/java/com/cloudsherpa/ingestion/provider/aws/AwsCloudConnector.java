@@ -370,14 +370,14 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
   @Override
   public List<String> getAllOfferedServices() {
     List<String> services = new ArrayList<>();
-    services.add("AWS/EC2");
-    services.add("AWS/ECS");
-    services.add("AWS/EKS");
-    services.add("AWS/Lambda");
-    services.add("AWS/RDS");
-    services.add("AWS/ElastiCache");
-    services.add("AWS/OpenSearch");
-    services.add("AWS/RedShift");
+    services.add("EC2");
+    services.add("ECS");
+    services.add("EKS");
+    services.add("Lambda");
+    services.add("RDS");
+    services.add("ElastiCache");
+    services.add("OpenSearch");
+    services.add("RedShift");
 
     return services;
   }
