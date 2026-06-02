@@ -76,4 +76,17 @@ public class CloudResourceController {
 
     return cloudResourceService.getAllResources(provider, credentials);
   }
+
+  @Operation(
+      summary = "Generate AWS IAM policy",
+      description = "Generates a least-privilege AWS IAM policy for the selected services")
+  @ApiResponses(
+      value = {
+        @ApiResponse(responseCode = "200", description = "IAM policy successfully generated")
+      })
+  @PostMapping("/aws/permissions")
+  public String generateAwsPermissionsPolicy(@RequestBody List<String> services) {
+
+    return cloudResourceService.generateAwsPermissionsPolicy(services);
+  }
 }
