@@ -39,7 +39,7 @@ public class AwsConnector implements CloudConnector {
 
   @Override
   public List<ResourceDetail> getAllResources(CloudCredentials credentials) {
-    return new ArrayList<ResourceDetail>();
+    return new ArrayList<>();
   }
 
   public List<Map<String, String>> fetchRawData() {
