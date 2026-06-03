@@ -4,7 +4,7 @@ import { Button } from '@/components/atoms/button';
 import { Input } from '@/components/atoms/input';
 import { Label } from '@/components/atoms/label';
 
-interface PropsForStepOne{
+interface PropsForStepOne {
   onNext: (data: {
     accessKeyId: string;
     secretAccessKey: string;
@@ -12,7 +12,7 @@ interface PropsForStepOne{
   }) => void;
 }
 
-export default function StepOne({ onNext }: PropsForStepOne){
+export default function StepOne({ onNext }: PropsForStepOne) {
   const [formData, setFormData] = useState({
     accessKeyId: '', secretAccessKey: '', region: 'region',
   });
@@ -23,10 +23,21 @@ export default function StepOne({ onNext }: PropsForStepOne){
   };
 
   const regions = [
-    'regions'
+    "us-east-1",
+    "us-east-2",
+    "us-west-1",
+    "us-west-2",
+    "af-south-1",
+    "ap-south-1",
+    "ap-southeast-1",
+    "ap-southeast-2",
+    "ap-northeast-1",
+    "eu-west-1",
+    "eu-central-1",
+    "sa-east-1",
   ];
 
-  return(
+  return (
     <div className="min-h-screen bg-background flex items-center justify-center p-8">
       <div className="w-full max-w-2xl bg-card rounded-lg shadow-none p-8">
         <div className="pb-6">
@@ -116,7 +127,7 @@ export default function StepOne({ onNext }: PropsForStepOne){
             >
               Next
             </Button>
-            
+
           </div>
         </form>
       </div>

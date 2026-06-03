@@ -20,13 +20,14 @@ public final class AwsPermissionsBuilder {
       permissions.addAll(AwsPermissionsRegistry.getPermissions(service));
     }
 
-    Map<String, Object> statement =
-        Map.of(
-            "Effect", "Allow",
-            "Action", permissions,
-            "Resource", "*");
+    Map<String, Object> statement = new LinkedHashMap<>();
+    statement.put("Effect", "Allow");
+    statement.put("Action", permissions);
+    statement.put("Resource", "*");
 
-    Map<String, Object> policy = Map.of("Version", "2012-10-17", "Statement", List.of(statement));
+    Map<String, Object> policy = new LinkedHashMap<>();
+    policy.put("Version", "2012-10-17");
+    policy.put("Statement", List.of(statement));
 
     try {
       return OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(policy);

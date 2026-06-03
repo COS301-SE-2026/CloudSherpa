@@ -18,6 +18,11 @@ export interface ResourceDetail {
   [key: string]: unknown;
 }
 
+export interface AwsPolicy {
+  Version: string;
+  Statement: unknown[];
+}
+
 /**
  * Retrieve all supported services for a selected cloud provider.
  *
@@ -59,8 +64,8 @@ export async function getCloudResources(
  */
 export async function generateAwsPermissionsPolicy(
   services: string[]
-): Promise<string> {
-  return apiClient<string>(
+): Promise<AwsPolicy> {
+  return apiClient<AwsPolicy>(
     "/api/cloud-resources/aws/permissions",
     {
       method: "POST",

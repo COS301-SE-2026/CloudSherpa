@@ -1,7 +1,7 @@
 'use client';
 import { Button } from '@/components/atoms/button';
 import { useEffect, useState } from 'react';
-import { getCloudServices } from '@/lib/fetch/cloud-resource-api';
+import { getCloudServices, generateAwsPermissionsPolicy, AwsPolicy } from '@/lib/fetch/cloud-resource-api';
 
 interface PropsForStepTwo {
   onNext: (selectedServices: string[]) => void;
@@ -14,6 +14,7 @@ export default function StepTwo({ onNext, onBack }: PropsForStepTwo) {
     { id: string; name: string }[]
   >([]);
   const [servicesSelected, setSelectedServices] = useState<string[]>([]);
+  const [permissions, setPermissions] = useState<AwsPolicy | null>(null);
 
   const toggleService = (serviceId: string) => {
     setSelectedServices(prev =>
@@ -37,6 +38,20 @@ export default function StepTwo({ onNext, onBack }: PropsForStepTwo) {
 
     loadServices();
   }, []);
+
+  useEffect(() => {
+    const fetchPermissions = async () => {
+      if (servicesSelected.length === 0) {
+        setPermissions(null);
+        return;
+      }
+
+      const result = await generateAwsPermissionsPolicy(servicesSelected);
+      setPermissions(result);
+    };
+
+    fetchPermissions();
+  }, [servicesSelected]);
 
   const handleSubmit = (forHandlingSubmit: React.FormEvent) => {
     forHandlingSubmit.preventDefault();
@@ -128,16 +143,17 @@ export default function StepTwo({ onNext, onBack }: PropsForStepTwo) {
                 Paste the following into the permissions field:
               </p>
               <pre className="bg-card p-4 rounded-lg overflow-x-auto text-xs font-mono text-foreground whitespace-pre-wrap">
-                {`{
-what needs to be pasted
-}`}
+                {permissions
+                  ? JSON.stringify(permissions, null, 2)
+                  : '{}'}
               </pre>
 
               <button
                 type="button"
                 onClick={() => {
-                  const textToCopy = `{\n what needs to be pasted }`;
-                  navigator.clipboard.writeText(textToCopy);
+                  navigator.clipboard.writeText(permissions
+                    ? JSON.stringify(permissions, null, 2)
+                    : '{}');
                 }}
                 className="mt-3 text-primary hover:text-accent text-sm transition-colors"
               >
