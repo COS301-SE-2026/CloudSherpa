@@ -33,7 +33,7 @@ export async function getCloudServices(
     "/api/cloud-resources/services",
     {
       method: "POST",
-      body: JSON.stringify(provider),
+      body: provider,
     }
   );
 }

@@ -67,7 +67,7 @@ public class ResourceDiscoveryController {
             content =
                 @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = ResourceDetail.class)))
+                    schema = @Schema(implementation = ResourceDetailDto.class)))
       })
   @PostMapping("/resources/{provider}")
   public List<ResourceDetailDto> getResources(
