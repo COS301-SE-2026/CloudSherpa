@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   description: "Ai Cloud Analytics and Finops Platform"
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen overflow-x-hidden">

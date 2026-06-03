@@ -19,7 +19,7 @@ interface LoginFormProps {
   onToggle?: () => void;
 }
 
-export default function LoginForm({ isLoading = false, onToggle }: LoginFormProps) {
+export default function LoginForm({ isLoading = false, onToggle }: Readonly<LoginFormProps>) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

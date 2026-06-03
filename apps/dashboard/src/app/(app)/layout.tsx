@@ -2,7 +2,7 @@ import { SidebarProvider, SidebarInset } from "@/components/atoms/sidebar";
 import { TooltipProvider } from "@/components/atoms/tooltip";
 import { AppSidebar } from "@/features/app/components/appSidebar";
 
-export default function DashboardShell({ children }: { children: React.ReactNode }) {
+export default function DashboardShell({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <TooltipProvider>
       <SidebarProvider>

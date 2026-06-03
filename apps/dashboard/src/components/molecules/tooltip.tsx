@@ -4,11 +4,11 @@
 import * as React from "react"
 import * as TooltipPrimitive from "@radix-ui/react-tooltip"
 
-export function Tooltip({ children, content, side = "top" }: { 
+export function Tooltip({ children, content, side = "top" }: Readonly<{ 
   children: React.ReactNode, 
   content: string,
   side?: "top" | "bottom" | "left" | "right"
-}) {
+}>) {
   return (
     <TooltipPrimitive.Provider delayDuration={300}>
       <TooltipPrimitive.Root>

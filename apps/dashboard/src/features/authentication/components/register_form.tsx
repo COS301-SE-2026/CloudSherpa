@@ -1,8 +1,7 @@
 import { Button } from "@/components/atoms/button";
 import { Input } from "@/components/atoms/input";
 import { Label } from "@/components/atoms/label";
-import { Loader2 } from "lucide-react";
-import { Eye, EyeOff, AlertCircle, CheckCircle2Icon } from "lucide-react";
+import { Loader2, Eye, EyeOff, AlertCircle, CheckCircle2Icon } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useRegistration } from "@/features/authentication/hooks/useRegistration";
@@ -18,7 +17,7 @@ interface RegisterFormProps {
   onToggle?: () => void;
 }
 
-export default function RegisterForm({ isLoading = false, onToggle }: RegisterFormProps) {
+export default function RegisterForm({ isLoading = false, onToggle }: Readonly<RegisterFormProps>) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false);
   const [password, setPassword] = useState("");

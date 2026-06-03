@@ -18,11 +18,11 @@ export function DateRangePicker({
   className,
   date,
   setDate
-}: {
+}: Readonly<{
   className?: string,
   date: DateRange | undefined,
   setDate: (date: DateRange | undefined) => void
-}) {
+}>) {
   return (
     <div className={cn("grid gap-2", className)}>
       <Popover>
