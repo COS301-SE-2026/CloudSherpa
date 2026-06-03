@@ -113,7 +113,7 @@ BEGIN
     EXECUTE format('CREATE SCHEMA IF NOT EXISTS %I;', schema_name);
 
     -- Build the resource table
-    EXECUTE format('
+    EXECUTE format($sql$
         CREATE TABLE %I.resource (
             resource_id uuid PRIMARY KEY,
             account_id uuid REFERENCES public.cloud_account(account_id) ON DELETE CASCADE, 
@@ -124,16 +124,16 @@ BEGIN
             last_updated timestamptz DEFAULT NOW(),
             created_at timestamptz DEFAULT NOW()
         );
-    ', schema_name);
+    $sql$, schema_name);
 
     -- The GIN Index for JSONB Tags
     -- %1$I means "use the first variable (schema_name) and format it safely as an Identifier".
-    EXECUTE format('
+    EXECUTE format($sql$
         CREATE INDEX ix_%1$s_resource_tags ON %1$I.resource USING GIN (tags);
-    ', schema_name);
+    $sql$, schema_name);
 
     -- Build the metrics table
-    EXECUTE format('
+    EXECUTE format($sql$
         CREATE TABLE %I.normalized_metrics (
             resource_id uuid REFERENCES %I.resource(resource_id) ON DELETE CASCADE,
             recorded_at timestamptz NOT NULL,
@@ -145,26 +145,26 @@ BEGIN
             period_start timestamptz NOT NULL,
             period_end timestamptz NOT NULL
         );
-    ', schema_name, schema_name);
+    $sql$, schema_name, schema_name);
 
     PERFORM create_hypertable(
         format('%I.normalized_metrics', schema_name), 
         'period_start'
     );
 
-    EXECUTE format('
+    EXECUTE format($sql$
         CREATE INDEX ix_%1$s_resource_metric_time 
         ON %1$I.normalized_metrics (resource_id, metric_name, period_start DESC);
-    ', schema_name);
+    $sql$, schema_name);
 
     -- Attach the Real-Time Broadcast Trigger
     -- Attach the trigger specifically to this new user's metrics table, 
     -- but tell it to execute the shared global function we defined in the public shema.
-    EXECUTE format('
+    EXECUTE format($sql$
         CREATE TRIGGER metric_notify_trigger
         AFTER INSERT ON %1$I.normalized_metrics
         FOR EACH ROW EXECUTE FUNCTION public.notify_metric_event();
-    ', schema_name);
+    $sql$, schema_name);
 
 END;
 $$ LANGUAGE plpgsql;
