@@ -1,18 +1,18 @@
 'use client';
-import { useState } from 'react';
 import { Button } from '@/components/atoms/button';
+import { useEffect, useState } from 'react';
+import { getCloudServices } from '@/lib/fetch/cloud-resource-api';
 
-interface PropsForStepTwo{
+interface PropsForStepTwo {
   onNext: (selectedServices: string[]) => void;
   onBack: () => void;
 }
 
-const availableServices = [
-  { id: 'ec2', name: 'EC2'}, { id: 'rds', name: 'RDS'}, { id: 'lambda', name: 'Lambda'}, { id: 'ecs', name: 'ECS'}, { id: 'eks', name: 'EKS'},
-];
 
-export default function StepTwo({ onNext, onBack }: PropsForStepTwo){
-    
+export default function StepTwo({ onNext, onBack }: PropsForStepTwo) {
+  const [availableServices, setAvailableServices] = useState<
+    { id: string; name: string }[]
+  >([]);
   const [servicesSelected, setSelectedServices] = useState<string[]>([]);
 
   const toggleService = (serviceId: string) => {
@@ -23,20 +23,35 @@ export default function StepTwo({ onNext, onBack }: PropsForStepTwo){
     );
   };
 
+  useEffect(() => {
+    const loadServices = async () => {
+      const services = await getCloudServices('aws');
+
+      setAvailableServices(
+        services.map((s) => ({
+          id: s,
+          name: s.toUpperCase(),
+        }))
+      );
+    };
+
+    loadServices();
+  }, []);
+
   const handleSubmit = (forHandlingSubmit: React.FormEvent) => {
     forHandlingSubmit.preventDefault();
     onNext(servicesSelected);
   };
 
   const forHandlingAllSelected = () => {
-    if(servicesSelected.length === availableServices.length){
+    if (servicesSelected.length === availableServices.length) {
       setSelectedServices([]);
-    } else{
+    } else {
       setSelectedServices(availableServices.map(s => s.id));
     }
   };
 
-  return(
+  return (
     <div className="min-h-screen bg-background flex items-center justify-center p-8">
       <div className="w-full max-w-3xl bg-card rounded-lg shadow-none p-8">
         <div className="pb-6">
@@ -113,7 +128,7 @@ export default function StepTwo({ onNext, onBack }: PropsForStepTwo){
                 Paste the following into the permissions field:
               </p>
               <pre className="bg-card p-4 rounded-lg overflow-x-auto text-xs font-mono text-foreground whitespace-pre-wrap">
-{`{
+                {`{
 what needs to be pasted
 }`}
               </pre>
