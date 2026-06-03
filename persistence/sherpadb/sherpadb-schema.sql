@@ -159,7 +159,7 @@ BEGIN
 
     -- Attach the Real-Time Broadcast Trigger
     -- Attach the trigger specifically to this new user's metrics table, 
-    -- but tell it to execute the shared global function we defined in Section 4.
+    -- but tell it to execute the shared global function we defined in the public shema.
     EXECUTE format('
         CREATE TRIGGER metric_notify_trigger
         AFTER INSERT ON %1$I.normalized_metrics
