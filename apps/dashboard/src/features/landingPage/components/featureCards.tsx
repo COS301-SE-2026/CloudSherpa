@@ -2,7 +2,7 @@
 import { forwardRef, useState } from "react";
 import { BrainCircuit, ChartBar, Wallet, Cloud, BellRing, Zap } from "lucide-react";
 
-interface forFeatureBlocks{
+interface ForFeatureBlocks{
   showingFeatureCards: boolean;
 }
 
@@ -109,10 +109,10 @@ const forFeatureItems = [
 function DetailedFeatures({ 
   card, 
   onBack 
-}: { 
+}: Readonly<{ 
   card: typeof forFeatureItems[0]; 
   onBack: () => void;
-}) {
+}>) {
   const Icon = card.icon;
   return(
     <div style={{ width: '100%', maxWidth: 1100, animation: 'slideInRight 0.3s ease' }}>
@@ -234,7 +234,7 @@ function DetailedFeatures({
 }
 
 //this is for the feature cards
-const forFeatureCards = forwardRef<HTMLElement, forFeatureBlocks>(
+const forFeatureCards = forwardRef<HTMLElement, ForFeatureBlocks>(
   ({showingFeatureCards}, containerRef) => {
     const [activeCardIndex,setActiveCardIndex] = useState<number | null>(null);
 
@@ -286,7 +286,7 @@ const forFeatureCards = forwardRef<HTMLElement, forFeatureBlocks>(
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {forFeatureItems.map((forFeature, forItem) => (
-                <div
+                <button
                   key={forFeature.heading}
                   onClick={() => handleCardClick(forItem)}
                   className="w-[350px] h-[278px] rounded-xl p-7 pb-6 flex flex-col items-center justify-center text-center relative cursor-pointer transition-all duration-200 hover:-translate-y-1"
@@ -317,7 +317,7 @@ const forFeatureCards = forwardRef<HTMLElement, forFeatureBlocks>(
                     <p className="text-[13px] text-[#CBD5E1] m-0 opacity-60">{forFeature.subHeading}</p>
                   </div>
 
-                </div>
+                </button>
               ))}
             </div>
           </div>

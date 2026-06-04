@@ -4,6 +4,7 @@ import { Button } from '@/components/atoms/button';
 import { Checkbox } from '@/components/atoms/checkbox';
 import { Badge } from '@/components/atoms/badge';
 import { ResourceDetail } from '@/lib/fetch/cloud-resource-api';
+import React from 'react';
 
 interface PropsForStepThree {
   resources: ResourceDetail[];
@@ -11,8 +12,8 @@ interface PropsForStepThree {
   onBack: () => void;
 }
 
-export default function StepThree({ resources, onComplete, onBack }: PropsForStepThree) {
-  const handleSubmit = (forHandlingSubmit: React.FormEvent) => {
+export default function StepThree({ resources, onComplete, onBack }: Readonly<PropsForStepThree>) {
+  const handleSubmit = (forHandlingSubmit: React.SubmitEvent<HTMLFormElement>) => {
     forHandlingSubmit.preventDefault();
     onComplete(selectedResources);
   };
@@ -20,14 +21,6 @@ export default function StepThree({ resources, onComplete, onBack }: PropsForSte
   const [selectedResources, setSelectedResources] = useState<string[]>(
     resources.map(resource => resource.resourceId)
   );
-
-  const toggleResource = (resourceId: string) => {
-    setSelectedResources(prev =>
-      prev.includes(resourceId)
-        ? prev.filter(id => id !== resourceId)
-        : [...prev, resourceId]
-    );
-  };
 
   const groupedResources = resources.reduce(
     (groups, resource) => {

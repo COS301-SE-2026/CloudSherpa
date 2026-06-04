@@ -1,6 +1,6 @@
 'use client';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/atoms/button';
-import { useEffect, useState } from 'react';
 import { getCloudServices, generateAwsPermissionsPolicy, getCloudResources } from '@/lib/fetch/cloud-resource-api';
 import {
   CloudCredentials,
@@ -19,7 +19,7 @@ interface PropsForStepTwo {
   onBack: () => void;
 }
 
-export default function StepTwo({ credentials, onNext, onBack }: PropsForStepTwo) {
+export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsForStepTwo>) {
   const [availableServices, setAvailableServices] = useState<
     { id: string; name: string }[]
   >([]);
@@ -27,6 +27,7 @@ export default function StepTwo({ credentials, onNext, onBack }: PropsForStepTwo
   const [permissions, setPermissions] = useState<AwsPolicy | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
 
   const toggleService = (serviceId: string) => {
     setSelectedServices(prev =>
@@ -66,7 +67,7 @@ export default function StepTwo({ credentials, onNext, onBack }: PropsForStepTwo
   }, [servicesSelected]);
 
   const handleSubmit = async (
-    forHandlingSubmit: React.FormEvent
+    forHandlingSubmit: React.SubmitEvent<HTMLFormElement>
   ) => {
     forHandlingSubmit.preventDefault();
 
