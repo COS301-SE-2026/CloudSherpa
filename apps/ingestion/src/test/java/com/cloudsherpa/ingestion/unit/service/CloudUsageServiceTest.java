@@ -39,7 +39,8 @@ class CloudUsageServiceTest {
 
     UsageRecordModel usageRecord = buildUsageRecord();
     String resource = "resource1";
-    ResourceDetail resourceDetail = new ResourceDetail("resourceId", "name", "type", null);
+    ResourceDetail resourceDetail =
+        new ResourceDetail("resourceId", "name", "type", "category", null);
 
     doReturn(List.of(usageRecord)).when(connector).fetchUsage(any(), any());
     doReturn(List.of(resource)).when(connector).getAllOfferedServices();

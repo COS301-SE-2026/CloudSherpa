@@ -6,15 +6,15 @@ import { Label } from '@/components/atoms/label';
 
 interface PropsForStepOne {
   onNext: (data: {
-    accessKeyId: string;
-    secretAccessKey: string;
-    region: string;
+    accessKey: string;
+    secretKey: string;
+    awsRegion: string;
   }) => void;
 }
 
 export default function StepOne({ onNext }: PropsForStepOne) {
   const [formData, setFormData] = useState({
-    accessKeyId: '', secretAccessKey: '', region: 'region',
+    accessKey: '', secretKey: '', awsRegion: 'af-south-1',
   });
 
   const handleSubmit = (forHandlingSubmit: React.FormEvent) => {
@@ -55,7 +55,7 @@ export default function StepOne({ onNext }: PropsForStepOne) {
           </h2>
 
           <p className="mt-2 text-muted-foreground/70">
-            Enter your AWS credentials to connect your account.
+            Please log in to your AWS  account and create a new IAM user. Enter the information below to begin the process of connecting your account.
           </p>
 
         </div>
@@ -71,8 +71,8 @@ export default function StepOne({ onNext }: PropsForStepOne) {
               id="accessKeyId"
               type="text"
               placeholder="EXAMPLE"
-              value={formData.accessKeyId}
-              onChange={(e) => setFormData({ ...formData, accessKeyId: e.target.value })}
+              value={formData.accessKey}
+              onChange={(e) => setFormData({ ...formData, accessKey: e.target.value })}
               className="bg-background border-border rounded-md px-4 py-3 text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all w-full"
               required
             />
@@ -89,8 +89,8 @@ export default function StepOne({ onNext }: PropsForStepOne) {
               id="secretAccessKey"
               type="password"
               placeholder="••••••••••••••••••••••••"
-              value={formData.secretAccessKey}
-              onChange={(e) => setFormData({ ...formData, secretAccessKey: e.target.value })}
+              value={formData.secretKey}
+              onChange={(e) => setFormData({ ...formData, secretKey: e.target.value })}
               className="bg-background border-border rounded-md px-4 py-3 text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all w-full"
               required
             />
@@ -105,8 +105,8 @@ export default function StepOne({ onNext }: PropsForStepOne) {
 
             <select
               id="region"
-              value={formData.region}
-              onChange={(e) => setFormData({ ...formData, region: e.target.value })}
+              value={formData.awsRegion}
+              onChange={(e) => setFormData({ ...formData, awsRegion: e.target.value })}
               className="w-full bg-background border-border rounded-md px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all cursor-pointer"
             >
 

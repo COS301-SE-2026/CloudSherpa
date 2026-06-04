@@ -3,24 +3,27 @@ import { useState } from 'react';
 import StepOne from './stepOne';
 import StepTwo from './stepTwo';
 import StepThree from './stepThree';
+import { ResourceDetail } from '@/lib/fetch/cloud-resource-api';
 
-interface WizardData{
+interface WizardData {
   credentials: {
-    accessKeyId: string;
-    secretAccessKey: string;
-    region: string;
+    accessKey: string;
+    secretKey: string;
+    awsRegion: string;
   } | null;
   selectedServices: string[];
   selectedInstances: string[];
+  resources: ResourceDetail[];
 }
 
-export default function WizardSetup(){
+export default function WizardSetup() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
 
   const [wizardData, setWizardData] = useState<WizardData>({
     credentials: null,
     selectedServices: [],
     selectedInstances: [],
+    resources: [],
   });
 
   const handleStepOneNext = (credentials: WizardData['credentials']) => {
@@ -28,8 +31,16 @@ export default function WizardSetup(){
     setStep(2);
   };
 
-  const handleStepTwoNext = (selectedServices: string[]) => {
-    setWizardData({ ...wizardData, selectedServices });
+  const handleStepTwoNext = (
+    selectedServices: string[],
+    resources: ResourceDetail[]
+  ) => {
+    setWizardData({
+      ...wizardData,
+      selectedServices,
+      resources,
+    });
+
     setStep(3);
   };
 
@@ -39,15 +50,16 @@ export default function WizardSetup(){
   };
 
   const handleBack = () => {
-    setStep(prev => (prev-1) as 1 | 2 | 3);
+    setStep(prev => (prev - 1) as 1 | 2 | 3);
   };
 
-  return(
+  return (
     <>
       {step === 1 && <StepOne onNext={handleStepOneNext} />}
 
       {step === 2 && (
         <StepTwo
+          credentials={wizardData.credentials}
           onNext={handleStepTwoNext}
           onBack={handleBack}
         />
@@ -55,12 +67,12 @@ export default function WizardSetup(){
 
       {step === 3 && (
         <StepThree
-          selectedServices={wizardData.selectedServices}
+          resources={wizardData.resources}
           onComplete={handleStepThreeComplete}
           onBack={handleBack}
         />
       )}
-      
+
     </>
   );
 }

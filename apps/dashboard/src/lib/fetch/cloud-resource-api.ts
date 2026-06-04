@@ -3,19 +3,19 @@ import apiClient from "./api-client";
 export interface CloudCredentials {
   accessKey?: string;
   secretKey?: string;
-  region?: string;
-  subscriptionId?: string;
+  awsRegion?: string;
   tenantId?: string;
   clientId?: string;
   clientSecret?: string;
+  projectId?: string;
 }
 
 export interface ResourceDetail {
-  id: string;
+  resourceId: string;
   name: string;
-  type: string;
-  region?: string;
-  [key: string]: unknown;
+  resourceType: string;
+  serviceCategory: string;
+  tags: Record<string, string>;
 }
 
 export interface AwsPolicy {

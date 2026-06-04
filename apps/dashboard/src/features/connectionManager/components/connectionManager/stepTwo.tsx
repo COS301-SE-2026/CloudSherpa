@@ -1,20 +1,32 @@
 'use client';
 import { Button } from '@/components/atoms/button';
 import { useEffect, useState } from 'react';
-import { getCloudServices, generateAwsPermissionsPolicy, AwsPolicy } from '@/lib/fetch/cloud-resource-api';
+import { getCloudServices, generateAwsPermissionsPolicy, getCloudResources } from '@/lib/fetch/cloud-resource-api';
+import {
+  CloudCredentials,
+  ResourceDetail,
+  AwsPolicy
+} from '@/lib/fetch/cloud-resource-api';
 
 interface PropsForStepTwo {
-  onNext: (selectedServices: string[]) => void;
+  credentials: CloudCredentials | null;
+
+  onNext: (
+    selectedServices: string[],
+    resources: ResourceDetail[]
+  ) => void;
+
   onBack: () => void;
 }
 
-
-export default function StepTwo({ onNext, onBack }: PropsForStepTwo) {
+export default function StepTwo({ credentials, onNext, onBack }: PropsForStepTwo) {
   const [availableServices, setAvailableServices] = useState<
     { id: string; name: string }[]
   >([]);
   const [servicesSelected, setSelectedServices] = useState<string[]>([]);
   const [permissions, setPermissions] = useState<AwsPolicy | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const toggleService = (serviceId: string) => {
     setSelectedServices(prev =>
@@ -53,9 +65,39 @@ export default function StepTwo({ onNext, onBack }: PropsForStepTwo) {
     fetchPermissions();
   }, [servicesSelected]);
 
-  const handleSubmit = (forHandlingSubmit: React.FormEvent) => {
+  const handleSubmit = async (
+    forHandlingSubmit: React.FormEvent
+  ) => {
     forHandlingSubmit.preventDefault();
-    onNext(servicesSelected);
+
+    try {
+      setLoading(true);
+      setError('');
+
+      const resources = await getCloudResources(
+        'aws',
+        {
+          accessKey: credentials?.accessKey,
+          secretKey: credentials?.secretKey,
+          awsRegion: credentials?.awsRegion,
+        }
+      );
+
+      if (resources.length === 0) {
+        setError('No resources were discovered.');
+        return;
+      }
+
+      onNext(servicesSelected, resources);
+    } catch (err) {
+      console.error(err);
+
+      setError(
+        'Failed to discover resources. Check credentials and permissions.'
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   const forHandlingAllSelected = () => {
@@ -140,7 +182,7 @@ export default function StepTwo({ onNext, onBack }: PropsForStepTwo) {
 
             <div className="bg-background rounded-lg p-4 border border-border">
               <p className="text-foreground text-sm mb-3">
-                Paste the following into the permissions field:
+                Please add the following permissions to the newly created IAM user:
               </p>
               <pre className="bg-card p-4 rounded-lg overflow-x-auto text-xs font-mono text-foreground whitespace-pre-wrap">
                 {permissions

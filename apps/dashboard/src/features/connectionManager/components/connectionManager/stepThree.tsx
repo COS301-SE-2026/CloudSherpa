@@ -1,17 +1,48 @@
 'use client';
+import { useState } from 'react';
 import { Button } from '@/components/atoms/button';
+import { Checkbox } from '@/components/atoms/checkbox';
+import { Badge } from '@/components/atoms/badge';
+import { ResourceDetail } from '@/lib/fetch/cloud-resource-api';
 
 interface PropsForStepThree {
-  selectedServices: string[];
+  resources: ResourceDetail[];
   onComplete: (selectedInstances: string[]) => void;
   onBack: () => void;
 }
 
-export default function StepThree({ selectedServices, onComplete, onBack }: PropsForStepThree) {
+export default function StepThree({ resources, onComplete, onBack }: PropsForStepThree) {
   const handleSubmit = (forHandlingSubmit: React.FormEvent) => {
     forHandlingSubmit.preventDefault();
-    onComplete([]);
+    onComplete(selectedResources);
   };
+
+  const [selectedResources, setSelectedResources] = useState<string[]>(
+    resources.map(resource => resource.resourceId)
+  );
+
+  const toggleResource = (resourceId: string) => {
+    setSelectedResources(prev =>
+      prev.includes(resourceId)
+        ? prev.filter(id => id !== resourceId)
+        : [...prev, resourceId]
+    );
+  };
+
+  const groupedResources = resources.reduce(
+    (groups, resource) => {
+      const category = resource.serviceCategory;
+
+      if (!groups[category]) {
+        groups[category] = [];
+      }
+
+      groups[category].push(resource);
+
+      return groups;
+    },
+    {} as Record<string, ResourceDetail[]>
+  );
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-8">
@@ -35,7 +66,77 @@ export default function StepThree({ selectedServices, onComplete, onBack }: Prop
 
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="min-h-[200px]">
-            {/*the instances will be populated once they are fetched hence step 3 will be blank for nwo*/}
+            <div className="space-y-8">
+              {Object.entries(groupedResources).map(
+                ([serviceCategory, categoryResources]) => (
+                  <div key={serviceCategory}>
+                    <h3 className="text-lg font-semibold text-foreground mb-4">
+                      {serviceCategory}
+                    </h3>
+
+                    <div className="space-y-3">
+                      {categoryResources.map(resource => (
+                        <div
+                          key={resource.resourceId}
+                          className="
+                flex
+                items-start
+                justify-between
+                gap-4
+                p-4
+                bg-background
+                rounded-lg
+                border
+                border-border
+                hover:border-primary/40
+                transition-all
+                cursor-pointer
+              "
+                        >
+                          <div className="flex items-start gap-3">
+                            <Checkbox
+                              checked={selectedResources.includes(resource.resourceId)}
+                              onCheckedChange={(checked) => {
+                                setSelectedResources(prev => {
+                                  if (checked) {
+                                    return prev.includes(resource.resourceId)
+                                      ? prev
+                                      : [...prev, resource.resourceId];
+                                  }
+                                  return prev.filter(id => id !== resource.resourceId);
+                                });
+                              }}
+                            />
+                            <div>
+                              <div className="font-medium text-foreground">
+                                {resource.name}
+
+                                <span className="ml-2 text-muted-foreground">
+                                  ({resource.resourceId})
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex flex-wrap justify-end gap-2 max-w-md">
+                            {Object.entries(
+                              resource.tags as Record<string, string>
+                            ).map(([key, value]) => (
+                              <Badge
+                                key={`${key}-${value}`}
+                                variant="secondary"
+                              >
+                                {key}: {value}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              )}
+            </div>
           </div>
 
           <div className="flex justify-between pt-6">
