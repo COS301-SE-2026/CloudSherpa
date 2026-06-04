@@ -52,7 +52,6 @@ export default function Toolbar({
         {/* Dashboard Group */}
         <div className="w-fit h-full flex flex-row items-start justify-start gap-4">
           <div className="w-full h-full flex flex-col">
-            <span className="hidden md:flex text-[10px] uppercase tracking-wider text-muted-foreground font-bold px-1">DASHBOARD</span>
             <div className="flex items-center gap-3">
               <DashboardSelector
                 dashboards={dashboards}
@@ -65,14 +64,6 @@ export default function Toolbar({
 
           {/* Edit Group */}
           <div className="fixed bottom-6 right-6 z-[100] flex w-fit flex-col items-end md:static md:h-full md:items-start md:z-auto">
-            {isEditMode && (
-              <span className="mb-2 rounded-md bg-background/95 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground shadow-sm animate-pulse whitespace-nowrap md:mb-0 md:bg-transparent md:px-1 md:py-0 md:shadow-none">
-                Editing Layout...
-              </span>
-            )}
-            {!isEditMode && (
-              <span className="hidden md:block text-[10px] uppercase tracking-wider text-muted-foreground font-bold px-1">Edit</span>
-            )}
             <div className="rounded-md shadow-2xl md:shadow-none">
               <EditButton
                 isEditMode={isEditMode}
@@ -88,7 +79,6 @@ export default function Toolbar({
 
       {/* Time Period Group */}
       <div className="w-fit h-full flex flex-col items-start justify-start">
-        <span className="hidden md:block text-[10px] uppercase tracking-wider text-muted-foreground font-bold px-1">TIME PERIOD</span>
         <TimePeriodSelector date={dateRange} onDateChange={onDateRangeChange} />
       </div>
     </div>
