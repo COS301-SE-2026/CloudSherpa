@@ -1,11 +1,12 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/atoms/button';
-import { getCloudServices, generateAwsPermissionsPolicy, getCloudResources } from '@/lib/fetch/cloud-resource-api';
 import {
   CloudCredentials,
   ResourceDetail,
-  AwsPolicy
+  AwsPolicy, getCloudServices,
+  generateAwsPermissionsPolicy,
+  getCloudResources
 } from '@/lib/fetch/cloud-resource-api';
 
 interface PropsForStepTwo {

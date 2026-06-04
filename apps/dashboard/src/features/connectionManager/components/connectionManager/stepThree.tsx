@@ -1,10 +1,9 @@
 'use client';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/atoms/button';
 import { Checkbox } from '@/components/atoms/checkbox';
 import { Badge } from '@/components/atoms/badge';
 import { ResourceDetail } from '@/lib/fetch/cloud-resource-api';
-import React from 'react';
 
 interface PropsForStepThree {
   resources: ResourceDetail[];
@@ -113,7 +112,7 @@ export default function StepThree({ resources, onComplete, onBack }: Readonly<Pr
 
                           <div className="flex flex-wrap justify-end gap-2 max-w-md">
                             {Object.entries(
-                              resource.tags as Record<string, string>
+                              resource.tags
                             ).map(([key, value]) => (
                               <Badge
                                 key={`${key}-${value}`}
