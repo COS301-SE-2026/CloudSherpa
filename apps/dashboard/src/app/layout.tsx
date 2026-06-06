@@ -18,17 +18,14 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "CloudSherpa",
-  description: "Ai Cloud Analytics and Finops Platform"
+  description: "Ai Cloud Analytics and Finops Platform",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning className={cn(geistHeading.variable)}>
+    <html lang="en" suppressHydrationWarning className={cn(geistSans.variable, geistMono.variable, geistHeading.variable)}>
       <body className="min-h-screen overflow-x-hidden">
-        <ThemeProvider
-          attribute="data-theme" 
-          defaultTheme="dark"
-          enableSystem={false}>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
           {children}
         </ThemeProvider>
       </body>
