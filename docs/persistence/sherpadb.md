@@ -167,7 +167,7 @@ Users add wild, unpredictable tags to their cloud resources. Instead of trying t
 * **Speed:** We use a special **GIN Index**, which allows the database to instantly search inside the JSON object to find specific tags without scanning the whole table.
 
 ```sql
-CREATE INDEX ix_tenant_resource_tags ON tenant_1234.resource USING GIN (tags);
+CREATE INDEX ix_tenant_123e_resource_tags ON tenant_123e.resource USING GIN (tags);
 ```
 
 ### normalized_metrics
@@ -197,8 +197,8 @@ Because the `normalized_metrics` table will easily hit millions or billions of r
 * **Instant Chart Sorting:** We created a specific index so that when the frontend asks for data to draw a line chart, the database hands it back already perfectly sorted by time:
 
 ```sql
-CREATE INDEX ix_tenant_resource_metric_time 
-ON tenant_1234.normalized_metrics (resource_id, metric_name, period_start DESC);
+CREATE INDEX ix_tenant_123e_resource_metric_time 
+ON tenant_123e.normalized_metrics (resource_id, metric_name, period_start DESC);
 ```
 
 ### 2. Real-Time Event Broadcasting
