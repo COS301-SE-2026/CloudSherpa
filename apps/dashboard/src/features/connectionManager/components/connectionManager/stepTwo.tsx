@@ -79,7 +79,7 @@ export default function StepTwo({ onNext, onBack }: Readonly<PropsForStepTwo>){
 
             <div className="space-y-3">
               {availableServices.map((service) => (
-                <div
+                <button
                   key={service.id}
                   onClick={() => toggleService(service.id)}
                   className="flex items-start gap-3 p-4 bg-background rounded-lg border border-border hover:border-primary/40 transition-all cursor-pointer"
@@ -97,7 +97,7 @@ export default function StepTwo({ onNext, onBack }: Readonly<PropsForStepTwo>){
                       <span className="text-foreground font-medium">{service.name}</span>
                     </div>
                   </div>
-                </div>
+                </button>
               ))}
             </div>
           </div>

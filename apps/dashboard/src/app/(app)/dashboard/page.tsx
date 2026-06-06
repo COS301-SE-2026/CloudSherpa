@@ -21,6 +21,7 @@ import { useWindowStore } from "@/features/dashboard/stores/window-store";
 import { useResourceNameStore } from "@/features/dashboard/stores/resource-store";
 import { useMetricStore } from "@/features/dashboard/stores/metric-store";
 
+
 function DashboardContent() {
   const { error: streamError } = useMetricStream();
   const router = useRouter();
@@ -225,6 +226,40 @@ function DashboardContent() {
     [setWindow],
   );
 
+  const renderMainContent = () => {
+    if (isLoading) {
+      //conditionally renders different content based on state, like whether data is still loading or if dashboard is empty
+      //can replace spinner with skeleton loader
+      return ( 
+        <div className="flex-1 flex items-center justify-center">
+          <Spinner className="size-8" />
+        </div>
+      );
+    }
+
+    if (activeDashboard) {
+      return (
+        <Grid
+          isEditMode={isEditMode}
+          dashboardId={activeDashboardId || ""}
+          onLayoutChange={handleLayoutChange}
+          layouts={widgetLayouts}
+          onDeleteWidget={handleDeleteWidget}
+          metricFetchLoad={metricFetchLoad}
+        />
+      );
+    }
+
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center text-center p-10">
+        <h2 className="text-xl font-semibold mb-2">No Dashboards Found</h2>
+        <p className="text-muted-foreground mb-6">
+          Create your first dashboard to start monitoring your cloud resources.
+        </p>
+      </div>
+    );
+  };
+
   return (
     <>
       <header className="sticky top-0 z-10 border-b bg-background/95 px-6 py-4">
@@ -255,34 +290,7 @@ function DashboardContent() {
         </div>
       )}
 
-      <main className="flex-1 overflow-y-auto overflow-x-hidden m-3 flex flex-col">
-        {isLoading ? (
-          <div className="flex-1 flex items-center justify-center">
-            <Spinner className="size-8" />
-          </div>
-        ) : metricFetchError ? (
-          <div className="flex-1 flex flex-col items-center justify-center text-center p-10">
-            <h2 className="text-xl font-semibold mb-2">Unable to Load Metrics</h2>
-            <p className="text-muted-foreground mb-6">Widgets are paused until historical metrics are available.</p>
-          </div>
-        ) : activeDashboard ? (
-          <Grid
-            isEditMode={isEditMode}
-            dashboardId={activeDashboardId || ""}
-            onLayoutChange={handleLayoutChange}
-            layouts={widgetLayouts}
-            onDeleteWidget={handleDeleteWidget}
-            metricFetchLoad={metricFetchLoad}
-          />
-        ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-center p-10">
-            <h2 className="text-xl font-semibold mb-2">No Dashboards Found</h2>
-            <p className="text-muted-foreground mb-6">
-              Create your first dashboard to start monitoring your cloud resources.
-            </p>
-          </div>
-        )}
-      </main>
+      <main className="flex-1 overflow-y-auto overflow-x-hidden m-3 flex flex-col">{renderMainContent()}</main>
     </>
   );
 }
