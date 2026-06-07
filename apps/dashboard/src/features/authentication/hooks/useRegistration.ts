@@ -4,6 +4,7 @@ import apiClient from "@/lib/fetch/api-client"
 import { RegisterRequestDto } from "@/features/authentication/types/dtos/auth/RegisterRequestDto";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react"
 
 export function useRegistration() {
 
@@ -18,8 +19,19 @@ export function useRegistration() {
         try {
             await apiClient("/auth/register", {
                 method: "POST",
-                body: JSON.stringify(registerPayload)
+                body: JSON.stringify(registerPayload),
+                credentials: "include"
             })
+
+            const signInResult = await signIn("credentials", {
+                email: registerPayload.email,
+                password: registerPayload.password,
+                redirect: false
+            });
+
+            if (!signInResult?.ok) {
+                throw new Error("Auth sign in callback failed");
+            }
 
             setRegistrationFailure(false);
             setRegistrationSuccess(true);

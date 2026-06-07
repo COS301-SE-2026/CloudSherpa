@@ -28,7 +28,7 @@ export default async function apiClient<T>(path: string, options?: RequestInit):
         },
     };
     const response = await fetch(`${API_BASE}${normalizedPath}`, options);
-
+    console.log(response);
     if (response.status === 204) {
         return [] as T;
     }
