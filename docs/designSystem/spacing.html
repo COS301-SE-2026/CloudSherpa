@@ -10,12 +10,54 @@
       src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"
       integrity="sha384-pW+DdBbWpHEF4g8fJ8ubOlXc1r2fkVqQa1e+kTvjfVkABXzGAOA9sNrgm9N8N7Yx"
       crossorigin="anonymous"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;700&display=swap"
-      rel="stylesheet"
-      crossorigin="anonymous"/>
+    
+      <style>
+        /*this is for the geist regluar (400)*/
+        @font-face{
+          font-display: swap;
+          font-family: 'Geist';
+          font-style: normal;
+          font-weight: 400;
+          src: url('./fonts/geist-v5-latin-regular.woff2') format('woff2');
+        }
+
+        /*this is for the geist medium (500)*/
+        @font-face{
+          font-display: swap;
+          font-family: 'Geist';
+          font-style: normal;
+          font-weight: 500;
+          src: url('./fonts/geist-v5-latin-500.woff2') format('woff2');
+        }
+
+        /*this is for the geist bold (700)*/
+        @font-face{
+          font-display: swap;
+          font-family: 'Geist';
+          font-style: normal;
+          font-weight: 700;
+          src: url('./fonts/geist-v5-latin-700.woff2') format('woff2');
+        }
+
+        /*this is for the geist mono regluar (400)*/
+        @font-face{
+          font-display: swap;
+          font-family: 'Geist Mono';
+          font-style: normal;
+          font-weight: 400;
+          src: url('./fonts/geist-mono-v5-latin-regular.woff2') format('woff2');
+        }
+
+        /*this is for the geist mon bold (700)*/
+        @font-face{
+          font-display: swap;
+          font-family: 'Geist Mono';
+          font-style: normal;
+          font-weight: 700;
+          src: url('./fonts/geist-mono-v5-latin-700.woff2') format('woff2');
+        }
+
+      </style>
 
     <style type="text/tailwindcss">
       @theme {
