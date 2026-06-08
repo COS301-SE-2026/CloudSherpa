@@ -3,11 +3,14 @@ package com.cloudsherpa.service.analytics.entities;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.OffsetDateTime;
+import java.util.Map;
 import java.util.UUID;
-
-// ! Note, this does not include cloud account yet
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "resource")
@@ -19,11 +22,22 @@ public class Resource {
   @Column(name = "account_id", nullable = false)
   private UUID accountId;
 
+  @ManyToOne
+  @JoinColumn(name = "account_id", nullable = false, insertable = false, updatable = false)
+  private CloudAccount account;
+
   @Column(name = "resource_type", length = 255)
   private String resourceType;
 
-  @Column(name = "tags")
-  private String tags;
+  @Column(name = "resource_name", length = 255, nullable = false)
+  private String resourceName;
+
+  @Column(name = "status", length = 50)
+  private String status;
+
+  @JdbcTypeCode(SqlTypes.JSON)
+  @Column(name = "tags", columnDefinition = "jsonb")
+  private Map<String, Object> tags;
 
   @Column(name = "created_at")
   private OffsetDateTime createdAt;
@@ -31,7 +45,11 @@ public class Resource {
   protected Resource() {}
 
   public Resource(
-      UUID id, UUID accountId, String resourceType, String tags, OffsetDateTime createdAt) {
+      UUID id,
+      UUID accountId,
+      String resourceType,
+      Map<String, Object> tags,
+      OffsetDateTime createdAt) {
     this.id = id;
     this.accountId = accountId;
     this.resourceType = resourceType;
@@ -47,6 +65,10 @@ public class Resource {
     return accountId;
   }
 
+  public CloudAccount getAccount() {
+    return account;
+  }
+
   public String getResourceType() {
     return resourceType;
   }
@@ -55,12 +77,8 @@ public class Resource {
     this.resourceType = resourceType;
   }
 
-  public String getTags() {
+  public Map<String, Object> getTags() {
     return tags;
-  }
-
-  public void setTags(String tags) {
-    this.tags = tags;
   }
 
   public OffsetDateTime getCreatedAt() {

@@ -135,6 +135,7 @@ BEGIN
     -- Build the metrics table
     EXECUTE format($sql$
         CREATE TABLE %I.normalized_metrics (
+            metric_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
             resource_id uuid REFERENCES %I.resource(resource_id) ON DELETE CASCADE,
             recorded_at timestamptz NOT NULL,
             metric_type public.metric_type_enum NOT NULL,
