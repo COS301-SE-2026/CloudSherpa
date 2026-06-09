@@ -1,16 +1,171 @@
 'use client';
+
+import React, { useState } from 'react';
 import { Button } from '@/components/atoms/button';
-import React from 'react';
+import { Checkbox } from '@/components/atoms/checkbox';
+import { Badge } from '@/components/atoms/badge';
+import { ResourceDetail } from '@/lib/fetch/cloud-resource-api';
+
 interface PropsForStepThree {
-  selectedServices: string[];
+  resources: ResourceDetail[];
   onComplete: (selectedInstances: string[]) => void;
   onBack: () => void;
 }
 
-export default function StepThree({ selectedServices, onComplete, onBack }: Readonly<PropsForStepThree>) {
-  const handleSubmit = (forHandlingSubmit: React.SubmitEvent<HTMLFormElement>) => {
-    forHandlingSubmit.preventDefault();
-    onComplete([]);
+interface ResourceTagsProps {
+  tags: Record<string, string>;
+}
+
+interface ResourceRowProps {
+  resource: ResourceDetail;
+  selected: boolean;
+  onToggle: (resourceId: string, checked: boolean) => void;
+}
+
+interface ResourceCategoryProps {
+  serviceCategory: string;
+  resources: ResourceDetail[];
+  selectedResources: string[];
+  onToggle: (resourceId: string, checked: boolean) => void;
+}
+
+function groupResourcesByCategory(
+  resources: ResourceDetail[]
+): Record<string, ResourceDetail[]> {
+  return resources.reduce(
+    (groups, resource) => {
+      const category = resource.serviceCategory;
+
+      if (!groups[category]) {
+        groups[category] = [];
+      }
+
+      groups[category].push(resource);
+
+      return groups;
+    },
+    {} as Record<string, ResourceDetail[]>
+  );
+}
+
+function ResourceTags({ tags }: Readonly<ResourceTagsProps>) {
+  return (
+    <div className="flex flex-wrap justify-end gap-2 max-w-md">
+      {Object.entries(tags).map(([key, value]) => (
+        <Badge
+          key={`${key}-${value}`}
+          variant="secondary"
+        >
+          {key}: {value}
+        </Badge>
+      ))}
+    </div>
+  );
+}
+
+function ResourceRow({
+  resource,
+  selected,
+  onToggle,
+}: Readonly<ResourceRowProps>) {
+  return (
+    <div
+      className="
+        flex
+        items-start
+        justify-between
+        gap-4
+        p-4
+        bg-background
+        rounded-lg
+        border
+        border-border
+        hover:border-primary/40
+        transition-all
+        cursor-pointer
+      "
+    >
+      <div className="flex items-start gap-3">
+        <Checkbox
+          checked={selected}
+          onCheckedChange={checked =>
+            onToggle(resource.resourceId, Boolean(checked))
+          }
+        />
+
+        <div>
+          <div className="font-medium text-foreground">
+            {resource.name}
+
+            <span className="ml-2 text-muted-foreground">
+              ({resource.resourceId})
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <ResourceTags tags={resource.tags} />
+    </div>
+  );
+}
+
+function ResourceCategory({
+  serviceCategory,
+  resources,
+  selectedResources,
+  onToggle,
+}: Readonly<ResourceCategoryProps>) {
+  return (
+    <div>
+      <h3 className="text-lg font-semibold text-foreground mb-4">
+        {serviceCategory}
+      </h3>
+
+      <div className="space-y-3">
+        {resources.map(resource => (
+          <ResourceRow
+            key={resource.resourceId}
+            resource={resource}
+            selected={selectedResources.includes(resource.resourceId)}
+            onToggle={onToggle}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default function StepThree({
+  resources,
+  onComplete,
+  onBack,
+}: Readonly<PropsForStepThree>) {
+  const [selectedResources, setSelectedResources] = useState<string[]>(
+    resources.map(resource => resource.resourceId)
+  );
+
+  const groupedResources = groupResourcesByCategory(resources);
+
+  const handleSubmit = (
+    event: React.FormEvent<HTMLFormElement>
+  ) => {
+    event.preventDefault();
+    onComplete(selectedResources);
+  };
+
+  const handleResourceToggle = (
+    resourceId: string,
+    checked: boolean
+  ) => {
+    setSelectedResources(previous => {
+      if (checked) {
+        return previous.includes(resourceId)
+          ? previous
+          : [...previous, resourceId];
+      }
+
+      return previous.filter(id => id !== resourceId);
+    });
   };
 
   return (
@@ -19,6 +174,7 @@ export default function StepThree({ selectedServices, onComplete, onBack }: Read
         <div className="pb-6">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-2 h-2 rounded-full bg-primary" />
+
             <span className="text-sm font-medium text-muted-foreground/70">
               STEP 3 OF 3
             </span>
@@ -33,9 +189,24 @@ export default function StepThree({ selectedServices, onComplete, onBack }: Read
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-8"
+        >
           <div className="min-h-[200px]">
-            {/*the instances will be populated once they are fetched hence step 3 will be blank for nwo*/}
+            <div className="space-y-8">
+              {Object.entries(groupedResources).map(
+                ([serviceCategory, categoryResources]) => (
+                  <ResourceCategory
+                    key={serviceCategory}
+                    serviceCategory={serviceCategory}
+                    resources={categoryResources}
+                    selectedResources={selectedResources}
+                    onToggle={handleResourceToggle}
+                  />
+                )
+              )}
+            </div>
           </div>
 
           <div className="flex justify-between pt-6">

@@ -1,22 +1,68 @@
 package com.cloudsherpa.ingestion.provider.aws;
 
-import com.cloudsherpa.ingestion.connector.*;
-import com.cloudsherpa.ingestion.models.*;
+import com.cloudsherpa.ingestion.connector.AccountScope;
+import com.cloudsherpa.ingestion.connector.BillingCapable;
+import com.cloudsherpa.ingestion.connector.CloudConnector;
+import com.cloudsherpa.ingestion.connector.CloudCredentials;
+import com.cloudsherpa.ingestion.connector.InstanceScope;
+import com.cloudsherpa.ingestion.connector.ServiceScope;
+import com.cloudsherpa.ingestion.connector.UsageCapable;
+import com.cloudsherpa.ingestion.models.BillingRecordModel;
+import com.cloudsherpa.ingestion.models.IngestionRequestEvent;
+import com.cloudsherpa.ingestion.models.ResourceDetail;
+import com.cloudsherpa.ingestion.models.UsageRecordModel;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Random;
+import java.util.SplittableRandom;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
-import software.amazon.awssdk.services.cloudwatch.model.*;
+import software.amazon.awssdk.services.cloudwatch.model.Datapoint;
+import software.amazon.awssdk.services.cloudwatch.model.Dimension;
+import software.amazon.awssdk.services.cloudwatch.model.GetMetricStatisticsRequest;
+import software.amazon.awssdk.services.cloudwatch.model.Statistic;
 import software.amazon.awssdk.services.ec2.Ec2Client;
-import software.amazon.awssdk.services.ec2.model.DescribeInstancesRequest;
 import software.amazon.awssdk.services.ec2.model.DescribeInstancesResponse;
+import software.amazon.awssdk.services.ec2.model.Instance;
 import software.amazon.awssdk.services.ec2.model.Reservation;
+import software.amazon.awssdk.services.ec2.model.Tag;
+import software.amazon.awssdk.services.ecs.EcsClient;
+import software.amazon.awssdk.services.ecs.model.ClusterField;
+import software.amazon.awssdk.services.ecs.model.DescribeClustersResponse;
+import software.amazon.awssdk.services.eks.EksClient;
+import software.amazon.awssdk.services.eks.model.Cluster;
+import software.amazon.awssdk.services.elasticache.ElastiCacheClient;
+import software.amazon.awssdk.services.elasticache.model.CacheCluster;
+import software.amazon.awssdk.services.elasticache.model.DescribeCacheClustersResponse;
+import software.amazon.awssdk.services.lambda.LambdaClient;
+import software.amazon.awssdk.services.lambda.model.FunctionConfiguration;
+import software.amazon.awssdk.services.lambda.model.ListFunctionsResponse;
+import software.amazon.awssdk.services.opensearch.OpenSearchClient;
+import software.amazon.awssdk.services.opensearch.model.DescribeDomainRequest;
+import software.amazon.awssdk.services.opensearch.model.DescribeDomainResponse;
+import software.amazon.awssdk.services.opensearch.model.DomainInfo;
+import software.amazon.awssdk.services.opensearch.model.DomainStatus;
+import software.amazon.awssdk.services.opensearch.model.ListDomainNamesRequest;
+import software.amazon.awssdk.services.opensearch.model.ListDomainNamesResponse;
+import software.amazon.awssdk.services.opensearch.model.ListTagsRequest;
+import software.amazon.awssdk.services.rds.RdsClient;
+import software.amazon.awssdk.services.rds.model.DBInstance;
+import software.amazon.awssdk.services.rds.model.DescribeDbInstancesResponse;
+import software.amazon.awssdk.services.redshift.RedshiftClient;
 
 @Component("aws")
 public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingCapable {
@@ -29,27 +75,253 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
   private static final String BYTES = "Bytes";
   private static final String PERCENT = "Percent";
 
-  private CloudWatchClient defaultClient =
+  private static final Logger log = LoggerFactory.getLogger(AwsCloudConnector.class);
+
+  private final CloudWatchClient defaultClient =
       CloudWatchClient.builder()
           .credentialsProvider(DefaultCredentialsProvider.create())
           .region(Region.EU_NORTH_1)
           .build();
 
-  public List<String> getAllEc2InstanceIds(Ec2Client ec2) {
-    List<String> instanceIds = new ArrayList<>();
+  public List<ResourceDetail> getAllEc2Instances(CloudCredentials credentials) {
 
-    DescribeInstancesRequest request = DescribeInstancesRequest.builder().build();
+    List<ResourceDetail> resources = new ArrayList<>();
 
-    for (DescribeInstancesResponse page : ec2.describeInstancesPaginator(request)) {
-      for (Reservation reservation : page.reservations()) {
-        for (software.amazon.awssdk.services.ec2.model.Instance instance :
-            reservation.instances()) {
-          instanceIds.add(instance.instanceId());
+    try (Ec2Client ec2 =
+        Ec2Client.builder()
+            .region(AwsClientFactory.region(credentials))
+            .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
+            .build()) {
+
+      DescribeInstancesResponse response = ec2.describeInstances();
+
+      for (Reservation reservation : response.reservations()) {
+        for (Instance instance : reservation.instances()) {
+
+          Map<String, String> tags =
+              instance.tags().stream().collect(Collectors.toMap(Tag::key, Tag::value, (a, b) -> b));
+          String instanceName = ResourceDetail.resolveName(instance.instanceId(), null, tags);
+          resources.add(
+              new ResourceDetail(instance.instanceId(), instanceName, "InstanceId", "EC2", tags));
         }
       }
     }
 
-    return instanceIds;
+    return resources;
+  }
+
+  public List<ResourceDetail> getAllEcsClusters(CloudCredentials credentials) {
+
+    try (EcsClient ecs =
+        EcsClient.builder()
+            .region(AwsClientFactory.region(credentials))
+            .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
+            .build()) {
+
+      List<String> clusterArns = ecs.listClusters().clusterArns();
+
+      DescribeClustersResponse response =
+          ecs.describeClusters(r -> r.clusters(clusterArns).include(ClusterField.TAGS));
+
+      return response.clusters().stream()
+          .map(
+              cluster -> {
+                Map<String, String> tags =
+                    cluster.tags().stream()
+                        .collect(
+                            Collectors.toMap(
+                                software.amazon.awssdk.services.ecs.model.Tag::key,
+                                software.amazon.awssdk.services.ecs.model.Tag::value,
+                                (a, b) -> b));
+                String name =
+                    ResourceDetail.resolveName(cluster.clusterName(), cluster.clusterName(), tags);
+                return new ResourceDetail(cluster.clusterArn(), name, "ClusterName", "ECS", tags);
+              })
+          .toList();
+    }
+  }
+
+  public List<ResourceDetail> getAllEksClusters(CloudCredentials credentials) {
+
+    List<ResourceDetail> resources = new ArrayList<>();
+
+    try (EksClient eks =
+        EksClient.builder()
+            .region(AwsClientFactory.region(credentials))
+            .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
+            .build()) {
+
+      for (String clusterName : eks.listClusters().clusters()) {
+
+        Cluster cluster = eks.describeCluster(r -> r.name(clusterName)).cluster();
+        String name = ResourceDetail.resolveName(clusterName, cluster.name(), cluster.tags());
+        resources.add(new ResourceDetail(clusterName, name, "ClusterName", "EKS", cluster.tags()));
+      }
+    }
+
+    return resources;
+  }
+
+  public List<ResourceDetail> getAllLambdaFunctions(CloudCredentials credentials) {
+
+    List<ResourceDetail> resources = new ArrayList<>();
+
+    try (LambdaClient lambda =
+        LambdaClient.builder()
+            .region(AwsClientFactory.region(credentials))
+            .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
+            .build()) {
+
+      ListFunctionsResponse response = lambda.listFunctions();
+
+      for (FunctionConfiguration fn : response.functions()) {
+
+        Map<String, String> tags = lambda.listTags(r -> r.resource(fn.functionArn())).tags();
+        String name = ResourceDetail.resolveName(fn.functionName(), fn.functionName(), tags);
+        resources.add(new ResourceDetail(fn.functionName(), name, "FunctionName", "LAMBDA", tags));
+      }
+    }
+
+    return resources;
+  }
+
+  public List<ResourceDetail> getAllRdsInstances(CloudCredentials credentials) {
+
+    List<ResourceDetail> resources = new ArrayList<>();
+
+    try (RdsClient rds =
+        RdsClient.builder()
+            .region(AwsClientFactory.region(credentials))
+            .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
+            .build()) {
+
+      DescribeDbInstancesResponse response = rds.describeDBInstances();
+
+      for (DBInstance db : response.dbInstances()) {
+
+        Map<String, String> tags =
+            rds.listTagsForResource(r -> r.resourceName(db.dbInstanceArn())).tagList().stream()
+                .collect(
+                    Collectors.toMap(
+                        software.amazon.awssdk.services.rds.model.Tag::key,
+                        software.amazon.awssdk.services.rds.model.Tag::value,
+                        (a, b) -> b));
+        String name =
+            ResourceDetail.resolveName(db.dbInstanceIdentifier(), db.dbInstanceIdentifier(), tags);
+        resources.add(
+            new ResourceDetail(
+                db.dbInstanceIdentifier(), name, "DBInstanceIdentifier", "RDS", tags));
+      }
+    }
+
+    return resources;
+  }
+
+  public List<ResourceDetail> getAllElastiCacheClusters(CloudCredentials credentials) {
+
+    List<ResourceDetail> resources = new ArrayList<>();
+
+    try (ElastiCacheClient client =
+        ElastiCacheClient.builder()
+            .region(AwsClientFactory.region(credentials))
+            .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
+            .build()) {
+
+      DescribeCacheClustersResponse response = client.describeCacheClusters();
+
+      for (CacheCluster cluster : response.cacheClusters()) {
+
+        Map<String, String> tags = Collections.emptyMap();
+
+        if (cluster.arn() != null) {
+          tags =
+              client.listTagsForResource(r -> r.resourceName(cluster.arn())).tagList().stream()
+                  .collect(
+                      Collectors.toMap(
+                          software.amazon.awssdk.services.elasticache.model.Tag::key,
+                          software.amazon.awssdk.services.elasticache.model.Tag::value,
+                          (a, b) -> b));
+        }
+        String name =
+            ResourceDetail.resolveName(cluster.cacheClusterId(), cluster.cacheClusterId(), tags);
+        resources.add(
+            new ResourceDetail(
+                cluster.cacheClusterId(), name, "CacheClusterId", "ELASTICACHE", tags));
+      }
+    }
+
+    return resources;
+  }
+
+  public List<ResourceDetail> getAllOpenSearchDomains(CloudCredentials credentials) {
+
+    List<ResourceDetail> resources = new ArrayList<>();
+
+    try (OpenSearchClient client =
+        OpenSearchClient.builder()
+            .region(AwsClientFactory.region(credentials))
+            .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
+            .build()) {
+
+      ListDomainNamesResponse response =
+          client.listDomainNames(ListDomainNamesRequest.builder().build());
+
+      for (DomainInfo domainInfo : response.domainNames()) {
+
+        DescribeDomainResponse domainResponse =
+            client.describeDomain(
+                DescribeDomainRequest.builder().domainName(domainInfo.domainName()).build());
+
+        DomainStatus domain = domainResponse.domainStatus();
+
+        Map<String, String> tags =
+            client.listTags(ListTagsRequest.builder().arn(domain.arn()).build()).tagList().stream()
+                .collect(
+                    Collectors.toMap(
+                        software.amazon.awssdk.services.opensearch.model.Tag::key,
+                        software.amazon.awssdk.services.opensearch.model.Tag::value,
+                        (a, b) -> b));
+        String name = ResourceDetail.resolveName(domain.domainName(), domain.domainName(), tags);
+        resources.add(
+            new ResourceDetail(domain.domainName(), name, "DomainName", "OPENSEARCH", tags));
+      }
+    }
+
+    return resources;
+  }
+
+  public List<ResourceDetail> getAllRedshiftClusters(CloudCredentials credentials) {
+
+    List<ResourceDetail> resources = new ArrayList<>();
+
+    try (RedshiftClient client =
+        RedshiftClient.builder()
+            .region(AwsClientFactory.region(credentials))
+            .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
+            .build()) {
+
+      software.amazon.awssdk.services.redshift.model.DescribeClustersResponse response =
+          client.describeClusters();
+
+      for (software.amazon.awssdk.services.redshift.model.Cluster cluster : response.clusters()) {
+
+        Map<String, String> tags =
+            cluster.tags().stream()
+                .collect(
+                    Collectors.toMap(
+                        software.amazon.awssdk.services.redshift.model.Tag::key,
+                        software.amazon.awssdk.services.redshift.model.Tag::value,
+                        (a, b) -> b));
+        String name =
+            ResourceDetail.resolveName(
+                cluster.clusterIdentifier(), cluster.clusterIdentifier(), tags);
+        resources.add(
+            new ResourceDetail(
+                cluster.clusterIdentifier(), name, "ClusterIdentifier", "REDSHIFT", tags));
+      }
+    }
+
+    return resources;
   }
 
   @Override
@@ -74,7 +346,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
       client =
           CloudWatchClient.builder()
               .credentialsProvider(StaticCredentialsProvider.create(credentials))
-              .region(Region.of(request.getCredentials().getRegion()))
+              .region(Region.of(request.getCredentials().getAwsRegion()))
               .build();
     }
 
@@ -132,6 +404,76 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
   }
 
   @Override
+  public List<String> getAllOfferedServices() {
+    List<String> services = new ArrayList<>();
+    services.add("EC2");
+    services.add("ECS");
+    services.add("EKS");
+    services.add("Lambda");
+    services.add("RDS");
+    services.add("ElastiCache");
+    services.add("OpenSearch");
+    services.add("RedShift");
+
+    return services;
+  }
+
+  @Override
+  public List<ResourceDetail> getAllResources(CloudCredentials credentials) {
+    List<ResourceDetail> resources = new ArrayList<>();
+
+    try {
+      resources.addAll(getAllEc2Instances(credentials));
+    } catch (Exception e) {
+      log.warn("Failed to discover EC2 resources", e);
+    }
+
+    try {
+      resources.addAll(getAllEcsClusters(credentials));
+    } catch (Exception e) {
+      log.warn("Failed to discover ECS resources", e);
+    }
+
+    try {
+      resources.addAll(getAllEksClusters(credentials));
+    } catch (Exception e) {
+      log.warn("Failed to discover EKS resources", e);
+    }
+
+    try {
+      resources.addAll(getAllElastiCacheClusters(credentials));
+    } catch (Exception e) {
+      log.warn("Failed to discover ElastiCache resources", e);
+    }
+
+    try {
+      resources.addAll(getAllLambdaFunctions(credentials));
+    } catch (Exception e) {
+      log.warn("Failed to discover Lambda resources", e);
+    }
+
+    try {
+      resources.addAll(getAllOpenSearchDomains(credentials));
+    } catch (Exception e) {
+      log.warn("Failed to discover OpenSearch resources", e);
+    }
+
+    try {
+      resources.addAll(getAllRdsInstances(credentials));
+    } catch (Exception e) {
+      log.warn("Failed to discover RDS resources", e);
+    }
+
+    try {
+      resources.addAll(getAllRedshiftClusters(credentials));
+    } catch (Exception e) {
+      log.warn("Failed to discover Redshift resources", e);
+    }
+
+    return resources;
+  }
+
+  @Override
   public List<BillingRecordModel> fetchMockBilling(
       AccountScope accountScope, IngestionRequestEvent request) {
     return List.of();
@@ -139,8 +481,19 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
 
   @Override
   public boolean testConnection(CloudCredentials credentials) {
+    CloudWatchClient client = defaultClient;
+    if (credentials != null) {
+      AwsBasicCredentials awsCredentials =
+          AwsBasicCredentials.create(credentials.getAccessKey(), credentials.getSecretKey());
+      client =
+          CloudWatchClient.builder()
+              .credentialsProvider(StaticCredentialsProvider.create(awsCredentials))
+              .region(Region.of(credentials.getAwsRegion()))
+              .build();
+    }
+
     try {
-      defaultClient.listMetrics();
+      client.listMetrics();
       return true;
     } catch (Exception e) {
       return false;
