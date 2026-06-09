@@ -1,4 +1,5 @@
 'use client';
+
 import React, { useState } from 'react';
 import { Button } from '@/components/atoms/button';
 import { Checkbox } from '@/components/atoms/checkbox';
@@ -11,17 +12,27 @@ interface PropsForStepThree {
   onBack: () => void;
 }
 
-export default function StepThree({ resources, onComplete, onBack }: Readonly<PropsForStepThree>) {
-  const handleSubmit = (forHandlingSubmit: React.SubmitEvent<HTMLFormElement>) => {
-    forHandlingSubmit.preventDefault();
-    onComplete(selectedResources);
-  };
+interface ResourceTagsProps {
+  tags: Record<string, string>;
+}
 
-  const [selectedResources, setSelectedResources] = useState<string[]>(
-    resources.map(resource => resource.resourceId)
-  );
+interface ResourceRowProps {
+  resource: ResourceDetail;
+  selected: boolean;
+  onToggle: (resourceId: string, checked: boolean) => void;
+}
 
-  const groupedResources = resources.reduce(
+interface ResourceCategoryProps {
+  serviceCategory: string;
+  resources: ResourceDetail[];
+  selectedResources: string[];
+  onToggle: (resourceId: string, checked: boolean) => void;
+}
+
+function groupResourcesByCategory(
+  resources: ResourceDetail[]
+): Record<string, ResourceDetail[]> {
+  return resources.reduce(
     (groups, resource) => {
       const category = resource.serviceCategory;
 
@@ -35,6 +46,127 @@ export default function StepThree({ resources, onComplete, onBack }: Readonly<Pr
     },
     {} as Record<string, ResourceDetail[]>
   );
+}
+
+function ResourceTags({ tags }: Readonly<ResourceTagsProps>) {
+  return (
+    <div className="flex flex-wrap justify-end gap-2 max-w-md">
+      {Object.entries(tags).map(([key, value]) => (
+        <Badge
+          key={`${key}-${value}`}
+          variant="secondary"
+        >
+          {key}: {value}
+        </Badge>
+      ))}
+    </div>
+  );
+}
+
+function ResourceRow({
+  resource,
+  selected,
+  onToggle,
+}: Readonly<ResourceRowProps>) {
+  return (
+    <div
+      className="
+        flex
+        items-start
+        justify-between
+        gap-4
+        p-4
+        bg-background
+        rounded-lg
+        border
+        border-border
+        hover:border-primary/40
+        transition-all
+        cursor-pointer
+      "
+    >
+      <div className="flex items-start gap-3">
+        <Checkbox
+          checked={selected}
+          onCheckedChange={checked =>
+            onToggle(resource.resourceId, Boolean(checked))
+          }
+        />
+
+        <div>
+          <div className="font-medium text-foreground">
+            {resource.name}
+
+            <span className="ml-2 text-muted-foreground">
+              ({resource.resourceId})
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <ResourceTags tags={resource.tags} />
+    </div>
+  );
+}
+
+function ResourceCategory({
+  serviceCategory,
+  resources,
+  selectedResources,
+  onToggle,
+}: Readonly<ResourceCategoryProps>) {
+  return (
+    <div>
+      <h3 className="text-lg font-semibold text-foreground mb-4">
+        {serviceCategory}
+      </h3>
+
+      <div className="space-y-3">
+        {resources.map(resource => (
+          <ResourceRow
+            key={resource.resourceId}
+            resource={resource}
+            selected={selectedResources.includes(resource.resourceId)}
+            onToggle={onToggle}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default function StepThree({
+  resources,
+  onComplete,
+  onBack,
+}: Readonly<PropsForStepThree>) {
+  const [selectedResources, setSelectedResources] = useState<string[]>(
+    resources.map(resource => resource.resourceId)
+  );
+
+  const groupedResources = groupResourcesByCategory(resources);
+
+  const handleSubmit = (
+    event: React.FormEvent<HTMLFormElement>
+  ) => {
+    event.preventDefault();
+    onComplete(selectedResources);
+  };
+
+  const handleResourceToggle = (
+    resourceId: string,
+    checked: boolean
+  ) => {
+    setSelectedResources(previous => {
+      if (checked) {
+        return previous.includes(resourceId)
+          ? previous
+          : [...previous, resourceId];
+      }
+
+      return previous.filter(id => id !== resourceId);
+    });
+  };
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-8">
@@ -42,6 +174,7 @@ export default function StepThree({ resources, onComplete, onBack }: Readonly<Pr
         <div className="pb-6">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-2 h-2 rounded-full bg-primary" />
+
             <span className="text-sm font-medium text-muted-foreground/70">
               STEP 3 OF 3
             </span>
@@ -56,76 +189,21 @@ export default function StepThree({ resources, onComplete, onBack }: Readonly<Pr
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-8"
+        >
           <div className="min-h-[200px]">
             <div className="space-y-8">
               {Object.entries(groupedResources).map(
                 ([serviceCategory, categoryResources]) => (
-                  <div key={serviceCategory}>
-                    <h3 className="text-lg font-semibold text-foreground mb-4">
-                      {serviceCategory}
-                    </h3>
-
-                    <div className="space-y-3">
-                      {categoryResources.map(resource => (
-                        <div
-                          key={resource.resourceId}
-                          className="
-                flex
-                items-start
-                justify-between
-                gap-4
-                p-4
-                bg-background
-                rounded-lg
-                border
-                border-border
-                hover:border-primary/40
-                transition-all
-                cursor-pointer
-              "
-                        >
-                          <div className="flex items-start gap-3">
-                            <Checkbox
-                              checked={selectedResources.includes(resource.resourceId)}
-                              onCheckedChange={(checked) => {
-                                setSelectedResources(prev => {
-                                  if (checked) {
-                                    return prev.includes(resource.resourceId)
-                                      ? prev
-                                      : [...prev, resource.resourceId];
-                                  }
-                                  return prev.filter(id => id !== resource.resourceId);
-                                });
-                              }}
-                            />
-                            <div>
-                              <div className="font-medium text-foreground">
-                                {resource.name}
-
-                                <span className="ml-2 text-muted-foreground">
-                                  ({resource.resourceId})
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="flex flex-wrap justify-end gap-2 max-w-md">
-                            {Object.entries(
-                              resource.tags
-                            ).map(([key, value]) => (
-                              <Badge
-                                key={`${key}-${value}`}
-                                variant="secondary"
-                              >
-                                {key}: {value}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  <ResourceCategory
+                    key={serviceCategory}
+                    serviceCategory={serviceCategory}
+                    resources={categoryResources}
+                    selectedResources={selectedResources}
+                    onToggle={handleResourceToggle}
+                  />
                 )
               )}
             </div>
