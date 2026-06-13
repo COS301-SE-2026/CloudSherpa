@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.cloudsherpa.ingestion.connector.CloudConnectorFactory;
+import com.cloudsherpa.ingestion.controller.CloudUsageController;
 import com.cloudsherpa.ingestion.models.UsageRecordModel;
 import com.cloudsherpa.ingestion.normalization.persistence.service.SherpaDbPersistenceService;
 import com.cloudsherpa.ingestion.provider.aws.AwsCloudConnector;
@@ -23,11 +24,10 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest
+@WebMvcTest(CloudUsageController.class)
 @Import(CloudUsageService.class)
 @AutoConfigureMockMvc(addFilters = false)
-class CloudUsageControllerServiceIntegrationTest {
-
+class CloudUsageControllerIntegrationTest {
   @Autowired private MockMvc mockMvc;
 
   @MockitoBean private CloudConnectorFactory connectorFactory;
