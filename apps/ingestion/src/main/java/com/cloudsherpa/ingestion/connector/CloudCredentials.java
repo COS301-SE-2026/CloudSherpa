@@ -14,6 +14,7 @@ public class CloudCredentials {
 
   // GCP
   private String projectId;
+  private String serviceAccountJson;
 
   public String getAccessKey() {
     return accessKey;
@@ -69,5 +70,13 @@ public class CloudCredentials {
 
   public void setProjectId(String projectId) {
     this.projectId = projectId;
+  }
+
+  public String getServiceAccountJson() {
+    return serviceAccountJson;
+  }
+
+  public void getServiceAccountJson(String serviceAccountJson) {
+    this.serviceAccountJson = serviceAccountJson;
   }
 }
