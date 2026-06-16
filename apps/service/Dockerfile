@@ -2,10 +2,12 @@
 FROM eclipse-temurin:21-jdk AS base
 WORKDIR /app
 
-COPY mvnw .
-COPY .mvn .mvn
-COPY pom.xml .
+COPY apps/service/mvnw .
+COPY apps/service/.mvn .mvn
+COPY apps/service/pom.xml .
+COPY apps/lib apps/lib
 RUN chmod +x mvnw
+RUN ./mvnw -f apps/lib/pom.xml clean install -DskipTests
 RUN ./mvnw dependency:go-offline
 
 # ==== Dev ====
@@ -20,8 +22,8 @@ ENTRYPOINT ["./mvnw", "spring-boot:run"]
 # ==== Build ====
 FROM base AS build
 
-COPY src src
-COPY config/checkstyle/checkstyle.xml config/checkstyle/checkstyle.xml
+COPY apps/ingestion/src src
+COPY apps/ingestion/config/checkstyle/checkstyle.xml config/checkstyle/checkstyle.xml
 
 RUN ./mvnw clean package -DskipTests
 
