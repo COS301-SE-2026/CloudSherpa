@@ -39,6 +39,9 @@ public class Resource {
   @Column(name = "tags", columnDefinition = "jsonb")
   private Map<String, Object> tags;
 
+  @Column(name = "last_updated")
+  private OffsetDateTime lastUpdated;
+
   @Column(name = "created_at")
   private OffsetDateTime createdAt;
 
@@ -48,12 +51,18 @@ public class Resource {
       UUID id,
       UUID accountId,
       String resourceType,
+      String resourceName,
+      String status,
       Map<String, Object> tags,
+      OffsetDateTime lastUpdated,
       OffsetDateTime createdAt) {
     this.id = id;
     this.accountId = accountId;
     this.resourceType = resourceType;
+    this.resourceName = resourceName;
+    this.status = status;
     this.tags = tags;
+    this.lastUpdated = lastUpdated;
     this.createdAt = createdAt;
   }
 
@@ -73,12 +82,12 @@ public class Resource {
     return resourceType;
   }
 
-  public void setResourceType(String resourceType) {
-    this.resourceType = resourceType;
-  }
-
   public Map<String, Object> getTags() {
     return tags;
+  }
+
+  public OffsetDateTime getLastUpdated() {
+    return lastUpdated;
   }
 
   public OffsetDateTime getCreatedAt() {

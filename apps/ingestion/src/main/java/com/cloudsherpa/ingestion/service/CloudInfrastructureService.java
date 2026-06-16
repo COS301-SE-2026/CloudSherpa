@@ -77,7 +77,7 @@ public class CloudInfrastructureService {
 
     CloudAccount newAccount =
         new CloudAccount(
-            accountUuid, connectionId, "aws_account", cloudAccountId, OffsetDateTime.now());
+            accountUuid, connectionId, "aws_account", cloudAccountId, null, OffsetDateTime.now());
 
     return accountRepo.save(newAccount);
   }
@@ -97,7 +97,10 @@ public class CloudInfrastructureService {
             resourceUuid,
             accountId,
             resourceType,
-            null, // will need to be populated later
+            cloudResourceId,
+            "active",
+            null,
+            OffsetDateTime.now(),
             OffsetDateTime.now());
     return resourceRepo.save(newResource);
   }

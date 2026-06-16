@@ -33,7 +33,6 @@ public class SherpaDbPersistenceService {
   public void recordMetric(NormalizedMetric metric, UsageRecordModel r, UUID userId) {
 
     Resource resource = infrastructureService.ensureInfrastructure(r, userId);
-    UUID accountId = resource.getAccountId();
     UUID resourceUuid = resource.getId();
 
     OffsetDateTime periodStart = null;
@@ -52,9 +51,8 @@ public class SherpaDbPersistenceService {
     // Create the new entity representing the row in the normalized_metrics table.
     NormalizedMetrics newMetric =
         new NormalizedMetrics.Builder()
-            .accountId(accountId)
-            .recordedAt(OffsetDateTime.now())
             .resourceId(resourceUuid)
+            .recordedAt(OffsetDateTime.now())
             .metricType(metric.getMetricType())
             .metricName(metric.getMetricName())
             .metricValue(BigDecimal.valueOf(metric.getMetricValue()))

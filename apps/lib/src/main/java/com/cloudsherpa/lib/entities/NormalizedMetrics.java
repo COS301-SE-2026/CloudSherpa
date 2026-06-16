@@ -5,6 +5,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -18,13 +20,14 @@ public class NormalizedMetrics {
   @Column(name = "metric_id", nullable = false, updatable = false)
   private UUID metricId;
 
-  @Column(name = "account_id", nullable = false)
-  private UUID accountId;
-
-  @Column(name = "resource_id", nullable = false, length = 255)
+  @Column(name = "resource_id", nullable = false)
   private UUID resourceId;
 
-  @Column(name = "recorded_at", updatable = false)
+  @ManyToOne
+  @JoinColumn(name = "resource_id", nullable = false, insertable = false, updatable = false)
+  private Resource resource;
+
+  @Column(name = "recorded_at", updatable = false, nullable = false)
   private OffsetDateTime recordedAt;
 
   @Column(name = "metric_type", length = 50)
@@ -53,7 +56,6 @@ public class NormalizedMetrics {
   }
 
   private NormalizedMetrics(Builder builder) {
-    this.accountId = builder.accountId;
     this.resourceId = builder.resourceId;
     this.recordedAt = builder.recordedAt;
     this.metricType = builder.metricType;
@@ -67,10 +69,6 @@ public class NormalizedMetrics {
 
   public UUID getMetricId() {
     return metricId;
-  }
-
-  public UUID getAccountId() {
-    return accountId;
   }
 
   public UUID getResourceId() {
@@ -110,7 +108,6 @@ public class NormalizedMetrics {
   }
 
   public static class Builder {
-    private UUID accountId;
     private UUID resourceId;
     private OffsetDateTime recordedAt;
     private String metricType;
@@ -120,11 +117,6 @@ public class NormalizedMetrics {
     private String currency;
     private OffsetDateTime periodStart;
     private OffsetDateTime periodEnd;
-
-    public Builder accountId(UUID accountId) {
-      this.accountId = accountId;
-      return this;
-    }
 
     public Builder resourceId(UUID resourceId) {
       this.resourceId = resourceId;
