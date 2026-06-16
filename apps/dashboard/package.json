@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "style-dictionary next  build",
+    "build": "style-dictionary build --config style_dictionary/sd.config.mjs && next build",
     "start": "next start -p 3000",
     "lint": "eslint",
     "test": "vitest run",
