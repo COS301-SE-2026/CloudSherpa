@@ -1,6 +1,6 @@
 package com.cloudsherpa.service.auth.service;
 
-import com.cloudsherpa.service.auth.model.User;
+import com.cloudsherpa.lib.entities.User;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import java.nio.charset.StandardCharsets;

@@ -1,10 +1,13 @@
-package com.cloudsherpa.ingestion.normalization.persistence.repository;
+package com.cloudsherpa.lib.repositories;
 
-import com.cloudsherpa.ingestion.normalization.persistence.entity.CloudAccount;
-import com.cloudsherpa.ingestion.normalization.persistence.entity.Resource;
+import com.cloudsherpa.lib.entities.CloudAccount;
+import com.cloudsherpa.lib.entities.Resource;
+
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
+import com.cloudsherpa.lib.projections.ResourceNames;
+import org.springframework.data.jpa.repository.Query;
 
 public interface ResourceRepository extends JpaRepository<Resource, UUID> {
   // Find all resources for a specific account
@@ -18,4 +21,7 @@ public interface ResourceRepository extends JpaRepository<Resource, UUID> {
 
   // Find by CloudAccount object
   List<Resource> findByAccount(CloudAccount account);
+
+  @Query("select r.id as id, r.resourceType as resourceType from Resource r")
+  List<ResourceNames> findResourceNames();
 }

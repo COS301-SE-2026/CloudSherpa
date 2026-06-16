@@ -9,9 +9,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.cloudsherpa.ingestion.connector.CloudConnectorFactory;
 import com.cloudsherpa.ingestion.models.UsageRecordModel;
-import com.cloudsherpa.ingestion.normalization.persistence.service.SherpaDbPersistenceService;
 import com.cloudsherpa.ingestion.provider.aws.AwsCloudConnector;
 import com.cloudsherpa.ingestion.service.CloudUsageService;
+import com.cloudsherpa.ingestion.service.SherpaDbPersistenceService;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

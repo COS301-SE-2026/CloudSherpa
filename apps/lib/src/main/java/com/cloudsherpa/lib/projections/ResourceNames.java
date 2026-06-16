@@ -1,4 +1,4 @@
-package com.cloudsherpa.service.analytics.projections;
+package com.cloudsherpa.lib.projections;
 
 import java.util.UUID;
 

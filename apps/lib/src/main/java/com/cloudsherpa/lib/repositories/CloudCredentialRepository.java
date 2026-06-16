@@ -1,7 +1,8 @@
-package com.cloudsherpa.ingestion.normalization.persistence.repository;
+package com.cloudsherpa.lib.repositories;
 
-import com.cloudsherpa.ingestion.normalization.persistence.entity.CloudConnection;
-import com.cloudsherpa.ingestion.normalization.persistence.entity.CloudCredential;
+import com.cloudsherpa.lib.entities.CloudConnection;
+import com.cloudsherpa.lib.entities.CloudCredential;
+
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;

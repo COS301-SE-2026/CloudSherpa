@@ -1,4 +1,4 @@
-package com.cloudsherpa.service.auth.model;
+package com.cloudsherpa.lib.entities;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

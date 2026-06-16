@@ -1,12 +1,12 @@
-package com.cloudsherpa.ingestion.normalization.persistence.service;
+package com.cloudsherpa.ingestion.service;
 
 import com.cloudsherpa.ingestion.models.UsageRecordModel;
-import com.cloudsherpa.ingestion.normalization.persistence.entity.CloudAccount;
-import com.cloudsherpa.ingestion.normalization.persistence.entity.CloudConnection;
-import com.cloudsherpa.ingestion.normalization.persistence.entity.Resource;
-import com.cloudsherpa.ingestion.normalization.persistence.repository.CloudAccountRepository;
-import com.cloudsherpa.ingestion.normalization.persistence.repository.CloudConnectionRepository;
-import com.cloudsherpa.ingestion.normalization.persistence.repository.ResourceRepository;
+import com.cloudsherpa.lib.entities.CloudAccount;
+import com.cloudsherpa.lib.entities.CloudConnection;
+import com.cloudsherpa.lib.entities.Resource;
+import com.cloudsherpa.lib.repositories.CloudAccountRepository;
+import com.cloudsherpa.lib.repositories.CloudConnectionRepository;
+import com.cloudsherpa.lib.repositories.ResourceRepository;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;

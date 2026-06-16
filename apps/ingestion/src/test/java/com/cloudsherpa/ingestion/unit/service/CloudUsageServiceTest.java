@@ -6,8 +6,8 @@ import static org.mockito.Mockito.*;
 
 import com.cloudsherpa.ingestion.connector.*;
 import com.cloudsherpa.ingestion.models.*;
-import com.cloudsherpa.ingestion.normalization.persistence.service.SherpaDbPersistenceService;
 import com.cloudsherpa.ingestion.service.CloudUsageService;
+import com.cloudsherpa.ingestion.service.SherpaDbPersistenceService;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;

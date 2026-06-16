@@ -1,4 +1,4 @@
-package com.cloudsherpa.ingestion.normalization.persistence.entity;
+package com.cloudsherpa.lib.entities;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

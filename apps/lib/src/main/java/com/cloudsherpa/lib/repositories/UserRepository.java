@@ -1,6 +1,7 @@
-package com.cloudsherpa.service.auth.repository;
+package com.cloudsherpa.lib.repositories;
 
-import com.cloudsherpa.service.auth.model.User;
+import com.cloudsherpa.lib.entities.User;
+
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 

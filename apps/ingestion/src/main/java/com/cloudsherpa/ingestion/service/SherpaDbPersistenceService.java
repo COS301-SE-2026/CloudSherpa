@@ -1,12 +1,12 @@
 // The service class contains the business logic and uses the repository to perform
 // operations on the database.
-package com.cloudsherpa.ingestion.normalization.persistence.service;
+package com.cloudsherpa.ingestion.service;
 
 import com.cloudsherpa.ingestion.models.UsageRecordModel;
 import com.cloudsherpa.ingestion.normalization.model.NormalizedMetric;
-import com.cloudsherpa.ingestion.normalization.persistence.entity.NormalizedMetrics;
-import com.cloudsherpa.ingestion.normalization.persistence.entity.Resource;
-import com.cloudsherpa.ingestion.normalization.persistence.repository.NormalizedMetricsRepository;
+import com.cloudsherpa.lib.entities.NormalizedMetrics;
+import com.cloudsherpa.lib.entities.Resource;
+import com.cloudsherpa.lib.repositories.NormalizedMetricsRepository;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.OffsetDateTime;
