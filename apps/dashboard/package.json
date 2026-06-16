@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "style-dictionary next  build",
     "start": "next start -p 3000",
     "lint": "eslint",
     "test": "vitest run",
@@ -47,7 +47,7 @@
     "eslint-config-next": "^16.2.4",
     "eslint-config-prettier": "^10.1.8",
     "jsdom": "^29.1.1",
-    "style-dictionary": "^5.4.0",
+    "style-dictionary": "^5.4.4",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vite-tsconfig-paths": "^6.1.1",
