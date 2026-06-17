@@ -1,0 +1,54 @@
+{
+  "theme": {
+    "dark": {
+      "background": { "$type": "color", "$value": "{color.neutral.950}" },
+      "foreground": { "$type": "color", "$value": "{color.neutral.50}" },
+
+      "card": { "$type": "color", "$value": "{color.neutral.900}" },
+      "card-foreground": { "$type": "color", "$value": "{color.neutral.50}" },
+
+      "popover": { "$type": "color", "$value": "{color.neutral.900}" },
+      "popover-foreground": { "$type": "color", "$value": "{color.neutral.50}" },
+
+      "primary": { "$type": "color", "$value": "{color.brand.500}" },
+      "primary-foreground": { "$type": "color", "$value": "{color.brand.50}" },
+
+      "secondary": { "$type": "color", "$value": "{color.secondary.800}" },
+      "secondary-foreground": { "$type": "color", "$value": "{color.secondary.100}" },
+
+      "muted": { "$type": "color", "$value": "{color.neutral.300}" },
+      "muted-foreground": { "$type": "color", "$value": "{color.neutral.300}" },
+
+      "accent": { "$type": "color", "$value": "{color.accent.700}" },
+      "accent-foreground": { "$type": "color", "$value": "{color.accent.50}" },
+
+      "destructive": { "$type": "color", "$value": "{color.error.500}" },
+      "destructive-foreground": { "$type": "color", "$value": "{color.error.50}" },
+
+      "success": { "$type": "color", "$value": "{color.success.500}" },
+      "success-foreground": { "$type": "color", "$value": "{color.success.50}" },
+
+      "warning": { "$type": "color", "$value": "{color.warning.500}" },
+      "warning-foreground": { "$type": "color", "$value": "{color.warning.50}" },
+
+      "border": { "$type": "color", "$value": "{color.neutral.800}" },
+      "input": { "$type": "color", "$value": "{color.neutral.800}" },
+      "ring": { "$type": "color", "$value": "{color.brand.300}" },
+
+      "sidebar": { "$type": "color", "$value": "{color.neutral.900}" },
+      "sidebar-foreground": { "$type": "color", "$value": "{color.neutral.50}" },
+      "sidebar-primary": { "$type": "color", "$value": "{color.brand.500}" },
+      "sidebar-primary-foreground": { "$type": "color", "$value": "{color.brand.50}" },
+      "sidebar-accent": { "$type": "color", "$value": "{color.neutral.800}" },
+      "sidebar-accent-foreground": { "$type": "color", "$value": "{color.neutral.50}" },
+      "sidebar-border": { "$type": "color", "$value": "{color.neutral.800}" },
+      "sidebar-ring": { "$type": "color", "$value": "{color.brand.300}" },
+
+      "chart-1": { "$type": "color", "$value": "{color.chart.teal.dark}" },
+      "chart-2": { "$type": "color", "$value": "{color.chart.amber.dark}" },
+      "chart-3": { "$type": "color", "$value": "{color.chart.violet.dark}" },
+      "chart-4": { "$type": "color", "$value": "{color.chart.rose.dark}" },
+      "chart-5": { "$type": "color", "$value": "{color.chart.sky.dark}" }
+    }
+  }
+}
