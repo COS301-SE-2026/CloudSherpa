@@ -38,7 +38,10 @@ jobs:
 
             - name: Make Maven Wrapper Executable
               run: chmod +x mvnw
-              
+            
+            - name: Install libs
+              run: ./mvnw install -pl apps/lib -DskipTests  
+
             - name: Lint
               run: ./mvnw checkstyle:check -pl apps/ingestion
             
@@ -46,4 +49,4 @@ jobs:
               env:
                 SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
                 SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-              run: ./mvnw -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.qualitygate.wait=true -Dsonar.projectKey=CloudSherpa-ingestion -Dsonar.projectName='CloudSherpa Ingestion' -DskipTests -pl apps/ingestion -amd
+              run: ./mvnw -B -f apps/ingestion/pom.xml verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.qualitygate.wait=true -Dsonar.projectKey=CloudSherpa-ingestion -Dsonar.projectName='CloudSherpa Ingestion'

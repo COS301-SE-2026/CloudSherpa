@@ -17,7 +17,7 @@ services:
     
   service:
     build:
-      context: ..
+      context: ../
       dockerfile: apps/service/Dockerfile
       target: prod
     image: grard835/cloudsherpa-service:prod
