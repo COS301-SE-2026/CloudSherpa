@@ -7,11 +7,12 @@
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>3.5.7</version>
-		<relativePath /> <!-- lookup parent from repository -->
+		<relativePath />
 	</parent>
+
 	<groupId>com.cloudsherpa</groupId>
+  	<version>0.0.1-SNAPSHOT</version>
 	<artifactId>ingestion</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
 	<name>ingestion</name>
 	<description />
 	<url />
@@ -101,7 +102,7 @@
 		<dependency>
 			<groupId>com.cloudsherpa</groupId>
 			<artifactId>lib</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
 

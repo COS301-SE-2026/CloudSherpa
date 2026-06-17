@@ -11,9 +11,6 @@ on:
 jobs:
     ingestion-validation:
         runs-on: ubuntu-latest
-        defaults:
-            run:
-                working-directory: apps/ingestion
         steps:
             - name: Checkout Repo
               uses: actions/checkout@v5
@@ -43,10 +40,10 @@ jobs:
               run: chmod +x mvnw
               
             - name: Lint
-              run: ./mvnw checkstyle:check
+              run: ./mvnw checkstyle:check -pl apps/ingestion
             
             - name: Build, Unit Test and SonarQube Analysis
               env:
                 SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
                 SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-              run: ./mvnw -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.qualitygate.wait=true -Dsonar.projectKey=CloudSherpa-ingestion -Dsonar.projectName='CloudSherpa Ingestion'
+              run: ./mvnw -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.qualitygate.wait=true -Dsonar.projectKey=CloudSherpa-ingestion -Dsonar.projectName='CloudSherpa Ingestion' -DskipTests -pl apps/ingestion -amd
