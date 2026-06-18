@@ -39,8 +39,7 @@ public class GcpCloudConnector implements CloudConnector, UsageCapable, BillingC
   @Override
   public List<UsageRecordModel> fetchUsage(
       AccountScope accountScope, IngestionRequestEvent request) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'fetchUsage'");
+    return metricProvider.collectMetrics(accountScope, request);
   }
 
   @Override

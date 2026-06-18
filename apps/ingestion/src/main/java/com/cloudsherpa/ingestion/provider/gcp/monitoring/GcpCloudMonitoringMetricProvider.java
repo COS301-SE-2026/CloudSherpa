@@ -1,6 +1,7 @@
 package com.cloudsherpa.ingestion.provider.gcp.monitoring;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,53 +40,131 @@ public class GcpCloudMonitoringMetricProvider implements CloudMonitoringMetricPr
     return MetricServiceClient.create(settings);
   }
 
-  private String buildFilter(String resourceType,
-      String serviceType, List<Metric> metricType, String resourceId) {
-    if (metricType.isEmpty()) {
-      throw new IllegalArgumentException("Metric list for a resource may not be empty");
-    }
-    String filter = String.format(
-        "resource.type=\"%s\" "
-            + "AND resource.labels.\"%s\"=\"%s\" AND (",
-        serviceType,
-        resourceType,
-        resourceId);
-    filter.concat(metricType.removeFirst().getName());
-    for (Metric metric : metricType) {
-      filter.concat(String.format(" OR metric.type=\"%s\" ", metric.getName()));
+  private MetricFilter buildFilter(
+      String resourceLabel,
+      String resourceType,
+      List<Metric> metrics,
+      String resourceId) {
+
+    StringBuilder filter = new StringBuilder();
+
+    filter.append("resource.type=\"")
+        .append(resourceType)
+        .append("\" ");
+
+    filter.append("AND resource.labels.\"")
+        .append(resourceLabel)
+        .append("\"=\"")
+        .append(resourceId)
+        .append("\" ");
+
+    filter.append("AND (");
+
+    for (int i = 0; i < metrics.size(); i++) {
+
+      if (i > 0) {
+        filter.append(" OR ");
+      }
+
+      filter.append("metric.type=\"")
+          .append(metrics.get(i).getName())
+          .append("\"");
     }
 
-    return filter;
+    filter.append(")");
+    return new MetricFilter(filter.toString(), metrics);
   }
 
-  private List<String> processServiceScope(ServiceScope scope) {
-    List<String> filters = new ArrayList<>();
+  private List<MetricFilter> processServiceScope(ServiceScope scope) {
+    List<MetricFilter> filters = new ArrayList<>();
     for (InstanceScope instance : scope.getInstances()) {
       filters.addAll(processInstanceScope(scope, instance));
     }
     return filters;
   }
 
-  private List<String> processInstanceScope(ServiceScope scope, InstanceScope instance) {
-    List<String> filters = new ArrayList<>();
+  private List<MetricFilter> processInstanceScope(ServiceScope scope, InstanceScope instance) {
+    List<MetricFilter> filters = new ArrayList<>();
     for (String instanceValue : instance.getValues()) {
-      String filter = buildFilter(instance.getIdentifierName(), scope.getName(), scope.getMetrics(), instanceValue);
+      MetricFilter filter = buildFilter(instance.getIdentifierName(), scope.getName(), scope.getMetrics(),
+          instanceValue);
       filters.add(filter);
     }
     return filters;
   }
 
+  private Double extractValue(
+      Point point) {
+
+    switch (point.getValue().getValueCase()) {
+
+      case DOUBLE_VALUE:
+        return point.getValue()
+            .getDoubleValue();
+
+      case INT64_VALUE:
+        return (double) point.getValue()
+            .getInt64Value();
+
+      case BOOL_VALUE:
+        return point.getValue()
+            .getBoolValue()
+                ? 1D
+                : 0D;
+
+      default:
+        return 0D;
+    }
+  }
+
   private List<UsageRecordModel> processSeries(
-      TimeSeries series) {
-    series.getPoints()
-      throw new UnsupportedOperationException("");
+      TimeSeries series,
+      List<Metric> metrics) {
+
+    String metricType = series.getMetric().getType();
+
+    Metric metric = metrics.stream()
+        .filter(m -> m.getName().equals(metricType))
+        .findFirst()
+        .orElseThrow();
+
+    List<UsageRecordModel> results = new ArrayList<>();
+
+    for (Point point : series.getPointsList()) {
+
+      UsageRecordModel usage = new UsageRecordModel();
+
+      usage.setMetricName(metric.getName());
+
+      usage.setUnit(metric.getUnit());
+
+      usage.setTimestamp(
+          Instant.ofEpochSecond(
+              point.getInterval()
+                  .getEndTime()
+                  .getSeconds()));
+
+      usage.setValue(
+          extractValue(point));
+
+      results.add(usage);
+    }
+
+    return results;
   }
 
   @Override
   public List<UsageRecordModel> collectMetrics(
       AccountScope accountScope, IngestionRequestEvent request) {
-    MetricServiceClient client = buildClient(request.getCredentials());
-    String projectName = request.getCredentials().getProjectId();
+    MetricServiceClient client = null;
+    try {
+      client = buildClient(request.getCredentials());
+    } catch (IOException e) {
+      e.printStackTrace();
+      throw new IllegalArgumentException("Invalid account credentials provided for GCP usage metric ingestion");
+    }
+    String projectName = "projects/" +
+        request.getCredentials().getProjectId();
 
     Aggregation aggregation = Aggregation.newBuilder()
         .setAlignmentPeriod(
@@ -104,7 +183,7 @@ public class GcpCloudMonitoringMetricProvider implements CloudMonitoringMetricPr
             Timestamps.fromMillis(
                 request.getTo().toEpochMilli()))
         .build();
-    List<String> requestFilters = new ArrayList<>();
+    List<MetricFilter> requestFilters = new ArrayList<>();
     for (ServiceScope scope : accountScope.getServiceScopes()) { // we build filters per instanceId and return all of
                                                                  // them
       requestFilters.addAll(processServiceScope(scope));
@@ -112,26 +191,30 @@ public class GcpCloudMonitoringMetricProvider implements CloudMonitoringMetricPr
 
     List<UsageRecordModel> results = new ArrayList<>();
 
-    for (String filter : requestFilters) {
+    for (MetricFilter metricFilter : requestFilters) {
+
       ListTimeSeriesRequest metricRequest = ListTimeSeriesRequest.newBuilder()
           .setName(projectName)
-          .setFilter(filter)
+          .setFilter(metricFilter.filter())
           .setInterval(interval)
           .setAggregation(aggregation)
           .setView(
               ListTimeSeriesRequest.TimeSeriesView.FULL)
           .build();
+
       client.listTimeSeries(metricRequest)
           .iterateAll()
-          .forEach(series -> processSeries(
-              resource,
-              metric,
-              series,
-              results));
+          .forEach(series -> results.addAll(
+              processSeries(
+                  series,
+                  metricFilter.metrics())));
     }
 
     return results;
+  }
 
-    throw new UnsupportedOperationException("Unimplemented method 'collectMetrics'");
+  public record MetricFilter(
+      String filter,
+      List<Metric> metrics) {
   }
 }
