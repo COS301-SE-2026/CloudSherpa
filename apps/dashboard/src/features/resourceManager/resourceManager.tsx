@@ -35,6 +35,32 @@ export default function ResourceManager(){
         setPending({resource, direction : 'disable'});
     };
 
+    const handleConfirm = () => {
+        if(!pending){
+            return;
+        }
+
+        if(pending.direction === 'enable'){
+            setInactive((previous) => previous.filter((resource) => resource.id !== pending.resource.id));
+            setActive((previous) => [...previous, pending.resource]);
+        } else{
+            setActive((previous) => previous.filter((resource) => resource.id !== pending.resource.id));
+            setInactive((previous) => [...previous, pending.resource]);
+        }
+
+        if(selected === pending.resource.id){
+            setSelected(null);
+        }
+
+        setPending(null);
+    };
+
+    const handleCancel =() => {
+        setPending(null);
+    };
+
+    const confirmationText = pending?.direction === 'enable' ? "Are you sure you want resource to be active?" : "Are you sure you want resource to be inactive?";
+
     return(
         <div className = "min-h-screen bg-white flex flex-col items-center justify-center p-8">
 
@@ -115,6 +141,30 @@ export default function ResourceManager(){
                 </div>
 
             </div>
+
+            {/* this is a popup for the users to confirm/cancel their actions */}
+            {pending && (
+                <div className = "fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                    <div className = "bg-white border border-black rounded-lg shadow-xl p-8 w-80 text-center">
+                        <h3 className = "text-lg font-bold text-black mb-3"> Are you sure? </h3>
+                        <p className = "text-sm text-black/70 mb-6 leading-relaxed"> {confirmationText} </p>
+
+                        <div className = "flex gap-3 justify-center">
+                            <button 
+                                onClick = {handleCancel}
+                                className = "px-6 py-2 text-sm font-medium rounded border border-black text-black hover:bg-black/10 transition-colors"> cancel 
+                            </button>
+
+                            <button 
+                                onClick = {handleConfirm}
+                                className = "px-6 py-2 text-sm font-medium rounded bg-black text-white hover:bg-black/80 transition-colors"> confirm 
+                            </button>
+
+                        </div>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 }
