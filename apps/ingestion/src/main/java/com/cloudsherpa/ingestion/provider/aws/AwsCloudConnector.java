@@ -78,27 +78,29 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
 
   private static final Logger log = LoggerFactory.getLogger(AwsCloudConnector.class);
 
-  private final CloudWatchClient defaultClient = CloudWatchClient.builder()
-      .credentialsProvider(DefaultCredentialsProvider.create())
-      .region(Region.EU_NORTH_1)
-      .build();
+  private final CloudWatchClient defaultClient =
+      CloudWatchClient.builder()
+          .credentialsProvider(DefaultCredentialsProvider.create())
+          .region(Region.EU_NORTH_1)
+          .build();
 
   public List<ResourceDetail> getAllEc2Instances(CloudCredentials credentials) {
 
     List<ResourceDetail> resources = new ArrayList<>();
 
-    try (Ec2Client ec2 = Ec2Client.builder()
-        .region(AwsClientFactory.region(credentials))
-        .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
-        .build()) {
+    try (Ec2Client ec2 =
+        Ec2Client.builder()
+            .region(AwsClientFactory.region(credentials))
+            .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
+            .build()) {
 
       DescribeInstancesResponse response = ec2.describeInstances();
 
       for (Reservation reservation : response.reservations()) {
         for (Instance instance : reservation.instances()) {
 
-          Map<String, String> tags = instance.tags().stream()
-              .collect(Collectors.toMap(Tag::key, Tag::value, (a, b) -> b));
+          Map<String, String> tags =
+              instance.tags().stream().collect(Collectors.toMap(Tag::key, Tag::value, (a, b) -> b));
           String instanceName = ResourceDetail.resolveName(instance.instanceId(), null, tags);
           resources.add(
               new ResourceDetail(instance.instanceId(), instanceName, "InstanceId", "EC2", tags));
@@ -111,25 +113,29 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
 
   public List<ResourceDetail> getAllEcsClusters(CloudCredentials credentials) {
 
-    try (EcsClient ecs = EcsClient.builder()
-        .region(AwsClientFactory.region(credentials))
-        .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
-        .build()) {
+    try (EcsClient ecs =
+        EcsClient.builder()
+            .region(AwsClientFactory.region(credentials))
+            .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
+            .build()) {
 
       List<String> clusterArns = ecs.listClusters().clusterArns();
 
-      DescribeClustersResponse response = ecs.describeClusters(r -> r.clusters(clusterArns).include(ClusterField.TAGS));
+      DescribeClustersResponse response =
+          ecs.describeClusters(r -> r.clusters(clusterArns).include(ClusterField.TAGS));
 
       return response.clusters().stream()
           .map(
               cluster -> {
-                Map<String, String> tags = cluster.tags().stream()
-                    .collect(
-                        Collectors.toMap(
-                            software.amazon.awssdk.services.ecs.model.Tag::key,
-                            software.amazon.awssdk.services.ecs.model.Tag::value,
-                            (a, b) -> b));
-                String name = ResourceDetail.resolveName(cluster.clusterName(), cluster.clusterName(), tags);
+                Map<String, String> tags =
+                    cluster.tags().stream()
+                        .collect(
+                            Collectors.toMap(
+                                software.amazon.awssdk.services.ecs.model.Tag::key,
+                                software.amazon.awssdk.services.ecs.model.Tag::value,
+                                (a, b) -> b));
+                String name =
+                    ResourceDetail.resolveName(cluster.clusterName(), cluster.clusterName(), tags);
                 return new ResourceDetail(cluster.clusterArn(), name, "ClusterName", "ECS", tags);
               })
           .toList();
@@ -140,10 +146,11 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
 
     List<ResourceDetail> resources = new ArrayList<>();
 
-    try (EksClient eks = EksClient.builder()
-        .region(AwsClientFactory.region(credentials))
-        .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
-        .build()) {
+    try (EksClient eks =
+        EksClient.builder()
+            .region(AwsClientFactory.region(credentials))
+            .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
+            .build()) {
 
       for (String clusterName : eks.listClusters().clusters()) {
 
@@ -160,10 +167,11 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
 
     List<ResourceDetail> resources = new ArrayList<>();
 
-    try (LambdaClient lambda = LambdaClient.builder()
-        .region(AwsClientFactory.region(credentials))
-        .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
-        .build()) {
+    try (LambdaClient lambda =
+        LambdaClient.builder()
+            .region(AwsClientFactory.region(credentials))
+            .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
+            .build()) {
 
       ListFunctionsResponse response = lambda.listFunctions();
 
@@ -182,22 +190,25 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
 
     List<ResourceDetail> resources = new ArrayList<>();
 
-    try (RdsClient rds = RdsClient.builder()
-        .region(AwsClientFactory.region(credentials))
-        .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
-        .build()) {
+    try (RdsClient rds =
+        RdsClient.builder()
+            .region(AwsClientFactory.region(credentials))
+            .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
+            .build()) {
 
       DescribeDbInstancesResponse response = rds.describeDBInstances();
 
       for (DBInstance db : response.dbInstances()) {
 
-        Map<String, String> tags = rds.listTagsForResource(r -> r.resourceName(db.dbInstanceArn())).tagList().stream()
-            .collect(
-                Collectors.toMap(
-                    software.amazon.awssdk.services.rds.model.Tag::key,
-                    software.amazon.awssdk.services.rds.model.Tag::value,
-                    (a, b) -> b));
-        String name = ResourceDetail.resolveName(db.dbInstanceIdentifier(), db.dbInstanceIdentifier(), tags);
+        Map<String, String> tags =
+            rds.listTagsForResource(r -> r.resourceName(db.dbInstanceArn())).tagList().stream()
+                .collect(
+                    Collectors.toMap(
+                        software.amazon.awssdk.services.rds.model.Tag::key,
+                        software.amazon.awssdk.services.rds.model.Tag::value,
+                        (a, b) -> b));
+        String name =
+            ResourceDetail.resolveName(db.dbInstanceIdentifier(), db.dbInstanceIdentifier(), tags);
         resources.add(
             new ResourceDetail(
                 db.dbInstanceIdentifier(), name, "DBInstanceIdentifier", "RDS", tags));
@@ -211,10 +222,11 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
 
     List<ResourceDetail> resources = new ArrayList<>();
 
-    try (ElastiCacheClient client = ElastiCacheClient.builder()
-        .region(AwsClientFactory.region(credentials))
-        .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
-        .build()) {
+    try (ElastiCacheClient client =
+        ElastiCacheClient.builder()
+            .region(AwsClientFactory.region(credentials))
+            .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
+            .build()) {
 
       DescribeCacheClustersResponse response = client.describeCacheClusters();
 
@@ -223,14 +235,16 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
         Map<String, String> tags = Collections.emptyMap();
 
         if (cluster.arn() != null) {
-          tags = client.listTagsForResource(r -> r.resourceName(cluster.arn())).tagList().stream()
-              .collect(
-                  Collectors.toMap(
-                      software.amazon.awssdk.services.elasticache.model.Tag::key,
-                      software.amazon.awssdk.services.elasticache.model.Tag::value,
-                      (a, b) -> b));
+          tags =
+              client.listTagsForResource(r -> r.resourceName(cluster.arn())).tagList().stream()
+                  .collect(
+                      Collectors.toMap(
+                          software.amazon.awssdk.services.elasticache.model.Tag::key,
+                          software.amazon.awssdk.services.elasticache.model.Tag::value,
+                          (a, b) -> b));
         }
-        String name = ResourceDetail.resolveName(cluster.cacheClusterId(), cluster.cacheClusterId(), tags);
+        String name =
+            ResourceDetail.resolveName(cluster.cacheClusterId(), cluster.cacheClusterId(), tags);
         resources.add(
             new ResourceDetail(
                 cluster.cacheClusterId(), name, "CacheClusterId", "ELASTICACHE", tags));
@@ -244,27 +258,30 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
 
     List<ResourceDetail> resources = new ArrayList<>();
 
-    try (OpenSearchClient client = OpenSearchClient.builder()
-        .region(AwsClientFactory.region(credentials))
-        .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
-        .build()) {
+    try (OpenSearchClient client =
+        OpenSearchClient.builder()
+            .region(AwsClientFactory.region(credentials))
+            .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
+            .build()) {
 
-      ListDomainNamesResponse response = client.listDomainNames(ListDomainNamesRequest.builder().build());
+      ListDomainNamesResponse response =
+          client.listDomainNames(ListDomainNamesRequest.builder().build());
 
       for (DomainInfo domainInfo : response.domainNames()) {
 
-        DescribeDomainResponse domainResponse = client.describeDomain(
-            DescribeDomainRequest.builder().domainName(domainInfo.domainName()).build());
+        DescribeDomainResponse domainResponse =
+            client.describeDomain(
+                DescribeDomainRequest.builder().domainName(domainInfo.domainName()).build());
 
         DomainStatus domain = domainResponse.domainStatus();
 
-        Map<String, String> tags = client.listTags(ListTagsRequest.builder().arn(domain.arn()).build()).tagList()
-            .stream()
-            .collect(
-                Collectors.toMap(
-                    software.amazon.awssdk.services.opensearch.model.Tag::key,
-                    software.amazon.awssdk.services.opensearch.model.Tag::value,
-                    (a, b) -> b));
+        Map<String, String> tags =
+            client.listTags(ListTagsRequest.builder().arn(domain.arn()).build()).tagList().stream()
+                .collect(
+                    Collectors.toMap(
+                        software.amazon.awssdk.services.opensearch.model.Tag::key,
+                        software.amazon.awssdk.services.opensearch.model.Tag::value,
+                        (a, b) -> b));
         String name = ResourceDetail.resolveName(domain.domainName(), domain.domainName(), tags);
         resources.add(
             new ResourceDetail(domain.domainName(), name, "DomainName", "OPENSEARCH", tags));
@@ -278,23 +295,27 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
 
     List<ResourceDetail> resources = new ArrayList<>();
 
-    try (RedshiftClient client = RedshiftClient.builder()
-        .region(AwsClientFactory.region(credentials))
-        .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
-        .build()) {
+    try (RedshiftClient client =
+        RedshiftClient.builder()
+            .region(AwsClientFactory.region(credentials))
+            .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
+            .build()) {
 
-      software.amazon.awssdk.services.redshift.model.DescribeClustersResponse response = client.describeClusters();
+      software.amazon.awssdk.services.redshift.model.DescribeClustersResponse response =
+          client.describeClusters();
 
       for (software.amazon.awssdk.services.redshift.model.Cluster cluster : response.clusters()) {
 
-        Map<String, String> tags = cluster.tags().stream()
-            .collect(
-                Collectors.toMap(
-                    software.amazon.awssdk.services.redshift.model.Tag::key,
-                    software.amazon.awssdk.services.redshift.model.Tag::value,
-                    (a, b) -> b));
-        String name = ResourceDetail.resolveName(
-            cluster.clusterIdentifier(), cluster.clusterIdentifier(), tags);
+        Map<String, String> tags =
+            cluster.tags().stream()
+                .collect(
+                    Collectors.toMap(
+                        software.amazon.awssdk.services.redshift.model.Tag::key,
+                        software.amazon.awssdk.services.redshift.model.Tag::value,
+                        (a, b) -> b));
+        String name =
+            ResourceDetail.resolveName(
+                cluster.clusterIdentifier(), cluster.clusterIdentifier(), tags);
         resources.add(
             new ResourceDetail(
                 cluster.clusterIdentifier(), name, "ClusterIdentifier", "REDSHIFT", tags));
@@ -308,8 +329,9 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
   public List<UsageRecordModel> fetchUsage(
       AccountScope accountScope, IngestionRequestEvent request) {
     UUID ingestionID = UUID.randomUUID();
-    int period = request
-        .getPeriod(); // contract: ensure that the request does not return over 1000 datapoints
+    int period =
+        request
+            .getPeriod(); // contract: ensure that the request does not return over 1000 datapoints
     // ((to-from)/period)
     if (period <= 0) {
       throw new IllegalArgumentException("Period must be > 0");
@@ -319,45 +341,53 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
     }
     CloudWatchClient client = defaultClient;
     if (request.getCredentials() != null) {
-      AwsBasicCredentials credentials = AwsBasicCredentials.create(
-          request.getCredentials().getAccessKey(), request.getCredentials().getSecretKey());
-      client = CloudWatchClient.builder()
-          .credentialsProvider(StaticCredentialsProvider.create(credentials))
-          .region(Region.of(request.getCredentials().getAwsRegion()))
-          .build();
+      AwsBasicCredentials credentials =
+          AwsBasicCredentials.create(
+              request.getCredentials().getAccessKey(), request.getCredentials().getSecretKey());
+      client =
+          CloudWatchClient.builder()
+              .credentialsProvider(StaticCredentialsProvider.create(credentials))
+              .region(Region.of(request.getCredentials().getAwsRegion()))
+              .build();
     }
 
     List<UsageRecordModel> result = new ArrayList<>();
-    for (ServiceScope serviceScope : accountScope.getServiceScopes()) { // these are for services such as EC2, RDS
+    for (ServiceScope serviceScope :
+        accountScope.getServiceScopes()) { // these are for services such as EC2, RDS
       // etc.
 
-      for (InstanceScope instance : serviceScope.getInstances()) { // instances within a service with a name and
+      for (InstanceScope instance :
+          serviceScope.getInstances()) { // instances within a service with a name and
         // value
         // list e.g. i-23xxxxxxx
         for (String instanceValue : instance.getValues()) { // the specific instance
-          Dimension dimension = Dimension.builder().name(instance.getIdentifierName()).value(instanceValue).build();
+          Dimension dimension =
+              Dimension.builder().name(instance.getIdentifierName()).value(instanceValue).build();
 
-          for (Metric metric : serviceScope.getMetrics()) { // the metrics requested, e.g. CPUUtilisation,
+          for (Metric metric :
+              serviceScope.getMetrics()) { // the metrics requested, e.g. CPUUtilisation,
             // NetworkIn,
             // NetworkOut etc.
-            GetMetricStatisticsRequest req = GetMetricStatisticsRequest.builder()
-                .namespace(serviceScope.getName())
-                .metricName(metric.getName())
-                .startTime(request.getFrom())
-                .endTime(request.getTo())
-                .period(period)
-                .dimensions(dimension)
-                .statistics(Statistic.AVERAGE)
-                .build();
+            GetMetricStatisticsRequest req =
+                GetMetricStatisticsRequest.builder()
+                    .namespace(serviceScope.getName())
+                    .metricName(metric.getName())
+                    .startTime(request.getFrom())
+                    .endTime(request.getTo())
+                    .period(period)
+                    .dimensions(dimension)
+                    .statistics(Statistic.AVERAGE)
+                    .build();
 
-            AwsMetricRequestContext context = new AwsMetricRequestContext(
-                accountScope,
-                serviceScope,
-                instance,
-                instanceValue,
-                metric.getName(),
-                period,
-                ingestionID);
+            AwsMetricRequestContext context =
+                new AwsMetricRequestContext(
+                    accountScope,
+                    serviceScope,
+                    instance,
+                    instanceValue,
+                    metric.getName(),
+                    period,
+                    ingestionID);
 
             result.addAll(buildRequestResult(client, req, context));
           }
@@ -454,12 +484,13 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
   public boolean testConnection(CloudCredentials credentials) {
     CloudWatchClient client = defaultClient;
     if (credentials != null) {
-      AwsBasicCredentials awsCredentials = AwsBasicCredentials.create(credentials.getAccessKey(),
-          credentials.getSecretKey());
-      client = CloudWatchClient.builder()
-          .credentialsProvider(StaticCredentialsProvider.create(awsCredentials))
-          .region(Region.of(credentials.getAwsRegion()))
-          .build();
+      AwsBasicCredentials awsCredentials =
+          AwsBasicCredentials.create(credentials.getAccessKey(), credentials.getSecretKey());
+      client =
+          CloudWatchClient.builder()
+              .credentialsProvider(StaticCredentialsProvider.create(awsCredentials))
+              .region(Region.of(credentials.getAwsRegion()))
+              .build();
     }
 
     try {
@@ -479,19 +510,16 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
       AccountScope accountScope,
       IngestionRequestEvent request,
       UUID ingestionId,
-      long accountSeed) {
-  }
+      long accountSeed) {}
 
   private record ServiceSimulationContext(
-      ServiceScope serviceScope, ServiceType serviceType, MutableDouble serviceClusterState) {
-  }
+      ServiceScope serviceScope, ServiceType serviceType, MutableDouble serviceClusterState) {}
 
   private record InstanceProcessingContext(
       InstanceScope instanceScope,
       String instanceId,
       SplittableRandom rng,
-      MetricSimulationContext metricContext) {
-  }
+      MetricSimulationContext metricContext) {}
 
   private record AwsMetricRequestContext(
       AccountScope accountScope,
@@ -500,8 +528,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
       String instanceValue,
       String metric,
       int period,
-      UUID ingestionId) {
-  }
+      UUID ingestionId) {}
 
   private void validateRequest(IngestionRequestEvent request) {
     if (request.getPeriod() <= 0) {
@@ -517,7 +544,8 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
 
     UUID ingestionID = UUID.randomUUID();
 
-    long globalSeed = Objects.hash(request.getFrom().toEpochMilli(), request.getTo().toEpochMilli());
+    long globalSeed =
+        Objects.hash(request.getFrom().toEpochMilli(), request.getTo().toEpochMilli());
 
     List<UsageRecordModel> result = new ArrayList<>();
 
@@ -538,11 +566,12 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
 
     long accountSeed = Objects.hash(globalSeed, requestContext.accountScope().getAccountId());
 
-    UsageRequestContext updatedContext = new UsageRequestContext(
-        requestContext.accountScope(),
-        requestContext.request(),
-        requestContext.ingestionId(),
-        accountSeed);
+    UsageRequestContext updatedContext =
+        new UsageRequestContext(
+            requestContext.accountScope(),
+            requestContext.request(),
+            requestContext.ingestionId(),
+            accountSeed);
 
     for (ServiceScope serviceScope : requestContext.accountScope().getServiceScopes()) {
 
@@ -559,9 +588,11 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
 
     ServiceType type = ServiceType.from(serviceScope.getName());
 
-    MutableDouble clusterState = new MutableDouble(50.0 + new Random(requestContext.accountSeed()).nextGaussian() * 10);
+    MutableDouble clusterState =
+        new MutableDouble(50.0 + new Random(requestContext.accountSeed()).nextGaussian() * 10);
 
-    ServiceSimulationContext simulationContext = new ServiceSimulationContext(serviceScope, type, clusterState);
+    ServiceSimulationContext simulationContext =
+        new ServiceSimulationContext(serviceScope, type, clusterState);
 
     for (InstanceScope instance : serviceScope.getInstances()) {
 
@@ -594,21 +625,24 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
 
     List<UsageRecordModel> result = new ArrayList<>();
 
-    long resourceSeed = Objects.hash(
-        requestContext.accountSeed(), simulationContext.serviceScope().getName(), instanceId);
+    long resourceSeed =
+        Objects.hash(
+            requestContext.accountSeed(), simulationContext.serviceScope().getName(), instanceId);
 
     SplittableRandom rng = new SplittableRandom(resourceSeed);
 
-    MetricSimulationContext metricContext = createSimulationContext(
-        simulationContext.serviceType(), rng, simulationContext.serviceScope());
+    MetricSimulationContext metricContext =
+        createSimulationContext(
+            simulationContext.serviceType(), rng, simulationContext.serviceScope());
 
-    InstanceProcessingContext processingContext = new InstanceProcessingContext(instance, instanceId, rng,
-        metricContext);
+    InstanceProcessingContext processingContext =
+        new InstanceProcessingContext(instance, instanceId, rng, metricContext);
 
     int count = 0;
 
-    for (Instant t = requestContext.request().getFrom(); !t.isAfter(requestContext.request().getTo()); t = t
-        .plusSeconds(requestContext.request().getPeriod())) {
+    for (Instant t = requestContext.request().getFrom();
+        !t.isAfter(requestContext.request().getTo());
+        t = t.plusSeconds(requestContext.request().getPeriod())) {
 
       if (++count > 1440) {
         break;
@@ -628,27 +662,35 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
 
     List<UsageRecordModel> result = new ArrayList<>();
 
-    SeasonalFactors seasonalFactors = calculateSeasonalFactors(
-        timestamp, processingContext.rng(), simulationContext.serviceType());
+    SeasonalFactors seasonalFactors =
+        calculateSeasonalFactors(
+            timestamp, processingContext.rng(), simulationContext.serviceType());
 
-    double clusterFactor = updateClusterFactor(
-        processingContext.rng(),
-        seasonalFactors.getBurst(),
-        simulationContext.serviceClusterState());
+    double clusterFactor =
+        updateClusterFactor(
+            processingContext.rng(),
+            seasonalFactors.getBurst(),
+            simulationContext.serviceClusterState());
 
     for (Metric metric : simulationContext.serviceScope().getMetrics()) {
 
-      double value = computeMetricValue(
-          metric.getName(),
-          simulationContext.serviceType(),
-          processingContext.rng(),
-          processingContext.metricContext(),
-          seasonalFactors,
-          clusterFactor);
+      double value =
+          computeMetricValue(
+              metric.getName(),
+              simulationContext.serviceType(),
+              processingContext.rng(),
+              processingContext.metricContext(),
+              seasonalFactors,
+              clusterFactor);
 
       result.add(
           buildUsageRecord(
-              requestContext, simulationContext, processingContext, metric.getName(), value, timestamp));
+              requestContext,
+              simulationContext,
+              processingContext,
+              metric.getName(),
+              value,
+              timestamp));
     }
 
     return result;
@@ -824,11 +866,12 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
     double drift = context.getTheta() * (mean - state);
     double noise = gaussian * context.getVolatility();
 
-    state = state
-        + drift
-        + noise
-        + seasonalFactors.getSeasonal()
-        + seasonalFactors.getMaintenancePenalty();
+    state =
+        state
+            + drift
+            + noise
+            + seasonalFactors.getSeasonal()
+            + seasonalFactors.getMaintenancePenalty();
 
     state += seasonalFactors.getBurst() * metricBurstWeight(type, metric);
 
@@ -964,85 +1007,85 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
 
   public final class CloudWatchMetricUnits {
 
-    private CloudWatchMetricUnits() {
-    }
+    private CloudWatchMetricUnits() {}
 
-    public static final Map<ServiceType, Map<String, String>> units = Map.of(
-        ServiceType.EC2,
-        Map.ofEntries(
-            Map.entry(CPU_UTILIZATION, PERCENT),
-            Map.entry("DiskReadOps", COUNT),
-            Map.entry("DiskWriteOps", COUNT),
-            Map.entry("DiskReadBytes", BYTES),
-            Map.entry("DiskWriteBytes", BYTES),
-            Map.entry(NETWORK_IN, BYTES),
-            Map.entry(NETWORK_OUT, BYTES),
-            Map.entry("NetworkPacketsIn", COUNT),
-            Map.entry("NetworkPacketsOut", COUNT),
-            Map.entry("StatusCheckFailed", COUNT),
-            Map.entry("StatusCheckFailed_Instance", COUNT),
-            Map.entry("StatusCheckFailed_System", COUNT)),
-        ServiceType.LAMBDA,
-        Map.ofEntries(
-            Map.entry("Invocations", COUNT),
-            Map.entry("Errors", COUNT),
-            Map.entry("Duration", MILLISECONDS),
-            Map.entry("Throttles", COUNT),
-            Map.entry("IteratorAge", MILLISECONDS),
-            Map.entry("ConcurrentExecutions", COUNT),
-            Map.entry("UnreservedConcurrentExecutions", COUNT)),
-        ServiceType.RDS,
-        Map.ofEntries(
-            Map.entry(CPU_UTILIZATION, PERCENT),
-            Map.entry("DatabaseConnections", COUNT),
-            Map.entry("FreeStorageSpace", BYTES),
-            Map.entry("ReadLatency", MILLISECONDS),
-            Map.entry("WriteLatency", MILLISECONDS),
-            Map.entry("ReadIOPS", "Count/Second"),
-            Map.entry("WriteIOPS", "Count/Second"),
-            Map.entry("NetworkReceiveThroughput", "Bytes/Second"),
-            Map.entry("NetworkTransmitThroughput", "Bytes/Second"),
-            Map.entry("FreeableMemory", BYTES),
-            Map.entry("SwapUsage", BYTES)),
-        ServiceType.S3,
-        Map.ofEntries(
-            Map.entry("NumberOfObjects", COUNT),
-            Map.entry("BucketSizeBytes", BYTES),
-            Map.entry("AllRequests", COUNT),
-            Map.entry("GetRequests", COUNT),
-            Map.entry("PutRequests", COUNT),
-            Map.entry("DeleteRequests", COUNT),
-            Map.entry("4xxErrors", COUNT),
-            Map.entry("5xxErrors", COUNT),
-            Map.entry("FirstByteLatency", MILLISECONDS),
-            Map.entry("TotalRequestLatency", MILLISECONDS)),
-        ServiceType.DYNAMODB,
-        Map.ofEntries(
-            Map.entry("ConsumedReadCapacityUnits", COUNT),
-            Map.entry("ConsumedWriteCapacityUnits", COUNT),
-            Map.entry("ReadThrottleEvents", COUNT),
-            Map.entry("WriteThrottleEvents", COUNT),
-            Map.entry("ThrottledRequests", COUNT),
-            Map.entry("SuccessfulRequestLatency", MILLISECONDS),
-            Map.entry("SystemErrors", COUNT),
-            Map.entry("UserErrors", COUNT)),
-        ServiceType.ECS_EKS,
-        Map.ofEntries(
-            Map.entry(CPU_UTILIZATION, PERCENT),
-            Map.entry(MEMORY_UTILIZATION, PERCENT),
-            Map.entry("RunningTaskCount", COUNT),
-            Map.entry("PendingTaskCount", COUNT),
-            Map.entry("ServiceCount", COUNT)),
-        ServiceType.GPU_ML,
-        Map.ofEntries(
-            Map.entry("GPUUtilization", PERCENT),
-            Map.entry("GPUMemoryUtilization", PERCENT),
-            Map.entry(CPU_UTILIZATION, PERCENT),
-            Map.entry(MEMORY_UTILIZATION, PERCENT),
-            Map.entry("DiskUtilization", PERCENT),
-            Map.entry("TrainingLoss", "None"),
-            Map.entry("BatchSize", COUNT),
-            Map.entry("IterationTime", MILLISECONDS)));
+    public static final Map<ServiceType, Map<String, String>> units =
+        Map.of(
+            ServiceType.EC2,
+            Map.ofEntries(
+                Map.entry(CPU_UTILIZATION, PERCENT),
+                Map.entry("DiskReadOps", COUNT),
+                Map.entry("DiskWriteOps", COUNT),
+                Map.entry("DiskReadBytes", BYTES),
+                Map.entry("DiskWriteBytes", BYTES),
+                Map.entry(NETWORK_IN, BYTES),
+                Map.entry(NETWORK_OUT, BYTES),
+                Map.entry("NetworkPacketsIn", COUNT),
+                Map.entry("NetworkPacketsOut", COUNT),
+                Map.entry("StatusCheckFailed", COUNT),
+                Map.entry("StatusCheckFailed_Instance", COUNT),
+                Map.entry("StatusCheckFailed_System", COUNT)),
+            ServiceType.LAMBDA,
+            Map.ofEntries(
+                Map.entry("Invocations", COUNT),
+                Map.entry("Errors", COUNT),
+                Map.entry("Duration", MILLISECONDS),
+                Map.entry("Throttles", COUNT),
+                Map.entry("IteratorAge", MILLISECONDS),
+                Map.entry("ConcurrentExecutions", COUNT),
+                Map.entry("UnreservedConcurrentExecutions", COUNT)),
+            ServiceType.RDS,
+            Map.ofEntries(
+                Map.entry(CPU_UTILIZATION, PERCENT),
+                Map.entry("DatabaseConnections", COUNT),
+                Map.entry("FreeStorageSpace", BYTES),
+                Map.entry("ReadLatency", MILLISECONDS),
+                Map.entry("WriteLatency", MILLISECONDS),
+                Map.entry("ReadIOPS", "Count/Second"),
+                Map.entry("WriteIOPS", "Count/Second"),
+                Map.entry("NetworkReceiveThroughput", "Bytes/Second"),
+                Map.entry("NetworkTransmitThroughput", "Bytes/Second"),
+                Map.entry("FreeableMemory", BYTES),
+                Map.entry("SwapUsage", BYTES)),
+            ServiceType.S3,
+            Map.ofEntries(
+                Map.entry("NumberOfObjects", COUNT),
+                Map.entry("BucketSizeBytes", BYTES),
+                Map.entry("AllRequests", COUNT),
+                Map.entry("GetRequests", COUNT),
+                Map.entry("PutRequests", COUNT),
+                Map.entry("DeleteRequests", COUNT),
+                Map.entry("4xxErrors", COUNT),
+                Map.entry("5xxErrors", COUNT),
+                Map.entry("FirstByteLatency", MILLISECONDS),
+                Map.entry("TotalRequestLatency", MILLISECONDS)),
+            ServiceType.DYNAMODB,
+            Map.ofEntries(
+                Map.entry("ConsumedReadCapacityUnits", COUNT),
+                Map.entry("ConsumedWriteCapacityUnits", COUNT),
+                Map.entry("ReadThrottleEvents", COUNT),
+                Map.entry("WriteThrottleEvents", COUNT),
+                Map.entry("ThrottledRequests", COUNT),
+                Map.entry("SuccessfulRequestLatency", MILLISECONDS),
+                Map.entry("SystemErrors", COUNT),
+                Map.entry("UserErrors", COUNT)),
+            ServiceType.ECS_EKS,
+            Map.ofEntries(
+                Map.entry(CPU_UTILIZATION, PERCENT),
+                Map.entry(MEMORY_UTILIZATION, PERCENT),
+                Map.entry("RunningTaskCount", COUNT),
+                Map.entry("PendingTaskCount", COUNT),
+                Map.entry("ServiceCount", COUNT)),
+            ServiceType.GPU_ML,
+            Map.ofEntries(
+                Map.entry("GPUUtilization", PERCENT),
+                Map.entry("GPUMemoryUtilization", PERCENT),
+                Map.entry(CPU_UTILIZATION, PERCENT),
+                Map.entry(MEMORY_UTILIZATION, PERCENT),
+                Map.entry("DiskUtilization", PERCENT),
+                Map.entry("TrainingLoss", "None"),
+                Map.entry("BatchSize", COUNT),
+                Map.entry("IterationTime", MILLISECONDS)));
 
     public static String unit(ServiceType type, String metric) {
       return units.getOrDefault(type, Map.of()).getOrDefault(metric, "None");

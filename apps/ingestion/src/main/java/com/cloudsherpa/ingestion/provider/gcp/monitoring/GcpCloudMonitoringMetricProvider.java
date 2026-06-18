@@ -1,12 +1,5 @@
 package com.cloudsherpa.ingestion.provider.gcp.monitoring;
 
-import java.io.IOException;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.springframework.stereotype.Component;
-
 import com.cloudsherpa.ingestion.connector.AccountScope;
 import com.cloudsherpa.ingestion.connector.CloudCredentials;
 import com.cloudsherpa.ingestion.connector.InstanceScope;
@@ -26,6 +19,11 @@ import com.google.monitoring.v3.TimeInterval;
 import com.google.monitoring.v3.TimeSeries;
 import com.google.protobuf.Duration;
 import com.google.protobuf.util.Timestamps;
+import java.io.IOException;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import org.springframework.stereotype.Component;
 
 @Component
 public class GcpCloudMonitoringMetricProvider implements CloudMonitoringMetricProvider {
@@ -33,26 +31,23 @@ public class GcpCloudMonitoringMetricProvider implements CloudMonitoringMetricPr
 
     GoogleCredentials googleCredentials = GcpClientFactory.credentials(credentials);
 
-    MetricServiceSettings settings = MetricServiceSettings.newBuilder()
-        .setCredentialsProvider(FixedCredentialsProvider.create(googleCredentials))
-        .build();
+    MetricServiceSettings settings =
+        MetricServiceSettings.newBuilder()
+            .setCredentialsProvider(FixedCredentialsProvider.create(googleCredentials))
+            .build();
 
     return MetricServiceClient.create(settings);
   }
 
   private MetricFilter buildFilter(
-      String resourceLabel,
-      String resourceType,
-      List<Metric> metrics,
-      String resourceId) {
+      String resourceLabel, String resourceType, List<Metric> metrics, String resourceId) {
 
     StringBuilder filter = new StringBuilder();
 
-    filter.append("resource.type=\"")
-        .append(resourceType)
-        .append("\" ");
+    filter.append("resource.type=\"").append(resourceType).append("\" ");
 
-    filter.append("AND resource.labels.\"")
+    filter
+        .append("AND resource.labels.\"")
         .append(resourceLabel)
         .append("\"=\"")
         .append(resourceId)
@@ -66,9 +61,7 @@ public class GcpCloudMonitoringMetricProvider implements CloudMonitoringMetricPr
         filter.append(" OR ");
       }
 
-      filter.append("metric.type=\"")
-          .append(metrics.get(i).getName())
-          .append("\"");
+      filter.append("metric.type=\"").append(metrics.get(i).getName()).append("\"");
     }
 
     filter.append(")");
@@ -86,47 +79,37 @@ public class GcpCloudMonitoringMetricProvider implements CloudMonitoringMetricPr
   private List<MetricFilter> processInstanceScope(ServiceScope scope, InstanceScope instance) {
     List<MetricFilter> filters = new ArrayList<>();
     for (String instanceValue : instance.getValues()) {
-      MetricFilter filter = buildFilter(instance.getIdentifierName(), scope.getName(), scope.getMetrics(),
-          instanceValue);
+      MetricFilter filter =
+          buildFilter(
+              instance.getIdentifierName(), scope.getName(), scope.getMetrics(), instanceValue);
       filters.add(filter);
     }
     return filters;
   }
 
-  private Double extractValue(
-      Point point) {
+  private Double extractValue(Point point) {
 
     switch (point.getValue().getValueCase()) {
-
       case DOUBLE_VALUE:
-        return point.getValue()
-            .getDoubleValue();
+        return point.getValue().getDoubleValue();
 
       case INT64_VALUE:
-        return (double) point.getValue()
-            .getInt64Value();
+        return (double) point.getValue().getInt64Value();
 
       case BOOL_VALUE:
-        return point.getValue()
-            .getBoolValue()
-                ? 1D
-                : 0D;
+        return point.getValue().getBoolValue() ? 1D : 0D;
 
       default:
         return 0D;
     }
   }
 
-  private List<UsageRecordModel> processSeries(
-      TimeSeries series,
-      List<Metric> metrics) {
+  private List<UsageRecordModel> processSeries(TimeSeries series, List<Metric> metrics) {
 
     String metricType = series.getMetric().getType();
 
-    Metric metric = metrics.stream()
-        .filter(m -> m.getName().equals(metricType))
-        .findFirst()
-        .orElseThrow();
+    Metric metric =
+        metrics.stream().filter(m -> m.getName().equals(metricType)).findFirst().orElseThrow();
 
     List<UsageRecordModel> results = new ArrayList<>();
 
@@ -138,14 +121,9 @@ public class GcpCloudMonitoringMetricProvider implements CloudMonitoringMetricPr
 
       usage.setUnit(metric.getUnit());
 
-      usage.setTimestamp(
-          Instant.ofEpochSecond(
-              point.getInterval()
-                  .getEndTime()
-                  .getSeconds()));
+      usage.setTimestamp(Instant.ofEpochSecond(point.getInterval().getEndTime().getSeconds()));
 
-      usage.setValue(
-          extractValue(point));
+      usage.setValue(extractValue(point));
 
       results.add(usage);
     }
@@ -161,31 +139,26 @@ public class GcpCloudMonitoringMetricProvider implements CloudMonitoringMetricPr
       client = buildClient(request.getCredentials());
     } catch (IOException e) {
       e.printStackTrace();
-      throw new IllegalArgumentException("Invalid account credentials provided for GCP usage metric ingestion");
+      throw new IllegalArgumentException(
+          "Invalid account credentials provided for GCP usage metric ingestion");
     }
-    String projectName = "projects/" +
-        request.getCredentials().getProjectId();
+    String projectName = "projects/" + request.getCredentials().getProjectId();
 
-    Aggregation aggregation = Aggregation.newBuilder()
-        .setAlignmentPeriod(
-            Duration.newBuilder()
-                .setSeconds(request.getPeriod())
-                .build())
-        .setPerSeriesAligner(
-            Aggregation.Aligner.ALIGN_MEAN)
-        .build();
+    Aggregation aggregation =
+        Aggregation.newBuilder()
+            .setAlignmentPeriod(Duration.newBuilder().setSeconds(request.getPeriod()).build())
+            .setPerSeriesAligner(Aggregation.Aligner.ALIGN_MEAN)
+            .build();
 
-    TimeInterval interval = TimeInterval.newBuilder()
-        .setStartTime(
-            Timestamps.fromMillis(
-                request.getFrom().toEpochMilli()))
-        .setEndTime(
-            Timestamps.fromMillis(
-                request.getTo().toEpochMilli()))
-        .build();
+    TimeInterval interval =
+        TimeInterval.newBuilder()
+            .setStartTime(Timestamps.fromMillis(request.getFrom().toEpochMilli()))
+            .setEndTime(Timestamps.fromMillis(request.getTo().toEpochMilli()))
+            .build();
     List<MetricFilter> requestFilters = new ArrayList<>();
-    for (ServiceScope scope : accountScope.getServiceScopes()) { // we build filters per instanceId and return all of
-                                                                 // them
+    for (ServiceScope scope :
+        accountScope.getServiceScopes()) { // we build filters per instanceId and return all of
+      // them
       requestFilters.addAll(processServiceScope(scope));
     }
 
@@ -193,28 +166,23 @@ public class GcpCloudMonitoringMetricProvider implements CloudMonitoringMetricPr
 
     for (MetricFilter metricFilter : requestFilters) {
 
-      ListTimeSeriesRequest metricRequest = ListTimeSeriesRequest.newBuilder()
-          .setName(projectName)
-          .setFilter(metricFilter.filter())
-          .setInterval(interval)
-          .setAggregation(aggregation)
-          .setView(
-              ListTimeSeriesRequest.TimeSeriesView.FULL)
-          .build();
+      ListTimeSeriesRequest metricRequest =
+          ListTimeSeriesRequest.newBuilder()
+              .setName(projectName)
+              .setFilter(metricFilter.filter())
+              .setInterval(interval)
+              .setAggregation(aggregation)
+              .setView(ListTimeSeriesRequest.TimeSeriesView.FULL)
+              .build();
 
-      client.listTimeSeries(metricRequest)
+      client
+          .listTimeSeries(metricRequest)
           .iterateAll()
-          .forEach(series -> results.addAll(
-              processSeries(
-                  series,
-                  metricFilter.metrics())));
+          .forEach(series -> results.addAll(processSeries(series, metricFilter.metrics())));
     }
 
     return results;
   }
 
-  public record MetricFilter(
-      String filter,
-      List<Metric> metrics) {
-  }
+  public record MetricFilter(String filter, List<Metric> metrics) {}
 }
