@@ -6,6 +6,7 @@ export function proxy(request: NextRequest) {
   if (request.cookies.get("auth_token")
      || process.env['NODE_ENV'] == "development"
     ) {
+      
     return NextResponse.next()
   }
  
