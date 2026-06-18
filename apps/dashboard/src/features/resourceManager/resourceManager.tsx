@@ -18,6 +18,8 @@ export default function ResourceManager(){
 
     const [active, setActive] = useState<Resource[]>([]);
 
+    const [selected, setSelected] = useState<string | null>(null);
+
     return(
         <div className = "min-h-screen bg-white flex flex-col items-center justify-center p-8">
 
@@ -32,10 +34,13 @@ export default function ResourceManager(){
                         <ul className = "p-2 min-h-96 space-y-1">
                             {inactive.map((resource) =>
                                 (
-                                    <li key = {resource.id} className = "flex items-center justify-between px-3 py-2 rounded text-sm bg-white text-black">
+                                    <li 
+                                        key = {resource.id}
+                                        onClick = {() => setSelected(resource.id)}
+                                        className = {`flex items-center justify-between px-3 py-2 rounded text-sm cursor-pointer transition-colors ${
+                                            selected === resource.id ? 'bg-black text-white' : 'bg-white text-black hover:bg-black/10'}`}>
                                         {resource.name}
                                     </li>
-
                                 )
                             )}
                         </ul>
@@ -62,7 +67,11 @@ export default function ResourceManager(){
                         <ul className = "p-2 min-h-96 space-y-1">
                             {active.map((resource) => 
                                 (
-                                    <li key = {resource.id} className = "flex items-center justify-between px-3 py-2 rounded text-sm bg-white text-black">
+                                    <li 
+                                        key = {resource.id} 
+                                        onClick = {() => setSelected(resource.id)}
+                                        className = {`flex items-center justify-between px-3 py-2 rounded text-sm cursor-pointer transition-colors ${
+                                            selected === resource.id ? 'bg-black text-white' : 'bg-white text-black hover:bg-black/10'}`}>
                                         {resource.name}
                                     </li>
                                 )
