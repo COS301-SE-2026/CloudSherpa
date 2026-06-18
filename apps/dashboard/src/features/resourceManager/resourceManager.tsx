@@ -1,4 +1,5 @@
 'use client'
+import { Input } from '@/components/atoms/input';
 import React, {useState} from 'react';
 
 /*
@@ -26,6 +27,10 @@ export default function ResourceManager(){
     const [selected, setSelected] = useState<string | null>(null);
 
     const [pending, setPending] = useState<ActionPending>(null);
+
+    const [inactiveSearch, setInactiveSearch] = useState('');
+
+    const [activeSearch, setActiveSearch] = useState('');
 
     const handleAdd = (resource : Resource) => {
         setPending({resource, direction : 'enable'});
@@ -59,6 +64,14 @@ export default function ResourceManager(){
         setPending(null);
     };
 
+    const inactiveFiltered = inactive.filter((resource) =>
+        resource.name.toLowerCase().includes(inactiveSearch.toLowerCase())
+    );
+
+    const activeFiltered = active.filter((resource) =>
+        resource.name.toLowerCase().includes(activeSearch.toLowerCase())
+    );
+
     const confirmationText = pending?.direction === 'enable' ? "Are you sure you want resource to be active?" : "Are you sure you want resource to be inactive?";
 
     return(
@@ -72,8 +85,23 @@ export default function ResourceManager(){
                 <div className = "flex flex-col gap-1">
                     <span className = "text-xs text-black text-center"> Inactive </span>
                     <div className = "w-96 bg-white border border-black rounded-md overflow-hidden">
+                        <div className = "flex items-center justify-between px-3 py-2 border-b border-black gap-2">
+                            <Input
+                                placeholder = "Search..."
+                                value = {inactiveSearch}
+                                onChange = {(clickSearch) => setInactiveSearch(clickSearch.target.value)}
+                                className = "h-5 text-xs border-none shadow-none px-1 bg-transparent focus-visible:ring-0 text-black placeholder:text-black/50"
+                            />
+
+                            <button
+                                onClick = {() => setInactiveSearch('')}
+                                className = "text-black text-xs"> x 
+                            </button>
+
+                        </div>
+
                         <ul className = "p-2 min-h-96 space-y-1">
-                            {inactive.map((resource) =>
+                            {inactiveFiltered.map((resource) =>
                                 (
                                     <li 
                                         key = {resource.id}
@@ -115,8 +143,22 @@ export default function ResourceManager(){
                 <div className = "flex flex-col gap-1">
                     <span className = "text-xs text-black text-center"> Active </span>
                     <div className = "w-96 bg-white border border-black rounded-md overflow-hidden">
+                        <div className = "flex items-center justify-between px-3 py-2 border-b border-black gap-2">
+                            <Input
+                                placeholder = "Search..."
+                                value = {activeSearch}
+                                onChange = {(clickSearch) => setActiveSearch(clickSearch.target.value)}
+                                className = "h-5 text-xs border-none shadow-none px-1 bg-transparent focus-visible:ring-0 text-black placeholder:text-black/50"
+                            />
+
+                            <button
+                                onClick = {() => setActiveSearch('')}
+                                className = "text-black text-xs"> x 
+                            </button>
+
+                        </div>
                         <ul className = "p-2 min-h-96 space-y-1">
-                            {active.map((resource) => 
+                            {activeFiltered.map((resource) => 
                                 (
                                     <li 
                                         key = {resource.id} 
