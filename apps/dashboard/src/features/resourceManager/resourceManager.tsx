@@ -13,12 +13,27 @@ interface Resource{
     name : string;
 }
 
+type ActionPending = {
+    resource : Resource;
+    direction : 'enable' | 'disable';
+} | null;
+
 export default function ResourceManager(){
     const [inactive, setInactive] = useState<Resource[]>([ {id: '1', name: 'Resource'},]);
 
     const [active, setActive] = useState<Resource[]>([]);
 
     const [selected, setSelected] = useState<string | null>(null);
+
+    const [pending, setPending] = useState<ActionPending>(null);
+
+    const handleAdd = (resource : Resource) => {
+        setPending({resource, direction : 'enable'});
+    };
+
+    const handleRemove = (resource : Resource) => {
+        setPending({resource, direction : 'disable'});
+    };
 
     return(
         <div className = "min-h-screen bg-white flex flex-col items-center justify-center p-8">
@@ -40,6 +55,16 @@ export default function ResourceManager(){
                                         className = {`flex items-center justify-between px-3 py-2 rounded text-sm cursor-pointer transition-colors ${
                                             selected === resource.id ? 'bg-black text-white' : 'bg-white text-black hover:bg-black/10'}`}>
                                         {resource.name}
+
+                                        <button
+                                            onClick = {(clickButton) => {
+                                                clickButton.stopPropagation(); 
+                                                handleAdd(resource);
+                                            }}
+
+                                            className = "text-base leading-none ml-2"
+
+                                        > + </button>
                                     </li>
                                 )
                             )}
@@ -73,6 +98,15 @@ export default function ResourceManager(){
                                         className = {`flex items-center justify-between px-3 py-2 rounded text-sm cursor-pointer transition-colors ${
                                             selected === resource.id ? 'bg-black text-white' : 'bg-white text-black hover:bg-black/10'}`}>
                                         {resource.name}
+
+                                        <button
+                                            onClick = {(clickButton) => {
+                                                clickButton.stopPropagation();
+                                                handleRemove(resource);
+                                            }}
+
+                                            className = "text-base leading-none ml-2"
+                                        > &minus </button>
                                     </li>
                                 )
                             )}
