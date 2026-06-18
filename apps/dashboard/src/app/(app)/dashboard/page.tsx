@@ -255,7 +255,7 @@ function DashboardContent() {
         </div>
       )}
 
-      <main className="flex-1 overflow-y-auto overflow-x-hidden m-3 flex flex-col">
+      <main className="flex-1 overflow-y-auto overflow-x-hidden m-3 flex flex-col" data-testid="dashboard">
         {isLoading ? (
           <div className="flex-1 flex items-center justify-center">
             <Spinner className="size-8" />
