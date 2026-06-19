@@ -51,26 +51,14 @@ public class AuthController {
         @ApiResponse(
             responseCode = "201",
             description = "User successfully registered",
-            content = @Content(schema = @Schema(implementation = AuthUserResponse.class))),
+            content = @Content),
         @ApiResponse(responseCode = "400", description = "Invalid input"),
         @ApiResponse(responseCode = "409", description = "Email already in use")
       })
   @PostMapping("/register")
-  public ResponseEntity<AuthUserResponse> register(@RequestBody RegisterRequest request) {
-    AuthUserResponse response = authService.register(request);
-
-    ResponseCookie cookie =
-        ResponseCookie.from("auth_token", response.getToken())
-            .httpOnly(true)
-            .secure(authCookieSecure) // ! true in production HTTPS
-            .sameSite("Strict")
-            .path("/")
-            .maxAge(tokenExpiryMinutes.toSeconds())
-            .build();
-
-    return ResponseEntity.status(HttpStatus.CREATED)
-        .header(HttpHeaders.SET_COOKIE, cookie.toString())
-        .body(response);
+  public ResponseEntity<Void> register(@RequestBody RegisterRequest request) {
+    authService.register(request);
+    return ResponseEntity.status(HttpStatus.CREATED).build();
   }
 
   @Operation(summary = "Login user")
@@ -99,6 +87,11 @@ public class AuthController {
     return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).body(response);
   }
 
+  @Operation(summary = "Logout user")
+  @ApiResponses(
+      value = {
+        @ApiResponse(responseCode = "200", description = "Successfully logged out"),
+      })
   @PostMapping("/logout")
   public ResponseEntity<Void> logout() {
     ResponseCookie cookie =
@@ -113,7 +106,15 @@ public class AuthController {
     return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).build();
   }
 
-  // auth/me endpoint here
+  @Operation(summary = "Get current authenticated user")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Current authenticated user",
+            content = @Content(schema = @Schema(implementation = AuthUserResponse.class))),
+        @ApiResponse(responseCode = "401", description = "Unauthenticated")
+      })
   @GetMapping("/me")
   public AuthUserResponse me(JwtAuthenticationToken authentication) {
     Jwt jwt = authentication.getToken();

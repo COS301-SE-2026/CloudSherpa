@@ -9,13 +9,15 @@ export function useLogin() {
     const authContext = useAuthContext();
     const router = useRouter();
 
-    async function login(loginPayload: LoginRequestDto) {
+    async function login(loginPayload: LoginRequestDto, redirect?: boolean) {
         console.log(authContext);
         const loginResult = await authContext?.login(loginPayload);
 
         if (loginResult) {
             setLoginFailure(false);
-            router.push("/dashboard");
+            if (redirect) {
+                router.push("/dashboard");
+            }
         } else {
             setLoginFailure(true);
         }
