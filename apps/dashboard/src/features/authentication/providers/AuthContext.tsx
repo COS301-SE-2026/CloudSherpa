@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, createContext, useEffect, useContext } from "react"
+import { useState, createContext, useEffect, useContext, useMemo, useCallback } from "react"
 import { SessionState, User } from "../types/Session"
 import { LoginRequestDto } from "../types/dtos/auth/LoginRequestDto";
 import { LoginResponseDto } from "../types/dtos/auth/LoginResponseDto";
@@ -29,8 +29,8 @@ export function AuthProvider({
         loadAuthState();
     }, [])
 
-    async function logout(): Promise<boolean> {
-        
+    const logout = useCallback(async (): Promise<boolean> => {
+
         // Want to attempt logout, attempt success => succesful logout
         // What to do on attempt failure? problably still clear session state ig => inconsistency client server, but
         // stateless
@@ -49,9 +49,9 @@ export function AuthProvider({
         }
 
         return logoutSuccess;
-    }
+    }, [])
 
-    async function login(loginPayload: LoginRequestDto): Promise<boolean> {
+    const login = useCallback(async (loginPayload: LoginRequestDto): Promise<boolean> => {
         try {
             const response: LoginResponseDto = await apiClient('/auth/login', {
                 method: "POST",
@@ -73,16 +73,18 @@ export function AuthProvider({
 
             return false;
         }
-    }
+    }, [])
+
+    const authContextValue = useMemo<SessionState>(() => ({
+        isAuthReady: isAuthReady,
+        isAuthenticated: user !== null,
+        user: user,
+        login: login,
+        logout: logout,
+    }), [isAuthReady, user, login, logout])
 
     return (
-        <AuthContext value={{
-            isAuthReady: isAuthReady,
-            isAuthenticated: user !== null,
-            user: user,
-            login: login,
-            logout: logout,
-        }}>
+        <AuthContext value={authContextValue}>
             {children}
         </AuthContext>
     )

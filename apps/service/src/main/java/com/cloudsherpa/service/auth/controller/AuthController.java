@@ -30,12 +30,19 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Authentication", description = "Endpoints for user registration and login")
 public class AuthController {
   private final AuthService authService;
-  private final long tokenExpiryMinutes;
+  private final Duration tokenExpiryMinutes;
+  private static final Duration DEFAULT_EXPIRY = Duration.ofMinutes(60);
+
+  private final boolean authCookieSecure;
 
   public AuthController(
-      AuthService authService, @Value("${auth.jwt.exp-minutes:60}") long tokenExpiryMinutes) {
+      AuthService authService,
+      @Value("${auth.jwt.exp-minutes:60}") long tokenExpiryMinutes,
+      @Value("${auth.cookie.secure:true}") boolean authCookieSecure) {
     this.authService = authService;
-    this.tokenExpiryMinutes = tokenExpiryMinutes;
+    this.tokenExpiryMinutes =
+        tokenExpiryMinutes > 0 ? Duration.ofMinutes(tokenExpiryMinutes) : DEFAULT_EXPIRY;
+    this.authCookieSecure = authCookieSecure;
   }
 
   @Operation(summary = "Register a new user")
@@ -55,10 +62,10 @@ public class AuthController {
     ResponseCookie cookie =
         ResponseCookie.from("auth_token", response.getToken())
             .httpOnly(true)
-            .secure(false) // ! true in production HTTPS
+            .secure(authCookieSecure) // ! true in production HTTPS
             .sameSite("Strict")
             .path("/")
-            .maxAge(Duration.ofMinutes(tokenExpiryMinutes))
+            .maxAge(tokenExpiryMinutes.toSeconds())
             .build();
 
     return ResponseEntity.status(HttpStatus.CREATED)
@@ -83,10 +90,10 @@ public class AuthController {
     ResponseCookie cookie =
         ResponseCookie.from("auth_token", response.getToken())
             .httpOnly(true)
-            .secure(false) // ! true in production HTTPS
+            .secure(authCookieSecure) // ! true in production HTTPS
             .sameSite("Strict")
             .path("/")
-            .maxAge(Duration.ofMinutes(tokenExpiryMinutes))
+            .maxAge(tokenExpiryMinutes.toSeconds())
             .build();
 
     return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).body(response);
@@ -97,7 +104,7 @@ public class AuthController {
     ResponseCookie cookie =
         ResponseCookie.from("auth_token")
             .httpOnly(true)
-            .secure(false)
+            .secure(authCookieSecure)
             .sameSite("Strict")
             .path("/")
             .maxAge(0)
