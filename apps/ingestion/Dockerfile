@@ -2,16 +2,18 @@
 FROM eclipse-temurin:21-jdk AS base
 WORKDIR /app
 
-COPY mvnw .
-COPY .mvn .mvn
-COPY pom.xml .
+COPY apps/ingestion/mvnw .
+COPY apps/ingestion/.mvn .mvn
+COPY apps/ingestion/pom.xml apps/ingestion/pom.xml
+COPY apps/lib apps/lib
 RUN chmod +x mvnw
-RUN ./mvnw dependency:go-offline
+RUN ./mvnw -f apps/lib/pom.xml clean install -DskipTests
+RUN ./mvnw -f apps/ingestion/pom.xml dependency:go-offline
 
 # ==== Dev ====
 FROM base AS dev
 
-COPY . .
+COPY apps/ingestion apps/ingestion
 
 EXPOSE 8080
 ENTRYPOINT ["./mvnw", "spring-boot:run"]
@@ -20,10 +22,10 @@ ENTRYPOINT ["./mvnw", "spring-boot:run"]
 # ==== Build ====
 FROM base AS build
 
-COPY src src
-COPY config/checkstyle/checkstyle.xml config/checkstyle/checkstyle.xml
+COPY apps/ingestion/src apps/ingestion/src
+COPY apps/ingestion/config/checkstyle/checkstyle.xml config/checkstyle/checkstyle.xml
 
-RUN ./mvnw clean package -DskipTests
+RUN ./mvnw -f apps/ingestion/pom.xml clean package -DskipTests
 
 
 # ==== Prod ====
