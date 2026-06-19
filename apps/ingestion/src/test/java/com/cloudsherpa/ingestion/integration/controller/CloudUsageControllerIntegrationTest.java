@@ -28,7 +28,7 @@ import org.springframework.test.web.servlet.MockMvc;
 @WebMvcTest(CloudUsageController.class)
 @Import(CloudUsageService.class)
 @AutoConfigureMockMvc(addFilters = false)
-class CloudUsageControllerServiceIntegrationTest {
+class CloudUsageControllerIntegrationTest {
 
   @SpringBootApplication(scanBasePackages = "com.cloudsherpa.ingestion.controller")
   static class TestApp {}
