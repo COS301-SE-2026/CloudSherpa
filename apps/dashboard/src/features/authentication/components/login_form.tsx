@@ -99,7 +99,7 @@ export default function LoginForm({ isLoading = false, onToggle }: LoginFormProp
         password: password
       }
 
-      login(loginPayload);
+      login(loginPayload, true);
     }
   };
 
