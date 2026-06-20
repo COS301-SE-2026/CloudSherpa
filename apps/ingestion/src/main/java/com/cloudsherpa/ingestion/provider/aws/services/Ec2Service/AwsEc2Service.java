@@ -1,4 +1,4 @@
-package com.cloudsherpa.ingestion.provider.aws.services.Ec2;
+package com.cloudsherpa.ingestion.provider.aws.services.Ec2Service;
 
 import com.cloudsherpa.ingestion.connector.CloudCredentials;
 import com.cloudsherpa.ingestion.models.ResourceDetail;
