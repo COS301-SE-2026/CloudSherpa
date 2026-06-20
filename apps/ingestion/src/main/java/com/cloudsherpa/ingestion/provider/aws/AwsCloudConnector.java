@@ -14,6 +14,8 @@ import com.cloudsherpa.ingestion.models.ResourceDetail;
 import com.cloudsherpa.ingestion.models.UsageRecordModel;
 import com.cloudsherpa.ingestion.provider.aws.monitoring.AwsCloudWatchMetricProvider;
 import com.cloudsherpa.ingestion.provider.aws.monitoring.CloudWatchMetricProvider;
+import com.cloudsherpa.ingestion.provider.aws.services.Ec2.AwsEc2Service;
+import com.cloudsherpa.ingestion.provider.aws.services.Ec2.Ec2Service;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,11 +35,6 @@ import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
-import software.amazon.awssdk.services.ec2.Ec2Client;
-import software.amazon.awssdk.services.ec2.model.DescribeInstancesResponse;
-import software.amazon.awssdk.services.ec2.model.Instance;
-import software.amazon.awssdk.services.ec2.model.Reservation;
-import software.amazon.awssdk.services.ec2.model.Tag;
 import software.amazon.awssdk.services.ecs.EcsClient;
 import software.amazon.awssdk.services.ecs.model.ClusterField;
 import software.amazon.awssdk.services.ecs.model.DescribeClustersResponse;
@@ -74,38 +71,17 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
   private static final String PERCENT = "Percent";
 
   private final CloudWatchMetricProvider metricProvider;
+  private final Ec2Service ec2Service;
 
   public AwsCloudConnector() {
     metricProvider = new AwsCloudWatchMetricProvider();
+    ec2Service = new AwsEc2Service();
   }
 
   private static final Logger log = LoggerFactory.getLogger(AwsCloudConnector.class);
 
   public List<ResourceDetail> getAllEc2Instances(CloudCredentials credentials) {
-
-    List<ResourceDetail> resources = new ArrayList<>();
-
-    try (Ec2Client ec2 =
-        Ec2Client.builder()
-            .region(AwsClientFactory.region(credentials))
-            .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
-            .build()) {
-
-      DescribeInstancesResponse response = ec2.describeInstances();
-
-      for (Reservation reservation : response.reservations()) {
-        for (Instance instance : reservation.instances()) {
-
-          Map<String, String> tags =
-              instance.tags().stream().collect(Collectors.toMap(Tag::key, Tag::value, (a, b) -> b));
-          String instanceName = ResourceDetail.resolveName(instance.instanceId(), null, tags);
-          resources.add(
-              new ResourceDetail(instance.instanceId(), instanceName, "InstanceId", "EC2", tags));
-        }
-      }
-    }
-
-    return resources;
+    return ec2Service.getAllEc2InstancesWithTags(credentials);
   }
 
   public List<ResourceDetail> getAllEcsClusters(CloudCredentials credentials) {
@@ -354,7 +330,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
     List<ResourceDetail> resources = new ArrayList<>();
 
     try {
-      resources.addAll(getAllEc2Instances(credentials));
+      resources.addAll(ec2Service.getAllEc2InstancesWithTags(credentials));
     } catch (Exception e) {
       log.warn("Failed to discover EC2 resources", e);
     }
