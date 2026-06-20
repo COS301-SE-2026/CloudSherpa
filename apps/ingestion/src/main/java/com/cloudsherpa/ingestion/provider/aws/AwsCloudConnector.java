@@ -12,7 +12,8 @@ import com.cloudsherpa.ingestion.models.BillingRecordModel;
 import com.cloudsherpa.ingestion.models.IngestionRequestEvent;
 import com.cloudsherpa.ingestion.models.ResourceDetail;
 import com.cloudsherpa.ingestion.models.UsageRecordModel;
-import java.time.Duration;
+import com.cloudsherpa.ingestion.provider.aws.monitoring.AwsCloudWatchMetricProvider;
+import com.cloudsherpa.ingestion.provider.aws.monitoring.CloudWatchMetricProvider;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,10 +33,6 @@ import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
-import software.amazon.awssdk.services.cloudwatch.model.Datapoint;
-import software.amazon.awssdk.services.cloudwatch.model.Dimension;
-import software.amazon.awssdk.services.cloudwatch.model.GetMetricStatisticsRequest;
-import software.amazon.awssdk.services.cloudwatch.model.Statistic;
 import software.amazon.awssdk.services.ec2.Ec2Client;
 import software.amazon.awssdk.services.ec2.model.DescribeInstancesResponse;
 import software.amazon.awssdk.services.ec2.model.Instance;
@@ -76,13 +73,13 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
   private static final String BYTES = "Bytes";
   private static final String PERCENT = "Percent";
 
-  private static final Logger log = LoggerFactory.getLogger(AwsCloudConnector.class);
+  private final CloudWatchMetricProvider metricProvider;
 
-  private final CloudWatchClient defaultClient =
-      CloudWatchClient.builder()
-          .credentialsProvider(DefaultCredentialsProvider.create())
-          .region(Region.EU_NORTH_1)
-          .build();
+  public AwsCloudConnector() {
+    metricProvider = new AwsCloudWatchMetricProvider();
+  }
+
+  private static final Logger log = LoggerFactory.getLogger(AwsCloudConnector.class);
 
   public List<ResourceDetail> getAllEc2Instances(CloudCredentials credentials) {
 
@@ -328,74 +325,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
   @Override
   public List<UsageRecordModel> fetchUsage(
       AccountScope accountScope, IngestionRequestEvent request) {
-    UUID ingestionID = UUID.randomUUID();
-    int period =
-        request
-            .getPeriod(); // contract: ensure that the request does not return over 1000 datapoints
-    // ((to-from)/period)
-    if (period <= 0) {
-      throw new IllegalArgumentException("Period must be > 0");
-    }
-    if ((Duration.between(request.getFrom(), request.getTo()).getSeconds()) / period > 1440) {
-      throw new IllegalArgumentException("AWS will not return over 1440 datapoints per metric");
-    }
-    CloudWatchClient client = defaultClient;
-    if (request.getCredentials() != null) {
-      AwsBasicCredentials credentials =
-          AwsBasicCredentials.create(
-              request.getCredentials().getAccessKey(), request.getCredentials().getSecretKey());
-      client =
-          CloudWatchClient.builder()
-              .credentialsProvider(StaticCredentialsProvider.create(credentials))
-              .region(Region.of(request.getCredentials().getAwsRegion()))
-              .build();
-    }
-
-    List<UsageRecordModel> result = new ArrayList<>();
-    for (ServiceScope serviceScope :
-        accountScope.getServiceScopes()) { // these are for services such as EC2, RDS
-      // etc.
-
-      for (InstanceScope instance :
-          serviceScope.getInstances()) { // instances within a service with a name and
-        // value
-        // list e.g. i-23xxxxxxx
-        for (String instanceValue : instance.getValues()) { // the specific instance
-          Dimension dimension =
-              Dimension.builder().name(instance.getIdentifierName()).value(instanceValue).build();
-
-          for (Metric metric :
-              serviceScope.getMetrics()) { // the metrics requested, e.g. CPUUtilisation,
-            // NetworkIn,
-            // NetworkOut etc.
-            GetMetricStatisticsRequest req =
-                GetMetricStatisticsRequest.builder()
-                    .namespace(serviceScope.getName())
-                    .metricName(metric.getName())
-                    .startTime(request.getFrom())
-                    .endTime(request.getTo())
-                    .period(period)
-                    .dimensions(dimension)
-                    .statistics(Statistic.AVERAGE)
-                    .build();
-
-            AwsMetricRequestContext context =
-                new AwsMetricRequestContext(
-                    accountScope,
-                    serviceScope,
-                    instance,
-                    instanceValue,
-                    metric.getName(),
-                    period,
-                    ingestionID);
-
-            result.addAll(buildRequestResult(client, req, context));
-          }
-        }
-      }
-    }
-
-    return result;
+    return metricProvider.collectMetrics(accountScope, request);
   }
 
   @Override
@@ -482,7 +412,12 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
 
   @Override
   public boolean testConnection(CloudCredentials credentials) {
-    CloudWatchClient client = defaultClient;
+    CloudWatchClient client =
+        CloudWatchClient.builder()
+            .credentialsProvider(DefaultCredentialsProvider.create())
+            .region(Region.EU_NORTH_1)
+            .build();
+
     if (credentials != null) {
       AwsBasicCredentials awsCredentials =
           AwsBasicCredentials.create(credentials.getAccessKey(), credentials.getSecretKey());
@@ -520,15 +455,6 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
       String instanceId,
       SplittableRandom rng,
       MetricSimulationContext metricContext) {}
-
-  private record AwsMetricRequestContext(
-      AccountScope accountScope,
-      ServiceScope serviceScope,
-      InstanceScope instanceScope,
-      String instanceValue,
-      String metric,
-      int period,
-      UUID ingestionId) {}
 
   private void validateRequest(IngestionRequestEvent request) {
     if (request.getPeriod() <= 0) {
@@ -724,38 +650,6 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
     r.setSource("MockCloudWatch");
 
     return r;
-  }
-
-  private List<UsageRecordModel> buildRequestResult(
-      CloudWatchClient client, GetMetricStatisticsRequest req, AwsMetricRequestContext context) {
-
-    List<UsageRecordModel> records = new ArrayList<>();
-
-    for (Datapoint dp : client.getMetricStatistics(req).datapoints()) {
-
-      UsageRecordModel r = new UsageRecordModel();
-
-      r.setProvider(context.accountScope().getProvider());
-      r.setAccountId(context.accountScope().getAccountId());
-      r.setServiceName(context.serviceScope().getName());
-      r.setMetricName(context.metric());
-      r.setValue(dp.average());
-      r.setUnit(dp.unit().name());
-      r.setTimestamp(dp.timestamp());
-      r.setIngestionTimestamp(Instant.now());
-      r.setRecordId(UUID.randomUUID());
-      r.setResourceId(context.instanceValue());
-      r.setResourceType(context.instanceScope().getIdentifierName());
-      r.setRegion(Region.AF_SOUTH_1.toString());
-      r.setIngestionId(context.ingestionId().toString());
-      r.setSource("CloudWatch");
-      r.setPeriodStart(dp.timestamp().minusSeconds(context.period()));
-      r.setPeriodEnd(dp.timestamp());
-
-      records.add(r);
-    }
-
-    return records;
   }
 
   public class SeasonalFactors {
