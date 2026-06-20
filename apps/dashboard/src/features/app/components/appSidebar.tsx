@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutDashboard, Network, Sun, Moon } from "lucide-react";
+import { LayoutDashboard, Network, Moon, Sun } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -13,7 +13,6 @@ import {
   SidebarHeader,
   SidebarFooter,
 } from "@/components/atoms/sidebar";
-
 import { useTheme } from "next-themes";
 import { useSyncExternalStore } from "react";
 import Link from "next/link";
