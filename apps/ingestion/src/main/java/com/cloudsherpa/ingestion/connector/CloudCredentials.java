@@ -76,7 +76,7 @@ public class CloudCredentials {
     return serviceAccountJson;
   }
 
-  public void getServiceAccountJson(String serviceAccountJson) {
+  public void setServiceAccountJson(String serviceAccountJson) {
     this.serviceAccountJson = serviceAccountJson;
   }
 }

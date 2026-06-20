@@ -40,7 +40,7 @@ public class GcpCloudMonitoringMetricProvider implements CloudMonitoringMetricPr
   }
 
   private MetricFilter buildFilter(
-      String resourceLabel, String resourceType, List<Metric> metrics, String resourceId) {
+      String resourceLabel, String resourceType, Metric metric, String resourceId) {
 
     StringBuilder filter = new StringBuilder();
 
@@ -53,19 +53,9 @@ public class GcpCloudMonitoringMetricProvider implements CloudMonitoringMetricPr
         .append(resourceId)
         .append("\" ");
 
-    filter.append("AND (");
+    filter.append("AND metric.type=\"").append(metric.getName()).append("\"");
 
-    for (int i = 0; i < metrics.size(); i++) {
-
-      if (i > 0) {
-        filter.append(" OR ");
-      }
-
-      filter.append("metric.type=\"").append(metrics.get(i).getName()).append("\"");
-    }
-
-    filter.append(")");
-    return new MetricFilter(filter.toString(), metrics);
+    return new MetricFilter(filter.toString(), metric);
   }
 
   private List<MetricFilter> processServiceScope(ServiceScope scope) {
@@ -79,10 +69,11 @@ public class GcpCloudMonitoringMetricProvider implements CloudMonitoringMetricPr
   private List<MetricFilter> processInstanceScope(ServiceScope scope, InstanceScope instance) {
     List<MetricFilter> filters = new ArrayList<>();
     for (String instanceValue : instance.getValues()) {
-      MetricFilter filter =
-          buildFilter(
-              instance.getIdentifierName(), scope.getName(), scope.getMetrics(), instanceValue);
-      filters.add(filter);
+      for (Metric metric : scope.getMetrics()) {
+        MetricFilter filter =
+            buildFilter(instance.getIdentifierName(), scope.getName(), metric, instanceValue);
+        filters.add(filter);
+      }
     }
     return filters;
   }
@@ -104,13 +95,7 @@ public class GcpCloudMonitoringMetricProvider implements CloudMonitoringMetricPr
     }
   }
 
-  private List<UsageRecordModel> processSeries(TimeSeries series, List<Metric> metrics) {
-
-    String metricType = series.getMetric().getType();
-
-    Metric metric =
-        metrics.stream().filter(m -> m.getName().equals(metricType)).findFirst().orElseThrow();
-
+  private List<UsageRecordModel> processSeries(TimeSeries series, Metric metric) {
     List<UsageRecordModel> results = new ArrayList<>();
 
     for (Point point : series.getPointsList()) {
@@ -157,8 +142,7 @@ public class GcpCloudMonitoringMetricProvider implements CloudMonitoringMetricPr
             .build();
     List<MetricFilter> requestFilters = new ArrayList<>();
     for (ServiceScope scope :
-        accountScope.getServiceScopes()) { // we build filters per instanceId and return all of
-      // them
+        accountScope.getServiceScopes()) { // we build filters per metric and return all of them
       requestFilters.addAll(processServiceScope(scope));
     }
 
@@ -184,5 +168,5 @@ public class GcpCloudMonitoringMetricProvider implements CloudMonitoringMetricPr
     return results;
   }
 
-  public record MetricFilter(String filter, List<Metric> metrics) {}
+  public record MetricFilter(String filter, Metric metrics) {}
 }
