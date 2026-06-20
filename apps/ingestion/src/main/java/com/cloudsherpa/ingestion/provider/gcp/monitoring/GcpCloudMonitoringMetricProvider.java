@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -55,7 +56,7 @@ public class GcpCloudMonitoringMetricProvider implements CloudMonitoringMetricPr
 
     filter.append("AND metric.type=\"").append(metric.getName()).append("\"");
 
-    return new MetricFilter(filter.toString(), metric);
+    return new MetricFilter(resourceType, resourceId, resourceLabel, filter.toString(), metric);
   }
 
   private List<MetricFilter> processServiceScope(ServiceScope scope) {
@@ -95,20 +96,33 @@ public class GcpCloudMonitoringMetricProvider implements CloudMonitoringMetricPr
     }
   }
 
-  private List<UsageRecordModel> processSeries(TimeSeries series, Metric metric) {
+  private List<UsageRecordModel> processSeries(
+      TimeSeries series,
+      Metric metric,
+      String resourceId,
+      String serviceType,
+      String resourceType) {
     List<UsageRecordModel> results = new ArrayList<>();
 
     for (Point point : series.getPointsList()) {
 
       UsageRecordModel usage = new UsageRecordModel();
-
+      usage.setServiceName(serviceType);
       usage.setMetricName(metric.getName());
-
+      usage.setResourceType(resourceType);
+      usage.setResourceId(resourceId);
       usage.setUnit(metric.getUnit());
-
       usage.setTimestamp(Instant.ofEpochSecond(point.getInterval().getEndTime().getSeconds()));
-
+      usage.setIngestionTimestamp(Instant.now());
+      usage.setPeriodEnd(Instant.ofEpochSecond(point.getInterval().getEndTime().getSeconds()));
+      usage.setPeriodStart(Instant.ofEpochSecond(point.getInterval().getStartTime().getSeconds()));
       usage.setValue(extractValue(point));
+      usage.setDimensions(
+          series
+              .getResource()
+              .getLabelsMap()); // region is contained within this but may not always
+      // have the same label, e.g. "zone", "region",
+      // "location" etc.
 
       results.add(usage);
     }
@@ -119,6 +133,7 @@ public class GcpCloudMonitoringMetricProvider implements CloudMonitoringMetricPr
   @Override
   public List<UsageRecordModel> collectMetrics(
       AccountScope accountScope, IngestionRequestEvent request) {
+    String ingestionId = UUID.randomUUID().toString();
     MetricServiceClient client = null;
     try {
       client = buildClient(request.getCredentials());
@@ -162,11 +177,27 @@ public class GcpCloudMonitoringMetricProvider implements CloudMonitoringMetricPr
       client
           .listTimeSeries(metricRequest)
           .iterateAll()
-          .forEach(series -> results.addAll(processSeries(series, metricFilter.metrics())));
+          .forEach(
+              series ->
+                  results.addAll(
+                      processSeries(
+                          series,
+                          metricFilter.metrics(),
+                          metricFilter.resourceId(),
+                          metricFilter.serviceType(),
+                          metricFilter.resourceType())));
+    }
+    for (UsageRecordModel result : results) {
+      result.setProjectId(accountScope.getProjectId());
+      result.setIngestionId(ingestionId);
+      result.setProvider("GCP");
+      result.setSource("GCPMonitoringService");
+      result.setRecordId(UUID.randomUUID());
     }
 
     return results;
   }
 
-  public record MetricFilter(String filter, Metric metrics) {}
+  public record MetricFilter(
+      String serviceType, String resourceId, String resourceType, String filter, Metric metrics) {}
 }
