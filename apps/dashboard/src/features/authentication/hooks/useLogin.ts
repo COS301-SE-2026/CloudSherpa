@@ -1,29 +1,27 @@
 "use client"
 
-import apiClient from "@/lib/fetch/api-client";
 import { LoginRequestDto } from "@/features/authentication/types/dtos/auth/LoginRequestDto";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAuthContext } from "../providers/AuthContext";
 export function useLogin() {
     const [loginFailure, setLoginFailure] = useState(false);
-
+    const authContext = useAuthContext();
     const router = useRouter();
 
-    async function login(loginPayload: LoginRequestDto) {
-        try {
-            await apiClient('/auth/login', {
-                method: "POST",
-                body: JSON.stringify(loginPayload)
-            })
+    async function login(loginPayload: LoginRequestDto, redirect?: boolean) {
+        console.log(authContext);
+        const loginResult = await authContext?.login(loginPayload);
 
-            router.push('/dashboard');
-        } catch (error) {
-            if (!(error instanceof Error)) {
-                console.error("Unknown error has occured");
-            } 
-
+        if (loginResult) {
+            setLoginFailure(false);
+            if (redirect) {
+                router.push("/dashboard");
+            }
+        } else {
             setLoginFailure(true);
         }
+        
     }
 
     return { login, loginFailure };

@@ -1,9 +1,9 @@
 package com.cloudsherpa.service.analytics.service;
 
-import com.cloudsherpa.service.analytics.entities.NormalizedMetrics;
-import com.cloudsherpa.service.analytics.projections.ResourceNames;
-import com.cloudsherpa.service.analytics.repository.NormalizedMetricsRepository;
-import com.cloudsherpa.service.analytics.repository.ResourceRepository;
+import com.cloudsherpa.lib.entities.NormalizedMetrics;
+import com.cloudsherpa.lib.projections.ResourceNames;
+import com.cloudsherpa.lib.repositories.NormalizedMetricsRepository;
+import com.cloudsherpa.lib.repositories.ResourceRepository;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.HashMap;

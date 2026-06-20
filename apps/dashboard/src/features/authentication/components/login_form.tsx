@@ -41,7 +41,7 @@ export default function LoginForm({ isLoading = false, onToggle }: Readonly<Logi
         password: password,
       };
 
-      login(loginPayload);
+      login(loginPayload, true);
     }
   };
 

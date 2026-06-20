@@ -25,7 +25,7 @@ public class CorsSecurity {
     config.setAllowedOrigins(List.of(allowedOrigins));
     config.setAllowCredentials(true);
     // Add methods as we need them, explicitly keep to methods we are actually using
-    config.setAllowedMethods(List.of("GET", "POST"));
+    config.setAllowedMethods(List.of("GET", "POST", "OPTIONS"));
     config.setAllowedHeaders(List.of("*"));
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     // All endpoints /**

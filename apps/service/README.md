@@ -11,8 +11,8 @@ apps/service
 ## Local Development
 
 ```bash
-cd apps/service
-./mvnw spring-boot:run
+./mvnw -f apps/lib/pom.xml install -DskipTests
+./mvnw -f apps/service/pom.xml spring-boot:run
 ```
 
 Local URL: `http://localhost:8080`
@@ -27,18 +27,16 @@ From the repository root:
 docker compose -f infra/docker-compose.dev.yml up --build service
 ```
 
-The development Compose service bind-mounts `apps/service` into `/app`. Spring Boot reload on `.java` file changes works through VS Code Java tooling. If you use another IDE, run `./mvnw compile` from `apps/service` or inside the container to trigger reload after Java source changes.
+The development Compose service bind-mounts the repository into `/app`. Spring Boot reload on `.java` file changes works through VS Code Java tooling. If you use another IDE, run `./mvnw -pl apps/service -am compile` from the repository root or inside the container to trigger reload after Java source changes.
 
 ## Build
 
 ```bash
-cd apps/service
-./mvnw clean package
+./mvnw -pl apps/service -am clean package
 ```
 
 ## Test
 
 ```bash
-cd apps/service
-./mvnw test
+./mvnw -pl apps/service -am test
 ```

@@ -2,8 +2,8 @@ services:
   # TODO: add explicit container names 
   ingestion:
     build:
-      context: ../apps/ingestion
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: apps/ingestion/Dockerfile
       target: dev
     image: cloudsherpa-ingestion:dev
     container_name: ingestion
@@ -19,15 +19,15 @@ services:
     
   service:
     build:
-      context: ../apps/service
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: apps/service/Dockerfile
       target: dev
     image: cloudsherpa-service:dev
     container_name: service
     ports:
       - "8083:8080"
     env_file:
-      - ../apps/service/.env
+      - ../apps/service/.env.docker
     volumes:
       - ../apps/service:/app
     depends_on:

@@ -1,5 +1,6 @@
 {
     "java.autobuild.enabled": true,
-    "java.configuration.updateBuildConfiguration": "interactive",
-    "java.compile.nullAnalysis.mode": "automatic"
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "java.compile.nullAnalysis.mode": "automatic",
+    "maven.executable.options": "-Dspotless.check.skip=true"
 }

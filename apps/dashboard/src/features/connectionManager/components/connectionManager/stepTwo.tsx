@@ -1,42 +1,116 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/atoms/button';
+import {
+  CloudCredentials,
+  ResourceDetail,
+  AwsPolicy, getCloudServices,
+  generateAwsPermissionsPolicy,
+  getCloudResources
+} from '@/lib/fetch/cloud-resource-api';
 
-interface PropsForStepTwo{
-  onNext: (selectedServices: string[]) => void;
+interface PropsForStepTwo {
+  credentials: CloudCredentials | null;
+
+  onNext: (
+    selectedServices: string[],
+    resources: ResourceDetail[]
+  ) => void;
+
   onBack: () => void;
 }
 
-const availableServices = [
-  { id: 'ec2', name: 'EC2'}, { id: 'rds', name: 'RDS'}, { id: 'lambda', name: 'Lambda'}, { id: 'ecs', name: 'ECS'}, { id: 'eks', name: 'EKS'},
-];
+export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsForStepTwo>) {
+  const [availableServices, setAvailableServices] = useState<
+    { id: string; name: string }[]
+  >([]);
+  const [servicesSelected, setSelectedServices] = useState<string[]>([]);
+  const [permissions, setPermissions] = useState<AwsPolicy | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-export default function StepTwo({ onNext, onBack }: Readonly<PropsForStepTwo>){
-    
-  const [servicesSelected, setServicesSelected] = useState<string[]>([]);
 
   const toggleService = (serviceId: string) => {
-    setServicesSelected(prev =>
+    setSelectedServices(prev =>
       prev.includes(serviceId)
         ? prev.filter(id => id !== serviceId)
         : [...prev, serviceId]
     );
   };
 
-  const handleSubmit = (forHandlingSubmit: React.SubmitEvent<HTMLFormElement>) => {
-    forHandlingSubmit.preventDefault();
-    onNext(servicesSelected);
-  };
+  useEffect(() => {
+    const loadServices = async () => {
+      const services = await getCloudServices('aws');
 
-  const forHandlingAllSelected = () => {
-    if(servicesSelected.length === availableServices.length){
-      setServicesSelected([]);
-    } else{
-      setServicesSelected(availableServices.map(s => s.id));
+      setAvailableServices(
+        services.map((s) => ({
+          id: s,
+          name: s.toUpperCase(),
+        }))
+      );
+    };
+
+    loadServices();
+  }, []);
+
+  useEffect(() => {
+    const fetchPermissions = async () => {
+      if (servicesSelected.length === 0) {
+        setPermissions(null);
+        return;
+      }
+
+      const result = await generateAwsPermissionsPolicy(servicesSelected);
+      setPermissions(result);
+    };
+
+    fetchPermissions();
+  }, [servicesSelected]);
+
+  const handleSubmit = async (
+    forHandlingSubmit: React.SubmitEvent<HTMLFormElement>
+  ) => {
+    forHandlingSubmit.preventDefault();
+
+    try {
+      setLoading(true);
+      setError('');
+
+      const resources = await getCloudResources(
+        'aws',
+        {
+          accessKey: credentials?.accessKey,
+          secretKey: credentials?.secretKey,
+          awsRegion: credentials?.awsRegion,
+        }
+      );
+
+      if (resources.length === 0) {
+        setError('No resources were discovered.');
+        return;
+      }
+
+      onNext(servicesSelected, resources);
+    } catch (err) {
+      console.error(err);
+
+      setError(
+        'Failed to discover resources. Check credentials and permissions.'
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
-  return(
+  const forHandlingAllSelected = () => {
+    if (servicesSelected.length === availableServices.length) {
+      setSelectedServices([]);
+    } else {
+      setSelectedServices(availableServices.map(s => s.id));
+    }
+  };
+
+  return (
     <div className="min-h-screen bg-background flex items-center justify-center p-8">
       <div className="w-full max-w-3xl bg-card rounded-lg shadow-none p-8">
         <div className="pb-6">
@@ -110,19 +184,20 @@ export default function StepTwo({ onNext, onBack }: Readonly<PropsForStepTwo>){
 
             <div className="bg-background rounded-lg p-4 border border-border">
               <p className="text-foreground text-sm mb-3">
-                Paste the following into the permissions field:
+                Please add the following permissions to the newly created IAM user:
               </p>
               <pre className="bg-card p-4 rounded-lg overflow-x-auto text-xs font-mono text-foreground whitespace-pre-wrap">
-{`{
-what needs to be pasted
-}`}
+                {permissions
+                  ? JSON.stringify(permissions, null, 2)
+                  : '{}'}
               </pre>
 
               <button
                 type="button"
                 onClick={() => {
-                  const textToCopy = `{\n what needs to be pasted }`;
-                  navigator.clipboard.writeText(textToCopy);
+                  navigator.clipboard.writeText(permissions
+                    ? JSON.stringify(permissions, null, 2)
+                    : '{}');
                 }}
                 className="mt-3 text-primary hover:text-accent text-sm transition-colors"
               >

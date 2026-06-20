@@ -142,7 +142,7 @@ export default function RegisterForm({ isLoading = false, onToggle }: Readonly<R
 
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label htmlFor="password">Confirm Password</Label>
+            <Label htmlFor="confirmPassword">Confirm Password</Label>
           </div>
           <div className="relative">
             <Input
