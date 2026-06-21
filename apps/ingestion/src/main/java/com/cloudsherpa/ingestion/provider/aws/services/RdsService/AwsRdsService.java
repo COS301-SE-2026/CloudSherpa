@@ -2,7 +2,7 @@ package com.cloudsherpa.ingestion.provider.aws.services.RdsService;
 
 import com.cloudsherpa.ingestion.connector.CloudCredentials;
 import com.cloudsherpa.ingestion.models.ResourceDetail;
-import com.cloudsherpa.ingestion.provider.aws.AwsClientFactory;
+import com.cloudsherpa.ingestion.provider.aws.factory.AwsClientFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

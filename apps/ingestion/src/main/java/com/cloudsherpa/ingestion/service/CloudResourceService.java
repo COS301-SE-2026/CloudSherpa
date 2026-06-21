@@ -4,7 +4,7 @@ import com.cloudsherpa.ingestion.connector.CloudConnector;
 import com.cloudsherpa.ingestion.connector.CloudConnectorFactory;
 import com.cloudsherpa.ingestion.connector.CloudCredentials;
 import com.cloudsherpa.ingestion.models.ResourceDetail;
-import com.cloudsherpa.ingestion.provider.aws.AwsPermissionsBuilder;
+import com.cloudsherpa.ingestion.provider.aws.permissions.AwsPermissionsBuilder;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Service;

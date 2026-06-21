@@ -1,4 +1,4 @@
-package com.cloudsherpa.ingestion.provider.aws;
+package com.cloudsherpa.ingestion.provider.aws.factory;
 
 import com.cloudsherpa.ingestion.connector.CloudCredentials;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
