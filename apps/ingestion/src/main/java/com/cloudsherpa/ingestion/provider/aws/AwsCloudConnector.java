@@ -22,6 +22,8 @@ import com.cloudsherpa.ingestion.provider.aws.services.ElastiCacheService.AwsEla
 import com.cloudsherpa.ingestion.provider.aws.services.ElastiCacheService.ElastiCacheService;
 import com.cloudsherpa.ingestion.provider.aws.services.LambdaService.AwsLambdaService;
 import com.cloudsherpa.ingestion.provider.aws.services.LambdaService.LambdaService;
+import com.cloudsherpa.ingestion.provider.aws.services.OpenSearchService.AwsOpenSearchService;
+import com.cloudsherpa.ingestion.provider.aws.services.OpenSearchService.OpenSearchService;
 import com.cloudsherpa.ingestion.provider.aws.services.RdsService.AwsRdsService;
 import com.cloudsherpa.ingestion.provider.aws.services.RdsService.RdsService;
 import java.util.ArrayList;
@@ -36,14 +38,6 @@ import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
-import software.amazon.awssdk.services.opensearch.OpenSearchClient;
-import software.amazon.awssdk.services.opensearch.model.DescribeDomainRequest;
-import software.amazon.awssdk.services.opensearch.model.DescribeDomainResponse;
-import software.amazon.awssdk.services.opensearch.model.DomainInfo;
-import software.amazon.awssdk.services.opensearch.model.DomainStatus;
-import software.amazon.awssdk.services.opensearch.model.ListDomainNamesRequest;
-import software.amazon.awssdk.services.opensearch.model.ListDomainNamesResponse;
-import software.amazon.awssdk.services.opensearch.model.ListTagsRequest;
 import software.amazon.awssdk.services.redshift.RedshiftClient;
 
 @Component("aws")
@@ -57,6 +51,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
   private final LambdaService lambdaService;
   private final RdsService rdsService;
   private final ElastiCacheService elasticacheService;
+  private final OpenSearchService opensearchService;
 
   public AwsCloudConnector() {
     metricProvider = new AwsCloudWatchMetricProvider();
@@ -67,6 +62,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
     lambdaService = new AwsLambdaService();
     rdsService = new AwsRdsService();
     elasticacheService = new AwsElastiCacheService();
+    opensearchService = new AwsOpenSearchService();
   }
 
   private static final Logger log = LoggerFactory.getLogger(AwsCloudConnector.class);
@@ -96,40 +92,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
   }
 
   public List<ResourceDetail> getAllOpenSearchDomains(CloudCredentials credentials) {
-
-    List<ResourceDetail> resources = new ArrayList<>();
-
-    try (OpenSearchClient client =
-        OpenSearchClient.builder()
-            .region(AwsClientFactory.region(credentials))
-            .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
-            .build()) {
-
-      ListDomainNamesResponse response =
-          client.listDomainNames(ListDomainNamesRequest.builder().build());
-
-      for (DomainInfo domainInfo : response.domainNames()) {
-
-        DescribeDomainResponse domainResponse =
-            client.describeDomain(
-                DescribeDomainRequest.builder().domainName(domainInfo.domainName()).build());
-
-        DomainStatus domain = domainResponse.domainStatus();
-
-        Map<String, String> tags =
-            client.listTags(ListTagsRequest.builder().arn(domain.arn()).build()).tagList().stream()
-                .collect(
-                    Collectors.toMap(
-                        software.amazon.awssdk.services.opensearch.model.Tag::key,
-                        software.amazon.awssdk.services.opensearch.model.Tag::value,
-                        (a, b) -> b));
-        String name = ResourceDetail.resolveName(domain.domainName(), domain.domainName(), tags);
-        resources.add(
-            new ResourceDetail(domain.domainName(), name, "DomainName", "OPENSEARCH", tags));
-      }
-    }
-
-    return resources;
+    return opensearchService.getAllOpenSearchDomainsWithTags(credentials);
   }
 
   public List<ResourceDetail> getAllRedshiftClusters(CloudCredentials credentials) {
