@@ -20,6 +20,8 @@ import com.cloudsherpa.ingestion.provider.aws.services.EksService.AwsEksService;
 import com.cloudsherpa.ingestion.provider.aws.services.EksService.EksService;
 import com.cloudsherpa.ingestion.provider.aws.services.LambdaService.AwsLambdaService;
 import com.cloudsherpa.ingestion.provider.aws.services.LambdaService.LambdaService;
+import com.cloudsherpa.ingestion.provider.aws.services.RdsService.AwsRdsService;
+import com.cloudsherpa.ingestion.provider.aws.services.RdsService.RdsService;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -44,9 +46,6 @@ import software.amazon.awssdk.services.opensearch.model.DomainStatus;
 import software.amazon.awssdk.services.opensearch.model.ListDomainNamesRequest;
 import software.amazon.awssdk.services.opensearch.model.ListDomainNamesResponse;
 import software.amazon.awssdk.services.opensearch.model.ListTagsRequest;
-import software.amazon.awssdk.services.rds.RdsClient;
-import software.amazon.awssdk.services.rds.model.DBInstance;
-import software.amazon.awssdk.services.rds.model.DescribeDbInstancesResponse;
 import software.amazon.awssdk.services.redshift.RedshiftClient;
 
 @Component("aws")
@@ -58,6 +57,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
   private final EcsService ecsService;
   private final EksService eksService;
   private final LambdaService lambdaService;
+  private final RdsService rdsService;
 
   public AwsCloudConnector() {
     metricProvider = new AwsCloudWatchMetricProvider();
@@ -66,6 +66,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
     ecsService = new AwsEcsService();
     eksService = new AwsEksService();
     lambdaService = new AwsLambdaService();
+    rdsService = new AwsRdsService();
   }
 
   private static final Logger log = LoggerFactory.getLogger(AwsCloudConnector.class);
@@ -87,35 +88,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
   }
 
   public List<ResourceDetail> getAllRdsInstances(CloudCredentials credentials) {
-
-    List<ResourceDetail> resources = new ArrayList<>();
-
-    try (RdsClient rds =
-        RdsClient.builder()
-            .region(AwsClientFactory.region(credentials))
-            .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
-            .build()) {
-
-      DescribeDbInstancesResponse response = rds.describeDBInstances();
-
-      for (DBInstance db : response.dbInstances()) {
-
-        Map<String, String> tags =
-            rds.listTagsForResource(r -> r.resourceName(db.dbInstanceArn())).tagList().stream()
-                .collect(
-                    Collectors.toMap(
-                        software.amazon.awssdk.services.rds.model.Tag::key,
-                        software.amazon.awssdk.services.rds.model.Tag::value,
-                        (a, b) -> b));
-        String name =
-            ResourceDetail.resolveName(db.dbInstanceIdentifier(), db.dbInstanceIdentifier(), tags);
-        resources.add(
-            new ResourceDetail(
-                db.dbInstanceIdentifier(), name, "DBInstanceIdentifier", "RDS", tags));
-      }
-    }
-
-    return resources;
+    return rdsService.getAllRdsInstancesWithTags(credentials);
   }
 
   public List<ResourceDetail> getAllElastiCacheClusters(CloudCredentials credentials) {
