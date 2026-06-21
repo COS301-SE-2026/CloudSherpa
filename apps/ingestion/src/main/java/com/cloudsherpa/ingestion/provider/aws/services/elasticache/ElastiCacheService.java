@@ -1,4 +1,4 @@
-package com.cloudsherpa.ingestion.provider.aws.services.ElastiCacheService;
+package com.cloudsherpa.ingestion.provider.aws.services.elasticache;
 
 import com.cloudsherpa.ingestion.connector.CloudCredentials;
 import com.cloudsherpa.ingestion.models.ResourceDetail;

@@ -1,4 +1,4 @@
-package com.cloudsherpa.ingestion.provider.aws.services.LambdaService;
+package com.cloudsherpa.ingestion.provider.aws.services.lambda;
 
 import com.cloudsherpa.ingestion.connector.CloudCredentials;
 import com.cloudsherpa.ingestion.models.ResourceDetail;

@@ -1,4 +1,4 @@
-package com.cloudsherpa.ingestion.provider.aws.services.RedShiftService;
+package com.cloudsherpa.ingestion.provider.aws.services.redshift;
 
 import com.cloudsherpa.ingestion.connector.CloudCredentials;
 import com.cloudsherpa.ingestion.models.ResourceDetail;

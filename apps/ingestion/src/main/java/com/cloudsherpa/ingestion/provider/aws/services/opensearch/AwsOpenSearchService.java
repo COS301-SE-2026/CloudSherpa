@@ -1,4 +1,4 @@
-package com.cloudsherpa.ingestion.provider.aws.services.OpenSearchService;
+package com.cloudsherpa.ingestion.provider.aws.services.opensearch;
 
 import com.cloudsherpa.ingestion.connector.CloudCredentials;
 import com.cloudsherpa.ingestion.models.ResourceDetail;

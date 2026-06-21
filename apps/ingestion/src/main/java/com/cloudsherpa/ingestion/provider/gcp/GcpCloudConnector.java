@@ -25,15 +25,13 @@ public class GcpCloudConnector implements CloudConnector, UsageCapable, BillingC
   @Override
   public List<BillingRecordModel> fetchBilling(
       AccountScope accountScope, IngestionRequestEvent request) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'fetchBilling'");
+    return List.of(); // to be implemented
   }
 
   @Override
   public List<BillingRecordModel> fetchMockBilling(
       AccountScope accountScope, IngestionRequestEvent request) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'fetchMockBilling'");
+    return List.of(); // to be implemented
   }
 
   @Override
@@ -45,31 +43,26 @@ public class GcpCloudConnector implements CloudConnector, UsageCapable, BillingC
   @Override
   public List<UsageRecordModel> fetchMockUsage(
       AccountScope accountScope, IngestionRequestEvent request) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'fetchMockUsage'");
+    return List.of(); // to be implemented
   }
 
   @Override
   public String getProviderName() {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'getProviderName'");
+    return "GCP";
   }
 
   @Override
   public List<String> getAllOfferedServices() {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'getAllOfferedServices'");
+    return List.of(); // to be implemented
   }
 
   @Override
   public List<ResourceDetail> getAllResources(CloudCredentials credentials) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'getAllResources'");
+    return List.of(); // to be implemented
   }
 
   @Override
   public boolean testConnection(CloudCredentials credentials) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'testConnection'");
+    return true; // to be implemented
   }
 }

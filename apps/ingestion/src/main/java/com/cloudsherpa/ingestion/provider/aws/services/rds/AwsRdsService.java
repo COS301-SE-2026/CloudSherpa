@@ -1,4 +1,4 @@
-package com.cloudsherpa.ingestion.provider.aws.services.RdsService;
+package com.cloudsherpa.ingestion.provider.aws.services.rds;
 
 import com.cloudsherpa.ingestion.connector.CloudCredentials;
 import com.cloudsherpa.ingestion.models.ResourceDetail;
