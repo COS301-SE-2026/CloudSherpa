@@ -16,6 +16,8 @@ import com.cloudsherpa.ingestion.provider.aws.services.Ec2Service.AwsEc2Service;
 import com.cloudsherpa.ingestion.provider.aws.services.Ec2Service.Ec2Service;
 import com.cloudsherpa.ingestion.provider.aws.services.EcsService.AwsEcsService;
 import com.cloudsherpa.ingestion.provider.aws.services.EcsService.EcsService;
+import com.cloudsherpa.ingestion.provider.aws.services.EksService.AwsEksService;
+import com.cloudsherpa.ingestion.provider.aws.services.EksService.EksService;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -29,8 +31,6 @@ import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
-import software.amazon.awssdk.services.eks.EksClient;
-import software.amazon.awssdk.services.eks.model.Cluster;
 import software.amazon.awssdk.services.elasticache.ElastiCacheClient;
 import software.amazon.awssdk.services.elasticache.model.CacheCluster;
 import software.amazon.awssdk.services.elasticache.model.DescribeCacheClustersResponse;
@@ -57,12 +57,14 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
   private final CloudWatchMetricProvider mockMetricProvider;
   private final Ec2Service ec2Service;
   private final EcsService ecsService;
+  private final EksService eksService;
 
   public AwsCloudConnector() {
     metricProvider = new AwsCloudWatchMetricProvider();
     mockMetricProvider = new MockCloudWatchMetricProvider();
     ec2Service = new AwsEc2Service();
     ecsService = new AwsEcsService();
+    eksService = new AwsEksService();
   }
 
   private static final Logger log = LoggerFactory.getLogger(AwsCloudConnector.class);
@@ -76,24 +78,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
   }
 
   public List<ResourceDetail> getAllEksClusters(CloudCredentials credentials) {
-
-    List<ResourceDetail> resources = new ArrayList<>();
-
-    try (EksClient eks =
-        EksClient.builder()
-            .region(AwsClientFactory.region(credentials))
-            .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
-            .build()) {
-
-      for (String clusterName : eks.listClusters().clusters()) {
-
-        Cluster cluster = eks.describeCluster(r -> r.name(clusterName)).cluster();
-        String name = ResourceDetail.resolveName(clusterName, cluster.name(), cluster.tags());
-        resources.add(new ResourceDetail(clusterName, name, "ClusterName", "EKS", cluster.tags()));
-      }
-    }
-
-    return resources;
+    return eksService.getAllEksClustersWithTags(credentials);
   }
 
   public List<ResourceDetail> getAllLambdaFunctions(CloudCredentials credentials) {
