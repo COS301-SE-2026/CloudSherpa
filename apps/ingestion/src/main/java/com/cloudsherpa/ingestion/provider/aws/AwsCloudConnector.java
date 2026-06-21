@@ -18,6 +18,8 @@ import com.cloudsherpa.ingestion.provider.aws.services.EcsService.AwsEcsService;
 import com.cloudsherpa.ingestion.provider.aws.services.EcsService.EcsService;
 import com.cloudsherpa.ingestion.provider.aws.services.EksService.AwsEksService;
 import com.cloudsherpa.ingestion.provider.aws.services.EksService.EksService;
+import com.cloudsherpa.ingestion.provider.aws.services.LambdaService.AwsLambdaService;
+import com.cloudsherpa.ingestion.provider.aws.services.LambdaService.LambdaService;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -34,9 +36,6 @@ import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
 import software.amazon.awssdk.services.elasticache.ElastiCacheClient;
 import software.amazon.awssdk.services.elasticache.model.CacheCluster;
 import software.amazon.awssdk.services.elasticache.model.DescribeCacheClustersResponse;
-import software.amazon.awssdk.services.lambda.LambdaClient;
-import software.amazon.awssdk.services.lambda.model.FunctionConfiguration;
-import software.amazon.awssdk.services.lambda.model.ListFunctionsResponse;
 import software.amazon.awssdk.services.opensearch.OpenSearchClient;
 import software.amazon.awssdk.services.opensearch.model.DescribeDomainRequest;
 import software.amazon.awssdk.services.opensearch.model.DescribeDomainResponse;
@@ -58,6 +57,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
   private final Ec2Service ec2Service;
   private final EcsService ecsService;
   private final EksService eksService;
+  private final LambdaService lambdaService;
 
   public AwsCloudConnector() {
     metricProvider = new AwsCloudWatchMetricProvider();
@@ -65,6 +65,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
     ec2Service = new AwsEc2Service();
     ecsService = new AwsEcsService();
     eksService = new AwsEksService();
+    lambdaService = new AwsLambdaService();
   }
 
   private static final Logger log = LoggerFactory.getLogger(AwsCloudConnector.class);
@@ -82,26 +83,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
   }
 
   public List<ResourceDetail> getAllLambdaFunctions(CloudCredentials credentials) {
-
-    List<ResourceDetail> resources = new ArrayList<>();
-
-    try (LambdaClient lambda =
-        LambdaClient.builder()
-            .region(AwsClientFactory.region(credentials))
-            .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
-            .build()) {
-
-      ListFunctionsResponse response = lambda.listFunctions();
-
-      for (FunctionConfiguration fn : response.functions()) {
-
-        Map<String, String> tags = lambda.listTags(r -> r.resource(fn.functionArn())).tags();
-        String name = ResourceDetail.resolveName(fn.functionName(), fn.functionName(), tags);
-        resources.add(new ResourceDetail(fn.functionName(), name, "FunctionName", "LAMBDA", tags));
-      }
-    }
-
-    return resources;
+    return lambdaService.getAllLambdaFunctionsWithTags(credentials);
   }
 
   public List<ResourceDetail> getAllRdsInstances(CloudCredentials credentials) {
