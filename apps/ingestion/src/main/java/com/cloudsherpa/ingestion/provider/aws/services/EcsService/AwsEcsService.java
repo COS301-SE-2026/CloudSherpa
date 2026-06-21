@@ -12,6 +12,7 @@ import software.amazon.awssdk.services.ecs.model.DescribeClustersResponse;
 import software.amazon.awssdk.services.ecs.model.Tag;
 
 public class AwsEcsService implements EcsService {
+  @Override
   public List<String> getAllEcsClusterArns(CloudCredentials credentials) {
     try (EcsClient ecs =
         EcsClient.builder()
@@ -23,6 +24,7 @@ public class AwsEcsService implements EcsService {
     }
   }
 
+  @Override
   public List<ResourceDetail> getAllEcsClustersWithTags(CloudCredentials credentials) {
     try (EcsClient ecs =
         EcsClient.builder()

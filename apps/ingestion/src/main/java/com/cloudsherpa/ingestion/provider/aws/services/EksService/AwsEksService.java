@@ -9,6 +9,7 @@ import software.amazon.awssdk.services.eks.EksClient;
 import software.amazon.awssdk.services.eks.model.Cluster;
 
 public class AwsEksService implements EksService {
+  @Override
   public List<String> getAllEksClusterArns(CloudCredentials credentials) {
     try (EksClient eks =
         EksClient.builder()
@@ -20,6 +21,7 @@ public class AwsEksService implements EksService {
     }
   }
 
+  @Override
   public List<ResourceDetail> getAllEksClustersWithTags(CloudCredentials credentials) {
     List<ResourceDetail> resources = new ArrayList<>();
 

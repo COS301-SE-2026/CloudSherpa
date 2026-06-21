@@ -11,6 +11,7 @@ import software.amazon.awssdk.services.lambda.model.FunctionConfiguration;
 import software.amazon.awssdk.services.lambda.model.ListFunctionsResponse;
 
 public class AwsLambdaService implements LambdaService {
+  @Override
   public List<String> getAllLambdaFunctionArns(CloudCredentials credentials) {
     List<String> functionArns = new ArrayList<>();
 
@@ -29,6 +30,7 @@ public class AwsLambdaService implements LambdaService {
     return functionArns;
   }
 
+  @Override
   public List<ResourceDetail> getAllLambdaFunctionsWithTags(CloudCredentials credentials) {
     List<ResourceDetail> resources = new ArrayList<>();
 

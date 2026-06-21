@@ -26,10 +26,10 @@ import com.cloudsherpa.ingestion.provider.aws.services.OpenSearchService.AwsOpen
 import com.cloudsherpa.ingestion.provider.aws.services.OpenSearchService.OpenSearchService;
 import com.cloudsherpa.ingestion.provider.aws.services.RdsService.AwsRdsService;
 import com.cloudsherpa.ingestion.provider.aws.services.RdsService.RdsService;
+import com.cloudsherpa.ingestion.provider.aws.services.RedShiftService.AwsRedshiftService;
+import com.cloudsherpa.ingestion.provider.aws.services.RedShiftService.RedshiftService;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -38,7 +38,6 @@ import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
-import software.amazon.awssdk.services.redshift.RedshiftClient;
 
 @Component("aws")
 public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingCapable {
@@ -52,6 +51,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
   private final RdsService rdsService;
   private final ElastiCacheService elasticacheService;
   private final OpenSearchService opensearchService;
+  private final RedshiftService redshiftService;
 
   public AwsCloudConnector() {
     metricProvider = new AwsCloudWatchMetricProvider();
@@ -63,6 +63,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
     rdsService = new AwsRdsService();
     elasticacheService = new AwsElastiCacheService();
     opensearchService = new AwsOpenSearchService();
+    redshiftService = new AwsRedshiftService();
   }
 
   private static final Logger log = LoggerFactory.getLogger(AwsCloudConnector.class);
@@ -96,37 +97,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
   }
 
   public List<ResourceDetail> getAllRedshiftClusters(CloudCredentials credentials) {
-
-    List<ResourceDetail> resources = new ArrayList<>();
-
-    try (RedshiftClient client =
-        RedshiftClient.builder()
-            .region(AwsClientFactory.region(credentials))
-            .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
-            .build()) {
-
-      software.amazon.awssdk.services.redshift.model.DescribeClustersResponse response =
-          client.describeClusters();
-
-      for (software.amazon.awssdk.services.redshift.model.Cluster cluster : response.clusters()) {
-
-        Map<String, String> tags =
-            cluster.tags().stream()
-                .collect(
-                    Collectors.toMap(
-                        software.amazon.awssdk.services.redshift.model.Tag::key,
-                        software.amazon.awssdk.services.redshift.model.Tag::value,
-                        (a, b) -> b));
-        String name =
-            ResourceDetail.resolveName(
-                cluster.clusterIdentifier(), cluster.clusterIdentifier(), tags);
-        resources.add(
-            new ResourceDetail(
-                cluster.clusterIdentifier(), name, "ClusterIdentifier", "REDSHIFT", tags));
-      }
-    }
-
-    return resources;
+    return redshiftService.getAllRedshiftClustersWithTags(credentials);
   }
 
   @Override

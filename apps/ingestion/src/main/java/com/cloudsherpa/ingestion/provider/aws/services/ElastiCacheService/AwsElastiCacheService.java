@@ -14,6 +14,7 @@ import software.amazon.awssdk.services.elasticache.model.DescribeCacheClustersRe
 import software.amazon.awssdk.services.elasticache.model.Tag;
 
 public class AwsElastiCacheService implements ElastiCacheService {
+  @Override
   public List<String> getAllElastiCacheClusterArns(CloudCredentials credentials) {
     List<String> clusterArns = new ArrayList<>();
     try (ElastiCacheClient client =
@@ -33,6 +34,7 @@ public class AwsElastiCacheService implements ElastiCacheService {
     return clusterArns;
   }
 
+  @Override
   public List<ResourceDetail> getAllElastiCacheClustersWithTags(CloudCredentials credentials) {
     List<ResourceDetail> resources = new ArrayList<>();
 

@@ -18,7 +18,7 @@ import software.amazon.awssdk.services.opensearch.model.ListTagsRequest;
 import software.amazon.awssdk.services.opensearch.model.Tag;
 
 public class AwsOpenSearchService implements OpenSearchService {
-
+  @Override
   public List<DomainInfo> getAllOpenSearchDomains(CloudCredentials credentials) {
     List<DomainInfo> domains = new ArrayList<>();
 
@@ -35,6 +35,7 @@ public class AwsOpenSearchService implements OpenSearchService {
     return domains;
   }
 
+  @Override
   public List<ResourceDetail> getAllOpenSearchDomainsWithTags(CloudCredentials credentials) {
     List<ResourceDetail> resources = new ArrayList<>();
 
