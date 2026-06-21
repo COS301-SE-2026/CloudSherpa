@@ -14,6 +14,8 @@ import com.cloudsherpa.ingestion.provider.aws.monitoring.CloudWatchMetricProvide
 import com.cloudsherpa.ingestion.provider.aws.monitoring.MockCloudWatchMetricProvider;
 import com.cloudsherpa.ingestion.provider.aws.services.Ec2Service.AwsEc2Service;
 import com.cloudsherpa.ingestion.provider.aws.services.Ec2Service.Ec2Service;
+import com.cloudsherpa.ingestion.provider.aws.services.EcsService.AwsEcsService;
+import com.cloudsherpa.ingestion.provider.aws.services.EcsService.EcsService;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -27,9 +29,6 @@ import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
-import software.amazon.awssdk.services.ecs.EcsClient;
-import software.amazon.awssdk.services.ecs.model.ClusterField;
-import software.amazon.awssdk.services.ecs.model.DescribeClustersResponse;
 import software.amazon.awssdk.services.eks.EksClient;
 import software.amazon.awssdk.services.eks.model.Cluster;
 import software.amazon.awssdk.services.elasticache.ElastiCacheClient;
@@ -57,11 +56,13 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
   private final CloudWatchMetricProvider metricProvider;
   private final CloudWatchMetricProvider mockMetricProvider;
   private final Ec2Service ec2Service;
+  private final EcsService ecsService;
 
   public AwsCloudConnector() {
     metricProvider = new AwsCloudWatchMetricProvider();
     mockMetricProvider = new MockCloudWatchMetricProvider();
     ec2Service = new AwsEc2Service();
+    ecsService = new AwsEcsService();
   }
 
   private static final Logger log = LoggerFactory.getLogger(AwsCloudConnector.class);
@@ -71,34 +72,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
   }
 
   public List<ResourceDetail> getAllEcsClusters(CloudCredentials credentials) {
-
-    try (EcsClient ecs =
-        EcsClient.builder()
-            .region(AwsClientFactory.region(credentials))
-            .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
-            .build()) {
-
-      List<String> clusterArns = ecs.listClusters().clusterArns();
-
-      DescribeClustersResponse response =
-          ecs.describeClusters(r -> r.clusters(clusterArns).include(ClusterField.TAGS));
-
-      return response.clusters().stream()
-          .map(
-              cluster -> {
-                Map<String, String> tags =
-                    cluster.tags().stream()
-                        .collect(
-                            Collectors.toMap(
-                                software.amazon.awssdk.services.ecs.model.Tag::key,
-                                software.amazon.awssdk.services.ecs.model.Tag::value,
-                                (a, b) -> b));
-                String name =
-                    ResourceDetail.resolveName(cluster.clusterName(), cluster.clusterName(), tags);
-                return new ResourceDetail(cluster.clusterArn(), name, "ClusterName", "ECS", tags);
-              })
-          .toList();
-    }
+    return ecsService.getAllEcsClustersWithTags(credentials);
   }
 
   public List<ResourceDetail> getAllEksClusters(CloudCredentials credentials) {
@@ -316,7 +290,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
     List<ResourceDetail> resources = new ArrayList<>();
 
     try {
-      resources.addAll(ec2Service.getAllEc2InstancesWithTags(credentials));
+      resources.addAll(getAllEc2Instances(credentials));
     } catch (Exception e) {
       log.warn("Failed to discover EC2 resources", e);
     }
