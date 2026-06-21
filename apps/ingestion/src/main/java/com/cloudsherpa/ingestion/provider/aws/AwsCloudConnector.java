@@ -18,12 +18,13 @@ import com.cloudsherpa.ingestion.provider.aws.services.EcsService.AwsEcsService;
 import com.cloudsherpa.ingestion.provider.aws.services.EcsService.EcsService;
 import com.cloudsherpa.ingestion.provider.aws.services.EksService.AwsEksService;
 import com.cloudsherpa.ingestion.provider.aws.services.EksService.EksService;
+import com.cloudsherpa.ingestion.provider.aws.services.ElastiCacheService.AwsElastiCacheService;
+import com.cloudsherpa.ingestion.provider.aws.services.ElastiCacheService.ElastiCacheService;
 import com.cloudsherpa.ingestion.provider.aws.services.LambdaService.AwsLambdaService;
 import com.cloudsherpa.ingestion.provider.aws.services.LambdaService.LambdaService;
 import com.cloudsherpa.ingestion.provider.aws.services.RdsService.AwsRdsService;
 import com.cloudsherpa.ingestion.provider.aws.services.RdsService.RdsService;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -35,9 +36,6 @@ import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
-import software.amazon.awssdk.services.elasticache.ElastiCacheClient;
-import software.amazon.awssdk.services.elasticache.model.CacheCluster;
-import software.amazon.awssdk.services.elasticache.model.DescribeCacheClustersResponse;
 import software.amazon.awssdk.services.opensearch.OpenSearchClient;
 import software.amazon.awssdk.services.opensearch.model.DescribeDomainRequest;
 import software.amazon.awssdk.services.opensearch.model.DescribeDomainResponse;
@@ -58,6 +56,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
   private final EksService eksService;
   private final LambdaService lambdaService;
   private final RdsService rdsService;
+  private final ElastiCacheService elasticacheService;
 
   public AwsCloudConnector() {
     metricProvider = new AwsCloudWatchMetricProvider();
@@ -67,6 +66,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
     eksService = new AwsEksService();
     lambdaService = new AwsLambdaService();
     rdsService = new AwsRdsService();
+    elasticacheService = new AwsElastiCacheService();
   }
 
   private static final Logger log = LoggerFactory.getLogger(AwsCloudConnector.class);
@@ -92,39 +92,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
   }
 
   public List<ResourceDetail> getAllElastiCacheClusters(CloudCredentials credentials) {
-
-    List<ResourceDetail> resources = new ArrayList<>();
-
-    try (ElastiCacheClient client =
-        ElastiCacheClient.builder()
-            .region(AwsClientFactory.region(credentials))
-            .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
-            .build()) {
-
-      DescribeCacheClustersResponse response = client.describeCacheClusters();
-
-      for (CacheCluster cluster : response.cacheClusters()) {
-
-        Map<String, String> tags = Collections.emptyMap();
-
-        if (cluster.arn() != null) {
-          tags =
-              client.listTagsForResource(r -> r.resourceName(cluster.arn())).tagList().stream()
-                  .collect(
-                      Collectors.toMap(
-                          software.amazon.awssdk.services.elasticache.model.Tag::key,
-                          software.amazon.awssdk.services.elasticache.model.Tag::value,
-                          (a, b) -> b));
-        }
-        String name =
-            ResourceDetail.resolveName(cluster.cacheClusterId(), cluster.cacheClusterId(), tags);
-        resources.add(
-            new ResourceDetail(
-                cluster.cacheClusterId(), name, "CacheClusterId", "ELASTICACHE", tags));
-      }
-    }
-
-    return resources;
+    return elasticacheService.getAllElastiCacheClustersWithTags(credentials);
   }
 
   public List<ResourceDetail> getAllOpenSearchDomains(CloudCredentials credentials) {
@@ -232,49 +200,49 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
     try {
       resources.addAll(getAllEc2Instances(credentials));
     } catch (Exception e) {
-      log.warn("Failed to discover EC2 resources", e);
+      log.info("Failed to discover EC2 resources", e);
     }
 
     try {
       resources.addAll(getAllEcsClusters(credentials));
     } catch (Exception e) {
-      log.warn("Failed to discover ECS resources", e);
+      log.info("Failed to discover ECS resources", e);
     }
 
     try {
       resources.addAll(getAllEksClusters(credentials));
     } catch (Exception e) {
-      log.warn("Failed to discover EKS resources", e);
+      log.info("Failed to discover EKS resources", e);
     }
 
     try {
       resources.addAll(getAllElastiCacheClusters(credentials));
     } catch (Exception e) {
-      log.warn("Failed to discover ElastiCache resources", e);
+      log.info("Failed to discover ElastiCache resources", e);
     }
 
     try {
       resources.addAll(getAllLambdaFunctions(credentials));
     } catch (Exception e) {
-      log.warn("Failed to discover Lambda resources", e);
+      log.info("Failed to discover Lambda resources", e);
     }
 
     try {
       resources.addAll(getAllOpenSearchDomains(credentials));
     } catch (Exception e) {
-      log.warn("Failed to discover OpenSearch resources", e);
+      log.info("Failed to discover OpenSearch resources", e);
     }
 
     try {
       resources.addAll(getAllRdsInstances(credentials));
     } catch (Exception e) {
-      log.warn("Failed to discover RDS resources", e);
+      log.info("Failed to discover RDS resources", e);
     }
 
     try {
       resources.addAll(getAllRedshiftClusters(credentials));
     } catch (Exception e) {
-      log.warn("Failed to discover Redshift resources", e);
+      log.info("Failed to discover Redshift resources", e);
     }
 
     return resources;
