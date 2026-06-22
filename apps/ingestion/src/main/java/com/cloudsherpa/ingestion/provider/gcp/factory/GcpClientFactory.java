@@ -1,4 +1,4 @@
-package com.cloudsherpa.ingestion.provider.gcp;
+package com.cloudsherpa.ingestion.provider.gcp.factory;
 
 import com.cloudsherpa.ingestion.connector.CloudCredentials;
 import com.google.auth.oauth2.GoogleCredentials;

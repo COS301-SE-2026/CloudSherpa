@@ -7,7 +7,7 @@ import com.cloudsherpa.ingestion.connector.Metric;
 import com.cloudsherpa.ingestion.connector.ServiceScope;
 import com.cloudsherpa.ingestion.models.IngestionRequestEvent;
 import com.cloudsherpa.ingestion.models.UsageRecordModel;
-import com.cloudsherpa.ingestion.provider.gcp.GcpClientFactory;
+import com.cloudsherpa.ingestion.provider.gcp.factory.GcpClientFactory;
 import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.monitoring.v3.MetricServiceClient;
