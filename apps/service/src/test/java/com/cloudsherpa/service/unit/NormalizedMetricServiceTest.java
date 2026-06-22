@@ -5,10 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.cloudsherpa.service.analytics.entities.NormalizedMetrics;
-import com.cloudsherpa.service.analytics.projections.ResourceNames;
-import com.cloudsherpa.service.analytics.repository.NormalizedMetricsRepository;
-import com.cloudsherpa.service.analytics.repository.ResourceRepository;
+import com.cloudsherpa.lib.entities.NormalizedMetrics;
+import com.cloudsherpa.lib.projections.ResourceNames;
+import com.cloudsherpa.lib.repositories.NormalizedMetricsRepository;
+import com.cloudsherpa.lib.repositories.ResourceRepository;
 import com.cloudsherpa.service.analytics.service.NormalizedMetricService;
 import java.time.OffsetDateTime;
 import java.util.List;

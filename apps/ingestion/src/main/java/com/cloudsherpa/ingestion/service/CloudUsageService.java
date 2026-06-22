@@ -11,7 +11,6 @@ import com.cloudsherpa.ingestion.models.IngestionResult;
 import com.cloudsherpa.ingestion.models.UsageRecordModel;
 import com.cloudsherpa.ingestion.normalization.model.NormalizedMetric;
 import com.cloudsherpa.ingestion.normalization.normalizers.AwsNormalizer;
-import com.cloudsherpa.ingestion.normalization.persistence.service.SherpaDbPersistenceService;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;

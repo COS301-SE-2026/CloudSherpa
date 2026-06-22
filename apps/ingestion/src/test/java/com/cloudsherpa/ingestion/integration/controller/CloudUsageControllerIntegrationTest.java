@@ -10,13 +10,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.cloudsherpa.ingestion.connector.CloudConnectorFactory;
 import com.cloudsherpa.ingestion.controller.CloudUsageController;
 import com.cloudsherpa.ingestion.models.UsageRecordModel;
-import com.cloudsherpa.ingestion.normalization.persistence.service.SherpaDbPersistenceService;
 import com.cloudsherpa.ingestion.provider.aws.AwsCloudConnector;
 import com.cloudsherpa.ingestion.service.CloudUsageService;
+import com.cloudsherpa.ingestion.service.SherpaDbPersistenceService;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -28,6 +29,10 @@ import org.springframework.test.web.servlet.MockMvc;
 @Import(CloudUsageService.class)
 @AutoConfigureMockMvc(addFilters = false)
 class CloudUsageControllerIntegrationTest {
+
+  @SpringBootApplication(scanBasePackages = "com.cloudsherpa.ingestion.controller")
+  static class TestApp {}
+
   @Autowired private MockMvc mockMvc;
 
   @MockitoBean private CloudConnectorFactory connectorFactory;

@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutDashboard, Network } from "lucide-react";
+import { LayoutDashboard, Network, Moon, Sun } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -13,10 +13,11 @@ import {
   SidebarHeader,
   SidebarFooter,
 } from "@/components/atoms/sidebar";
-import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useSyncExternalStore } from "react";
 import Link from "next/link";
+import { useAuthContext } from "@/features/authentication/providers/AuthContext";
+import { useLogout } from "@/features/authentication/hooks/useLogout";
 
 const navItems = [
   { title: "Dashboard", icon: LayoutDashboard, url: "/dashboard" },
@@ -29,6 +30,9 @@ export function AppSidebar() {
     () => true,
     () => false
   );
+
+  const authContext = useAuthContext();
+  const { logout } = useLogout();
 
   if (!isMounted) return null;
   return (
@@ -119,22 +123,32 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter>
-        <SidebarMenuButton
-          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          tooltip="Toggle Theme"
-        >
-          {theme === "dark" ? (
-            <>
-              <Sun className="h-4 w-4" />
-              <span className="ml-2 group-data-[collapsible=offcanvas]:hidden">Light Mode</span>
-            </>
-          ) : (
-            <>
-              <Moon className="h-4 w-4" />
-              <span className="ml-2 group-data-[collapsible=offcanvas]:hidden">Dark Mode</span>
-            </>
-          )}
-        </SidebarMenuButton>
+        <SidebarMenu>
+          <SidebarGroupLabel>
+            {authContext?.user?.email}
+          </SidebarGroupLabel>
+          <SidebarMenuButton onClick={() => {
+            logout();
+          }}>
+            Logout
+          </SidebarMenuButton>
+          <SidebarMenuButton
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            tooltip="Toggle Theme"
+          >
+            {theme === "dark" ? (
+              <>
+                <Sun className="h-4 w-4" />
+                <span className="ml-2 group-data-[collapsible=offcanvas]:hidden">Light Mode</span>
+              </>
+            ) : (
+              <>
+                <Moon className="h-4 w-4" />
+                <span className="ml-2 group-data-[collapsible=offcanvas]:hidden">Dark Mode</span>
+              </>
+            )}
+          </SidebarMenuButton>
+        </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
   );

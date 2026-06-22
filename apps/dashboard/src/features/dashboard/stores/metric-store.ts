@@ -74,7 +74,7 @@ function upsertMetric(
     return {
         ...seriesByKey,
         [key]: {
-            ...(seriesByKey[key] ?? {}),
+            ...(seriesByKey[key]),
             [metric.timestamp]: metric,
         },
     };

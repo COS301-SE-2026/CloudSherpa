@@ -1,16 +1,11 @@
 "use client";
 
-import { Button } from "@/components/atoms/button";
 import { TimePeriodSelector } from "@/features/dashboard/components/toolbar/timePeriodSelector";
 import { DashboardSelector } from "@/features/dashboard/components/toolbar/dashboardSelector";
-import { Tooltip } from "@/components/molecules/tooltip";
 import { DateRange } from "react-day-picker";
 import { SidebarTrigger } from "@/components/atoms/sidebar";
 import { DashboardStub } from "@/features/dashboard/types/widgets";
 import EditButton from "@/features/dashboard/components/toolbar/editButton";
-
-import { Edit, Pencil } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface ToolbarProps {
   dashboards: DashboardStub[];
@@ -38,7 +33,7 @@ export default function Toolbar({
   onCreateDashboard,
   dateRange,
   onDateRangeChange,
-}: ToolbarProps) {
+}: Readonly<ToolbarProps>) {
   return (
     <div className="w-full flex flex-row items-center justify-between transition-card">
       <div className="flex flex-row items-end gap-2">

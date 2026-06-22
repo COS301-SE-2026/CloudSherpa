@@ -2,11 +2,13 @@ package com.cloudsherpa.service;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
-
-// This annotation tells Spring to scan the codebase for methods annotated with @Scheduled
+@EntityScan(basePackages = "com.cloudsherpa.lib.entities")
+@EnableJpaRepositories(basePackages = "com.cloudsherpa.lib.repositories")
 @EnableScheduling
 public class ServiceApplication {
 

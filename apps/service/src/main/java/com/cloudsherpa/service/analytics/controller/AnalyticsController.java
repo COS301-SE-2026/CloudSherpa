@@ -1,6 +1,6 @@
 package com.cloudsherpa.service.analytics.controller;
 
-import com.cloudsherpa.service.analytics.entities.NormalizedMetrics;
+import com.cloudsherpa.lib.entities.NormalizedMetrics;
 import com.cloudsherpa.service.analytics.service.NormalizedMetricService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;

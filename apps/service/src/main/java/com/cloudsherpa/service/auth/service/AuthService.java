@@ -1,10 +1,10 @@
 package com.cloudsherpa.service.auth.service;
 
+import com.cloudsherpa.lib.entities.User;
+import com.cloudsherpa.lib.repositories.UserRepository;
 import com.cloudsherpa.service.auth.dto.AuthUserResponse;
 import com.cloudsherpa.service.auth.dto.LoginRequest;
 import com.cloudsherpa.service.auth.dto.RegisterRequest;
-import com.cloudsherpa.service.auth.model.User;
-import com.cloudsherpa.service.auth.repository.UserRepository;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -26,7 +26,7 @@ public class AuthService {
   }
 
   // REGISTER
-  public AuthUserResponse register(RegisterRequest request) {
+  public void register(RegisterRequest request) {
     String email = normalizeEmail(request.getEmail());
     String username = normalizeUsername(request.getUsername());
     String password = request.getPassword();
@@ -56,11 +56,7 @@ public class AuthService {
     User user = new User(UUID.randomUUID(), email, username, passwordHash);
 
     // write the newly created user to SherpaDB in the users table
-    User savedUser = userRepository.save(user);
-
-    String token = jwtService.generateToken(savedUser);
-    return new AuthUserResponse(
-        savedUser.getId(), savedUser.getEmail(), savedUser.getUsername(), token);
+    userRepository.save(user);
   }
 
   // LOGIN

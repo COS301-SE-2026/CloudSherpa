@@ -7,7 +7,7 @@ const MOBILE_BREAKPOINT = 768
 export function useIsMobile() {
   return React.useSyncExternalStore(
     (callback) => {
-      const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
+      const mql = globalThis.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
       mql.addEventListener("change", callback)
       return () => mql.removeEventListener("change", callback)
     },
