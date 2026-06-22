@@ -8,7 +8,7 @@ interface AuthPanelProps {
 
 //wraps the login and register forms for the animation
 //will need to adjust this to make it responsive
-export function AuthPanel({ children, isActive, isSignUpState }: AuthPanelProps) {
+export function AuthPanel({ children, isActive, isSignUpState }: Readonly<AuthPanelProps>) {
   return (
     <div
       className={cn(

@@ -8,7 +8,7 @@ interface OverlayProps {
   toggle: (val: boolean) => void;
 }
 
-export function AuthOverlay({ isSignUp, toggle }: OverlayProps) {
+export function AuthOverlay({ isSignUp, toggle }: Readonly<OverlayProps>) {
   return (
     <div className={cn(
       // Hidden on mobile, visible and 50% width on medium screens and larger

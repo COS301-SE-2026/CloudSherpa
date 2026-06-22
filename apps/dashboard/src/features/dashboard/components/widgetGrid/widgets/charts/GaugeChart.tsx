@@ -179,39 +179,6 @@ export function GaugeChart({
         chartInstance.current.setOption(option);
     }, [latestValue, textColor, primaryColor, trackColor]);
 
-    useEffect(() => {
-        if(!chartInstance.current){
-            return;
-        }
-
-        const handleResize = () => {
-            chartInstance.current?.resize();
-        };
-
-        const handleWidgetResize = () => {
-            setTimeout(() => {
-                chartInstance.current?.resize();
-            }, 10);
-        };
-
-        window.addEventListener('resize', handleResize);
-        globalThis.addEventListener('widget-resize', handleWidgetResize);
-
-        const resizeObserver = new ResizeObserver(() => {
-            chartInstance.current?.resize();
-        });
-
-        if(chartRef.current){
-            resizeObserver.observe(chartRef.current);
-        }
-
-        return () => {
-            window.removeEventListener('resize', handleResize);
-            globalThis.removeEventListener('widget-resize', handleWidgetResize);
-            resizeObserver.disconnect();
-        };
-    }, []);
-
     return(
         <div className="relative h-full w-full">
             <div ref={chartRef} className="h-full w-full" />
