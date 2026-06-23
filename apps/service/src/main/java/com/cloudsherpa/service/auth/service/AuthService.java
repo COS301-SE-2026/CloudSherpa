@@ -53,10 +53,15 @@ public class AuthService {
     }
 
     String passwordHash = passwordEncoder.encode(password);
-    User user = new User(UUID.randomUUID(), email, username, passwordHash);
+
+    UUID userId = UUID.randomUUID();
+    User user = new User(userId, email, username, passwordHash);
 
     // write the newly created user to SherpaDB in the users table
     userRepository.save(user);
+
+    // trigger the creation of the new user's personal schema
+    userRepository.createTenantSchema(userId);
   }
 
   // LOGIN
