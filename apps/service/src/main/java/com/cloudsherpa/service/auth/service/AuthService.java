@@ -9,6 +9,7 @@ import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
@@ -26,6 +27,7 @@ public class AuthService {
   }
 
   // REGISTER
+  @Transactional
   public void register(RegisterRequest request) {
     String email = normalizeEmail(request.getEmail());
     String username = normalizeUsername(request.getUsername());
