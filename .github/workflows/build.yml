@@ -27,10 +27,11 @@ jobs:
         runs-on: ubuntu-latest
 
         strategy:
+            fail-fast: false
             matrix:
                 include:
                     - name: dashboard
-                      context: .
+                      context: apps/dashboard
                       dockerfile: apps/dashboard/Dockerfile
 
                     - name: service
