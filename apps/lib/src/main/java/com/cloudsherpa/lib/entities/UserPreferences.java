@@ -9,7 +9,7 @@ import jakarta.persistence.Table;
 import java.util.UUID;
 
 @Entity
-@Table(name = "preferences")
+@Table(name = "preferences", schema = "public")
 public class UserPreferences {
 
   @Id

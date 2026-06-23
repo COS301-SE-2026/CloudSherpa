@@ -9,7 +9,7 @@ import jakarta.persistence.Table;
 import java.util.UUID;
 
 @Entity
-@Table(name = "widget_resource")
+@Table(name = "widget_resource", schema = "public")
 public class WidgetResource {
 
   @Id
