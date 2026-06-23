@@ -4,7 +4,6 @@ import com.cloudsherpa.lib.entities.User;
 
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +20,6 @@ public interface UserRepository extends JpaRepository<User, UUID> {
   
   // Calls the PostgreSQL automation function to dynamically generate a new
   // schema (e.g., tenant_123e4567...) and all required metrics tables for a new user.
-  @Modifying
   @Transactional
   @Query(value = "SELECT public.create_new_tenant(:tenantId)", nativeQuery = true)
   void createTenantSchema(@Param("tenantId") UUID tenantId);
