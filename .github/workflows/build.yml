@@ -1,12 +1,6 @@
 name: CloudSherpa Images Build
 
 on:
-    # Push is temp for test
-    push:
-        branches:
-            - feature/continous-container-publishing
-        paths:
-            - ".github/workflows/build.yml"
     pull_request:
         branches:
             - main
