@@ -60,7 +60,7 @@ jobs:
               env:
                 REGISTRY: ${{ steps.login-ecr.outputs.registry }}
                 REPOSITORY: cloudsherpa
-                IMAGE_TAG: "${{ matrix.name }}:${{ github.sha }}"
+                IMAGE_TAG: "${{ matrix.name }}-${{ github.sha }}"
               run: |
-                docker build --file "${{ matrix.dockerfile }}" --tag $IMAGE_TAG ${{ matrix.context }} 
-                docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+                docker build --file "${{ matrix.dockerfile }}" --tag "$REGISTRY/$REPOSITORY:$IMAGE_TAG" "${{ matrix.context }}" 
+                docker push "$REGISTRY/$REPOSITORY:$IMAGE_TAG"
