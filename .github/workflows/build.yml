@@ -1,0 +1,60 @@
+name: CloudSherpa Images Build
+
+on:
+    pull_request:
+        branches:
+            - main
+        paths:
+            - "apps/dashboard/**"
+            - "apps/service/**"
+            - "apps/ingestion/**"
+            - ".github/workflows/build.yml"
+
+concurrency:
+    group: ecr-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    cloudsherpa-build:
+        permissions:
+            id-token: write
+        runs-on: ubuntu-latest
+
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - name: dashboard
+                      context: apps/dashboard
+                      dockerfile: apps/dashboard/Dockerfile
+
+                    - name: service
+                      context: .
+                      dockerfile: apps/service/Dockerfile
+
+                    - name: ingestion
+                      context: .
+                      dockerfile: apps/ingestion/Dockerfile
+
+        steps:
+            - name: Checkout repo
+              uses: actions/checkout@b9e0990d219a03df7633c93f6f005a8fecbcab22 # Version 7
+            
+            - name: Configure AWS Credentials
+              uses: aws-actions/configure-aws-credentials@e004cdcd2873919dbd2e62aa51128bedb3181599 # Version 6.1.0
+              with:
+                role-to-assume: ${{ vars.AWS_ACTIONS_ROLE_ARN }}
+                aws-region: eu-north-1
+            
+            - name: Login to Amazon ECR Private
+              id: login-ecr
+              uses: aws-actions/amazon-ecr-login@d539f0932e70871a027e9d5a9d8fc38589180a64 # Version 2.1.6
+
+            - name: Build and push image
+              env:
+                REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+                REPOSITORY: cloudsherpa
+                IMAGE_TAG: "${{ matrix.name }}-${{ github.sha }}"
+              run: |
+                docker build --file "${{ matrix.dockerfile }}" --tag "$REGISTRY/$REPOSITORY:$IMAGE_TAG" "${{ matrix.context }}" 
+                docker push "$REGISTRY/$REPOSITORY:$IMAGE_TAG"
