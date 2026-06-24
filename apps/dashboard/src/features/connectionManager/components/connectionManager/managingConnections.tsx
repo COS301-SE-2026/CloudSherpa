@@ -57,15 +57,15 @@ export default function ManagingConnections(){
   return(
     <div
       data-theme = "dark"
-      className = "min-h-screen bg-[var(--color-neutral-950)] text-[var(--color-neutral-50)] p-8">
+      className = "min-h-screen bg-background text-foreground p-8">
       
       {/* this si for the heading */}
       <div className = "flex items-start justify-between mb-5">
-        <h1 className = "text-3xl font-semibold text-[var(--color-neutral-50)]"> Connection Manager </h1>
+        <h1 className = "text-3xl font-semibold text-foreground"> Connection Manager </h1>
 
         <button
           onClick = {handleAdd}
-          className = "text-sm px-3 py-1.5 rounded-[var(--radius-sm)] border border-[var(--color-neutral-800)] text-[var(--color-neutral-50)] bg-transparent hover:bg-[var(--color-neutral-800)] transition-colors"> + add connection
+          className = "text-sm px-3 py-1.5 rounded-[var(--radius-sm)] border border-border text-foreground bg-transparent hover:bg-border transition-colors"> + add connection
         </button>
 
       </div>
@@ -98,10 +98,10 @@ export default function ManagingConnections(){
         {filtered.map((connection) => (
           <div 
             key = {connection.id}
-            className = "flex items-center justify-between px-4 py-3 rounded-[var(--radius-md)] border border-[var(--color-neutral-800)] bg-[var(--color-neutral-900)]">
+            className = "flex items-center justify-between px-4 py-3 rounded-[var(--radius-md)] border border-border bg-sidebar">
 
             <div>
-              <p className = "text-sm font-medium text-[var(--color-neutral-50)]"> {connection.name} </p>
+              <p className = "text-sm font-medium text-foreground"> {connection.name} </p>
 
               <p className = "text-xs text-[var(--color-neutral-400)] mt-0.5"> {connection.detail} </p>
             </div>
