@@ -20,6 +20,11 @@ public class TenantResolver implements CurrentTenantIdentifierResolver {
 
   @Override
   public boolean validateExistingCurrentSessions() {
+    // Security measure
+    // Every single time a query is executed within an open Session,
+    // Hibernate will re-call resolveCurrentTenantIdentifier() and verify that the tenant ID hasn't
+    // suddenly changed.
+    // Completely prevents having access to other tenants' data
     return true;
   }
 }
