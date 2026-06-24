@@ -1,5 +1,3 @@
-//resource manager
-
 'use client'
 import { Input } from '@/components/atoms/input';
 import React, {useState} from 'react';
@@ -105,23 +103,21 @@ export default function ResourceManager(){
                         <ul className = "p-2 min-h-96 space-y-1">
                             {inactiveFiltered.map((resource) =>
                                 (
-                                    <li 
+                                    <div
                                         key = {resource.id}
-                                        onClick = {() => setSelected(resource.id)}
-                                        className = {`flex items-center justify-between px-3 py-2 rounded text-sm cursor-pointer transition-colors ${
-                                            selected === resource.id ? 'bg-sidebar-primary-foreground text-sidebar-primary-foreground' : 'text-sidebar-border hover:bg-border'}`}>
-                                        {resource.name}
+                                        className = {`flex items-center justify-between px-3 py-2 rounded text-sm cursor-pointer transition-colors ${ selected === resource.id ? 'bg-sidebar-primary-foreground text-primary-foreground' : 'text-sidebar-border hover:bg-border'}`}>
 
                                         <button
-                                            onClick = {(clickButton) => {
-                                                clickButton.stopPropagation(); 
-                                                handleAdd(resource);
-                                            }}
+                                            onClick = {() => setSelected(resource.id)}
+                                            className = "flex-1 text-left bg-transparent border-none text-inherit text-sm"> {resource.name} 
+                                        </button>
 
-                                            className = "text-base leading-none ml-2 text-sidebar-accent hover:text-sidebar-ring"
+                                        <button
+                                            onClick = {(clickingAdd) => {clickingAdd.stopPropagation(); handleAdd(resource); }}
+                                            className = "test-base leading-none ml-2 text-sidebar-accent hover:text-ring"> + 
+                                        </button>
 
-                                        > + </button>
-                                    </li>
+                                    </div>
                                 )
                             )}
                         </ul>
@@ -131,11 +127,11 @@ export default function ResourceManager(){
                 {/* arrows */}
                 <div className = "flex flex-col gap-2 mt-5">
 
-                    <button className = "w-8 h-8 p-0 rounded-md flex items-center justify-center bg-border border border-sidebar-foreground text-foreground hover:bg-sidebar-foreground transition-colors">
+                    <button className = "w-8 h-8 p-0 rounded-md flex items-center justify-center bg-border border border-sidebar-foreground text-foreground transition-colors">
                         &rarr;
                     </button>
 
-                    <button className = "w-8 h-8 p-0 rounded-md flex items-center justify-center bg-border border border-sidebar-foreground text-foreground hover:bg-sidebar-foreground transition-colors">
+                    <button className = "w-8 h-8 p-0 rounded-md flex items-center justify-center bg-border border border-sidebar-foreground text-foreground transition-colors">
                         &larr;
                     </button>
 
@@ -162,22 +158,21 @@ export default function ResourceManager(){
                         <ul className = "p-2 min-h-96 space-y-1">
                             {activeFiltered.map((resource) => 
                                 (
-                                    <li 
-                                        key = {resource.id} 
-                                        onClick = {() => setSelected(resource.id)}
-                                        className = {`flex items-center justify-between px-3 py-2 rounded text-sm cursor-pointer transition-colors ${
-                                            selected === resource.id ? 'bg-sidebar-primary-foreground text-sidebar-primary-foreground' : 'text-sidebar-border hover:bg-border'}`}>
-                                        {resource.name}
+                                    <div
+                                        key = {resource.id}
+                                        className = {`flex items-center justify-between px-3 py-2 rounded text-sm cursor-pointer transition-colors $ {selected === resource.id ? 'bg-sidebar-primary-foreground text-primary-foreground' : 'text-sidebar-border hover:bg-border'}`}>
 
-                                        <button
-                                            onClick = {(clickButton) => {
-                                                clickButton.stopPropagation();
-                                                handleRemove(resource);
-                                            }}
+                                            <button
+                                                onClick = {() => setSelected(resource.id)}
+                                                className = "flex-1 text-left bg-transparent border-none text-inherit text-sm"> {resource.name} 
+                                            </button>
 
-                                            className = "text-base leading-none ml-2 text-[var(--color-error-400)] hover:text-[var(--color-error-300)]"
-                                        > - </button>
-                                    </li>
+                                            <button
+                                                onClick = {(clicking) => { clicking.stopPropagation(); handleRemove(resource); }}
+                                                className = "text-base leading-none ml-2 text-[var(--color-error-400)] hover:text-[var(--color-error-300)]"> - 
+                                            </button>
+
+                                    </div>
                                 )
                             )}
                         </ul>
@@ -186,7 +181,7 @@ export default function ResourceManager(){
 
             </div>
 
-            {/* this is a popup for the users to   confirm/cancel their actions */}
+            {/* this is a popup for the users to confirm/cancel their actions */}
             {pending && (
                 <div className = "fixed inset-0 flex items-center justify-center z-50 bg-black/60">
                     <div className = "rounded-lg shadow-xl p-8 w-80 text-center bg-card border border-border">
