@@ -16,7 +16,7 @@ public class SchemaMultiTenantConnectionProvider
     implements MultiTenantConnectionProvider<String> { // String representing the user_id
 
   // Pool of database connections
-  private final DataSource dataSource;
+  private final transient DataSource dataSource;
 
   public SchemaMultiTenantConnectionProvider(DataSource dataSource) {
     this.dataSource = dataSource;

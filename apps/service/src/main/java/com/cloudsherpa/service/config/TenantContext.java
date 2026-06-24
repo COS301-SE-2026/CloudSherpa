@@ -7,6 +7,11 @@ package com.cloudsherpa.service.config;
 // * clicking around at the exact same time.
 
 public class TenantContext {
+
+  private TenantContext() {
+    throw new IllegalStateException("Utility class");
+  }
+
   private static final ThreadLocal<String> TENANT = new ThreadLocal<>();
 
   public static String getCurrentTenant() {
