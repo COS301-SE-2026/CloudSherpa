@@ -1,5 +1,10 @@
 package com.cloudsherpa.service.config;
 
+// * Once Hibernate knows who the user is, this class grabs a connection to PostgreSQL and runs the
+// * SET search_path to point that connection directly into the user's private data walls.
+// * When the query is finished, this class resets the connection back to the
+// * public default so it is perfectly clean and safe for the next person to use.
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import javax.sql.DataSource;

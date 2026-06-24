@@ -1,5 +1,10 @@
 package com.cloudsherpa.service.config;
 
+// * Every time a request arrives, this guard checks the user's JWT token.
+// * If they are logged in, the guard writes their ID on the sticky note (TenantContext).
+// * When the user is done and the response is sent, this guard shreds the sticky note
+// * so the next person who connects doesn't accidentally see the previous person's data.
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,8 +16,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 @Component
-// This code will execute exactly one time per incoming HTTP request, no matter what happens
-// internally.
 public class TenantInitializer extends OncePerRequestFilter {
   @Override
   protected void doFilterInternal(
