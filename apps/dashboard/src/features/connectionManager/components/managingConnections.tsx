@@ -50,6 +50,10 @@ export default function ManagingConnections(){
     setConnections((previous) => previous.filter((filteredConnections) => filteredConnections.id != id));
   };
 
+  const handleAdd = () => {
+    //empty for now
+  };
+
   return(
     <div
       data-theme = "dark"
@@ -58,6 +62,11 @@ export default function ManagingConnections(){
       {/* this si for the heading */}
       <div className = "flex items-start justify-between mb-5">
         <h1 className = "text-3xl font-semibold text-[var(--color-neutral-50)]"> Connection Manager </h1>
+
+        <button
+          onClick = {handleAdd}
+          className = "text-sm px-3 py-1.5 rounded-[var(--radius-sm)] border border-[var(--color-neutral-800)] text-[var(--color-neutral-50)] bg-transparent hover:bg-[var(--color-neutral-800)] transition-colors"> + add connection
+        </button>
 
       </div>
 
