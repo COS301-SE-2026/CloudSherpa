@@ -46,6 +46,10 @@ export default function ManagingConnections(){
 
   const filtered = activeFilter ? connections.filter((filteredConnections) => filteredConnections.provider === activeFilter) : connections;
 
+  const handleDeletion = (id : number) => {
+    setConnections((previous) => previous.filter((filteredConnections) => filteredConnections.id != id));
+  };
+
   return(
     <div
       data-theme = "dark"
@@ -95,6 +99,11 @@ export default function ManagingConnections(){
 
             <div className = "flex items-center gap-3">
               <span className = "text-xs text-[var(--color-neutral-400)]"> resource </span>
+
+              <button
+                onClick = {() => handleDeletion(connection.id)}
+                className = "text-[var(--color-neutral-400)] hover:text-[var(--color-error-500)] transition-colors"> <Trash2 size={15} />
+              </button>
 
             </div>
 
