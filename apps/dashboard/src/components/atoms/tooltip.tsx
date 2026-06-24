@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils"
 function TooltipProvider({
   delayDuration = 0,
   ...props
-}: Readonly<React.ComponentProps<typeof TooltipPrimitive.Provider>>) {
+}: React.ComponentProps<typeof TooltipPrimitive.Provider>) {
   return (
     <TooltipPrimitive.Provider
       data-slot="tooltip-provider"
@@ -20,7 +20,7 @@ function TooltipProvider({
 
 function Tooltip({
   ...props
-}: Readonly<React.ComponentProps<typeof TooltipPrimitive.Root>>) {
+}: React.ComponentProps<typeof TooltipPrimitive.Root>) {
   return <TooltipPrimitive.Root data-slot="tooltip" {...props} />
 }
 

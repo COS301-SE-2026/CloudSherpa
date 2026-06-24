@@ -172,7 +172,6 @@ function DashboardContent() {
   }, [layoutsMap, activeDashboardId]);
 
   const handleCancelEdit = useCallback(() => {
-    // Pass revert to original staate screenshort before edit was activated
     setInitialState(dashboards, originalLayout, originalConfigs);
     setIsEditMode(false);
   }, [originalLayout, originalConfigs, dashboards, setInitialState]);
@@ -186,12 +185,11 @@ function DashboardContent() {
         layoutItemIds: [],
       };
       addDashboard(newDashboard);
-      router.push(`?id=${newId}`); //push new id search params to url to redirect user to new dash
+      router.push(`?id=${newId}`); 
     },
     [addDashboard, router],
   );
 
-  //  UUID's for widget and layout id's so in theory won't be an id clash
   const handleAddWidget = useCallback(() => {
     const widgetId = crypto.randomUUID();
     const layoutId = crypto.randomUUID();

@@ -13,14 +13,14 @@
       "primary": { "$type": "color", "$value": "{color.brand.500}" },
       "primary-foreground": { "$type": "color", "$value": "{color.brand.50}" },
 
-      "secondary": { "$type": "color", "$value": "{color.secondary.800}" },
-      "secondary-foreground": { "$type": "color", "$value": "{color.secondary.100}" },
+      "secondary": { "$type": "color", "$value": "{color.neutral.800}" },
+      "secondary-foreground": { "$type": "color", "$value": "{color.neutral.50}" },
 
-      "muted": { "$type": "color", "$value": "{color.neutral.300}" },
-      "muted-foreground": { "$type": "color", "$value": "{color.neutral.300}" },
+      "muted": { "$type": "color", "$value": "{color.neutral.800}" },
+      "muted-foreground": { "$type": "color", "$value": "{color.neutral.400}" },
 
-      "accent": { "$type": "color", "$value": "{color.accent.700}" },
-      "accent-foreground": { "$type": "color", "$value": "{color.accent.50}" },
+      "accent": { "$type": "color", "$value": "{color.neutral.800}" },
+      "accent-foreground": { "$type": "color", "$value": "{color.neutral.50}" },
 
       "destructive": { "$type": "color", "$value": "{color.error.500}" },
       "destructive-foreground": { "$type": "color", "$value": "{color.error.50}" },

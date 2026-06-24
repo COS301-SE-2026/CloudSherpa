@@ -3,7 +3,6 @@
 import { TimePeriodSelector } from "@/features/dashboard/components/toolbar/timePeriodSelector";
 import { DashboardSelector } from "@/features/dashboard/components/toolbar/dashboardSelector";
 import { DateRange } from "react-day-picker";
-import { SidebarTrigger } from "@/components/atoms/sidebar";
 import { DashboardStub } from "@/features/dashboard/types/widgets";
 import EditButton from "@/features/dashboard/components/toolbar/editButton";
 
@@ -35,47 +34,25 @@ export default function Toolbar({
   onDateRangeChange,
 }: Readonly<ToolbarProps>) {
   return (
-    <div className="w-full flex flex-row items-center justify-between transition-card">
-      <div className="flex flex-row items-end gap-2">
-        {/* Toggle Group */}
-        <div className="flex flex-col items-start">
-          <SidebarTrigger className="bg-card border-border hover:bg-hover hover:text-foreground h-9 w-9 border" />
-        </div>
-        {/* vertical seperator as to not confuse user of sidebar trigger functionality */}
-        <div className="hidden md:flex h-9 w-px bg-border self-end mb-0" />
-
-        {/* Dashboard Group */}
-        <div className="w-fit h-full flex flex-row items-start justify-start gap-4">
-          <div className="w-full h-full flex flex-col">
-            <div className="flex items-center gap-3">
-              <DashboardSelector
-                dashboards={dashboards}
-                selectedId={selectedDashboardId}
-                onSelect={onDashboardChange}
-                onCreate={onCreateDashboard}
-              />
-            </div>
-          </div>
-
-          {/* Edit Group */}
-          <div className="fixed bottom-6 right-6 z-[100] flex w-fit flex-col items-end md:static md:h-full md:items-start md:z-auto">
-            <div className="rounded-md shadow-2xl md:shadow-none">
-              <EditButton
-                isEditMode={isEditMode}
-                handleStartEditing={handleStartEditing}
-                handleSaveEdit={handleSaveEdit}
-                handleCancelEdit={handleCancelEdit}
-                handleAddWidget={handleAddWidget}
-              />
-            </div>
-          </div>
-        </div>
+    <header className="flex h-16 shrink-0 items-center justify-between px-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 bg-red-500">
+      <div className="flex items-center gap-3 md:gap-4 shrink-0">
+        <DashboardSelector
+          dashboards={dashboards}
+          selectedId={selectedDashboardId}
+          onSelect={onDashboardChange}
+          onCreate={onCreateDashboard}
+        />
+        <EditButton
+          isEditMode={isEditMode}
+          handleStartEditing={handleStartEditing}
+          handleSaveEdit={handleSaveEdit}
+          handleCancelEdit={handleCancelEdit}
+          handleAddWidget={handleAddWidget}
+        />
       </div>
-
-      {/* Time Period Group */}
-      <div className="w-fit h-full flex flex-col items-start justify-start">
+      <div className="flex items-center">
         <TimePeriodSelector date={dateRange} onDateChange={onDateRangeChange} />
       </div>
-    </div>
+    </header>
   );
 }
