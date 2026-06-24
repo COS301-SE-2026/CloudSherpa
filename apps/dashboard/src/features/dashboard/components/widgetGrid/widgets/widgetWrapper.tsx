@@ -19,12 +19,20 @@ export const WidgetWrapper = ({ layout, isEditMode, onDeleteWidget, metricFetchL
 
   if (!config) return null;
 
+  const gridStackAttributes = {
+    "gs-id": id,
+    "gs-x": x,
+    "gs-y": y,
+    "gs-w": w,
+    "gs-h": h,
+    "widget-id": widgetId,
+    ...(autoPosition ? { "gs-auto-position": "true" } : {}),
+  };
+
   return (
-    <div 
+<div 
       className="grid-stack-item" 
-      gs-id={id} gs-x={x} gs-y={y} gs-w={w} gs-h={h}
-      data-widget-id={widgetId}
-      gs-auto-position={autoPosition ? "true" : undefined}
+      {...gridStackAttributes}
     >
       <div className="grid-stack-item-content relative overflow-visible rounded-md group">
         {/* handle area overlay */}

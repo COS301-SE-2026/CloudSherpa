@@ -19,7 +19,7 @@ export default function EditButton({
   handleStartEditing,
   handleSaveEdit,
   handleCancelEdit,
-}: ToolbarProps) {
+}: Readonly<ToolbarProps>) {
   return (
             <div className="flex items-center gap-2">
               <Button

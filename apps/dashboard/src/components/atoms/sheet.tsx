@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/atoms/button"
 import { XIcon } from "lucide-react"
 
-function Sheet({ ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {
+function Sheet({ ...props }: Readonly<React.ComponentProps<typeof SheetPrimitive.Root>>) {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />
 }
 
@@ -25,7 +25,7 @@ function SheetClose({
 
 function SheetPortal({
   ...props
-}: React.ComponentProps<typeof SheetPrimitive.Portal>) {
+}: Readonly<React.ComponentProps<typeof SheetPrimitive.Portal>>) {
   return <SheetPrimitive.Portal data-slot="sheet-portal" {...props} />
 }
 
@@ -113,7 +113,7 @@ function SheetTitle({
   return (
     <SheetPrimitive.Title
       data-slot="sheet-title"
-      className={cn("font-medium text-foreground", className)}
+      className={cn("font-heading font-medium text-foreground", className)}
       {...props}
     />
   )

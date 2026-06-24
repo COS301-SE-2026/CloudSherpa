@@ -27,7 +27,7 @@ export function Dropdown<T>({
   labelKey,
   valueKey,
   className
-}: DropdownProps<T>) {
+}:  Readonly<DropdownProps<T>>) {
   return (
     <Select value={value} onValueChange={onChange}>
 <SelectTrigger 

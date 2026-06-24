@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutDashboard, Cloud } from "lucide-react";
+import { LayoutDashboard, Network, Moon, Sun } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -13,9 +13,11 @@ import {
   SidebarHeader,
   SidebarFooter,
 } from "@/components/atoms/sidebar";
-import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useSyncExternalStore } from "react";
+import Link from "next/link";
+import { useAuthContext } from "@/features/authentication/providers/AuthContext";
+import { useLogout } from "@/features/authentication/hooks/useLogout";
 
 const navItems = [
   { title: "Dashboard", icon: LayoutDashboard, url: "/dashboard" },
@@ -24,10 +26,13 @@ const navItems = [
 export function AppSidebar() {
   const { theme, setTheme } = useTheme();
   const isMounted = useSyncExternalStore(
-    () => () => {}, 
-    () => true,    
-    () => false    
+    () => () => { },
+    () => true,
+    () => false
   );
+
+  const authContext = useAuthContext();
+  const { logout } = useLogout();
 
   if (!isMounted) return null;
   return (
@@ -69,35 +74,81 @@ export function AppSidebar() {
                     asChild
                     tooltip={item.title}
                     className="hover:bg-hover hover:text-secondary transition-button">
-                    <a href={item.url}>
+                    <Link href={item.url}>
                       <item.icon className="h-4 w-4" />
                       <span>{item.title}</span>
-                    </a>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold pt-4">
+            Add Connection
+          </SidebarGroupLabel>
+
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Link href="/addConnection/aws">
+                    <Network className="h-4 w-4" />
+                    <span>AWS</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Link href="/addConnection/gcp">
+                    <Network className="h-4 w-4" />
+                    <span>Google Cloud Platform</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Link href="/addConnection/azure">
+                    <Network className="h-4 w-4" />
+                    <span>Azure</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
 
       <SidebarFooter>
-        <SidebarMenuButton 
-      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-      tooltip="Toggle Theme"
-    >
-      {theme === "dark" ? (
-        <>
-          <Sun className="h-4 w-4" />
-          <span className="ml-2 group-data-[collapsible=offcanvas]:hidden">Light Mode</span>
-        </>
-      ) : (
-        <>
-          <Moon className="h-4 w-4" />
-          <span className="ml-2 group-data-[collapsible=offcanvas]:hidden">Dark Mode</span>
-        </>
-      )}
-    </SidebarMenuButton>
+        <SidebarMenu>
+          <SidebarGroupLabel>
+            {authContext?.user?.email}
+          </SidebarGroupLabel>
+          <SidebarMenuButton onClick={() => {
+            logout();
+          }}>
+            Logout
+          </SidebarMenuButton>
+          <SidebarMenuButton
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            tooltip="Toggle Theme"
+          >
+            {theme === "dark" ? (
+              <>
+                <Sun className="h-4 w-4" />
+                <span className="ml-2 group-data-[collapsible=offcanvas]:hidden">Light Mode</span>
+              </>
+            ) : (
+              <>
+                <Moon className="h-4 w-4" />
+                <span className="ml-2 group-data-[collapsible=offcanvas]:hidden">Dark Mode</span>
+              </>
+            )}
+          </SidebarMenuButton>
+        </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
   );

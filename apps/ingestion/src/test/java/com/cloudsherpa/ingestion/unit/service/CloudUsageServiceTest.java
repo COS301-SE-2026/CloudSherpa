@@ -6,8 +6,8 @@ import static org.mockito.Mockito.*;
 
 import com.cloudsherpa.ingestion.connector.*;
 import com.cloudsherpa.ingestion.models.*;
-import com.cloudsherpa.ingestion.normalization.persistence.service.SherpaDbPersistenceService;
 import com.cloudsherpa.ingestion.service.CloudUsageService;
+import com.cloudsherpa.ingestion.service.SherpaDbPersistenceService;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,8 +38,13 @@ class CloudUsageServiceTest {
     when(factory.getConnector("AWS")).thenReturn(connector);
 
     UsageRecordModel usageRecord = buildUsageRecord();
+    String resource = "resource1";
+    ResourceDetail resourceDetail =
+        new ResourceDetail("resourceId", "name", "type", "category", null);
 
     doReturn(List.of(usageRecord)).when(connector).fetchUsage(any(), any());
+    doReturn(List.of(resource)).when(connector).getAllOfferedServices();
+    doReturn(List.of(resourceDetail)).when(connector).getAllResources(any());
 
     IngestionRequestEvent request = buildRequest(true, false);
 
@@ -232,6 +237,16 @@ class CloudUsageServiceTest {
     @Override
     public String getProviderName() {
       return "AWS";
+    }
+
+    @Override
+    public List<String> getAllOfferedServices() {
+      return List.of();
+    }
+
+    @Override
+    public List<ResourceDetail> getAllResources(CloudCredentials credentials) {
+      return List.of();
     }
 
     @Override

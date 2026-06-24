@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useState } from "react";
-import { format, subDays } from "date-fns";
+import { format } from "date-fns";
 import { Calendar as CalendarIcon, ChevronLeft, ChevronDown, Filter } from "lucide-react";
 import { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
@@ -49,10 +49,10 @@ function getPresetRange(presetId: DurationPreset): DateRange {
 export function TimePeriodSelector({
   date,
   onDateChange,
-}: {
+}: Readonly<{
   date: DateRange | undefined;
   onDateChange: (range: DateRange | undefined) => void;
-}) {
+}>) {
   const [open, setOpen] = useState(false);
   const [view, setView] = useState<"presets" | "custom">("presets");
   const setSelectedPreset = useWindowStore((state) => state.setPreset);

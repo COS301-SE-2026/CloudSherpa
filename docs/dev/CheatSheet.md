@@ -35,11 +35,10 @@ pip install -r requirements.txt
 
 The `python -m venv .venv` command depends on your Python installation. If it fails, make sure the Python `venv` module is installed, then try `python3 -m venv .venv`.
 
-Spring Boot services use their Maven wrappers:
+Spring Boot services use the repository-root Maven wrapper:
 
 ```bash
-chmod +x apps/ingestion/mvnw
-chmod +x apps/service/mvnw
+chmod +x mvnw
 ```
 
 ## Docker Compose
@@ -68,7 +67,7 @@ Start the development container stack:
 docker compose -f infra/docker-compose.dev.yml up --build
 ```
 
-The development stack bind-mounts app source into the containers. The dashboard runs the Next.js development server and supports live reload for frontend changes. The Spring Boot containers use the dev image target with source mounted into `/app`; with VS Code, Java file changes can trigger Spring Boot reload through the Java tooling. With other IDEs, run `./mvnw compile` inside the relevant app directory or container to trigger reload after `.java` changes.
+The development stack bind-mounts app source into the containers. The dashboard runs the Next.js development server and supports live reload for frontend changes. The Spring Boot containers use the dev image target with source mounted into `/app`; with VS Code, Java file changes can trigger Spring Boot reload through the Java tooling. With other IDEs, run `./mvnw -pl apps/<app> -am compile` from the repository root or inside the container to trigger reload after `.java` changes.
 
 Start one service:
 
@@ -136,8 +135,8 @@ URL: `http://localhost:8000`
 ### Ingestion
 
 ```bash
-cd apps/ingestion
-./mvnw spring-boot:run
+./mvnw -f apps/lib/pom.xml install -DskipTests
+./mvnw -f apps/ingestion/pom.xml spring-boot:run
 ```
 
 URL: `http://localhost:8080` locally, or `http://localhost:8081` through Docker Compose.
@@ -145,8 +144,8 @@ URL: `http://localhost:8080` locally, or `http://localhost:8081` through Docker 
 ### Service
 
 ```bash
-cd apps/service
-./mvnw spring-boot:run
+./mvnw -f apps/lib/pom.xml install -DskipTests
+./mvnw -f apps/service/pom.xml spring-boot:run
 ```
 
 URL: `http://localhost:8080` locally, or `http://localhost:8083` through Docker Compose.
@@ -157,14 +156,14 @@ URL: `http://localhost:8080` locally, or `http://localhost:8083` through Docker 
 cd apps/dashboard-frontend && npm run build
 cd apps/dashboard-backend && npm run build
 cd apps/alert-engine && npm run build
-cd apps/ingestion && ./mvnw clean package
-cd apps/service && ./mvnw clean package
+./mvnw -pl apps/ingestion -am clean package
+./mvnw -pl apps/service -am clean package
 ```
 
 For Spring Boot builds without tests:
 
 ```bash
-./mvnw clean package -DskipTests
+./mvnw -pl apps/service -am clean package -DskipTests
 ```
 
 ## Test Commands
@@ -173,8 +172,8 @@ For Spring Boot builds without tests:
 cd apps/dashboard-backend && npm test
 cd apps/dashboard-backend && npm run test:e2e
 cd apps/alert-engine && npm test
-cd apps/ingestion && ./mvnw test
-cd apps/service && ./mvnw test
+./mvnw -pl apps/ingestion -am test
+./mvnw -pl apps/service -am test
 ```
 
 ## Lint and Format

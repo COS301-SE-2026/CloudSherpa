@@ -19,7 +19,7 @@ interface DashboardSelectorProps {
   onCreate: (name: string) => void;
 }
 
-export function DashboardSelector({ dashboards, selectedId, onSelect, onCreate }: DashboardSelectorProps) {
+export function DashboardSelector({ dashboards, selectedId, onSelect, onCreate }: Readonly<DashboardSelectorProps>) {
   const [open, setOpen] = useState(false);
   const [view, setView] = useState<"list" | "create">("list");
   const [newDashboardName, setNewDashboardName] = useState("");

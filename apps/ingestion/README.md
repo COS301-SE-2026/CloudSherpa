@@ -11,8 +11,8 @@ apps/ingestion
 ## Local Development
 
 ```bash
-cd apps/ingestion
-./mvnw spring-boot:run
+./mvnw -f apps/lib/pom.xml install -DskipTests
+./mvnw -f apps/ingestion/pom.xml spring-boot:run
 ```
 
 Local URL: `http://localhost:8080`
@@ -27,18 +27,16 @@ From the repository root:
 docker compose -f infra/docker-compose.dev.yml up --build ingestion
 ```
 
-The development Compose service bind-mounts `apps/ingestion` into `/app`. Spring Boot reload on `.java` file changes works through VS Code Java tooling. If you use another IDE, run `./mvnw compile` from `apps/ingestion` or inside the container to trigger reload after Java source changes.
+The development Compose service bind-mounts the repository into `/app`. Spring Boot reload on `.java` file changes works through VS Code Java tooling. If you use another IDE, run `./mvnw -pl apps/ingestion -am compile` from the repository root or inside the container to trigger reload after Java source changes.
 
 ## Build
 
 ```bash
-cd apps/ingestion
-./mvnw clean package
+./mvnw -pl apps/ingestion -am clean package
 ```
 
 ## Test
 
 ```bash
-cd apps/ingestion
-./mvnw test
+./mvnw -pl apps/ingestion -am test
 ```
