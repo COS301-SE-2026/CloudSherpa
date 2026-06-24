@@ -34,25 +34,25 @@ export default function Toolbar({
   onDateRangeChange,
 }: Readonly<ToolbarProps>) {
   return (
-    <header className="flex h-16 shrink-0 items-center justify-between px-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 bg-red-500">
-      <div className="flex items-center gap-3 md:gap-4 shrink-0">
-        <DashboardSelector
-          dashboards={dashboards}
-          selectedId={selectedDashboardId}
-          onSelect={onDashboardChange}
-          onCreate={onCreateDashboard}
-        />
-        <EditButton
-          isEditMode={isEditMode}
-          handleStartEditing={handleStartEditing}
-          handleSaveEdit={handleSaveEdit}
-          handleCancelEdit={handleCancelEdit}
-          handleAddWidget={handleAddWidget}
-        />
-      </div>
-      <div className="flex items-center">
-        <TimePeriodSelector date={dateRange} onDateChange={onDateRangeChange} />
-      </div>
+    <header className="h-16 flex flex-row items-center justify-between px-6 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
+          <div className="flex flex-row gap-2">
+            <DashboardSelector
+              dashboards={dashboards}
+              selectedId={selectedDashboardId}
+              onSelect={onDashboardChange}
+              onCreate={onCreateDashboard}
+            />
+            <EditButton
+              isEditMode={isEditMode}
+              handleStartEditing={handleStartEditing}
+              handleSaveEdit={handleSaveEdit}
+              handleCancelEdit={handleCancelEdit}
+              handleAddWidget={handleAddWidget}
+            />
+          </div>
+          <div>
+            <TimePeriodSelector date={dateRange} onDateChange={onDateRangeChange} />
+          </div>
     </header>
   );
 }

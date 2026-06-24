@@ -8,7 +8,7 @@ export default function AppWrapper({ children }: Readonly<{ children: React.Reac
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset className="flex flex-col flex-1 overflow-hidden">
-          <div className="flex flex-1 flex-col gap-4 p-4">
+          <div className="flex flex-1 flex-col gap-4">
             {children}
           </div>
         </SidebarInset>

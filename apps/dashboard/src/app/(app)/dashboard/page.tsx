@@ -5,7 +5,6 @@ import { DateRange } from "react-day-picker";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { Spinner } from "@/components/atoms/spinner";
-import Toolbar from "@/features/dashboard/components/toolbar/toolbar";
 import Grid from "@/features/dashboard/components/widgetGrid/grid";
 import {
   LayoutItem,
@@ -30,13 +29,7 @@ function DashboardContent() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [originalLayout, setOriginalLayout] = useState<LayoutItem[]>([]);
   const [originalConfigs, setOriginalConfigs] = useState<WidgetConfig[]>([]);
-
-  const fromMs = useWindowStore((state) => state.fromMs);
-  const toMs = useWindowStore((state) => state.toMs);
-  const from = new Date(fromMs);
-  const to = new Date(toMs);
   const setWindow = useWindowStore((state) => state.setWindow);
-  const dateRange: DateRange = { from, to };
 
   const dashboards = useDashboardStore((state: DashboardStore) => state.dashboards);
   const activeDashboardId = useDashboardStore((state: DashboardStore) => state.activeDashboardId);
@@ -172,6 +165,7 @@ function DashboardContent() {
   }, [layoutsMap, activeDashboardId]);
 
   const handleCancelEdit = useCallback(() => {
+    // Pass revert to original staate screenshort before edit was activated
     setInitialState(dashboards, originalLayout, originalConfigs);
     setIsEditMode(false);
   }, [originalLayout, originalConfigs, dashboards, setInitialState]);
@@ -265,21 +259,6 @@ function DashboardContent() {
 
   return (
     <>
-      <header className="sticky top-0 z-10 border-b bg-background/95 px-6 py-4">
-        <Toolbar
-          dashboards={dashboardStubs}
-          isEditMode={isEditMode}
-          handleAddWidget={handleAddWidget}
-          handleStartEditing={handleStartEditing}
-          handleSaveEdit={handleSaveEdit}
-          handleCancelEdit={handleCancelEdit}
-          selectedDashboardId={activeDashboardId || ""}
-          onDashboardChange={handleDashboardChange}
-          onCreateDashboard={handleCreateDashboard}
-          dateRange={dateRange}
-          onDateRangeChange={handleDateRangeChange}
-        />
-      </header>
       {streamError && (
         <div className="mx-6 mt-4 p-3 bg-destructive/10 border border-destructive/80 rounded-md text-destructive text-xs">
           Stream Error: {streamError.message}. Real-time updates may be paused.
