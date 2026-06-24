@@ -1,3 +1,5 @@
+//resource manager
+
 'use client'
 import { Input } from '@/components/atoms/input';
 import React, {useState} from 'react';
@@ -75,27 +77,27 @@ export default function ResourceManager(){
     const confirmationText = pending?.direction === 'enable' ? "Are you sure you want resource to be active?" : "Are you sure you want resource to be inactive?";
 
     return(
-        <div className = "min-h-screen bg-white flex flex-col items-center justify-center p-8">
+        <div className = "min-h-screen flex flex-col items-center justify-center p-8 bg-background text-foreground">
 
-            <h2 className = "text-lg font-medium tracking-tight text-black mb-8"> Resource Manager </h2>
+            <h2 className = "text-lg font-medium tracking-tight mb-8 text-foreground"> Resource Manager </h2>
 
             <div className = "flex items-center gap-4">
 
                 {/* this is for the inactive side */}
                 <div className = "flex flex-col gap-1">
-                    <span className = "text-xs text-black text-center"> Inactive </span>
-                    <div className = "w-96 bg-white border border-black rounded-md overflow-hidden">
-                        <div className = "flex items-center justify-between px-3 py-2 border-b border-black gap-2">
+                    <span className = "text-xs text-center text-[var(--color-neutral-400)]"> Inactive </span>
+                    <div className = "w-96 rounded-md overflow-hidden bg-card border border-border">
+                        <div className = "flex items-center justify-between px-3 py-2 gap-2 border-b border-border">
                             <Input
                                 placeholder = "Search..."
                                 value = {inactiveSearch}
                                 onChange = {(clickSearch) => setInactiveSearch(clickSearch.target.value)}
-                                className = "h-5 text-xs border-none shadow-none px-1 bg-transparent focus-visible:ring-0 text-black placeholder:text-black/50"
+                                className = "h-5 text-xs border-none shadow-none px-1 bg-transparent focus-visible:ring-0 placeholder:text-neutral-500 text-foreground"
                             />
 
                             <button
                                 onClick = {() => setInactiveSearch('')}
-                                className = "text-black text-xs"> x 
+                                className = "text-xs text-[var(--color-neutral-400)]"> x 
                             </button>
 
                         </div>
@@ -107,7 +109,7 @@ export default function ResourceManager(){
                                         key = {resource.id}
                                         onClick = {() => setSelected(resource.id)}
                                         className = {`flex items-center justify-between px-3 py-2 rounded text-sm cursor-pointer transition-colors ${
-                                            selected === resource.id ? 'bg-black text-white' : 'bg-white text-black hover:bg-black/10'}`}>
+                                            selected === resource.id ? 'bg-sidebar-primary-foreground text-sidebar-primary-foreground' : 'text-sidebar-border hover:bg-border'}`}>
                                         {resource.name}
 
                                         <button
@@ -116,7 +118,7 @@ export default function ResourceManager(){
                                                 handleAdd(resource);
                                             }}
 
-                                            className = "text-base leading-none ml-2"
+                                            className = "text-base leading-none ml-2 text-sidebar-accent hover:text-sidebar-ring"
 
                                         > + </button>
                                     </li>
@@ -129,11 +131,11 @@ export default function ResourceManager(){
                 {/* arrows */}
                 <div className = "flex flex-col gap-2 mt-5">
 
-                    <button className = "w-8 h-8 p-0 border-2 border-black bg-white text-black rounded-md flex items-center justify-center">
+                    <button className = "w-8 h-8 p-0 rounded-md flex items-center justify-center bg-border border border-sidebar-foreground text-foreground hover:bg-sidebar-foreground transition-colors">
                         &rarr;
                     </button>
 
-                    <button className = "w-8 h-8 p-0 border-2 border-black bg-white text-black rounded-md flex items-center justify-center">
+                    <button className = "w-8 h-8 p-0 rounded-md flex items-center justify-center bg-border border border-sidebar-foreground text-foreground hover:bg-sidebar-foreground transition-colors">
                         &larr;
                     </button>
 
@@ -141,19 +143,19 @@ export default function ResourceManager(){
 
                 {/* this is for the active side */}
                 <div className = "flex flex-col gap-1">
-                    <span className = "text-xs text-black text-center"> Active </span>
-                    <div className = "w-96 bg-white border border-black rounded-md overflow-hidden">
-                        <div className = "flex items-center justify-between px-3 py-2 border-b border-black gap-2">
+                    <span className = "text-xs text-center text-[var(--color-neutral-400)]"> Active </span>
+                    <div className = "w-96 rounded-md overflow-hidden bg-card border border-border">
+                        <div className = "flex items-center justify-between px-3 py-2 gap-2 border-b border-border">
                             <Input
                                 placeholder = "Search..."
                                 value = {activeSearch}
                                 onChange = {(clickSearch) => setActiveSearch(clickSearch.target.value)}
-                                className = "h-5 text-xs border-none shadow-none px-1 bg-transparent focus-visible:ring-0 text-black placeholder:text-black/50"
+                                className = "h-5 text-xs border-none shadow-none px-1 bg-transparent focus-visible:ring-0 placeholder:text-neutral-500 text-foreground"
                             />
 
                             <button
                                 onClick = {() => setActiveSearch('')}
-                                className = "text-black text-xs"> x 
+                                className = "text-xs text-[var(--color-neutral-400)]"> x 
                             </button>
 
                         </div>
@@ -164,7 +166,7 @@ export default function ResourceManager(){
                                         key = {resource.id} 
                                         onClick = {() => setSelected(resource.id)}
                                         className = {`flex items-center justify-between px-3 py-2 rounded text-sm cursor-pointer transition-colors ${
-                                            selected === resource.id ? 'bg-black text-white' : 'bg-white text-black hover:bg-black/10'}`}>
+                                            selected === resource.id ? 'bg-sidebar-primary-foreground text-sidebar-primary-foreground' : 'text-sidebar-border hover:bg-border'}`}>
                                         {resource.name}
 
                                         <button
@@ -173,8 +175,8 @@ export default function ResourceManager(){
                                                 handleRemove(resource);
                                             }}
 
-                                            className = "text-base leading-none ml-2"
-                                        > &minus </button>
+                                            className = "text-base leading-none ml-2 text-[var(--color-error-400)] hover:text-[var(--color-error-300)]"
+                                        > - </button>
                                     </li>
                                 )
                             )}
@@ -184,22 +186,22 @@ export default function ResourceManager(){
 
             </div>
 
-            {/* this is a popup for the users to confirm/cancel their actions */}
+            {/* this is a popup for the users to   confirm/cancel their actions */}
             {pending && (
-                <div className = "fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <div className = "bg-white border border-black rounded-lg shadow-xl p-8 w-80 text-center">
-                        <h3 className = "text-lg font-bold text-black mb-3"> Are you sure? </h3>
-                        <p className = "text-sm text-black/70 mb-6 leading-relaxed"> {confirmationText} </p>
+                <div className = "fixed inset-0 flex items-center justify-center z-50 bg-black/60">
+                    <div className = "rounded-lg shadow-xl p-8 w-80 text-center bg-card border border-border">
+                        <h3 className = "text-lg font-bold mb-3 text-muted"> Are you sure? </h3>
+                        <p className = "text-sm leading-relaxed text-[var(--color-neutral-400)]"> {confirmationText} </p>
 
                         <div className = "flex gap-3 justify-center">
                             <button 
                                 onClick = {handleCancel}
-                                className = "px-6 py-2 text-sm font-medium rounded border border-black text-black hover:bg-black/10 transition-colors"> cancel 
+                                className = "px-6 py-2 text-sm font-medium rounded transition-colors border border-sidebar-foreground text-muted hover:bg-border"> cancel 
                             </button>
 
                             <button 
                                 onClick = {handleConfirm}
-                                className = "px-6 py-2 text-sm font-medium rounded bg-black text-white hover:bg-black/80 transition-colors"> confirm 
+                                className = "px-6 py-2 text-sm font-medium rounded transition-colors border border-muted text-foreground hover:bg-muted-foreground"> confirm 
                             </button>
 
                         </div>
