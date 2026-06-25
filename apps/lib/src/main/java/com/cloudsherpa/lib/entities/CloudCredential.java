@@ -10,7 +10,7 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "cloud_credential")
+@Table(name = "cloud_credential", schema = "public")
 public class CloudCredential {
 
   @Id
