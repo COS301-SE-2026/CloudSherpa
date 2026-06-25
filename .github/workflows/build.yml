@@ -18,6 +18,7 @@ jobs:
     cloudsherpa-build:
         permissions:
             id-token: write
+            contents: read
         runs-on: ubuntu-latest
 
         strategy:
@@ -43,7 +44,7 @@ jobs:
             - name: Configure AWS Credentials
               uses: aws-actions/configure-aws-credentials@e004cdcd2873919dbd2e62aa51128bedb3181599 # Version 6.1.0
               with:
-                role-to-assume: ${{ vars.AWS_ACTIONS_ROLE_ARN }}
+                role-to-assume: ${{ vars.AWS_ACTIONS_ECR_ROLE_ARN }}
                 aws-region: eu-north-1
             
             - name: Login to Amazon ECR Private
@@ -58,3 +59,4 @@ jobs:
               run: |
                 docker build --file "${{ matrix.dockerfile }}" --tag "$REGISTRY/$REPOSITORY:$IMAGE_TAG" "${{ matrix.context }}" 
                 docker push "$REGISTRY/$REPOSITORY:$IMAGE_TAG"
+    
