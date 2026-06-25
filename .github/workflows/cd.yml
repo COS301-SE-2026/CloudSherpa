@@ -1,15 +1,12 @@
 name: CloudSherpa Continous Deployment
 
 on:
-    # Temp trigger
-    workflow_run:
-        workflows: ["CloudSherpa Images Build"]
-        types:
-            - completed
+  push:
+    branches:
+      - main
 
 jobs:
     cloudsherpa-deploy:
-        if: ${{ github.event.workflow_run.conclusion == 'success' }}
         permissions:
             id-token: write
         runs-on: ubuntu-latest
@@ -29,7 +26,7 @@ jobs:
                 IMAGE_TAG: ${{ github.sha }}
                 INSTANCE_ID: ${{ vars.AWS_DEPLOY_INSTANCE_ID }} 
               run: |
-                COMMAND_ID= "$(aws ssm send-command \
+                COMMAND_ID="$(aws ssm send-command \
                     --instance-ids "$INSTANCE_ID" \
                     --document-name "AWS-RunShellScript" \
                     --comment "Deploy commit $IMAGE_TAG" \
@@ -38,4 +35,4 @@ jobs:
                     --output text
                 )"
               
-                aws ssm wait command-executed --command-id "$COMMAND_ID" instance-id "$INSTANCE_ID"
+                aws ssm wait command-executed --command-id "$COMMAND_ID" --instance-id "$INSTANCE_ID"

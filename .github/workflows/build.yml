@@ -22,6 +22,7 @@ jobs:
     cloudsherpa-build:
         permissions:
             id-token: write
+            contents: read
         runs-on: ubuntu-latest
 
         strategy:
@@ -62,3 +63,37 @@ jobs:
               run: |
                 docker build --file "${{ matrix.dockerfile }}" --tag "$REGISTRY/$REPOSITORY:$IMAGE_TAG" "${{ matrix.context }}" 
                 docker push "$REGISTRY/$REPOSITORY:$IMAGE_TAG"
+    
+    # Temp add as part of build to test deployment
+    cloudsherpa-deploy:
+        needs: cloudsherpa-build
+        permissions:
+            id-token: write
+            contents: read
+        runs-on: ubuntu-latest
+        
+        steps:
+            - name: Checkout repo
+              uses: actions/checkout@b9e0990d219a03df7633c93f6f005a8fecbcab22 # Version 7
+
+            - name: Configure AWS Credentials
+              uses: aws-actions/configure-aws-credentials@e004cdcd2873919dbd2e62aa51128bedb3181599 # Version 6.1.0
+              with:
+                role-to-assume: ${{ vars.AWS_ACTIONS_DEPLOY_ROLE_ARN }}
+                aws-region: eu-north-1
+            
+            - name: Deploy via AWS SSM
+              env:
+                IMAGE_TAG: ${{ github.sha }}
+                INSTANCE_ID: ${{ vars.AWS_DEPLOY_INSTANCE_ID }} 
+              run: |
+                COMMAND_ID="$(aws ssm send-command \
+                    --instance-ids "$INSTANCE_ID" \
+                    --document-name "AWS-RunShellScript" \
+                    --comment "Deploy commit $IMAGE_TAG" \
+                    --parameters "commands=[\"/opt/cloudsherpa/deploy.sh '$IMAGE_TAG'\"]" \
+                    --query "Command.CommandId" \
+                    --output text
+                )"
+              
+                aws ssm wait command-executed --command-id "$COMMAND_ID" --instance-id "$INSTANCE_ID"
