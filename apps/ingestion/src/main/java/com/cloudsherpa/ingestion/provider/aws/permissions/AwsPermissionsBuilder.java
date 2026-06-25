@@ -1,4 +1,4 @@
-package com.cloudsherpa.ingestion.provider.aws;
+package com.cloudsherpa.ingestion.provider.aws.permissions;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

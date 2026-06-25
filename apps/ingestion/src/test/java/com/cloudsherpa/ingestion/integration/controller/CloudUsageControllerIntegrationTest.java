@@ -63,36 +63,38 @@ class CloudUsageControllerIntegrationTest {
 
     String requestJson =
         """
+        {
+          "includeUsage": true,
+          "includeBilling": false,
+          "period": 300,
+          "from": "2026-05-20T00:00:00Z",
+          "to": "2026-05-20T01:00:00Z",
+          "scopes": [
+            {
+              "provider": "AWS",
+              "accountId": "123456789",
+              "serviceScopes": [
                 {
-                  "includeUsage": true,
-                  "includeBilling": false,
-                  "period": 300,
-                  "from": "2026-05-20T00:00:00Z",
-                  "to": "2026-05-20T01:00:00Z",
-                  "scopes": [
+                  "name": "AWS/EC2",
+                  "metrics": [
+                  {
+                    "name": "CPUUtilization"
+                  }
+                  ],
+                  "instances": [
                     {
-                      "provider": "AWS",
-                      "accountId": "123456789",
-                      "serviceScopes": [
-                        {
-                          "name": "AWS/EC2",
-                          "metrics": [
-                            "CPUUtilization"
-                          ],
-                          "instances": [
-                            {
-                              "identifierName": "InstanceId",
-                              "values": [
-                                "i-test123"
-                              ]
-                            }
-                          ]
-                        }
+                      "identifierName": "InstanceId",
+                      "values": [
+                        "i-test123"
                       ]
                     }
                   ]
                 }
-                """;
+              ]
+            }
+          ]
+        }
+        """;
 
     mockMvc
         .perform(
