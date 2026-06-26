@@ -21,13 +21,13 @@ import { ChevronsUpDownIcon, PlusIcon } from "lucide-react"
 
 export function TeamSwitcher({
   teams,
-}: {
+}: Readonly<{
   teams: {
     name: string
     logo: React.ReactNode
     plan: string
   }[]
-}) {
+}>) {
   const { isMobile } = useSidebar()
   const [activeTeam, setActiveTeam] = React.useState(teams[0])
 

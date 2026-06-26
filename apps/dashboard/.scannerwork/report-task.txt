@@ -1,0 +1,6 @@
+projectKey=CloudSherpa-dashboard
+serverUrl=https://sonarqube.gjjcs.org
+serverVersion=26.5.0.122743
+dashboardUrl=https://sonarqube.gjjcs.org/dashboard?id=CloudSherpa-dashboard
+ceTaskId=e5c7b9bb-6fce-428e-8663-651b7093c832
+ceTaskUrl=https://sonarqube.gjjcs.org/api/ce/task?id=e5c7b9bb-6fce-428e-8663-651b7093c832

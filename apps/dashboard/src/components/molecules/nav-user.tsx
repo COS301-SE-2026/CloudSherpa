@@ -24,13 +24,13 @@ import { ChevronsUpDownIcon, SparklesIcon, BadgeCheckIcon, CreditCardIcon, BellI
 
 export function NavUser({
   user,
-}: {
+}: Readonly<{
   user: {
     name: string
     email: string
     avatar: string
   }
-}) {
+}>) {
   const { isMobile } = useSidebar()
 
   return (
