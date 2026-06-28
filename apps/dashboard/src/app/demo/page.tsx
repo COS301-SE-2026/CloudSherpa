@@ -1,64 +1,89 @@
-"use client"
+"use client";
 
-import { useMetricStream } from "@/features/dashboard/services/sse/metric-stream";
+import React, { useEffect, useState } from "react";
+import Widget from "@/features/dashboard/components/widgetGrid/widgets/widget";
+import { WidgetConfig } from "@/features/dashboard/types/widgets";
 import { useMetricStore } from "@/features/dashboard/stores/metric-store";
-import { useFetchMetrics } from "@/features/dashboard/hooks/useFetchMetrics";
-import { metricSeriesToArray } from "@/features/dashboard/types/metric";
-import { useMemo } from "react";
+import { MetricSeries } from "@/features/dashboard/types/metric";
 
-export default function Demo() {
-    const { error } = useMetricStream();
-    const metrics = useMetricStore((state) => (state.seriesByKey));
+const MOCK_WIDGETS: WidgetConfig[] = [
+  {
+    id: "mock-widget-1",
+    chartType: "line",
+    title: "Server CPU Load (Mock)",
+    resourceId: "demo-server-01",
+    metricType: "cpu",
+  },
+  {
+    id: "mock-widget-2",
+    chartType: "gauge",
+    title: "Memory Utilization (Mock)",
+    resourceId: "demo-server-01",
+    metricType: "memory",
+  },
+];
 
-    const cpuSeries = metrics['74266597-141c-3ecc-8f68-8667ff7163a7:cpu'];
-    const forCpuData = useMemo(() => metricSeriesToArray(cpuSeries), [cpuSeries]);
-    const latestCpuValue = forCpuData.length > 0 ? forCpuData.at(-1)?.value : 0;
-    useFetchMetrics();
+export default function DemoPage() {
+  const [isReady, setIsReady] = useState(false);
 
-    return (
-        <main className="min-h-screen bg-slate-50 p-6 text-slate-950">
-            <div className="mx-auto max-w-7xl space-y-6">
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-                    <div>
-                        <h1 className="text-2xl font-semibold tracking-normal">Metric Stream</h1>
-                        <p className="text-sm text-slate-600">
-                            {/* Metrics received: {Object.values(metrics).reduce((count, series) => count + Object.keys(series).length, 0)} */}
-                        </p>
-                        <p className="text-sm text-blue-600">
-                            Current CPU: {latestCpuValue}%
-                        </p>
-                    </div>
-                </div>
+  useEffect(() => {
+    const now = Date.now();
 
-                {/*added widgets that will be adjusted from all sides*/}
-                <div className="flex flex-wrap gap-6 justify-center">
-                    {/* <ConfigurableWidget
-                        initialConfig={{
-                            id: crypto.randomUUID(),
-                            title: "EC2 mock",
-                            resourceId: "mock-ec2-1",
-                            metricType: "anon",
-                            widgetType: "line"
-                        }}
-                    /> */}
-{/* 
-                    <ConfigurableWidget
-                        initialConfig={{
-                            id: crypto.randomUUID(),
-                            title: "Name",
-                            resourceId: "mock-ec2-1",
-                            metricType: "anon",
-                            widgetType: "gauge"
-                        }}
-                    /> */}
-                </div>
+    const mockCpuSeries: MetricSeries = Array.from({ length: 60 }).reduce((acc: MetricSeries, _, i) => {
+      const timestampNum = now - (60 - i) * 5000;
+      const timestampStr = new Date(timestampNum).toISOString();
 
-                {error ? (
-                    <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-                        {error.message}
-                    </div>
-                ) : null}
+      const value = 40 + Math.sin(i * 0.5) * 20 + Math.random() * 10;
+
+      acc[timestampStr] = {
+        timestamp: timestampStr,
+        value: value,
+        resource_id: "demo-server-01",
+        metricType: "cpu",
+      };
+
+      return acc;
+    }, {});
+
+    const memoryTimestampStr = new Date(now).toISOString();
+    const mockMemorySeries: MetricSeries = {
+      [memoryTimestampStr]: {
+        timestamp: memoryTimestampStr,
+        value: 72.5,
+        resource_id: "demo-server-01",
+        metricType: "memory",
+      },
+    };
+
+    useMetricStore.setState((state) => ({
+      ...state,
+      seriesByKey: {
+        ...state.seriesByKey,
+        "demo-server-01:cpu": mockCpuSeries,
+        "demo-server-01:memory": mockMemorySeries,
+      },
+    }));
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setIsReady(true);
+  }, []);
+
+  return (
+    <div className="p-8 min-h-screen bg-background">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-foreground">Design System Charts</h1>
+        <p className="text-muted-foreground mt-2">
+          Testing decoupled ECharts with Shadcn themes and strict mock Zustand data.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-[350px]">
+        {isReady &&
+          MOCK_WIDGETS.map((config) => (
+            <div key={config.id} className="w-full h-full">
+              <Widget config={config} />
             </div>
-        </main>
-    );
+          ))}
+      </div>
+    </div>
+  );
 }
