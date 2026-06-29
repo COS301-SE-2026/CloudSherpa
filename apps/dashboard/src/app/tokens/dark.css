@@ -11,12 +11,12 @@
   --popover-foreground: var(--color-neutral-50);
   --primary: var(--color-brand-500);
   --primary-foreground: var(--color-brand-50);
-  --secondary: var(--color-secondary-800);
-  --secondary-foreground: var(--color-secondary-100);
-  --muted: var(--color-neutral-300);
-  --muted-foreground: var(--color-neutral-300);
-  --accent: var(--color-accent-700);
-  --accent-foreground: var(--color-accent-50);
+  --secondary: var(--color-neutral-800);
+  --secondary-foreground: var(--color-neutral-50);
+  --muted: var(--color-neutral-800);
+  --muted-foreground: var(--color-neutral-400);
+  --accent: var(--color-neutral-800);
+  --accent-foreground: var(--color-neutral-50);
   --destructive: var(--color-error-500);
   --destructive-foreground: var(--color-error-50);
   --success: var(--color-success-500);

@@ -147,7 +147,7 @@ export default function StepThree({
   const groupedResources = groupResourcesByCategory(resources);
 
   const handleSubmit = (
-    event: React.FormEvent<HTMLFormElement>
+    event: React.SubmitEvent<HTMLFormElement>
   ) => {
     event.preventDefault();
     onComplete(selectedResources);

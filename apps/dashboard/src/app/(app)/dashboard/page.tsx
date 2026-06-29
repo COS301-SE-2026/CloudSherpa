@@ -1,23 +1,19 @@
 "use client";
 
 import { useState, useCallback, useEffect, Suspense, useMemo } from "react";
-import { DateRange } from "react-day-picker";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { Spinner } from "@/components/atoms/spinner";
-import Toolbar from "@/features/dashboard/components/toolbar/toolbar";
 import Grid from "@/features/dashboard/components/widgetGrid/grid";
 import {
   LayoutItem,
   DashboardConfig,
-  DashboardStub,
   WidgetConfig,
   ChartType,
 } from "@/features/dashboard/types/widgets";
 import { useDashboardStore, DashboardStore } from "@/features/dashboard/stores/dashboard-store";
 import { useMetricStream } from "@/features/dashboard/services/sse/metric-stream";
 import { useFetchMetrics } from "@/features/dashboard/hooks/useFetchMetrics";
-import { useWindowStore } from "@/features/dashboard/stores/window-store";
 import { useResourceNameStore } from "@/features/dashboard/stores/resource-store";
 import { useMetricStore } from "@/features/dashboard/stores/metric-store";
 
@@ -27,28 +23,18 @@ function DashboardContent() {
   const searchParams = useSearchParams();
   const urlId = searchParams.get("id");
   const [isLoading, setIsLoading] = useState(true);
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [originalLayout, setOriginalLayout] = useState<LayoutItem[]>([]);
-  const [originalConfigs, setOriginalConfigs] = useState<WidgetConfig[]>([]);
-
-  const fromMs = useWindowStore((state) => state.fromMs);
-  const toMs = useWindowStore((state) => state.toMs);
-  const from = new Date(fromMs);
-  const to = new Date(toMs);
-  const setWindow = useWindowStore((state) => state.setWindow);
-  const dateRange: DateRange = { from, to };
+  const [isEditMode] = useState(false);
 
   const dashboards = useDashboardStore((state: DashboardStore) => state.dashboards);
   const activeDashboardId = useDashboardStore((state: DashboardStore) => state.activeDashboardId);
   const layoutsMap = useDashboardStore((state: DashboardStore) => state.layouts);
-  const widgetsMap = useDashboardStore((state: DashboardStore) => state.widgets);
 
   // Metrics and resource name stores
   const { metricFetchError, metricFetchLoad } = useFetchMetrics();
   const fetchResourceNames = useResourceNameStore((state) => state.fetchResources);
   const getMetricList = useMetricStore((state) => state.getMetricList);
 
-  const { setInitialState, addWidget, removeWidget, updateLayouts, setActiveDashboard, addDashboard } =
+  const { setInitialState, removeWidget, updateLayouts, setActiveDashboard } =
     useDashboardStore((state: DashboardStore) => state.actions);
 
   const createDefaultWidgetConfig = useCallback(
@@ -139,13 +125,6 @@ function DashboardContent() {
     }
   }, [urlId, dashboards, activeDashboardId, setActiveDashboard]);
 
-  const handleDashboardChange = useCallback(
-    (id: string) => {
-      router.push(`?id=${id}`);
-    },
-    [router],
-  );
-
   // computes the layouts array for the active dashboard
   const activeDashboard = activeDashboardId ? dashboards[activeDashboardId] : undefined;
   const widgetLayouts = useMemo(() => {
@@ -153,54 +132,6 @@ function DashboardContent() {
       activeDashboard?.layoutItemIds?.map((id: string) => layoutsMap[id]).filter((l): l is LayoutItem => !!l) ?? []
     );
   }, [activeDashboard, layoutsMap]);
-
-  // maps normalized dashboards back to stub format for thetoollbar dropdown
-  const dashboardStubs: DashboardStub[] = Object.values(dashboards).map((d: DashboardConfig) => ({
-    id: d.id,
-    label: d.name,
-  }));
-
-  const handleStartEditing = useCallback(() => {
-    setOriginalLayout(widgetLayouts.map((l) => ({ ...l })));
-    setOriginalConfigs(Object.values(widgetsMap).map((c) => ({ ...c })));
-    setIsEditMode(true);
-  }, [widgetLayouts, widgetsMap]);
-
-  const handleSaveEdit = useCallback(() => {
-    console.log(`Saving layout for ${activeDashboardId}...`, layoutsMap);
-    setIsEditMode(false);
-  }, [layoutsMap, activeDashboardId]);
-
-  const handleCancelEdit = useCallback(() => {
-    // Pass revert to original staate screenshort before edit was activated
-    setInitialState(dashboards, originalLayout, originalConfigs);
-    setIsEditMode(false);
-  }, [originalLayout, originalConfigs, dashboards, setInitialState]);
-
-  const handleCreateDashboard = useCallback(
-    (name: string) => {
-      const newId = crypto.randomUUID();
-      const newDashboard: DashboardConfig = {
-        id: newId,
-        name: name,
-        layoutItemIds: [],
-      };
-      addDashboard(newDashboard);
-      router.push(`?id=${newId}`); //push new id search params to url to redirect user to new dash
-    },
-    [addDashboard, router],
-  );
-
-  //  UUID's for widget and layout id's so in theory won't be an id clash
-  const handleAddWidget = useCallback(() => {
-    const widgetId = crypto.randomUUID();
-    const layoutId = crypto.randomUUID();
-    const newConfig = createDefaultWidgetConfig(widgetId, "New Widget (Click to Customize)", "line");
-    const newLayout: LayoutItem = { id: layoutId, widgetId, x: 0, y: 0, w: 6, h: 4, autoPosition: true };
-
-    addWidget(newLayout, newConfig);
-    setIsEditMode(true);
-  }, [addWidget, createDefaultWidgetConfig]);
 
   const handleDeleteWidget = useCallback(
     (layoutId: string, widgetId: string) => {
@@ -216,14 +147,6 @@ function DashboardContent() {
     [updateLayouts],
   );
 
-  const handleDateRangeChange = useCallback(
-    (range: DateRange | undefined) => {
-      if (range?.from && range?.to) {
-        setWindow(range.from, range.to);
-      }
-    },
-    [setWindow],
-  );
   const renderMainContent = () => {
     if (isLoading) {
       return (
@@ -267,21 +190,6 @@ function DashboardContent() {
 
   return (
     <>
-      <header className="sticky top-0 z-10 border-b bg-background/95 px-6 py-4">
-        <Toolbar
-          dashboards={dashboardStubs}
-          isEditMode={isEditMode}
-          handleAddWidget={handleAddWidget}
-          handleStartEditing={handleStartEditing}
-          handleSaveEdit={handleSaveEdit}
-          handleCancelEdit={handleCancelEdit}
-          selectedDashboardId={activeDashboardId || ""}
-          onDashboardChange={handleDashboardChange}
-          onCreateDashboard={handleCreateDashboard}
-          dateRange={dateRange}
-          onDateRangeChange={handleDateRangeChange}
-        />
-      </header>
       {streamError && (
         <div className="mx-6 mt-4 p-3 bg-destructive/10 border border-destructive/80 rounded-md text-destructive text-xs">
           Stream Error: {streamError.message}. Real-time updates may be paused.

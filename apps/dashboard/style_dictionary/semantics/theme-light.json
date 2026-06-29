@@ -10,17 +10,17 @@
       "popover": { "$type": "color", "$value": "{color.neutral.50}" },
       "popover-foreground": { "$type": "color", "$value": "{color.neutral.950}" },
 
-      "primary": { "$type": "color", "$value": "{color.brand.500}" },
+      "primary": { "$type": "color", "$value": "{color.brand.600}" },
       "primary-foreground": { "$type": "color", "$value": "{color.brand.50}" },
 
-      "secondary": { "$type": "color", "$value": "{color.secondary.500}" },
-      "secondary-foreground": { "$type": "color", "$value": "{color.secondary.50}" },
+      "secondary": { "$type": "color", "$value": "{color.neutral.100}" },
+      "secondary-foreground": { "$type": "color", "$value": "{color.neutral.900}" },
 
-      "muted": { "$type": "color", "$value": "{color.neutral.500}" },
-      "muted-foreground": { "$type": "color", "$value": "{color.neutral.600}" },
+      "muted": { "$type": "color", "$value": "{color.neutral.100}" },
+      "muted-foreground": { "$type": "color", "$value": "{color.neutral.500}" },
 
-      "accent": { "$type": "color", "$value": "{color.accent.500}" },
-      "accent-foreground": { "$type": "color", "$value": "{color.accent.50}" },
+      "accent": { "$type": "color", "$value": "{color.neutral.100}" },
+      "accent-foreground": { "$type": "color", "$value": "{color.neutral.900}" },
 
       "destructive": { "$type": "color", "$value": "{color.error.500}" },
       "destructive-foreground": { "$type": "color", "$value": "{color.error.50}" },
