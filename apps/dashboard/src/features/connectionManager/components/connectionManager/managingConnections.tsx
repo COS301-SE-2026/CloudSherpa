@@ -8,6 +8,8 @@
 
 import {useState} from "react";
 import {Trash2} from "lucide-react";
+import {Card, CardContent} from "@/components/atoms/card";
+import {Button} from "@/components/atoms/button";
 
 type Providers = "AWS" | "Azure" | "GCP";
 
@@ -63,10 +65,10 @@ export default function ManagingConnections(){
       <div className = "flex items-start justify-between mb-5">
         <h1 className = "text-3xl font-semibold text-foreground"> Connection Manager </h1>
 
-        <button
+        <Button
           onClick = {handleAdd}
-          className = "text-sm px-3 py-1.5 rounded-[var(--radius-sm)] border border-border text-foreground bg-transparent hover:bg-border transition-colors"> + add connection
-        </button>
+          className = "text-sm px-3 py-1.5 h-auto"> + add connection
+        </Button>
 
       </div>
 
@@ -79,14 +81,14 @@ export default function ManagingConnections(){
           const styling = providerTabs[providers];
 
           return(
-            <button 
+            <Button 
               key = {providers}
               onClick = {() => setActiveFilter(isActive ? null : providers)}
-              className = {`text-xs px-2.5 py-0.5 rounded-[var(--radius-sm)] font-medium transition-all ${
+              className = {`text-xs px-2.5 py-0.5 h-auto rounded-[var(--radius-sm)] font-medium transition-all ${
                 isActive ? styling.active : styling.inactive
               }`}
               > {providers}
-            </button>
+            </Button>
           );
 
         })}
@@ -96,27 +98,33 @@ export default function ManagingConnections(){
       {/* this is for the list of conn */}
       <div className = "flex flex-col gap-2">
         {filtered.map((connection) => (
-          <div 
+          <Card 
             key = {connection.id}
-            className = "flex items-center justify-between px-4 py-3 rounded-[var(--radius-md)] border border-border bg-sidebar">
+            className = "border-border">
 
-            <div>
-              <p className = "text-sm font-medium text-foreground"> {connection.name} </p>
+            <CardContent className = "px-4 py-3">
+              <div className = "flex items-center justify-between">
+                <div>
+                  <p className = "text-sm font-medium text-foreground"> {connection.name} </p>
 
-              <p className = "text-xs text-[var(--color-neutral-400)] mt-0.5"> {connection.detail} </p>
-            </div>
+                  <p className = "text-xs text-[var(--color-neutral-400)] mt-0.5"> {connection.detail} </p>
+                </div>
 
-            <div className = "flex items-center gap-3">
-              <span className = "text-xs text-[var(--color-neutral-400)]"> resource </span>
+                <div className = "flex items-center gap-3">
+                  <span className = "text-xs text-[var(--color-neutral-400)]"> resource </span>
 
-              <button
-                onClick = {() => handleDeletion(connection.id)}
-                className = "text-[var(--color-neutral-400)] hover:text-[var(--color-error-500)] transition-colors"> <Trash2 size={15} />
-              </button>
+                  <Button
+                    onClick = {() => handleDeletion(connection.id)}
+                    variant = "ghost"
+                    size = "icon"
+                    className = "text-[var(--color-neutral-400)] hover:text-[var(--color-error-500)] transition-colors"> <Trash2 size={15} />
+                  </Button>
 
-            </div>
+                </div>
+              </div>
+            </CardContent>
 
-          </div>
+          </Card>
         ))}
       </div>
 
