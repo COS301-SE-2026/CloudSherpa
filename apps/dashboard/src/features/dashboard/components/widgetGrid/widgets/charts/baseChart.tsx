@@ -14,6 +14,7 @@ export function BaseChart({ option }: Readonly<{ option: EChartsOption }>) {  re
       style={{ height: "100%", width: "100%", minHeight: "100px" }}
       notMerge={true}
       lazyUpdate={true}
+      
     />
   );
 }

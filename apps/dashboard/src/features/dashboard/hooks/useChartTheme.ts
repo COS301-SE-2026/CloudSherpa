@@ -1,32 +1,65 @@
-import { useEffect, useState } from "react";
+"use client";
+
+import { useTheme } from "next-themes";
+import * as echarts from "echarts";
+
+import lightTokens from "@/app/tokens/chart-light.json";
+import darkTokens from "@/app/tokens/chart-dark.json";
+
+const createEChartsTheme = (tokens: Record<string, string>) => ({
+  color: [tokens["chart-1"], tokens["chart-2"], tokens["chart-3"], tokens["chart-4"], tokens["chart-5"]],
+  backgroundColor: "transparent",
+  textStyle: {
+    fontFamily: "inherit",
+    color: tokens["foreground"],
+  },
+  tooltip: {
+    backgroundColor: tokens["card"],
+    borderColor: tokens["border"],
+    borderWidth: 1,
+    textStyle: { color: tokens["card-foreground"], fontSize: 12 },
+    padding: [8, 12],
+    extraCssText: "border-radius: var(--radius); box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);",
+    axisPointer: {
+      type: "line",
+      lineStyle: { color: tokens["border"], width: 1, type: "dashed" },
+    },
+  },
+  line: {
+    smooth: 0.3,
+    lineStyle: { width: 2.5 },
+    symbol: "none",
+  },
+  categoryAxis: {
+    axisLine: { show: false },
+    axisTick: { show: false },
+    splitLine: { show: false },
+    axisLabel: { color: tokens["muted-foreground"], margin: 16 },
+  },
+  valueAxis: {
+    axisLine: { show: false },
+    axisTick: { show: false },
+    splitLine: {
+      show: true,
+      lineStyle: { color: tokens["border"], type: "dashed", opacity: 0.6 },
+    },
+    axisLabel: { color: tokens["muted-foreground"], margin: 16 },
+  },
+});
+
+if (typeof globalThis.window !== "undefined") {
+  echarts.registerTheme("cloudSherpaLight", createEChartsTheme(lightTokens));
+  echarts.registerTheme("cloudSherpaDark", createEChartsTheme(darkTokens));
+}
 
 export function useChartTheme() {
-  const [colors, setColors] = useState<string[]>([]);
+  const { theme, systemTheme } = useTheme();
 
-  useEffect(() => {
-    const style = getComputedStyle(document.documentElement);
+  const currentTheme = theme === "system" ? systemTheme : theme;
+  const isDark = currentTheme === "dark";
 
-    const getThemeColor = (token: string) => {
-      const val = style.getPropertyValue(token).trim();
-      if (!val) return undefined;
-
-      if (val.startsWith("#") || val.startsWith("rgb") || val.startsWith("hsl")) {
-        return val;
-      }
-      return `hsl(${val})`;
-    };
-
-    const themeColors = [
-      getThemeColor("--chart-1") || "#0f766e",
-      getThemeColor("--chart-2") || "#1d4ed8",
-      getThemeColor("--chart-3") || "#0369a1",
-      getThemeColor("--chart-4") || "#4338ca",
-      getThemeColor("--chart-5") || "#be185d",
-    ];
-    
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setColors(themeColors);
-  }, []);
-
-  return { colors };
+  return {
+    themeName: isDark ? "cloudSherpaDark" : "cloudSherpaLight",
+    tokens: isDark ? darkTokens : lightTokens,
+  };
 }

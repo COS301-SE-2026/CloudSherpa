@@ -14,8 +14,8 @@ type LineChartProps = {
 const AXIS_TICK_MS = 6000;
 
 export function LineChart({ resourceId, metricType }: Readonly<LineChartProps>) {
-  const chartData = useChartData(resourceId, metricType);
-  const { colors } = useChartTheme();
+  const { timeSeriesData } = useChartData(resourceId, metricType);
+  const { themeName, tokens } = useChartTheme();
   const fromMs = 0;
   const toMs = 0;
   const visibleWindowMs = toMs && fromMs && toMs > fromMs ? toMs - fromMs : 300_000;
@@ -24,39 +24,45 @@ export function LineChart({ resourceId, metricType }: Readonly<LineChartProps>) 
     const axisMax = Math.ceil(Date.now() / AXIS_TICK_MS) * AXIS_TICK_MS;
     const axisMin = axisMax - visibleWindowMs;
     return {
-      color: colors,
-      tooltip: {
-        trigger: "axis" as const,
-        axisPointer: { type: "line" as const },
-      },
-      grid: { left: "5%", right: "5%", bottom: "10%", top: "15%", containLabel: true },
+      grid: { left: "1%", right: "4%", bottom: "2%", top: "10%", containLabel: true },
       xAxis: {
         type: "time" as const,
         min: axisMin,
         max: axisMax,
-        splitLine: { show: false },
-        axisLabel: { color: "var(--muted-foreground)" },
       },
       yAxis: {
         type: "value" as const,
-        splitLine: {
-          show: true,
-          lineStyle: { color: "var(--border)", type: "dashed" as const },
-        },
-        axisLabel: { color: "var(--muted-foreground)" },
       },
       series: [
         {
-          data: chartData,
+          data: timeSeriesData,
           type: "line" as const,
-          smooth: true,
-          showSymbol: false,
-          areaStyle: { opacity: 0.1 },
-          lineStyle: { width: 2 },
+          areaStyle: {
+            opacity: 0.2,
+            color: {
+              type: "linear",
+              x: 0,
+              y: 0,
+              x2: 0,
+              y2: 1,
+              colorStops: [
+                { offset: 0, color: tokens["chart-1"] || tokens["primary"] },
+                { offset: 1, color: "transparent" },
+              ],
+            },
+          },
         },
       ],
     };
-  }, [chartData, colors, visibleWindowMs]);
+  }, [timeSeriesData, tokens, visibleWindowMs]);
 
-  return <ReactECharts option={options} style={{ height: "100%", width: "100%" }} notMerge={true} lazyUpdate={true} />;
+  return (
+    <ReactECharts
+      option={options}
+      theme={themeName} 
+      style={{ height: "100%", width: "100%" }}
+      notMerge={true}
+      lazyUpdate={true}
+    />
+  );
 }

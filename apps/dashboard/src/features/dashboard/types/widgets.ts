@@ -39,4 +39,5 @@ export type ChartThemeTokens = {
   gridLine: string;       
   chartColors: string[];  
   gridOpacity: number;   
+  
 };
