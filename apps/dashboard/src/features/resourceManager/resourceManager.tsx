@@ -97,7 +97,7 @@ export default function ResourceManager(){
 
                                 <button
                                     onClick = {() => setInactiveSearch('')}
-                                    className = "text-xs text-muted"> x 
+                                    className = "text-xs text-muted hover:text-foreground transition-colors"> X
                                 </button>
 
                             </div>
@@ -157,7 +157,7 @@ export default function ResourceManager(){
 
                                 <button
                                     onClick = {() => setActiveSearch('')}
-                                    className = "text-xs text-muted"> x 
+                                    className = "text-xs text-muted hover:text-foreground transition-colors"> X 
                                 </button>
 
                             </div>
@@ -194,19 +194,19 @@ export default function ResourceManager(){
             {/* this is a popup for the users to confirm/cancel their actions */}
             {pending && (
                 <div className = "fixed inset-0 flex items-center justify-center z-50 bg-black/60">
-                    <Card className = "w-80 text-center p-8 border-border">
-                            <h3 className = "text-lg font-bold mb-3 text-muted"> Are you sure? </h3>
-                            <p className = "text-sm leading-relaxed text-muted"> {confirmationText} </p>
+                    <Card className = "w-80 text-center p-8 border-border bg-background">
+                            <h3 className = "text-lg font-bold mb-3 text-foreground"> Are you sure? </h3>
+                            <p className = "text-sm leading-relaxed text-foreground"> {confirmationText} </p>
 
                             <div className = "flex gap-3 justify-center">
                                 <button 
                                     onClick = {handleCancel}
-                                    className = "px-6 py-2 text-sm font-medium rounded transition-colors border border-sidebar-foreground text-muted hover:bg-border"> cancel 
+                                    className = "px-6 py-2 text-sm font-medium rounded transition-colors border border-muted-foreground/30 text-foreground hover:bg-muted"> cancel 
                                 </button>
 
                                 <button 
                                     onClick = {handleConfirm}
-                                    className = "px-6 py-2 text-sm font-medium rounded transition-colors border border-muted text-foreground hover:bg-muted-foreground"> confirm 
+                                    className = "px-6 py-2 text-sm font-medium rounded transition-colors text-primary-foreground bg-primary hover:bg-primary/90"> confirm 
                                 </button>
 
                             </div>
