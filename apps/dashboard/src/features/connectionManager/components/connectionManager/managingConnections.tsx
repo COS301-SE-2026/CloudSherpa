@@ -22,15 +22,15 @@ interface Connections{
 
 const providerTabs : Record<Providers, {active : string; inactive : string}> = {
   AWS : {
-    active : "bg-[#FF9900] text-black", inactive : "bg-[#FF9900]/30 text-[#FF9900]/60",
+    active : "bg-[var(--chart-2)] text-black hover:bg-[var(--chart-2)]/90", inactive : "bg-[var(--chart-2)]/60 text-[var(--chart-2)]/60 hover:bg-[var(--chart-2)]/40",
   },
 
   Azure : {
-    active : "bg-[var(--color-secondary-400)] text-black", inactive : "bg-[var(--color-secondary-400)]/30 text-[var(--color-secondary-400)]/60",
+    active : "bg-[var(--chart-3)] text-black hover:bg-[var(--chart-3)]/90", inactive : "bg-[var(--chart-3)]/60 text-[var(--chart-3)]/60 hover:bg-[var(--chart-3)]/40",
   },
 
   GCP : {
-    active : "bg-[var(--color-success-600)] text-black", inactive : "bg-[var(--color-success-600)]/30 text-[var(--color-success-600)]/60",
+    active : "bg-[var(--chart-1)] text-black hover:bg-[var(--chart-1)]/90", inactive : "bg-[var(--chart-1)]/60 text-[var(--chart-1)]/60 hover:bg-[var(--chart-1)]/40",
   },
 };
 
@@ -111,13 +111,13 @@ export default function ManagingConnections(){
                 </div>
 
                 <div className = "flex items-center gap-3">
-                  <span className = "text-xs text-[var(--color-neutral-400)]"> resource </span>
+                  <span className = "text-xs text-muted-foreground"> resource </span>
 
                   <Button
                     onClick = {() => handleDeletion(connection.id)}
                     variant = "ghost"
                     size = "icon"
-                    className = "text-[var(--color-neutral-400)] hover:text-[var(--color-error-500)] transition-colors"> <Trash2 size={15} />
+                    className = "text-muted-foreground hover:text-destructive transition-colors"> <Trash2 size={15} />
                   </Button>
 
                 </div>
