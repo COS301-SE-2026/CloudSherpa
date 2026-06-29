@@ -84,7 +84,7 @@ export default function ResourceManager(){
 
                 {/* this is for the inactive side */}
                 <div className = "flex flex-col gap-1">
-                    <span className = "text-xs text-center text-[var(--color-neutral-400)]"> Inactive </span>
+                    <span className = "text-xs text-center text-muted"> Inactive </span>
                     <Card className = "w-96 border-border">
                         <CardHeader className = "px-3 py-2 border-b border-border">
                             <div className = "flex items-center justify-between gap-2">
@@ -97,7 +97,7 @@ export default function ResourceManager(){
 
                                 <button
                                     onClick = {() => setInactiveSearch('')}
-                                    className = "text-xs text-[var(--color-neutral-400)]"> x 
+                                    className = "text-xs text-muted"> x 
                                 </button>
 
                             </div>
@@ -109,7 +109,7 @@ export default function ResourceManager(){
                                     (
                                         <div
                                             key = {resource.id}
-                                            className = {`flex items-center justify-between px-3 py-2 rounded text-sm cursor-pointer transition-colors ${ selected === resource.id ? 'bg-sidebar-primary-foreground text-primary-foreground' : 'text-sidebar-border hover:bg-border'}`}>
+                                            className = {`flex items-center justify-between px-3 py-2 rounded text-sm ${ selected === resource.id ? 'bg-sidebar-primary-foreground' : ''}`}>
 
                                             <button
                                                 onClick = {() => setSelected(resource.id)}
@@ -144,7 +144,7 @@ export default function ResourceManager(){
 
                 {/* this is for the active side */}
                 <div className = "flex flex-col gap-1">
-                    <span className = "text-xs text-center text-[var(--color-neutral-400)]"> Active </span>
+                    <span className = "text-xs text-center text-muted"> Active </span>
                     <Card className = "w-96 border-border">
                         <CardHeader className = "px-3 py-2 border-b border-border">
                             <div className = "flex items-center justify-between gap-2">
@@ -157,7 +157,7 @@ export default function ResourceManager(){
 
                                 <button
                                     onClick = {() => setActiveSearch('')}
-                                    className = "text-xs text-[var(--color-neutral-400)]"> x 
+                                    className = "text-xs text-muted"> x 
                                 </button>
 
                             </div>
@@ -169,7 +169,7 @@ export default function ResourceManager(){
                                     (
                                         <div
                                             key = {resource.id}
-                                            className = {`flex items-center justify-between px-3 py-2 rounded text-sm cursor-pointer transition-colors ${selected === resource.id ? 'bg-sidebar-primary-foreground text-primary-foreground' : 'text-sidebar-border hover:bg-border'}`}>
+                                            className = {`flex items-center justify-between px-3 py-2 rounded text-sm ${selected === resource.id ? 'bg-sidebar-primary-foreground' : ''}`}>
 
                                                 <button
                                                     onClick = {() => setSelected(resource.id)}
@@ -196,7 +196,7 @@ export default function ResourceManager(){
                 <div className = "fixed inset-0 flex items-center justify-center z-50 bg-black/60">
                     <Card className = "w-80 text-center p-8 border-border">
                             <h3 className = "text-lg font-bold mb-3 text-muted"> Are you sure? </h3>
-                            <p className = "text-sm leading-relaxed text-[var(--color-neutral-400)]"> {confirmationText} </p>
+                            <p className = "text-sm leading-relaxed text-muted"> {confirmationText} </p>
 
                             <div className = "flex gap-3 justify-center">
                                 <button 
