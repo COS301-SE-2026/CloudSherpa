@@ -2,6 +2,8 @@
 -- This holds data that spans across all users (users, dashboards, credentials).
 CREATE SCHEMA IF NOT EXISTS public;
 
+CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;
+
 CREATE TYPE public.provider_enum AS ENUM ('AWS', 'AZURE', 'GCP');
 CREATE TYPE public.status_enum AS ENUM ('active', 'disabled');
 CREATE TYPE public.credential_type_enum AS ENUM ('access_key', 'oauth');
@@ -135,7 +137,7 @@ BEGIN
     -- Build the metrics table
     EXECUTE format($sql$
         CREATE TABLE %I.normalized_metrics (
-            metric_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+            metric_id uuid DEFAULT gen_random_uuid(),
             resource_id uuid REFERENCES %I.resource(resource_id) ON DELETE CASCADE,
             recorded_at timestamptz NOT NULL,
             metric_type public.metric_type_enum NOT NULL,
@@ -144,7 +146,8 @@ BEGIN
             unit varchar(50),
             currency varchar(10),
             period_start timestamptz NOT NULL,
-            period_end timestamptz NOT NULL
+            period_end timestamptz NOT NULL,
+            PRIMARY KEY (metric_id, period_start)
         );
     $sql$, schema_name, schema_name);
 

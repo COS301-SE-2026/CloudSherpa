@@ -6,7 +6,7 @@
 @import "./tokens/light.css";
 @import "./tokens/dark.css";
 
-@custom-variant dark (&:is([data-theme="dark"] *));
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --font-heading: var(--font-sans);
