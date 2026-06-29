@@ -40,7 +40,14 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
-		</dependencies>
+         <dependency>
+            <groupId>com.google.cloud</groupId>
+            <artifactId>libraries-bom</artifactId>
+            <version>26.49.0</version>
+            <type>pom</type>
+            <scope>import</scope>
+          </dependency>
+      </dependencies>
 	</dependencyManagement>
 	<dependencies>
 		<dependency>
@@ -107,8 +114,28 @@
 			<artifactId>opensearch</artifactId>
 		</dependency>
 		<dependency>
-    <groupId>software.amazon.awssdk</groupId>
-    <artifactId>redshift</artifactId>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>redshift</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.google.cloud</groupId>
+      <artifactId>google-cloud-monitoring</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.google.cloud</groupId>
+      <artifactId>google-cloud-compute</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.google.cloud</groupId>
+      <artifactId>google-cloud-storage</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.google.cloud</groupId>
+      <artifactId>google-cloud-container</artifactId>
+    </dependency>
+<dependency>
+    <groupId>com.google.cloud</groupId>
+    <artifactId>google-cloud-run</artifactId>
 </dependency>
 <dependency>
     <groupId>org.mockito</groupId>

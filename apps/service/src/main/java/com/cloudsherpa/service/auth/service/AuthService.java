@@ -9,6 +9,7 @@ import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
@@ -26,6 +27,7 @@ public class AuthService {
   }
 
   // REGISTER
+  @Transactional
   public void register(RegisterRequest request) {
     String email = normalizeEmail(request.getEmail());
     String username = normalizeUsername(request.getUsername());
@@ -53,10 +55,15 @@ public class AuthService {
     }
 
     String passwordHash = passwordEncoder.encode(password);
-    User user = new User(UUID.randomUUID(), email, username, passwordHash);
+
+    UUID userId = UUID.randomUUID();
+    User user = new User(userId, email, username, passwordHash);
 
     // write the newly created user to SherpaDB in the users table
     userRepository.save(user);
+
+    // trigger the creation of the new user's personal schema
+    userRepository.createTenantSchema(userId);
   }
 
   // LOGIN

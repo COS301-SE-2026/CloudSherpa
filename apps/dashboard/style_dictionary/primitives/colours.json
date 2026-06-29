@@ -2,43 +2,17 @@
   "color": {
     "$type": "color", 
     "brand": {
-      "50": { "$value": "#eaf2fa" },
-      "100": { "$value": "#d6e5f5" },
-      "200": { "$value": "#adcbeb" },
-      "300": { "$value": "#84b1e1" },
-      "400": { "$value": "#5b97d7" },
-      "500": { "$value": "#327dcd" },
-      "600": { "$value": "#2864a4" },
-      "700": { "$value": "#1e4b7b" },
-      "800": { "$value": "#143252" },
-      "900": { "$value": "#0a1929" },
-      "950": { "$value": "#07111d" }
-    },
-    "secondary": {
-      "50": { "$value": "#e0e7ff" },
-      "100": { "$value": "#c7d2fe" },
-      "200": { "$value": "#a5b4fc" },
-      "300": { "$value": "#818cf8" },
-      "400": { "$value": "#6366f1" },
-      "500": { "$value": "#4f46e5" },
-      "600": { "$value": "#4338ca" },
-      "700": { "$value": "#3730a3" },
-      "800": { "$value": "#1e1b4b" },
-      "900": { "$value": "#311042" },
-      "950": { "$value": "#170526" }
-    },
-    "accent": {
-      "50": { "$value": "#f5f3ff" },
-      "100": { "$value": "#ede9fe" },
-      "200": { "$value": "#ddd6fe" },
-      "300": { "$value": "#c4b5fd" },
-      "400": { "$value": "#a78bfa" },
-      "500": { "$value": "#8b5cf6" },
-      "600": { "$value": "#7c3aed" },
-      "700": { "$value": "#6d28d9" },
-      "800": { "$value": "#5b21b6" },
-      "900": { "$value": "#4c1d95" },
-      "950": { "$value": "#2e1065" }
+      "50": { "$value": "#eff6ff" },
+      "100": { "$value": "#dbeafe" },
+      "200": { "$value": "#bedbff" },
+      "300": { "$value": "#8ec5ff" },
+      "400": { "$value": "#51a2ff" },
+      "500": { "$value": "#2b7fff" },
+      "600": { "$value": "#155dfc" },
+      "700": { "$value": "#1447e6" },
+      "800": { "$value": "#193cb8" },
+      "900": { "$value": "#1c398e" },
+      "950": { "$value": "#162456" }
     },
     "neutral": {
       "50": { "$value": "#e3e9ef" },
@@ -94,24 +68,24 @@
     },
     "chart": {
       "teal": {
-        "light": { "$value": "#0e9e8e" },
-        "dark": { "$value": "#3dbfb2" }
+        "light": { "$value": "#2563EB" },
+        "dark": { "$value": "#3B82F6" }
       },
       "amber": {
-        "light": { "$value": "#c97c10" },
-        "dark": { "$value": "#e09f3a" }
+        "light": { "$value": "#7C3AED" },
+        "dark": { "$value": "#8B5CF6" }
       },
       "violet": {
-        "light": { "$value": "#7c4fd4" },
-        "dark": { "$value": "#a87ee8" }
+        "light": { "$value": "#10B981" },
+        "dark": { "$value": "#10B981" }
       },
       "rose": {
-        "light": { "$value": "#c4366a" },
-        "dark": { "$value": "#e06090" }
+        "light": { "$value": "#F59E0B" },
+        "dark": { "$value": "#F59E0B" }
       },
       "sky": {
-        "light": { "$value": "#0284c7" },
-        "dark": { "$value": "#38a8e8" }
+        "light": { "$value": "#EC4899" },
+        "dark": { "$value": "#F43F5E" }
       }
     }
   }

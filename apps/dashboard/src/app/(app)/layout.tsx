@@ -1,17 +1,17 @@
 import { SidebarProvider, SidebarInset } from "@/components/atoms/sidebar";
 import { TooltipProvider } from "@/components/atoms/tooltip";
-import { AppSidebar } from "@/features/app/components/appSidebar";
+import { AppSidebar } from "@/components/molecules/app-sidebar";
 
-export default function DashboardShell({ children }: Readonly<{ children: React.ReactNode }>) {
+export default function AppWrapper({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <TooltipProvider>
       <SidebarProvider>
-        <div className="flex min-h-screen w-full bg-background">
-          <AppSidebar />
-          <SidebarInset className="flex flex-col flex-1 overflow-hidden">
-             {children}
-          </SidebarInset>
-        </div>
+        <AppSidebar />
+        <SidebarInset className="flex flex-col flex-1 overflow-hidden">
+          <div className="flex flex-1 flex-col gap-4">
+            {children}
+          </div>
+        </SidebarInset>
       </SidebarProvider>
     </TooltipProvider>
   );
