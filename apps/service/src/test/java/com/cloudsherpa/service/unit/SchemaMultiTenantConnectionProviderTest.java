@@ -9,7 +9,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import javax.sql.DataSource;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -25,14 +24,11 @@ class SchemaMultiTenantConnectionProviderTest {
 
   @InjectMocks private SchemaMultiTenantConnectionProvider provider;
 
-  @BeforeEach
-  void setUp() throws SQLException {
-    when(dataSource.getConnection()).thenReturn(connection);
-  }
-
   @Test
   void getAnyConnectionReturnsDataSourceConnection() throws SQLException {
+    when(dataSource.getConnection()).thenReturn(connection);
     Connection actual = provider.getAnyConnection();
+
     assertEquals(connection, actual);
   }
 
@@ -44,6 +40,7 @@ class SchemaMultiTenantConnectionProviderTest {
 
   @Test
   void getConnectionSetsSchemaToPublicWhenTenantIsPublic() throws SQLException {
+    when(dataSource.getConnection()).thenReturn(connection);
     when(connection.createStatement()).thenReturn(statement);
 
     provider.getConnection("public");
@@ -54,6 +51,7 @@ class SchemaMultiTenantConnectionProviderTest {
 
   @Test
   void getConnectionSetsSchemaToTenantWhenTenantIsUuid() throws SQLException {
+    when(dataSource.getConnection()).thenReturn(connection);
     when(connection.createStatement()).thenReturn(statement);
     String tenantId = "abc-123";
 
