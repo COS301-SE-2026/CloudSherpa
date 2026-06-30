@@ -10,6 +10,7 @@ import {useState} from "react";
 import {Trash2} from "lucide-react";
 import {Card, CardContent} from "@/components/atoms/card";
 import {Button} from "@/components/atoms/button";
+import {Tabs, TabsList, TabsTrigger} from "@/components/atoms/tabs"
 
 type Providers = "AWS" | "Azure" | "GCP";
 
@@ -74,25 +75,30 @@ export default function ManagingConnections(){
 
 
       {/* this is for the provider tabs */}
-      <div className = "flex gap-2 mb-4">
-        {(["AWS", "Azure", "GCP"] as Providers[]).map((providers) => {
-          const isActive = activeFilter === providers;
+      <Tabs
+        value = {activeFilter || undefined}
+        onValueChange = {(value) => setActiveFilter(value as Providers)}
+        className = "mb-4"
+      >
 
-          const styling = providerTabs[providers];
+        <TabsList className = "self-start inline-flex gap-1 h-auto p-1 bg-muted rounded-lg w-fit">
+          {(["AWS", "Azure", "GCP"] as Providers[]).map((providers) => {
+            const isActive = activeFilter === providers;
 
-          return(
-            <Button 
-              key = {providers}
-              onClick = {() => setActiveFilter(isActive ? null : providers)}
-              className = {`text-xs px-2.5 py-0.5 h-auto rounded-[var(--radius-sm)] font-medium transition-all ${
-                isActive ? styling.active : styling.inactive
-              }`}
+            const styling = providerTabs[providers];
+
+            return(
+              <TabsTrigger 
+                key = {providers}
+                value = {providers}
+                className = {`flex-none text-xs px-2.5 py-0.5 h-auto rounded-[var(--radius-sm)] font-medium transition-all bg-transparent ${isActive ? styling.active : styling.inactive}`}
               > {providers}
-            </Button>
-          );
+              </TabsTrigger>
+            );
 
-        })}
-      </div>
+          })}
+        </TabsList>
+      </Tabs>
 
 
       {/* this is for the list of conn */}
