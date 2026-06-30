@@ -35,7 +35,7 @@ done
 
 # Dashboard validation
 echo "Validating DASHBOARD env vars"
-(cd apps/dashboard && npm exec -- varlock load)
+(cd apps/dashboard && varlock load)
 
 # Ingestion validation
 echo "Validating INGESTION env vars"

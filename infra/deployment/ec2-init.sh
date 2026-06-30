@@ -3,11 +3,11 @@
 # Utilities
 log() {
     if (( $1 == 0 )); then
-        "$(date) SUCCESS: $2" >> /var/log/user-data-init
+        echo "$(date) SUCCESS: $2" >> /var/log/user-data-init
     elif (( $1 == 1 )); then
-        "$(date) ERROR: $2" >> /var/log/user-data-init
+        echo "$(date) ERROR: $2" >> /var/log/user-data-init
     else
-        "$(date): $2" >> /var/log/user-data-init
+        echo "$(date): $2" >> /var/log/user-data-init
     fi
 }
 
@@ -19,14 +19,16 @@ sherpa-copy() {
     fi
 }
 
+HOME=/home/ubuntu
+
 # logs: /var/log/user-data-init
 touch /var/log/user-data-init
 
 # Clone repo
 # ! TEMP SWITCH TO STAGING BRANCH
-(cd /tmp && git clone https://github.com/COS301-SE-2026/CloudSherpa.git && cd CloudSherpa && git fetch origin && git checkout feature/staging ) 
-mkdir -p /opt/cloudsherpa
-chown ubuntu:ubuntu /opt/cloudsherpa
+(cd /tmp && git clone https://github.com/COS301-SE-2026/CloudSherpa.git && cd CloudSherpa && git fetch origin && git checkout feature/staging) 
+mkdir -p /opt/CloudSherpa
+chown -R ubuntu:ubuntu /opt/CloudSherpa
 
 # ---------DEPENDENCIES---------
 # DOCKER
@@ -67,11 +69,11 @@ groupadd docker
 usermod -aG docker ubuntu
 
 # NGINX
-sudo apt install apache2-utils nginx -y
+sudo apt install apache2-utils nginx certbot python3-certbot-nginx -y
 # create .htpasswd file
 PASS=$(openssl rand -base64 12)
-echo "$PASS" > /opt/cloudsherpa/basic-auth-pass
-chmod 644 /opt/cloudsherpa/basic-auth-pass
+echo "$PASS" > /opt/CloudSherpa/basic-auth-pass
+chmod 644 /opt/CloudSherpa/basic-auth-pass
 
 htpasswd -bc /etc/nginx/.htpasswd onthebigstage "$PASS"
 chmod 644 /etc/nginx/.htpasswd
@@ -81,16 +83,10 @@ unlink /etc/nginx/sites-enabled/default
 
 # Copy staging config to sites
 # ? Permissions
-cp /tmp/cloudsherpa/infra/deployment/nginx/cloudsherpa-staging /etc/nginx/sites-available
+sherpa-copy "/tmp/CloudSherpa/infra/deployment/nginx/CloudSherpa-staging" "/etc/nginx/sites-available/CloudSherpa-staging"
 
 # symlink
-ln -s /etc/nginx/sites-available/cloudsherpa-staging /etc/nginx/sites-enabled/cloudsherpa-staging
-
-if nginx -t &> /dev/null; then
-    log 0 "NGINX configuration enabled and valid"
-else
-    log 1 "NGINX configuration invalid"
-fi
+ln -s /etc/nginx/sites-available/CloudSherpa-staging /etc/nginx/sites-enabled/CloudSherpa-staging
 
 # Enable Nginx
 systemctl enable nginx
@@ -98,34 +94,32 @@ systemctl enable nginx
 systemctl start nginx
 
 # Install varlock
-curl -sSfL https://varlock.dev/install.sh | sh -s
-echo "export PATH="${XDG_CONFIG_HOME:-~/.config}/varlock/bin:$PATH"" >> ~/.bashrc
-source ~/.bashrc
+curl -sSfL https://varlock.dev/install.sh | sh -s -- --dir=/usr/local/bin
 
-if varlock --help &> /dev/null; then
+if /home/ubuntu/.config/varlock/bin/varlock --help &> /dev/null; then
     log 0 "Varlock installed"
 else
     log 1 "Varlock installation failed"
 fi
 
-# Move to /opt/cloudsherpa
-sherpa-copy "/tmp/CloudSherpa/infra/deployment/deploy.sh" "/opt/cloudsherpa"
-chmod +x /opt/cloudsherpa/deploy.sh
+# Move to /opt/CloudSherpa
+sherpa-copy "/tmp/CloudSherpa/infra/deployment/deploy.sh" "/opt/CloudSherpa"
+chmod +x /opt/CloudSherpa/deploy.sh
 
-sherpa-copy "/tmp/CloudSherpa/infra/deployment/docker-compose.yml" "/opt/cloudsherpa/docker-compose.yml"
+sherpa-copy "/tmp/CloudSherpa/infra/deployment/docker-compose.yml" "/opt/CloudSherpa/docker-compose.yml"
 
-mkdir -p /opt/cloudsherpa/apps/service /opt/cloudsherpa/apps/ingestion /opt/cloudsherpa/apps/dashboard
+mkdir -p /opt/CloudSherpa/apps/service /opt/CloudSherpa/apps/ingestion /opt/CloudSherpa/apps/dashboard
 
-sherpa-copy "/tmp/CloudSherpa/scripts/env-validation.sh" "/opt/cloudsherpa/env-validation.sh"
-chmod +x /opt/cloudsherpa/env-validation.sh 
+sherpa-copy "/tmp/CloudSherpa/scripts/env-validation.sh" "/opt/CloudSherpa/env-validation.sh"
+chmod +x /opt/CloudSherpa/env-validation.sh 
 
-sherpa-copy "/tmp/CloudSherpa/apps/ingestion/.env.schema" "/opt/cloudsherpa/apps/ingestion/.env.schema"
-sherpa-copy "/tmp/CloudSherpa/apps/dashboard/.env.schema" "/opt/cloudsherpa/apps/dashboard/.env.schema"
-sherpa-copy "/tmp/CloudSherpa/apps/service/.env.schema" "/opt/cloudsherpa/apps/service/.env.schema"
+sherpa-copy "/tmp/CloudSherpa/apps/ingestion/.env.schema" "/opt/CloudSherpa/apps/ingestion/.env.schema"
+sherpa-copy "/tmp/CloudSherpa/apps/dashboard/.env.schema" "/opt/CloudSherpa/apps/dashboard/.env.schema"
+sherpa-copy "/tmp/CloudSherpa/apps/service/.env.schema" "/opt/CloudSherpa/apps/service/.env.schema"
 
-log 2 "REMINDER: Env configuration currently manual"
+log 2 "REMINDER: Env and NGINX certs configuration currently manual"
 
 rm -rf /tmp/CloudSherpa
 
-echo 2 "DONE" 
+log 2 "DONE" 
 # Ready for pipeline
