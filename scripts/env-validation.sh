@@ -18,7 +18,7 @@ IFS='/' read -r -a path_array <<< "$current_dir"
 for dir in "${path_array[@]}"; do
     if [[ "$dir" == "CloudSherpa" ]]; then
         sherpa_found=1
-    elif [ $sherpa_found -eq 1 ]; then
+    elif [[ $sherpa_found -eq 1 ]]; then
         subdir=$(( subdir + 1 )) 
     fi
 done
