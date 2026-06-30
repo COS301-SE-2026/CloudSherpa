@@ -21,17 +21,18 @@ interface Connections{
   detail : string;
 }
 
+//will use these colours for the tabs for now, will add the company colours to the style dictionary and will update it
 const providerTabs : Record<Providers, {active : string; inactive : string}> = {
   AWS : {
-    active : "bg-[var(--chart-2)] text-black hover:bg-[var(--chart-2)]/90", inactive : "bg-[var(--chart-2)]/60 text-[var(--chart-2)]/60 hover:bg-[var(--chart-2)]/40",
+    active : "bg-primary text-primary-foreground hover:bg-primary/90", inactive : "bg-muted text-muted-foreground hover:bg-muted/80",
   },
 
   Azure : {
-    active : "bg-[var(--chart-3)] text-black hover:bg-[var(--chart-3)]/90", inactive : "bg-[var(--chart-3)]/60 text-[var(--chart-3)]/60 hover:bg-[var(--chart-3)]/40",
+    active : "bg-primary text-primary-foreground hover:bg-primary/90", inactive : "bg-muted text-muted-foreground hover:bg-muted/80",
   },
 
   GCP : {
-    active : "bg-[var(--chart-1)] text-black hover:bg-[var(--chart-1)]/90", inactive : "bg-[var(--chart-1)]/60 text-[var(--chart-1)]/60 hover:bg-[var(--chart-1)]/40",
+    active : "bg-primary text-primary-foreground hover:bg-primary/90", inactive : "bg-muted text-muted-foreground hover:bg-muted/80",
   },
 };
 
