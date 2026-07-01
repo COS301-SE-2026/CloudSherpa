@@ -44,3 +44,7 @@ echo "Validating INGESTION env vars"
 # Service validation
 echo "Validating SERVICE env vars"
 (cd apps/service && varlock load)
+
+# Persistence validation
+echo "Validating PERSISTENCE env vars"
+(cd persistence/sherpadb && varlock load)

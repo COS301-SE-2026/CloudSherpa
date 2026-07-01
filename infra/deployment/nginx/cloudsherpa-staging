@@ -1,6 +1,6 @@
 server {
     # Domain
-    server_name staging.gjjcs.org;
+    server_name cloudsherpa-staging.gjjcs.org;
 
     auth_basic  "CloudSherpa Demo1";
     auth_basic_user_file /etc/nginx/.htpasswd;
@@ -12,6 +12,11 @@ server {
     # Logs
     access_log /var/log/nginx/cloudsherpa.access.log;
     error_log  /var/log/nginx/cloudsherpa.error.log;    
+
+    location /hi/ {
+        auth_basic off;
+        try_files /cloudsherpa-hi.html =404;
+    }
 
     # Reverse proxying to containerized deployment, where the dashboard container publishes its port to the host
     location / {
@@ -46,14 +51,8 @@ server {
 
     }
 
-    location /hi/ {
-        auth_basic off;
-        try_files /cloudsherpa-hi.html =404;
-    }
-
     # Rate limiting (wip)
     #   limit_req zone=one burst=10 nodelay;
-
 
     # Security headers
     add_header X-Frame-Options "SAMEORIGIN" always;
@@ -65,27 +64,21 @@ server {
         deny all;
     }
 
-    # TLS config for HTTPS traffic, DO NOT TOUCH, managed by Certbot as comments suggest
     listen 443 ssl; # managed by Certbot
-    listen [::]:443 ssl ipv6only=on; # managed by Certbot
-    ssl_certificate /etc/letsencrypt/live/cloudsherpa.gjjcs.org/fullchain.pem; # managed by Certbot
-    ssl_certificate_key /etc/letsencrypt/live/cloudsherpa.gjjcs.org/privkey.pem; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/cloudsherpa-staging.gjjcs.org/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/cloudsherpa-staging.gjjcs.org/privkey.pem; # managed by Certbot
     include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
 
 }
 
-# Certbot managed block that upgrades connection to serve over HTTPS when HTTP request made
 server {
-    if ($host = cloudsherpa.gjjcs.org) {
+    if ($host = cloudsherpa-staging.gjjcs.org) {
         return 301 https://$host$request_uri;
     } # managed by Certbot
 
 
+    server_name cloudsherpa-staging.gjjcs.org;
     listen 80;
-    listen [::]:80;
-    server_name cloudsherpa.gjjcs.org;
     return 404; # managed by Certbot
-
-
 }

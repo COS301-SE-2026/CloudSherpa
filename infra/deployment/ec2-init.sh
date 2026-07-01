@@ -108,7 +108,7 @@ chmod +x /opt/CloudSherpa/deploy.sh
 
 sherpa-copy "/tmp/CloudSherpa/infra/deployment/docker-compose.yml" "/opt/CloudSherpa/docker-compose.yml"
 
-mkdir -p /opt/CloudSherpa/apps/service /opt/CloudSherpa/apps/ingestion /opt/CloudSherpa/apps/dashboard
+mkdir -p /opt/CloudSherpa/apps/service /opt/CloudSherpa/apps/ingestion /opt/CloudSherpa/apps/dashboard /opt/CloudSherpa/persistence/sherpadb
 
 sherpa-copy "/tmp/CloudSherpa/scripts/env-validation.sh" "/opt/CloudSherpa/env-validation.sh"
 chmod +x /opt/CloudSherpa/env-validation.sh 
@@ -116,6 +116,7 @@ chmod +x /opt/CloudSherpa/env-validation.sh
 sherpa-copy "/tmp/CloudSherpa/apps/ingestion/.env.schema" "/opt/CloudSherpa/apps/ingestion/.env.schema"
 sherpa-copy "/tmp/CloudSherpa/apps/dashboard/.env.schema" "/opt/CloudSherpa/apps/dashboard/.env.schema"
 sherpa-copy "/tmp/CloudSherpa/apps/service/.env.schema" "/opt/CloudSherpa/apps/service/.env.schema"
+sherpa-copy "/tmp/CloudSherpa/persistence/sherpadb/.env.schema" "/opt/CloudSherpa/persistence/sherpadb/.env.schema"
 
 log 2 "REMINDER: Env and NGINX certs configuration currently manual"
 
