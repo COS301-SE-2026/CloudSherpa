@@ -116,11 +116,27 @@ chmod +x /opt/CloudSherpa/env-validation.sh
 sherpa-copy "/tmp/CloudSherpa/apps/ingestion/.env.schema" "/opt/CloudSherpa/apps/ingestion/.env.schema"
 sherpa-copy "/tmp/CloudSherpa/apps/dashboard/.env.schema" "/opt/CloudSherpa/apps/dashboard/.env.schema"
 sherpa-copy "/tmp/CloudSherpa/apps/service/.env.schema" "/opt/CloudSherpa/apps/service/.env.schema"
+
+# Persistence
 sherpa-copy "/tmp/CloudSherpa/persistence/sherpadb/.env.schema" "/opt/CloudSherpa/persistence/sherpadb/.env.schema"
+sherpa-copy "/tmp/CloudSherpa/persistence/sherpadb/sherpadb-schema.sql" "/opt/CloudSherpa/persistence/sherpadb/sherpadb-schema.sql"
+
 
 log 2 "REMINDER: Env and NGINX certs configuration currently manual"
 
 rm -rf /tmp/CloudSherpa
+
+# AWS CLI
+apt install unzip -y
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "/tmp/awscliv2.zip"
+unzip /tmp/awscliv2.zip
+(cd aws && ./install)
+
+if aws --version &> /dev/null; then
+    log 0 "AWS CLI installed"
+else
+    log 1 "AWS CLI installation failed"
+fi
 
 log 2 "DONE" 
 # Ready for pipeline
