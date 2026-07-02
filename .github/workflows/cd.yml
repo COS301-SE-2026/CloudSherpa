@@ -1,0 +1,116 @@
+name: CloudSherpa Build and Deploy
+
+on:
+    push:
+        branches:
+            - staging
+            - main
+        paths:
+            - "apps/dashboard/**"
+            - "apps/service/**"
+            - "apps/ingestion/**"
+            - "infra/deployment/**"
+            - ".github/workflows/cd.yml"
+    pull_request:
+        branches:
+            - staging
+            - main
+        paths:
+            - "apps/dashboard/**"
+            - "apps/service/**"
+            - "apps/ingestion/**"
+            - ".github/workflows/cd.yml"
+
+concurrency:
+    group: cloudsherpa-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    cloudsherpa-images:
+        permissions:
+            id-token: write
+            contents: read
+        runs-on: ubuntu-latest
+
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - name: dashboard
+                      context: apps/dashboard
+                      dockerfile: apps/dashboard/Dockerfile
+
+                    - name: service
+                      context: .
+                      dockerfile: apps/service/Dockerfile
+
+                    - name: ingestion
+                      context: .
+                      dockerfile: apps/ingestion/Dockerfile
+
+        steps:
+            - name: Checkout repo
+              uses: actions/checkout@b9e0990d219a03df7633c93f6f005a8fecbcab22 # Version 7
+            
+            - name: Configure AWS Credentials
+              if: github.event_name == 'push'
+              uses: aws-actions/configure-aws-credentials@e004cdcd2873919dbd2e62aa51128bedb3181599 # Version 6.1.0
+              with:
+                role-to-assume: ${{ vars.AWS_ACTIONS_ECR_ROLE_ARN }}
+                aws-region: eu-north-1
+            
+            - name: Login to Amazon ECR Private
+              if: github.event_name == 'push'
+              id: login-ecr
+              uses: aws-actions/amazon-ecr-login@d539f0932e70871a027e9d5a9d8fc38589180a64 # Version 2.1.6
+
+            - name: Build image
+              env:
+                REGISTRY: ${{ github.event_name == 'push' && steps.login-ecr.outputs.registry || 'cloudsherpa-local' }}
+                REPOSITORY: cloudsherpa
+                IMAGE_TAG: "${{ matrix.name }}-${{ github.sha }}"
+                API_URL: ${{ ((github.event_name == 'pull_request' && github.base_ref == 'main') || (github.event_name == 'push' && github.ref_name == 'main')) && vars.NEXT_PUBLIC_API_URL_PRODUCTION || vars.NEXT_PUBLIC_API_URL_STAGING }}
+              run: |
+                docker build --file "${{ matrix.dockerfile }}" --tag "$REGISTRY/$REPOSITORY:$IMAGE_TAG" --build-arg API_URL="$API_URL" "${{ matrix.context }}"
+
+            - name: Push image
+              if: github.event_name == 'push'
+              env:
+                REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+                REPOSITORY: cloudsherpa
+                IMAGE_TAG: "${{ matrix.name }}-${{ github.sha }}"
+              run: |
+                docker push "$REGISTRY/$REPOSITORY:$IMAGE_TAG"
+
+    cloudsherpa-deploy:
+        if: github.event_name == 'push'
+        needs: cloudsherpa-images
+        permissions:
+            id-token: write
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout repo
+              uses: actions/checkout@b9e0990d219a03df7633c93f6f005a8fecbcab22 # Version 7
+
+            - name: Configure AWS Credentials
+              uses: aws-actions/configure-aws-credentials@e004cdcd2873919dbd2e62aa51128bedb3181599 # Version 6.1.0
+              with:
+                role-to-assume: ${{ vars.AWS_ACTIONS_DEPLOY_ROLE_ARN }}
+                aws-region: eu-north-1
+
+            - name: Deploy via AWS SSM
+              env:
+                IMAGE_TAG: ${{ github.sha }}
+                INSTANCE_ID: ${{ github.ref_name == 'main' && vars.AWS_DEPLOY_PRODUCTION_INSTANCE_ID || vars.AWS_DEPLOY_STAGING_INSTANCE_ID }}
+              run: |
+                COMMAND_ID="$(aws ssm send-command \
+                    --instance-ids "$INSTANCE_ID" \
+                    --document-name "AWS-RunShellScript" \
+                    --comment "Deploy commit $IMAGE_TAG" \
+                    --parameters "commands=[\"/opt/CloudSherpa/deploy.sh '$IMAGE_TAG'\"]" \
+                    --query "Command.CommandId" \
+                    --output text
+                )"
+
+                aws ssm wait command-executed --command-id "$COMMAND_ID" --instance-id "$INSTANCE_ID"
