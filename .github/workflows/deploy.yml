@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - staging
 
 jobs:
     cloudsherpa-deploy:
@@ -24,13 +25,13 @@ jobs:
             - name: Deploy via AWS SSM
               env:
                 IMAGE_TAG: ${{ github.sha }}
-                INSTANCE_ID: ${{ vars.AWS_DEPLOY_INSTANCE_ID }} 
+                INSTANCE_ID: ${{ github.ref_name == 'main' && vars.AWS_DEPLOY_PRODUCTION_INSTANCE_ID || vars.AWS_DEPLOY_STAGING_INSTANCE_ID }} 
               run: |
                 COMMAND_ID="$(aws ssm send-command \
                     --instance-ids "$INSTANCE_ID" \
                     --document-name "AWS-RunShellScript" \
                     --comment "Deploy commit $IMAGE_TAG" \
-                    --parameters "commands=[\"/opt/cloudsherpa/deploy.sh '$IMAGE_TAG'\"]" \
+                    --parameters "commands=[\"/opt/CloudSherpa/deploy.sh '$IMAGE_TAG'\"]" \
                     --query "Command.CommandId" \
                     --output text
                 )"
