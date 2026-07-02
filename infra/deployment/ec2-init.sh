@@ -26,6 +26,8 @@ sherpa-copy() {
     else
         log 1 "Failed to copy $copy_from to $copy_to"
     fi
+
+    return 0
 }
 
 HOME=/home/ubuntu
