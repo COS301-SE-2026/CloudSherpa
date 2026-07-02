@@ -19,7 +19,7 @@ export AWS_ECR_REGISTRY="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com"
 aws ecr get-login-password --region "$AWS_REGION" | docker login --username AWS --password-stdin "$AWS_ECR_REGISTRY"
 
 # Paths hardcoded like this for now
-cd /opt/cloudsherpa/infra
+cd /opt/CloudSherpa
 docker compose down
 docker compose pull
 docker compose up -d
