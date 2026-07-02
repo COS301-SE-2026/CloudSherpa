@@ -3,6 +3,7 @@ name: CloudSherpa Images Build
 on:
     pull_request:
         branches:
+            - staging
             - main
         paths:
             - "apps/dashboard/**"
@@ -57,6 +58,6 @@ jobs:
                 REPOSITORY: cloudsherpa
                 IMAGE_TAG: "${{ matrix.name }}-${{ github.sha }}"
               run: |
-                docker build --file "${{ matrix.dockerfile }}" --tag "$REGISTRY/$REPOSITORY:$IMAGE_TAG" "${{ matrix.context }}" 
+                docker build --file "${{ matrix.dockerfile }}" --tag "$REGISTRY/$REPOSITORY:$IMAGE_TAG" --build-arg API_URL="${{ github.base_ref == 'main' && vars.NEXT_PUBLIC_API_URL_PRODUCTION || vars.NEXT_PUBLIC_API_URL_STAGING }}" "${{ matrix.context }}"  
                 docker push "$REGISTRY/$REPOSITORY:$IMAGE_TAG"
     
