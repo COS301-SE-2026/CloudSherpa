@@ -1,5 +1,4 @@
 services:
-  # TODO: add explicit container names 
   ingestion:
     build:
       context: ..
@@ -27,7 +26,7 @@ services:
     ports:
       - "8083:8080"
     env_file:
-      - ../apps/service/.env.docker
+      - ../apps/service/.env
     volumes:
       - ../apps/service:/app
     depends_on:
