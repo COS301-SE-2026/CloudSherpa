@@ -7,6 +7,8 @@ import com.cloudsherpa.ingestion.normalization.model.NormalizedMetric;
 import com.cloudsherpa.lib.entities.NormalizedMetrics;
 import com.cloudsherpa.lib.entities.Resource;
 import com.cloudsherpa.lib.repositories.NormalizedMetricsRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -21,16 +23,25 @@ public class SherpaDbPersistenceService {
   private final NormalizedMetricsRepository metricsRepo;
   private final CloudInfrastructureService infrastructureService;
 
+  @PersistenceContext private EntityManager entityManager;
+
   public SherpaDbPersistenceService(
       NormalizedMetricsRepository metricsRepo, CloudInfrastructureService infrastructureService) {
     this.metricsRepo = metricsRepo;
     this.infrastructureService = infrastructureService;
   }
 
+  private void setTenantSchema(String tenantId) {
+    entityManager.createNativeQuery("SET search_path TO " + tenantId).executeUpdate();
+  }
+
   // Use @Transactional when we are modifying a database in more than 1 place
   // So that if 1 step succeeds and the other one fails, the data doesn't end up half-written
   @Transactional
-  public void recordMetric(NormalizedMetric metric, UsageRecordModel r, UUID userId) {
+  public void recordMetric(
+      NormalizedMetric metric, UsageRecordModel r, UUID userId, String tenantId) {
+
+    setTenantSchema(tenantId);
 
     Resource resource = infrastructureService.ensureInfrastructure(r, userId);
     UUID resourceUuid = resource.getId();
