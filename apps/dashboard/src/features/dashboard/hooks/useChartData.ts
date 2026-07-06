@@ -10,21 +10,19 @@ export function useChartData(resourceId: string, metricType: MetricType) {
     const rawSeries = series || {};
     const values = Object.values(rawSeries);
 
-    const timeSeriesData = values
-      .toSorted((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
-      .map((point) => [new Date(point.timestamp).getTime(), point.value]);
+    if (values.length === 0) {
+      return { timeSeriesData: [], currentValue: 0 };
+    }
 
-    const latestPoint = values.length > 0 
-      ? values.reduce((latest, current) => 
-          new Date(current.timestamp).getTime() > new Date(latest.timestamp).getTime() ? current : latest
-        ) 
-      : null;
+    const sortedValues = values.toSorted((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+
+    const timeSeriesData = sortedValues.map((point) => [new Date(point.timestamp).getTime(), point.value]);
+
+    const currentValue = sortedValues.at(-1)?.value ?? 0;
     
-    const currentValue = latestPoint ? latestPoint.value : 0;
-
-    return { 
-      timeSeriesData, 
-      currentValue 
+    return {
+      timeSeriesData,
+      currentValue,
     };
   }, [series]);
 }

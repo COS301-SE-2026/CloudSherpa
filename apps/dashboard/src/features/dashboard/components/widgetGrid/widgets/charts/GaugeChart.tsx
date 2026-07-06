@@ -1,10 +1,10 @@
 "use client";
 import type { EChartsOption } from "echarts";
 import { useMemo } from "react";
-import ReactECharts from "echarts-for-react";
 import { useChartTheme } from "@/features/dashboard/hooks/useChartTheme";
 import { MetricType } from "@/features/dashboard/types/metric";
 import { useChartData } from "@/features/dashboard/hooks/useChartData";
+import { BaseChart } from "@/features/dashboard/components/widgetGrid/widgets/charts/baseChart";
 
 type GaugeChartProps = {
   resourceId: string;
@@ -66,13 +66,5 @@ export function GaugeChart({ resourceId, metricType }: Readonly<GaugeChartProps>
     };
   }, [currentValue, tokens]);
 
-  return (
-    <ReactECharts
-      option={options}
-      theme={themeName}
-      style={{ height: "100%", width: "100%"}}
-      notMerge={true}
-      lazyUpdate={true}
-    />
-  );
+  return <BaseChart option={options} theme={themeName} />;
 }

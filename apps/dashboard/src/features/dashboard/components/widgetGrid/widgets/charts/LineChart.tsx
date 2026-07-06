@@ -4,7 +4,7 @@ import type { EChartsOption } from "echarts";
 import { useMemo } from "react";
 import { useChartData } from "@/features/dashboard/hooks/useChartData";
 import { useChartTheme } from "@/features/dashboard/hooks/useChartTheme";
-import ReactECharts from "echarts-for-react";
+import { BaseChart } from "./baseChart";
 
 type LineChartProps = {
   resourceId: string;
@@ -56,13 +56,5 @@ export function LineChart({ resourceId, metricType }: Readonly<LineChartProps>) 
     };
   }, [timeSeriesData, tokens, visibleWindowMs]);
 
-  return (
-    <ReactECharts
-      option={options}
-      theme={themeName} 
-      style={{ height: "100%", width: "100%" }}
-      notMerge={true}
-      lazyUpdate={true}
-    />
-  );
+  return <BaseChart option={options} theme={themeName} />;
 }
