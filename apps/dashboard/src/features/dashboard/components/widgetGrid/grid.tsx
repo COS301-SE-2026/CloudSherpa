@@ -43,7 +43,7 @@ export default function Grid({
           cellHeight: 100, //handles row heights that widgets snap to
           margin: 12, //layer around every widget. meaning there is 24px margin between every widget
           handle: ".drag-handle",
-          staticGrid: !isEditMode, //lock grid not in edit mode
+          staticGrid: !isEditModeRef.current, //lock grid not in edit mode (use ref to avoid re-init)
           float: false,
           resizable: { handles: "se" }, // part of library handles widget resizing from "south-east"/bottom-right corner
 
@@ -149,6 +149,7 @@ export default function Grid({
             layout={l} 
             isEditMode={isEditMode} 
             onDeleteWidget={onDeleteWidget}
+            metricFetchLoad={metricFetchLoad}
           />
         ))}
       </div>
