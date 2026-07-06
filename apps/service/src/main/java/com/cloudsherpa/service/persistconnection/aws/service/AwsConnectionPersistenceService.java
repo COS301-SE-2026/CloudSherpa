@@ -11,6 +11,7 @@ import com.cloudsherpa.lib.repositories.ResourceRepository;
 import com.cloudsherpa.service.persistconnection.aws.dto.AwsCredentialsDto;
 import com.cloudsherpa.service.persistconnection.aws.dto.PersistAwsConnectionRequest;
 import com.cloudsherpa.service.persistconnection.aws.dto.ResourceSelectionDto;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -61,7 +62,7 @@ public class AwsConnectionPersistenceService {
               request.userId(),
               "AWS",
               "ACTIVE",
-              Instant.now().atOffset(ZoneOffset.of("SAST")));
+              Instant.now().atOffset(ZoneOffset.of("+02:00")));
       return cloudConnectionRepository.save(connection);
     }
     return optionalConnection.getFirst();
@@ -77,7 +78,7 @@ public class AwsConnectionPersistenceService {
             "User",
             request.displayName(),
             request.ingestionPeriod().toString(),
-            Instant.now().atOffset(ZoneOffset.of("SAST")));
+            Instant.now().atOffset(ZoneOffset.of("+02:00")));
 
     return cloudAccountRepository.save(account);
   }
@@ -95,11 +96,10 @@ public class AwsConnectionPersistenceService {
               "AWS",
               "IAM_USER",
               encrypted,
-              Instant.now().atOffset(ZoneOffset.of("SAST")));
+              Instant.now().atOffset(ZoneOffset.of("+02:00")));
       cloudCredentialRepository.save(credential);
-    } catch (Exception e) {
-      throw new IllegalArgumentException(
-          "Provided credentials could not be converted to string for connection persistence");
+    } catch (JsonProcessingException e) {
+      throw new IllegalArgumentException("Unable to serialize AWS credentials.", e);
     }
   }
 
