@@ -23,7 +23,7 @@ ENTRYPOINT ["./mvnw", "spring-boot:run"]
 FROM base AS build
 
 COPY apps/ingestion/src apps/ingestion/src
-COPY apps/ingestion/config/checkstyle/checkstyle.xml config/checkstyle/checkstyle.xml
+COPY apps/ingestion/config/checkstyle/checkstyle.xml apps/ingestion/config/checkstyle/checkstyle.xml
 
 RUN ./mvnw -f apps/ingestion/pom.xml clean package -DskipTests
 
@@ -32,7 +32,7 @@ RUN ./mvnw -f apps/ingestion/pom.xml clean package -DskipTests
 FROM eclipse-temurin:21-jre AS prod
 
 WORKDIR /app
-COPY --from=build /app/target/*.jar app.jar
+COPY --from=build /app/apps/ingestion/target/*.jar app.jar
 
 RUN useradd ingestionuser
 USER ingestionuser

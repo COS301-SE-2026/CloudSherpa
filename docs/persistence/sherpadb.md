@@ -4,7 +4,21 @@ This document describes the database architecture used for CloudSherpa. The syst
 1. **Global Schema (`public`):** The shared space for all users. It holds global data like user accounts, UI preferences, and dashboard layouts.
 2. **Tenant Schemas (`tenant_<uuid>`):** A private, isolated database space created uniquely for each customer. This holds their massive lists of cloud resources and time-series metrics without mixing them up with other customers.
 
----
+## Local Database Access (pgAdmin)
+To view and manage the database locally during development, you can use the bundled pgAdmin container:
+
+1. **Open pgAdmin:** Navigate to [http://localhost:5050](http://localhost:5050)
+2. **Login:**
+   * **Email:** `admin@example.com`
+   * **Password:** `admin`
+3. **Add a New Server:**
+   * **Name:** `CloudSherpa`
+   * **Host:** `sherpa-db`
+   * **Port:** `5432`
+   * **Username / Password:** (Check your local `.env` file)
+4. **Browse the Data:**
+   * For global data: `Servers > CloudSherpa > Databases > sherpadb > Schemas > public > Tables`
+   * For tenant data: Look for dynamically created schemas named `tenant_<uuid>`.
 
 ## Enums (Shared Across All Schemas)
 

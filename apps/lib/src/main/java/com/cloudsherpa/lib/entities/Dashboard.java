@@ -10,7 +10,7 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "dashboard")
+@Table(name = "dashboard", schema = "public")
 public class Dashboard {
 
   @Id

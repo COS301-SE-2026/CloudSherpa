@@ -24,14 +24,14 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
   const [availableServices, setAvailableServices] = useState<
     { id: string; name: string }[]
   >([]);
-  const [servicesSelected, setSelectedServices] = useState<string[]>([]);
+  const [servicesSelected, setServicesSelected] = useState<string[]>([]);
   const [permissions, setPermissions] = useState<AwsPolicy | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
 
   const toggleService = (serviceId: string) => {
-    setSelectedServices(prev =>
+    setServicesSelected(prev =>
       prev.includes(serviceId)
         ? prev.filter(id => id !== serviceId)
         : [...prev, serviceId]
@@ -104,9 +104,9 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
 
   const forHandlingAllSelected = () => {
     if (servicesSelected.length === availableServices.length) {
-      setSelectedServices([]);
+      setServicesSelected([]);
     } else {
-      setSelectedServices(availableServices.map(s => s.id));
+      setServicesSelected(availableServices.map(s => s.id));
     }
   };
 
@@ -210,6 +210,7 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
           <div className="flex justify-between pt-4">
             <Button
               type="button"
+              disabled={loading} 
               onClick={onBack}
               className="bg-primary hover:bg-accent hover:text-accent-foreground text-primary-foreground px-6 py-2 rounded-md transition-all duration-200 font-medium"
             >
@@ -218,6 +219,7 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
 
             <Button
               type="submit"
+              disabled={loading} 
               className="bg-primary hover:bg-accent hover:text-accent-foreground text-primary-foreground px-6 py-2 rounded-md transition-all duration-200 font-medium"
             >
               Next

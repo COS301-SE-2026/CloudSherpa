@@ -96,14 +96,15 @@ class AwsCloudConnectorTest {
     request.setFrom(Instant.now().minusSeconds(3600));
     request.setTo(Instant.now());
     request.setPeriod(period);
-
     InstanceScope instance = new InstanceScope();
     instance.setIdentifierName("InstanceId");
     instance.setValues(List.of("i-123"));
 
+    Metric metric = new Metric();
+    metric.setName("CPUUtilization");
     ServiceScope service = new ServiceScope();
     service.setName("EC2");
-    service.setMetrics(List.of("CPUUtilization"));
+    service.setMetrics(List.of(metric));
     service.setInstances(List.of(instance));
 
     AccountScope scope = new AccountScope();
