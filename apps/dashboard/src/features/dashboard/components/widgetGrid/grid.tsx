@@ -12,7 +12,6 @@ interface GridProps {
   onLayoutChange: (layout: LayoutItem[]) => void;
   layouts: LayoutItem[];
   onDeleteWidget: (layoutId: string, widgetId: string) => void;
-  metricFetchLoad: boolean;
 }
 
 export default function Grid({
@@ -20,7 +19,6 @@ export default function Grid({
   onLayoutChange,
   layouts,
   onDeleteWidget,
-  metricFetchLoad,
 }: Readonly<GridProps>) {
   const gridRef = useRef<HTMLDivElement>(null);
   const gridStackInstance = useRef<GridStack | null>(null);
@@ -43,7 +41,7 @@ export default function Grid({
           cellHeight: 100, //handles row heights that widgets snap to
           margin: 12, //layer around every widget. meaning there is 24px margin between every widget
           handle: ".drag-handle",
-          staticGrid: !isEditModeRef.current, //lock grid not in edit mode (use ref to avoid re-init)
+          staticGrid: !isEditModeRef.current, //lock grid not in edit mode
           float: false,
           resizable: { handles: "se" }, // part of library handles widget resizing from "south-east"/bottom-right corner
 
@@ -149,7 +147,6 @@ export default function Grid({
             layout={l} 
             isEditMode={isEditMode} 
             onDeleteWidget={onDeleteWidget}
-            metricFetchLoad={metricFetchLoad}
           />
         ))}
       </div>
