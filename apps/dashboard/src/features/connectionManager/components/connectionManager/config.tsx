@@ -17,6 +17,25 @@ import {ArrowLeft, ExternalLink, Pencil} from 'lucide-react';
 export default function ConfigureConnection(){
     const [connectionName, setConnectionName] = useState('Connection 1');
 
+    const [newName, setNewName] = useState('Connection 1');
+
+    const [isChanging, setIsChanging] = useState(false);
+
+    const handlingEditing = () => {
+        setNewName(connectionName);
+        setIsChanging(true);
+    };
+
+    const handlingSave = () => {
+        setConnectionName(newName);
+        setIsChanging(false);
+    };
+
+    const handlingCancel = () => {
+        setNewName(connectionName);
+        setIsChanging(false);
+    };
+
     return(
         <div className = "min-h-screen bg-background text-foreground">
 
@@ -67,6 +86,26 @@ export default function ConfigureConnection(){
 
                         <div className = "flex items-center justify-between px-5 py-3">
                             <span className = "text-sm text-muted-foreground"> Connection name </span>
+
+                            <div className = "flex items-center gap-2">
+                                {isChanging ? (
+                                    <>
+                                        <Input autoFocus value = {newName} onChange = {(change) => setNewName(change.target.value)} className = "h-7 text-sm w-36 bg-transparent border-border text-foreground focus-visible:ring-ring" />
+
+                                        <Button size = "sm" onClick = {handlingSave} className = "h-7 text-xs px-3 bg-primary text-primary-foreground hover:bg-primary/90"> Save </Button>
+
+                                        <Button variant = "ghost" size = "sm" onClick = {handlingCancel} className = "h-7 text-xs px-3 text-muted-foreground hover:text-foreground"> Cancel </Button>
+                                    </>
+                                ) : 
+
+                                (
+                                    <>
+                                        <span className = "text-sm text-foreground border border-border rounded px-2 py-0.5"> {connectionName} </span>
+
+                                        <Button variant = "ghost" size = "icon" onClick = {handlingEditing} className = "h-6 w-6 text-muted-foreground hover:text-foreground"> <Pencil size = {14}/> </Button>
+                                    </>
+                                )}
+                            </div>
 
                         </div>
 
