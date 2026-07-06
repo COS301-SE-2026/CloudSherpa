@@ -15,6 +15,8 @@ import {ArrowLeft, ExternalLink, Pencil} from 'lucide-react';
 */
 
 export default function ConfigureConnection(){
+    const [connectionName, setConnectionName] = useState('Connection 1');
+
     return(
         <div className = "min-h-screen bg-background text-foreground">
 
@@ -29,11 +31,48 @@ export default function ConfigureConnection(){
                     <div>
                         <p className = "text-xs text-muted-foreground"> Connection manager/configuration </p>
 
+                        <h1 className = "text-xl font-semibold text-foreground"> {connectionName} </h1>
                     </div>
 
                 </div>
             </div>
 
+            <div className = "px-8 py-8">
+
+                {/* this is for the connection details */}
+                <h2 className = "text-base font-medium text-foreground mb-3"> Connection details </h2>
+                <Card className = "mb-8 bg-card border-border">
+                    <CardContent className = "p-0">
+                        <div className = "flex items-center justify-between px-5 py-3">
+
+                            <span className = "text-sm text-muted-foreground" > Provider </span>
+
+                            {/* is hard coded */}
+                            <span className = "text-xs font-medium px-3 py-1 rounded bg-success text-success-foreground"> Azure </span>
+
+                        </div>
+
+                        <Separator className = "bg-border"/>
+
+                        <div className = "flex items-center justify-between px-5 py-3">
+
+                            <span className = "text-sm text-muted-foreground"> Account linked </span>
+
+                            {/* is hard coded */}
+                            <span className = "text-sm text-foreground" > fi@bitflip.com </span>
+
+                        </div>
+
+                        <Separator className = "bg-border" />
+
+                        <div className = "flex items-center justify-between px-5 py-3">
+                            <span className = "text-sm text-muted-foreground"> Connection name </span>
+
+                        </div>
+
+                    </CardContent>
+                </Card>
+            </div>
         </div>
     );
     
