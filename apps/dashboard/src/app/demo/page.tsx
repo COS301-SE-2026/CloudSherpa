@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useMetricStream } from "@/features/dashboard/services/sse/metric-stream";
 import { useMetricStore } from "@/features/dashboard/stores/metric-store";
@@ -8,9 +8,9 @@ import { useMemo } from "react";
 
 export default function Demo() {
     const { error } = useMetricStream();
-    const metrics = useMetricStore((state) => (state.seriesByKey));
+    const metrics = useMetricStore((state) => state.seriesByKey);
 
-    const cpuSeries = metrics['74266597-141c-3ecc-8f68-8667ff7163a7:cpu'];
+    const cpuSeries = metrics["74266597-141c-3ecc-8f68-8667ff7163a7:cpu"];
     const forCpuData = useMemo(() => metricSeriesToArray(cpuSeries), [cpuSeries]);
     const latestCpuValue = forCpuData.length > 0 ? forCpuData.at(-1)?.value : 0;
     useFetchMetrics();
@@ -24,9 +24,7 @@ export default function Demo() {
                         <p className="text-sm text-slate-600">
                             {/* Metrics received: {Object.values(metrics).reduce((count, series) => count + Object.keys(series).length, 0)} */}
                         </p>
-                        <p className="text-sm text-blue-600">
-                            Current CPU: {latestCpuValue}%
-                        </p>
+                        <p className="text-sm text-blue-600">Current CPU: {latestCpuValue}%</p>
                     </div>
                 </div>
 
@@ -41,7 +39,7 @@ export default function Demo() {
                             widgetType: "line"
                         }}
                     /> */}
-{/* 
+                    {/* 
                     <ConfigurableWidget
                         initialConfig={{
                             id: crypto.randomUUID(),

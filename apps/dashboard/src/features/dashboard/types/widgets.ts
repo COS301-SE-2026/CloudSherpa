@@ -31,4 +31,4 @@ export type DashboardStub = {
 };
 
 // update every time a new chart is added
-export type ChartType = 'line' | 'gauge'
+export type ChartType = "line" | "gauge";

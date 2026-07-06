@@ -7,6 +7,12 @@ SUCCESS='\033[1;32m'
 RESET='\033[0m'
 ERROR='\033[1;31m'
 
+echo -e "${INFO}Running Cloudsherpa Dashboard Prettier Check${RESET}"
+(cd apps/dashboard && npm run format:check &> /dev/null || {
+	echo -e "${ERROR}Prettier format check failes, please run `npm run format:check` from apps/dashboard to view the formatting errors. Run `npm run format:fix` to have prettier apply the formatting rules"
+})
+echo -e "${SUCCESS}Dashboard prettier succeeded${RESET}"
+
 echo -e "${INFO}Running CloudSherpa Dashboard Lint...${RESET}"
 (cd apps/dashboard && npx eslint --fix . >/dev/null 2>&1 || {
 	echo -e "${ERROR}Dashboard lint failed. Run \"npm lint\" in apps/dashbaord for more verbose error messages. Commit not made.${RESET}"

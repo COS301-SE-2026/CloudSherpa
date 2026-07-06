@@ -1,10 +1,7 @@
-"use client"
-import * as echarts from 'echarts/core';
+"use client";
+import * as echarts from "echarts/core";
 
-import {
-    LineChart,
-    GaugeChart,
-} from "echarts/charts"
+import { LineChart, GaugeChart } from "echarts/charts";
 
 import {
     GridComponent,
@@ -12,11 +9,9 @@ import {
     LegendComponent,
     DataZoomComponent,
     DatasetComponent,
-} from "echarts/components"
+} from "echarts/components";
 
-import {
-    CanvasRenderer,
-} from "echarts/renderers"
+import { CanvasRenderer } from "echarts/renderers";
 
 echarts.use([
     LineChart,
@@ -27,6 +22,6 @@ echarts.use([
     DataZoomComponent,
     DatasetComponent,
     CanvasRenderer,
-])
+]);
 
-export * as echarts from 'echarts/core';
+export * as echarts from "echarts/core";

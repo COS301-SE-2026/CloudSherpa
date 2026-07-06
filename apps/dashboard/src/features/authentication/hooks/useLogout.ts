@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
 import { useState } from "react";
-import { useAuthContext } from "../providers/AuthContext"
+import { useAuthContext } from "../providers/AuthContext";
 import { useRouter } from "next/navigation";
 
 export function useLogout() {
@@ -16,5 +16,5 @@ export function useLogout() {
         router.push("/login");
     }
 
-    return { logout, logoutError }
+    return { logout, logoutError };
 }

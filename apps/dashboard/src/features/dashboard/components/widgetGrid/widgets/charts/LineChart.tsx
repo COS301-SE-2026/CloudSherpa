@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { Spinner } from "@/components/atoms/spinner";
 import { echarts } from "@/lib/charts/echarts";
@@ -9,10 +9,10 @@ import type { EChartsOption } from "echarts";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 type LineChartProps = {
-    resourceId?: string,
-    metricType?: MetricType,
-    metricFetchLoad?: boolean,
-}
+    resourceId?: string;
+    metricType?: MetricType;
+    metricFetchLoad?: boolean;
+};
 
 // This will be replaced by zustand store for dashboard window
 
@@ -33,27 +33,27 @@ export function LineChart({
     const visibleWindowMs = toMs - fromMs;
 
     const chartInstance = useRef<echarts.ECharts | null>(null);
-    const [lineColor, setLineColor] = useState<string>('#3b82f6'); // fallback blue
+    const [lineColor, setLineColor] = useState<string>("#3b82f6"); // fallback blue
     const [gridOpacity, setGridOpacity] = useState<number>(0.15);
-    const [textColor, setTextColor] = useState<string>('rgb(255, 255, 255)');
+    const [textColor, setTextColor] = useState<string>("rgb(255, 255, 255)");
 
     // Extract color token and listen for theme changes
-    //note: echarts does not have built in support for css tokens and stuff so we have to use workaround 
+    //note: echarts does not have built in support for css tokens and stuff so we have to use workaround
     useEffect(() => {
         const updateThemeStyles = () => {
             const style = getComputedStyle(document.documentElement);
-            const tokenColor = style.getPropertyValue('--primary').trim();
-            const foregroundToken = style.getPropertyValue('--foreground').trim();
-            
+            const tokenColor = style.getPropertyValue("--primary").trim();
+            const foregroundToken = style.getPropertyValue("--foreground").trim();
+
             if (tokenColor) {
                 setLineColor(tokenColor);
             }
 
-            const isLightMode = document.documentElement.dataset.theme === 'light';
+            const isLightMode = document.documentElement.dataset.theme === "light";
             if (foregroundToken) {
                 setTextColor(foregroundToken);
             } else {
-                setTextColor(isLightMode ? '#020617' : 'rgb(255, 255, 255)');
+                setTextColor(isLightMode ? "#020617" : "rgb(255, 255, 255)");
             }
 
             // Adjust horizontal grid line opacity based on active theme(just added on logic for theme swapping)
@@ -62,7 +62,10 @@ export function LineChart({
 
         updateThemeStyles();
         const observer = new MutationObserver(updateThemeStyles);
-        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'class'] });
+        observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ["data-theme", "class"],
+        });
         return () => observer.disconnect();
     }, []);
 
@@ -72,15 +75,17 @@ export function LineChart({
 
         return () => {
             chartInstance.current?.dispose();
-        }
+        };
     }, []);
 
     useEffect(() => {
         if (!chartRef.current) return;
 
         // Convert to unix timestamp in ms, should consider doing this during normalization
-        const points = data
-            .map((metric): [number, number] => [new Date(metric.timestamp).getTime(), metric.value]);
+        const points = data.map((metric): [number, number] => [
+            new Date(metric.timestamp).getTime(),
+            metric.value,
+        ]);
 
         // Suppose value of 121 with interval of 50s, 121 / 50 = 2.43, ceil takes that to 3, multiplied with 50 gives
         // you nice boundary of 150
@@ -89,13 +94,13 @@ export function LineChart({
         const option: EChartsOption = {
             color: [lineColor],
             tooltip: {
-                trigger: "axis"
+                trigger: "axis",
             },
 
             // animate on render, do not animate on update
             animationDuration: 600,
             animationDurationUpdate: 0,
-            
+
             grid: {
                 left: 20,
                 right: 20,
@@ -112,22 +117,22 @@ export function LineChart({
                 interval: AXIS_TICK_MS,
                 axisLabel: {
                     hideOverlap: true,
-                    formatter: '{HH}:{mm}', //makes it look less cluttered
-                    color: textColor
-                }
+                    formatter: "{HH}:{mm}", //makes it look less cluttered
+                    color: textColor,
+                },
             },
 
             yAxis: {
                 type: "value",
                 axisLabel: {
-                    formatter: '{value} %',
-                    color: textColor
+                    formatter: "{value} %",
+                    color: textColor,
                 },
                 splitLine: {
                     lineStyle: {
-                        opacity: gridOpacity // Dynamic opacity based on theme
-                    }
-                }
+                        opacity: gridOpacity, // Dynamic opacity based on theme
+                    },
+                },
             },
 
             series: [
@@ -137,15 +142,14 @@ export function LineChart({
                     // symbol = visual marker
                     showSymbol: false,
                 },
-                    
             ],
         };
 
         chartInstance.current?.setOption(option);
-    }, [ resourceId, data, visibleWindowMs, lineColor, gridOpacity, textColor])
+    }, [resourceId, data, visibleWindowMs, lineColor, gridOpacity, textColor]);
 
     useEffect(() => {
-        if(!chartInstance.current){
+        if (!chartInstance.current) {
             return;
         }
 
@@ -160,20 +164,20 @@ export function LineChart({
             }, 10);
         };
 
-        globalThis.addEventListener('resize', handleResize);
-        globalThis.addEventListener('widget-resize', handleWidgetResize);
+        globalThis.addEventListener("resize", handleResize);
+        globalThis.addEventListener("widget-resize", handleWidgetResize);
 
         const forResizing = new ResizeObserver(() => {
             chartInstance.current?.resize();
         });
 
-        if(chartRef.current){
+        if (chartRef.current) {
             forResizing.observe(chartRef.current);
         }
-        
+
         return () => {
-            globalThis.removeEventListener('resize', handleResize);
-            globalThis.removeEventListener('widget-resize', handleWidgetResize);
+            globalThis.removeEventListener("resize", handleResize);
+            globalThis.removeEventListener("widget-resize", handleWidgetResize);
             forResizing.disconnect();
         };
     }, []);

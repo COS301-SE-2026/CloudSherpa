@@ -1,76 +1,67 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { Button } from '@/components/atoms/button';
-import { Checkbox } from '@/components/atoms/checkbox';
-import { Badge } from '@/components/atoms/badge';
-import { ResourceDetail } from '@/lib/fetch/cloud-resource-api';
+import React, { useState } from "react";
+import { Button } from "@/components/atoms/button";
+import { Checkbox } from "@/components/atoms/checkbox";
+import { Badge } from "@/components/atoms/badge";
+import { ResourceDetail } from "@/lib/fetch/cloud-resource-api";
 
 interface PropsForStepThree {
-  resources: ResourceDetail[];
-  onComplete: (selectedInstances: string[]) => void;
-  onBack: () => void;
+    resources: ResourceDetail[];
+    onComplete: (selectedInstances: string[]) => void;
+    onBack: () => void;
 }
 
 interface ResourceTagsProps {
-  tags: Record<string, string>;
+    tags: Record<string, string>;
 }
 
 interface ResourceRowProps {
-  resource: ResourceDetail;
-  selected: boolean;
-  onToggle: (resourceId: string, checked: boolean) => void;
+    resource: ResourceDetail;
+    selected: boolean;
+    onToggle: (resourceId: string, checked: boolean) => void;
 }
 
 interface ResourceCategoryProps {
-  serviceCategory: string;
-  resources: ResourceDetail[];
-  selectedResources: string[];
-  onToggle: (resourceId: string, checked: boolean) => void;
+    serviceCategory: string;
+    resources: ResourceDetail[];
+    selectedResources: string[];
+    onToggle: (resourceId: string, checked: boolean) => void;
 }
 
-function groupResourcesByCategory(
-  resources: ResourceDetail[]
-): Record<string, ResourceDetail[]> {
-  return resources.reduce(
-    (groups, resource) => {
-      const category = resource.serviceCategory;
+function groupResourcesByCategory(resources: ResourceDetail[]): Record<string, ResourceDetail[]> {
+    return resources.reduce(
+        (groups, resource) => {
+            const category = resource.serviceCategory;
 
-      if (!groups[category]) {
-        groups[category] = [];
-      }
+            if (!groups[category]) {
+                groups[category] = [];
+            }
 
-      groups[category].push(resource);
+            groups[category].push(resource);
 
-      return groups;
-    },
-    {} as Record<string, ResourceDetail[]>
-  );
+            return groups;
+        },
+        {} as Record<string, ResourceDetail[]>
+    );
 }
 
 function ResourceTags({ tags }: Readonly<ResourceTagsProps>) {
-  return (
-    <div className="flex flex-wrap justify-end gap-2 max-w-md">
-      {Object.entries(tags).map(([key, value]) => (
-        <Badge
-          key={`${key}-${value}`}
-          variant="secondary"
-        >
-          {key}: {value}
-        </Badge>
-      ))}
-    </div>
-  );
+    return (
+        <div className="flex flex-wrap justify-end gap-2 max-w-md">
+            {Object.entries(tags).map(([key, value]) => (
+                <Badge key={`${key}-${value}`} variant="secondary">
+                    {key}: {value}
+                </Badge>
+            ))}
+        </div>
+    );
 }
 
-function ResourceRow({
-  resource,
-  selected,
-  onToggle,
-}: Readonly<ResourceRowProps>) {
-  return (
-    <div
-      className="
+function ResourceRow({ resource, selected, onToggle }: Readonly<ResourceRowProps>) {
+    return (
+        <div
+            className="
         flex
         items-start
         justify-between
@@ -84,149 +75,129 @@ function ResourceRow({
         transition-all
         cursor-pointer
       "
-    >
-      <div className="flex items-start gap-3">
-        <Checkbox
-          checked={selected}
-          onCheckedChange={checked =>
-            onToggle(resource.resourceId, Boolean(checked))
-          }
-        />
+        >
+            <div className="flex items-start gap-3">
+                <Checkbox
+                    checked={selected}
+                    onCheckedChange={(checked) => onToggle(resource.resourceId, Boolean(checked))}
+                />
 
-        <div>
-          <div className="font-medium text-foreground">
-            {resource.name}
+                <div>
+                    <div className="font-medium text-foreground">
+                        {resource.name}
 
-            <span className="ml-2 text-muted-foreground">
-              ({resource.resourceId})
-            </span>
-          </div>
+                        <span className="ml-2 text-muted-foreground">({resource.resourceId})</span>
+                    </div>
+                </div>
+            </div>
+
+            <ResourceTags tags={resource.tags} />
         </div>
-      </div>
-
-      <ResourceTags tags={resource.tags} />
-    </div>
-  );
+    );
 }
 
 function ResourceCategory({
-  serviceCategory,
-  resources,
-  selectedResources,
-  onToggle,
+    serviceCategory,
+    resources,
+    selectedResources,
+    onToggle,
 }: Readonly<ResourceCategoryProps>) {
-  return (
-    <div>
-      <h3 className="text-lg font-semibold text-foreground mb-4">
-        {serviceCategory}
-      </h3>
+    return (
+        <div>
+            <h3 className="text-lg font-semibold text-foreground mb-4">{serviceCategory}</h3>
 
-      <div className="space-y-3">
-        {resources.map(resource => (
-          <ResourceRow
-            key={resource.resourceId}
-            resource={resource}
-            selected={selectedResources.includes(resource.resourceId)}
-            onToggle={onToggle}
-          />
-        ))}
-      </div>
-    </div>
-  );
+            <div className="space-y-3">
+                {resources.map((resource) => (
+                    <ResourceRow
+                        key={resource.resourceId}
+                        resource={resource}
+                        selected={selectedResources.includes(resource.resourceId)}
+                        onToggle={onToggle}
+                    />
+                ))}
+            </div>
+        </div>
+    );
 }
 
-export default function StepThree({
-  resources,
-  onComplete,
-  onBack,
-}: Readonly<PropsForStepThree>) {
-  const [selectedResources, setSelectedResources] = useState<string[]>(
-    resources.map(resource => resource.resourceId)
-  );
+export default function StepThree({ resources, onComplete, onBack }: Readonly<PropsForStepThree>) {
+    const [selectedResources, setSelectedResources] = useState<string[]>(
+        resources.map((resource) => resource.resourceId)
+    );
 
-  const groupedResources = groupResourcesByCategory(resources);
+    const groupedResources = groupResourcesByCategory(resources);
 
-  const handleSubmit = (
-    event: React.SubmitEvent<HTMLFormElement>
-  ) => {
-    event.preventDefault();
-    onComplete(selectedResources);
-  };
+    const handleSubmit = (event: React.SubmitEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        onComplete(selectedResources);
+    };
 
-  const handleResourceToggle = (
-    resourceId: string,
-    checked: boolean
-  ) => {
-    setSelectedResources(previous => {
-      if (checked) {
-        return previous.includes(resourceId)
-          ? previous
-          : [...previous, resourceId];
-      }
+    const handleResourceToggle = (resourceId: string, checked: boolean) => {
+        setSelectedResources((previous) => {
+            if (checked) {
+                return previous.includes(resourceId) ? previous : [...previous, resourceId];
+            }
 
-      return previous.filter(id => id !== resourceId);
-    });
-  };
+            return previous.filter((id) => id !== resourceId);
+        });
+    };
 
-  return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-8">
-      <div className="w-full max-w-4xl bg-card rounded-lg shadow-none p-8">
-        <div className="pb-6">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-2 h-2 rounded-full bg-primary" />
+    return (
+        <div className="min-h-screen bg-background flex items-center justify-center p-8">
+            <div className="w-full max-w-4xl bg-card rounded-lg shadow-none p-8">
+                <div className="pb-6">
+                    <div className="flex items-center gap-2 mb-4">
+                        <div className="w-2 h-2 rounded-full bg-primary" />
 
-            <span className="text-sm font-medium text-muted-foreground/70">
-              STEP 3 OF 3
-            </span>
-          </div>
+                        <span className="text-sm font-medium text-muted-foreground/70">
+                            STEP 3 OF 3
+                        </span>
+                    </div>
 
-          <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-            Select Instances
-          </h2>
+                    <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+                        Select Instances
+                    </h2>
 
-          <p className="mt-2 text-muted-foreground/70">
-            Select the instances you want CloudSherpa to monitor.
-          </p>
-        </div>
+                    <p className="mt-2 text-muted-foreground/70">
+                        Select the instances you want CloudSherpa to monitor.
+                    </p>
+                </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-8"
-        >
-          <div className="min-h-[200px]">
-            <div className="space-y-8">
-              {Object.entries(groupedResources).map(
-                ([serviceCategory, categoryResources]) => (
-                  <ResourceCategory
-                    key={serviceCategory}
-                    serviceCategory={serviceCategory}
-                    resources={categoryResources}
-                    selectedResources={selectedResources}
-                    onToggle={handleResourceToggle}
-                  />
-                )
-              )}
+                <form onSubmit={handleSubmit} className="space-y-8">
+                    <div className="min-h-[200px]">
+                        <div className="space-y-8">
+                            {Object.entries(groupedResources).map(
+                                ([serviceCategory, categoryResources]) => (
+                                    <ResourceCategory
+                                        key={serviceCategory}
+                                        serviceCategory={serviceCategory}
+                                        resources={categoryResources}
+                                        selectedResources={selectedResources}
+                                        onToggle={handleResourceToggle}
+                                    />
+                                )
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="flex justify-between pt-6">
+                        <Button
+                            type="button"
+                            onClick={onBack}
+                            className="bg-primary hover:bg-accent hover:text-accent-foreground text-primary-foreground px-6 py-2 rounded-md transition-all duration-200 font-medium"
+                        >
+                            Back
+                        </Button>
+
+                        <Button
+                            type="submit"
+                            className="bg-primary hover:bg-accent hover:text-accent-foreground text-primary-foreground px-8 py-2 rounded-md transition-all duration-200 font-medium"
+                        >
+                            Finish
+                        </Button>
+                    </div>
+                </form>
             </div>
-          </div>
-
-          <div className="flex justify-between pt-6">
-            <Button
-              type="button"
-              onClick={onBack}
-              className="bg-primary hover:bg-accent hover:text-accent-foreground text-primary-foreground px-6 py-2 rounded-md transition-all duration-200 font-medium"
-            >
-              Back
-            </Button>
-
-            <Button
-              type="submit"
-              className="bg-primary hover:bg-accent hover:text-accent-foreground text-primary-foreground px-8 py-2 rounded-md transition-all duration-200 font-medium"
-            >
-              Finish
-            </Button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
+        </div>
+    );
 }

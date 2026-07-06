@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useDashboardStore } from '@/features/dashboard/stores/dashboard-store';
-import { useMetricStore } from '@/features/dashboard/stores/metric-store';
-import { useResourceNameStore } from '@/features/dashboard/stores/resource-store';
-import { MetricType } from '@/features/dashboard/types/metric';
-import { useState, useEffect, useRef } from 'react';
-import { WidgetConfig } from '@/features/dashboard/types/widgets';
+import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
+import { useMetricStore } from "@/features/dashboard/stores/metric-store";
+import { useResourceNameStore } from "@/features/dashboard/stores/resource-store";
+import { MetricType } from "@/features/dashboard/types/metric";
+import { useState, useEffect, useRef } from "react";
+import { WidgetConfig } from "@/features/dashboard/types/widgets";
 
-interface WidgetConfigMenuProps{
+interface WidgetConfigMenuProps {
     isOpen: boolean;
 
     onClose: () => void;
@@ -18,28 +18,31 @@ interface WidgetConfigMenuProps{
 
 // This is shared (used for dashboard store), perhaps we can move it to types
 // Also need to confirm that interface is more appropriate than type
-export function WidgetConfigMenu({ 
-    isOpen, 
+export function WidgetConfigMenu({
+    isOpen,
 
-    onClose, 
-    onSave, 
+    onClose,
+    onSave,
 
     existingConfig,
-
 }: Readonly<WidgetConfigMenuProps>) {
     const [configuration, setConfiguration] = useState<WidgetConfig>(existingConfig);
-    const registerWidgetConfigUpdate = useDashboardStore((state) => state.actions.updateWidgetConfig);
+    const registerWidgetConfigUpdate = useDashboardStore(
+        (state) => state.actions.updateWidgetConfig
+    );
     const resourceNamesById = useResourceNameStore((state) => state.resourcesById);
     const allAvailableMetrics = useMetricStore((state) => state.getMetricList);
 
-    const availableMetrics = configuration.resourceId ? allAvailableMetrics()[configuration.resourceId] ?? []: [];
+    const availableMetrics = configuration.resourceId
+        ? (allAvailableMetrics()[configuration.resourceId] ?? [])
+        : [];
 
     const availableResources = Object.keys(resourceNamesById);
 
     const isFirstRender = useRef(true);
 
     useEffect(() => {
-        if(!isFirstRender.current){
+        if (!isFirstRender.current) {
             setConfiguration(existingConfig);
         }
 
@@ -56,17 +59,14 @@ export function WidgetConfigMenu({
         registerWidgetConfigUpdate(newConfig);
     }
 
-    if(!isOpen){
+    if (!isOpen) {
         return null;
     }
 
     return (
         <>
-            <button
-                className="fixed inset-0 z-40"
-                onClick={onClose}
-            />
-            
+            <button className="fixed inset-0 z-40" onClick={onClose} />
+
             <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-card rounded-xl border border-border shadow-xl z-50">
                 <div className="flex items-center justify-between border-b border-border px-6 py-4">
                     <h3 className="text-lg font-semibold text-foreground">Widget Configuration</h3>
@@ -75,7 +75,10 @@ export function WidgetConfigMenu({
                 <div className="p-6 space-y-4">
                     {/*this is for the widget title*/}
                     <div>
-                        <label className="block text-sm font-medium text-foreground mb-2" htmlFor="title">
+                        <label
+                            className="block text-sm font-medium text-foreground mb-2"
+                            htmlFor="title"
+                        >
                             Title
                         </label>
 
@@ -83,7 +86,12 @@ export function WidgetConfigMenu({
                             id="title"
                             type="text"
                             value={configuration.title}
-                            onChange={(e) => setConfigAndRegisterUpdate({ ...configuration, title: e.target.value })}
+                            onChange={(e) =>
+                                setConfigAndRegisterUpdate({
+                                    ...configuration,
+                                    title: e.target.value,
+                                })
+                            }
                             className="w-full bg-background border border-border rounded-lg px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                             placeholder="Enter widget title"
                         />
@@ -91,7 +99,10 @@ export function WidgetConfigMenu({
 
                     {/*this is for the resource id*/}
                     <div>
-                        <label className="block text-sm font-medium text-foreground mb-2" htmlFor="resource-id">
+                        <label
+                            className="block text-sm font-medium text-foreground mb-2"
+                            htmlFor="resource-id"
+                        >
                             Resource ID
                         </label>
 
@@ -99,12 +110,15 @@ export function WidgetConfigMenu({
                             id="resource-id"
                             value={configuration.resourceId}
                             onChange={(e) => {
-                                    const resourceId = e.target.value;
-                                    const metricType = availableMetrics[0] ?? "anon";
+                                const resourceId = e.target.value;
+                                const metricType = availableMetrics[0] ?? "anon";
 
-                                    setConfigAndRegisterUpdate({ ...configuration, resourceId, metricType })
-                                }
-                            }
+                                setConfigAndRegisterUpdate({
+                                    ...configuration,
+                                    resourceId,
+                                    metricType,
+                                });
+                            }}
                             className="w-full bg-background border border-border rounded-lg px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                         >
                             {availableResources.map((resource) => (
@@ -119,14 +133,22 @@ export function WidgetConfigMenu({
                     <div>
                         {configuration.resourceId ? (
                             <>
-                                <label className="block text-sm font-medium text-foreground mb-2" htmlFor="metric-type">
+                                <label
+                                    className="block text-sm font-medium text-foreground mb-2"
+                                    htmlFor="metric-type"
+                                >
                                     Metric Type
                                 </label>
 
                                 <select
                                     id="metric-type"
                                     value={configuration.metricType}
-                                    onChange={(e) => setConfigAndRegisterUpdate({ ...configuration, metricType: e.target.value as MetricType })}
+                                    onChange={(e) =>
+                                        setConfigAndRegisterUpdate({
+                                            ...configuration,
+                                            metricType: e.target.value as MetricType,
+                                        })
+                                    }
                                     className="w-full bg-background border border-border rounded-lg px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                                 >
                                     {availableMetrics.map((type) => (
@@ -137,15 +159,16 @@ export function WidgetConfigMenu({
                                 </select>
                             </>
                         ) : (
-                            <p className="text-sm text-muted-foreground">
-                                Select resource first
-                            </p>
+                            <p className="text-sm text-muted-foreground">Select resource first</p>
                         )}
                     </div>
 
                     {/*this is to chnange bet. the line chart or the gauge chart*/}
                     <div>
-                        <label className="block text-sm font-medium text-foreground mb-2" htmlFor="chart-type">
+                        <label
+                            className="block text-sm font-medium text-foreground mb-2"
+                            htmlFor="chart-type"
+                        >
                             Chart Type
                         </label>
 
@@ -154,8 +177,13 @@ export function WidgetConfigMenu({
                                 <input
                                     type="radio"
                                     value="line"
-                                    checked={configuration.chartType === 'line'}
-                                    onChange={(e) => setConfiguration({ ...configuration, chartType: e.target.value as 'line' | 'gauge' })}
+                                    checked={configuration.chartType === "line"}
+                                    onChange={(e) =>
+                                        setConfiguration({
+                                            ...configuration,
+                                            chartType: e.target.value as "line" | "gauge",
+                                        })
+                                    }
                                     className="w-4 h-4 text-primary focus:ring-ring"
                                 />
                                 <span className="text-foreground">Line Chart</span>
@@ -165,13 +193,17 @@ export function WidgetConfigMenu({
                                 <input
                                     type="radio"
                                     value="gauge"
-                                    checked={configuration.chartType === 'gauge'}
-                                    onChange={(e) => setConfiguration({ ...configuration, chartType: e.target.value as 'line' | 'gauge' })}
+                                    checked={configuration.chartType === "gauge"}
+                                    onChange={(e) =>
+                                        setConfiguration({
+                                            ...configuration,
+                                            chartType: e.target.value as "line" | "gauge",
+                                        })
+                                    }
                                     className="w-4 h-4 text-primary focus:ring-ring"
                                 />
                                 <span className="text-foreground">Gauge Chart</span>
                             </label>
-
                         </div>
                     </div>
                 </div>
@@ -190,7 +222,6 @@ export function WidgetConfigMenu({
                     >
                         Save Changes
                     </button>
-
                 </div>
             </div>
         </>
