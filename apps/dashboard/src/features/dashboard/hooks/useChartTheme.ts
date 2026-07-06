@@ -6,6 +6,9 @@ import * as echarts from "echarts";
 import lightTokens from "@/app/tokens/chart-light.json";
 import darkTokens from "@/app/tokens/chart-dark.json";
 
+//note echarts is not a react library so fo the themes to work it has to be defined globally before any chart is rendred
+//thus we have if(typoef globalTHis.window !=="undefined")
+
 const createEChartsTheme = (tokens: Record<string, string>) => ({
   color: [tokens["chart-1"], tokens["chart-2"], tokens["chart-3"], tokens["chart-4"], tokens["chart-5"]],
   backgroundColor: "transparent",
@@ -36,6 +39,12 @@ const createEChartsTheme = (tokens: Record<string, string>) => ({
     splitLine: { show: false },
     axisLabel: { color: tokens["muted-foreground"], margin: 16 },
   },
+  timeAxis: {
+    axisLine: { show: false },
+    axisTick: { show: false },
+    splitLine: { show: false },
+    axisLabel: { color: tokens["muted-foreground"], margin: 16 },
+  },
   valueAxis: {
     axisLine: { show: false },
     axisTick: { show: false },
@@ -47,7 +56,7 @@ const createEChartsTheme = (tokens: Record<string, string>) => ({
   },
 });
 
-if (typeof globalThis.window !== "undefined") {
+if ("window" in globalThis) {
   echarts.registerTheme("cloudSherpaLight", createEChartsTheme(lightTokens));
   echarts.registerTheme("cloudSherpaDark", createEChartsTheme(darkTokens));
 }
