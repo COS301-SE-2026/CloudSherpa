@@ -58,3 +58,5 @@ const styleDictionaryConfig = {
     }
   }
 };
+
+export default styleDictionaryConfig;
