@@ -3,11 +3,14 @@ package com.cloudsherpa.service.persistconnection.aws.service;
 import com.cloudsherpa.lib.entities.CloudAccount;
 import com.cloudsherpa.lib.entities.CloudConnection;
 import com.cloudsherpa.lib.entities.CloudCredential;
+import com.cloudsherpa.lib.entities.Resource;
 import com.cloudsherpa.lib.repositories.CloudAccountRepository;
 import com.cloudsherpa.lib.repositories.CloudConnectionRepository;
 import com.cloudsherpa.lib.repositories.CloudCredentialRepository;
+import com.cloudsherpa.lib.repositories.ResourceRepository;
 import com.cloudsherpa.service.persistconnection.aws.dto.AwsCredentialsDto;
 import com.cloudsherpa.service.persistconnection.aws.dto.PersistAwsConnectionRequest;
+import com.cloudsherpa.service.persistconnection.aws.dto.ResourceSelectionDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -22,16 +25,19 @@ public class AwsConnectionPersistenceService {
   private final CloudAccountRepository cloudAccountRepository;
   private final CloudCredentialRepository cloudCredentialRepository;
   private final CredentialEncryptionService encryptionService;
+  private final ResourceRepository resourceRepository;
 
   public AwsConnectionPersistenceService(
       CloudConnectionRepository cloudConnectionRepository,
       CloudAccountRepository cloudAccountRepository,
       CloudCredentialRepository cloudCredentialRepository,
-      CredentialEncryptionService encryptionService) {
+      CredentialEncryptionService encryptionService,
+      ResourceRepository resourceRepository) {
     this.cloudConnectionRepository = cloudConnectionRepository;
     this.cloudAccountRepository = cloudAccountRepository;
     this.cloudCredentialRepository = cloudCredentialRepository;
     this.encryptionService = encryptionService;
+    this.resourceRepository = resourceRepository;
   }
 
   @Transactional
@@ -39,6 +45,7 @@ public class AwsConnectionPersistenceService {
     CloudConnection connection = getOrCreateConnection(request);
     CloudAccount account = createAccount(connection, request);
     createCredential(account, request.credentials());
+    createResources(account, request.resources());
   }
 
   private CloudConnection getOrCreateConnection(PersistAwsConnectionRequest request) {
@@ -53,7 +60,7 @@ public class AwsConnectionPersistenceService {
               connectionId,
               request.userId(),
               "AWS",
-              "Active",
+              "ACTIVE",
               Instant.now().atOffset(ZoneOffset.of("SAST")));
       return cloudConnectionRepository.save(connection);
     }
@@ -94,5 +101,28 @@ public class AwsConnectionPersistenceService {
       throw new IllegalArgumentException(
           "Provided credentials could not be converted to string for connection persistence");
     }
+  }
+
+  private void createResources(CloudAccount account, List<ResourceSelectionDto> resources) {
+
+    List<Resource> entities =
+        resources.stream()
+            .map(
+                r -> {
+                  Resource resource =
+                      new Resource(
+                          UUID.randomUUID(),
+                          account.getId(),
+                          r.resourceType(),
+                          r.resourceName(),
+                          r.active() ? "ACTIVE" : "INACTIVE",
+                          r.tags(),
+                          Instant.now().atOffset(ZoneOffset.of("SAST")),
+                          Instant.now().atOffset(ZoneOffset.of("SAST")));
+                  return resource;
+                })
+            .toList();
+
+    resourceRepository.saveAll(entities);
   }
 }
