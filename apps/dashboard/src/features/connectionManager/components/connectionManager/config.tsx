@@ -21,6 +21,8 @@ export default function ConfigureConnection(){
 
     const [isChanging, setIsChanging] = useState(false);
 
+    const resources = ['Resource 1', 'Resource 2', 'Resource 3'];
+
     const handlingEditing = () => {
         setNewName(connectionName);
         setIsChanging(true);
@@ -111,6 +113,32 @@ export default function ConfigureConnection(){
 
                     </CardContent>
                 </Card>
+
+                {/* this is for the attached resources */}
+                <div className = "flex items-center justify-between mb-3">
+                    <h2 className = "text-base font-medium text-foreground"> Attached resources </h2>
+
+                    <span className = "text-sm font-medium text-success"> {resources.length} active </span>
+                </div>
+
+                <Card className = "bg-card border-border">
+                    <CardContent className = "p-0">
+                        {resources.map((resource, index) => (
+
+                            <React.Fragment key = {resource}>
+                                <div className = "flex items-center justify-between px-5 py-3">
+                                    <span className = "text-sm text-foreground"> {resource} </span>
+
+                                    <Button variant = "ghost" size = "icon" className = "h-6 w-6 text-muted-foreground hover:text-foreground"> <ExternalLink size = {15} /> </Button>
+                                </div>
+
+                                {index !== resources.length-1 && <Separator className = "bg-border"/> }
+                            </React.Fragment>
+
+                        ))}
+                    </CardContent>
+                </Card>
+
             </div>
         </div>
     );
