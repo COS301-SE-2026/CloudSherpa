@@ -17,7 +17,6 @@ interface GridProps {
 
 export default function Grid({
   isEditMode,
-  dashboardId: _dashboardId,
   onLayoutChange,
   layouts,
   onDeleteWidget,
@@ -25,12 +24,17 @@ export default function Grid({
 }: Readonly<GridProps>) {
   const gridRef = useRef<HTMLDivElement>(null);
   const gridStackInstance = useRef<GridStack | null>(null);
+  const onLayoutChangeRef = useRef(onLayoutChange);
 
   const isEditModeRef = useRef(isEditMode);
 
   useEffect(() => {
     isEditModeRef.current = isEditMode;
   }, [isEditMode]);
+
+  useEffect(() => {
+    onLayoutChangeRef.current = onLayoutChange;
+  }, [onLayoutChange]);
 
   useLayoutEffect(() => {
     if (gridRef.current && !gridStackInstance.current) {
@@ -53,11 +57,10 @@ export default function Grid({
       
       gridStackInstance.current.on("change", (_event, nodes) => {
         if (gridStackInstance.current && isEditModeRef.current && nodes) {
-          // Use the save callback to re-inject the widgetId from the DOM into the state update
           const fullLayout = gridStackInstance.current.save(false, false, (node, w: GridStackWidget) => {
             (w as LayoutItem).widgetId = node.el?.dataset.widgetId || "";
           }) as LayoutItem[];
-          onLayoutChange(fullLayout);
+          onLayoutChangeRef.current(fullLayout);
         }
       });
     }
@@ -146,7 +149,6 @@ export default function Grid({
             layout={l} 
             isEditMode={isEditMode} 
             onDeleteWidget={onDeleteWidget}
-            metricFetchLoad={metricFetchLoad}
           />
         ))}
       </div>
