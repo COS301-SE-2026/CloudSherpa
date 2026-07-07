@@ -1,6 +1,5 @@
 "use client"
 
-import { Spinner } from "@/components/atoms/spinner";
 import { echarts } from "@/lib/charts/echarts";
 import { useMetricStore } from "@/features/dashboard/stores/metric-store";
 import { useWindowStore } from "@/features/dashboard/stores/window-store";
@@ -11,7 +10,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 type LineChartProps = {
     resourceId?: string,
     metricType?: MetricType,
-    metricFetchLoad?: boolean,
 }
 
 // This will be replaced by zustand store for dashboard window
@@ -23,7 +21,6 @@ const AXIS_TICK_MS = 5_000;
 export function LineChart({
     resourceId,
     metricType,
-    metricFetchLoad = false,
 }: Readonly<LineChartProps>) {
     const chartRef = useRef<HTMLDivElement>(null);
     const series = useMetricStore((state) => state.seriesByKey[`${resourceId}:${metricType}`]);
@@ -181,11 +178,6 @@ export function LineChart({
     return (
         <div className="relative h-full w-full">
             <div ref={chartRef} className="h-full w-full" />
-            {metricFetchLoad && (
-                <div className="absolute inset-0 z-10 flex items-center justify-center bg-card/60 backdrop-blur-[1px]">
-                    <Spinner className="size-8" />
-                </div>
-            )}
         </div>
     );
 }

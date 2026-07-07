@@ -173,7 +173,6 @@ function DashboardContent() {
           onLayoutChange={handleLayoutChange}
           layouts={widgetLayouts}
           onDeleteWidget={handleDeleteWidget}
-          metricFetchLoad={metricFetchLoad}
         />
       );
     }
