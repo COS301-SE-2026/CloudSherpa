@@ -50,8 +50,6 @@ export default function ConfigureConnection(){
                     </Button>
 
                     <div>
-                        <p className = "text-xs text-muted-foreground"> Connection manager/configuration </p>
-
                         <h1 className = "text-xl font-semibold text-foreground"> {connectionName} </h1>
                     </div>
 
