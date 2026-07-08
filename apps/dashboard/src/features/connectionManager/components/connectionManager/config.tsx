@@ -72,8 +72,8 @@ export default function ConfigureConnection(){
 
                             <TooltipContent className = "max-w-xs flex flex-col gap-2">
                                 <p className = "font-medium text-sm"> Configuration of connection </p>
-                                <p className = "text-xs text-muted-foreground leading-relaxed"> A connection links your cloud provider account to CloudSherpa for cost monitoring </p>
-                                <p className = "text-xs text-muted-foreground leading-relaxed mt-1"> You can rename this connection at any time using the pencil icon next to the connection name </p>
+                                <p className = "text-xs leading-relaxed"> A connection links your cloud provider account to CloudSherpa for cost monitoring </p>
+                                <p className = "text-xs leading-relaxed"> You can rename this connection at any time using the pencil icon next to the connection name </p>
                             </TooltipContent>
 
                         </Tooltip>
