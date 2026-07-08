@@ -29,11 +29,17 @@ export default function DemoPage() {
   useEffect(() => {
     const now = Date.now();
 
+    const secureRandom = () => {
+      const a = new Uint32Array(1);
+      crypto.getRandomValues(a);
+      return a[0] / 0x100000000; 
+    };
+
     const mockCpuSeries: MetricSeries = Array.from({ length: 60 }).reduce((acc: MetricSeries, _, i) => {
       const timestampNum = now - (60 - i) * 5000;
       const timestampStr = new Date(timestampNum).toISOString();
 
-      const value = 40 + Math.sin(i * 0.5) * 20 + Math.random() * 10;
+      const value = 40 + Math.sin(i * 0.5) * 20 + secureRandom() * 10;
 
       acc[timestampStr] = {
         timestamp: timestampStr,

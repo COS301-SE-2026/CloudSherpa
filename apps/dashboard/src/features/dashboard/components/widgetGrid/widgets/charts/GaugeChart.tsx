@@ -64,7 +64,7 @@ export function GaugeChart({ resourceId, metricType }: Readonly<GaugeChartProps>
         },
       ],
     };
-  }, [currentValue, tokens]);
+  }, [currentValue, tokens, themeName]);
 
   return <BaseChart option={options} theme={themeName} />;
 }
