@@ -1,6 +1,6 @@
 import { formats } from 'style-dictionary/enums';
 
-export default {
+const styleDictionaryConfig = {
   source: ['style_dictionary/**/*.json'],
   
   hooks: {
@@ -74,3 +74,5 @@ export default {
     }
   }
 };
+
+export default styleDictionaryConfig;
