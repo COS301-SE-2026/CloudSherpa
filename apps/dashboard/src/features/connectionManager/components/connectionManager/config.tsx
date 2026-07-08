@@ -5,7 +5,8 @@ import {Separator} from '@/components/atoms/separator';
 import {Input} from '@/components/atoms/input';
 import {Button} from '@/components/atoms/button';
 import {Card, CardContent} from '@/components/atoms/card';
-import {ArrowLeft, ExternalLink, Pencil} from 'lucide-react';
+import {ArrowLeft, ExternalLink, Pencil, Info} from 'lucide-react';
+import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@/components/atoms/tooltip';
 
 /*
 - the user should be able to veiw details about a particular connectio here
@@ -59,7 +60,26 @@ export default function ConfigureConnection(){
             <div className = "px-8 py-8">
 
                 {/* this is for the connection details */}
-                <h2 className = "text-base font-medium text-foreground mb-3"> Connection details </h2>
+                <div className = "flex items-center gap-2 mb-3">
+                    <h2 className = "text-base font-medium text-foreground"> Connection details </h2>
+
+                    <TooltipProvider>
+                        <Tooltip>
+
+                            <TooltipTrigger>
+                                <Info size = {15} className = "text-muted-foreground cursor-pointer"/>
+                            </TooltipTrigger>
+
+                            <TooltipContent className = "max-w-xs flex flex-col gap-2">
+                                <p className = "font-medium text-sm"> Configuration of connection </p>
+                                <p className = "text-xs text-muted-foreground leading-relaxed"> A connection links your cloud provider account to CloudSherpa for cost monitoring </p>
+                                <p className = "text-xs text-muted-foreground leading-relaxed mt-1"> You can rename this connection at any time using the pencil icon next to the connection name </p>
+                            </TooltipContent>
+
+                        </Tooltip>
+                    </TooltipProvider>
+
+                </div>
                 <Card className = "mb-8 bg-card border-border">
                     <CardContent className = "p-0">
                         <div className = "flex items-center justify-between px-5 py-3">
