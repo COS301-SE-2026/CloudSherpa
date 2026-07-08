@@ -14,6 +14,7 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.UUID;
+import java.util.regex.Pattern;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +23,7 @@ public class SherpaDbPersistenceService {
 
   private final NormalizedMetricsRepository metricsRepo;
   private final CloudInfrastructureService infrastructureService;
+  private static final Pattern TENANT_SCHEMA_PATTERN = Pattern.compile("^tenant_[a-f0-9_]{36}$");
 
   @PersistenceContext private EntityManager entityManager;
 
@@ -31,8 +33,9 @@ public class SherpaDbPersistenceService {
     this.infrastructureService = infrastructureService;
   }
 
-  private void setTenantSchema(String tenantId) {
-    entityManager.createNativeQuery("SET search_path TO " + tenantId).executeUpdate();
+  private void setTenantSchema(String tenantIdHeader) {
+    String schema = normalizeTenantSchema(tenantIdHeader);
+    entityManager.createNativeQuery("SET search_path TO " + schema + ", public").executeUpdate();
   }
 
   // Use @Transactional when we are modifying a database in more than 1 place
@@ -79,5 +82,26 @@ public class SherpaDbPersistenceService {
     // Because an INSERT happens here, PostgreSQL immediately executes the `metric_notify_trigger`
     // defined in sherpadb-schema.sql, broadcasting the JSON event.
     metricsRepo.save(newMetric);
+  }
+
+  private String normalizeTenantSchema(String tenantIdHeader) {
+    if (tenantIdHeader == null || tenantIdHeader.isBlank()) {
+      throw new IllegalArgumentException("tenant-id header is required");
+    }
+
+    String trimmed = tenantIdHeader.trim().toLowerCase();
+    String schema = "";
+
+    if (trimmed.startsWith("tenant_")) {
+      schema = trimmed;
+    } else {
+      schema = "tenant_" + trimmed.replace("-", "_");
+    }
+
+    if (!TENANT_SCHEMA_PATTERN.matcher(schema).matches()) {
+      throw new IllegalArgumentException("Invalid tenant-id format: " + tenantIdHeader);
+    }
+
+    return schema;
   }
 }

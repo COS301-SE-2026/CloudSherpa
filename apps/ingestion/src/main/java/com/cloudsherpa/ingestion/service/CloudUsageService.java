@@ -159,10 +159,6 @@ public class CloudUsageService {
 
   private void writeToSherpaDb(
       NormalizedMetric metric, UsageRecordModel r, UUID userId, String tenantId) {
-    try {
-      sherpaDbPersistenceService.recordMetric(metric, r, userId, tenantId);
-    } catch (Exception e) {
-      logger.info(e.getMessage());
-    }
+    sherpaDbPersistenceService.recordMetric(metric, r, userId, tenantId);
   }
 }

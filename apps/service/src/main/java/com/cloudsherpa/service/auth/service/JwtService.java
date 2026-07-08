@@ -33,9 +33,10 @@ public class JwtService {
 
     // Build the JWT claims, then sign and serialize into a compact token string.
     return Jwts.builder()
-        .setSubject(user.getUsername())
+        .setSubject(user.getId().toString())
         .claim("email", user.getEmail())
-        .claim("tenantId", user.getId())
+        .claim("username", user.getUsername())
+        .claim("tenantId", user.getId().toString())
         .setIssuedAt(Date.from(now))
         .setExpiration(Date.from(expiresAt))
         .signWith(key)
