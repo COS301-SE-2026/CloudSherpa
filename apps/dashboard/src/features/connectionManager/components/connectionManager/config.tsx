@@ -83,28 +83,6 @@ export default function ConfigureConnection(){
                 <Card className = "mb-8 bg-card border-border">
                     <CardContent className = "p-0">
                         <div className = "flex items-center justify-between px-5 py-3">
-
-                            <span className = "text-sm text-muted-foreground" > Provider </span>
-
-                            {/* is hard coded */}
-                            <span className = "text-xs font-medium px-3 py-1 rounded bg-success text-success-foreground"> Azure </span>
-
-                        </div>
-
-                        <Separator className = "bg-border"/>
-
-                        <div className = "flex items-center justify-between px-5 py-3">
-
-                            <span className = "text-sm text-muted-foreground"> Account linked </span>
-
-                            {/* is hard coded */}
-                            <span className = "text-sm text-foreground" > fi@bitflip.com </span>
-
-                        </div>
-
-                        <Separator className = "bg-border" />
-
-                        <div className = "flex items-center justify-between px-5 py-3">
                             <span className = "text-sm text-muted-foreground"> Connection name </span>
 
                             <div className = "flex items-center gap-2">
@@ -126,6 +104,28 @@ export default function ConfigureConnection(){
                                     </>
                                 )}
                             </div>
+
+                        </div>
+
+                        <Separator className = "bg-border" />
+
+                        <div className = "flex items-center justify-between px-5 py-3">
+
+                            <span className = "text-sm text-muted-foreground" > Provider </span>
+
+                            {/* is hard coded */}
+                            <span className = "text-xs font-medium px-3 py-1 rounded bg-success text-success-foreground"> Azure </span>
+
+                        </div>
+
+                        <Separator className = "bg-border"/>
+
+                        <div className = "flex items-center justify-between px-5 py-3">
+
+                            <span className = "text-sm text-muted-foreground"> Account linked </span>
+
+                            {/* is hard coded */}
+                            <span className = "text-sm text-foreground" > fi@bitflip.com </span>
 
                         </div>
 
