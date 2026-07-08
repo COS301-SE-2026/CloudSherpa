@@ -10,16 +10,12 @@ export function useChartData(resourceId: string, metricType: MetricType) {
     const rawSeries = series || {};
     const values = Object.values(rawSeries);
 
-    if (values.length === 0) {
-      return { timeSeriesData: [], currentValue: 0 };
-    }
+    const timeSeriesData = values.map((point) => [new Date(point.timestamp).getTime(), point.value]);
 
-    const sortedValues = values.toSorted((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+    const latestPoint = values.length > 0 ? values.at(-1) : null;
 
-    const timeSeriesData = sortedValues.map((point) => [new Date(point.timestamp).getTime(), point.value]);
+    const currentValue = latestPoint ? latestPoint.value : 0;
 
-    const currentValue = sortedValues.at(-1)?.value ?? 0;
-    
     return {
       timeSeriesData,
       currentValue,
