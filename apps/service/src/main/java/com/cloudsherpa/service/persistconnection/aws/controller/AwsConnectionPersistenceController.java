@@ -22,7 +22,7 @@ public class AwsConnectionPersistenceController {
     this.persistenceService = persistenceService;
   }
 
-  @PostMapping("/createConnection")
+  @PostMapping("/connections")
   public ResponseEntity<Void> persistConnection(
       @AuthenticationPrincipal Jwt jwt, @RequestBody PersistAwsConnectionRequest request) {
 
