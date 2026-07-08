@@ -12,6 +12,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -24,10 +26,13 @@ public class TenantInitializer extends OncePerRequestFilter {
     try {
       Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-      // If a user is logged in, Spring Security holds their UUID in auth.getName()
-      // ("anonymousUser" is what Spring calls people who haven't logged in yet)
-      if (auth != null && !auth.getName().equals("anonymousUser")) {
-        TenantContext.setCurrentTenant(auth.getName());
+      if (auth instanceof JwtAuthenticationToken) {
+        JwtAuthenticationToken jwtAuth = (JwtAuthenticationToken) auth;
+        Jwt jwt = jwtAuth.getToken();
+        String tenantId = jwt.getClaimAsString("tenantId");
+        if (tenantId != null) {
+          TenantContext.setCurrentTenant(tenantId);
+        }
       }
 
       chain.doFilter(req, res);
