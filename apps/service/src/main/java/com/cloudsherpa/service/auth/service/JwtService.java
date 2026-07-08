@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.UUID;
 import java.util.function.Function;
 import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Value;
@@ -65,5 +66,10 @@ public class JwtService {
 
   private Claims extractAllClaims(String token) {
     return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
+  }
+
+  public UUID extractTenantId(String token) {
+    final Claims claims = extractAllClaims(token);
+    return UUID.fromString((String) claims.get("tenantId"));
   }
 }
