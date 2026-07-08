@@ -1,20 +1,15 @@
-// src/features/dashboard/hooks/useChartData.ts
 import { useMemo } from "react";
 import { useMetricStore } from "@/features/dashboard/stores/metric-store";
-import { MetricType } from "@/features/dashboard/types/metric";
 
-export function useChartData(resourceId: string, metricType: MetricType) {
+export function useChartData(resourceId: string, metricType: string) {
   const series = useMetricStore((state) => state.seriesByKey[`${resourceId}:${metricType}`]);
 
   return useMemo(() => {
-    const rawSeries = series || {};
-    const values = Object.values(rawSeries);
+    const timeSeriesData = Array.isArray(series) ? series : [];
 
-    const timeSeriesData = values.map((point) => [new Date(point.timestamp).getTime(), point.value]);
+    const latestPoint = timeSeriesData.length > 0 ? timeSeriesData[timeSeriesData.length - 1] : null;
 
-    const latestPoint = values.length > 0 ? values.at(-1) : null;
-
-    const currentValue = latestPoint ? latestPoint.value : 0;
+    const currentValue = latestPoint ? latestPoint[1] : 0;
 
     return {
       timeSeriesData,
