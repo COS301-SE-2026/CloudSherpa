@@ -48,7 +48,7 @@ public class AwsConnectionPersistenceService {
   public void persistConnection(PersistAwsConnectionRequest request) {
     CloudConnection connection = getOrCreateConnection(request);
     CloudAccount account = createAccount(connection, request);
-    createCredential(connection, request.credentials());
+    createCredential(account, request.credentials());
     createResources(account, request.resources());
   }
 
@@ -86,7 +86,7 @@ public class AwsConnectionPersistenceService {
     return cloudAccountRepository.save(account);
   }
 
-  private void createCredential(CloudConnection connection, AwsCredentialsDto credentials) {
+  private void createCredential(CloudAccount account, AwsCredentialsDto credentials) {
     ObjectMapper objectMapper = new ObjectMapper();
     try {
       String json = objectMapper.writeValueAsString(credentials);
@@ -95,7 +95,7 @@ public class AwsConnectionPersistenceService {
       CloudCredential credential =
           new CloudCredential(
               UUID.randomUUID(),
-              connection.getId(),
+              account.getId(),
               "AWS",
               "IAM_USER",
               encrypted,
