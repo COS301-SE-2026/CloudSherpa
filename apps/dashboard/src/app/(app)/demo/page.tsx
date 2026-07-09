@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Widget from "@/features/dashboard/components/widgetGrid/widgets/widget";
 import { WidgetConfig } from "@/features/dashboard/types/widgets";
 import { useMetricStore } from "@/features/dashboard/stores/metric-store";
+import { MetricSeries } from "@/features/dashboard/types/metric";
 
 const MOCK_WIDGETS: WidgetConfig[] = [
   {
@@ -31,16 +32,34 @@ export default function DemoPage() {
     const secureRandom = () => {
       const a = new Uint32Array(1);
       crypto.getRandomValues(a);
-      return a[0] / 0x100000000;
+      return a[0] / 0x100000000; 
     };
 
-    const mockCpuSeries: [number, number][] = Array.from({ length: 60 }).map((_, i) => {
-      const timestampMs = now - (60 - i) * 5000;
-      const value = 40 + Math.sin(i * 0.5) * 20 + secureRandom() * 10;
-      return [timestampMs, value];
-    });
+    const mockCpuSeries: MetricSeries = Array.from({ length: 60 }).reduce((acc: MetricSeries, _, i) => {
+      const timestampNum = now - (60 - i) * 5000;
+      const timestampStr = new Date(timestampNum).toISOString();
 
-    const mockMemorySeries: [number, number][] = [[now, 72.5]];
+      const value = 40 + Math.sin(i * 0.5) * 20 + secureRandom() * 10;
+
+      acc[timestampStr] = {
+        timestamp: timestampStr,
+        value: value,
+        resource_id: "demo-server-01",
+        metricType: "cpu",
+      };
+
+      return acc;
+    }, {});
+
+    const memoryTimestampStr = new Date(now).toISOString();
+    const mockMemorySeries: MetricSeries = {
+      [memoryTimestampStr]: {
+        timestamp: memoryTimestampStr,
+        value: 72.5,
+        resource_id: "demo-server-01",
+        metricType: "memory",
+      },
+    };
 
     useMetricStore.setState((state) => ({
       ...state,
@@ -50,8 +69,8 @@ export default function DemoPage() {
         "demo-server-01:memory": mockMemorySeries,
       },
     }));
-
-    queueMicrotask(() => setIsReady(true));
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setIsReady(true);
   }, []);
 
   return (

@@ -4,7 +4,7 @@ import type { EChartsOption } from "echarts";
 import { useMemo } from "react";
 import { useChartData } from "@/features/dashboard/hooks/useChartData";
 import { useChartTheme } from "@/features/dashboard/hooks/useChartTheme";
-import { BaseChart } from "@/features/dashboard/components/widgetGrid/widgets/charts/baseChart";
+import { BaseChart } from "./baseChart";
 
 type LineChartProps = {
   resourceId: string;
