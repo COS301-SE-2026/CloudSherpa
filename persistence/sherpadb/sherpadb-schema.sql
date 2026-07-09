@@ -96,7 +96,8 @@ BEGIN
     -- TG_TABLE_SCHEMA dynamically grabs the name of the schema that fired the trigger.
     -- Example: If a metric hits tenant_1234, it broadcasts on 'metric_events_tenant_1234'.
     -- row_to_json(NEW) turns the newly inserted row into a JSON object.
-    PERFORM pg_notify('metric_events_' || TG_TABLE_SCHEMA, row_to_json(NEW)::text); 
+    PERFORM pg_notify('metric_events', row_to_json(NEW)::text);
+    PERFORM pg_notify('metric_events_' || TG_TABLE_SCHEMA, row_to_json(NEW)::text);
     
     RETURN NEW;
 END;
