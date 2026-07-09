@@ -4,6 +4,7 @@ package com.cloudsherpa.ingestion.service;
 
 import com.cloudsherpa.ingestion.models.UsageRecordModel;
 import com.cloudsherpa.ingestion.normalization.model.NormalizedMetric;
+import com.cloudsherpa.lib.entities.MetricTypeEnum;
 import com.cloudsherpa.lib.entities.NormalizedMetrics;
 import com.cloudsherpa.lib.entities.Resource;
 import com.cloudsherpa.lib.repositories.NormalizedMetricsRepository;
@@ -62,12 +63,19 @@ public class SherpaDbPersistenceService {
           OffsetDateTime.ofInstant(Instant.ofEpochMilli(metric.getPeriodEnd()), ZoneOffset.UTC);
     }
 
+    MetricTypeEnum metricTypeEnum;
+    try {
+      metricTypeEnum = MetricTypeEnum.valueOf(metric.getMetricType().toLowerCase());
+    } catch (Exception ex) {
+      metricTypeEnum = MetricTypeEnum.usage;
+    }
+
     // Create the new entity representing the row in the normalized_metrics table.
     NormalizedMetrics newMetric =
         new NormalizedMetrics.Builder()
             .resourceId(resourceUuid)
             .recordedAt(OffsetDateTime.now())
-            .metricType(metric.getMetricType())
+            .metricType(metricTypeEnum)
             .metricName(metric.getMetricName())
             .metricValue(BigDecimal.valueOf(metric.getMetricValue()))
             .unit(metric.getUnit())

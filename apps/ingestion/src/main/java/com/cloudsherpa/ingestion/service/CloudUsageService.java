@@ -146,6 +146,7 @@ public class CloudUsageService {
       usageRecord.setProvider(provider);
       usageRecord.setAccountId(accountId);
       usageRecord.setServiceName("EC2");
+      usageRecord.setResourceType("ec2_instance");
       usageRecord.setMetricName("CPUUtilization");
       usageRecord.setResourceId("mock-ec2-" + (i + 1));
       usageRecord.setValue(averages[i]);

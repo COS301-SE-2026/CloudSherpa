@@ -1,9 +1,12 @@
 package com.cloudsherpa.ingestion.service;
 
 import com.cloudsherpa.ingestion.models.UsageRecordModel;
+import com.cloudsherpa.lib.entities.AccountTypeEnum;
 import com.cloudsherpa.lib.entities.CloudAccount;
 import com.cloudsherpa.lib.entities.CloudConnection;
+import com.cloudsherpa.lib.entities.ProviderEnum;
 import com.cloudsherpa.lib.entities.Resource;
+import com.cloudsherpa.lib.entities.StatusEnum;
 import com.cloudsherpa.lib.repositories.CloudAccountRepository;
 import com.cloudsherpa.lib.repositories.CloudConnectionRepository;
 import com.cloudsherpa.lib.repositories.ResourceRepository;
@@ -50,14 +53,17 @@ public class CloudInfrastructureService {
   // Ensures CloudConnection exists for user + provider combination.
   // If it exists, returns it; otherwise creates a new one.
   private CloudConnection ensureCloudConnection(UUID userId, String provider) {
-    List<CloudConnection> connection = connectionRepo.findByUserIdAndProvider(userId, provider);
+    ProviderEnum providerEnum = ProviderEnum.valueOf(provider.trim().toUpperCase());
+
+    List<CloudConnection> connection = connectionRepo.findByUserIdAndProvider(userId, providerEnum);
 
     if (!connection.isEmpty()) {
       return connection.get(0);
     }
 
     CloudConnection newConnection =
-        new CloudConnection(UUID.randomUUID(), userId, provider, "active", OffsetDateTime.now());
+        new CloudConnection(
+            UUID.randomUUID(), userId, providerEnum, StatusEnum.active, OffsetDateTime.now());
 
     return connectionRepo.save(newConnection);
   }
@@ -77,7 +83,12 @@ public class CloudInfrastructureService {
 
     CloudAccount newAccount =
         new CloudAccount(
-            accountUuid, connectionId, "aws_account", cloudAccountId, null, OffsetDateTime.now());
+            accountUuid,
+            connectionId,
+            AccountTypeEnum.aws_account,
+            cloudAccountId,
+            null,
+            OffsetDateTime.now());
 
     return accountRepo.save(newAccount);
   }
@@ -98,7 +109,7 @@ public class CloudInfrastructureService {
             accountId,
             resourceType,
             cloudResourceId,
-            "active",
+            StatusEnum.active,
             null,
             OffsetDateTime.now(),
             OffsetDateTime.now());
