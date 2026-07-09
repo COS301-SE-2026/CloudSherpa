@@ -79,14 +79,11 @@ class NormalizedMetricServiceTest {
   }
 
   @Test
-  void httpNoContentWhenNoResourceNames() {
-
+  void returnsEmptyMapWhenNoResourceNames() {
     when(resourceRepository.findResourceNames()).thenReturn(List.of());
 
-    ResponseStatusException exception =
-        assertThrows(
-            ResponseStatusException.class, () -> normalizedMetricService.fetchResourceNames());
+    Map<String, String> actual = normalizedMetricService.fetchResourceNames();
 
-    assertEquals("No resources found", exception.getReason());
+    assertEquals(Map.of(), actual);
   }
 }

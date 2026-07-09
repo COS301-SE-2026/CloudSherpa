@@ -107,7 +107,11 @@ public class CloudUsageService {
       NormalizedMetric normalized = normalizer.normalize(r);
 
       if (normalized != null) {
-        writeToSherpaDb(normalized, r, userId);
+        try {
+          writeToSherpaDb(normalized, r, userId);
+        } catch (RuntimeException ex) {
+          logger.warning("Failed to persist normalized metric: " + ex.getMessage());
+        }
       }
     }
   }
