@@ -36,7 +36,7 @@ public class ApiSecurity {
           .csrf(csrf -> csrf.disable())
           .sessionManagement(
               session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-          .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+          .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
           .oauth2ResourceServer(
               oauth2 -> oauth2.bearerTokenResolver(bearerTokenResolver).jwt(Customizer.withDefaults()))
           .addFilterAfter(tenantInitializer, BearerTokenAuthenticationFilter.class)
