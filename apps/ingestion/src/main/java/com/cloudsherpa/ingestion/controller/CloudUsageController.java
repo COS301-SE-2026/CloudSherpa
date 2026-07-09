@@ -11,7 +11,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -45,14 +44,13 @@ public class CloudUsageController {
       })
   @PostMapping("/ingest")
   public IngestionResult ingest(
-      @RequestHeader("tenant-id") String tenantId,
       @io.swagger.v3.oas.annotations.parameters.RequestBody(
               description = "Cloud ingestion request object",
               required = true,
               content = @Content(schema = @Schema(implementation = IngestionRequestEvent.class)))
           @RequestBody
           IngestionRequestEvent request) {
-    return cloudUsageService.ingest(request, tenantId);
+    return cloudUsageService.ingest(request);
   }
 
   @Operation(
@@ -72,7 +70,6 @@ public class CloudUsageController {
       })
   @PostMapping("/ingest/mockNoise")
   public IngestionResult ingestMockWithNoise(
-      @RequestHeader("tenant-id") String tenantId,
       @io.swagger.v3.oas.annotations.parameters.RequestBody(
               description =
                   "Ingestion request object, credentials and some other fields are not used",
@@ -80,7 +77,7 @@ public class CloudUsageController {
               content = @Content(schema = @Schema(implementation = IngestionRequestEvent.class)))
           @RequestBody
           IngestionRequestEvent request) {
-    return cloudUsageService.ingestMockWithNoise(request, tenantId);
+    return cloudUsageService.ingestMockWithNoise(request);
   }
 
   @Operation(
@@ -100,7 +97,6 @@ public class CloudUsageController {
       })
   @PostMapping("/ingest/mock")
   public IngestionResult ingestMock(
-      @RequestHeader("tenant-id") String tenantId,
       @io.swagger.v3.oas.annotations.parameters.RequestBody(
               description =
                   "Ingestion request object, credentials and some other fields are not used",
@@ -108,6 +104,6 @@ public class CloudUsageController {
               content = @Content(schema = @Schema(implementation = IngestionRequestEvent.class)))
           @RequestBody
           IngestionRequestEvent request) {
-    return cloudUsageService.ingestMock(request, tenantId);
+    return cloudUsageService.ingestMock(request);
   }
 }

@@ -4,7 +4,6 @@ while true
 do
   curl -X POST http://localhost:8081/api/events/ingest/mock \
     -H "Content-Type: application/json" \
-    -H "tenant-id: ${DEMO_USER_ID}" \
     -d "{
       \"userId\": \"${DEMO_USER_ID}\",
       \"provider\": \"AWS\",

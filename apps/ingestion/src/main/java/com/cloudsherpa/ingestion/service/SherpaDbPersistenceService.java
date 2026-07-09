@@ -34,18 +34,17 @@ public class SherpaDbPersistenceService {
     this.infrastructureService = infrastructureService;
   }
 
-  private void setTenantSchema(String tenantIdHeader) {
-    String schema = normalizeTenantSchema(tenantIdHeader);
+  private void setTenantSchema(UUID userId) {
+    String schema = normalizeTenantSchema(userId);
     entityManager.createNativeQuery("SET search_path TO " + schema + ", public").executeUpdate();
   }
 
   // Use @Transactional when we are modifying a database in more than 1 place
   // So that if 1 step succeeds and the other one fails, the data doesn't end up half-written
   @Transactional
-  public void recordMetric(
-      NormalizedMetric metric, UsageRecordModel r, UUID userId, String tenantId) {
+  public void recordMetric(NormalizedMetric metric, UsageRecordModel r, UUID userId) {
 
-    setTenantSchema(tenantId);
+    setTenantSchema(userId);
 
     Resource resource = infrastructureService.ensureInfrastructure(r, userId);
     UUID resourceUuid = resource.getId();
@@ -92,22 +91,15 @@ public class SherpaDbPersistenceService {
     metricsRepo.save(newMetric);
   }
 
-  private String normalizeTenantSchema(String tenantIdHeader) {
-    if (tenantIdHeader == null || tenantIdHeader.isBlank()) {
-      throw new IllegalArgumentException("tenant-id header is required");
+  private String normalizeTenantSchema(UUID userId) {
+    if (userId == null) {
+      throw new IllegalArgumentException("userId is required");
     }
 
-    String trimmed = tenantIdHeader.trim().toLowerCase();
-    String schema = "";
-
-    if (trimmed.startsWith("tenant_")) {
-      schema = trimmed;
-    } else {
-      schema = "tenant_" + trimmed.replace("-", "_");
-    }
+    String schema = "tenant_" + userId.toString().toLowerCase().replace("-", "_");
 
     if (!TENANT_SCHEMA_PATTERN.matcher(schema).matches()) {
-      throw new IllegalArgumentException("Invalid tenant-id format: " + tenantIdHeader);
+      throw new IllegalArgumentException("Invalid userId format: " + userId);
     }
 
     return schema;

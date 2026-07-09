@@ -33,7 +33,7 @@ public class CloudUsageService {
     this.sherpaDbPersistenceService = sherpaDbPersistenceService;
   }
 
-  public IngestionResult ingest(IngestionRequestEvent request, String tenantId) {
+  public IngestionResult ingest(IngestionRequestEvent request) {
 
     List<UsageRecordModel> usageResults = new ArrayList<>();
     List<BillingRecordModel> billingResults = new ArrayList<>();
@@ -46,7 +46,7 @@ public class CloudUsageService {
       if (request.isIncludeUsage() && connector instanceof UsageCapable usageCapable) {
         List<UsageRecordModel> usageRecords = usageCapable.fetchUsage(scope, request);
         usageResults.addAll(usageRecords);
-        normalizeAndPersistUsage(usageRecords, userId, tenantId);
+        normalizeAndPersistUsage(usageRecords, userId);
       }
 
       if (request.isIncludeBilling() && connector instanceof BillingCapable billingCapable) {
@@ -57,7 +57,7 @@ public class CloudUsageService {
     return new IngestionResult(usageResults, billingResults);
   }
 
-  public IngestionResult ingestMockWithNoise(IngestionRequestEvent request, String tenantId) {
+  public IngestionResult ingestMockWithNoise(IngestionRequestEvent request) {
 
     List<UsageRecordModel> usageResults = new ArrayList<>();
     List<BillingRecordModel> billingResults = new ArrayList<>();
@@ -70,7 +70,7 @@ public class CloudUsageService {
       if (request.isIncludeUsage() && connector instanceof UsageCapable usageCapable) {
         List<UsageRecordModel> usageRecords = usageCapable.fetchMockUsage(scope, request);
         usageResults.addAll(usageRecords);
-        normalizeAndPersistUsage(usageRecords, userId, tenantId);
+        normalizeAndPersistUsage(usageRecords, userId);
       }
 
       if (request.isIncludeBilling() && connector instanceof BillingCapable billingCapable) {
@@ -81,7 +81,7 @@ public class CloudUsageService {
     return new IngestionResult(usageResults, billingResults);
   }
 
-  public IngestionResult ingestMock(IngestionRequestEvent request, String tenantId) {
+  public IngestionResult ingestMock(IngestionRequestEvent request) {
     List<UsageRecordModel> usageResults = new ArrayList<>();
     List<BillingRecordModel> billingResults = new ArrayList<>();
     UUID userId = request.getUserId();
@@ -90,15 +90,14 @@ public class CloudUsageService {
       if (request.isIncludeUsage()) {
         List<UsageRecordModel> usageRecords = buildMockUsage(scope);
         usageResults.addAll(usageRecords);
-        normalizeAndPersistUsage(usageRecords, userId, tenantId);
+        normalizeAndPersistUsage(usageRecords, userId);
       }
     }
 
     return new IngestionResult(usageResults, billingResults);
   }
 
-  private void normalizeAndPersistUsage(
-      List<UsageRecordModel> usageRecords, UUID userId, String tenantId) {
+  private void normalizeAndPersistUsage(List<UsageRecordModel> usageRecords, UUID userId) {
     if (usageRecords == null || usageRecords.isEmpty()) {
       return;
     }
@@ -107,7 +106,7 @@ public class CloudUsageService {
       NormalizedMetric normalized = normalizer.normalize(r);
 
       if (normalized != null) {
-        writeToSherpaDb(normalized, r, userId, tenantId);
+        writeToSherpaDb(normalized, r, userId);
       }
     }
   }
@@ -158,8 +157,7 @@ public class CloudUsageService {
     return results;
   }
 
-  private void writeToSherpaDb(
-      NormalizedMetric metric, UsageRecordModel r, UUID userId, String tenantId) {
-    sherpaDbPersistenceService.recordMetric(metric, r, userId, tenantId);
+  private void writeToSherpaDb(NormalizedMetric metric, UsageRecordModel r, UUID userId) {
+    sherpaDbPersistenceService.recordMetric(metric, r, userId);
   }
 }
