@@ -25,7 +25,7 @@ export interface PersistAwsConnectionRequest {
 export async function createAwsConnection(
   request: PersistAwsConnectionRequest
 ): Promise<void> {
-  await apiClient<void>("/api/aws/connections", {
+  await apiClient<void>("/aws/connections", {
     method: "POST",
     body: JSON.stringify(request),
   });

@@ -11,6 +11,8 @@ interface WizardData {
     secretKey: string;
     awsRegion: string;
   } | null;
+  displayName: string;
+  ingestionPeriod: string;
   selectedServices: string[];
   selectedInstances: string[];
   resources: ResourceDetail[];
@@ -21,6 +23,8 @@ export default function WizardSetup() {
 
   const [wizardData, setWizardData] = useState<WizardData>({
     credentials: null,
+    displayName: "AWS Connection",
+    ingestionPeriod: "60",
     selectedServices: [],
     selectedInstances: [],
     resources: [],
@@ -44,9 +48,9 @@ export default function WizardSetup() {
     setStep(3);
   };
 
-  const handleStepThreeComplete = (selectedInstances: string[]) => {
-    setWizardData({ ...wizardData, selectedInstances });
-    console.log('Wizard completed:', { ...wizardData, selectedInstances });
+  const handleStepThreeComplete = () => {
+    setWizardData({ ...wizardData });
+    console.log('Wizard completed:', { ...wizardData });
   };
 
   const handleBack = () => {
@@ -67,6 +71,9 @@ export default function WizardSetup() {
 
       {step === 3 && (
         <StepThree
+          displayName={"AWS Connection"}
+          ingestionPeriod={"60"}
+          credentials={wizardData.credentials!}
           resources={wizardData.resources}
           onComplete={handleStepThreeComplete}
           onBack={handleBack}

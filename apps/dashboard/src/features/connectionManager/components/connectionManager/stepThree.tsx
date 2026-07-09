@@ -5,10 +5,20 @@ import { Button } from '@/components/atoms/button';
 import { Checkbox } from '@/components/atoms/checkbox';
 import { Badge } from '@/components/atoms/badge';
 import { ResourceDetail } from '@/lib/fetch/cloud-resource-api';
+import {
+  AwsCredentialsDto,
+  PersistAwsConnectionRequest,
+  ResourceSelectionDto,
+  createAwsConnection
+} from '@/lib/fetch/aws-connection-api';
+import { useRouter } from 'next/navigation';
 
 interface PropsForStepThree {
+  displayName: string;
+  ingestionPeriod: string;
+  credentials: AwsCredentialsDto;
   resources: ResourceDetail[];
-  onComplete: (selectedInstances: string[]) => void;
+  onComplete: () => void;
   onBack: () => void;
 }
 
@@ -136,6 +146,9 @@ function ResourceCategory({
 }
 
 export default function StepThree({
+  displayName,
+  ingestionPeriod,
+  credentials,
   resources,
   onComplete,
   onBack,
@@ -143,14 +156,52 @@ export default function StepThree({
   const [selectedResources, setSelectedResources] = useState<string[]>(
     resources.map(resource => resource.resourceId)
   );
+  const router = useRouter();
+
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const groupedResources = groupResourcesByCategory(resources);
 
-  const handleSubmit = (
-    event: React.SubmitEvent<HTMLFormElement>
+  const handleSubmit = async (
+    event: React.FormEvent<HTMLFormElement>
   ) => {
     event.preventDefault();
-    onComplete(selectedResources);
+
+    setSaving(true);
+    setError(null);
+
+    try {
+      const request: PersistAwsConnectionRequest = {
+        userId: '',
+        displayName,
+        ingestionPeriod,
+        credentials,
+        resources: resources.map(
+          (resource): ResourceSelectionDto => ({
+            resourceId: resource.resourceId,
+            resourceType: resource.serviceCategory,
+            resourceName: resource.name,
+            tags: resource.tags,
+            active: selectedResources.includes(resource.resourceId),
+          })
+        ),
+      };
+
+      await createAwsConnection(request);
+
+      onComplete();
+
+      router.push('/connections');
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Unable to create AWS connection.'
+      );
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleResourceToggle = (
@@ -208,10 +259,15 @@ export default function StepThree({
               )}
             </div>
           </div>
-
+          {error && (
+            <div className="rounded-md border border-red-500 bg-red-50 p-3 text-sm text-red-700">
+              {error}
+            </div>
+          )}
           <div className="flex justify-between pt-6">
             <Button
               type="button"
+              disabled={saving}
               onClick={onBack}
               className="bg-primary hover:bg-accent hover:text-accent-foreground text-primary-foreground px-6 py-2 rounded-md transition-all duration-200 font-medium"
             >
@@ -220,9 +276,10 @@ export default function StepThree({
 
             <Button
               type="submit"
+              disabled={saving}
               className="bg-primary hover:bg-accent hover:text-accent-foreground text-primary-foreground px-8 py-2 rounded-md transition-all duration-200 font-medium"
             >
-              Finish
+              {saving ? 'Saving...' : 'Finish'}
             </Button>
           </div>
         </form>
