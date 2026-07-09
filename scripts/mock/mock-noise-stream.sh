@@ -2,7 +2,7 @@
 set -euo pipefail
 
 INGEST_URL="${INGEST_URL:-http://localhost:8081/api/events/ingest/mockNoise}"
-USER_ID="${USER_ID:-11111111-2222-3333-4444-555555555555}"
+USER_ID="${USER_ID:-5ebe4340-c5ec-4833-ad93-06abf4609f03}"
 ACCOUNT_ID="${ACCOUNT_ID:-test-account}"
 INTERVAL_SECONDS="${INTERVAL_SECONDS:-5}"
 PERIOD_SECONDS="${PERIOD_SECONDS:-5}"
@@ -78,7 +78,7 @@ for ((batch = 1; batch <= BATCH_COUNT; batch++)); do
                 {\"name\": \"NetworkIn\"},
                 {\"name\": \"NetworkOut\"},
                 {\"name\": \"DiskReadBytes\"},
-                {\"name\": \"DiskWriteBytes\")
+                {\"name\": \"DiskWriteBytes\"}
               ]
             },
             {
