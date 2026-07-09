@@ -46,7 +46,7 @@ CREATE TABLE public.cloud_connection (
 
 CREATE TABLE public.cloud_credential (
   credential_id uuid PRIMARY KEY,
-  connection_id uuid REFERENCES public.cloud_connection(connection_id) ON DELETE CASCADE,
+  account_id uuid UNIQUE REFERENCES public.cloud_account(account_id) ON DELETE CASCADE,
   provider public.provider_enum NOT NULL,
   credential_type public.credential_type_enum NOT NULL,
   credential_value text NOT NULL,
