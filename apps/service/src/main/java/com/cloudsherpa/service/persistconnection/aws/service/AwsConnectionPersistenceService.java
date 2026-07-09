@@ -1,9 +1,12 @@
 package com.cloudsherpa.service.persistconnection.aws.service;
 
+import com.cloudsherpa.lib.entities.AccountTypeEnum;
 import com.cloudsherpa.lib.entities.CloudAccount;
 import com.cloudsherpa.lib.entities.CloudConnection;
 import com.cloudsherpa.lib.entities.CloudCredential;
+import com.cloudsherpa.lib.entities.ProviderEnum;
 import com.cloudsherpa.lib.entities.Resource;
+import com.cloudsherpa.lib.entities.StatusEnum;
 import com.cloudsherpa.lib.repositories.CloudAccountRepository;
 import com.cloudsherpa.lib.repositories.CloudConnectionRepository;
 import com.cloudsherpa.lib.repositories.CloudCredentialRepository;
@@ -51,17 +54,18 @@ public class AwsConnectionPersistenceService {
 
   private CloudConnection getOrCreateConnection(PersistAwsConnectionRequest request) {
 
-    List<CloudConnection> optionalConnection = cloudConnectionRepository.findByUserIdAndProvider(request.userId(),
-        "AWS");
+    List<CloudConnection> optionalConnection =
+        cloudConnectionRepository.findByUserIdAndProvider(request.userId(), ProviderEnum.AWS);
 
     if (optionalConnection.isEmpty()) {
       UUID connectionId = UUID.randomUUID();
-      CloudConnection connection = new CloudConnection(
-          connectionId,
-          request.userId(),
-          "AWS",
-          "ACTIVE",
-          OffsetDateTime.now(ZoneOffset.UTC));
+      CloudConnection connection =
+          new CloudConnection(
+              connectionId,
+              request.userId(),
+              ProviderEnum.AWS,
+              StatusEnum.active,
+              OffsetDateTime.now(ZoneOffset.UTC));
       return cloudConnectionRepository.save(connection);
     }
     return optionalConnection.getFirst();
@@ -70,13 +74,14 @@ public class AwsConnectionPersistenceService {
   private CloudAccount createAccount(
       CloudConnection connection, PersistAwsConnectionRequest request) {
 
-    CloudAccount account = new CloudAccount(
-        UUID.randomUUID(),
-        connection.getId(),
-        "User",
-        request.displayName(),
-        request.ingestionPeriod().toString(),
-        OffsetDateTime.now(ZoneOffset.UTC));
+    CloudAccount account =
+        new CloudAccount(
+            UUID.randomUUID(),
+            connection.getId(),
+            AccountTypeEnum.aws_account,
+            request.displayName(),
+            request.ingestionPeriod().toString(),
+            OffsetDateTime.now(ZoneOffset.UTC));
 
     return cloudAccountRepository.save(account);
   }
@@ -87,13 +92,14 @@ public class AwsConnectionPersistenceService {
       String json = objectMapper.writeValueAsString(credentials);
       String encrypted = encryptionService.encrypt(json);
 
-      CloudCredential credential = new CloudCredential(
-          UUID.randomUUID(),
-          connection.getId(),
-          "AWS",
-          "IAM_USER",
-          encrypted,
-          OffsetDateTime.now(ZoneOffset.UTC));
+      CloudCredential credential =
+          new CloudCredential(
+              UUID.randomUUID(),
+              connection.getId(),
+              "AWS",
+              "IAM_USER",
+              encrypted,
+              OffsetDateTime.now(ZoneOffset.UTC));
       cloudCredentialRepository.save(credential);
     } catch (JsonProcessingException e) {
       throw new IllegalArgumentException("Unable to serialize AWS credentials.", e);
@@ -101,22 +107,23 @@ public class AwsConnectionPersistenceService {
   }
 
   private void createResources(CloudAccount account, List<ResourceSelectionDto> resources) {
-
-    List<Resource> entities = resources.stream()
-        .map(
-            r -> {
-              Resource resource = new Resource(
-                  UUID.randomUUID(),
-                  account.getId(),
-                  r.resourceType(),
-                  r.resourceName(),
-                  r.active() ? "ACTIVE" : "INACTIVE",
-                  r.tags(),
-                  OffsetDateTime.now(ZoneOffset.UTC),
-                  OffsetDateTime.now(ZoneOffset.UTC));
-              return resource;
-            })
-        .toList();
+    List<Resource> entities =
+        resources.stream()
+            .map(
+                r -> {
+                  Resource resource =
+                      new Resource(
+                          UUID.randomUUID(),
+                          account.getId(),
+                          r.resourceType(),
+                          r.resourceName(),
+                          r.active() ? StatusEnum.active : StatusEnum.disabled,
+                          r.tags(),
+                          OffsetDateTime.now(ZoneOffset.UTC),
+                          OffsetDateTime.now(ZoneOffset.UTC));
+                  return resource;
+                })
+            .toList();
 
     resourceRepository.saveAll(entities);
   }
