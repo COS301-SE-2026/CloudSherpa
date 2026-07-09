@@ -17,12 +17,12 @@ public class CloudCredential {
   @Column(name = "credential_id", nullable = false)
   private UUID id;
 
-  @Column(name = "connection_id", nullable = false)
-  private UUID connectionId;
+  @Column(name = "account_id", nullable = false)
+  private UUID accountId;
 
   @ManyToOne
-  @JoinColumn(name = "connection_id", nullable = false, insertable = false, updatable = false)
-  private CloudConnection connection;
+  @JoinColumn(name = "account_id", nullable = false, insertable = false, updatable = false)
+  private CloudAccount account;
 
   @Column(name = "provider", nullable = false, length = 50)
   private String provider;
@@ -40,13 +40,13 @@ public class CloudCredential {
 
   public CloudCredential(
       UUID id,
-      UUID connectionId,
+      UUID accountId,
       String provider,
       String credentialType,
       String credentialValue,
       OffsetDateTime createdAt) {
     this.id = id;
-    this.connectionId = connectionId;
+    this.accountId = accountId;
     this.provider = provider;
     this.credentialType = credentialType;
     this.credentialValue = credentialValue;
@@ -57,12 +57,12 @@ public class CloudCredential {
     return id;
   }
 
-  public UUID getConnectionId() {
-    return connectionId;
+  public UUID getAccountId() {
+    return accountId;
   }
 
-  public CloudConnection getConnection() {
-    return connection;
+  public CloudAccount getAccount() {
+    return account;
   }
 
   public String getProvider() {
