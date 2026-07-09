@@ -9,7 +9,7 @@ services:
     ports:
       - "8081:8080"
     env_file:
-      - ../apps/ingestion/.env
+      - apps/ingestion/.env
     depends_on:
       sherpa-db:
         condition: service_healthy
@@ -24,7 +24,7 @@ services:
     ports:
       - "8083:8080"
     env_file:
-      - ../apps/service/.env
+      - apps/service/.env
     depends_on:
       sherpa-db:
         condition: service_healthy
@@ -39,19 +39,19 @@ services:
     ports:
       - "3000:3000"
     env_file:
-      - ../apps/dashboard/.env
+      - apps/dashboard/.env
 
   sherpa-db:
     image: timescale/timescaledb:2.16.1-pg16
     container_name: sherpa-db
     restart: unless-stopped
     env_file:
-      - ../persistence/sherpadb/.env
+      - persistence/sherpadb/.env
     ports:
       - "5432:5432"
     volumes:
       - sherpa_db_data:/var/lib/postgresql/data
-      - ../persistence/sherpadb:/docker-entrypoint-initdb.d:ro
+      - ./persistence/sherpadb:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 5s
