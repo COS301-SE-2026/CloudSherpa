@@ -89,7 +89,7 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
         setError('No resources were discovered.');
         return;
       }
-
+      setLoading(false)
       onNext(servicesSelected, resources);
     } catch (err) {
       console.error(err);
@@ -161,7 +161,7 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
                 <button
                   key={service.id}
                   onClick={() => toggleService(service.id)}
-                  className="flex items-start gap-3 p-4 bg-background rounded-lg border border-border hover:border-primary/40 transition-all cursor-pointer"
+                  className="flex items-start gap-3 p-4 bg-background rounded-lg border border-border hover:border-primary/40 transition-all cursor-pointer w-full"
                 >
 
                   <input
@@ -215,7 +215,7 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
           <div className="flex justify-between pt-4">
             <Button
               type="button"
-              disabled={loading} 
+              disabled={loading}
               onClick={onBack}
               className="bg-primary hover:bg-accent hover:text-accent-foreground text-primary-foreground px-6 py-2 rounded-md transition-all duration-200 font-medium"
             >
@@ -224,7 +224,7 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
 
             <Button
               type="submit"
-              disabled={loading} 
+              disabled={loading}
               className="bg-primary hover:bg-accent hover:text-accent-foreground text-primary-foreground px-6 py-2 rounded-md transition-all duration-200 font-medium"
             >
               Next

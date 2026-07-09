@@ -191,8 +191,7 @@ export default function StepThree({
       await createAwsConnection(request);
 
       onComplete();
-
-      router.push('/connections');
+      router.push('/dashboard');
     } catch (err) {
       setError(
         err instanceof Error
