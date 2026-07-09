@@ -30,11 +30,26 @@ export default function WizardSetup() {
     resources: [],
   });
 
-  const handleStepOneNext = (credentials: WizardData['credentials']) => {
-    setWizardData({ ...wizardData, credentials });
+  const handleStepOneNext = (
+    data: {
+      displayName: string;
+      accessKey: string;
+      secretKey: string;
+      awsRegion: string;
+    }
+  ) => {
+    setWizardData({
+      ...wizardData,
+      displayName: data.displayName,
+      credentials: {
+        accessKey: data.accessKey,
+        secretKey: data.secretKey,
+        awsRegion: data.awsRegion,
+      },
+    });
+
     setStep(2);
   };
-
   const handleStepTwoNext = (
     selectedServices: string[],
     resources: ResourceDetail[]
@@ -71,7 +86,7 @@ export default function WizardSetup() {
 
       {step === 3 && (
         <StepThree
-          displayName={"AWS Connection"}
+          displayName={wizardData.displayName}
           ingestionPeriod={"60"}
           credentials={wizardData.credentials!}
           resources={wizardData.resources}
