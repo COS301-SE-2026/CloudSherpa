@@ -1,4 +1,4 @@
-DEMO_USER_ID="add_userId_here"
+DEMO_USER_ID="5ebe4340-c5ec-4833-ad93-06abf4609f03"
 
 while true
 do

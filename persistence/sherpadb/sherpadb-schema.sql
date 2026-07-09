@@ -88,6 +88,18 @@ CREATE TABLE public.widget_resource (
   metric_type public.metric_type_enum NOT NULL
 );
 
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+INSERT INTO public.users (user_id, email, username, password_hash, created_at)
+VALUES (
+  '5ebe4340-c5ec-4833-ad93-06abf4609f03'::uuid,
+  'demo@gmail.com',
+  'demo@gmail.com',
+  crypt('Password@2', gen_salt('bf', 12)),
+  now()
+  )
+ON CONFLICT DO NOTHING;
+
 -- This sits in the public schema so it only has to be written once, but it is 
 -- smart enough to broadcast on a specific tenant's channel dynamically.
 CREATE OR REPLACE FUNCTION public.notify_metric_event() 
