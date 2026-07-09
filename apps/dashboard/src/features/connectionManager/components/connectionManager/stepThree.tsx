@@ -4,6 +4,12 @@ import React, { useState } from 'react';
 import { Button } from '@/components/atoms/button';
 import { Checkbox } from '@/components/atoms/checkbox';
 import { Badge } from '@/components/atoms/badge';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/atoms/tooltip';
 import { ResourceDetail } from '@/lib/fetch/cloud-resource-api';
 import {
   AwsCredentialsDto,
@@ -12,13 +18,15 @@ import {
   createAwsConnection
 } from '@/lib/fetch/aws-connection-api';
 import { useRouter } from 'next/navigation';
+import { Input } from '@/components/atoms/input';
+import { Label } from '@/components/atoms/label';
 
 interface PropsForStepThree {
   displayName: string;
   ingestionPeriod: string;
   credentials: AwsCredentialsDto;
   resources: ResourceDetail[];
-  onComplete: () => void;
+  onComplete: (ingestionPeriod: string) => void;
   onBack: () => void;
 }
 
@@ -160,6 +168,8 @@ export default function StepThree({
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [period, setPeriod] = useState<string>(ingestionPeriod);
+  const recommendedPeriod = selectedResources.length * 5 * 20;
 
   const groupedResources = groupResourcesByCategory(resources);
 
@@ -175,7 +185,7 @@ export default function StepThree({
       const request: PersistAwsConnectionRequest = {
         userId: '',
         displayName,
-        ingestionPeriod,
+        ingestionPeriod: period,
         credentials,
         resources: resources.map(
           (resource): ResourceSelectionDto => ({
@@ -190,7 +200,7 @@ export default function StepThree({
 
       await createAwsConnection(request);
 
-      onComplete();
+      onComplete(period);
       router.push('/dashboard');
     } catch (err) {
       setError(
@@ -257,6 +267,91 @@ export default function StepThree({
                 )
               )}
             </div>
+          </div>
+          <div className="space-y-2">
+
+            <div className="flex items-center gap-2">
+
+              <Label
+                htmlFor="ingestionPeriod"
+                className="text-foreground text-sm font-medium"
+              >
+                Ingestion period (seconds)
+              </Label>
+
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      className="
+              flex
+              items-center
+              justify-center
+              w-5
+              h-5
+              rounded-full
+              text-xs
+              text-muted-foreground
+              hover:text-foreground
+              border
+              border-border
+            "
+                    >
+                      ?
+                    </button>
+                  </TooltipTrigger>
+
+                  <TooltipContent>
+                    <p>
+                      Recommended ingestion period: {recommendedPeriod} seconds
+                      based on {selectedResources.length} selected resources. Setting
+                      the period to a lower value could incur costs due to CloudWatch
+                      API free tier limits. The ingestion period determines the frequency of
+                      dashboard timeseries updates.
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+            </div>
+
+
+            <Input
+              id="ingestionPeriod"
+              type="number"
+              min="1"
+              step="1"
+              value={period}
+              onChange={(e) => {
+                const value = e.target.value;
+
+                if (/^\d*$/.test(value)) {
+                  setPeriod(value);
+                }
+              }}
+              className="
+      bg-background
+      border-border
+      rounded-md
+      px-4
+      py-3
+      text-foreground
+      placeholder:text-muted-foreground/40
+      focus:outline-none
+      focus:ring-2
+      focus:ring-ring
+      focus:border-transparent
+      transition-all
+      w-full
+    "
+              required
+            />
+
+            <p className="text-xs text-muted-foreground/70">
+              Recommended: {recommendedPeriod} seconds
+            </p>
+
           </div>
           {error && (
             <div className="rounded-md border border-red-500 bg-red-50 p-3 text-sm text-red-700">

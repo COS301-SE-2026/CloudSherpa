@@ -63,9 +63,16 @@ export default function WizardSetup() {
     setStep(3);
   };
 
-  const handleStepThreeComplete = () => {
-    setWizardData({ ...wizardData });
-    console.log('Wizard completed:', { ...wizardData });
+  const handleStepThreeComplete = (ingestionPeriod: string) => {
+    setWizardData({
+      ...wizardData,
+      ingestionPeriod,
+    });
+
+    console.log('Wizard completed:', {
+      ...wizardData,
+      ingestionPeriod,
+    });
   };
 
   const handleBack = () => {
@@ -87,7 +94,7 @@ export default function WizardSetup() {
       {step === 3 && (
         <StepThree
           displayName={wizardData.displayName}
-          ingestionPeriod={"60"}
+          ingestionPeriod={""}
           credentials={wizardData.credentials!}
           resources={wizardData.resources}
           onComplete={handleStepThreeComplete}
