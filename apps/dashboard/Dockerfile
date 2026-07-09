@@ -1,5 +1,9 @@
 # syntax=docker/dockerfile:1
 
+# For production images, requires --build-arg API_URL="https://whatever/api", explicitly
+# left out default value to ensure that the arg is explicitly set 
+ARG API_URL
+
 # ==== Base ====
 FROM node:24-alpine AS base
 
@@ -19,6 +23,10 @@ CMD ["npm", "run", "dev"]
 
 # ==== Build ====
 FROM base AS build
+
+ARG API_URL
+ENV NEXT_PUBLIC_API_URL=$API_URL
+ENV DISABLE_AUTH=false
 
 RUN npm run build
 
