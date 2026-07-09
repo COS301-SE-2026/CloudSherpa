@@ -25,6 +25,9 @@ public class AwsConnectionPersistenceController {
   @PostMapping("/connections")
   public ResponseEntity<Void> persistConnection(
       @AuthenticationPrincipal Jwt jwt, @RequestBody PersistAwsConnectionRequest request) {
+    if (jwt == null) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
 
     UUID userId = UUID.fromString(jwt.getSubject());
     PersistAwsConnectionRequest requestWithUser = request.withUserId(userId);
