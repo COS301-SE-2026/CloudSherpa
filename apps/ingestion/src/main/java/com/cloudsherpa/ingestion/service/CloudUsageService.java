@@ -12,6 +12,7 @@ import com.cloudsherpa.ingestion.models.UsageRecordModel;
 import com.cloudsherpa.ingestion.normalization.model.NormalizedMetric;
 import com.cloudsherpa.ingestion.normalization.normalizers.AwsNormalizer;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -88,7 +89,7 @@ public class CloudUsageService {
 
     for (AccountScope scope : request.getScopes()) {
       if (request.isIncludeUsage()) {
-        List<UsageRecordModel> usageRecords = buildMockUsage(scope);
+        List<UsageRecordModel> usageRecords = buildMockUsage(scope, request);
         usageResults.addAll(usageRecords);
         normalizeAndPersistUsage(usageRecords, userId);
       }
@@ -111,7 +112,7 @@ public class CloudUsageService {
     }
   }
 
-  private List<UsageRecordModel> buildMockUsage(AccountScope scope) {
+  private List<UsageRecordModel> buildMockUsage(AccountScope scope, IngestionRequestEvent request) {
     List<UsageRecordModel> results = new ArrayList<>();
 
     String provider = "AWS";
@@ -120,15 +121,31 @@ public class CloudUsageService {
     }
     String accountId = scope.getAccountId();
 
-    String[] timestamps = {
-      "2026-05-02T18:17:00+02:00",
-      "2026-05-02T18:12:00+02:00",
-      "2026-05-02T18:07:00+02:00",
-      "2026-05-02T18:02:00+02:00",
-      "2026-05-02T17:57:00+02:00",
-      "2026-05-02T17:52:00+02:00",
-      "2026-05-02T17:47:00+02:00"
-    };
+    OffsetDateTime to;
+    if (request.getTo() != null) {
+      to = request.getTo().atOffset(ZoneOffset.UTC);
+    } else {
+      to = OffsetDateTime.now(ZoneOffset.UTC);
+    }
+
+    OffsetDateTime from;
+    if (request.getFrom() != null) {
+      from = request.getFrom().atOffset(ZoneOffset.UTC);
+    } else {
+      from = to.minusMinutes(30);
+    }
+
+    if (from.isAfter(to)) {
+      from = to.minusMinutes(30);
+    }
+
+    String[] timestamps = new String[7];
+    long totalSeconds = Math.max(1, to.toEpochSecond() - from.toEpochSecond());
+    long stepSeconds = Math.max(1, totalSeconds / (timestamps.length - 1));
+
+    for (int i = 0; i < timestamps.length; i++) {
+      timestamps[i] = from.plusSeconds(stepSeconds * i).toString();
+    }
 
     double[] averages = {
       1.9488974910916348,
