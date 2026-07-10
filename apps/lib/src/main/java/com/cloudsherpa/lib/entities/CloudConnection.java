@@ -8,6 +8,10 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.OffsetDateTime;
 import java.util.UUID;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "cloud_connection", schema = "public")
@@ -24,11 +28,15 @@ public class CloudConnection {
   @JoinColumn(name = "user_id", nullable = false, insertable = false, updatable = false)
   private User user;
 
-  @Column(name = "provider", nullable = false, length = 50)
-  private String provider;
+  @Enumerated(EnumType.STRING)
+  @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+  @Column(name = "provider", nullable = false, columnDefinition = "public.provider_enum")
+  private ProviderEnum provider;
 
-  @Column(name = "status", nullable = false, length = 50)
-  private String status;
+  @Enumerated(EnumType.STRING)
+  @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+  @Column(name = "status", nullable = false, columnDefinition = "public.status_enum")
+  private StatusEnum status;
 
   @Column(name = "created_at")
   private OffsetDateTime createdAt;
@@ -36,7 +44,7 @@ public class CloudConnection {
   protected CloudConnection() {}
 
   public CloudConnection(
-      UUID id, UUID userId, String provider, String status, OffsetDateTime createdAt) {
+      UUID id, UUID userId, ProviderEnum provider, StatusEnum status, OffsetDateTime createdAt) {
     this.id = id;
     this.userId = userId;
     this.provider = provider;
@@ -56,19 +64,15 @@ public class CloudConnection {
     return user;
   }
 
-  public String getProvider() {
-    return provider;
-  }
+  public ProviderEnum getProvider() {
+  return provider;
+}
 
-  public String getStatus() {
-    return status;
-  }
+public StatusEnum getStatus() {
+  return status;
+}
 
-  public void setStatus(String status) {
-    this.status = status;
-  }
-
-  public OffsetDateTime getCreatedAt() {
-    return createdAt;
-  }
+public void setStatus(StatusEnum status) {
+  this.status = status;
+}
 }

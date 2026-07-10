@@ -1,9 +1,9 @@
 'use client';
 
-import { useDashboardStore } from '@/features/dashboard/stores/dashboard-store';
+import { useDashboardStore, DashboardStore } from '@/features/dashboard/stores/dashboard-store';
+import { useResourceNameStore, ResourceNameStore } from '@/features/dashboard/stores/resource-store';
+import { MetricType, MetricStore } from '@/features/dashboard/types/metric';
 import { useMetricStore } from '@/features/dashboard/stores/metric-store';
-import { useResourceNameStore } from '@/features/dashboard/stores/resource-store';
-import { MetricType } from '@/features/dashboard/types/metric';
 import { useState, useEffect, useRef } from 'react';
 import { WidgetConfig } from '@/features/dashboard/types/widgets';
 
@@ -28,13 +28,23 @@ export function WidgetConfigMenu({
 
 }: Readonly<WidgetConfigMenuProps>) {
     const [configuration, setConfiguration] = useState<WidgetConfig>(existingConfig);
-    const registerWidgetConfigUpdate = useDashboardStore((state) => state.actions.updateWidgetConfig);
-    const resourceNamesById = useResourceNameStore((state) => state.resourcesById);
-    const allAvailableMetrics = useMetricStore((state) => state.getMetricList);
+    const registerWidgetConfigUpdate = useDashboardStore(
+        (state: DashboardStore) => state.actions.updateWidgetConfig
+        );
+        const resourceNamesById = useResourceNameStore(
+        (state: ResourceNameStore) => state.resourcesById
+        );
+        const allAvailableMetrics = useMetricStore(
+        (state: MetricStore) => state.getMetricList
+        );
 
-    const availableMetrics = configuration.resourceId ? allAvailableMetrics()[configuration.resourceId] ?? []: [];
-
-    const availableResources = Object.keys(resourceNamesById);
+    const availableMetrics = configuration.resourceId
+    ? allAvailableMetrics()[configuration.resourceId] ?? []
+    : [];
+    const metricsByResource = allAvailableMetrics();
+    const metricResourceIds = Object.keys(metricsByResource);
+    const availableResources =
+    metricResourceIds.length > 0 ? metricResourceIds : Object.keys(resourceNamesById);
 
     const isFirstRender = useRef(true);
 
@@ -97,22 +107,23 @@ export function WidgetConfigMenu({
 
                         <select
                             id="resource-id"
-                            value={configuration.resourceId}
+                            value={configuration.resourceId || ""}
                             onChange={(e) => {
-                                    const resourceId = e.target.value;
-                                    const metricType = availableMetrics[0] ?? "anon";
+                                const resourceId = e.target.value;
+                                const nextMetricOptions = allAvailableMetrics()[resourceId] ?? [];
+                                const metricType = nextMetricOptions[0] ?? "anon";
 
-                                    setConfigAndRegisterUpdate({ ...configuration, resourceId, metricType })
-                                }
-                            }
+                                setConfigAndRegisterUpdate({ ...configuration, resourceId, metricType });
+                            }}
                             className="w-full bg-background border border-border rounded-lg px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                        >
+                            >
+                            <option value="" disabled>Select a resource</option>
                             {availableResources.map((resource) => (
                                 <option key={resource} value={resource}>
-                                    {resourceNamesById[resource] ?? "Unknown Resource"}
+                                    {resourceNamesById[resource] ?? resource}
                                 </option>
                             ))}
-                        </select>
+                            </select>
                     </div>
 
                     {/*this is for the metric type*/}
@@ -129,7 +140,7 @@ export function WidgetConfigMenu({
                                     onChange={(e) => setConfigAndRegisterUpdate({ ...configuration, metricType: e.target.value as MetricType })}
                                     className="w-full bg-background border border-border rounded-lg px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                                 >
-                                    {availableMetrics.map((type) => (
+                                    {availableMetrics.map((type: MetricType) => (
                                         <option key={type} value={type}>
                                             {type.toUpperCase()}
                                         </option>

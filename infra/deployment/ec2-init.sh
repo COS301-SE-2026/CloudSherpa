@@ -2,21 +2,32 @@
 
 # Utilities
 log() {
-    if (( $1 == 0 )); then
-        echo "$(date) SUCCESS: $2" >> /var/log/user-data-init
-    elif (( $1 == 1 )); then
-        echo "$(date) ERROR: $2" >> /var/log/user-data-init
+
+    local log_status=$1
+    local log_message=$2
+
+    if (( log_status == 0 )); then
+        echo "$(date) SUCCESS: $log_message" >> /var/log/user-data-init
+    elif (( log_status == 1 )); then
+        echo "$(date) ERROR: $log_message" >> /var/log/user-data-init
     else
-        echo "$(date): $2" >> /var/log/user-data-init
+        echo "$(date): $log_message" >> /var/log/user-data-init
     fi
+
+    return 0
 }
 
 sherpa-copy() {
-    if cp $1 $2; then
-        log 0 "Copied $1 to $2"
+    local copy_from=$1
+    local copy_to=$2
+
+    if cp "$copy_from" "$copy_to"; then
+        log 0 "Copied $copy_from to $copy_to"
     else
-        log 1 "Failed to copy $1 to $2"
+        log 1 "Failed to copy $copy_from to $copy_to"
     fi
+
+    return 0
 }
 
 HOME=/home/ubuntu
