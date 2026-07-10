@@ -44,21 +44,22 @@ CREATE TABLE public.cloud_connection (
   created_at timestamptz DEFAULT NOW()
 );
 
-CREATE TABLE public.cloud_credential (
-  credential_id uuid PRIMARY KEY,
-  account_id uuid UNIQUE REFERENCES public.cloud_account(account_id) ON DELETE CASCADE,
-  provider public.provider_enum NOT NULL,
-  credential_type public.credential_type_enum NOT NULL,
-  credential_value text NOT NULL,
-  created_at timestamptz DEFAULT NOW()
-);
-
 CREATE TABLE public.cloud_account (
   account_id uuid PRIMARY KEY,
   connection_id uuid REFERENCES public.cloud_connection(connection_id) ON DELETE CASCADE,
   account_type public.account_type_enum NOT NULL,
   ingestion_period public.ingestion_period_enum,
   display_name varchar(255),
+  created_at timestamptz DEFAULT NOW()
+);
+
+
+CREATE TABLE public.cloud_credential (
+  credential_id uuid PRIMARY KEY,
+  account_id uuid UNIQUE REFERENCES public.cloud_account(account_id) ON DELETE CASCADE,
+  provider public.provider_enum NOT NULL,
+  credential_type public.credential_type_enum NOT NULL,
+  credential_value text NOT NULL,
   created_at timestamptz DEFAULT NOW()
 );
 
