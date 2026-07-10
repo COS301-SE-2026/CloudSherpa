@@ -4,11 +4,29 @@ import React, { useState } from 'react';
 import { Button } from '@/components/atoms/button';
 import { Checkbox } from '@/components/atoms/checkbox';
 import { Badge } from '@/components/atoms/badge';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/atoms/tooltip';
 import { ResourceDetail } from '@/lib/fetch/cloud-resource-api';
+import {
+  AwsCredentialsDto,
+  PersistAwsConnectionRequest,
+  ResourceSelectionDto,
+  createAwsConnection
+} from '@/lib/fetch/aws-connection-api';
+import { useRouter } from 'next/navigation';
+import { Input } from '@/components/atoms/input';
+import { Label } from '@/components/atoms/label';
 
 interface PropsForStepThree {
+  displayName: string;
+  ingestionPeriod: string;
+  credentials: AwsCredentialsDto;
   resources: ResourceDetail[];
-  onComplete: (selectedInstances: string[]) => void;
+  onComplete: (ingestionPeriod: string) => void;
   onBack: () => void;
 }
 
@@ -136,6 +154,9 @@ function ResourceCategory({
 }
 
 export default function StepThree({
+  displayName,
+  ingestionPeriod,
+  credentials,
   resources,
   onComplete,
   onBack,
@@ -143,14 +164,53 @@ export default function StepThree({
   const [selectedResources, setSelectedResources] = useState<string[]>(
     resources.map(resource => resource.resourceId)
   );
+  const router = useRouter();
+
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [period, setPeriod] = useState<string>(ingestionPeriod);
+  const recommendedPeriod = selectedResources.length * 5 * 20;
 
   const groupedResources = groupResourcesByCategory(resources);
 
-  const handleSubmit = (
-    event: React.SubmitEvent<HTMLFormElement>
+  const handleSubmit = async (
+    event: React.FormEvent<HTMLFormElement>
   ) => {
     event.preventDefault();
-    onComplete(selectedResources);
+
+    setSaving(true);
+    setError(null);
+
+    try {
+      const request: PersistAwsConnectionRequest = {
+        userId: '',
+        displayName,
+        ingestionPeriod: period,
+        credentials,
+        resources: resources.map(
+          (resource): ResourceSelectionDto => ({
+            resourceId: resource.resourceId,
+            resourceType: resource.serviceCategory,
+            resourceName: resource.name,
+            tags: resource.tags,
+            active: selectedResources.includes(resource.resourceId),
+          })
+        ),
+      };
+
+      await createAwsConnection(request);
+
+      onComplete(period);
+      router.push('/dashboard');
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Unable to create AWS connection.'
+      );
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleResourceToggle = (
@@ -208,10 +268,100 @@ export default function StepThree({
               )}
             </div>
           </div>
+          <div className="space-y-2">
 
+            <div className="flex items-center gap-2">
+
+              <Label
+                htmlFor="ingestionPeriod"
+                className="text-foreground text-sm font-medium"
+              >
+                Ingestion period (seconds)
+              </Label>
+
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      className="
+              flex
+              items-center
+              justify-center
+              w-5
+              h-5
+              rounded-full
+              text-xs
+              text-muted-foreground
+              hover:text-foreground
+              border
+              border-border
+            "
+                    >
+                      ?
+                    </button>
+                  </TooltipTrigger>
+
+                  <TooltipContent>
+                    <p>
+                      Recommended ingestion period: {recommendedPeriod} seconds
+                      based on {selectedResources.length} selected resources. Setting
+                      the period to a lower value could incur costs due to CloudWatch
+                      API free tier limits. The ingestion period determines the frequency of
+                      dashboard timeseries updates.
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+            </div>
+
+
+            <Input
+              id="ingestionPeriod"
+              type="number"
+              min="1"
+              step="1"
+              value={period}
+              onChange={(e) => {
+                const value = e.target.value;
+
+                if (/^\d*$/.test(value)) {
+                  setPeriod(value);
+                }
+              }}
+              className="
+      bg-background
+      border-border
+      rounded-md
+      px-4
+      py-3
+      text-foreground
+      placeholder:text-muted-foreground/40
+      focus:outline-none
+      focus:ring-2
+      focus:ring-ring
+      focus:border-transparent
+      transition-all
+      w-full
+    "
+              required
+            />
+
+            <p className="text-xs text-muted-foreground/70">
+              Recommended: {recommendedPeriod} seconds
+            </p>
+
+          </div>
+          {error && (
+            <div className="rounded-md border border-red-500 bg-red-50 p-3 text-sm text-red-700">
+              {error}
+            </div>
+          )}
           <div className="flex justify-between pt-6">
             <Button
               type="button"
+              disabled={saving}
               onClick={onBack}
               className="bg-primary hover:bg-accent hover:text-accent-foreground text-primary-foreground px-6 py-2 rounded-md transition-all duration-200 font-medium"
             >
@@ -220,9 +370,10 @@ export default function StepThree({
 
             <Button
               type="submit"
+              disabled={saving}
               className="bg-primary hover:bg-accent hover:text-accent-foreground text-primary-foreground px-8 py-2 rounded-md transition-all duration-200 font-medium"
             >
-              Finish
+              {saving ? 'Saving...' : 'Finish'}
             </Button>
           </div>
         </form>
