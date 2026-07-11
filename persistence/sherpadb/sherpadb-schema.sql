@@ -46,7 +46,7 @@ CREATE TABLE public.cloud_connection (
 
 CREATE TABLE public.cloud_credential (
   credential_id uuid PRIMARY KEY,
-  connection_id uuid REFERENCES public.cloud_connection(connection_id) ON DELETE CASCADE,
+  account_id uuid UNIQUE REFERENCES public.cloud_account(account_id) ON DELETE CASCADE,
   provider public.provider_enum NOT NULL,
   credential_type public.credential_type_enum NOT NULL,
   credential_value text NOT NULL,
@@ -88,6 +88,18 @@ CREATE TABLE public.widget_resource (
   metric_type public.metric_type_enum NOT NULL
 );
 
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+INSERT INTO public.users (user_id, email, username, password_hash, created_at)
+VALUES (
+  '5ebe4340-c5ec-4833-ad93-06abf4609f03'::uuid,
+  'demo@gmail.com',
+  'demo@gmail.com',
+  crypt('Password@2', gen_salt('bf', 12)),
+  now()
+  )
+ON CONFLICT DO NOTHING;
+
 -- This sits in the public schema so it only has to be written once, but it is 
 -- smart enough to broadcast on a specific tenant's channel dynamically.
 CREATE OR REPLACE FUNCTION public.notify_metric_event() 
@@ -96,7 +108,8 @@ BEGIN
     -- TG_TABLE_SCHEMA dynamically grabs the name of the schema that fired the trigger.
     -- Example: If a metric hits tenant_1234, it broadcasts on 'metric_events_tenant_1234'.
     -- row_to_json(NEW) turns the newly inserted row into a JSON object.
-    PERFORM pg_notify('metric_events_' || TG_TABLE_SCHEMA, row_to_json(NEW)::text); 
+    PERFORM pg_notify('metric_events', row_to_json(NEW)::text);
+    PERFORM pg_notify('metric_events_' || TG_TABLE_SCHEMA, row_to_json(NEW)::text);
     
     RETURN NEW;
 END;

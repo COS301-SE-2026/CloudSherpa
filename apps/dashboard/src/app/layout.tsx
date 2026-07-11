@@ -33,7 +33,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       className={cn(geistSans.variable, geistHeading.variable, geistMono.variable, "font-sans")}>
       <body className="min-h-screen overflow-x-hidden">
         <ThemeProvider
-          attribute="data-theme" 
+          attribute="class" 
           defaultTheme="dark"
           enableSystem={false}>
             <AuthProvider>
