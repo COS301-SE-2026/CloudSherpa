@@ -1,0 +1,3 @@
+fastapi[standard]>=0.136.0,<0.140.0
+numpy>=2.1.0
+chronos-forecasting[extras]>=2.2
