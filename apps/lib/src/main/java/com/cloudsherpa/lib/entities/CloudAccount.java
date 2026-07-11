@@ -8,6 +8,10 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.OffsetDateTime;
 import java.util.UUID;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "cloud_account", schema = "public")
@@ -24,8 +28,10 @@ public class CloudAccount {
   @JoinColumn(name = "connection_id", nullable = false, insertable = false, updatable = false)
   private CloudConnection connection;
 
-  @Column(name = "account_type", nullable = false, length = 255)
-  private String accountType;
+  @Enumerated(EnumType.STRING)
+  @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+  @Column(name = "account_type", nullable = false, columnDefinition = "public.account_type_enum")
+  private AccountTypeEnum accountType;
 
   @Column(name = "display_name", length = 255)
   private String displayName;
@@ -41,7 +47,7 @@ public class CloudAccount {
   public CloudAccount(
       UUID id,
       UUID connectionId,
-      String accountType,
+      AccountTypeEnum accountType,
       String displayName,
       String ingestionPeriod,
       OffsetDateTime createdAt) {
@@ -65,7 +71,7 @@ public class CloudAccount {
     return connection;
   }
 
-  public String getAccountType() {
+  public AccountTypeEnum getAccountType() {
     return accountType;
   }
 

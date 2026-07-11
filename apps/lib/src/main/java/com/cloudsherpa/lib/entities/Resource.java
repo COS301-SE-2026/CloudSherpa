@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.UUID;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 
 @Entity
 @Table(name = "resource")
@@ -32,8 +34,10 @@ public class Resource {
   @Column(name = "resource_name", length = 255, nullable = false)
   private String resourceName;
 
-  @Column(name = "status", length = 50)
-  private String status;
+  @Enumerated(EnumType.STRING)
+  @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+  @Column(name = "status", columnDefinition = "public.status_enum")
+  private StatusEnum status;
 
   @JdbcTypeCode(SqlTypes.JSON)
   @Column(name = "tags", columnDefinition = "jsonb")
@@ -52,7 +56,7 @@ public class Resource {
       UUID accountId,
       String resourceType,
       String resourceName,
-      String status,
+      StatusEnum status,
       Map<String, Object> tags,
       OffsetDateTime lastUpdated,
       OffsetDateTime createdAt) {
@@ -92,5 +96,9 @@ public class Resource {
 
   public OffsetDateTime getCreatedAt() {
     return createdAt;
+  }
+
+  public StatusEnum getStatus() {
+    return status;
   }
 }

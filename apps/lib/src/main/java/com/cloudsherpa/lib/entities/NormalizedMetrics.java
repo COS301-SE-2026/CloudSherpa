@@ -11,6 +11,10 @@ import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.UUID;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "normalized_metrics")
@@ -30,8 +34,10 @@ public class NormalizedMetrics {
   @Column(name = "recorded_at", updatable = false, nullable = false)
   private OffsetDateTime recordedAt;
 
-  @Column(name = "metric_type", length = 50)
-  private String metricType;
+  @Enumerated(EnumType.STRING)
+  @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+  @Column(name = "metric_type", nullable = false, columnDefinition = "public.metric_type_enum")
+  private MetricTypeEnum metricType;
 
   @Column(name = "metric_name", length = 255)
   private String metricName;
@@ -79,7 +85,7 @@ public class NormalizedMetrics {
     return recordedAt;
   }
 
-  public String getMetricType() {
+  public MetricTypeEnum getMetricType() {
     return metricType;
   }
 
@@ -110,7 +116,7 @@ public class NormalizedMetrics {
   public static class Builder {
     private UUID resourceId;
     private OffsetDateTime recordedAt;
-    private String metricType;
+    private MetricTypeEnum metricType;
     private String metricName;
     private BigDecimal metricValue;
     private String unit;
@@ -128,7 +134,7 @@ public class NormalizedMetrics {
       return this;
     }
 
-    public Builder metricType(String metricType) {
+    public Builder metricType(MetricTypeEnum metricType) {
       this.metricType = metricType;
       return this;
     }
