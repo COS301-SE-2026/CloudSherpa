@@ -126,16 +126,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <div className="px-2 py-1.5 text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
-              {authContext?.user?.email || "Not logged in"}
+              {!authContext?.isAuthReady
+                ? "Loading..."
+                : authContext?.user?.email || "Not logged in"
+              }
             </div>
           </SidebarMenuItem>
-
+          
+          {authContext.isAuthReady && 
           <SidebarMenuItem>
             <SidebarMenuButton onClick={() => logout()} tooltip="Logout">
               <span>Logout</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
-
+          }
           {mounted && (
             <SidebarMenuItem>
               <SidebarMenuButton onClick={() => setTheme(theme === "dark" ? "light" : "dark")} tooltip="Toggle Theme">

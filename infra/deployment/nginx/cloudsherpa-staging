@@ -47,8 +47,19 @@ server {
 
         # WebSocket support
         proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
+        proxy_set_header Connection "";
 
+        # support SSE connection
+        proxy_buffering off;
+
+        # Disable caching
+        proxy_cache off;
+
+        # Keep HTTP/1.1 chunked transfer encoding enabled for streams
+        chunked_transfer_encoding on;
+
+        # Long timeout for the SSE connection
+        proxy_read_timeout 86400s;
     }
 
     # Rate limiting (wip)
