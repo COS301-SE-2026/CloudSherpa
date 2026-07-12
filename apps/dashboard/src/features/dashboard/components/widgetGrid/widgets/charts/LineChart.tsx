@@ -5,38 +5,54 @@ import { useMemo } from "react";
 import { useChartData } from "@/features/dashboard/hooks/useChartData";
 import { useChartTheme } from "@/features/dashboard/hooks/useChartTheme";
 import { BaseChart } from "./baseChart";
+import { useWindowStore } from "@/features/dashboard/stores/window-store"
 
 type LineChartProps = {
   resourceId: string;
   metricType: MetricType;
 };
 
-const AXIS_TICK_MS = 6000;
-
 export function LineChart({ resourceId, metricType }: Readonly<LineChartProps>) {
   const { timeSeriesData } = useChartData(resourceId, metricType);
   const { themeName, tokens } = useChartTheme();
-  const fromMs = 0;
-  const toMs = 0;
-  const visibleWindowMs = toMs && fromMs && toMs > fromMs ? toMs - fromMs : 300_000;
+  const fromMs = useWindowStore((state) => state.fromMs);
+  const toMs = useWindowStore((state) => state.toMs);
   const options: EChartsOption = useMemo(() => {
-    // eslint-disable-next-line react-hooks/purity
-    const axisMax = Math.ceil(Date.now() / AXIS_TICK_MS) * AXIS_TICK_MS;
-    const axisMin = axisMax - visibleWindowMs;
     return {
       grid: { left: "1%", right: "4%", bottom: "2%", top: "10%", containLabel: true },
       xAxis: {
         type: "time" as const,
-        min: axisMin,
-        max: axisMax,
+        min: fromMs,
+        max: toMs,
+        axisLabel: {
+          hideOverlap: true,
+          formatter: {
+            year: '{yyyy}',
+            month: '{MMM}', 
+            day: '{ee} {d}',   
+            hour: '{HH}:{mm}',   
+            minute: '{HH}:{mm}',
+            second: '{HH}:{mm}:{ss}'
+          }
+        },
       },
       yAxis: {
         type: "value" as const,
       },
+      dataset: {
+        dimensions: [
+          { name: 'timestamp', type: 'time' }, 
+          { name: 'value', type: 'number' }
+        ],
+        source: timeSeriesData 
+      },
       series: [
         {
-          data: timeSeriesData,
           type: "line" as const,
+          encode: {
+            x: "timestamp",
+            y: "value",
+          },
           areaStyle: {
             opacity: 0.2,
             color: {
@@ -45,7 +61,7 @@ export function LineChart({ resourceId, metricType }: Readonly<LineChartProps>) 
               y: 0,
               x2: 0,
               y2: 1,
-              colorStops: [
+              colorStops: [ 
                 { offset: 0, color: tokens["chart-1"] || tokens["primary"] },
                 { offset: 1, color: "transparent" },
               ],
@@ -54,7 +70,7 @@ export function LineChart({ resourceId, metricType }: Readonly<LineChartProps>) 
         },
       ],
     };
-  }, [timeSeriesData, tokens, visibleWindowMs]);
+  }, [timeSeriesData, tokens, fromMs, toMs]);
 
   return <BaseChart option={options} theme={themeName} />;
 }

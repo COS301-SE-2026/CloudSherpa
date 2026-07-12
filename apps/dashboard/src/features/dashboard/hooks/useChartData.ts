@@ -10,7 +10,7 @@ export function useChartData(resourceId: string, metricType: MetricType) {
     const rawSeries = series || {};
     const values = Object.values(rawSeries);
 
-    const timeSeriesData = values.map((point) => [new Date(point.timestamp).getTime(), point.value]);
+    const timeSeriesData = values;
 
     const latestPoint = values.length > 0 ? values.at(-1) : null;
 
