@@ -5,6 +5,7 @@ import Widget from "@/features/dashboard/components/widgetGrid/widgets/widget";
 import { WidgetConfig } from "@/features/dashboard/types/widgets";
 import { useMetricStore } from "@/features/dashboard/stores/metric-store";
 import { MetricSeries } from "@/features/dashboard/types/metric";
+import { useWindowStore } from "@/features/dashboard/stores/window-store";
 
 const MOCK_WIDGETS: WidgetConfig[] = [
   {
@@ -32,7 +33,7 @@ export default function DemoPage() {
     const secureRandom = () => {
       const a = new Uint32Array(1);
       crypto.getRandomValues(a);
-      return a[0] / 0x100000000; 
+      return a[0] / 0x100000000;
     };
 
     const mockCpuSeries: MetricSeries = Array.from({ length: 60 }).reduce((acc: MetricSeries, _, i) => {
@@ -69,9 +70,14 @@ export default function DemoPage() {
         "demo-server-01:memory": mockMemorySeries,
       },
     }));
+    useWindowStore.setState({
+      fromMs: now - 300_000,
+      toMs: now,
+    });
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsReady(true);
   }, []);
+
 
   return (
     <div className="p-8 min-h-screen bg-background">
