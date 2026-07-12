@@ -21,8 +21,17 @@ export function AuthProvider({
 
     useEffect(() => {
         async function loadAuthState() {
-            // auth/me here, whatever needs to run on each protected page render goes here 
-            // if not redirect here? Maybe it would be more wise to do this in the proxy
+            if (user == null) {
+                const response: LoginResponseDto = await apiClient('/auth/me', {
+                method: "GET",
+            })
+
+            setUser({
+                userId: response.userId,
+                username: response.username,
+                email: response.email
+            })
+            }
             setIsAuthReady(true);
         }
 
