@@ -1,12 +1,27 @@
 from fastapi import FastAPI
-from src.schemas.forecast_request import ForecastRequest
+from contextlib import asynccontextmanager
+import gc
+import torch
+from schemas.forecast_request import ForecastRequest
+from models.chronos_model import ChronosUnivariate
+from models.sherpa_model import SherpaModel
 
-app = FastAPI()    
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    model: SherpaModel = ChronosUnivariate()
+    app.state.model = model
+
+    try:
+        yield 
+    finally:
+        app.state.model = None
+        del model
+
+        gc.collect()
+
+app = FastAPI(lifespan=lifespan)    
 
 @app.post("/forecast")
 async def root(request: ForecastRequest):
-    return {
-        "message": "Received forecast request",
-        "series_len": len(request.series),
-        "prediction_len": request.prediction_length
-    }
+    model = app.state.model
+    return model.predict_series(series=request.series[0], prediction_length=request.prediction_length)

@@ -1,8 +1,9 @@
 from pydantic import BaseModel
+from enum import Enum
 
 class ForecastSeries(BaseModel):
-    series_id: str
-    provider: str
+    # Put provider on ice for now
+    # provider: str
     resource_id: str 
     resource_type: str 
     metric_type: str 
