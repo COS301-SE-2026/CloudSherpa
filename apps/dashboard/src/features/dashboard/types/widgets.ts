@@ -32,3 +32,12 @@ export type DashboardStub = {
 
 // update every time a new chart is added
 export type ChartType = 'line' | 'gauge'
+
+export type ChartThemeTokens = {
+  textColor: string;      
+  mutedText: string;      
+  gridLine: string;       
+  chartColors: string[];  
+  gridOpacity: number;   
+  
+};

@@ -55,6 +55,22 @@ const styleDictionaryConfig = {
           }
         }
       ]
+    },
+  echarts: {
+      transforms: ['name/shadcn', 'color/hex'], 
+      buildPath: 'src/app/tokens/',
+      files: [
+        {
+          destination: 'chart-light.json',
+          format: formats.jsonFlat,
+          filter: 'is-light'
+        },
+        {
+          destination: 'chart-dark.json',
+          format: formats.jsonFlat,
+          filter: 'is-dark'
+        }
+      ]
     }
   }
 };
