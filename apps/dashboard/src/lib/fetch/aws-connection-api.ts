@@ -39,6 +39,21 @@ export interface CloudAccount {
   createdAt: string;
 }
 
+export enum ResourceStatus {
+  ACTIVE = "active",
+  DISABLED = "disabled",
+}
+
+export interface CloudResource {
+  id: string;
+  accountId: string;
+  resourceType: string;
+  resourceName: string;
+  status: ResourceStatus;
+  tags: Record<string, string>;
+  lastUpdated: string;
+  createdAt: string;
+}
 export async function createAwsConnection(
   request: PersistAwsConnectionRequest
 ): Promise<void> {
@@ -50,4 +65,8 @@ export async function createAwsConnection(
 
 export async function getAwsAccountConnections(): Promise<CloudAccount[]> {
   return apiClient<CloudAccount[]>("/aws/connections", { method: "GET", });
+}
+
+export async function getAwsAccountResources(accountId: string): Promise<CloudResource[]> {
+  return apiClient<CloudResource[]>("/aws/resources", { method: "GET", body: JSON.stringify(accountId), });
 }
