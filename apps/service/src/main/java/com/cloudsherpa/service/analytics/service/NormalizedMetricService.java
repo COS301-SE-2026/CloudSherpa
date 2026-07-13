@@ -45,6 +45,11 @@ public class NormalizedMetricService {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid interval");
     }
 
+    if (!interval.equals("daily") && !interval.equals("weekly") && !interval.equals("monthly")) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST, "Invalid interval. Supported values: daily, weekly, monthly");
+    }
+
     return normalizedMetricsRepository.findByPeriodStartBetween(parsedFromDate, parsedToDate);
   }
 
