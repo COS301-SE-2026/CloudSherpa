@@ -8,6 +8,7 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
@@ -31,6 +32,7 @@ public class NormalizedMetricService {
 
     OffsetDateTime parsedFromDate;
     OffsetDateTime parsedToDate;
+    String normalizedInterval = interval.toLowerCase(Locale.ROOT);
 
     try {
       parsedFromDate = OffsetDateTime.parse(from);
@@ -42,13 +44,12 @@ public class NormalizedMetricService {
     }
 
     if (parsedFromDate.isAfter(parsedToDate)) {
-      // from after to
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid interval");
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid date range");
     }
 
     String bucketWidth;
 
-    switch (interval) {
+    switch (normalizedInterval) {
       case "daily":
         bucketWidth = "1 day";
         break;
