@@ -66,4 +66,33 @@ public interface NormalizedMetricsRepository extends JpaRepository<NormalizedMet
       @Param("fromDate") OffsetDateTime fromDate,
       @Param("toDate") OffsetDateTime toDate,
       @Param("bucketWidth") String bucketWidth);
+
+        @Query(
+      value =
+          """
+          SELECT
+            nm.resource_id AS resourceId,
+            nm.metric_name AS metricName,
+            nm.metric_type::text AS metricType,
+            AVG(nm.metric_value) AS metricValue,
+            MIN(nm.unit) AS unit,
+            time_bucket(CAST(:bucketWidth AS INTERVAL), nm.period_start) AS periodStart,
+            time_bucket(CAST(:bucketWidth AS INTERVAL), nm.period_start)
+              + CAST(:bucketWidth AS INTERVAL) AS periodEnd,
+          FROM normalized_metrics nm
+          WHERE nm.period_start BETWEEN :fromDate AND :toDate
+            AND nm.resource_id IN (:resourceIds)
+          GROUP BY
+            nm.resource_id,
+            nm.metric_name,
+            nm.metric_type,
+            time_bucket(CAST(:bucketWidth AS INTERVAL), nm.period_start)
+          ORDER BY periodStart ASC
+          """,
+      nativeQuery = true)
+  List<AggregatedMetric> findAggregatedMetricsByPeriodAndResourceIds(
+      @Param("fromDate") OffsetDateTime fromDate,
+      @Param("toDate") OffsetDateTime toDate,
+      @Param("bucketWidth") String bucketWidth,
+      @Param("resourceIds") List<UUID> resourceIds);
 }

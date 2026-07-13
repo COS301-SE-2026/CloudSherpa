@@ -6,5 +6,4 @@ export type MetricDTO = {
   unit: string | null;
   periodStart: string;
   periodEnd: string;
-  sampleCount: number;
 };

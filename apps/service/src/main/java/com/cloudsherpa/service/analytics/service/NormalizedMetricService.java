@@ -9,6 +9,7 @@ import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -25,8 +26,8 @@ public class NormalizedMetricService {
     this.resourceRepository = resourceRepository;
   }
 
-  public List<AggregatedMetric> fetchHistoricalData(String from, String to, String interval)
-      throws ResponseStatusException {
+  public List<AggregatedMetric> fetchHistoricalData(
+      String from, String to, String interval, List<UUID> resourceIds) {
 
     OffsetDateTime parsedFromDate;
     OffsetDateTime parsedToDate;
@@ -62,8 +63,13 @@ public class NormalizedMetricService {
             HttpStatus.BAD_REQUEST, "Invalid interval. Supported values: daily, weekly, monthly");
     }
 
-    return normalizedMetricsRepository.findAggregatedMetricsByPeriod(
-        parsedFromDate, parsedToDate, bucketWidth);
+    if (resourceIds == null || resourceIds.isEmpty()) {
+      return normalizedMetricsRepository.findAggregatedMetricsByPeriod(
+          parsedFromDate, parsedToDate, bucketWidth);
+    }
+
+    return normalizedMetricsRepository.findAggregatedMetricsByPeriodAndResourceIds(
+        parsedFromDate, parsedToDate, bucketWidth, resourceIds);
   }
 
   public Map<String, String> fetchResourceNames() {
