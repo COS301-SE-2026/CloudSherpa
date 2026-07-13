@@ -44,6 +44,7 @@ public interface NormalizedMetricsRepository extends JpaRepository<NormalizedMet
             -- (e.g., 10:00:00 + '5 minutes' = 10:05:00).
             time_bucket(CAST(:bucketWidth AS INTERVAL), nm.period_start)
               + CAST(:bucketWidth AS INTERVAL) AS periodEnd,
+            COUNT(*) AS sampleCount
             
           FROM normalized_metrics nm
           
@@ -79,6 +80,7 @@ public interface NormalizedMetricsRepository extends JpaRepository<NormalizedMet
             time_bucket(CAST(:bucketWidth AS INTERVAL), nm.period_start) AS periodStart,
             time_bucket(CAST(:bucketWidth AS INTERVAL), nm.period_start)
               + CAST(:bucketWidth AS INTERVAL) AS periodEnd,
+              COUNT(*) AS sampleCount
           FROM normalized_metrics nm
           WHERE nm.period_start BETWEEN :fromDate AND :toDate
             AND nm.resource_id IN (:resourceIds)
