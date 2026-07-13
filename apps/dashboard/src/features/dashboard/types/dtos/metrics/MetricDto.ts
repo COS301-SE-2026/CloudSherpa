@@ -1,13 +1,10 @@
 export type MetricDTO = {
-  metricId: string;
-  accountId: string;
-  currency: string | null;
   resourceId: string;
-  metricType: string;
   metricName: string;
+  metricType: string;
   metricValue: number;
+  unit: string | null;
   periodStart: string;
   periodEnd: string;
-  recordedAt: string;
-  unit: string;
+  sampleCount: number;
 };
