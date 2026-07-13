@@ -27,6 +27,8 @@ services:
       - "8083:8080"
     env_file:
       - ../apps/service/.env
+    environment:
+      INGESTION_BASE_URL: http://ingestion:8080
     volumes:
       - ../apps/service:/app
     depends_on:
