@@ -1,6 +1,7 @@
 package com.cloudsherpa.service.persistconnection.aws.controller;
 
 import com.cloudsherpa.lib.entities.CloudAccount;
+import com.cloudsherpa.lib.entities.Resource;
 import com.cloudsherpa.service.persistconnection.aws.service.AwsConnectionQueryService;
 import java.util.List;
 import java.util.UUID;
@@ -33,5 +34,22 @@ public class AwsConnectionQueryController {
     UUID userId = UUID.fromString(jwt.getSubject());
     List<CloudAccount> accounts = queryService.getAccountConnections(userId);
     return ResponseEntity.status(HttpStatus.OK).body(accounts);
+  }
+
+  @GetMapping("/resources")
+  public ResponseEntity<List<Resource>> getResourcesForAccount(
+      @AuthenticationPrincipal Jwt jwt, UUID accountId) {
+    if (jwt == null) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
+    UUID userId = UUID.fromString(jwt.getSubject());
+    List<CloudAccount> accounts = queryService.getAccountConnections(userId);
+    if (accounts.stream().anyMatch(account -> account.getId().equals(accountId))) {
+      List<Resource> resources = queryService.getResourcesForAccount(accountId);
+      return ResponseEntity.status(HttpStatus.OK).body(resources);
+    }
+    // Unauthorized if the user requests resources from an account they don't own
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
   }
 }
