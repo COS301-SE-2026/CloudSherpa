@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.cloudsherpa.lib.entities.NormalizedMetrics;
+import com.cloudsherpa.lib.projections.AggregatedMetric;
 import com.cloudsherpa.lib.projections.ResourceNames;
 import com.cloudsherpa.lib.repositories.NormalizedMetricsRepository;
 import com.cloudsherpa.lib.repositories.ResourceRepository;
@@ -33,19 +33,43 @@ class NormalizedMetricServiceTest {
   @InjectMocks private NormalizedMetricService normalizedMetricService;
 
   @Test
-  void fetchHistoricalDataReturnsMetricsBetweenDates() throws Exception {
+  void fetchHistoricalDataReturnsAggregatedMetricsBetweenDates() {
     String from = "2026-04-01T00:00:00Z";
     String to = "2026-04-30T00:00:00Z";
 
     OffsetDateTime parsedFrom = OffsetDateTime.parse(from);
     OffsetDateTime parsedTo = OffsetDateTime.parse(to);
 
-    List<NormalizedMetrics> expected = List.of(new NormalizedMetrics());
+    AggregatedMetric aggregatedMetric = mock(AggregatedMetric.class);
+    List<AggregatedMetric> expected = List.of(aggregatedMetric);
 
-    when(normalizedMetricsRepository.findByPeriodStartBetween(parsedFrom, parsedTo))
+    when(normalizedMetricsRepository.findAggregatedMetricsByPeriod(parsedFrom, parsedTo, "1 day"))
         .thenReturn(expected);
 
-    List<NormalizedMetrics> actual = normalizedMetricService.fetchHistoricalData(from, to);
+    List<AggregatedMetric> actual =
+        normalizedMetricService.fetchHistoricalData(from, to, "daily", List.of());
+
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  void fetchHistoricalDataReturnsAggregatedMetricsForResourceFilter() {
+    String from = "2026-04-01T00:00:00Z";
+    String to = "2026-04-30T00:00:00Z";
+
+    OffsetDateTime parsedFrom = OffsetDateTime.parse(from);
+    OffsetDateTime parsedTo = OffsetDateTime.parse(to);
+
+    UUID resourceId = UUID.randomUUID();
+    AggregatedMetric aggregatedMetric = mock(AggregatedMetric.class);
+    List<AggregatedMetric> expected = List.of(aggregatedMetric);
+
+    when(normalizedMetricsRepository.findAggregatedMetricsByPeriodAndResourceIds(
+            parsedFrom, parsedTo, "1 day", List.of(resourceId)))
+        .thenReturn(expected);
+
+    List<AggregatedMetric> actual =
+        normalizedMetricService.fetchHistoricalData(from, to, "daily", List.of(resourceId));
 
     assertEquals(expected, actual);
   }
@@ -57,7 +81,18 @@ class NormalizedMetricServiceTest {
     "2026-04-15T00:00:00Z,2026-04-05T00::00Z"
   })
   void throwExceptionWhenInvalidDate(String from, String to) {
-    assertThrows(Exception.class, () -> normalizedMetricService.fetchHistoricalData(from, to));
+    assertThrows(
+        Exception.class,
+        () -> normalizedMetricService.fetchHistoricalData(from, to, "daily", List.of()));
+  }
+
+  @Test
+  void throwExceptionWhenIntervalInvalid() {
+    assertThrows(
+        Exception.class,
+        () ->
+            normalizedMetricService.fetchHistoricalData(
+                "2026-04-01T00:00:00Z", "2026-04-30T00:00:00Z", "yearly", List.of()));
   }
 
   @Test
