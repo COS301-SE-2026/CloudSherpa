@@ -1,184 +1,76 @@
 "use client";
-
-import { echarts } from "@/lib/charts/echarts";
-import { useMetricStore } from "@/features/dashboard/stores/metric-store";
-import { useWindowStore } from "@/features/dashboard/stores/window-store";
-import { metricSeriesToArray, MetricType } from "@/features/dashboard/types/metric";
+import { MetricType } from "@/features/dashboard/types/metric";
 import type { EChartsOption } from "echarts";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo } from "react";
+import { useChartData } from "@/features/dashboard/hooks/useChartData";
+import { useChartTheme } from "@/features/dashboard/hooks/useChartTheme";
+import { BaseChart } from "./baseChart";
+import { useWindowStore } from "@/features/dashboard/stores/window-store";
 
 type LineChartProps = {
-    resourceId?: string;
-    metricType?: MetricType;
+    resourceId: string;
+    metricType: MetricType;
 };
 
-// This will be replaced by zustand store for dashboard window
-
-// The tick should sync with the ingestion intervals, still need to do system-wide
-// investigation regarding this
-const AXIS_TICK_MS = 5_000;
-
 export function LineChart({ resourceId, metricType }: Readonly<LineChartProps>) {
-    const chartRef = useRef<HTMLDivElement>(null);
-    const series = useMetricStore((state) => state.seriesByKey[`${resourceId}:${metricType}`]);
-    const data = useMemo(() => metricSeriesToArray(series), [series]);
+    const { timeSeriesData } = useChartData(resourceId, metricType);
+    const { themeName, tokens } = useChartTheme();
     const fromMs = useWindowStore((state) => state.fromMs);
     const toMs = useWindowStore((state) => state.toMs);
-    const visibleWindowMs = toMs - fromMs;
-
-    const chartInstance = useRef<echarts.ECharts | null>(null);
-    const [lineColor, setLineColor] = useState<string>("#3b82f6"); // fallback blue
-    const [gridOpacity, setGridOpacity] = useState<number>(0.15);
-    const [textColor, setTextColor] = useState<string>("rgb(255, 255, 255)");
-
-    // Extract color token and listen for theme changes
-    //note: echarts does not have built in support for css tokens and stuff so we have to use workaround
-    useEffect(() => {
-        const updateThemeStyles = () => {
-            const style = getComputedStyle(document.documentElement);
-            const tokenColor = style.getPropertyValue("--primary").trim();
-            const foregroundToken = style.getPropertyValue("--foreground").trim();
-
-            if (tokenColor) {
-                setLineColor(tokenColor);
-            }
-
-            const isLightMode = document.documentElement.dataset.theme === "light";
-            if (foregroundToken) {
-                setTextColor(foregroundToken);
-            } else {
-                setTextColor(isLightMode ? "#020617" : "rgb(255, 255, 255)");
-            }
-
-            // Adjust horizontal grid line opacity based on active theme(just added on logic for theme swapping)
-            setGridOpacity(isLightMode ? 0.7 : 0.1);
-        };
-
-        updateThemeStyles();
-        const observer = new MutationObserver(updateThemeStyles);
-        observer.observe(document.documentElement, {
-            attributes: true,
-            attributeFilter: ["data-theme", "class"],
-        });
-        return () => observer.disconnect();
-    }, []);
-
-    useEffect(() => {
-        if (!chartRef.current) return;
-        chartInstance.current = echarts.init(chartRef.current);
-
-        return () => {
-            chartInstance.current?.dispose();
-        };
-    }, []);
-
-    useEffect(() => {
-        if (!chartRef.current) return;
-
-        // Convert to unix timestamp in ms, should consider doing this during normalization
-        const points = data.map((metric): [number, number] => [
-            new Date(metric.timestamp).getTime(),
-            metric.value,
-        ]);
-
-        // Suppose value of 121 with interval of 50s, 121 / 50 = 2.43, ceil takes that to 3, multiplied with 50 gives
-        // you nice boundary of 150
-        const axisMax = Math.ceil(Date.now() / AXIS_TICK_MS) * AXIS_TICK_MS;
-
-        const option: EChartsOption = {
-            color: [lineColor],
-            tooltip: {
-                trigger: "axis",
-            },
-
-            // animate on render, do not animate on update
-            animationDuration: 600,
-            animationDurationUpdate: 0,
-
-            grid: {
-                left: 20,
-                right: 20,
-                top: 40,
-                bottom: 20,
-
-                containLabel: true,
-            },
-
+    const options: EChartsOption = useMemo(() => {
+        return {
+            grid: { left: "1%", right: "4%", bottom: "2%", top: "10%", containLabel: true },
             xAxis: {
-                type: "time",
-                min: axisMax - visibleWindowMs,
-                max: axisMax,
-                interval: AXIS_TICK_MS,
+                type: "time" as const,
+                min: fromMs,
+                max: toMs,
                 axisLabel: {
                     hideOverlap: true,
-                    formatter: "{HH}:{mm}", //makes it look less cluttered
-                    color: textColor,
-                },
-            },
-
-            yAxis: {
-                type: "value",
-                axisLabel: {
-                    formatter: "{value} %",
-                    color: textColor,
-                },
-                splitLine: {
-                    lineStyle: {
-                        opacity: gridOpacity, // Dynamic opacity based on theme
+                    formatter: {
+                        year: "{yyyy}",
+                        month: "{MMM}",
+                        day: "{ee} {d}",
+                        hour: "{HH}:{mm}",
+                        minute: "{HH}:{mm}",
+                        second: "{HH}:{mm}:{ss}",
                     },
                 },
             },
-
+            yAxis: {
+                type: "value" as const,
+            },
+            dataset: {
+                dimensions: [
+                    { name: "timestamp", type: "time" },
+                    { name: "value", type: "number" },
+                ],
+                source: timeSeriesData,
+            },
             series: [
                 {
-                    type: "line",
-                    data: points,
-                    // symbol = visual marker
-                    showSymbol: false,
+                    type: "line" as const,
+                    encode: {
+                        x: "timestamp",
+                        y: "value",
+                    },
+                    areaStyle: {
+                        opacity: 0.2,
+                        color: {
+                            type: "linear",
+                            x: 0,
+                            y: 0,
+                            x2: 0,
+                            y2: 1,
+                            colorStops: [
+                                { offset: 0, color: tokens["chart-1"] || tokens["primary"] },
+                                { offset: 1, color: "transparent" },
+                            ],
+                        },
+                    },
                 },
             ],
         };
+    }, [timeSeriesData, tokens, fromMs, toMs]);
 
-        chartInstance.current?.setOption(option);
-    }, [resourceId, data, visibleWindowMs, lineColor, gridOpacity, textColor]);
-
-    useEffect(() => {
-        if (!chartInstance.current) {
-            return;
-        }
-
-        //this will recalc its size
-        const handleResize = () => {
-            chartInstance.current?.resize();
-        };
-
-        const handleWidgetResize = () => {
-            setTimeout(() => {
-                chartInstance.current?.resize();
-            }, 10);
-        };
-
-        globalThis.addEventListener("resize", handleResize);
-        globalThis.addEventListener("widget-resize", handleWidgetResize);
-
-        const forResizing = new ResizeObserver(() => {
-            chartInstance.current?.resize();
-        });
-
-        if (chartRef.current) {
-            forResizing.observe(chartRef.current);
-        }
-
-        return () => {
-            globalThis.removeEventListener("resize", handleResize);
-            globalThis.removeEventListener("widget-resize", handleWidgetResize);
-            forResizing.disconnect();
-        };
-    }, []);
-
-    return (
-        <div className="relative h-full w-full">
-            <div ref={chartRef} className="h-full w-full" />
-        </div>
-    );
+    return <BaseChart option={options} theme={themeName} />;
 }
