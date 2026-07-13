@@ -48,15 +48,18 @@ public class AnalyticsController {
    * Request params
    * - fromDate: ISO-8601 String, fetch metrics from
    * - toDate: ISO-8601 String, fetch metrics to
+   * - interval: aggregation interval (daily, weekly, monthly)
    * Curl example:
    * curl
-   * "localhost:8083/analytics/historical?from=2026-05-01T10:44:33.000Z&to=2026-05-02T10:44:33.106Z"
+   * "localhost:8083/analytics/historical?from=2026-05-01T10:44:33.000Z&to=2026-05-02T10:44:33.106Z&interval=daily"
    */
   public ResponseEntity<List<NormalizedMetrics>> getHistoricalData(
-      @RequestParam("from") String fromDate, @RequestParam("to") String toDate) {
+      @RequestParam("from") String fromDate,
+      @RequestParam("to") String toDate,
+      @RequestParam(name = "interval", defaultValue = "daily") String interval) {
     try {
       List<NormalizedMetrics> normalizedMetrics =
-          normalizedMetricService.fetchHistoricalData(fromDate, toDate);
+          normalizedMetricService.fetchHistoricalData(fromDate, toDate, interval);
 
       if (normalizedMetrics.isEmpty()) {
         Map<String, String> message = new HashMap<>();

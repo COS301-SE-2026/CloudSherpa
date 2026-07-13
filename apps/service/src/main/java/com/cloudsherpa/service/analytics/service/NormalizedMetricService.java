@@ -25,7 +25,7 @@ public class NormalizedMetricService {
     this.resourceRepository = resourceRepository;
   }
 
-  public List<NormalizedMetrics> fetchHistoricalData(String from, String to)
+  public List<NormalizedMetrics> fetchHistoricalData(String from, String to, String interval)
       throws ResponseStatusException {
 
     OffsetDateTime parsedFromDate;
