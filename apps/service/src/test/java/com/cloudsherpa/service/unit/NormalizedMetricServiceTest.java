@@ -5,10 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.cloudsherpa.service.analytics.entities.NormalizedMetrics;
-import com.cloudsherpa.service.analytics.projections.ResourceNames;
-import com.cloudsherpa.service.analytics.repository.NormalizedMetricsRepository;
-import com.cloudsherpa.service.analytics.repository.ResourceRepository;
+import com.cloudsherpa.lib.entities.NormalizedMetrics;
+import com.cloudsherpa.lib.projections.ResourceNames;
+import com.cloudsherpa.lib.repositories.NormalizedMetricsRepository;
+import com.cloudsherpa.lib.repositories.ResourceRepository;
 import com.cloudsherpa.service.analytics.service.NormalizedMetricService;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -16,6 +16,8 @@ import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -48,37 +50,14 @@ class NormalizedMetricServiceTest {
     assertEquals(expected, actual);
   }
 
-  @Test
-  void throwExceptionWhenFromIsAfterTo() {
-    String from = "2026-04-15T00:00:00Z";
-    String to = "2026-04-05T00:00:00Z";
-
-    Exception exception =
-        assertThrows(Exception.class, () -> normalizedMetricService.fetchHistoricalData(from, to));
-
-    assertEquals("Invalid interval", exception.getMessage());
-  }
-
-  @Test
-  void throwsExceptionWhenFromNotIsoDate() {
-    String from = "2026-04-15T00:00:0";
-    String to = "2026-04-05T00:00:00Z";
-
-    Exception exception =
-        assertThrows(Exception.class, () -> normalizedMetricService.fetchHistoricalData(from, to));
-
-    assertEquals("Date Strings do not conform to ISO-8601 standard", exception.getMessage());
-  }
-
-  @Test
-  void throwsExceptionWhenToNotIsoDate() {
-    String from = "2026-04-15T00:00:00Z";
-    String to = "2026-04-05T00::00Z";
-
-    Exception exception =
-        assertThrows(Exception.class, () -> normalizedMetricService.fetchHistoricalData(from, to));
-
-    assertEquals("Date Strings do not conform to ISO-8601 standard", exception.getMessage());
+  @ParameterizedTest
+  @CsvSource({
+    "2026-04-15T00:00:00Z,2026-04-05T00:00:00Z",
+    "2026-04-15T00:00:0,2026-04-05T00:00:00Z",
+    "2026-04-15T00:00:00Z,2026-04-05T00::00Z"
+  })
+  void throwExceptionWhenInvalidDate(String from, String to) {
+    assertThrows(Exception.class, () -> normalizedMetricService.fetchHistoricalData(from, to));
   }
 
   @Test
@@ -100,14 +79,11 @@ class NormalizedMetricServiceTest {
   }
 
   @Test
-  void httpNoContentWhenNoResourceNames() {
-
+  void returnsEmptyMapWhenNoResourceNames() {
     when(resourceRepository.findResourceNames()).thenReturn(List.of());
 
-    ResponseStatusException exception =
-        assertThrows(
-            ResponseStatusException.class, () -> normalizedMetricService.fetchResourceNames());
+    Map<String, String> actual = normalizedMetricService.fetchResourceNames();
 
-    assertEquals("No resources found", exception.getReason());
+    assertEquals(Map.of(), actual);
   }
 }

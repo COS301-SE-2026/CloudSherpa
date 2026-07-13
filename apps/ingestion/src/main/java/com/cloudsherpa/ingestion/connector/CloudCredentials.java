@@ -5,7 +5,7 @@ public class CloudCredentials {
   // AWS
   private String accessKey;
   private String secretKey;
-  private String region;
+  private String awsRegion;
 
   // Azure
   private String tenantId;
@@ -14,6 +14,7 @@ public class CloudCredentials {
 
   // GCP
   private String projectId;
+  private String serviceAccountJson;
 
   public String getAccessKey() {
     return accessKey;
@@ -31,12 +32,12 @@ public class CloudCredentials {
     this.secretKey = secretKey;
   }
 
-  public String getRegion() {
-    return region;
+  public String getAwsRegion() {
+    return awsRegion;
   }
 
-  public void setRegion(String region) {
-    this.region = region;
+  public void setAwsRegion(String region) {
+    this.awsRegion = region;
   }
 
   public String getTenantId() {
@@ -69,5 +70,13 @@ public class CloudCredentials {
 
   public void setProjectId(String projectId) {
     this.projectId = projectId;
+  }
+
+  public String getServiceAccountJson() {
+    return serviceAccountJson;
+  }
+
+  public void setServiceAccountJson(String serviceAccountJson) {
+    this.serviceAccountJson = serviceAccountJson;
   }
 }

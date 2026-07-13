@@ -1,0 +1,42 @@
+/**
+ * Do not edit directly, this file was auto-generated.
+ */
+
+.dark {
+  --background: var(--color-neutral-950);
+  --foreground: var(--color-neutral-50);
+  --card: var(--color-neutral-900);
+  --card-foreground: var(--color-neutral-50);
+  --popover: var(--color-neutral-900);
+  --popover-foreground: var(--color-neutral-50);
+  --primary: var(--color-brand-500);
+  --primary-foreground: var(--color-brand-50);
+  --secondary: var(--color-neutral-800);
+  --secondary-foreground: var(--color-neutral-50);
+  --muted: var(--color-neutral-800);
+  --muted-foreground: var(--color-neutral-400);
+  --accent: var(--color-neutral-800);
+  --accent-foreground: var(--color-neutral-50);
+  --destructive: var(--color-error-500);
+  --destructive-foreground: var(--color-error-50);
+  --success: var(--color-success-500);
+  --success-foreground: var(--color-success-50);
+  --warning: var(--color-warning-500);
+  --warning-foreground: var(--color-warning-50);
+  --border: var(--color-neutral-800);
+  --input: var(--color-neutral-800);
+  --ring: var(--color-brand-300);
+  --sidebar: var(--color-neutral-900);
+  --sidebar-foreground: var(--color-neutral-50);
+  --sidebar-primary: var(--color-brand-500);
+  --sidebar-primary-foreground: var(--color-brand-50);
+  --sidebar-accent: var(--color-neutral-800);
+  --sidebar-accent-foreground: var(--color-neutral-50);
+  --sidebar-border: var(--color-neutral-800);
+  --sidebar-ring: var(--color-brand-300);
+  --chart-1: var(--color-chart-teal-dark);
+  --chart-2: var(--color-chart-amber-dark);
+  --chart-3: var(--color-chart-violet-dark);
+  --chart-4: var(--color-chart-rose-dark);
+  --chart-5: var(--color-chart-sky-dark);
+}

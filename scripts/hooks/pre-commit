@@ -16,26 +16,26 @@ echo -e "${INFO}Running CloudSherpa Dashboard Lint...${RESET}"
 echo -e "${SUCCESS}Dashboard lint succeeded${RESET}"
 
 echo -e "${INFO}Running CloudSherpa Ingestion Lint...${RESET}"
-(cd apps/ingestion && ./mvnw -q -ntp checkstyle:check 2>&1 || {
+(./mvnw -q -ntp checkstyle:check -pl apps/ingestion 2>&1 || {
 	echo -e "${ERROR}Ingestion lint failed. Run \"./mvnw checkstyle:check\" in apps/ingestion for more verbose error messages. Commit not made.${RESET}"
 	exit 1
 })
-(cd apps/ingestion && ./mvnw -q -ntp spotless:apply 2>&1 || {
+(./mvnw -q -ntp spotless:apply -pl apps/ingestion 2>&1 || {
 	echo -e "${ERROR}Spotless apply formatting failed. Run \"./mvnw spotless:apply\" in apps/ingestion for more verbose error messages. Commit not made.${RESET}"
 	exit 1
 })
 echo -e "${SUCCESS}Ingestion lint succeeded${RESET}"
 
 echo -e "${INFO}Running CloudSherpa Service Lint...${RESET}"
-(cd apps/service && ./mvnw -q -ntp checkstyle:check 2>&1 || {
+(./mvnw -q -ntp checkstyle:check -pl apps/service 2>&1 || {
 	echo -e "${ERROR}Service lint failed. Run \"./mvnw checkstyle:check\" in apps/service for more verbose error messages. Commit not made.${RESET}"
 	exit 1
 })
-(cd apps/service && ./mvnw -q -ntp spotless:apply 2>&1 || {
+(./mvnw -q -ntp spotless:apply -pl apps/service 2>&1 || {
 	echo -e "${ERROR}Spotless apply formatting failed. Run \"./mvnw spotless:apply\" in apps/service for more verbose error messages. Commit not made.${RESET}"
 	exit 1
 })
-echo -e "${SUCCESS}Ingestion lint succeeded${RESET}"
+echo -e "${SUCCESS}Service lint succeeded${RESET}"
 
 git add .
 

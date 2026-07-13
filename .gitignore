@@ -1,4 +1,5 @@
 .env
+.env.docker
 
 HELP.md
 target/
@@ -29,11 +30,11 @@ node_modules
 coverage
 
 # Playwright
-test-results/
-playwright-report/
-blob-report/
-playwright/.cache/
-playwright/.auth/
+test-results
+playwright-report
+blob-report
+playwright/.cache
+playwright/.auth
 
 
 # next.js

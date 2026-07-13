@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.logging.Logger;
 import org.postgresql.PGConnection;
 import org.postgresql.PGNotification;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,6 +41,8 @@ public class PostgresNotificationListener implements SmartLifecycle {
   private final SseService sseService;
 
   private volatile boolean running;
+
+  Logger logger = Logger.getLogger(getClass().getName());
 
   PostgresNotificationListener(SseService sseService) {
     this.sseService = sseService;
@@ -76,7 +79,7 @@ public class PostgresNotificationListener implements SmartLifecycle {
         stmt.execute("LISTEN metric_events");
       }
     } catch (SQLException e) {
-      System.err.println(e.getMessage());
+      logger.info(e.getMessage());
     }
   }
 
@@ -115,38 +118,28 @@ public class PostgresNotificationListener implements SmartLifecycle {
           // This retrieves the actual text payload we sent from the database trigger
           // Thanks to row_to_json(NEW), it should be a JSON string representing a database row.
           String payload = notification.getParameter();
-          System.out.println("NOTIFIED metric_events: " + payload);
+          logger.info("NOTIFIED metric_events");
 
-          try {
-            // Parse the raw string back into a JSON object
-            JsonNode event = objectMapper.readTree(payload);
-
-            // Pass the parsed JSON to the business logic
-            processMetricForAnalytics(event);
-          } catch (Exception e) {
-            System.err.println(e.getMessage());
-          }
+          processMetricForAnalytics(payload);
         }
       }
     } catch (SQLException e) {
-      System.err.println(e.getMessage());
+      logger.info(e.getMessage());
     }
   }
 
   // Parse and forward the metric to any connected SSE clients.
-  private void processMetricForAnalytics(JsonNode metric) {
-    // Now that the data is a JSON object, extract values defensively.
-    String metricId = metric.path("metric_id").asText("unknown");
-    String accountId = metric.path("account_id").asText("unknown");
-    String resourceId = metric.path("resource_id").asText("unknown");
-    String metricType = metric.path("metric_type").asText("unknown");
-    String metricName = metric.path("metric_name").asText("unknown");
-    double metricValue = metric.path("metric_value").asDouble(0.0);
-    String unit = metric.path("unit").asText("unknown");
+  private void processMetricForAnalytics(String payload) {
+    try {
+      // Parse the raw string back into a JSON object
+      JsonNode event = objectMapper.readTree(payload);
 
-    // This is where we would call intelligence engine to do its thing
+      // This is where we would call intelligence engine to do its thing
 
-    sseService.broadcast("metric", metric);
+      sseService.broadcast("metric", event);
+    } catch (Exception e) {
+      logger.info("Failed to parse metric payload: " + e.getMessage());
+    }
   }
 
   // SmartLifecycle: called by Spring when the context starts.
@@ -184,7 +177,7 @@ public class PostgresNotificationListener implements SmartLifecycle {
       connection = null;
       pgConnection = null;
     } catch (SQLException e) {
-      System.err.println(e.getMessage());
+      logger.info(e.getMessage());
     }
   }
 }

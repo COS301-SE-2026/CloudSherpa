@@ -6,9 +6,8 @@ import static org.mockito.Mockito.*;
 
 import com.cloudsherpa.ingestion.connector.*;
 import com.cloudsherpa.ingestion.models.*;
-import com.cloudsherpa.ingestion.normalization.persistence.service.SherpaDbPersistenceService;
 import com.cloudsherpa.ingestion.service.CloudUsageService;
-import java.lang.reflect.Field;
+import com.cloudsherpa.ingestion.service.SherpaDbPersistenceService;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,17 +22,12 @@ class CloudUsageServiceTest {
   private CloudUsageService service;
 
   @BeforeEach
-  void setUp() throws Exception {
+  void setUp() {
 
     factory = mock(CloudConnectorFactory.class);
     persistenceService = mock(SherpaDbPersistenceService.class);
 
-    service = new CloudUsageService(factory);
-
-    Field field = CloudUsageService.class.getDeclaredField("sherpaDbPersistenceService");
-
-    field.setAccessible(true);
-    field.set(service, persistenceService);
+    service = new CloudUsageService(factory, persistenceService);
   }
 
   @Test
@@ -43,9 +37,14 @@ class CloudUsageServiceTest {
 
     when(factory.getConnector("AWS")).thenReturn(connector);
 
-    UsageRecordModel record = buildUsageRecord();
+    UsageRecordModel usageRecord = buildUsageRecord();
+    String resource = "resource1";
+    ResourceDetail resourceDetail =
+        new ResourceDetail("resourceId", "name", "type", "category", null);
 
-    doReturn(List.of(record)).when(connector).fetchUsage(any(), any());
+    doReturn(List.of(usageRecord)).when(connector).fetchUsage(any(), any());
+    doReturn(List.of(resource)).when(connector).getAllOfferedServices();
+    doReturn(List.of(resourceDetail)).when(connector).getAllResources(any());
 
     IngestionRequestEvent request = buildRequest(true, false);
 
@@ -199,16 +198,16 @@ class CloudUsageServiceTest {
 
   private UsageRecordModel buildUsageRecord() {
 
-    UsageRecordModel record = new UsageRecordModel();
+    UsageRecordModel usageRecord = new UsageRecordModel();
 
-    record.setProvider("AWS");
-    record.setMetricName("CPUUtilization");
-    record.setServiceName("EC2");
-    record.setAccountId("123");
-    record.setTimestamp(Instant.now());
-    record.setValue(50.0);
+    usageRecord.setProvider("AWS");
+    usageRecord.setMetricName("CPUUtilization");
+    usageRecord.setServiceName("EC2");
+    usageRecord.setAccountId("123");
+    usageRecord.setTimestamp(Instant.now());
+    usageRecord.setValue(50.0);
 
-    return record;
+    return usageRecord;
   }
 
   private IngestionRequestEvent buildRequest(boolean usage, boolean billing) {
@@ -241,6 +240,16 @@ class CloudUsageServiceTest {
     }
 
     @Override
+    public List<String> getAllOfferedServices() {
+      return List.of();
+    }
+
+    @Override
+    public List<ResourceDetail> getAllResources(CloudCredentials credentials) {
+      return List.of();
+    }
+
+    @Override
     public List<UsageRecordModel> fetchUsage(
         AccountScope accountScope, IngestionRequestEvent request) {
       return List.of();
@@ -266,16 +275,16 @@ class CloudUsageServiceTest {
 
     private static UsageRecordModel buildMockRecord() {
 
-      UsageRecordModel record = new UsageRecordModel();
+      UsageRecordModel usageRecord = new UsageRecordModel();
 
-      record.setProvider("AWS");
-      record.setMetricName("CPUUtilization");
-      record.setServiceName("EC2");
-      record.setAccountId("123");
-      record.setTimestamp(Instant.now());
-      record.setValue(42.0);
+      usageRecord.setProvider("AWS");
+      usageRecord.setMetricName("CPUUtilization");
+      usageRecord.setServiceName("EC2");
+      usageRecord.setAccountId("123");
+      usageRecord.setTimestamp(Instant.now());
+      usageRecord.setValue(42.0);
 
-      return record;
+      return usageRecord;
     }
   }
 }

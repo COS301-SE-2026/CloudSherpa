@@ -41,8 +41,7 @@ public class SseService implements SmartLifecycle {
         if (Objects.nonNull(data) && Objects.nonNull(eventName)) {
           emitter.send(SseEmitter.event().name(eventName).data(data));
         } else {
-          logger.warn(
-              String.format("Invalid SSE event:%nEvent Name: %s%nData:%s", eventName, data));
+          logger.warn("Invalid SSE event:\nEvent Name: {}\nData: {}", eventName, data);
         }
       } catch (IOException e) {
         logger.error(

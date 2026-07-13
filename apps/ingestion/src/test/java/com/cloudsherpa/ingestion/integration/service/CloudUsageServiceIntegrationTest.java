@@ -10,6 +10,7 @@ import com.cloudsherpa.ingestion.models.IngestionResult;
 import com.cloudsherpa.ingestion.models.UsageRecordModel;
 import com.cloudsherpa.ingestion.provider.aws.AwsCloudConnector;
 import com.cloudsherpa.ingestion.service.CloudUsageService;
+import com.cloudsherpa.ingestion.service.SherpaDbPersistenceService;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.Test;
 class CloudUsageServiceIntegrationTest {
 
   private CloudConnectorFactory factory;
+  private SherpaDbPersistenceService persistenceService;
   private AwsCloudConnector connector;
   private CloudUsageService service;
 
@@ -24,12 +26,13 @@ class CloudUsageServiceIntegrationTest {
   void setUp() {
 
     factory = mock(CloudConnectorFactory.class);
+    persistenceService = mock(SherpaDbPersistenceService.class);
 
     connector = spy(new AwsCloudConnector());
 
     when(factory.getConnector("AWS")).thenReturn(connector);
 
-    service = new CloudUsageService(factory);
+    service = new CloudUsageService(factory, persistenceService);
   }
 
   @Test

@@ -5,7 +5,7 @@ import java.util.List;
 public class ServiceScope {
   private String name;
   private List<InstanceScope> instances;
-  private List<String> metrics;
+  private List<Metric> metrics;
 
   public String getName() {
     return name;
@@ -23,11 +23,11 @@ public class ServiceScope {
     this.instances = instances;
   }
 
-  public List<String> getMetrics() {
+  public List<Metric> getMetrics() {
     return metrics;
   }
 
-  public void setMetrics(List<String> metrics) {
+  public void setMetrics(List<Metric> metrics) {
     this.metrics = metrics;
   }
 }

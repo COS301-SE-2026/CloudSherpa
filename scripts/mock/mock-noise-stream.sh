@@ -2,7 +2,7 @@
 set -euo pipefail
 
 INGEST_URL="${INGEST_URL:-http://localhost:8081/api/events/ingest/mockNoise}"
-USER_ID="${USER_ID:-11111111-2222-3333-4444-555555555555}"
+USER_ID="${USER_ID:-5ebe4340-c5ec-4833-ad93-06abf4609f03}"
 ACCOUNT_ID="${ACCOUNT_ID:-test-account}"
 INTERVAL_SECONDS="${INTERVAL_SECONDS:-5}"
 PERIOD_SECONDS="${PERIOD_SECONDS:-5}"
@@ -74,11 +74,11 @@ for ((batch = 1; batch <= BATCH_COUNT; batch++)); do
                 }
               ],
               \"metrics\": [
-                \"CPUUtilization\",
-                \"NetworkIn\",
-                \"NetworkOut\",
-                \"DiskReadBytes\",
-                \"DiskWriteBytes\"
+                {\"name\": \"CPUUtilization\"},
+                {\"name\": \"NetworkIn\"},
+                {\"name\": \"NetworkOut\"},
+                {\"name\": \"DiskReadBytes\"},
+                {\"name\": \"DiskWriteBytes\"}
               ]
             },
             {
@@ -93,11 +93,11 @@ for ((batch = 1; batch <= BATCH_COUNT; batch++)); do
                 }
               ],
               \"metrics\": [
-                \"CPUUtilization\",
-                \"DatabaseConnections\",
-                \"ReadLatency\",
-                \"WriteLatency\",
-                \"FreeStorageSpace\"
+                {\"name\": \"CPUUtilization\"},
+                {\"name\": \"DatabaseConnections\"},
+                {\"name\": \"ReadLatency\"},
+                {\"name\": \"WriteLatency\"},
+                {\"name\": \"FreeStorageSpace\"}
               ]
             },
             {
@@ -112,10 +112,10 @@ for ((batch = 1; batch <= BATCH_COUNT; batch++)); do
                 }
               ],
               \"metrics\": [
-                \"Invocations\",
-                \"Errors\",
-                \"Duration\",
-                \"Throttles\"
+                {\"name\": \"Invocations\"},
+                {\"name\": \"Errors\"},
+                {\"name\": \"Duration\"},
+                {\"name\": \"Throttles\"}
               ]
             },
             {
@@ -130,10 +130,10 @@ for ((batch = 1; batch <= BATCH_COUNT; batch++)); do
                 }
               ],
               \"metrics\": [
-                \"ConsumedReadCapacityUnits\",
-                \"ConsumedWriteCapacityUnits\",
-                \"ReadThrottleEvents\",
-                \"WriteThrottleEvents\"
+                {\"name\": \"ConsumedReadCapacityUnits\"},
+                {\"name\": \"ConsumedWriteCapacityUnits\"},
+                {\"name\": \"ReadThrottleEvents\"},
+                {\"name\": \"WriteThrottleEvents\"}
               ]
             },
             {
@@ -148,10 +148,10 @@ for ((batch = 1; batch <= BATCH_COUNT; batch++)); do
                 }
               ],
               \"metrics\": [
-                \"BucketSizeBytes\",
-                \"NumberOfObjects\",
-                \"AllRequests\",
-                \"FirstByteLatency\"
+                {\"name\": \"BucketSizeBytes\"},
+                {\"name\": \"NumberOfObjects\"},
+                {\"name\": \"AllRequests\"},
+                {\"name\": \"FirstByteLatency\"}
               ]
             }
           ]

@@ -1,14 +1,15 @@
 package com.cloudsherpa.service.auth.service;
 
+import com.cloudsherpa.lib.entities.User;
+import com.cloudsherpa.lib.repositories.UserRepository;
 import com.cloudsherpa.service.auth.dto.AuthUserResponse;
 import com.cloudsherpa.service.auth.dto.LoginRequest;
 import com.cloudsherpa.service.auth.dto.RegisterRequest;
-import com.cloudsherpa.service.auth.model.User;
-import com.cloudsherpa.service.auth.repository.UserRepository;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
@@ -26,7 +27,8 @@ public class AuthService {
   }
 
   // REGISTER
-  public AuthUserResponse register(RegisterRequest request) {
+  @Transactional
+  public void register(RegisterRequest request) {
     String email = normalizeEmail(request.getEmail());
     String username = normalizeUsername(request.getUsername());
     String password = request.getPassword();
@@ -53,14 +55,15 @@ public class AuthService {
     }
 
     String passwordHash = passwordEncoder.encode(password);
-    User user = new User(UUID.randomUUID(), email, username, passwordHash);
+
+    UUID userId = UUID.randomUUID();
+    User user = new User(userId, email, username, passwordHash);
 
     // write the newly created user to SherpaDB in the users table
-    User savedUser = userRepository.save(user);
+    userRepository.save(user);
 
-    String token = jwtService.generateToken(savedUser);
-    return new AuthUserResponse(
-        savedUser.getId(), savedUser.getEmail(), savedUser.getUsername(), token);
+    // trigger the creation of the new user's personal schema
+    userRepository.createTenantSchema(userId);
   }
 
   // LOGIN
@@ -84,8 +87,6 @@ public class AuthService {
     return new AuthUserResponse(user.getId(), user.getEmail(), user.getUsername(), token);
   }
 
-  // ---------------------------------------------- HELPERS
-  // ----------------------------------------------
   private String normalizeEmail(String email) {
     if (email == null) {
       return null;
@@ -109,40 +110,13 @@ public class AuthService {
   }
 
   private boolean isEmailValid(String email) {
-    // email regex
-    // [^@\s] = match any character that is not an @ or a space
-    //
     return email.matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$");
   }
 
   private boolean isPasswordStrong(String password) {
-    if (password.length() < 8) {
+    if (password == null) {
       return false;
     }
-
-    boolean hasUpper = false;
-    boolean hasLower = false;
-    boolean hasDigit = false;
-    boolean hasSymbol = false;
-
-    for (char c : password.toCharArray()) {
-      // no whitespace allowed
-      if (Character.isWhitespace(c)) {
-        return false;
-      }
-      if (Character.isUpperCase(c)) {
-        hasUpper = true;
-      } else if (Character.isLowerCase(c)) {
-        hasLower = true;
-      } else if (Character.isDigit(c)) {
-        hasDigit = true;
-      } else {
-        hasSymbol = true;
-      }
-    }
-
-    return hasUpper && hasLower && hasDigit && hasSymbol;
+    return password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^a-zA-Z0-9\\s])(?!.*\\s).{8,}$");
   }
-  // ---------------------------------------------- HELPERS
-  // ----------------------------------------------
 }

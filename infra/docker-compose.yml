@@ -1,9 +1,8 @@
 services:
-  # TODO: add explicit container names 
   ingestion:
     build:
-      context: ../apps/ingestion
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: apps/ingestion/Dockerfile
       target: prod
     image: grard835/cloudsherpa-ingestion:prod
     container_name: ingestion
@@ -17,8 +16,8 @@ services:
     
   service:
     build:
-      context: ../apps/service
-      dockerfile: Dockerfile
+      context: ../
+      dockerfile: apps/service/Dockerfile
       target: prod
     image: grard835/cloudsherpa-service:prod
     container_name: service

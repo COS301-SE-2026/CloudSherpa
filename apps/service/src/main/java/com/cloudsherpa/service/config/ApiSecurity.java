@@ -8,6 +8,7 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
@@ -15,9 +16,11 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class ApiSecurity {
 
   private final String mode;
+  private final TenantInitializer tenantInitializer;
 
-  ApiSecurity(@Value("${mode:prod}") String mode) {
+  ApiSecurity(@Value("${mode:prod}") String mode, TenantInitializer tenantInitializer) {
     this.mode = mode;
+    this.tenantInitializer = tenantInitializer;
   }
 
   @Bean
@@ -33,7 +36,11 @@ public class ApiSecurity {
           .csrf(csrf -> csrf.disable())
           .sessionManagement(
               session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-          .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+          .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
+          .oauth2ResourceServer(
+              oauth2 ->
+                  oauth2.bearerTokenResolver(bearerTokenResolver).jwt(Customizer.withDefaults()))
+          .addFilterAfter(tenantInitializer, BearerTokenAuthenticationFilter.class)
           .build();
     } else {
       return http.cors(cors -> cors.configurationSource(corsConfigurationSource))
@@ -45,6 +52,7 @@ public class ApiSecurity {
           .oauth2ResourceServer(
               oauth2 ->
                   oauth2.bearerTokenResolver(bearerTokenResolver).jwt(Customizer.withDefaults()))
+          .addFilterAfter(tenantInitializer, BearerTokenAuthenticationFilter.class)
           .build();
     }
   }

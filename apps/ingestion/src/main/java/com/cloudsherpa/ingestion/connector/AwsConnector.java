@@ -1,6 +1,6 @@
 package com.cloudsherpa.ingestion.connector;
 
-import com.cloudsherpa.ingestion.models.IngestionRequestEvent;
+import com.cloudsherpa.ingestion.models.ResourceDetail;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -17,11 +17,29 @@ public class AwsConnector implements CloudConnector {
     return "AWS";
   }
 
-  public void ingest(IngestionRequestEvent request) {} // Mock implementation
-
   @Override
   public boolean testConnection(CloudCredentials credentials) {
     return true;
+  }
+
+  @Override
+  public List<String> getAllOfferedServices() {
+    List<String> services = new ArrayList<>();
+    services.add("AWS/EC2");
+    services.add("AWS/ECS");
+    services.add("AWS/EKS");
+    services.add("AWS/Lambda");
+    services.add("AWS/RDS");
+    services.add("AWS/ElastiCache");
+    services.add("AWS/OpenSearch");
+    services.add("AWS/RedShift");
+
+    return services;
+  }
+
+  @Override
+  public List<ResourceDetail> getAllResources(CloudCredentials credentials) {
+    return new ArrayList<>();
   }
 
   public List<Map<String, String>> fetchRawData() {

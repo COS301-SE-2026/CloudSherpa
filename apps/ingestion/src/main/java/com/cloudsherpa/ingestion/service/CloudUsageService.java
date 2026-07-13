@@ -11,21 +11,27 @@ import com.cloudsherpa.ingestion.models.IngestionResult;
 import com.cloudsherpa.ingestion.models.UsageRecordModel;
 import com.cloudsherpa.ingestion.normalization.model.NormalizedMetric;
 import com.cloudsherpa.ingestion.normalization.normalizers.AwsNormalizer;
-import com.cloudsherpa.ingestion.normalization.persistence.service.SherpaDbPersistenceService;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.logging.Logger;
 import org.springframework.stereotype.Service;
 
 /** Intermediary between the CloudUsageController and the ingestion pipeline. */
 @Service
 public class CloudUsageService {
   private final CloudConnectorFactory factory;
+  private final SherpaDbPersistenceService sherpaDbPersistenceService;
+  private final AwsNormalizer normalizer = new AwsNormalizer();
 
-  public CloudUsageService(CloudConnectorFactory factory) {
+  Logger logger = Logger.getLogger(getClass().getName());
+
+  public CloudUsageService(
+      CloudConnectorFactory factory, SherpaDbPersistenceService sherpaDbPersistenceService) {
     this.factory = factory;
+    this.sherpaDbPersistenceService = sherpaDbPersistenceService;
   }
 
   public IngestionResult ingest(IngestionRequestEvent request) {
@@ -83,7 +89,7 @@ public class CloudUsageService {
 
     for (AccountScope scope : request.getScopes()) {
       if (request.isIncludeUsage()) {
-        List<UsageRecordModel> usageRecords = buildMockUsage(scope);
+        List<UsageRecordModel> usageRecords = buildMockUsage(scope, request);
         usageResults.addAll(usageRecords);
         normalizeAndPersistUsage(usageRecords, userId);
       }
@@ -91,10 +97,6 @@ public class CloudUsageService {
 
     return new IngestionResult(usageResults, billingResults);
   }
-
-  @Autowired private SherpaDbPersistenceService sherpaDbPersistenceService;
-
-  private final AwsNormalizer normalizer = new AwsNormalizer();
 
   private void normalizeAndPersistUsage(List<UsageRecordModel> usageRecords, UUID userId) {
     if (usageRecords == null || usageRecords.isEmpty()) {
@@ -105,12 +107,16 @@ public class CloudUsageService {
       NormalizedMetric normalized = normalizer.normalize(r);
 
       if (normalized != null) {
-        writeToSherpaDb(normalized, r, userId);
+        try {
+          writeToSherpaDb(normalized, r, userId);
+        } catch (RuntimeException ex) {
+          logger.warning("Failed to persist normalized metric: " + ex.getMessage());
+        }
       }
     }
   }
 
-  private List<UsageRecordModel> buildMockUsage(AccountScope scope) {
+  private List<UsageRecordModel> buildMockUsage(AccountScope scope, IngestionRequestEvent request) {
     List<UsageRecordModel> results = new ArrayList<>();
 
     String provider = "AWS";
@@ -119,15 +125,31 @@ public class CloudUsageService {
     }
     String accountId = scope.getAccountId();
 
-    String[] timestamps = {
-      "2026-05-02T18:17:00+02:00",
-      "2026-05-02T18:12:00+02:00",
-      "2026-05-02T18:07:00+02:00",
-      "2026-05-02T18:02:00+02:00",
-      "2026-05-02T17:57:00+02:00",
-      "2026-05-02T17:52:00+02:00",
-      "2026-05-02T17:47:00+02:00"
-    };
+    OffsetDateTime to;
+    if (request.getTo() != null) {
+      to = request.getTo().atOffset(ZoneOffset.UTC);
+    } else {
+      to = OffsetDateTime.now(ZoneOffset.UTC);
+    }
+
+    OffsetDateTime from;
+    if (request.getFrom() != null) {
+      from = request.getFrom().atOffset(ZoneOffset.UTC);
+    } else {
+      from = to.minusMinutes(30);
+    }
+
+    if (from.isAfter(to)) {
+      from = to.minusMinutes(30);
+    }
+
+    String[] timestamps = new String[7];
+    long totalSeconds = Math.max(1, to.toEpochSecond() - from.toEpochSecond());
+    long stepSeconds = Math.max(1, totalSeconds / (timestamps.length - 1));
+
+    for (int i = 0; i < timestamps.length; i++) {
+      timestamps[i] = from.plusSeconds(stepSeconds * i).toString();
+    }
 
     double[] averages = {
       1.9488974910916348,
@@ -140,26 +162,23 @@ public class CloudUsageService {
     };
 
     for (int i = 0; i < timestamps.length; i++) {
-      UsageRecordModel record = new UsageRecordModel();
-      record.setProvider(provider);
-      record.setAccountId(accountId);
-      record.setServiceName("EC2");
-      record.setMetricName("CPUUtilization");
-      record.setResourceId("mock-ec2-" + (i + 1));
-      record.setValue(averages[i]);
-      record.setUnit("Percent");
-      record.setTimestamp(OffsetDateTime.parse(timestamps[i]).toInstant());
-      results.add(record);
+      UsageRecordModel usageRecord = new UsageRecordModel();
+      usageRecord.setProvider(provider);
+      usageRecord.setAccountId(accountId);
+      usageRecord.setServiceName("EC2");
+      usageRecord.setResourceType("ec2_instance");
+      usageRecord.setMetricName("CPUUtilization");
+      usageRecord.setResourceId("mock-ec2-" + (i + 1));
+      usageRecord.setValue(averages[i]);
+      usageRecord.setUnit("Percent");
+      usageRecord.setTimestamp(OffsetDateTime.parse(timestamps[i]).toInstant());
+      results.add(usageRecord);
     }
 
     return results;
   }
 
   private void writeToSherpaDb(NormalizedMetric metric, UsageRecordModel r, UUID userId) {
-    try {
-      sherpaDbPersistenceService.recordMetric(metric, r, userId);
-    } catch (Exception e) {
-      System.err.println(e.getMessage());
-    }
+    sherpaDbPersistenceService.recordMetric(metric, r, userId);
   }
 }

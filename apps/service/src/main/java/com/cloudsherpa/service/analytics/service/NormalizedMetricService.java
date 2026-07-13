@@ -1,9 +1,9 @@
 package com.cloudsherpa.service.analytics.service;
 
-import com.cloudsherpa.service.analytics.entities.NormalizedMetrics;
-import com.cloudsherpa.service.analytics.projections.ResourceNames;
-import com.cloudsherpa.service.analytics.repository.NormalizedMetricsRepository;
-import com.cloudsherpa.service.analytics.repository.ResourceRepository;
+import com.cloudsherpa.lib.entities.NormalizedMetrics;
+import com.cloudsherpa.lib.projections.ResourceNames;
+import com.cloudsherpa.lib.repositories.NormalizedMetricsRepository;
+import com.cloudsherpa.lib.repositories.ResourceRepository;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.HashMap;
@@ -25,7 +25,8 @@ public class NormalizedMetricService {
     this.resourceRepository = resourceRepository;
   }
 
-  public List<NormalizedMetrics> fetchHistoricalData(String from, String to) throws Exception {
+  public List<NormalizedMetrics> fetchHistoricalData(String from, String to)
+      throws ResponseStatusException {
 
     OffsetDateTime parsedFromDate;
     OffsetDateTime parsedToDate;
@@ -35,23 +36,20 @@ public class NormalizedMetricService {
       parsedToDate = OffsetDateTime.parse(to);
     } catch (DateTimeParseException e) {
       // Still need to log for server-side visibility
-      throw new Exception("Date Strings do not conform to ISO-8601 standard");
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST, "Date Strings do not conform to ISO-8601 standard");
     }
 
     if (parsedFromDate.isAfter(parsedToDate)) {
       // from after to
-      throw new Exception("Invalid interval");
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid interval");
     }
 
     return normalizedMetricsRepository.findByPeriodStartBetween(parsedFromDate, parsedToDate);
   }
 
-  public Map<String, String> fetchResourceNames() throws ResponseStatusException {
+  public Map<String, String> fetchResourceNames() {
     List<ResourceNames> resourceNames = resourceRepository.findResourceNames();
-
-    if (resourceNames.isEmpty()) {
-      throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No resources found");
-    }
 
     Map<String, String> resourceIdNameMap = new HashMap<>();
 

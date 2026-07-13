@@ -4,14 +4,17 @@ WORKDIR /app
 
 COPY mvnw .
 COPY .mvn .mvn
-COPY pom.xml .
+COPY apps/service/pom.xml apps/service/pom.xml
+COPY apps/lib/pom.xml apps/lib/pom.xml
 RUN chmod +x mvnw
-RUN ./mvnw dependency:go-offline
+COPY apps/lib apps/lib
+RUN ./mvnw -f apps/lib/pom.xml install -DskipTests
+RUN ./mvnw -f apps/service/pom.xml dependency:go-offline
 
 # ==== Dev ====
 FROM base AS dev
 
-COPY . .
+COPY apps/service apps/service
 
 EXPOSE 8080
 ENTRYPOINT ["./mvnw", "spring-boot:run"]
@@ -20,17 +23,19 @@ ENTRYPOINT ["./mvnw", "spring-boot:run"]
 # ==== Build ====
 FROM base AS build
 
-COPY src src
-COPY config/checkstyle/checkstyle.xml config/checkstyle/checkstyle.xml
-
-RUN ./mvnw clean package -DskipTests
+COPY apps/service/src apps/service/src
+COPY apps/service/config/checkstyle/checkstyle.xml apps/service/config/checkstyle/checkstyle.xml
+RUN ./mvnw -f apps/service/pom.xml clean package -DskipTests
 
 
 # ==== Prod ====
 FROM eclipse-temurin:21-jre AS prod
 
 WORKDIR /app
-COPY --from=build /app/target/*.jar app.jar
+COPY --from=build /app/apps/service/target/*.jar app.jar
+
+RUN useradd serviceuser
+USER serviceuser 
 
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]

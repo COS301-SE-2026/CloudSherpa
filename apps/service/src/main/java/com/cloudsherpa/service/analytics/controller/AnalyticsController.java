@@ -1,6 +1,6 @@
 package com.cloudsherpa.service.analytics.controller;
 
-import com.cloudsherpa.service.analytics.entities.NormalizedMetrics;
+import com.cloudsherpa.lib.entities.NormalizedMetrics;
 import com.cloudsherpa.service.analytics.service.NormalizedMetricService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -52,7 +52,7 @@ public class AnalyticsController {
    * curl
    * "localhost:8083/analytics/historical?from=2026-05-01T10:44:33.000Z&to=2026-05-02T10:44:33.106Z"
    */
-  public ResponseEntity<?> getHistoricalData(
+  public ResponseEntity<List<NormalizedMetrics>> getHistoricalData(
       @RequestParam("from") String fromDate, @RequestParam("to") String toDate) {
     try {
       List<NormalizedMetrics> normalizedMetrics =

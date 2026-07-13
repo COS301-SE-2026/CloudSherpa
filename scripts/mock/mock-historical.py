@@ -57,9 +57,9 @@ for i in range(1, batches + 1):
                             }
                         ],
                         "metrics": [
-                            "CPUUtilization",
-                            "NetworkIn",
-                            "DiskReadBytes",
+                            {"name": "CPUUtilization"},
+                            {"name": "NetworkIn"},
+                            {"name": "DiskReadBytes"},
                         ],
                     },
                     {
@@ -73,10 +73,10 @@ for i in range(1, batches + 1):
                             }
                         ],
                         "metrics": [
-                            "CPUUtilization",
-                            "DatabaseConnections",
-                            "ReadLatency",
-                            "FreeStorageSpace",
+                            {"name": "CPUUtilization"},
+                            {"name": "DatabaseConnections"},
+                            {"name": "ReadLatency"},
+                            {"name": "FreeStorageSpace"},
                         ],
                     },
                     {
@@ -90,10 +90,10 @@ for i in range(1, batches + 1):
                             }
                         ],
                         "metrics": [
-                            "Invocations",
-                            "Errors",
-                            "Duration",
-                            "Throttles",
+                            {"name": "Invocations"},
+                            {"name": "Errors"},
+                            {"name": "Duration"},
+                            {"name": "Throttles"},
                         ],
                     },
                     {
@@ -107,9 +107,9 @@ for i in range(1, batches + 1):
                             }
                         ],
                         "metrics": [
-                            "ConsumedReadCapacityUnits",
-                            "ConsumedWriteCapacityUnits",
-                            "ReadThrottleEvents",
+                            {"name": "ConsumedReadCapacityUnits"},
+                            {"name": "ConsumedWriteCapacityUnits"},
+                            {"name": "ReadThrottleEvents"},
                         ],
                     },
                     {
@@ -123,10 +123,10 @@ for i in range(1, batches + 1):
                             }
                         ],
                         "metrics": [
-                            "BucketSizeBytes",
-                            "NumberOfObjects",
-                            "AllRequests",
-                            "FirstByteLatency",
+                            {"name": "BucketSizeBytes"},
+                            {"name": "NumberOfObjects"},
+                            {"name": "AllRequests"},
+                            {"name": "FirstByteLatency"},
                         ],
                     },
                 ],
