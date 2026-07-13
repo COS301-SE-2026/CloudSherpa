@@ -2,13 +2,19 @@ package com.cloudsherpa.service.preferences.controller;
 
 import com.cloudsherpa.service.preferences.dto.ThemeUpdateRequest;
 import com.cloudsherpa.service.preferences.service.PreferencesService;
+import java.util.Collections;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/preferences")
@@ -22,7 +28,7 @@ public class PreferencesController {
   }
 
   @GetMapping("/theme")
-  public ResponseEntity<String> getTheme(@AuthenticationPrincipal Jwt jwt) {
+  public ResponseEntity<Map<String, String>> getTheme(@AuthenticationPrincipal Jwt jwt) {
     if (jwt == null) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
@@ -30,7 +36,7 @@ public class PreferencesController {
     UUID userId = UUID.fromString(jwt.getSubject());
     String currentTheme = preferencesService.getUserTheme(userId);
 
-    return ResponseEntity.ok(currentTheme);
+    return ResponseEntity.ok(Collections.singletonMap("theme", currentTheme));
   }
 
   @PutMapping("/theme")
