@@ -1,5 +1,4 @@
 "use client";
-import { Spinner } from "@/components/atoms/spinner";
 import { echarts } from "@/lib/charts/echarts";
 import { useMetricStore } from "@/features/dashboard/stores/metric-store";
 import { metricSeriesToArray, MetricType } from "@/features/dashboard/types/metric";
@@ -9,14 +8,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 type GaugeChartProps = {
     resourceId?: string;
     metricType?: MetricType;
-    metricFetchLoad?: boolean;
 };
 
-export function GaugeChart({
-    resourceId,
-    metricType,
-    metricFetchLoad = false,
-}: Readonly<GaugeChartProps>) {
+export function GaugeChart({ resourceId, metricType }: Readonly<GaugeChartProps>) {
     const chartRef = useRef<HTMLDivElement>(null);
     const series = useMetricStore((state) => state.seriesByKey[`${resourceId}:${metricType}`]);
     const data = useMemo(() => metricSeriesToArray(series), [series]);
@@ -184,11 +178,6 @@ export function GaugeChart({
     return (
         <div className="relative h-full w-full">
             <div ref={chartRef} className="h-full w-full" />
-            {metricFetchLoad && (
-                <div className="absolute inset-0 z-10 flex items-center justify-center bg-card/60 backdrop-blur-[1px]">
-                    <Spinner className="size-8" />
-                </div>
-            )}
         </div>
     );
 }

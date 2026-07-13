@@ -2,6 +2,7 @@ package com.cloudsherpa.lib.repositories;
 
 import com.cloudsherpa.lib.entities.CloudConnection;
 import com.cloudsherpa.lib.entities.User;
+import com.cloudsherpa.lib.entities.ProviderEnum;
 
 import java.util.List;
 import java.util.UUID;
@@ -15,10 +16,10 @@ public interface CloudConnectionRepository extends JpaRepository<CloudConnection
   List<CloudConnection> findByUserIdAndStatus(UUID userId, String status);
 
   // Find all connections for a specific provider
-  List<CloudConnection> findByProvider(String provider);
+  List<CloudConnection> findByProvider(ProviderEnum provider);
 
   // Find all connections for a specific user and provider
-  List<CloudConnection> findByUserIdAndProvider(UUID userId, String provider);
+  List<CloudConnection> findByUserIdAndProvider(UUID userId, ProviderEnum provider);
 
   // Alternative: Find by User object directly
   List<CloudConnection> findByUser(User user);

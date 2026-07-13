@@ -5,11 +5,17 @@ import { Input } from "@/components/atoms/input";
 import { Label } from "@/components/atoms/label";
 
 interface PropsForStepOne {
-    onNext: (data: { accessKey: string; secretKey: string; awsRegion: string }) => void;
+    onNext: (data: {
+        displayName: string;
+        accessKey: string;
+        secretKey: string;
+        awsRegion: string;
+    }) => void;
 }
 
 export default function StepOne({ onNext }: Readonly<PropsForStepOne>) {
     const [formData, setFormData] = useState({
+        displayName: "",
         accessKey: "",
         secretKey: "",
         awsRegion: "af-south-1",
@@ -58,6 +64,27 @@ export default function StepOne({ onNext }: Readonly<PropsForStepOne>) {
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="space-y-2">
+                        <Label
+                            htmlFor="displayName"
+                            className="text-foreground text-sm font-medium"
+                        >
+                            Account name
+                        </Label>
+
+                        <Input
+                            id="displayName"
+                            type="text"
+                            placeholder="AWS Connection"
+                            value={formData.displayName}
+                            onChange={(e) =>
+                                setFormData({ ...formData, displayName: e.target.value })
+                            }
+                            className="bg-background border-border rounded-md px-4 py-3 text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all w-full"
+                            required
+                        />
+                    </div>
+
                     <div className="space-y-2">
                         <Label
                             htmlFor="accessKeyId"

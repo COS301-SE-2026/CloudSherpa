@@ -11,6 +11,8 @@ interface WizardData {
         secretKey: string;
         awsRegion: string;
     } | null;
+    displayName: string;
+    ingestionPeriod: string;
     selectedServices: string[];
     selectedInstances: string[];
     resources: ResourceDetail[];
@@ -21,16 +23,31 @@ export default function WizardSetup() {
 
     const [wizardData, setWizardData] = useState<WizardData>({
         credentials: null,
+        displayName: "AWS Connection",
+        ingestionPeriod: "60",
         selectedServices: [],
         selectedInstances: [],
         resources: [],
     });
 
-    const handleStepOneNext = (credentials: WizardData["credentials"]) => {
-        setWizardData({ ...wizardData, credentials });
+    const handleStepOneNext = (data: {
+        displayName: string;
+        accessKey: string;
+        secretKey: string;
+        awsRegion: string;
+    }) => {
+        setWizardData({
+            ...wizardData,
+            displayName: data.displayName,
+            credentials: {
+                accessKey: data.accessKey,
+                secretKey: data.secretKey,
+                awsRegion: data.awsRegion,
+            },
+        });
+
         setStep(2);
     };
-
     const handleStepTwoNext = (selectedServices: string[], resources: ResourceDetail[]) => {
         setWizardData({
             ...wizardData,
@@ -41,9 +58,16 @@ export default function WizardSetup() {
         setStep(3);
     };
 
-    const handleStepThreeComplete = (selectedInstances: string[]) => {
-        setWizardData({ ...wizardData, selectedInstances });
-        console.log("Wizard completed:", { ...wizardData, selectedInstances });
+    const handleStepThreeComplete = (ingestionPeriod: string) => {
+        setWizardData({
+            ...wizardData,
+            ingestionPeriod,
+        });
+
+        console.log("Wizard completed:", {
+            ...wizardData,
+            ingestionPeriod,
+        });
     };
 
     const handleBack = () => {
@@ -64,6 +88,9 @@ export default function WizardSetup() {
 
             {step === 3 && (
                 <StepThree
+                    displayName={wizardData.displayName}
+                    ingestionPeriod={""}
+                    credentials={wizardData.credentials!}
                     resources={wizardData.resources}
                     onComplete={handleStepThreeComplete}
                     onBack={handleBack}

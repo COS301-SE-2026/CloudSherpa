@@ -24,7 +24,7 @@ export interface DashboardStore {
     actions: DashboardActions;
 }
 
-export const useDashboardStore = create<DashboardStore>((set, get) => ({
+export const useDashboardStore = create<DashboardStore>((set) => ({
     activeDashboardId: null,
     dashboards: {},
     layouts: {},

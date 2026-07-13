@@ -8,8 +8,9 @@ RESET='\033[0m'
 ERROR='\033[1;31m'
 
 echo -e "${INFO}Running Cloudsherpa Dashboard Prettier Check${RESET}"
-(cd apps/dashboard && npm run format:check &> /dev/null || {
+(cd apps/dashboard && npm run format:check >/dev/null 2>&1 || {
 	echo -e "${ERROR}Prettier format check failes, please run `npm run format:check` from apps/dashboard to view the formatting errors. Run `npm run format:fix` to have prettier apply the formatting rules"
+	exit 1
 })
 echo -e "${SUCCESS}Dashboard prettier succeeded${RESET}"
 

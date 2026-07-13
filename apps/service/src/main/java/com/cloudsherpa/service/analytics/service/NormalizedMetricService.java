@@ -48,12 +48,8 @@ public class NormalizedMetricService {
     return normalizedMetricsRepository.findByPeriodStartBetween(parsedFromDate, parsedToDate);
   }
 
-  public Map<String, String> fetchResourceNames() throws ResponseStatusException {
+  public Map<String, String> fetchResourceNames() {
     List<ResourceNames> resourceNames = resourceRepository.findResourceNames();
-
-    if (resourceNames.isEmpty()) {
-      throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No resources found");
-    }
 
     Map<String, String> resourceIdNameMap = new HashMap<>();
 

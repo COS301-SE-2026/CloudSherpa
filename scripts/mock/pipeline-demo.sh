@@ -1,21 +1,26 @@
+DEMO_USER_ID="5ebe4340-c5ec-4833-ad93-06abf4609f03"
+
 while true
 do
-curl -X POST http://localhost:8081/api/events/ingest/mock \
-  -H "Content-Type: application/json" \
-  -d '{
-    "provider": "AWS",
-    "accountId": "test-account",
-    "from": "2026-04-28T00:00:00Z",
-    "to": "2026-05-05T00:00:00Z",
-    "includeUsage": true,
-    "scopes": [
-      {
-        "provider": "AWS",
-        "accountId": "test-account"
-      }
-    ]
-  }'
+  FROM="$(date -u -d '10 minutes ago' +%Y-%m-%dT%H:%M:%SZ)"
+  TO="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+  curl -X POST http://localhost:8081/api/events/ingest/mock \
+    -H "Content-Type: application/json" \
+    -d "{
+      \"userId\": \"${DEMO_USER_ID}\",
+      \"provider\": \"AWS\",
+      \"accountId\": \"test-account\",
+      \"from\": \"${FROM}\",
+      \"to\": \"${TO}\",
+      \"includeUsage\": true,
+      \"scopes\": [
+        {
+          \"provider\": \"AWS\",
+          \"accountId\": \"test-account\"
+        }
+      ]
+    }"
 
   sleep 5
 done
-

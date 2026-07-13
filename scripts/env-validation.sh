@@ -35,7 +35,7 @@ done
 
 # Dashboard validation
 echo "Validating DASHBOARD env vars"
-(cd apps/dashboard && npm exec -- varlock load)
+(cd apps/dashboard && varlock load)
 
 # Ingestion validation
 echo "Validating INGESTION env vars"
@@ -44,3 +44,7 @@ echo "Validating INGESTION env vars"
 # Service validation
 echo "Validating SERVICE env vars"
 (cd apps/service && varlock load)
+
+# Persistence validation
+echo "Validating PERSISTENCE env vars"
+(cd persistence/sherpadb && varlock load)

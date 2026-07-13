@@ -82,7 +82,7 @@ Securely stores the passwords, API keys, or tokens needed to safely talk to the 
 | Column Name | Data Type | Key/Constraint | Description |
 | :--- | :--- | :--- | :--- |
 | **credential_id** | UUID | Primary Key | The unique ID for these credentials. |
-| **connection_id** | UUID | Foreign Key | Links to the specific `cloud_connection`. |
+| **account_id** | UUID | Foreign Key, Unique | Links to the specific `cloud_account` and enforces one credential per account. |
 | **provider** | provider_enum| Not Null | Repeated here to make searching for AWS vs GCP keys faster. |
 | **credential_type**| credential_type_enum | Not Null | Tells the system how to read the key (e.g., as an `access_key`). |
 | **credential_value**| TEXT | Not Null | The heavily encrypted JSON text containing the actual secret keys. |

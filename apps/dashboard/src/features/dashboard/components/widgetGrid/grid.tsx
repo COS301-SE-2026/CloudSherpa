@@ -12,25 +12,27 @@ interface GridProps {
     onLayoutChange: (layout: LayoutItem[]) => void;
     layouts: LayoutItem[];
     onDeleteWidget: (layoutId: string, widgetId: string) => void;
-    metricFetchLoad: boolean;
 }
 
 export default function Grid({
     isEditMode,
-    dashboardId: _dashboardId,
     onLayoutChange,
     layouts,
     onDeleteWidget,
-    metricFetchLoad,
 }: Readonly<GridProps>) {
     const gridRef = useRef<HTMLDivElement>(null);
     const gridStackInstance = useRef<GridStack | null>(null);
+    const onLayoutChangeRef = useRef(onLayoutChange);
 
     const isEditModeRef = useRef(isEditMode);
 
     useEffect(() => {
         isEditModeRef.current = isEditMode;
     }, [isEditMode]);
+
+    useEffect(() => {
+        onLayoutChangeRef.current = onLayoutChange;
+    }, [onLayoutChange]);
 
     useLayoutEffect(() => {
         if (gridRef.current && !gridStackInstance.current) {
@@ -39,7 +41,7 @@ export default function Grid({
                     cellHeight: 100, //handles row heights that widgets snap to
                     margin: 12, //layer around every widget. meaning there is 24px margin between every widget
                     handle: ".drag-handle",
-                    staticGrid: !isEditMode, //lock grid not in edit mode
+                    staticGrid: !isEditModeRef.current, //lock grid not in edit mode
                     float: false,
                     resizable: { handles: "se" }, // part of library handles widget resizing from "south-east"/bottom-right corner
 
@@ -53,7 +55,6 @@ export default function Grid({
 
             gridStackInstance.current.on("change", (_event, nodes) => {
                 if (gridStackInstance.current && isEditModeRef.current && nodes) {
-                    // Use the save callback to re-inject the widgetId from the DOM into the state update
                     const fullLayout = gridStackInstance.current.save(
                         false,
                         false,
@@ -61,7 +62,7 @@ export default function Grid({
                             (w as LayoutItem).widgetId = node.el?.dataset.widgetId || "";
                         }
                     ) as LayoutItem[];
-                    onLayoutChange(fullLayout);
+                    onLayoutChangeRef.current(fullLayout);
                 }
             });
         }
@@ -154,7 +155,6 @@ export default function Grid({
                         layout={l}
                         isEditMode={isEditMode}
                         onDeleteWidget={onDeleteWidget}
-                        metricFetchLoad={metricFetchLoad}
                     />
                 ))}
             </div>

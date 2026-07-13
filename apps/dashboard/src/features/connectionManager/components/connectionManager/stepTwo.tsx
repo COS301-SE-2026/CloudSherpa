@@ -77,7 +77,7 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
                 setError("No resources were discovered.");
                 return;
             }
-
+            setLoading(false);
             onNext(servicesSelected, resources);
         } catch (err) {
             console.error(err);
@@ -111,6 +111,11 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
                     <h2 className="text-2xl font-semibold tracking-tight text-foreground">
                         Select Services
                     </h2>
+                    {error && (
+                        <div className="mt-3 rounded-sm bg-destructive/5 p-3 text-destructive text-sm">
+                            {error}
+                        </div>
+                    )}
 
                     <p className="mt-2 text-muted-foreground/70">
                         Choose which AWS services you want to monitor.
@@ -140,7 +145,7 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
                                 <button
                                     key={service.id}
                                     onClick={() => toggleService(service.id)}
-                                    className="flex items-start gap-3 p-4 bg-background rounded-lg border border-border hover:border-primary/40 transition-all cursor-pointer"
+                                    className="flex items-start gap-3 p-4 bg-background rounded-lg border border-border hover:border-primary/40 transition-all cursor-pointer w-full"
                                 >
                                     <input
                                         type="checkbox"

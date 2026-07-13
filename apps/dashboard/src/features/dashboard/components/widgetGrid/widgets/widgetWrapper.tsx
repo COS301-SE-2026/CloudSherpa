@@ -1,4 +1,3 @@
-import React from "react";
 import { GripVertical, Trash } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LayoutItem } from "@/features/dashboard/types/widgets";
@@ -9,15 +8,9 @@ interface WidgetWrapperProps {
     layout: LayoutItem;
     isEditMode: boolean;
     onDeleteWidget: (layoutId: string, widgetId: string) => void;
-    metricFetchLoad: boolean;
 }
 
-export const WidgetWrapper = ({
-    layout,
-    isEditMode,
-    onDeleteWidget,
-    metricFetchLoad,
-}: WidgetWrapperProps) => {
+export const WidgetWrapper = ({ layout, isEditMode, onDeleteWidget }: WidgetWrapperProps) => {
     const { id, widgetId, x, y, w, h, autoPosition } = layout;
     const config = useDashboardStore((state: DashboardStore) => state.widgets[widgetId]);
 
