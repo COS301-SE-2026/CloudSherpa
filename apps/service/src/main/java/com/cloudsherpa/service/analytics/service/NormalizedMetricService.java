@@ -1,6 +1,6 @@
 package com.cloudsherpa.service.analytics.service;
 
-import com.cloudsherpa.lib.entities.NormalizedMetrics;
+import com.cloudsherpa.lib.projections.AggregatedMetric;
 import com.cloudsherpa.lib.projections.ResourceNames;
 import com.cloudsherpa.lib.repositories.NormalizedMetricsRepository;
 import com.cloudsherpa.lib.repositories.ResourceRepository;
@@ -25,7 +25,7 @@ public class NormalizedMetricService {
     this.resourceRepository = resourceRepository;
   }
 
-  public List<NormalizedMetrics> fetchHistoricalData(String from, String to, String interval)
+  public List<AggregatedMetric> fetchHistoricalData(String from, String to, String interval)
       throws ResponseStatusException {
 
     OffsetDateTime parsedFromDate;
@@ -45,12 +45,25 @@ public class NormalizedMetricService {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid interval");
     }
 
-    if (!interval.equals("daily") && !interval.equals("weekly") && !interval.equals("monthly")) {
-      throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST, "Invalid interval. Supported values: daily, weekly, monthly");
+    String bucketWidth;
+
+    switch (interval) {
+      case "daily":
+        bucketWidth = "1 day";
+        break;
+      case "weekly":
+        bucketWidth = "1 week";
+        break;
+      case "monthly":
+        bucketWidth = "1 month";
+        break;
+      default:
+        throw new ResponseStatusException(
+            HttpStatus.BAD_REQUEST, "Invalid interval. Supported values: daily, weekly, monthly");
     }
 
-    return normalizedMetricsRepository.findByPeriodStartBetween(parsedFromDate, parsedToDate);
+    return normalizedMetricsRepository.findAggregatedMetricsByPeriod(
+        parsedFromDate, parsedToDate, bucketWidth);
   }
 
   public Map<String, String> fetchResourceNames() {
