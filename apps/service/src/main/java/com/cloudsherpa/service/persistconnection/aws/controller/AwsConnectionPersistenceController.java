@@ -28,8 +28,13 @@ public class AwsConnectionPersistenceController {
     if (jwt == null) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
+    UUID userId;
+    try {
+      userId = UUID.fromString(jwt.getSubject());
+    } catch (IllegalArgumentException e) {
+      return ResponseEntity.badRequest().build();
+    }
 
-    UUID userId = UUID.fromString(jwt.getSubject());
     PersistAwsConnectionRequest requestWithUser = request.withUserId(userId);
     persistenceService.persistConnection(requestWithUser);
 

@@ -1,18 +1,17 @@
 package com.cloudsherpa.service.persistconnection.aws.service;
 
 import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
+import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
+import java.security.SecureRandom;
+import java.util.Base64;
 import javax.crypto.AEADBadTagException;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import java.nio.charset.StandardCharsets;
-import java.security.GeneralSecurityException;
-import java.security.SecureRandom;
-import java.util.Base64;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 @Service
 public class CredentialEncryptionService {
@@ -20,10 +19,7 @@ public class CredentialEncryptionService {
   private static final String ALGORITHM = "AES";
   private static final String TRANSFORMATION = "AES/GCM/NoPadding";
 
-  /**
-   * Recommended IV (Initialization Vector) length for GCM used :
-   * 12 * 8 = 96 bits.
-   */
+  /** Recommended IV (Initialization Vector) length for GCM used : 12 * 8 = 96 bits. */
   private static final int IV_LENGTH = 12;
 
   /** Authentication tag length in bits. */
@@ -61,13 +57,9 @@ public class CredentialEncryptionService {
 
       Cipher cipher = Cipher.getInstance(TRANSFORMATION);
 
-      cipher.init(
-          Cipher.ENCRYPT_MODE,
-          secretKey,
-          new GCMParameterSpec(GCM_TAG_LENGTH_BITS, iv));
+      cipher.init(Cipher.ENCRYPT_MODE, secretKey, new GCMParameterSpec(GCM_TAG_LENGTH_BITS, iv));
 
-      byte[] encrypted = cipher.doFinal(
-          plainText.getBytes(StandardCharsets.UTF_8));
+      byte[] encrypted = cipher.doFinal(plainText.getBytes(StandardCharsets.UTF_8));
 
       byte[] combined = new byte[iv.length + encrypted.length];
 
@@ -97,19 +89,14 @@ public class CredentialEncryptionService {
 
       Cipher cipher = Cipher.getInstance(TRANSFORMATION);
 
-      cipher.init(
-          Cipher.DECRYPT_MODE,
-          secretKey,
-          new GCMParameterSpec(GCM_TAG_LENGTH_BITS, iv));
+      cipher.init(Cipher.DECRYPT_MODE, secretKey, new GCMParameterSpec(GCM_TAG_LENGTH_BITS, iv));
 
       byte[] decrypted = cipher.doFinal(ciphertext);
 
       return new String(decrypted, StandardCharsets.UTF_8);
 
     } catch (AEADBadTagException e) {
-      throw new IllegalArgumentException(
-          "Encrypted data is invalid or has been tampered with.",
-          e);
+      throw new IllegalArgumentException("Encrypted data is invalid or has been tampered with.", e);
     } catch (GeneralSecurityException | IllegalArgumentException e) {
       throw new IllegalStateException("Failed to decrypt data.", e);
     }
