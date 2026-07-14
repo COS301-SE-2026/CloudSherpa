@@ -91,6 +91,22 @@ function ToggleCells({row, table} : Readonly<CellContext<Resource, Resource["sta
     )
 }
 
+//this will define the col structure for the table
+//by using createColumnHelper we get type-safe col def
+const helperForColumns = createColumnHelper<Resource>();
+
+const columns = [
+    helperForColumns.accessor("name", {header : ResourceHeaders, cell : ResourceCells,}),
+
+    helperForColumns.accessor("type", {header : "Type", cell : SecondaryCells,}),
+
+    helperForColumns.accessor("region", { header : "Region", cell : SecondaryCells,}),
+
+    helperForColumns.accessor("tag", {header : "Tags", cell : TagCells,}),
+
+    helperForColumns.accessor("status", {header : ToggleHeader, filterFn : "equals", cell : ToggleCells,}),
+];
+
 export default function ResourceManager(){
     return(
         <div className = "min-h-screen bg-background text-foreground p-8">
