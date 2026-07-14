@@ -7,7 +7,7 @@ import java.util.Map;
 import software.amazon.awssdk.services.ec2.model.Instance;
 
 public interface Ec2Service {
-  public List<Instance> getAllEc2Instances(CloudCredentials credentials);
+  public List<RegionalInstance> getAllEc2Instances(CloudCredentials credentials);
 
   public Map<String, String> getTagsForInstance(Instance instance);
 

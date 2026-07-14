@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.ec2.Ec2Client;
 import software.amazon.awssdk.services.ec2.model.DescribeInstancesResponse;
 import software.amazon.awssdk.services.ec2.model.Instance;
@@ -15,24 +16,24 @@ import software.amazon.awssdk.services.ec2.model.Tag;
 
 public class AwsEc2Service implements Ec2Service {
   @Override
-  public List<Instance> getAllEc2Instances(CloudCredentials credentials) {
-    List<Instance> resources = new ArrayList<>();
+  public List<RegionalInstance> getAllEc2Instances(CloudCredentials credentials) {
+    List<RegionalInstance> resources = new ArrayList<>();
+    for (Region region : Region.regions())
+      try (Ec2Client ec2 =
+          Ec2Client.builder()
+              .region(region)
+              .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
+              .build()) {
 
-    try (Ec2Client ec2 =
-        Ec2Client.builder()
-            .region(AwsClientFactory.region(credentials))
-            .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
-            .build()) {
+        DescribeInstancesResponse response = ec2.describeInstances();
 
-      DescribeInstancesResponse response = ec2.describeInstances();
+        for (Reservation reservation : response.reservations()) {
+          for (Instance instance : reservation.instances()) {
 
-      for (Reservation reservation : response.reservations()) {
-        for (Instance instance : reservation.instances()) {
-
-          resources.add(instance);
+            resources.add(new RegionalInstance(instance, region));
+          }
         }
       }
-    }
 
     return resources;
   }
@@ -44,14 +45,21 @@ public class AwsEc2Service implements Ec2Service {
 
   @Override
   public List<ResourceDetail> getAllEc2InstancesWithTags(CloudCredentials credentials) {
-    List<Instance> instances = getAllEc2Instances(credentials);
+    List<RegionalInstance> instances = getAllEc2Instances(credentials);
     List<ResourceDetail> resources = new ArrayList<>();
 
-    for (Instance instance : instances) {
-      Map<String, String> tags = getTagsForInstance(instance);
-      String instanceName = ResourceDetail.resolveName(instance.instanceId(), null, tags);
+    for (RegionalInstance instance : instances) {
+      Map<String, String> tags = getTagsForInstance(instance.instance());
+      String instanceName =
+          ResourceDetail.resolveName(instance.instance().instanceId(), null, tags);
       resources.add(
-          new ResourceDetail(instance.instanceId(), instanceName, "InstanceId", "EC2", tags));
+          new ResourceDetail(
+              instance.instance().instanceId(),
+              instanceName,
+              "InstanceId",
+              "EC2",
+              instance.region().id(),
+              tags));
     }
 
     return resources;

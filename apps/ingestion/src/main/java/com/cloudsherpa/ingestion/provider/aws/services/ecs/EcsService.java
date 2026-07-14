@@ -5,7 +5,7 @@ import com.cloudsherpa.ingestion.models.ResourceDetail;
 import java.util.List;
 
 public interface EcsService {
-  public List<String> getAllEcsClusterArns(CloudCredentials credentials);
+  public List<RegionalArn> getAllEcsClusterArns(CloudCredentials credentials);
 
   public List<ResourceDetail> getAllEcsClustersWithTags(CloudCredentials credentials);
 }

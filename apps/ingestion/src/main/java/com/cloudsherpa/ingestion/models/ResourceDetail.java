@@ -9,6 +9,7 @@ public class ResourceDetail {
   private final String name;
   private final String resourceType;
   private final String serviceCategory;
+  private final String region;
   private final Map<String, String> tags;
 
   public ResourceDetail(
@@ -16,11 +17,13 @@ public class ResourceDetail {
       String name,
       String resourceType,
       String serviceCategory,
+      String region,
       Map<String, String> tags) {
     this.resourceId = resourceId;
     this.name = name;
     this.resourceType = resourceType;
     this.serviceCategory = serviceCategory;
+    this.region = region;
     this.tags = tags == null ? Collections.emptyMap() : tags;
   }
 
