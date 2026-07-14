@@ -111,15 +111,18 @@ public class AwsConnectionPersistenceService {
         resources.stream()
             .map(
                 r ->
-                    new Resource(
-                        UUID.randomUUID(),
-                        account.getId(),
-                        r.resourceType(),
-                        r.resourceName(),
-                        r.active() ? StatusEnum.active : StatusEnum.disabled,
-                        r.tags(),
-                        OffsetDateTime.now(ZoneOffset.UTC),
-                        OffsetDateTime.now(ZoneOffset.UTC)))
+                    new Resource.Builder()
+                        .id(UUID.randomUUID())
+                        .accountId(account.getId())
+                        .resourceType(r.resourceType())
+                        .resourceName(r.resourceName())
+                        .resourceIdentifier(r.resourceId())
+                        .region(r.region())
+                        .status(r.active() ? StatusEnum.active : StatusEnum.disabled)
+                        .tags(r.tags())
+                        .createdAt(OffsetDateTime.now(ZoneOffset.UTC))
+                        .lastUpdated(OffsetDateTime.now(ZoneOffset.UTC))
+                        .build())
             .toList();
 
     resourceRepository.saveAll(entities);

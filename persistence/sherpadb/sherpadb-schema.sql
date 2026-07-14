@@ -134,10 +134,20 @@ BEGIN
             account_id uuid REFERENCES public.cloud_account(account_id) ON DELETE CASCADE, 
             resource_type varchar(255) NOT NULL,
             resource_name varchar(255) NOT NULL,
+            resource_identifier varchar(255) NOT NULL,
+            region varchar(100) NOT NULL,
             status public.status_enum,
             tags jsonb,
             last_updated timestamptz DEFAULT NOW(),
             created_at timestamptz DEFAULT NOW()
+
+            CONSTRAINT uq_resource_identity
+        UNIQUE (
+            account_id,
+            resource_type,
+            resource_identifier,
+            region
+        )
         );
     $sql$, schema_name);
 

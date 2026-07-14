@@ -4,6 +4,7 @@ import com.cloudsherpa.lib.entities.CloudAccount;
 import com.cloudsherpa.lib.entities.Resource;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import com.cloudsherpa.lib.projections.ResourceNames;
@@ -21,6 +22,13 @@ public interface ResourceRepository extends JpaRepository<Resource, UUID> {
 
   // Find by CloudAccount object
   List<Resource> findByAccount(CloudAccount account);
+
+  // Find a resource by its cloud identity
+  Optional<Resource> findByAccountIdAndResourceTypeAndResourceIdentifierAndRegion(
+      UUID accountId,
+      String resourceType,
+      String resourceIdentifier,
+      String region);
 
   @Query("select r.id as id, r.resourceType as resourceType from Resource r")
   List<ResourceNames> findResourceNames();
