@@ -22,7 +22,7 @@ export const WidgetWrapper = ({ layout, isEditMode, onDeleteWidget }: WidgetWrap
         "gs-y": y,
         "gs-w": w,
         "gs-h": h,
-        "widget-id": widgetId,
+        "data-widget-id": widgetId,
         ...(autoPosition ? { "gs-auto-position": "true" } : {}),
     };
 

@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect, Suspense, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useToolbar } from "@/features/dashboard/components/toolbar/toolbarProvider";
 
 import { Spinner } from "@/components/atoms/spinner";
 import Grid from "@/features/dashboard/components/widgetGrid/grid";
@@ -23,7 +24,7 @@ function DashboardContent() {
     const searchParams = useSearchParams();
     const urlId = searchParams.get("id");
     const [isLoading, setIsLoading] = useState(true);
-    const [isEditMode] = useState(false);
+    const { isEditMode } = useToolbar();
 
     const dashboards = useDashboardStore((state: DashboardStore) => state.dashboards);
     const activeDashboardId = useDashboardStore((state: DashboardStore) => state.activeDashboardId);

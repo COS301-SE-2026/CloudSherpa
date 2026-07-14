@@ -170,13 +170,15 @@ export default function StepThree({
                 displayName,
                 ingestionPeriod: period,
                 credentials,
-                resources: resources.map((resource): ResourceSelectionDto => ({
-                    resourceId: resource.resourceId,
-                    resourceType: resource.serviceCategory,
-                    resourceName: resource.name,
-                    tags: resource.tags,
-                    active: selectedResources.includes(resource.resourceId),
-                })),
+                resources: resources.map(
+                    (resource): ResourceSelectionDto => ({
+                        resourceId: resource.resourceId,
+                        resourceType: resource.serviceCategory,
+                        resourceName: resource.name,
+                        tags: resource.tags,
+                        active: selectedResources.includes(resource.resourceId),
+                    })
+                ),
             };
 
             await createAwsConnection(request);
