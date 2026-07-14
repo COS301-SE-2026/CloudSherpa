@@ -20,23 +20,30 @@ export function AuthProvider({
     const [user, setUser] = useState<User | null>(null);
 
     useEffect(() => {
-        async function loadAuthState() {
+    async function loadAuthState() {
+        try {
             if (user == null) {
-                const response: LoginResponseDto = await apiClient('/auth/me', {
-                method: "GET",
-            })
+                const response: LoginResponseDto = await apiClient("/auth/me", {
+                    method: "GET",
+                });
 
-            setUser({
-                userId: response.userId,
-                username: response.username,
-                email: response.email
-            })
+                setUser({
+                    userId: response.userId,
+                    username: response.username,
+                    email: response.email,
+                });
             }
+        } catch (error) {
+            if (error instanceof Error && !error.message.includes("401")) {
+                console.error("Failed to load auth state", error);
+            }
+        } finally {
             setIsAuthReady(true);
         }
+    }
 
-        loadAuthState();
-    }, [])
+        void loadAuthState();
+    }, [user]);
 
     const logout = useCallback(async (): Promise<boolean> => {
 
