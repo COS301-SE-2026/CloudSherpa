@@ -17,50 +17,36 @@ public interface NormalizedMetricsRepository extends JpaRepository<NormalizedMet
   List<NormalizedMetrics> findByPeriodStartBetween(
       OffsetDateTime startTime, OffsetDateTime endTime);
 
-@Query(
+  @Query(
       value =
           """
+          WITH bucketed_metrics AS (
+            SELECT
+              nm.resource_id,
+              nm.metric_name,
+              CAST(nm.metric_type AS text) AS metric_type,
+              nm.metric_value,
+              nm.unit,
+              time_bucket(CAST(:bucketWidth AS INTERVAL), nm.period_start) AS bucket_start
+            FROM normalized_metrics nm
+            WHERE nm.period_start BETWEEN :fromDate AND :toDate
+          )
           SELECT
-            -- Metadata so the frontend knows what this data is for
-            nm.resource_id AS resourceId,
-            nm.metric_name AS metricName,
-            
-            -- Cast the metric_type to a standard text string
-            nm.metric_type::text AS metricType,
-
-            -- Take all the raw metric values that fall into this specific time bucket and calculate their mean average
-            AVG(nm.metric_value) AS metricValue,
-            
-            -- Because 'unit' is not in our GROUP BY clause, SQL forces us to aggregate it.
-            -- MIN() simply grabs the first string it finds without doing any real math
-            MIN(nm.unit) AS unit,
-            
-            -- TimescaleDB function that acts like a 'floor' function for time
-            -- It rounds the raw 'period_start' down to the nearest interval of :bucketWidth
-            -- (e.g., If bucketWidth is '5 minutes', 10:04:33 becomes 10:00:00)
-            time_bucket(CAST(:bucketWidth AS INTERVAL), nm.period_start) AS periodStart,
-            
-            -- Recalculates the start time, then adds the :bucketWidth back onto it
-            -- (e.g., 10:00:00 + '5 minutes' = 10:05:00).
-            time_bucket(CAST(:bucketWidth AS INTERVAL), nm.period_start)
-              + CAST(:bucketWidth AS INTERVAL) AS periodEnd,
+            bm.resource_id AS resourceId,
+            bm.metric_name AS metricName,
+            bm.metric_type AS metricType,
+            AVG(bm.metric_value) AS metricValue,
+            MIN(bm.unit) AS unit,
+            bm.bucket_start AS periodStart,
+            bm.bucket_start + CAST(:bucketWidth AS INTERVAL) AS periodEnd,
             COUNT(*) AS sampleCount
-            
-          FROM normalized_metrics nm
-          
-          -- Only process rows that fall within the user's selected dashboard time range
-          WHERE nm.period_start BETWEEN :fromDate AND :toDate
-          
-          -- Group the data into discrete piles. To be in the same pile, rows must have the exact same:
-          -- Resource ID, Metric Name, Metric Type, AND fall into the exact same Time Bucket
+          FROM bucketed_metrics bm
           GROUP BY
-            nm.resource_id,
-            nm.metric_name,
-            nm.metric_type,
-            time_bucket(CAST(:bucketWidth AS INTERVAL), nm.period_start)
-            
-          -- Sort the resulting buckets chronologically
-          ORDER BY periodStart ASC
+            bm.resource_id,
+            bm.metric_name,
+            bm.metric_type,
+            bm.bucket_start
+          ORDER BY bm.bucket_start ASC
           """,
       nativeQuery = true)
   List<AggregatedMetric> findAggregatedMetricsByPeriod(
@@ -68,33 +54,42 @@ public interface NormalizedMetricsRepository extends JpaRepository<NormalizedMet
       @Param("toDate") OffsetDateTime toDate,
       @Param("bucketWidth") String bucketWidth);
 
-        @Query(
-      value =
-          """
+@Query(
+    value =
+        """
+        WITH bucketed_metrics AS (
           SELECT
-            nm.resource_id AS resourceId,
-            nm.metric_name AS metricName,
-            nm.metric_type::text AS metricType,
-            AVG(nm.metric_value) AS metricValue,
-            MIN(nm.unit) AS unit,
-            time_bucket(CAST(:bucketWidth AS INTERVAL), nm.period_start) AS periodStart,
-            time_bucket(CAST(:bucketWidth AS INTERVAL), nm.period_start)
-              + CAST(:bucketWidth AS INTERVAL) AS periodEnd,
-              COUNT(*) AS sampleCount
+            nm.resource_id,
+            nm.metric_name,
+            CAST(nm.metric_type AS text) AS metric_type,
+            nm.metric_value,
+            nm.unit,
+            time_bucket(CAST(:bucketWidth AS INTERVAL), nm.period_start) AS bucket_start
           FROM normalized_metrics nm
           WHERE nm.period_start BETWEEN :fromDate AND :toDate
             AND nm.resource_id IN (:resourceIds)
-          GROUP BY
-            nm.resource_id,
-            nm.metric_name,
-            nm.metric_type,
-            time_bucket(CAST(:bucketWidth AS INTERVAL), nm.period_start)
-          ORDER BY periodStart ASC
-          """,
-      nativeQuery = true)
-  List<AggregatedMetric> findAggregatedMetricsByPeriodAndResourceIds(
-      @Param("fromDate") OffsetDateTime fromDate,
-      @Param("toDate") OffsetDateTime toDate,
-      @Param("bucketWidth") String bucketWidth,
-      @Param("resourceIds") List<UUID> resourceIds);
+        )
+        SELECT
+          bm.resource_id AS resourceId,
+          bm.metric_name AS metricName,
+          bm.metric_type AS metricType,
+          AVG(bm.metric_value) AS metricValue,
+          MIN(bm.unit) AS unit,
+          bm.bucket_start AS periodStart,
+          bm.bucket_start + CAST(:bucketWidth AS INTERVAL) AS periodEnd,
+          COUNT(*) AS sampleCount
+        FROM bucketed_metrics bm
+        GROUP BY
+          bm.resource_id,
+          bm.metric_name,
+          bm.metric_type,
+          bm.bucket_start
+        ORDER BY bm.bucket_start ASC
+        """,
+    nativeQuery = true)
+List<AggregatedMetric> findAggregatedMetricsByPeriodAndResourceIds(
+    @Param("fromDate") OffsetDateTime fromDate,
+    @Param("toDate") OffsetDateTime toDate,
+    @Param("bucketWidth") String bucketWidth,
+    @Param("resourceIds") List<UUID> resourceIds);
 }
