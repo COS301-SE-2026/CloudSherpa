@@ -38,7 +38,7 @@ function ThemePersistenceEnforcer({ children }: { children: React.ReactNode }) {
 
 export function ThemeProvider({ children, ...props }: Readonly<React.ComponentProps<typeof NextThemesProvider>>) {
   return (
-    <NextThemesProvider disableTransitionOnChange {...props}>\
+    <NextThemesProvider disableTransitionOnChange {...props}>
       <ThemePersistenceEnforcer>
       {children}
       </ThemePersistenceEnforcer>
