@@ -108,6 +108,47 @@ const columns = [
 ];
 
 export default function ResourceManager(){
+    const [resource, setResource] = useState<Resource[]>(hardCodedResources);
+
+    const [filter, setFilter] = useState("");
+
+    const [sort, setSort] = useState<SortingState>([]);
+
+    const [filterColumn, setFilterColumn] = useState<ColumnFiltersState>([]);
+
+    const changeStatus = (id : string) => {
+        setResource((previous) => 
+            previous.map((resources) => 
+                resources.id === id ? {...resources, status : resources.status === "active" ? "inactive" : "active"} : resources
+            )
+        );
+    };
+
+    //useMemo prevents the actions obj from being recreated on every render
+    const actions = useMemo<ResourceAction>(() => ({changeStatus}), []);
+
+    const table = useReactTable({
+        data : resource,
+        columns,
+        meta : actions,
+        state : {globalFilter : filter, sorting : sort, columnFilters : filterColumn,},
+        
+        getRowId : (row) => row.id,
+        onGlobalFilterChange : setFilter,
+
+        onSortingChange : setSort,
+        onColumnFiltersChange : setFilterColumn,
+
+        //returns all the rows without any filtering/sorting
+        getCoreRowModel : getCoreRowModel(),
+
+        //enables row filtering
+        getFilteredRowModel : getFilteredRowModel(),
+
+        //enables row sorting
+        getSortedRowModel : getSortedRowModel(),
+    });
+
     return(
         <div className = "min-h-screen bg-background text-foreground p-8">
             <h1 className = "text-3xl font-semibold text-center mb-8"> Resource Manager </h1>
