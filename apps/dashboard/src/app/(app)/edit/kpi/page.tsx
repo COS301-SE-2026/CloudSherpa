@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/atoms/button";
 import { Card, CardTitle } from "@/components/atoms/card";
 import {
@@ -21,6 +23,50 @@ import {
     SelectValue,
 } from "@/components/atoms/select";
 import { SearchIcon } from "lucide-react";
+
+import {
+    KPIConfigTableRow,
+    kpiConfigColumns,
+} from "@/features/dashboard/components/kpi/config/columns";
+import { KPIConfigTable } from "@/features/dashboard/components/kpi/config/config-table";
+
+const mockKpiConfigRows: KPIConfigTableRow[] = [
+    {
+        resourceName: "Production API Gateway",
+        resourceId: "api-gw-prod-01",
+        service: "API Gateway",
+        provider: "AWS",
+        connection: "Production AWS",
+    },
+    {
+        resourceName: "Customer Database",
+        resourceId: "rds-customer-prod",
+        service: "RDS",
+        provider: "AWS",
+        connection: "Production AWS",
+    },
+    {
+        resourceName: "Billing Worker Cluster",
+        resourceId: "eks-billing-workers",
+        service: "EKS",
+        provider: "AWS",
+        connection: "Production AWS",
+    },
+    {
+        resourceName: "Analytics Storage Bucket",
+        resourceId: "s3-analytics-events",
+        service: "S3",
+        provider: "AWS",
+        connection: "Data AWS",
+    },
+    {
+        resourceName: "Cloud Cost Export",
+        resourceId: "bigquery-cost-export",
+        service: "BigQuery",
+        provider: "GCP",
+        connection: "Finance GCP",
+    },
+];
 
 export default function EditKpiPage() {
     const mockConnections = [
@@ -95,7 +141,7 @@ export default function EditKpiPage() {
                             </div>
                         </div>
                     </FieldSet>
-
+                    <KPIConfigTable columns={kpiConfigColumns} data={mockKpiConfigRows} />
                     <FieldSeparator />
                 </Card>
 
