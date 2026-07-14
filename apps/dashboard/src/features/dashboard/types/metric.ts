@@ -21,11 +21,11 @@ export type MetricType =
     | "anon";
 
 export type Metric = {
-    resource_id: string,
-    metricType: MetricType,
-    timestamp: string,
-    value: number
-}
+    resource_id: string;
+    metricType: MetricType;
+    timestamp: string;
+    value: number;
+};
 
 // Maps timestamp: record
 export type MetricSeries = Record<string, Metric>;
@@ -34,12 +34,12 @@ export type MetricStore = {
     seriesByKey: Record<string, MetricSeries>;
 
     addMetric: (metric: Metric) => void;
-    addMetricFromDto: (metricDto : MetricDTO) => void;
+    addMetricFromDto: (metricDto: MetricDTO) => void;
     clearStore: () => void;
     getResourceList: () => string[];
     // Maps resource id to its available metrics
     getMetricList: () => Record<string, MetricType[]>;
-}
+};
 
 export function metricSeriesToArray(series?: MetricSeries): Metric[] {
     if (!series) {
