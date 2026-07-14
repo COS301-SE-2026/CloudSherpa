@@ -1,4 +1,5 @@
 export type MetricDTO = {
+    metric_id: string;
     resourceId: string;
     metricName: string;
     metricType: string;
