@@ -258,6 +258,33 @@ export default function EditKpiPage() {
 
                 <Card className="p-6">
                     <CardTitle>Preview</CardTitle>
+                    <Card className="flex flex-col gap-4 p-6 bg-muted/40">
+                        <h1 className="text-lg font-bold">Card title</h1>
+                        <h1 className="text-xl">$100.00</h1>
+                        <p>Accros 3 selected resources</p>
+                        <div className="flex flex-row justify-between">
+                            <p>Last 30 days</p>
+                            <p>Updated now</p>
+                        </div>
+                    </Card>
+
+                    <Card className="flex flex-col p-6 bg-muted/40">
+                        <h1 className="text-lg font-bold">Configuration Summary</h1>
+                        <div className="grid grid-cols-2">
+                            <div className="flex flex-col gap-6">
+                                <p className="text-muted-foreground">Connections</p>
+                                <p className="text-muted-foreground">Resources</p>
+                                <p className="text-muted-foreground">Time Period</p>
+                                <p className="text-muted-foreground">Aggregation</p>
+                            </div>
+                            <div className="flex flex-col gap-6">
+                                <p className="font-semibold">All connections</p>
+                                <p className="font-semibold">3 selected</p>
+                                <p className="font-semibold">30 days</p>
+                                <p className="font-semibold">Total cost (sum)</p>
+                            </div>
+                        </div>
+                    </Card>
                 </Card>
             </div>
         </main>
