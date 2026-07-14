@@ -22,7 +22,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "CloudSherpa",
-  description: "Ai Cloud Analytics and Finops Platform"
+  description: "Ai Cloud Analytics and Finops Platform",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
@@ -32,14 +32,11 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       suppressHydrationWarning
       className={cn(geistSans.variable, geistHeading.variable, geistMono.variable, "font-sans")}>
       <body className="min-h-screen overflow-x-hidden">
-        <ThemeProvider
-          attribute="class" 
-          defaultTheme="dark"
-          enableSystem={false}>
-            <AuthProvider>
-              {children}
-            </AuthProvider>
-        </ThemeProvider>
+        <AuthProvider>
+          <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+            {children}
+          </ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   );

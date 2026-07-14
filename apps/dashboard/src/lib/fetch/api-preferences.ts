@@ -5,14 +5,14 @@ export interface ThemeResponse {
 }
 
 export const fetchUserTheme = async (): Promise<ThemeResponse> => {
-  return apiClient<ThemeResponse>('/api/preferences/theme', {
+  return apiClient<ThemeResponse>('/preferences/theme', {
     method: 'GET',
   });
 };
 
 export const updateUserTheme = async (theme: 'light' | 'dark'): Promise<void> => {
-  await apiClient<void>('/api/preferences/theme', {
-    method: 'PUT',
+  await apiClient<void>('/preferences/theme', {
+    method: 'POST',
     body: JSON.stringify({ theme }),
   });
 };
