@@ -12,7 +12,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -45,24 +44,13 @@ public class AnalyticsController {
                         @ArraySchema(schema = @Schema(implementation = AggregatedMetric.class))))
       })
   @GetMapping("/historical")
-  /*
-   * Request params
-   * - fromDate: ISO-8601 String, fetch metrics from
-   * - toDate: ISO-8601 String, fetch metrics to
-   * - interval: aggregation interval (daily, weekly, monthly)
-   * - resourceId: optional repeated query parameter to limit results to dashboard resources
-   * Curl example:
-   * curl
-   * "localhost:8083/analytics/historical?from=2026-05-01T10:44:33.000Z&to=2026-05-02T10:44:33.106Z&interval=daily&resourceId=11111111-1111-1111-1111-111111111111&resourceId=22222222-2222-2222-2222-222222222222"
-   */
   public ResponseEntity<List<AggregatedMetric>> getHistoricalData(
       @RequestParam("from") String fromDate,
       @RequestParam("to") String toDate,
-      @RequestParam(name = "interval", defaultValue = "daily") String interval,
-      @RequestParam(name = "resourceId", required = false) List<UUID> resourceIds) {
+      @RequestParam(name = "interval", defaultValue = "daily") String interval) {
     try {
       List<AggregatedMetric> aggregatedMetrics =
-          normalizedMetricService.fetchHistoricalData(fromDate, toDate, interval, resourceIds);
+          normalizedMetricService.fetchHistoricalData(fromDate, toDate, interval);
 
       if (aggregatedMetrics.isEmpty()) {
         Map<String, String> message = new HashMap<>();
