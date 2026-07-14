@@ -154,7 +154,16 @@ export default function ResourceManager(){
             <h1 className = "text-3xl font-semibold text-center mb-8"> Resource Manager </h1>
 
             <div className = "max-w-4xl mx-auto flex flex-col gap-4">
-                
+                <div className = "flex items-center justify-between gap-3">
+
+                    <div className = "relative flex-1">
+                        <Search size = {14} className = "absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"/>
+
+                        <Input value = {filter} onChange = {(change) => setFilter(change.target.value)} placeholder = "Search resources..." className = "pl-8 h-9"/>
+                    </div>
+
+                </div>
+
             </div>
         </div>
     );
