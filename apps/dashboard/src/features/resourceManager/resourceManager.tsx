@@ -149,6 +149,12 @@ export default function ResourceManager(){
         getSortedRowModel : getSortedRowModel(),
     });
 
+    const filterStatus = (table.getColumn("status")?.getFilterValue() as string | undefined) ?? "all";
+
+    const setFilterStatus = (value : string) => {
+        table.getColumn("status")?.setFilterValue(value === "all" ? undefined : value);
+    };
+
     return(
         <div className = "min-h-screen bg-background text-foreground p-8">
             <h1 className = "text-3xl font-semibold text-center mb-8"> Resource Manager </h1>
@@ -161,6 +167,16 @@ export default function ResourceManager(){
 
                         <Input value = {filter} onChange = {(change) => setFilter(change.target.value)} placeholder = "Search resources..." className = "pl-8 h-9"/>
                     </div>
+
+                    {/*
+                        why is ToggleGroup being used and not tabs?
+                        - toggle group is more appropriate for when changing between states/filtering as the same content is being shown but just a filtered version
+                    */}
+                    <ToggleGroup type = "single" value = {filterStatus} onValueChange = {(value) => value && setFilterStatus(value)} className = "bg-muted rounded-lg p-1 h-9">
+                        <ToggleGroupItem value = "all" className = "h-full text-xs px-3 capitalize data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"> All</ToggleGroupItem>
+                        <ToggleGroupItem value = "active" className = "h-full text-xs px-3 capitalize data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"> Active </ToggleGroupItem>
+                        <ToggleGroupItem value = "inactive" className = "h-full text-xs px-3 capitalize data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"> Inactive </ToggleGroupItem>
+                    </ToggleGroup>
 
                 </div>
 
