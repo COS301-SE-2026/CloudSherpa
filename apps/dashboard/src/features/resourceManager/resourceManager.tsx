@@ -180,6 +180,37 @@ export default function ResourceManager(){
 
                 </div>
 
+                {/* flexRender is used for rendering the header comp */}
+                <div className = "rounded-lg border">
+                    <Table className = "table-fixed w-full">
+
+                        <TableHeader>
+                            {table.getHeaderGroups().map((headerGroup) => 
+                                <TableRow key = {headerGroup.id} className = "hover:bg-transparent">
+                                    {headerGroup.headers.map((header) => (
+                                        <TableHead key = {header.id}> {flexRender(header.column.columnDef.header, header.getContext())}</TableHead>
+                                    ))}
+                                </TableRow>
+                            )}
+                        </TableHeader>
+
+                        <TableBody>
+                            {table.getRowModel().rows.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan = {columns.length} className = "text-center text-xs text-muted-foreground py-6"> No resources </TableCell>
+                                </TableRow>
+                            ) : (
+                                table.getRowModel().rows.map((row) => (
+                                    <TableRow key = {row.id}>
+                                        {row.getVisibleCells().map((cell) => (
+                                            <TableCell key = {cell.id}> {flexRender(cell.column.columnDef.cell, cell.getContext())} </TableCell>
+                                        ))}
+                                    </TableRow>
+                                )))}
+                        </TableBody>
+
+                    </Table>
+                </div>
             </div>
         </div>
     );
