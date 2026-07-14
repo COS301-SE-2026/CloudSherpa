@@ -6,6 +6,9 @@ import { LoginRequestDto } from "../types/dtos/auth/LoginRequestDto";
 import { LoginResponseDto } from "../types/dtos/auth/LoginResponseDto";
 import apiClient from "@/lib/fetch/api-client";
 
+const DISABLE_AUTH = process.env["NEXT_PUBLIC_DISABLE_AUTH"];
+const NODE_ENV = process.env["NODE_ENV"];
+
 type AuthProps = {
     readonly children: React.ReactNode;
 };
@@ -18,7 +21,13 @@ export function AuthProvider({ children }: AuthProps) {
 
     useEffect(() => {
         async function loadAuthState() {
-            if (user == null) {
+            if (NODE_ENV !== "production" && DISABLE_AUTH === "true") {
+                setUser({
+                    userId: "",
+                    username: "authdisabled@gmail.com",
+                    email: "authdisabled@gmail.com",
+                });
+            } else if (user == null) {
                 const response: LoginResponseDto = await apiClient("/auth/me", {
                     method: "GET",
                 });
