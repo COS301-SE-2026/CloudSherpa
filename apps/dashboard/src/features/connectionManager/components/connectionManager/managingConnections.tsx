@@ -34,13 +34,15 @@ const providerTabs : Record<Providers, {active : string; inactive : string}> = {
     active : "bg-primary text-primary-foreground hover:bg-primary/90", inactive : "bg-muted text-muted-foreground hover:bg-muted/80",
   },
 
-  Azure : {
-    active : "bg-primary text-primary-foreground hover:bg-primary/90", inactive : "bg-muted text-muted-foreground hover:bg-muted/80",
-  },
+    Azure: {
+        active: "bg-primary text-primary-foreground hover:bg-primary/90",
+        inactive: "bg-muted text-muted-foreground hover:bg-muted/80",
+    },
 
-  GCP : {
-    active : "bg-primary text-primary-foreground hover:bg-primary/90", inactive : "bg-muted text-muted-foreground hover:bg-muted/80",
-  },
+    GCP: {
+        active: "bg-primary text-primary-foreground hover:bg-primary/90",
+        inactive: "bg-muted text-muted-foreground hover:bg-muted/80",
+    },
 };
 
 const badges = (provider : Exclude<Providers, "All">) => {
@@ -57,20 +59,22 @@ const hardCodedConn : Connections[] = [
   {id : 4, name : "Connection 4", detail : "details about connection", provider : "AWS", resource : 2, status : "active"},
 ];
 
-export default function ManagingConnections(){
-  const [connections, setConnections] = useState<Connections[]>(hardCodedConn);
+export default function ManagingConnections() {
+    const [connections, setConnections] = useState<Connections[]>(hardCodedConn);
 
   const [activeFilter, setActiveFilter] = useState<Providers>("All");
 
   const filtered = activeFilter === "All" ? connections : connections.filter((filteredConnections) => filteredConnections.provider === activeFilter);
 
-  const handleDeletion = (id : number) => {
-    setConnections((previous) => previous.filter((filteredConnections) => filteredConnections.id != id));
-  };
+    const handleDeletion = (id: number) => {
+        setConnections((previous) =>
+            previous.filter((filteredConnections) => filteredConnections.id != id)
+        );
+    };
 
-  const handleAdd = () => {
-    //empty for now
-  };
+    const handleAdd = () => {
+        //empty for now
+    };
 
   return(
     <div

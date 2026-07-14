@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { LoginRequestDto } from "@/features/authentication/types/dtos/auth/LoginRequestDto";
 import { useState } from "react";
@@ -21,7 +21,6 @@ export function useLogin() {
         } else {
             setLoginFailure(true);
         }
-        
     }
 
     return { login, loginFailure };

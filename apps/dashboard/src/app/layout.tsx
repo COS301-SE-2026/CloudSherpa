@@ -6,41 +6,42 @@ import { AuthProvider } from "@/features/authentication/providers/AuthContext";
 import { cn } from "@/lib/utils";
 
 const geistSans = Geist({
-  subsets: ["latin"],
-  variable: "--font-sans",
+    subsets: ["latin"],
+    variable: "--font-sans",
 });
 
 const geistHeading = Geist({
-  subsets: ["latin"],
-  variable: "--font-heading",
+    subsets: ["latin"],
+    variable: "--font-heading",
 });
 
 const geistMono = Geist_Mono({
-  subsets: ["latin"],
-  variable: "--font-mono",
+    subsets: ["latin"],
+    variable: "--font-mono",
 });
 
 export const metadata: Metadata = {
-  title: "CloudSherpa",
-  description: "Ai Cloud Analytics and Finops Platform"
+    title: "CloudSherpa",
+    description: "Ai Cloud Analytics and Finops Platform",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return (
-    <html
-      lang="en"
-      suppressHydrationWarning
-      className={cn(geistSans.variable, geistHeading.variable, geistMono.variable, "font-sans")}>
-      <body className="min-h-screen overflow-x-hidden">
-        <ThemeProvider
-          attribute="class" 
-          defaultTheme="dark"
-          enableSystem={false}>
-            <AuthProvider>
-              {children}
-            </AuthProvider>
-        </ThemeProvider>
-      </body>
-    </html>
-  );
+    return (
+        <html
+            lang="en"
+            suppressHydrationWarning
+            className={cn(
+                geistSans.variable,
+                geistHeading.variable,
+                geistMono.variable,
+                "font-sans"
+            )}
+        >
+            <body className="min-h-screen overflow-x-hidden">
+                <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+                    <AuthProvider>{children}</AuthProvider>
+                </ThemeProvider>
+            </body>
+        </html>
+    );
 }

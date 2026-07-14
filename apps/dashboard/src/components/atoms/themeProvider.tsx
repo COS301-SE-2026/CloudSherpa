@@ -1,10 +1,15 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { ThemeProvider as NextThemesProvider } from "next-themes"
+import * as React from "react";
+import { ThemeProvider as NextThemesProvider } from "next-themes";
 
-export function ThemeProvider({ children, ...props }: Readonly<React.ComponentProps<typeof NextThemesProvider>>) {
-  return (
-    <NextThemesProvider disableTransitionOnChange {...props}>{children}</NextThemesProvider>
-  )
+export function ThemeProvider({
+    children,
+    ...props
+}: Readonly<React.ComponentProps<typeof NextThemesProvider>>) {
+    return (
+        <NextThemesProvider disableTransitionOnChange {...props}>
+            {children}
+        </NextThemesProvider>
+    );
 }
