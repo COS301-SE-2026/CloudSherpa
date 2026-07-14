@@ -1,11 +1,19 @@
 "use client";
 
-import * as React from "react";
 import { useState } from "react";
-import { LayoutDashboard, Plus, ChevronLeft, ChevronDown } from "lucide-react";
+import { LayoutDashboard, Plus, ChevronLeft, ChevronDown, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/atoms/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/atoms/popover";
+import {
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+    CommandList,
+    CommandSeparator,
+} from "@/components/atoms/command";
 
 interface DashboardStub {
     id: string;
@@ -68,40 +76,43 @@ export function DashboardSelector({
                 align="start"
             >
                 {view === "list" ? (
-                    <div className="flex flex-col p-1">
-                        <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            My Dashboards
-                        </div>
-                        {dashboards.map((d) => (
-                            <Button
-                                key={d.id}
-                                variant="ghost"
-                                className={cn(
-                                    "justify-start font-normal transition-button mb-0.5 last:mb-0",
-                                    selectedId === d.id
-                                        ? "bg-active text-primary-foreground"
-                                        : "text-foreground-secondary hover:bg-hover hover:text-foreground"
-                                )}
-                                onClick={() => {
-                                    onSelect(d.id);
-                                    setOpen(false);
-                                }}
-                            >
-                                {d.label}
-                            </Button>
-                        ))}
-
-                        <div className="h-px bg-border-subtle my-1 w-full" />
-
-                        <Button
-                            variant="ghost"
-                            className="justify-start font-medium text-accent hover:bg-accent transition-button group/btn hover:text-secondary"
-                            onClick={() => setView("create")}
-                        >
-                            <Plus className="mr-2 h-4 w-4 transition-transform group-hover/btn:rotate-90" />
-                            Create New Dashboard
-                        </Button>
-                    </div>
+                    <Command>
+                        <CommandInput placeholder="Search dashboards..." className="h-9" />
+                        <CommandList>
+                            <CommandEmpty>No dashboard found.</CommandEmpty>
+                            <CommandGroup heading="My Dashboards">
+                                {dashboards.map((d) => (
+                                    <CommandItem
+                                        key={d.id}
+                                        value={d.label}
+                                        onSelect={() => {
+                                            onSelect(d.id);
+                                            setOpen(false);
+                                        }}
+                                        className="cursor-pointer"
+                                    >
+                                        <Check
+                                            className={cn(
+                                                "mr-2 h-4 w-4",
+                                                selectedId === d.id ? "opacity-100" : "opacity-0"
+                                            )}
+                                        />
+                                        {d.label}
+                                    </CommandItem>
+                                ))}
+                            </CommandGroup>
+                            <CommandSeparator />
+                            <CommandGroup>
+                                <CommandItem
+                                    onSelect={() => setView("create")}
+                                    className="cursor-pointer"
+                                >
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Create New Dashboard
+                                </CommandItem>
+                            </CommandGroup>
+                        </CommandList>
+                    </Command>
                 ) : (
                     // create new dashboard view
                     <div className="flex flex-col p-3 animate-in fade-in zoom-in-95 duration-200">
