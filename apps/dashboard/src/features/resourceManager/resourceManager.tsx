@@ -42,6 +42,55 @@ const hardCodedResources : Resource[] = [
     },
 ];
 
+//only 3 tags ae displayed, rest are hidden
+function ListOfTags({tags} : Readonly<{tags : string[]}>){
+    const displayedTags = tags.slice(0,3);
+
+    return(
+        <div className = "flex items-center gap-1 flex-wrap">
+            {displayedTags.map((tag) => (
+                <Badge key = {tag} variant = "secondary" className = "text-[10px] font-normal"> {tag} </Badge>
+            ))}
+        </div>
+    )
+}
+
+//this allows a sortable col to rendered, can be clicked on to sort the resources (asc to desc and vice versa)
+function ResourceHeaders({column} : Readonly<HeaderContext<Resource, string>>){
+    return(
+        <Button variant = "ghost" size = "sm" 
+            className = "h-auto p-0 font-medium text-foreground hover:bg-transparent hover:text-foreground/80"
+            onClick = {() => column.toggleSorting(column.getIsSorted() === "asc")}> Resource <ArrowUpDown size = {12} className = "ml-1.5 text-muted-foreground"/>
+        </Button>
+    );
+}
+
+function ResourceCells({getValue} : Readonly<CellContext<Resource, string>>){
+    return <span className = "font-medium"> {getValue()} </span>;
+}
+
+function SecondaryCells({getValue} : Readonly<CellContext<Resource, string>>){
+    return <span className = "text-xs text-muted-foreground"> {getValue()} </span>;
+}
+
+function TagCells({getValue} : Readonly<CellContext<Resource, string[]>>){
+    return <ListOfTags tags = {getValue()}/>;
+}
+
+function ToggleHeader(){
+    return <span className = "block text-center"> Active/Inactive </span>;
+}
+
+function ToggleCells({row, table} : Readonly<CellContext<Resource, Resource["status"]>>){
+    const {changeStatus} = table.options.meta as ResourceAction;
+
+    return(
+        <div className = "flex justify-center">
+            <Switch checked = {row.original.status === "active"} onCheckedChange = {() => changeStatus(row.original.id)}/>
+        </div>
+    )
+}
+
 export default function ResourceManager(){
     return(
         <div className = "min-h-screen bg-background text-foreground p-8">
