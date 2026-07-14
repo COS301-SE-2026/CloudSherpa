@@ -5,7 +5,6 @@ import { MetricDTO } from "@/features/dashboard/types/dtos/metrics/MetricDto";
 import { useCallback, useEffect, useState } from "react";
 
 export function useFetchMetrics() {
-
     const [metricFetchError, setMetricFetchError] = useState<Error | null>(null);
     const [metricFetchLoad, setMetricFetchLoad] = useState(true);
 
@@ -34,20 +33,13 @@ export function useFetchMetrics() {
             for (const metric of metrics) {
                 addMetricFromDto(metric);
             }
-
         } catch (error) {
             console.warn(`Failed to fetch metrics: ${error}`);
 
-            setMetricFetchError(
-                error instanceof Error
-                    ? error
-                    : new Error(String(error))
-            );
-
+            setMetricFetchError(error instanceof Error ? error : new Error(String(error)));
         } finally {
             setMetricFetchLoad(false);
         }
-
     }, [addMetricFromDto, clearMetricStore, fromMs, toMs]);
 
     useEffect(() => {

@@ -4,21 +4,21 @@ import { useMetricStore } from "@/features/dashboard/stores/metric-store";
 import { MetricType } from "@/features/dashboard/types/metric";
 
 export function useChartData(resourceId: string, metricType: MetricType) {
-  const series = useMetricStore((state) => state.seriesByKey[`${resourceId}:${metricType}`]);
+    const series = useMetricStore((state) => state.seriesByKey[`${resourceId}:${metricType}`]);
 
-  return useMemo(() => {
-    const rawSeries = series || {};
-    const values = Object.values(rawSeries);
+    return useMemo(() => {
+        const rawSeries = series || {};
+        const values = Object.values(rawSeries);
 
-    const timeSeriesData = values;
+        const timeSeriesData = values;
 
-    const latestPoint = values.length > 0 ? values.at(-1) : null;
+        const latestPoint = values.length > 0 ? values.at(-1) : null;
 
-    const currentValue = latestPoint ? latestPoint.value : 0;
+        const currentValue = latestPoint ? latestPoint.value : 0;
 
-    return {
-      timeSeriesData,
-      currentValue,
-    };
-  }, [series]);
+        return {
+            timeSeriesData,
+            currentValue,
+        };
+    }, [series]);
 }
