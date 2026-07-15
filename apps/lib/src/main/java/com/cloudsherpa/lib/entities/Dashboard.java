@@ -20,6 +20,9 @@ public class Dashboard {
   @Column(name = "user_id", nullable = false)
   private UUID userId;
 
+  @Column(name = "name", length = 100)
+  private String display_name;
+
   @ManyToOne
   @JoinColumn(name = "user_id", nullable = false, insertable = false, updatable = false)
   private User user;

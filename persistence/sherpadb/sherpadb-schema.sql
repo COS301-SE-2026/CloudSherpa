@@ -14,7 +14,7 @@ CREATE TYPE public.currency_enum AS ENUM ('USD', 'EUR', 'ZAR');
 CREATE TYPE public.language_enum AS ENUM ('en', 'es', 'fr');
 CREATE TYPE public.ingestion_period_enum AS ENUM ('1m', '5m', '1h');
 CREATE TYPE public.predefined_time_enum AS ENUM ('last_1h', 'last_24h', 'last_7d');
-CREATE TYPE public.type_enum AS ENUM ('line_chart', 'guage_chart');
+CREATE TYPE public.type_enum AS ENUM ('line_chart', 'gauge_chart');
 
 -- Global Tables in Public Schema
 -- These tables use ON DELETE CASCADE so if a user deletes their account, 
@@ -65,6 +65,7 @@ CREATE TABLE public.cloud_credential (
 
 CREATE TABLE public.dashboard (
   dashboard_id uuid PRIMARY KEY,
+  display_name varchar(255) NOT NULL,
   user_id uuid REFERENCES public.users(user_id) ON DELETE CASCADE,
   time_from timestamptz,
   time_to timestamptz,
