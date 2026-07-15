@@ -31,7 +31,7 @@ export type DashboardStub = {
 };
 
 // update every time a new chart is added
-export type ChartType = "line" | "gauge";
+export type ChartType = "line_chart" | "gauge_chart";
 
 export type ChartThemeTokens = {
     textColor: string;
