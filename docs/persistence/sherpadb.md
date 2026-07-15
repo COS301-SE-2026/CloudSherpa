@@ -2,7 +2,7 @@
 
 This document describes the database architecture used for CloudSherpa. The system uses a **Hybrid Multi-Tenant Architecture** built on PostgreSQL and TimescaleDB:
 1. **Global Schema (`public`):** The shared space for all users. It holds global data like user accounts, UI preferences, and dashboard layouts.
-2. **Tenant Schemas (`tenant_<uuid>`):** A private, isolated database space created uniquely for each customer. This holds their massive lists of cloud resources and time-series metrics without mixing them up with other customers.
+2. **Tenant Schemas (`tenant_<uuid>`):** A private, isolated database space created uniquely for each customer. This holds their cloud resources, time-series metrics, and normalized billing data without mixing them up with other customers.
 
 ## Local Database Access (pgAdmin)
 To view and manage the database locally during development, you can use the bundled pgAdmin container:
@@ -35,6 +35,7 @@ To view and manage the database locally during development, you can use the bund
 | **ingestion_period_enum**| `1m`, `5m`, `1h` | How often our system fetches new data from the cloud. |
 | **predefined_time_enum** | `last_1h`, `last_24h`, `last_7d` | Quick-select time filters for viewing dashboards. |
 | **type_enum** | `line_chart`, `guage_chart` | The specific type of visual chart used in a widget. |
+| **charge_type_enum** | `Usage`, `Other` | Distinguishes actual resource usage charges from other billing line items such as taxes, credits, refunds, and support charges. |
 
 ---
 
@@ -189,6 +190,7 @@ The giant, fast-moving table that holds every single metric data point (CPU spik
 
 | Column Name | Data Type | Key/Constraint | Description |
 | :--- | :--- | :--- | :--- |
+| **metric_id** | UUID | Primary Key | Unique identifier for each metric record. Together with `period_start`, it forms the composite primary key required by TimescaleDB. |
 | **resource_id** | UUID | Foreign Key | The specific resource this data point belongs to. |
 | **recorded_at** | TIMESTAMPTZ | Not Null | The exact moment our system received and saved this data. |
 | **metric_type** | metric_type_enum | Not Null | Is this a `cost`, `usage`, or `performance` metric? |
@@ -199,7 +201,27 @@ The giant, fast-moving table that holds every single metric data point (CPU spik
 | **period_start**| TIMESTAMPTZ | Hypertable Key | **Partition Column.** The start time of the measurement window (e.g., 12:00 PM). Frontend charts use this to sort data. |
 | **period_end** | TIMESTAMPTZ | Not Null | The end time of the measurement window (e.g., 12:05 PM). |
 
----
+### normalized_costs
+Stores normalized cloud billing records imported from cloud provider billing exports (such as the AWS Cost and Usage Report). This table stores financial information used for cost reporting, dashboards, and long-term billing analysis.
+
+| Column Name | Data Type | Key/Constraint | Description |
+| :--- | :--- | :--- | :--- |
+| **cost_id** | UUID | Primary Key | Unique identifier for each normalized billing record. Together with `usage_start_time`, it forms the composite primary key required by TimescaleDB. |
+| **resource_id** | UUID | Foreign Key (Nullable) | Links the billing record to a cloud resource whenever possible. Some billing records (support fees, taxes, credits, refunds, etc.) do not belong to a specific resource and therefore remain NULL. |
+| **provider** | provider_enum | Not Null | The cloud provider that generated the billing record. |
+| **billing_account_id** | VARCHAR(255) | Not Null | Identifier of the cloud billing account responsible for the charge. |
+| **service_name** | VARCHAR(255) | Not Null | The cloud service that generated the charge (e.g., `AmazonEC2`, `AmazonS3`). |
+| **charge_type** | charge_type_enum | Not Null | Distinguishes usage charges from all other billing line items. |
+| **cost_amount** | NUMERIC(16,8) | Not Null | Value of the billing record. |
+| **currency** | currency_enum | Default `USD` | Currency in which the billing record was reported. |
+| **usage_start_time** | TIMESTAMPTZ | Hypertable Key | Beginning of the billing interval used for TimescaleDB partitioning. |
+| **usage_end_time** | TIMESTAMPTZ | Not Null | End of the billing interval. |
+| **metadata** | JSONB | Default `{}` | Stores provider-specific billing information that is not part of the standardized schema. |
+
+#### Cost Data Design
+Unlike performance metrics, billing records are not always associated with a single resource. Charges such as taxes, support plans, subscriptions, credits, and refunds apply to an account rather than an individual cloud resource. For this reason, `resource_id` is intentionally nullable while still allowing direct resource-level cost analysis whenever a resource exists.
+
+The `metadata` JSONB column preserves additional provider-specific billing attributes without requiring schema changes whenever cloud providers introduce new billing fields. This allows CloudSherpa to retain all imported billing information while maintaining a consistent normalized schema.
 
 ## Advanced Database Architecture Features
 
@@ -214,6 +236,25 @@ Because the `normalized_metrics` table will easily hit millions or billions of r
 CREATE INDEX ix_tenant_123e_resource_metric_time 
 ON tenant_123e.normalized_metrics (resource_id, metric_name, period_start DESC);
 ```
+
+The `normalized_costs` table is also implemented as a **TimescaleDB hypertable**. Since cloud billing data continuously accumulates over months or years, partitioning the table by `usage_start_time` enables efficient time-based queries while keeping insert performance high.
+
+To optimize the most common financial queries, two additional indexes are maintained:
+
+```sql
+CREATE INDEX ix_tenant_123e_costs_resource_time
+ON tenant_123e.normalized_costs (resource_id, usage_start_time DESC);
+
+CREATE INDEX ix_tenant_123e_costs_service_time
+ON tenant_123e.normalized_costs (service_name, usage_start_time DESC);
+```
+
+These indexes optimize queries such as:
+
+- Cost history for an individual cloud resource.
+- Historical cost trends for a specific cloud service.
+- Dashboard visualizations showing costs over time.
+- Financial reporting grouped by resources or services.
 
 ### 2. Real-Time Event Broadcasting
 When new metrics hit the database, we want the live frontend dashboards to update instantly without needing to constantly ask the database "Are there any updates?"
@@ -235,3 +276,47 @@ When new metrics hit the database, we want the live frontend dashboards to updat
   "period_end": "2026-05-18T13:25:00.000Z"
 }
 ```
+
+### 3. Dynamic Tenant Provisioning
+CloudSherpa automatically provisions a completely isolated schema whenever a new tenant is created.
+
+Rather than maintaining a single shared table containing data from every customer, the backend executes the `create_new_tenant()` function, which dynamically creates a dedicated schema named `tenant_<uuid>`.
+
+During tenant creation the function automatically:
+
+- Creates the tenant schema.
+- Creates the `resource` table.
+- Creates the `normalized_metrics` hypertable.
+- Creates the `normalized_costs` hypertable.
+- Creates all required indexes.
+- Registers the PostgreSQL trigger used for real-time metric notifications.
+
+This approach provides strong tenant isolation while allowing every tenant to share the same application code and database instance.
+
+### 4. Hybrid Multi-Tenant Architecture
+
+CloudSherpa separates global application data from tenant-specific operational data.
+
+The **public** schema tables:
+
+- User accounts
+- User preferences
+- Cloud connections
+- Cloud accounts
+- Cloud credentials
+- Dashboards
+- Widgets
+
+Each **tenant** schema tables:
+
+- Cloud resources
+- Time-series performance metrics
+- Normalized billing records
+
+This architecture provides several advantages:
+
+- Strong logical isolation between customers.
+- Simpler backup and migration of individual tenants.
+- Efficient TimescaleDB partitioning for time-series workloads.
+- Shared authentication and application metadata.
+- Scalable storage for operational and financial cloud data without mixing customer datasets.
