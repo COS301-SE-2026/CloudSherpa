@@ -20,8 +20,8 @@ public class Dashboard {
   @Column(name = "user_id", nullable = false)
   private UUID userId;
 
-  @Column(name = "name", length = 100)
-  private String display_name;
+  @Column(name = "display_name", length = 255)
+  private String displayName;
 
   @ManyToOne
   @JoinColumn(name = "user_id", nullable = false, insertable = false, updatable = false)
@@ -41,11 +41,13 @@ public class Dashboard {
   public Dashboard(
       UUID id,
       UUID userId,
+      String displayName,
       OffsetDateTime timeFrom,
       OffsetDateTime timeTo,
       String predefinedTime) {
     this.id = id;
     this.userId = userId;
+    this.displayName = displayName;
     this.timeFrom = timeFrom;
     this.timeTo = timeTo;
     this.predefinedTime = predefinedTime;
@@ -57,6 +59,10 @@ public class Dashboard {
 
   public UUID getUserId() {
     return userId;
+  }
+
+  public String getDisplayName() {
+    return displayName;
   }
 
   public User getUser() {

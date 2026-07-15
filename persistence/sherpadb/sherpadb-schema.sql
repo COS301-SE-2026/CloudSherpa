@@ -70,6 +70,7 @@ CREATE TABLE public.dashboard (
   time_from timestamptz,
   time_to timestamptz,
   predefined_time public.predefined_time_enum
+  current BOOLEAN DEFAULT FALSE,
 );
 
 CREATE TABLE public.widget (
