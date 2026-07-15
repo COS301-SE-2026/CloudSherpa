@@ -38,13 +38,17 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
                     ...state.dashboards,
                     [dashboard.id]: dashboard,
                 },
-                activeDashboardId: dashboard.id, // optionally set active
+                activeDashboardId: dashboard.id,
             })),
         removeDashboard: (id) =>
             set((state) => {
                 const newDashboards = { ...state.dashboards };
                 delete newDashboards[id];
-                return { dashboards: newDashboards };
+                return {
+                    dashboards: newDashboards,
+                    activeDashboardId:
+                        state.activeDashboardId === id ? null : state.activeDashboardId,
+                };
             }),
         addWidget: (layout, widget) =>
             set((state) => {
@@ -104,11 +108,36 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
             }),
         updateLayouts: (newLayouts) =>
             set((state) => {
+                const activeId = state.activeDashboardId;
+                if (!activeId || !state.dashboards[activeId]) return state;
+                const activeDashboard = state.dashboards[activeId];
+                const newLayoutIds = newLayouts.map((l) => l.id);
+
                 const updatedLayouts = { ...state.layouts };
+                const updatedWidgets = { ...state.widgets };
+
+                const idsToDelete = activeDashboard.layoutItemIds.filter(
+                    (id) => !newLayoutIds.includes(id)
+                );
+
+                idsToDelete.forEach((id) => {
+                    delete updatedLayouts[id];
+                    delete updatedWidgets[id];
+                });
                 newLayouts.forEach((layout) => {
                     updatedLayouts[layout.id] = layout;
                 });
-                return { layouts: updatedLayouts };
+                return {
+                    layouts: updatedLayouts,
+                    widgets: updatedWidgets,
+                    dashboards: {
+                        ...state.dashboards,
+                        [activeId]: {
+                            ...activeDashboard,
+                            layoutItemIds: newLayoutIds,
+                        },
+                    },
+                };
             }),
         setInitialState: (dashboards, layoutsArray, widgetsArray) => {
             const layoutsMap = layoutsArray.reduce<Record<string, LayoutItem>>((acc, item) => {
@@ -119,10 +148,14 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
                 acc[item.id] = item;
                 return acc;
             }, {});
+
+            const activeDashboard = Object.values(dashboards).find((d) => d.current);
+
             set({
                 dashboards: dashboards,
                 layouts: layoutsMap,
                 widgets: widgetsMap,
+                activeDashboardId: activeDashboard ? activeDashboard.id : null,
             });
         },
     },
