@@ -97,7 +97,7 @@ export default function DemoPage() {
         <div className="p-8 min-h-screen bg-background">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-[350px]">
                 {isReady &&
-                    MOCK_CHART_WIDGETS.map((config) => (
+                    [...MOCK_CHART_WIDGETS, ...MOCK_KPI_WIDGETS].map((config) => (
                         <div key={config.id} className="w-full h-full">
                             <Widget config={config} />
                         </div>
