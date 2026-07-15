@@ -69,8 +69,8 @@ CREATE TABLE public.dashboard (
   user_id uuid REFERENCES public.users(user_id) ON DELETE CASCADE,
   time_from timestamptz,
   time_to timestamptz,
-  predefined_time public.predefined_time_enum
-  current BOOLEAN DEFAULT FALSE,
+  predefined_time public.predefined_time_enum,
+  current boolean DEFAULT false
 );
 
 CREATE TABLE public.widget (

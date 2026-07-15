@@ -36,6 +36,9 @@ public class Dashboard {
   @Column(name = "predefined_time", length = 50)
   private String predefinedTime;
 
+  @Column(name = "current", nullable = false)
+  private Boolean current;
+
   protected Dashboard() {}
 
   public Dashboard(
@@ -44,13 +47,15 @@ public class Dashboard {
       String displayName,
       OffsetDateTime timeFrom,
       OffsetDateTime timeTo,
-      String predefinedTime) {
+      String predefinedTime,
+      Boolean current) {
     this.id = id;
     this.userId = userId;
     this.displayName = displayName;
     this.timeFrom = timeFrom;
     this.timeTo = timeTo;
     this.predefinedTime = predefinedTime;
+    this.current = current;
   }
 
   public UUID getId() {
@@ -79,5 +84,9 @@ public class Dashboard {
 
   public String getPredefinedTime() {
     return predefinedTime;
+  }
+
+  public Boolean getCurrent() {
+    return current;
   }
 }
