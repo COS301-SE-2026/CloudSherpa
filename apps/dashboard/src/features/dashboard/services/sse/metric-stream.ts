@@ -37,22 +37,18 @@ type MetricStreamEvent = {
     period_start: string;
     period_end: string;
     recorded_at: string;
-    unit: string;
+    unit: string | null;
 };
 
 function toMetricDto(event: MetricStreamEvent): MetricDTO {
     return {
-        metricId: event.metric_id,
-        accountId: event.account_id,
-        currency: event.currency,
         resourceId: event.resource_id,
-        metricType: event.metric_type,
         metricName: event.metric_name,
+        metricType: event.metric_type,
         metricValue: event.metric_value,
+        unit: event.unit,
         periodStart: event.period_start,
         periodEnd: event.period_end,
-        recordedAt: event.recorded_at,
-        unit: event.unit,
     };
 }
 

@@ -18,7 +18,7 @@ export function AuthProvider({ children }: AuthProps) {
 
     useEffect(() => {
         async function loadAuthState() {
-            if (user == null) {
+            try {
                 const response: LoginResponseDto = await apiClient("/auth/me", {
                     method: "GET",
                 });
@@ -28,8 +28,13 @@ export function AuthProvider({ children }: AuthProps) {
                     username: response.username,
                     email: response.email,
                 });
+            } catch (error) {
+                if (error instanceof Error && !error.message.includes("401")) {
+                    console.error("Failed to load auth state", error);
+                }
+            } finally {
+                setIsAuthReady(true);
             }
-            setIsAuthReady(true);
         }
 
         loadAuthState();
