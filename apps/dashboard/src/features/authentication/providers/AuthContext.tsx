@@ -19,19 +19,19 @@ export function AuthProvider({ children }: AuthProps) {
     useEffect(() => {
         async function loadAuthState() {
             try {
-                if (user == null) {
-                    const response: LoginResponseDto = await apiClient("/auth/me", {
-                        method: "GET",
-                    });
+                const response: LoginResponseDto = await apiClient("/auth/me", {
+                    method: "GET",
+                });
 
-                    setUser({
-                        userId: response.userId,
-                        username: response.username,
-                        email: response.email,
-                    });
+                setUser({
+                    userId: response.userId,
+                    username: response.username,
+                    email: response.email,
+                });
+            } catch (error) {
+                if (error instanceof Error && !error.message.includes("401")) {
+                    console.error("Failed to load auth state", error);
                 }
-            } catch {
-                setUser(null);
             } finally {
                 setIsAuthReady(true);
             }
