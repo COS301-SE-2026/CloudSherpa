@@ -1,5 +1,6 @@
 package com.cloudsherpa.ingestion.controller;
 
+import com.cloudsherpa.ingestion.billing.provider.aws.cur.AwsCurIngestionService;
 import com.cloudsherpa.ingestion.models.IngestionRequestEvent;
 import com.cloudsherpa.ingestion.models.IngestionResult;
 import com.cloudsherpa.ingestion.service.CloudUsageService;
@@ -21,10 +22,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/events")
 public class CloudUsageController {
   private final CloudUsageService cloudUsageService;
+  private final AwsCurIngestionService awsCurIngestionService;
 
   // CloudUsageService injected as dependency of CloudUsageController
-  public CloudUsageController(CloudUsageService cloudUsageService) {
+  public CloudUsageController(
+      CloudUsageService cloudUsageService, AwsCurIngestionService awsCurIngestionService) {
     this.cloudUsageService = cloudUsageService;
+    this.awsCurIngestionService = awsCurIngestionService;
   }
 
   @Operation(
@@ -105,5 +109,10 @@ public class CloudUsageController {
           @RequestBody
           IngestionRequestEvent request) {
     return cloudUsageService.ingestMock(request);
+  }
+
+  @PostMapping("/ingest/aws/billing/cur")
+  public void ingestAwsBillingCur() {
+    awsCurIngestionService.runCurIngestion();
   }
 }
