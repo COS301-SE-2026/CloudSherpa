@@ -18,7 +18,7 @@ CREATE TYPE public.ingestion_period_enum AS ENUM ('1m', '5m', '1h');
 CREATE TYPE public.predefined_time_enum AS ENUM ('last_1h', 'last_24h', 'last_7d');
 CREATE TYPE public.type_enum AS ENUM ('line_chart', 'guage_chart');
 
--- Differentiates actual compute usage from taxes, credits, and refunds.
+-- Differentiates actual compute usage from other types.
 -- Maps to CUR: line_item_line_item_type
 CREATE TYPE public.charge_type_enum AS ENUM ('Usage', 'Other'); 
 
