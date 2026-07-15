@@ -7,9 +7,10 @@ import { useMetricStore } from "@/features/dashboard/stores/metric-store";
 import { MetricSeries } from "@/features/dashboard/types/metric";
 import { useWindowStore } from "@/features/dashboard/stores/window-store";
 
-const MOCK_WIDGETS: WidgetConfig[] = [
+const MOCK_CHART_WIDGETS: WidgetConfig[] = [
     {
         id: "mock-widget-1",
+        widgetType: "chart",
         chartType: "line",
         title: "Server CPU Load (Mock)",
         resourceId: "demo-server-01",
@@ -17,10 +18,21 @@ const MOCK_WIDGETS: WidgetConfig[] = [
     },
     {
         id: "mock-widget-2",
+        widgetType: "chart",
         chartType: "gauge",
         title: "Memory Utilization (Mock)",
         resourceId: "demo-server-01",
         metricType: "memory",
+    },
+];
+
+const MOCK_KPI_WIDGETS: WidgetConfig[] = [
+    {
+        id: "mock-kpi-widget-1",
+        title: "Mock KPI 1",
+        widgetType: "kpi",
+        resourceIds: ["resource-1"],
+        aggregationWindowDays: 30,
     },
 ];
 
@@ -85,7 +97,7 @@ export default function DemoPage() {
         <div className="p-8 min-h-screen bg-background">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-[350px]">
                 {isReady &&
-                    MOCK_WIDGETS.map((config) => (
+                    MOCK_CHART_WIDGETS.map((config) => (
                         <div key={config.id} className="w-full h-full">
                             <Widget config={config} />
                         </div>
