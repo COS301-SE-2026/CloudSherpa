@@ -6,8 +6,11 @@ import com.cloudsherpa.lib.entities.WidgetResource;
 import com.cloudsherpa.lib.repositories.DashboardRepository;
 import com.cloudsherpa.lib.repositories.DashboardWidgetRepository;
 import com.cloudsherpa.lib.repositories.WidgetResourceRepository;
-import com.cloudsherpa.service.dashboard.dto.DashboardSaveRequestDTO;
+import com.cloudsherpa.service.dashboard.dto.DashboardCreateDTO;
+import com.cloudsherpa.service.dashboard.dto.DashboardDTO;
+import com.cloudsherpa.service.dashboard.dto.WidgetConfigUpdateDTO;
 import com.cloudsherpa.service.dashboard.dto.WidgetDTO;
+import com.cloudsherpa.service.dashboard.dto.WidgetLayoutUpdateDTO;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.UUID;
@@ -30,168 +33,216 @@ public class DashboardService {
     this.widgetResourceRepository = widgetResourceRepository;
   }
 
+  // get all dashboards owned by user
   @Transactional
-  public List<DashboardSaveRequestDTO> getDashboardsByUserId(UUID userId) {
-    List<Dashboard> dashboards = dashboardRepository.findByUserId(userId);
-
-    return dashboards.stream().map(this::mapToDashboardDTO).toList();
+  public List<DashboardDTO> getDashboardsByUserId(UUID userId) {
+    return dashboardRepository.findByUserId(userId).stream().map(this::mapToDashboardDTO).toList();
   }
 
+  // create new blanck instance of dashbnoard
   @Transactional
-  public DashboardSaveRequestDTO saveDashboard(UUID userId, DashboardSaveRequestDTO request) {
-    if (request.getId() != null) {
-      verifyOwnershipIfExists(userId, request.getId());
+  public DashboardDTO createDashboard(DashboardCreateDTO request) {
+    UUID userId = request.userId();
+    List<Dashboard> existingDashboards = dashboardRepository.findByUserId(userId);
+    for (Dashboard existing : existingDashboards) {
+      if (Boolean.TRUE.equals(existing.getCurrent())) {
+        Dashboard updatedExisting =
+            new Dashboard(
+                existing.getId(),
+                existing.getUserId(),
+                existing.getDisplayName(),
+                existing.getTimeFrom(),
+                existing.getTimeTo(),
+                existing.getPredefinedTime(),
+                false);
+        dashboardRepository.save(updatedExisting);
+      }
     }
 
-    Dashboard dashboard = persistDashboardEntity(userId, request);
+    Dashboard newDashboard =
+        new Dashboard(
+            request.id() != null ? request.id() : UUID.randomUUID(),
+            userId,
+            request.displayName(),
+            null,
+            null,
+            "last_24h",
+            true);
 
-    if (request.getWidgets() != null && !request.getWidgets().isEmpty()) {
-      syncWidgets(dashboard, request.getWidgets());
+    dashboardRepository.save(newDashboard);
+    return mapToDashboardDTO(newDashboard);
+  }
+
+  // delete existing dashboard that is owned by specific user
+  @Transactional
+  public void deleteDashboard(UUID userId, UUID dashboardId) {
+    Dashboard dashboard = getDashboardAndVerifyOwnership(userId, dashboardId);
+    if (Boolean.TRUE.equals(dashboard.getCurrent())) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST, "Cannot delete the current dashboard");
     }
+    dashboardRepository.delete(dashboard);
+  }
 
+  // batch update dashboard layout after edit mode was saved in frontend
+  @Transactional
+  public void updateDashboardLayout(
+      UUID userId, UUID dashboardId, List<WidgetLayoutUpdateDTO> layouts) {
+    getDashboardAndVerifyOwnership(userId, dashboardId);
+    // all widgets in db
+    List<Widget> existingWidgets = widgetRepository.findByDashboardId(dashboardId);
+    // ids from incoming widgets
+    List<UUID> incomingWidgetIds = layouts.stream().map(WidgetLayoutUpdateDTO::id).toList();
+    // delete widgets if not present in payload
+    List<Widget> widgetsToDelete =
+        existingWidgets.stream()
+            .filter(widget -> !incomingWidgetIds.contains(widget.getId()))
+            .toList();
+    if (!widgetsToDelete.isEmpty()) {
+      widgetRepository.deleteAll(widgetsToDelete);
+    }
+    // update remaining
+    for (WidgetLayoutUpdateDTO layout : layouts) {
+      widgetRepository
+          .findById(layout.id())
+          .ifPresent(
+              widget -> {
+                Widget updatedWidget =
+                    new Widget(
+                        widget.getId(),
+                        widget.getDashboardId(),
+                        widget.getType(),
+                        layout.x(),
+                        layout.y(),
+                        layout.w(),
+                        layout.h());
+                widgetRepository.save(updatedWidget);
+              });
+    }
+  }
+
+  // add new widget to specific dashboard
+  @Transactional
+  public WidgetDTO createWidget(UUID dashboardId, WidgetDTO request) {
+    UUID userId = request.userId();
+    getDashboardAndVerifyOwnership(userId, dashboardId);
+    Widget widget =
+        new Widget(
+            request.id() != null ? request.id() : UUID.randomUUID(),
+            dashboardId,
+            request.type(),
+            request.startX(),
+            request.startY(),
+            request.width(),
+            request.height());
+    widgetRepository.save(widget);
+
+    if (request.resourceId() != null && request.metricType() != null) {
+      WidgetResource resource =
+          new WidgetResource(
+              UUID.randomUUID(), widget.getId(), request.resourceId(), request.metricType());
+      widgetResourceRepository.save(resource);
+    }
     return request;
   }
 
+  // update specific widget's visual or data configuration
   @Transactional
-  public void deleteDashboard(UUID userId, UUID dashboardId) {
-    if (dashboardId == null) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dashboard ID is required");
+  public WidgetDTO updateWidgetConfig(UUID widgetId, WidgetConfigUpdateDTO request) {
+    UUID userId = request.userId();
+    Widget widget =
+        widgetRepository
+            .findById(widgetId)
+            .orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Widget not found"));
+    getDashboardAndVerifyOwnership(userId, widget.getDashboardId());
+
+    Widget updatedWidget =
+        new Widget(
+            widget.getId(),
+            widget.getDashboardId(),
+            request.type(),
+            widget.getStartX(),
+            widget.getStartY(),
+            widget.getWidth(),
+            widget.getHeight());
+    widgetRepository.save(updatedWidget);
+
+    List<WidgetResource> existingResources = widgetResourceRepository.findByWidgetId(widgetId);
+    if (!existingResources.isEmpty()) {
+      widgetResourceRepository.deleteAll(existingResources);
     }
 
+    if (request.resourceId() != null && request.metricType() != null) {
+      WidgetResource resource =
+          new WidgetResource(
+              UUID.randomUUID(), widgetId, request.resourceId(), request.metricType());
+      widgetResourceRepository.save(resource);
+    }
+
+    return new WidgetDTO(
+        userId,
+        updatedWidget.getId(),
+        updatedWidget.getType(),
+        updatedWidget.getDisplayName(),
+        updatedWidget.getStartX(),
+        updatedWidget.getStartY(),
+        updatedWidget.getWidth(),
+        updatedWidget.getHeight(),
+        request.resourceId(),
+        request.metricType());
+  }
+
+  private Dashboard getDashboardAndVerifyOwnership(UUID userId, UUID dashboardId) {
     Dashboard dashboard =
         dashboardRepository
             .findById(dashboardId)
             .orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Dashboard not found"));
-
     if (!dashboard.getUserId().equals(userId)) {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied to this dashboard");
     }
-
-    dashboardRepository.delete(dashboard);
+    return dashboard;
   }
 
-  private void verifyOwnershipIfExists(UUID userId, UUID dashboardId) {
-    if (dashboardId == null) return;
-
-    dashboardRepository
-        .findById(dashboardId)
-        .ifPresent(
-            existing -> {
-              if (!existing.getUserId().equals(userId)) {
-                throw new ResponseStatusException(
-                    HttpStatus.FORBIDDEN, "Access denied to this dashboard");
-              }
-            });
-  }
-
-  private Dashboard persistDashboardEntity(UUID userId, DashboardSaveRequestDTO payload) {
-    UUID dashboardId = payload.getId() != null ? payload.getId() : UUID.randomUUID();
-
-    Dashboard dashboard =
-        new Dashboard(
-            dashboardId,
-            userId,
-            payload.getTimeFrom(),
-            payload.getTimeTo(),
-            payload.getPredefinedTime());
-
-    return dashboardRepository.save(dashboard);
-  }
-
-  private void syncWidgets(Dashboard dashboard, List<WidgetDTO> incomingWidgets) {
-    List<Widget> existingWidgets = widgetRepository.findByDashboardId(dashboard.getId());
-    List<UUID> incomingWidgetIds =
-        incomingWidgets.stream()
-            .filter(w -> w != null && w.getId() != null)
-            .map(WidgetDTO::getId)
-            .toList();
-
-    List<Widget> toDelete =
-        existingWidgets.stream().filter(w -> !incomingWidgetIds.contains(w.getId())).toList();
-
-    if (!toDelete.isEmpty()) {
-      widgetRepository.deleteAll(toDelete);
-    }
-
-    for (WidgetDTO dto : incomingWidgets) {
-      if (dto != null) {
-        Widget widget = persistWidgetEntity(dashboard.getId(), dto);
-        persistWidgetResource(widget.getId(), dto);
-      }
-    }
-  }
-
-  private Widget persistWidgetEntity(UUID dashboardId, WidgetDTO dto) {
-    UUID widgetId = dto.getId() != null ? dto.getId() : UUID.randomUUID();
-
-    Widget widget =
-        new Widget(
-            widgetId,
-            dashboardId,
-            dto.getType(),
-            dto.getStartX(),
-            dto.getStartY(),
-            dto.getWidth(),
-            dto.getHeight());
-
-    return widgetRepository.save(widget);
-  }
-
-  private void persistWidgetResource(UUID widgetId, WidgetDTO dto) {
-    if (dto.getResourceId() == null || dto.getMetricType() == null) {
-      return;
-    }
-
-    List<WidgetResource> existingResources = widgetResourceRepository.findByWidgetId(widgetId);
-
-    if (existingResources.isEmpty()) {
-      WidgetResource resource =
-          new WidgetResource(UUID.randomUUID(), widgetId, dto.getResourceId(), dto.getMetricType());
-      widgetResourceRepository.save(resource);
-    } else {
-      widgetResourceRepository.deleteAll(existingResources);
-
-      WidgetResource resource =
-          new WidgetResource(UUID.randomUUID(), widgetId, dto.getResourceId(), dto.getMetricType());
-      widgetResourceRepository.save(resource);
-    }
-  }
-
-  private DashboardSaveRequestDTO mapToDashboardDTO(Dashboard dashboard) {
-    DashboardSaveRequestDTO dto = new DashboardSaveRequestDTO();
-    dto.setId(dashboard.getId());
-    dto.setTimeFrom(dashboard.getTimeFrom());
-    dto.setTimeTo(dashboard.getTimeTo());
-    dto.setPredefinedTime(dashboard.getPredefinedTime());
-
+  private DashboardDTO mapToDashboardDTO(Dashboard dashboard) {
     List<Widget> widgets = widgetRepository.findByDashboardId(dashboard.getId());
 
     List<WidgetDTO> widgetDTOs =
         widgets.stream()
             .map(
                 widget -> {
-                  WidgetDTO wDto = new WidgetDTO();
-                  wDto.setId(widget.getId());
-                  wDto.setType(widget.getType());
-                  wDto.setDisplayName(widget.getDisplayName());
-                  wDto.setStartX(widget.getStartX());
-                  wDto.setStartY(widget.getStartY());
-                  wDto.setWidth(widget.getWidth());
-                  wDto.setHeight(widget.getHeight());
+                  UUID resourceId = null;
+                  String metricType = null;
 
-                  widgetResourceRepository.findByWidgetId(widget.getId()).stream()
-                      .findFirst()
-                      .ifPresent(
-                          resource -> {
-                            wDto.setResourceId(resource.getResourceId());
-                            wDto.setMetricType(resource.getMetricType());
-                          });
-                  return wDto;
+                  List<WidgetResource> resources =
+                      widgetResourceRepository.findByWidgetId(widget.getId());
+                  if (!resources.isEmpty()) {
+                    resourceId = resources.get(0).getResourceId();
+                    metricType = resources.get(0).getMetricType();
+                  }
+
+                  return new WidgetDTO(
+                      dashboard.getUserId(),
+                      widget.getId(),
+                      widget.getType(),
+                      widget.getDisplayName(),
+                      widget.getStartX(),
+                      widget.getStartY(),
+                      widget.getWidth(),
+                      widget.getHeight(),
+                      resourceId,
+                      metricType);
                 })
             .toList();
 
-    dto.setWidgets(widgetDTOs);
-    return dto;
+    return new DashboardDTO(
+        dashboard.getId(),
+        dashboard.getDisplayName(),
+        dashboard.getTimeFrom(),
+        dashboard.getTimeTo(),
+        dashboard.getPredefinedTime(),
+        dashboard.getCurrent(),
+        widgetDTOs);
   }
 }
