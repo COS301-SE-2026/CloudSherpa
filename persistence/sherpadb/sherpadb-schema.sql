@@ -17,6 +17,7 @@ CREATE TYPE public.language_enum AS ENUM ('en', 'es', 'fr');
 CREATE TYPE public.ingestion_period_enum AS ENUM ('1m', '5m', '1h');
 CREATE TYPE public.predefined_time_enum AS ENUM ('last_1h', 'last_24h', 'last_7d');
 CREATE TYPE public.type_enum AS ENUM ('line_chart', 'guage_chart');
+CREATE TYPE public.execution_status_enum AS ENUM ('pending', 'processing', 'completed', 'failed');
 
 -- Differentiates actual compute usage from other types.
 -- Maps to CUR: line_item_line_item_type
@@ -66,6 +67,25 @@ CREATE TABLE IF NOT EXISTS public.cloud_credential (
   credential_type public.credential_type_enum NOT NULL,
   credential_value text NOT NULL,
   created_at timestamptz DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS public.billing_export_config (
+  config_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  account_id uuid REFERENCES public.cloud_account(account_id) ON DELETE CASCADE,
+  bucket_name varchar(255) NOT NULL,
+  export_prefix varchar(255), 
+  export_name varchar(255) NOT NULL,
+  created_at timestamptz DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS public.billing_export_execution (
+  execution_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  config_id uuid REFERENCES public.billing_export_config(config_id) ON DELETE CASCADE,
+  status public.execution_status_enum DEFAULT 'pending',
+  rows_processed integer DEFAULT 0,
+  started_at timestamptz DEFAULT NOW(),
+  completed_at timestamptz,
+  error_message text
 );
 
 CREATE TABLE IF NOT EXISTS public.dashboard (
@@ -196,10 +216,16 @@ BEGIN
         CREATE TABLE IF NOT EXISTS %I.normalized_costs (
             cost_id uuid DEFAULT gen_random_uuid(),
             
+            -- Traces this specific cost row back to the execution that ingested it.
+            execution_id uuid REFERENCES public.billing_export_execution(execution_id) ON DELETE CASCADE,
+            
             -- Connects the cost directly to the resources table. 
             -- Must be nullable because some costs are not tied to a specific resource.
-            -- Maps to CUR: line_item_resource_id (matched to internal UUID)
             resource_id uuid REFERENCES %I.resource(resource_id) ON DELETE SET NULL,
+
+            -- The raw ID from the CUR (line_item_resource_id).
+            -- Ensures we never lose the AWS identifier even if resource_id is NULL.
+            raw_resource_id varchar(512), 
 
             provider public.provider_enum NOT NULL,
 
