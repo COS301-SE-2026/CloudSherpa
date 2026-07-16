@@ -107,23 +107,3 @@ Table normalized_metrics {
     (resource_id, metric_name, period_start) [name: "ix_tenant_resource_metric_time"]
   }
 }
-
-Table normalized_costs {
-  cost_id uuid
-  resource_id uuid [ref: > resource.resource_id]
-  provider provider_enum
-  billing_account_id varchar(255)
-  service_name varchar(255)
-  charge_type charge_type_enum
-  cost_amount numeric(16,8)
-  currency currency_enum
-  usage_start_time timestamptz
-  usage_end_time timestamptz
-  metadata jsonb
-
-  Indexes {
-    (cost_id, usage_start_time) [pk]
-    (resource_id, usage_start_time) [name: "ix_costs_resource_time"]
-    (service_name, usage_start_time) [name: "ix_costs_service_time"]
-  }
-}
