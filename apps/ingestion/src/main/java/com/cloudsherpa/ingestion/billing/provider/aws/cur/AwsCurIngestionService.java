@@ -10,8 +10,7 @@ public class AwsCurIngestionService {
 
   public AwsCurIngestionService(AwsCurReportDiscovery awsCurReportDiscovery) {
     this.config =
-        new AwsCurConfig(
-            "test-bucket-564907680089-eu-north-1-an", "example-prefix", "example-export-name");
+        new AwsCurConfig("test-bucket-564907680089-eu-north-1-an", "/exports", "CloudSherpaExport");
     this.awsCurReportDiscovery = awsCurReportDiscovery;
   }
 

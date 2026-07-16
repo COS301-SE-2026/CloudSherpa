@@ -11,7 +11,7 @@
 	</parent>
 
 	<groupId>com.cloudsherpa</groupId>
-  	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.1-SNAPSHOT</version>
 	<artifactId>ingestion</artifactId>
 	<name>ingestion</name>
 	<description />
@@ -40,14 +40,14 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
-         <dependency>
-            <groupId>com.google.cloud</groupId>
-            <artifactId>libraries-bom</artifactId>
-            <version>26.49.0</version>
-            <type>pom</type>
-            <scope>import</scope>
-          </dependency>
-      </dependencies>
+			<dependency>
+				<groupId>com.google.cloud</groupId>
+				<artifactId>libraries-bom</artifactId>
+				<version>26.49.0</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
 	</dependencyManagement>
 	<dependencies>
 		<dependency>
@@ -118,35 +118,35 @@
 			<artifactId>opensearch</artifactId>
 		</dependency>
 		<dependency>
-      <groupId>software.amazon.awssdk</groupId>
-      <artifactId>redshift</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.google.cloud</groupId>
-      <artifactId>google-cloud-monitoring</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.google.cloud</groupId>
-      <artifactId>google-cloud-compute</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.google.cloud</groupId>
-      <artifactId>google-cloud-storage</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.google.cloud</groupId>
-      <artifactId>google-cloud-container</artifactId>
-    </dependency>
-<dependency>
-    <groupId>com.google.cloud</groupId>
-    <artifactId>google-cloud-run</artifactId>
-</dependency>
-<dependency>
-    <groupId>org.mockito</groupId>
-    <artifactId>mockito-inline</artifactId>
-    <version>5.2.0</version>
-    <scope>test</scope>
-</dependency>
+			<groupId>software.amazon.awssdk</groupId>
+			<artifactId>redshift</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.google.cloud</groupId>
+			<artifactId>google-cloud-monitoring</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.google.cloud</groupId>
+			<artifactId>google-cloud-compute</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.google.cloud</groupId>
+			<artifactId>google-cloud-storage</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.google.cloud</groupId>
+			<artifactId>google-cloud-container</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.google.cloud</groupId>
+			<artifactId>google-cloud-run</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-inline</artifactId>
+			<version>5.2.0</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-math3</artifactId>
