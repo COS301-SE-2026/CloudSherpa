@@ -2,11 +2,19 @@ package com.cloudsherpa.ingestion.billing.provider.aws.cur.pipeline;
 
 import com.cloudsherpa.ingestion.provider.aws.services.s3.AwsS3;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AwsCurContext {
-  // Runtime dependency; should never be included in an API response
+
+  Logger logger = LoggerFactory.getLogger(AwsCurContext.class);
+
+  // Runtime dependency
   @JsonIgnore private final AwsS3 s3;
 
   private String bucketName;
@@ -18,6 +26,7 @@ public class AwsCurContext {
   @JsonIgnore private List<AwsCurExport> processingExports;
 
   private List<String> dataFiles;
+  private Path awsCurTmpDir;
 
   public AwsCurContext() {
     this.s3 = new AwsS3();
@@ -76,5 +85,19 @@ public class AwsCurContext {
 
   public void setProcessingExports(List<AwsCurExport> processingExports) {
     this.processingExports = processingExports;
+  }
+
+  public Path getAwsCurTmpDir() {
+    return awsCurTmpDir;
+  }
+
+  public void setAwsCurTmpDir(Path awsCurTmpDir) {
+    try {
+      Files.createDirectories(awsCurTmpDir);
+      this.awsCurTmpDir = awsCurTmpDir;
+    } catch (IOException ioException) {
+      logger.error("Failed to create temp dir {}", awsCurTmpDir, ioException);
+      throw new RuntimeException("Failed to set AWS CUR download directory");
+    }
   }
 }

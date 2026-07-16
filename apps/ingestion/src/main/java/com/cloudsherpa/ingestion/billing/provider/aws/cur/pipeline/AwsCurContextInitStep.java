@@ -1,5 +1,6 @@
 package com.cloudsherpa.ingestion.billing.provider.aws.cur.pipeline;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +24,7 @@ public class AwsCurContextInitStep implements AwsCurIngestionPipelineStep {
     context.setBucketName("test-bucket-564907680089-eu-north-1-an");
     context.setExportPrefix("/exports");
     context.setExportName("CloudSherpaExport");
+    context.setAwsCurTmpDir(Path.of("/tmp/sherpa/aws/cur/")); // will replace with env var
 
     this.logger.info("Initialized AWS CUR Ingestion Pipeline Context");
   }

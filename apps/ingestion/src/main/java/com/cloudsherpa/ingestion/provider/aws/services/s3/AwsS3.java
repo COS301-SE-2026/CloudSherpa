@@ -2,12 +2,15 @@ package com.cloudsherpa.ingestion.provider.aws.services.s3;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
+import java.net.URI;
+import java.nio.file.Path;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.S3Uri;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
@@ -65,6 +68,27 @@ public class AwsS3 {
     } catch (Exception exception) {
       throw new RuntimeException(
           "Failed to build get object request for S3 object: " + object.object().key(), exception);
+    }
+  }
+
+  public void downloadObject(String objectUri, Path destination) {
+
+    try (S3Client s3 = S3Client.builder().region(Region.EU_NORTH_1).build()) {
+
+      S3Uri parsedUri = s3.utilities().parseUri(URI.create(objectUri));
+
+      String bucket =
+          parsedUri
+              .bucket()
+              .orElseThrow(() -> new IllegalArgumentException("S3 URI has no bucket"));
+
+      String key =
+          parsedUri.key().orElseThrow(() -> new IllegalArgumentException("S3 URI has no key"));
+
+      GetObjectRequest request = GetObjectRequest.builder().bucket(bucket).key(key).build();
+
+      logger.info("Downloading S3 object: '{}'", key);
+      s3.getObject(request, destination);
     }
   }
 

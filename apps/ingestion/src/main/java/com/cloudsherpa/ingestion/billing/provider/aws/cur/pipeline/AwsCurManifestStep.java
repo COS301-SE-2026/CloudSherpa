@@ -1,6 +1,6 @@
 package com.cloudsherpa.ingestion.billing.provider.aws.cur.pipeline;
 
-import com.cloudsherpa.ingestion.billing.provider.aws.cur.serialization.json.ManifestConfig;
+import com.cloudsherpa.ingestion.billing.provider.aws.cur.deserialization.json.ManifestConfig;
 import com.cloudsherpa.ingestion.provider.aws.services.s3.S3ObjectReference;
 import java.util.List;
 import org.slf4j.Logger;
@@ -33,9 +33,19 @@ public class AwsCurManifestStep implements AwsCurIngestionPipelineStep {
       ManifestConfig manifestConfig =
           context.getS3().objectToJson(metadataObjectReference, ManifestConfig.class);
       if (!context.getProcessedExports().contains(manifestConfig.getExecutionId())) {
-        context
-            .getProcessingExports()
-            .add(new AwsCurExport(manifestConfig.getExecutionId(), manifestConfig.getDataFiles()));
+
+        AwsCurExport newExport =
+            new AwsCurExport(manifestConfig.getExecutionId(), manifestConfig.getDataFiles());
+
+        if (manifestConfig.getDataFiles().get(0).contains(".parquet")) {
+          newExport.setEncoding("PARQUET");
+        } else if (manifestConfig.getDataFiles().get(0).contains(".csv")) {
+          newExport.setEncoding("CSV");
+        } else {
+          newExport.setEncoding("UNKNOWN");
+        }
+
+        context.getProcessingExports().add(newExport);
       }
     }
   }

@@ -5,6 +5,7 @@ import java.util.List;
 public class AwsCurExport {
   private String exportId;
   private List<String> dataFiles;
+  private String encoding;
 
   public AwsCurExport(String exportId, List<String> dataFiles) {
     this.exportId = exportId;
@@ -25,5 +26,13 @@ public class AwsCurExport {
 
   public void setDataFiles(List<String> dataFiles) {
     this.dataFiles = dataFiles;
+  }
+
+  public String getEncoding() {
+    return encoding;
+  }
+
+  public void setEncoding(String encoding) {
+    this.encoding = encoding;
   }
 }
