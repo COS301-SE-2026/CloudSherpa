@@ -33,6 +33,8 @@ public class AwsCurDownloadReportStep implements AwsCurIngestionPipelineStep {
             throw new RuntimeException("Could not create directory", ioException);
           }
 
+          export.addTmpPath(reportPath);
+
           if (Files.exists(reportPath)) {
             logger.warn("Report already exists at '{}'", reportPath);
           } else {
