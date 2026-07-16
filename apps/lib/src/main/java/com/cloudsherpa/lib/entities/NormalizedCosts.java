@@ -2,6 +2,11 @@ package com.cloudsherpa.lib.entities;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -11,11 +16,6 @@ import java.util.Map;
 import java.util.UUID;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 
 @Entity
 @Table(name = "normalized_costs")
@@ -26,12 +26,22 @@ public class NormalizedCosts {
   @Column(name = "cost_id", nullable = false, updatable = false)
   private UUID costId;
 
+  @Column(name = "execution_id")
+  private UUID executionId;
+
+  @ManyToOne
+  @JoinColumn(name = "execution_id", insertable = false, updatable = false)
+  private BillingExportExecution execution;
+
   @Column(name = "resource_id")
   private UUID resourceId;
 
   @ManyToOne
   @JoinColumn(name = "resource_id", insertable = false, updatable = false)
   private Resource resource;
+
+  @Column(name = "raw_resource_id", length = 512)
+  private String rawResourceId;
 
   @Enumerated(EnumType.STRING)
   @JdbcTypeCode(SqlTypes.NAMED_ENUM)
@@ -66,4 +76,64 @@ public class NormalizedCosts {
   @JdbcTypeCode(SqlTypes.JSON)
   @Column(name = "metadata", columnDefinition = "jsonb")
   private Map<String, Object> metadata;
+
+  public UUID getCostId() {
+    return costId;
+  }
+
+  public UUID getExecutionId() {
+    return executionId;
+  }
+
+  public BillingExportExecution getExecution() {
+    return execution;
+  }
+
+  public UUID getResourceId() {
+    return resourceId;
+  }
+
+  public Resource getResource() {
+    return resource;
+  }
+
+  public String getRawResourceId() {
+    return rawResourceId;
+  }
+
+  public ProviderEnum getProvider() {
+    return provider;
+  }
+
+  public String getBillingAccountId() {
+    return billingAccountId;
+  }
+
+  public String getServiceName() {
+    return serviceName;
+  }
+
+  public ChargeTypeEnum getChargeType() {
+    return chargeType;
+  }
+
+  public BigDecimal getCostAmount() {
+    return costAmount;
+  }
+
+  public CurrencyEnum getCurrency() {
+    return currency;
+  }
+
+  public OffsetDateTime getUsageStartTime() {
+    return usageStartTime;
+  }
+
+  public OffsetDateTime getUsageEndTime() {
+    return usageEndTime;
+  }
+
+  public Map<String, Object> getMetadata() {
+    return metadata;
+  }
 }
