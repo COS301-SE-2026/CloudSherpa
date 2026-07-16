@@ -11,8 +11,8 @@ interface WidgetWrapperProps {
 }
 
 export const WidgetWrapper = ({ layout, isEditMode, onDeleteWidget }: WidgetWrapperProps) => {
-    const { id, widgetId, x, y, w, h, autoPosition } = layout;
-    const config = useDashboardStore((state: DashboardStore) => state.widgets[widgetId]);
+    const { id, x, y, w, h, autoPosition } = layout;
+    const config = useDashboardStore((state: DashboardStore) => state.widgets[id]);
 
     if (!config) return null;
 
@@ -22,7 +22,7 @@ export const WidgetWrapper = ({ layout, isEditMode, onDeleteWidget }: WidgetWrap
         "gs-y": y,
         "gs-w": w,
         "gs-h": h,
-        "data-widget-id": widgetId,
+        "data-widget-id": id,
         ...(autoPosition ? { "gs-auto-position": "true" } : {}),
     };
 
@@ -36,7 +36,7 @@ export const WidgetWrapper = ({ layout, isEditMode, onDeleteWidget }: WidgetWrap
                             <GripVertical className="h-3.5 w-3.5" />
                         </div>
                         <button
-                            onClick={() => onDeleteWidget(id, widgetId)}
+                            onClick={() => onDeleteWidget(id, id)}
                             className="bg-background border border-border shadow-md p-1 rounded-md text-muted-foreground hover:bg-destructive hover:text-destructive-foreground transition-all"
                         >
                             <Trash className="h-3.5 w-3.5" />

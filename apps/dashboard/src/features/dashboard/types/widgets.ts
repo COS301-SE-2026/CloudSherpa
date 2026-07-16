@@ -19,7 +19,7 @@ export type WidgetConfig = {
 
 export type DashboardConfig = {
     id: string;
-    displayname: string;
+    displayName: string;
     timeFrom: string | null;
     timeTo: string | null;
     predefinedTime: string;

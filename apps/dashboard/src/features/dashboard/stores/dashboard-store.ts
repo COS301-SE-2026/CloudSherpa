@@ -2,6 +2,9 @@ import { create } from "zustand";
 import { LayoutItem, DashboardConfig, WidgetConfig } from "@/features/dashboard/types/widgets";
 
 interface DashboardActions {
+    createSnapshot: () => void;
+    restoreSnapshot: () => void;
+    clearSnapshot: () => void;
     setActiveDashboard: (id: string | null) => void;
     addDashboard: (dashboard: DashboardConfig) => void;
     removeDashboard: (id: string) => void;
@@ -21,6 +24,11 @@ export interface DashboardStore {
     dashboards: Record<string, DashboardConfig>;
     layouts: Record<string, LayoutItem>;
     widgets: Record<string, WidgetConfig>;
+    snapshot: {
+        dashboards: Record<string, DashboardConfig>;
+        layouts: Record<string, LayoutItem>;
+        widgets: Record<string, WidgetConfig>;
+    } | null;
     actions: DashboardActions;
 }
 
@@ -29,8 +37,31 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
     dashboards: {},
     layouts: {},
     widgets: {},
+    snapshot: null,
 
     actions: {
+        createSnapshot: () =>
+            set((state) => ({
+                snapshot: {
+                    dashboards: JSON.parse(JSON.stringify(state.dashboards)),
+                    layouts: JSON.parse(JSON.stringify(state.layouts)),
+                    widgets: JSON.parse(JSON.stringify(state.widgets)),
+                },
+            })),
+
+        restoreSnapshot: () =>
+            set((state) => {
+                if (!state.snapshot) return state;
+                return {
+                    dashboards: state.snapshot.dashboards,
+                    layouts: state.snapshot.layouts,
+                    widgets: state.snapshot.widgets,
+                    snapshot: null,
+                };
+            }),
+
+        clearSnapshot: () => set({ snapshot: null }),
+
         setActiveDashboard: (id) => set({ activeDashboardId: id }),
         addDashboard: (dashboard) =>
             set((state) => ({
@@ -106,6 +137,7 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
                     dashboards: newDashboards,
                 };
             }),
+
         updateLayouts: (newLayouts) =>
             set((state) => {
                 const activeId = state.activeDashboardId;
@@ -139,11 +171,13 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
                     },
                 };
             }),
+
         setInitialState: (dashboards, layoutsArray, widgetsArray) => {
             const layoutsMap = layoutsArray.reduce<Record<string, LayoutItem>>((acc, item) => {
                 acc[item.id] = item;
                 return acc;
             }, {});
+
             const widgetsMap = widgetsArray.reduce<Record<string, WidgetConfig>>((acc, item) => {
                 acc[item.id] = item;
                 return acc;

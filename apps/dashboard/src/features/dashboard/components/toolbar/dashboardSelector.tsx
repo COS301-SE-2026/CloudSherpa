@@ -17,14 +17,14 @@ import {
 
 interface DashboardStub {
     id: string;
-    label: string;
+    displayName: string;
 }
 
 interface DashboardSelectorProps {
     dashboards: DashboardStub[];
     selectedId: string;
     onSelect: (id: string) => void;
-    onCreate: (name: string) => void;
+    onCreate: (displayName: string) => void;
 }
 
 export function DashboardSelector({
@@ -64,7 +64,7 @@ export function DashboardSelector({
                     <div className="flex flex-row items-center overflow-hidden">
                         <LayoutDashboard className="mr-2 h-4 w-4 shrink-0" />
                         <span className="truncate">
-                            {selectedDashboard?.label || "Select Dashboard"}
+                            {selectedDashboard?.displayName || "Select Dashboard"}
                         </span>
                     </div>
                     <ChevronDown className="ml-2 h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
@@ -84,7 +84,7 @@ export function DashboardSelector({
                                 {dashboards.map((d) => (
                                     <CommandItem
                                         key={d.id}
-                                        value={d.label}
+                                        value={d.displayName}
                                         onSelect={() => {
                                             onSelect(d.id);
                                             setOpen(false);
@@ -97,7 +97,7 @@ export function DashboardSelector({
                                                 selectedId === d.id ? "opacity-100" : "opacity-0"
                                             )}
                                         />
-                                        {d.label}
+                                        {d.displayName}
                                     </CommandItem>
                                 ))}
                             </CommandGroup>

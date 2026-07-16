@@ -8,5 +8,4 @@ import java.util.List;
 
 public interface DashboardWidgetRepository extends JpaRepository<Widget, UUID> {
     List<Widget> findByDashboardId(UUID dashboardId);
-    List<Widget> findByWidgetId(UUID widgetId);
 }

@@ -7,6 +7,7 @@ import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
 import { useWindowStore } from "@/features/dashboard/stores/window-store";
 import { useMetricStore } from "@/features/dashboard/stores/metric-store";
 import { LayoutItem, WidgetConfig } from "@/features/dashboard/types/widgets";
+import { createDashboard, updateDashboardLayout, createWidget } from "@/lib/fetch/api-dashboard";
 import {
     ToolbarProvider,
     useToolbar,
@@ -19,7 +20,8 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
 
     const activeDashboardId = useDashboardStore((state) => state.activeDashboardId);
     const dashboardsMap = useDashboardStore((state) => state.dashboards);
-    const { addDashboard, addWidget } = useDashboardStore((state) => state.actions);
+    const { addDashboard, addWidget, createSnapshot, restoreSnapshot, clearSnapshot } =
+        useDashboardStore((state) => state.actions);
 
     const fromMs = useWindowStore((state) => state.fromMs);
     const toMs = useWindowStore((state) => state.toMs);
@@ -30,7 +32,7 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
     const dateRange = { from: new Date(fromMs), to: new Date(toMs) };
     const dashboardStubs = Object.values(dashboardsMap).map((d) => ({
         id: d.id,
-        label: d.name,
+        displayName: d.displayName,
     }));
 
     const handleDashboardChange = useCallback(
@@ -41,10 +43,23 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
     );
 
     const handleCreateDashboard = useCallback(
-        (name: string) => {
+        async (name: string) => {
             const newId = crypto.randomUUID();
-            addDashboard({ id: newId, name: name, layoutItemIds: [] });
+            addDashboard({
+                id: newId,
+                displayName: name,
+                timeFrom: null,
+                timeTo: null,
+                predefinedTime: "last_24h",
+                current: true,
+                layoutItemIds: [],
+            });
             router.push(`?id=${newId}`);
+            try {
+                await createDashboard({ id: newId, displayName: name });
+            } catch (error) {
+                console.error("Failed to persist new dashboard", error);
+            }
         },
         [addDashboard, router]
     );
@@ -57,43 +72,65 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
     );
 
     const handleStartEditing = useCallback(() => {
+        createSnapshot();
         setIsEditMode(true);
-    }, [setIsEditMode]);
+    }, [setIsEditMode, createSnapshot]);
 
-    const handleSaveEdit = useCallback(() => {
+    const handleSaveEdit = useCallback( async () => {
+        clearSnapshot();
         setIsEditMode(false);
-    }, [setIsEditMode]);
+        if (!activeDashboardId) return;
+        const currentLayouts = useDashboardStore.getState().layouts;
+        const activeDashboard = useDashboardStore.getState().dashboards[activeDashboardId];
+        const layoutPayload = activeDashboard.layoutItemIds.map(id => {
+            const l = currentLayouts[id];
+            return {
+                id: l.id,
+                x: l.x,
+                y: l.y,
+                w: l.w,
+                h: l.h
+            };
+        });
+        try {
+            await updateDashboardLayout(activeDashboardId, layoutPayload);
+        } catch (error) {
+            console.error("Failed to persist dashboard layout sync", error);
+        }
+    }, [setIsEditMode, clearSnapshot, activeDashboardId]);
 
     const handleCancelEdit = useCallback(() => {
+        restoreSnapshot();
         setIsEditMode(false);
-    }, [setIsEditMode]);
+    }, [setIsEditMode, restoreSnapshot]);
 
     const handleAddWidget = useCallback(() => {
-        const widgetId = crypto.randomUUID();
-        const layoutId = crypto.randomUUID();
+        const sharedId = crypto.randomUUID();
         const metricsByResource = getMetricList();
         const resourceId = Object.keys(metricsByResource)[0];
 
         const newConfig: WidgetConfig = {
-            id: widgetId,
-            title: "New Widget (Click to Customize)",
-            chartType: "line",
+            id: sharedId,
+            displayName: "New Widget (Click to Customize)",
+            type: "line_chart",
             resourceId: resourceId,
             metricType: resourceId ? (metricsByResource[resourceId]?.[0] ?? "anon") : "anon",
         };
 
         const newLayout: LayoutItem = {
-            id: layoutId,
-            widgetId,
+            id: sharedId,
             x: 0,
             y: 0,
             w: 6,
             h: 4,
             autoPosition: true,
         };
+        if (!isEditMode) {
+            createSnapshot();
+        }
         addWidget(newLayout, newConfig);
         setIsEditMode(true);
-    }, [addWidget, getMetricList, setIsEditMode]);
+    }, [addWidget, getMetricList, setIsEditMode, isEditMode, createSnapshot]);
 
     return (
         <div className="flex flex-col flex-1 h-full w-full">

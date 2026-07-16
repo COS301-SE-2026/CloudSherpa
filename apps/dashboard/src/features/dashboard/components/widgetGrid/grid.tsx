@@ -59,7 +59,7 @@ export default function Grid({
                         false,
                         false,
                         (node, w: GridStackWidget) => {
-                            (w as LayoutItem).widgetId = node.el?.dataset.widgetId || "";
+                            (w as LayoutItem).id = node.id || "";
                         }
                     ) as LayoutItem[];
                     onLayoutChangeRef.current(fullLayout);
