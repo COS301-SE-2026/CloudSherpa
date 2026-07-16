@@ -15,8 +15,8 @@ interface BaseChartProps {
 }
 
 const CHART_COMPONENTS: Record<ChartType, React.ComponentType<BaseChartProps>> = {
-    line: LineChart,
-    gauge: GaugeChart,
+    line_chart: LineChart,
+    gauge_chart: GaugeChart,
 };
 
 interface WidgetProps {
@@ -24,19 +24,40 @@ interface WidgetProps {
 }
 
 export default function Widget({ config }: Readonly<WidgetProps>) {
-    const { chartType, title, resourceId, metricType } = config;
-    const ChartComponent = CHART_COMPONENTS[chartType];
+    const { type, displayName, resourceId, metricType } = config;
+    const ChartComponent = CHART_COMPONENTS[type];
     const [isConfigOpen, setIsConfigOpen] = useState(false);
 
     console.log(metricType, resourceId);
 
     const updateStore = useDashboardStore((state) => state.actions.updateWidgetConfig);
 
+    const renderChartContent = () => {
+        if (!ChartComponent) {
+            return (
+                <div className="flex items-center justify-center h-full text-muted-foreground italic text-xs">
+                    Unknown Chart Type: {type}
+                </div>
+            );
+        }
+
+        if (!resourceId || !metricType) {
+            return (
+                <Card className="flex flex-col items-center justify-center h-full">
+                    <span>Unconfigured Widget</span>
+                    <span className="text-xs mt-1">Click the menu to set up</span>
+                </Card>
+            );
+        }
+
+        return <ChartComponent resourceId={resourceId} metricType={metricType} />;
+    };
+
     return (
         <>
             <Card className="flex flex-col h-full w-full overflow-hidden">
                 <CardHeader className="flex flex-row items-center justify-between ">
-                    <CardTitle>{title}</CardTitle>
+                    <CardTitle>{displayName}</CardTitle>
                     <Button
                         onClick={() => setIsConfigOpen(true)}
                         className="text-muted-foreground bg-transparent hover:bg-muted/10"
@@ -46,13 +67,7 @@ export default function Widget({ config }: Readonly<WidgetProps>) {
                 </CardHeader>
 
                 <CardContent className="flex-1 w-full relative overflow-hidden">
-                    {ChartComponent ? (
-                        <ChartComponent resourceId={resourceId} metricType={metricType} />
-                    ) : (
-                        <div className="flex items-center justify-center h-full text-muted-foreground italic text-xs">
-                            Unknown Chart Type: {chartType}
-                        </div>
-                    )}
+                    {renderChartContent()}
                 </CardContent>
             </Card>
 

@@ -54,7 +54,7 @@ export async function createDashboard(payload: DashboardCreateDTO): Promise<Dash
 }
 export async function deleteDashboard(dashboardId: string): Promise<void> {
     await apiClient<void>(`/dashboards/${dashboardId}`, {
-        method: "Post",
+        method: "POST",
     });
 }
 
@@ -63,7 +63,7 @@ export async function updateDashboardLayout(
     layouts: WidgetLayoutUpdateDTO[]
 ): Promise<void> {
     await apiClient<void>(`/dashboards/${dashboardId}/layout`, {
-        method: "Post",
+        method: "POST",
         body: JSON.stringify(layouts),
     });
 }
@@ -80,7 +80,7 @@ export async function updateWidgetConfig(
     payload: WidgetConfigUpdateDTO
 ): Promise<WidgetDTO> {
     return await apiClient<WidgetDTO>(`/dashboards/widgets/${widgetId}/config`, {
-        method: "Post",
+        method: "POST",
         body: JSON.stringify(payload),
     });
 }

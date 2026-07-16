@@ -8,7 +8,7 @@ import {
 import { MetricType, MetricStore } from "@/features/dashboard/types/metric";
 import { useMetricStore } from "@/features/dashboard/stores/metric-store";
 import { useState, useEffect, useRef } from "react";
-import { WidgetConfig } from "@/features/dashboard/types/widgets";
+import { ChartType, WidgetConfig } from "@/features/dashboard/types/widgets";
 import { updateWidgetConfig } from "@/lib/fetch/api-dashboard";
 
 interface WidgetConfigMenuProps {
@@ -53,9 +53,19 @@ export function WidgetConfigMenu({
         isFirstRender.current = false;
     }, [existingConfig]);
 
-    const handleSave = () => {
+    const handleSave = async () => {
         onSave(configuration);
         onClose();
+        try {
+            await updateWidgetConfig(configuration.id, {
+                type: configuration.type as string,
+                displayName: configuration.displayName,
+                resourceId: configuration.resourceId,
+                metricType: configuration.metricType as string,
+            });
+        } catch (error) {
+            console.error("Failed to save widget configuration to database:", error);
+        }
     };
 
     function setConfigAndRegisterUpdate(newConfig: WidgetConfig) {
@@ -89,7 +99,7 @@ export function WidgetConfigMenu({
                         <input
                             id="title"
                             type="text"
-                            value={configuration.displayName}
+                            value={configuration.displayName || ""}
                             onChange={(e) =>
                                 setConfigAndRegisterUpdate({
                                     ...configuration,
@@ -150,7 +160,7 @@ export function WidgetConfigMenu({
 
                                 <select
                                     id="metric-type"
-                                    value={configuration.metricType}
+                                    value={configuration.metricType || ""}
                                     onChange={(e) =>
                                         setConfigAndRegisterUpdate({
                                             ...configuration,
@@ -184,12 +194,12 @@ export function WidgetConfigMenu({
                             <label className="flex items-center gap-2 cursor-pointer">
                                 <input
                                     type="radio"
-                                    value="line"
-                                    checked={configuration.chartType === "line"}
+                                    value="line_chart"
+                                    checked={configuration.type === "line_chart"}
                                     onChange={(e) =>
                                         setConfiguration({
                                             ...configuration,
-                                            chartType: e.target.value as "line" | "gauge",
+                                            type: e.target.value as ChartType,
                                         })
                                     }
                                     className="w-4 h-4 text-primary focus:ring-ring"
@@ -200,12 +210,12 @@ export function WidgetConfigMenu({
                             <label className="flex items-center gap-2 cursor-pointer ">
                                 <input
                                     type="radio"
-                                    value="gauge"
-                                    checked={configuration.chartType === "gauge"}
+                                    value="gauge_chart"
+                                    checked={configuration.type === "gauge_chart"}
                                     onChange={(e) =>
                                         setConfiguration({
                                             ...configuration,
-                                            chartType: e.target.value as "line" | "gauge",
+                                            type: e.target.value as ChartType,
                                         })
                                     }
                                     className="w-4 h-4 text-primary focus:ring-ring"
