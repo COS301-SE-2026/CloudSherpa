@@ -1,6 +1,7 @@
 package com.cloudsherpa.ingestion.controller;
 
 import com.cloudsherpa.ingestion.billing.provider.aws.cur.AwsCurIngestionService;
+import com.cloudsherpa.ingestion.billing.provider.aws.cur.pipeline.AwsCurContext;
 import com.cloudsherpa.ingestion.models.IngestionRequestEvent;
 import com.cloudsherpa.ingestion.models.IngestionResult;
 import com.cloudsherpa.ingestion.service.CloudUsageService;
@@ -112,7 +113,7 @@ public class CloudUsageController {
   }
 
   @PostMapping("/ingest/aws/billing/cur")
-  public void ingestAwsBillingCur() {
-    awsCurIngestionService.runCurIngestion();
+  public AwsCurContext ingestAwsBillingCur() {
+    return awsCurIngestionService.execute();
   }
 }

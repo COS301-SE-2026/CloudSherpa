@@ -1,20 +1,25 @@
 package com.cloudsherpa.ingestion.billing.provider.aws.cur;
 
-import com.cloudsherpa.ingestion.billing.provider.aws.cur.discovery.AwsCurReportDiscovery;
+import com.cloudsherpa.ingestion.billing.provider.aws.cur.pipeline.AwsCurContext;
+import com.cloudsherpa.ingestion.billing.provider.aws.cur.pipeline.AwsCurIngestionPipelineStep;
+import java.util.List;
 import org.springframework.stereotype.Service;
 
 @Service
 public class AwsCurIngestionService {
-  private final AwsCurConfig config;
-  private final AwsCurReportDiscovery awsCurReportDiscovery;
+  private final List<AwsCurIngestionPipelineStep> steps;
 
-  public AwsCurIngestionService(AwsCurReportDiscovery awsCurReportDiscovery) {
-    this.config =
-        new AwsCurConfig("test-bucket-564907680089-eu-north-1-an", "/exports", "CloudSherpaExport");
-    this.awsCurReportDiscovery = awsCurReportDiscovery;
+  public AwsCurIngestionService(List<AwsCurIngestionPipelineStep> steps) {
+    this.steps = List.copyOf(steps);
   }
 
-  public void runCurIngestion() {
-    awsCurReportDiscovery.discoverCurReports(config);
+  public AwsCurContext execute() {
+    AwsCurContext context = new AwsCurContext();
+
+    for (AwsCurIngestionPipelineStep step : steps) {
+      step.execute(context);
+    }
+
+    return context;
   }
 }

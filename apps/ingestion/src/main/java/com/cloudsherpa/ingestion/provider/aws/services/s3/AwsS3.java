@@ -38,6 +38,9 @@ public class AwsS3 {
       ListObjectsV2Response response = s3.listObjectsV2(request.build());
 
       logger.info("Found '{}' objects in bucket '{}'", response.contents().size(), bucketName);
+      for (S3Object object : response.contents()) {
+        logger.info(object.key());
+      }
 
       return response.contents();
 
