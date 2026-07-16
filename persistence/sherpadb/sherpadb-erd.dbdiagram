@@ -33,8 +33,8 @@
       {
         "name": "cloud_credential",
         "schemaName": "public",
-        "x": 1170.1535607315868,
-        "y": -19.254357571417984
+        "x": 740.975504214402,
+        "y": 328.71323583935487
       },
       {
         "name": "dashboard",
@@ -57,20 +57,32 @@
       {
         "name": "resource",
         "schemaName": "public",
-        "x": 1128.897808737315,
-        "y": 265.7477340628627
+        "x": 1255.7447812873766,
+        "y": 341.4443861588728
       },
       {
         "name": "normalized_metrics",
         "schemaName": "public",
-        "x": 1654.083810432501,
-        "y": 72.00836653712247
+        "x": 1640.0325890103281,
+        "y": 83.195068652636
       },
       {
         "name": "normalized_costs",
         "schemaName": "public",
-        "x": 1649.0831132210742,
-        "y": 455.00627490284194
+        "x": 1640.0325890103281,
+        "y": 468.39796285459465
+      },
+      {
+        "name": "billing_export_config",
+        "schemaName": "public",
+        "x": 1283.6817023491335,
+        "y": -20.137205607904036
+      },
+      {
+        "name": "billing_export_execution",
+        "schemaName": "public",
+        "x": 2026.8707768127092,
+        "y": -52.137205607904036
       }
     ],
     "tableGroupCollapseStates": [],
