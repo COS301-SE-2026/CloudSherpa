@@ -1,6 +1,6 @@
 package com.cloudsherpa.service.analytics.service;
 
-import com.cloudsherpa.lib.entities.NormalizedMetrics;
+import com.cloudsherpa.lib.projections.AggregatedMetric;
 import com.cloudsherpa.lib.projections.ResourceNames;
 import com.cloudsherpa.lib.repositories.NormalizedMetricsRepository;
 import com.cloudsherpa.lib.repositories.ResourceRepository;
@@ -8,6 +8,7 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -25,11 +26,10 @@ public class NormalizedMetricService {
     this.resourceRepository = resourceRepository;
   }
 
-  public List<NormalizedMetrics> fetchHistoricalData(String from, String to)
-      throws ResponseStatusException {
-
+  public List<AggregatedMetric> fetchHistoricalData(String from, String to, String interval) {
     OffsetDateTime parsedFromDate;
     OffsetDateTime parsedToDate;
+    String normalizedInterval = interval.toLowerCase(Locale.ROOT);
 
     try {
       parsedFromDate = OffsetDateTime.parse(from);
@@ -41,11 +41,28 @@ public class NormalizedMetricService {
     }
 
     if (parsedFromDate.isAfter(parsedToDate)) {
-      // from after to
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid interval");
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid date range");
     }
 
-    return normalizedMetricsRepository.findByPeriodStartBetween(parsedFromDate, parsedToDate);
+    String bucketWidth;
+
+    switch (normalizedInterval) {
+      case "daily":
+        bucketWidth = "1 day";
+        break;
+      case "weekly":
+        bucketWidth = "1 week";
+        break;
+      case "monthly":
+        bucketWidth = "1 month";
+        break;
+      default:
+        throw new ResponseStatusException(
+            HttpStatus.BAD_REQUEST, "Invalid interval. Supported values: daily, weekly, monthly");
+    }
+
+    return normalizedMetricsRepository.findAggregatedMetricsByPeriod(
+        parsedFromDate, parsedToDate, bucketWidth);
   }
 
   public Map<String, String> fetchResourceNames() {
