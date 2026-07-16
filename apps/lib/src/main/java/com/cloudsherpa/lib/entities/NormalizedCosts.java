@@ -38,7 +38,7 @@ public class NormalizedCosts {
   @Column(name = "provider", nullable = false, columnDefinition = "public.provider_enum")
   private ProviderEnum provider;
 
-  @Column(name = "billing_account_id", nullable = false)
+  @Column(name = "billing_account_id")
   private String billingAccountId;
 
   @Column(name = "service_name", nullable = false)
