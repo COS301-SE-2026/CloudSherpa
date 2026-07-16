@@ -42,19 +42,19 @@ export interface WidgetConfigUpdateDTO {
     metricType: string | null;
 }
 export async function fetchDashboards(): Promise<DashboardDTO[]> {
-    return await apiClient<DashboardDTO[]>("/analytics/dashboards", {
+    return await apiClient<DashboardDTO[]>("/dashboards", {
         method: "GET",
     });
 }
 export async function createDashboard(payload: DashboardCreateDTO): Promise<DashboardDTO> {
-    return await apiClient<DashboardDTO>("/analytics/dashboards", {
+    return await apiClient<DashboardDTO>("/dashboards", {
         method: "POST",
         body: JSON.stringify(payload),
     });
 }
 export async function deleteDashboard(dashboardId: string): Promise<void> {
-    await apiClient<void>(`/analytics/dashboards/${dashboardId}`, {
-        method: "DELETE",
+    await apiClient<void>(`/dashboards/${dashboardId}`, {
+        method: "Post",
     });
 }
 
@@ -62,14 +62,14 @@ export async function updateDashboardLayout(
     dashboardId: string,
     layouts: WidgetLayoutUpdateDTO[]
 ): Promise<void> {
-    await apiClient<void>(`/analytics/dashboards/${dashboardId}/layout`, {
-        method: "PUT",
+    await apiClient<void>(`/dashboards/${dashboardId}/layout`, {
+        method: "Post",
         body: JSON.stringify(layouts),
     });
 }
 
 export async function createWidget(dashboardId: string, payload: WidgetDTO): Promise<WidgetDTO> {
-    return await apiClient<WidgetDTO>(`/analytics/dashboards/${dashboardId}/widgets`, {
+    return await apiClient<WidgetDTO>(`/dashboards/${dashboardId}/widgets`, {
         method: "POST",
         body: JSON.stringify(payload),
     });
@@ -79,8 +79,8 @@ export async function updateWidgetConfig(
     widgetId: string,
     payload: WidgetConfigUpdateDTO
 ): Promise<WidgetDTO> {
-    return await apiClient<WidgetDTO>(`/analytics/dashboards/widgets/${widgetId}/config`, {
-        method: "PUT",
+    return await apiClient<WidgetDTO>(`/dashboards/widgets/${widgetId}/config`, {
+        method: "Post",
         body: JSON.stringify(payload),
     });
 }

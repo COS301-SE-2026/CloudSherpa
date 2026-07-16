@@ -116,6 +116,7 @@ public class DashboardService {
                         layout.y(),
                         layout.w(),
                         layout.h());
+                updatedWidget.setDisplayName(widget.getDisplayName());
                 widgetRepository.save(updatedWidget);
               });
     }

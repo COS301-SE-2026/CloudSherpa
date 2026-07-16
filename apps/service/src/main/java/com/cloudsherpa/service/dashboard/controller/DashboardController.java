@@ -14,11 +14,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -52,7 +50,7 @@ public class DashboardController {
     return ResponseEntity.ok(dashboardService.createDashboard(requestWithUser));
   }
 
-  @DeleteMapping("/{dashboardId}")
+  @PostMapping("/{dashboardId}")
   @Operation(summary = "Delete a dashboard")
   public ResponseEntity<Void> deleteDashboard(
       @PathVariable UUID dashboardId, @AuthenticationPrincipal Jwt jwt) {
@@ -63,7 +61,7 @@ public class DashboardController {
     return ResponseEntity.noContent().build();
   }
 
-  @PutMapping("/{dashboardId}/layout")
+  @PostMapping("/{dashboardId}/layout")
   @Operation(summary = "Batch update the sizes and positions of all widgets on a dashboard")
   public ResponseEntity<Void> updateDashboardLayout(
       @PathVariable UUID dashboardId,
@@ -89,7 +87,7 @@ public class DashboardController {
     return ResponseEntity.ok(dashboardService.createWidget(dashboardId, requestWithUser));
   }
 
-  @PutMapping("/widgets/{widgetId}/config")
+  @PostMapping("/widgets/{widgetId}/config")
   @Operation(summary = "Update a widget's visual or data configuration")
   public ResponseEntity<WidgetDTO> updateWidgetConfig(
       @PathVariable UUID widgetId,

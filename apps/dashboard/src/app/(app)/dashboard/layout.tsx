@@ -76,20 +76,20 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
         setIsEditMode(true);
     }, [setIsEditMode, createSnapshot]);
 
-    const handleSaveEdit = useCallback( async () => {
+    const handleSaveEdit = useCallback(async () => {
         clearSnapshot();
         setIsEditMode(false);
         if (!activeDashboardId) return;
         const currentLayouts = useDashboardStore.getState().layouts;
         const activeDashboard = useDashboardStore.getState().dashboards[activeDashboardId];
-        const layoutPayload = activeDashboard.layoutItemIds.map(id => {
+        const layoutPayload = activeDashboard.layoutItemIds.map((id) => {
             const l = currentLayouts[id];
             return {
                 id: l.id,
                 x: l.x,
                 y: l.y,
                 w: l.w,
-                h: l.h
+                h: l.h,
             };
         });
         try {
@@ -104,7 +104,9 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
         setIsEditMode(false);
     }, [setIsEditMode, restoreSnapshot]);
 
-    const handleAddWidget = useCallback(() => {
+    const handleAddWidget = useCallback(async () => {
+        if (!activeDashboardId) return;
+
         const sharedId = crypto.randomUUID();
         const metricsByResource = getMetricList();
         const resourceId = Object.keys(metricsByResource)[0];
@@ -128,8 +130,25 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
         if (!isEditMode) {
             createSnapshot();
         }
+
         addWidget(newLayout, newConfig);
         setIsEditMode(true);
+
+        try {
+            await createWidget(activeDashboardId, {
+                id: newConfig.id,
+                type: newConfig.type,
+                displayName: newConfig.displayName,
+                startX: newLayout.x,
+                startY: newLayout.y,
+                width: newLayout.w,
+                height: newLayout.h,
+                resourceId: newConfig.resourceId,
+                metricType: newConfig.metricType,
+            });
+        } catch (error) {
+            console.error("Failed to persist new widget", error);
+        }
     }, [addWidget, getMetricList, setIsEditMode, isEditMode, createSnapshot]);
 
     return (

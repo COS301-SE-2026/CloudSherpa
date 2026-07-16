@@ -9,13 +9,12 @@ import { MetricType, MetricStore } from "@/features/dashboard/types/metric";
 import { useMetricStore } from "@/features/dashboard/stores/metric-store";
 import { useState, useEffect, useRef } from "react";
 import { WidgetConfig } from "@/features/dashboard/types/widgets";
+import { updateWidgetConfig } from "@/lib/fetch/api-dashboard";
 
 interface WidgetConfigMenuProps {
     isOpen: boolean;
-
     onClose: () => void;
     onSave: (config: WidgetConfig) => void;
-
     existingConfig: WidgetConfig;
 }
 
@@ -23,10 +22,8 @@ interface WidgetConfigMenuProps {
 // Also need to confirm that interface is more appropriate than type
 export function WidgetConfigMenu({
     isOpen,
-
     onClose,
     onSave,
-
     existingConfig,
 }: Readonly<WidgetConfigMenuProps>) {
     const [configuration, setConfiguration] = useState<WidgetConfig>(existingConfig);
@@ -92,11 +89,11 @@ export function WidgetConfigMenu({
                         <input
                             id="title"
                             type="text"
-                            value={configuration.title}
+                            value={configuration.displayName}
                             onChange={(e) =>
                                 setConfigAndRegisterUpdate({
                                     ...configuration,
-                                    title: e.target.value,
+                                    displayName: e.target.value,
                                 })
                             }
                             className="w-full bg-background border border-border rounded-lg px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"

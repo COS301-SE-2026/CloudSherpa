@@ -54,12 +54,12 @@ export default function Grid({
             );
 
             gridStackInstance.current.on("change", (_event, nodes) => {
-                if (gridStackInstance.current && isEditModeRef.current && nodes) {
+                if (gridStackInstance.current && isEditModeRef.current) {
                     const fullLayout = gridStackInstance.current.save(
                         false,
                         false,
                         (node, w: GridStackWidget) => {
-                            (w as LayoutItem).id = node.id || "";
+                            (w as LayoutItem).id = String(node.id || "");
                         }
                     ) as LayoutItem[];
                     onLayoutChangeRef.current(fullLayout);
