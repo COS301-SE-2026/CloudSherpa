@@ -1,0 +1,129 @@
+// ==========================================
+// PUBLIC SCHEMA (Shared across all tenants)
+// ==========================================
+
+Table users {
+  user_id uuid [pk]
+  email varchar(320) [unique]
+  username varchar(100)
+  password_hash varchar(255)
+  created_at timestamptz
+}
+
+Table preferences {
+  user_id uuid [pk, ref: - users.user_id]
+  theme theme_enum
+  background text
+  currency currency_enum
+  language language_enum
+  sidebar_toggle boolean
+}
+
+Table cloud_connection {
+  connection_id uuid [pk]
+  user_id uuid [ref: > users.user_id]
+  provider provider_enum
+  status status_enum
+  created_at timestamptz
+}
+
+Table cloud_account {
+  account_id uuid [pk]
+  connection_id uuid [ref: > cloud_connection.connection_id]
+  account_type account_type_enum
+  ingestion_period ingestion_period_enum
+  display_name varchar(255)
+  created_at timestamptz
+}
+
+Table cloud_credential {
+  credential_id uuid [pk]
+  account_id uuid [unique, ref: - cloud_account.account_id]
+  provider provider_enum
+  credential_type credential_type_enum
+  credential_value text
+  created_at timestamptz
+}
+
+Table dashboard {
+  dashboard_id uuid [pk]
+  user_id uuid [ref: > users.user_id]
+  time_from timestamptz
+  time_to timestamptz
+  predefined_time predefined_time_enum
+}
+
+Table widget {
+  widget_id uuid [pk]
+  dashboard_id uuid [ref: > dashboard.dashboard_id]
+  type type_enum
+  start_x integer
+  start_y integer
+  width integer
+  height integer
+  display_name varchar(100)
+}
+
+Table widget_resource {
+  widget_resource_id uuid [pk]
+  widget_id uuid [ref: > widget.widget_id]
+  resource_id uuid
+  metric_type metric_type_enum
+}
+
+// ==========================================
+// TENANT SCHEMA TEMPLATE (e.g. tenant_xxxx)
+// ==========================================
+
+Table resource {
+  resource_id uuid [pk]
+  account_id uuid [ref: > cloud_account.account_id]
+  resource_type varchar(255)
+  resource_name varchar(255)
+  status status_enum
+  tags jsonb
+  last_updated timestamptz
+  created_at timestamptz
+
+  Indexes {
+    tags [name: "ix_resource_tags", type: gin]
+  }
+}
+
+Table normalized_metrics {
+  metric_id uuid
+  resource_id uuid [ref: > resource.resource_id]
+  recorded_at timestamptz
+  metric_type metric_type_enum
+  metric_name varchar(255)
+  metric_value numeric
+  unit varchar(50)
+  currency varchar(10)
+  period_start timestamptz
+  period_end timestamptz
+
+  Indexes {
+    (metric_id, period_start) [pk]
+    (resource_id, metric_name, period_start) [name: "ix_tenant_resource_metric_time"]
+  }
+}
+
+Table normalized_costs {
+  cost_id uuid
+  resource_id uuid [ref: > resource.resource_id]
+  provider provider_enum
+  billing_account_id varchar(255)
+  service_name varchar(255)
+  charge_type charge_type_enum
+  cost_amount numeric(16,8)
+  currency currency_enum
+  usage_start_time timestamptz
+  usage_end_time timestamptz
+  metadata jsonb
+
+  Indexes {
+    (cost_id, usage_start_time) [pk]
+    (resource_id, usage_start_time) [name: "ix_costs_resource_time"]
+    (service_name, usage_start_time) [name: "ix_costs_service_time"]
+  }
+}

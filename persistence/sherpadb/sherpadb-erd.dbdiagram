@@ -1,0 +1,81 @@
+{
+  "version": "2.0.0",
+  "darkMode": true,
+  "gridEnabling": false,
+  "currentViewName": null,
+  "defaultView": {
+    "detailLevel": "All",
+    "tablePositions": [
+      {
+        "name": "users",
+        "schemaName": "public",
+        "x": 12,
+        "y": 12
+      },
+      {
+        "name": "preferences",
+        "schemaName": "public",
+        "x": 505.05517578125,
+        "y": 12
+      },
+      {
+        "name": "cloud_connection",
+        "schemaName": "public",
+        "x": 505.05517578125,
+        "y": 282
+      },
+      {
+        "name": "cloud_account",
+        "schemaName": "public",
+        "x": 1077.61962890625,
+        "y": 12
+      },
+      {
+        "name": "cloud_credential",
+        "schemaName": "public",
+        "x": 1637.71875,
+        "y": 12
+      },
+      {
+        "name": "dashboard",
+        "schemaName": "public",
+        "x": 507.7186183670249,
+        "y": 565.2785239581713
+      },
+      {
+        "name": "widget",
+        "schemaName": "public",
+        "x": 1077.61962890625,
+        "y": 282
+      },
+      {
+        "name": "widget_resource",
+        "schemaName": "public",
+        "x": 1637.71875,
+        "y": 616
+      },
+      {
+        "name": "resource",
+        "schemaName": "public",
+        "x": 1637.71875,
+        "y": 282
+      },
+      {
+        "name": "normalized_metrics",
+        "schemaName": "public",
+        "x": 2184.15771484375,
+        "y": 12
+      },
+      {
+        "name": "normalized_costs",
+        "schemaName": "public",
+        "x": 2184.15771484375,
+        "y": 410
+      }
+    ],
+    "tableGroupCollapseStates": [],
+    "stickyNoteLayouts": [],
+    "referencePaths": []
+  },
+  "views": {}
+}
