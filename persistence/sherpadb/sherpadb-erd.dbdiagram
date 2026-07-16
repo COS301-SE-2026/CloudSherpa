@@ -9,68 +9,68 @@
       {
         "name": "users",
         "schemaName": "public",
-        "x": 12,
-        "y": 12
+        "x": 782.6624413086566,
+        "y": -262.4387989753394
       },
       {
         "name": "preferences",
         "schemaName": "public",
-        "x": 505.05517578125,
-        "y": 12
+        "x": 401.04631714850996,
+        "y": -253.81900499164806
       },
       {
         "name": "cloud_connection",
         "schemaName": "public",
-        "x": 505.05517578125,
-        "y": 282
+        "x": 402.85539917975996,
+        "y": 44
       },
       {
         "name": "cloud_account",
         "schemaName": "public",
-        "x": 1077.61962890625,
+        "x": 733.821695620652,
         "y": 12
       },
       {
         "name": "cloud_credential",
         "schemaName": "public",
-        "x": 1637.71875,
-        "y": 12
+        "x": 1170.1535607315868,
+        "y": -19.254357571417984
       },
       {
         "name": "dashboard",
         "schemaName": "public",
-        "x": 507.7186183670249,
-        "y": 565.2785239581713
+        "x": 1106.3859624425822,
+        "y": -294.7360844587356
       },
       {
         "name": "widget",
         "schemaName": "public",
-        "x": 1077.61962890625,
-        "y": 282
+        "x": 1516.0527908795677,
+        "y": -326.7610423833063
       },
       {
         "name": "widget_resource",
         "schemaName": "public",
-        "x": 1637.71875,
-        "y": 616
+        "x": 1840.2469870627883,
+        "y": -359.1359562282411
       },
       {
         "name": "resource",
         "schemaName": "public",
-        "x": 1637.71875,
-        "y": 282
+        "x": 1128.897808737315,
+        "y": 265.7477340628627
       },
       {
         "name": "normalized_metrics",
         "schemaName": "public",
-        "x": 2184.15771484375,
-        "y": 12
+        "x": 1654.083810432501,
+        "y": 72.00836653712247
       },
       {
         "name": "normalized_costs",
         "schemaName": "public",
-        "x": 2184.15771484375,
-        "y": 410
+        "x": 1649.0831132210742,
+        "y": 455.00627490284194
       }
     ],
     "tableGroupCollapseStates": [],
