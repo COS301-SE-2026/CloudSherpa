@@ -2,6 +2,7 @@ package com.cloudsherpa.ingestion.provider.aws.services.ec2;
 
 import com.cloudsherpa.ingestion.connector.CloudCredentials;
 import com.cloudsherpa.ingestion.models.ResourceDetail;
+import com.cloudsherpa.ingestion.provider.aws.model.RegionalInstance;
 import java.util.List;
 import java.util.Map;
 import software.amazon.awssdk.services.ec2.model.Instance;

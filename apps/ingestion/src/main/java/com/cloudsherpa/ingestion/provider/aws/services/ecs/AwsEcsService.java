@@ -3,6 +3,7 @@ package com.cloudsherpa.ingestion.provider.aws.services.ecs;
 import com.cloudsherpa.ingestion.connector.CloudCredentials;
 import com.cloudsherpa.ingestion.models.ResourceDetail;
 import com.cloudsherpa.ingestion.provider.aws.factory.AwsClientFactory;
+import com.cloudsherpa.ingestion.provider.aws.model.RegionalArn;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,9 @@ public class AwsEcsService implements EcsService {
               .build()) {
 
         regionalArns.add(new RegionalArn(ecs.listClusters().clusterArns(), region));
+      } catch (Exception e) {
+        System.out.println(
+            "Skipping ECS discovery for region " + region.id() + ": " + e.getMessage());
       }
     }
     return regionalArns;

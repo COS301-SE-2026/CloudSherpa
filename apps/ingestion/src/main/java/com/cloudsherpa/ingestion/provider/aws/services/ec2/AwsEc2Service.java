@@ -3,6 +3,7 @@ package com.cloudsherpa.ingestion.provider.aws.services.ec2;
 import com.cloudsherpa.ingestion.connector.CloudCredentials;
 import com.cloudsherpa.ingestion.models.ResourceDetail;
 import com.cloudsherpa.ingestion.provider.aws.factory.AwsClientFactory;
+import com.cloudsherpa.ingestion.provider.aws.model.RegionalInstance;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +19,7 @@ public class AwsEc2Service implements Ec2Service {
   @Override
   public List<RegionalInstance> getAllEc2Instances(CloudCredentials credentials) {
     List<RegionalInstance> resources = new ArrayList<>();
-    for (Region region : Region.regions())
+    for (Region region : Region.regions()) {
       try (Ec2Client ec2 =
           Ec2Client.builder()
               .region(region)
@@ -33,7 +34,11 @@ public class AwsEc2Service implements Ec2Service {
             resources.add(new RegionalInstance(instance, region));
           }
         }
+      } catch (Exception e) {
+        System.out.println(
+            "Skipping EC2 discovery for region " + region.id() + ": " + e.getMessage());
       }
+    }
 
     return resources;
   }
