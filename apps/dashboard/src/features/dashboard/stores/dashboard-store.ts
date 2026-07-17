@@ -42,13 +42,27 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
 
     actions: {
         createSnapshot: () =>
-            set((state) => ({
-                snapshot: {
-                    dashboards: structuredClone(state.dashboards),
-                    layouts: structuredClone(state.layouts),
-                    widgets: structuredClone(state.widgets),
-                },
-            })),
+            set((state) => {
+                const cleanLayouts: Record<string, LayoutItem> = {};
+                Object.values(state.layouts).forEach((l) => {
+                    cleanLayouts[l.id] = {
+                        id: l.id,
+                        x: l.x,
+                        y: l.y,
+                        w: l.w,
+                        h: l.h,
+                        autoPosition: l.autoPosition,
+                    };
+                });
+
+                return {
+                    snapshot: {
+                        dashboards: structuredClone(state.dashboards),
+                        layouts: cleanLayouts,
+                        widgets: structuredClone(state.widgets),
+                    },
+                };
+            }),
 
         restoreSnapshot: () =>
             set((state) => {
