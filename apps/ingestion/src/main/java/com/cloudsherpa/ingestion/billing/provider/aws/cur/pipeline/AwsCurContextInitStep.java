@@ -29,8 +29,8 @@ public class AwsCurContextInitStep implements AwsCurIngestionPipelineStep {
 
     // Hardcoded for now, need to fetch from DB
     context.setBucketName("test-bucket-564907680089-eu-north-1-an");
-    context.setExportPrefix("/exports");
-    context.setExportName("CloudSherpaExport");
+    context.setExportPrefix("exports");
+    context.setExportName("CloudSherpaCsvExport");
 
     context.setAwsCurTmpDir(Path.of(awsCurTmpDir));
 

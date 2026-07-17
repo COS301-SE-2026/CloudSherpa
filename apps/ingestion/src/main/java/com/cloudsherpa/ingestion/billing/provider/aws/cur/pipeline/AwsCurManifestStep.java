@@ -39,7 +39,7 @@ public class AwsCurManifestStep implements AwsCurIngestionPipelineStep {
 
         if (manifestConfig.getDataFiles().get(0).contains(".parquet")) {
           newExport.setEncoding("PARQUET");
-        } else if (manifestConfig.getDataFiles().get(0).contains(".csv")) {
+        } else if (manifestConfig.getDataFiles().get(0).contains(".csv.gz")) {
           newExport.setEncoding("CSV");
         } else {
           newExport.setEncoding("UNKNOWN");

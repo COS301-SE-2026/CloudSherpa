@@ -4,6 +4,8 @@ import com.cloudsherpa.ingestion.billing.provider.aws.cur.normalization.AwsCurCs
 import com.cloudsherpa.ingestion.billing.provider.aws.cur.normalization.AwsCurParquetNormalizerService;
 import java.nio.file.Path;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
@@ -13,6 +15,8 @@ public class AwsCurNormalizationStep implements AwsCurIngestionPipelineStep {
 
   private final AwsCurParquetNormalizerService awsCurParquetNormalizationService;
   private final AwsCurCsvNormalizerService awsCurCsvNormalizerService;
+
+  Logger logger = LoggerFactory.getLogger(AwsCurNormalizationStep.class);
 
   public AwsCurNormalizationStep(
       AwsCurParquetNormalizerService awsCurParquetNormalizationService,
@@ -30,7 +34,7 @@ public class AwsCurNormalizationStep implements AwsCurIngestionPipelineStep {
           awsCurParquetNormalizationService.normalize(exportFile);
         }
       } else if (processingExport.getEncoding().equals("CSV")) {
-        for (String dataFile : context.getDataFiles()) {
+        for (String dataFile : processingExport.getDataFiles()) {
           awsCurCsvNormalizerService.normalize(dataFile, context);
         }
       } else {

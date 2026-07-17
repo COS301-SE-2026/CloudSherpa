@@ -27,6 +27,7 @@ public class AwsCurCsvNormalizerService {
 
   public void normalize(String objectUri, AwsCurContext context) {
     try (S3Client s3 = S3Client.builder().region(Region.EU_NORTH_1).build()) {
+
       S3ObjectUriReference s3Uri = context.getS3().uriHelper(s3, objectUri);
 
       GetObjectRequest request =
