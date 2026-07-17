@@ -223,10 +223,6 @@ BEGIN
             -- Must be nullable because some costs are not tied to a specific resource.
             resource_id uuid REFERENCES %I.resource(resource_id) ON DELETE SET NULL,
 
-            -- The raw ID from the CUR (line_item_resource_id).
-            -- Ensures we never lose the AWS identifier even if resource_id is NULL.
-            raw_resource_id varchar(512), 
-
             provider public.provider_enum NOT NULL,
 
             -- Maps to CUR: line_item_usage_account_id
