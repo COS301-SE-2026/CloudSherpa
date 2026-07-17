@@ -1,4 +1,4 @@
-package com.cloudsherpa.ingestion.billing.provider.aws.cur.serialization.json;
+package com.cloudsherpa.ingestion.billing.provider.aws.cur.deserialization.json;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.List;
