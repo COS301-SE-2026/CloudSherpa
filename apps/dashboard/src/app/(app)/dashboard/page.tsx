@@ -20,6 +20,45 @@ import { useMetricStore } from "@/features/dashboard/stores/metric-store";
 import { fetchDashboards, DashboardDTO } from "@/lib/fetch/api-dashboard";
 import { MetricType } from "@/features/dashboard/types/metric";
 
+function processFetchedDashboards(fetchedData: DashboardDTO[]) {
+    const dashboardsMap: Record<string, DashboardConfig> = {};
+    const layoutsArray: LayoutItem[] = [];
+    const configsArray: WidgetConfig[] = [];
+
+    for (const db of fetchedData) {
+        dashboardsMap[db.id] = {
+            id: db.id,
+            displayName: db.displayName,
+            timeFrom: db.timeFrom,
+            timeTo: db.timeTo,
+            predefinedTime: db.predefinedTime,
+            current: db.current,
+            layoutItemIds: db.widgets.map((w) => w.id),
+        };
+
+        for (const w of db.widgets) {
+            layoutsArray.push({
+                id: w.id,
+                x: w.startX,
+                y: w.startY,
+                w: w.width,
+                h: w.height,
+                autoPosition: false,
+            });
+
+            configsArray.push({
+                id: w.id,
+                type: w.type as ChartType,
+                displayName: w.displayName,
+                resourceId: w.resourceId,
+                metricType: w.metricType as MetricType | null,
+            });
+        }
+    }
+
+    return { dashboardsMap, layoutsArray, configsArray };
+}
+
 function DashboardContent() {
     const { error: streamError } = useMetricStream();
     const router = useRouter();
@@ -57,45 +96,6 @@ function DashboardContent() {
         [getMetricList]
     );
 
-    function processFetchedDashboards(fetchedData: DashboardDTO[]) {
-        const dashboardsMap: Record<string, DashboardConfig> = {};
-        const layoutsArray: LayoutItem[] = [];
-        const configsArray: WidgetConfig[] = [];
-
-        for (const db of fetchedData) {
-            dashboardsMap[db.id] = {
-                id: db.id,
-                displayName: db.displayName,
-                timeFrom: db.timeFrom,
-                timeTo: db.timeTo,
-                predefinedTime: db.predefinedTime,
-                current: db.current,
-                layoutItemIds: db.widgets.map((w) => w.id),
-            };
-
-            for (const w of db.widgets) {
-                layoutsArray.push({
-                    id: w.id,
-                    x: w.startX,
-                    y: w.startY,
-                    w: w.width,
-                    h: w.height,
-                    autoPosition: false,
-                });
-
-                configsArray.push({
-                    id: w.id,
-                    type: w.type as ChartType,
-                    displayName: w.displayName,
-                    resourceId: w.resourceId,
-                    metricType: w.metricType as MetricType | null,
-                });
-            }
-        }
-
-        return { dashboardsMap, layoutsArray, configsArray };
-    }
-
     useEffect(() => {
         const loadDashboardData = async () => {
             if (Object.keys(dashboards).length > 0) {
@@ -116,12 +116,13 @@ function DashboardContent() {
                     processFetchedDashboards(fetchedData);
                 setInitialState(dashboardsMap, layoutsArray, configsArray);
                 const currentDb = fetchedData.find((d) => d.current);
-                const defaultId =
-                    urlId && dashboardsMap[urlId]
-                        ? urlId
-                        : currentDb
-                          ? currentDb.id
-                          : fetchedData[0]?.id;
+                let defaultId = fetchedData[0]?.id;
+
+                if (urlId && dashboardsMap[urlId]) {
+                    defaultId = urlId;
+                } else if (currentDb) {
+                    defaultId = currentDb.id;
+                }
 
                 if (defaultId) {
                     setActiveDashboard(defaultId);

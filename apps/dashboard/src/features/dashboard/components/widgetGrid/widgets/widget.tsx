@@ -44,7 +44,6 @@ export default function Widget({ config }: Readonly<WidgetProps>) {
 
     console.log(metricType, resourceId);
 
-    const updateStore = useDashboardStore((state) => state.actions.updateWidgetConfig);
     const removeWidget = useDashboardStore((state) => state.actions.removeWidget);
 
     const renderChartContent = () => {
@@ -122,10 +121,6 @@ export default function Widget({ config }: Readonly<WidgetProps>) {
                 isOpen={isConfigOpen}
                 existingConfig={config}
                 onClose={() => setIsConfigOpen(false)}
-                onSave={(newConfig: WidgetConfig) => {
-                    updateStore(newConfig);
-                    setIsConfigOpen(false);
-                }}
             />
         </>
     );

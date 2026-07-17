@@ -53,7 +53,7 @@ export default function Grid({
                 gridRef.current
             );
 
-            gridStackInstance.current.on("change", (_event, nodes) => {
+            gridStackInstance.current.on("change", () => {
                 if (gridStackInstance.current && isEditModeRef.current) {
                     const fullLayout = gridStackInstance.current.save(
                         false,
@@ -150,12 +150,7 @@ export default function Grid({
         <div className="bg-background min-h-screen">
             <div ref={gridRef} className="grid-stack">
                 {layouts.map((l) => (
-                    <WidgetWrapper
-                        key={l.id}
-                        layout={l}
-                        isEditMode={isEditMode}
-                        onDeleteWidget={onDeleteWidget}
-                    />
+                    <WidgetWrapper key={l.id} layout={l} isEditMode={isEditMode} />
                 ))}
             </div>
         </div>

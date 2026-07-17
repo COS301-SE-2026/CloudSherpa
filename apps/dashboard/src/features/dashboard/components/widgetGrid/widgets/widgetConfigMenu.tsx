@@ -12,7 +12,6 @@ import { ChartType, WidgetConfig } from "@/features/dashboard/types/widgets";
 interface WidgetConfigMenuProps {
     isOpen: boolean;
     onClose: () => void;
-    onSave: (config: WidgetConfig) => void;
     existingConfig: WidgetConfig;
 }
 
@@ -21,7 +20,6 @@ interface WidgetConfigMenuProps {
 export function WidgetConfigMenu({
     isOpen,
     onClose,
-    onSave,
     existingConfig,
 }: Readonly<WidgetConfigMenuProps>) {
     const [configuration, setConfiguration] = useState<WidgetConfig>(existingConfig);

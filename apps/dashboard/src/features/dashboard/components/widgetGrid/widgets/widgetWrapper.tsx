@@ -7,10 +7,9 @@ import Widget from "@/features/dashboard/components/widgetGrid/widgets/widget";
 interface WidgetWrapperProps {
     layout: LayoutItem;
     isEditMode: boolean;
-    onDeleteWidget: (layoutId: string, widgetId: string) => void;
 }
 
-export const WidgetWrapper = ({ layout, isEditMode, onDeleteWidget }: WidgetWrapperProps) => {
+export const WidgetWrapper = ({ layout, isEditMode }: WidgetWrapperProps) => {
     const { id, x, y, w, h, autoPosition } = layout;
     const config = useDashboardStore((state: DashboardStore) => state.widgets[id]);
 
