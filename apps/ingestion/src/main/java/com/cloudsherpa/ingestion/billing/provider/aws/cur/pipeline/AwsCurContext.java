@@ -1,5 +1,6 @@
 package com.cloudsherpa.ingestion.billing.provider.aws.cur.pipeline;
 
+import com.cloudsherpa.ingestion.billing.provider.aws.cur.AwsCurExport;
 import com.cloudsherpa.ingestion.provider.aws.services.s3.AwsS3;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.IOException;
@@ -20,14 +21,16 @@ public class AwsCurContext {
   private String exportPrefix;
   private String exportName;
   private List<String> processedExports;
+  private final String configId;
 
   @JsonIgnore private List<AwsCurExport> processingExports;
 
   private List<String> dataFiles;
   private Path awsCurTmpDir;
 
-  public AwsCurContext() {
+  public AwsCurContext(String configId) {
     this.s3 = new AwsS3();
+    this.configId = configId;
     this.processedExports = new ArrayList<>();
     this.processingExports = new ArrayList<>();
     this.dataFiles = new ArrayList<>();
@@ -91,6 +94,10 @@ public class AwsCurContext {
 
   public Path getAwsCurTmpDir() {
     return awsCurTmpDir;
+  }
+
+  public String getConfigId() {
+    return configId;
   }
 
   public void setAwsCurTmpDir(Path awsCurTmpDir) {

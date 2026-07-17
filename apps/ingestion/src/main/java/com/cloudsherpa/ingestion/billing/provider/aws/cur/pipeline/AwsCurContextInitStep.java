@@ -31,7 +31,6 @@ public class AwsCurContextInitStep implements AwsCurIngestionPipelineStep {
     this.logger.info("Initializing AWS CUR Ingestion Pipeline Context");
     getProcessedExports(context);
 
-    // Hardcoded for now, need to fetch from DB
     context.setBucketName("test-bucket-564907680089-eu-north-1-an");
     context.setExportPrefix("exports");
     context.setExportName("CloudSherpaCsvExport");
@@ -41,7 +40,10 @@ public class AwsCurContextInitStep implements AwsCurIngestionPipelineStep {
     this.logger.info("Initialized AWS CUR Ingestion Pipeline Context");
   }
 
+  // This could problably be a bean and not be run on each export
   private void getProcessedExports(AwsCurContext context) {
+    this.logger.info("Querying DB to get processed executions");
+
     List<BillingExportExecution> processedExportExecutions =
         billingExportExecutionRepository.findAll();
 

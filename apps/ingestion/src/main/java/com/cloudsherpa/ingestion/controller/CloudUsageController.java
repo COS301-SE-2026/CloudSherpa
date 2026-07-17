@@ -114,6 +114,6 @@ public class CloudUsageController {
 
   @PostMapping("/ingest/aws/billing/cur")
   public AwsCurContext ingestAwsBillingCur() {
-    return awsCurIngestionService.execute();
+    return awsCurIngestionService.execute("123");
   }
 }

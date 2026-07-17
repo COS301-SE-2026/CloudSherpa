@@ -1,5 +1,7 @@
 package com.cloudsherpa.ingestion.billing.provider.aws.cur.pipeline;
 
+import com.cloudsherpa.ingestion.billing.provider.aws.cur.AwsCurExport;
+import com.cloudsherpa.ingestion.billing.provider.aws.cur.AwsCurExportService;
 import com.cloudsherpa.ingestion.billing.provider.aws.cur.deserialization.json.ManifestConfig;
 import com.cloudsherpa.ingestion.provider.aws.services.s3.S3ObjectReference;
 import java.util.List;
@@ -13,6 +15,11 @@ import software.amazon.awssdk.services.s3.model.S3Object;
 @Order(2)
 public class AwsCurManifestStep implements AwsCurIngestionPipelineStep {
   Logger logger = LoggerFactory.getLogger(AwsCurManifestStep.class);
+  private final AwsCurExportService awsCurExportService;
+
+  public AwsCurManifestStep(AwsCurExportService awsCurExportService) {
+    this.awsCurExportService = awsCurExportService;
+  }
 
   @Override
   public void execute(AwsCurContext context) {
@@ -35,7 +42,10 @@ public class AwsCurManifestStep implements AwsCurIngestionPipelineStep {
       if (!context.getProcessedExports().contains(manifestConfig.getExecutionId())) {
 
         AwsCurExport newExport =
-            new AwsCurExport(manifestConfig.getExecutionId(), manifestConfig.getDataFiles());
+            awsCurExportService.initializeExport(
+                manifestConfig.getExecutionId(),
+                context.getConfigId(),
+                manifestConfig.getDataFiles());
 
         if (manifestConfig.getDataFiles().get(0).contains(".parquet")) {
           newExport.setEncoding("PARQUET");

@@ -45,7 +45,8 @@ public class BillingExportExecution {
   @Column(name = "error_message", columnDefinition = "text")
   private String errorMessage;
 
-  protected BillingExportExecution() {}
+  protected BillingExportExecution() {
+  }
 
   public BillingExportExecution(
       UUID id,
@@ -64,12 +65,65 @@ public class BillingExportExecution {
     this.errorMessage = errorMessage;
   }
 
-  public UUID getId() { return id; }
-  public UUID getConfigId() { return configId; }
-  public BillingExportConfig getConfig() { return config; }
-  public ExecutionStatusEnum getStatus() { return status; }
-  public Integer getRowsProcessed() { return rowsProcessed; }
-  public OffsetDateTime getStartedAt() { return startedAt; }
-  public OffsetDateTime getCompletedAt() { return completedAt; }
-  public String getErrorMessage() { return errorMessage; }
+  public BillingExportExecution(
+      UUID id,
+      UUID configId,
+      ExecutionStatusEnum status) {
+    this.id = id;
+    this.configId = configId;
+    this.status = status;
+  }
+
+  public UUID getId() {
+    return id;
+  }
+
+  public UUID getConfigId() {
+    return configId;
+  }
+
+  public BillingExportConfig getConfig() {
+    return config;
+  }
+
+  public ExecutionStatusEnum getStatus() {
+    return status;
+  }
+
+  public Integer getRowsProcessed() {
+    return rowsProcessed;
+  }
+
+  public OffsetDateTime getStartedAt() {
+    return startedAt;
+  }
+
+  public OffsetDateTime getCompletedAt() {
+    return completedAt;
+  }
+
+  public String getErrorMessage() {
+    return errorMessage;
+  }
+
+  public void setStatus(ExecutionStatusEnum executionStatus) {
+    this.status = executionStatus;
+  }
+
+  public void setRowsProcessed(Integer rowsProcessed) {
+    this.rowsProcessed = rowsProcessed;
+  }
+
+  public void setStartedAt(OffsetDateTime startedAt) {
+    this.startedAt = startedAt;
+  }
+
+  public void setCompletedAt(OffsetDateTime completedAt) {
+    this.completedAt = completedAt;
+  }
+
+  public void setErrorMessage(String errorMessage) {
+    this.errorMessage = errorMessage;
+  }
+
 }
