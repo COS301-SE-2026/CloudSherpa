@@ -329,7 +329,7 @@ ON CONFLICT (config_id) DO NOTHING;
 
 INSERT INTO public.billing_export_execution (execution_id, config_id, status, rows_processed, started_at, completed_at)
 VALUES (
-    'x0000000-0000-0000-0000-000000000001', 
+    'f0000000-0000-0000-0000-000000000001', 
     'e0000000-0000-0000-0000-000000000001', 
     'completed', 
     3, 
@@ -343,10 +343,10 @@ INSERT INTO tenant_5ebe4340_c5ec_4833_ad93_06abf4609f03.resource
     (resource_id, account_id, resource_type, resource_name, status, tags)
 VALUES 
     -- Discovered EC2 Volume
-    ('r0000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000001', 'AWS::EC2::Volume', 'vol-074a596d821cdf168', 'active', '{"Name": "prod-db-data"}'),
+    ('b0000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000001', 'AWS::EC2::Volume', 'vol-074a596d821cdf168', 'active', '{"Name": "prod-db-data"}'),
     
     -- Discovered S3 Bucket
-    ('r0000000-0000-0000-0000-000000000002', 'a0000000-0000-0000-0000-000000000001', 'AWS::S3::Bucket', 'test-bucket-564907680089-eu-north-1-an', 'active', '{"Environment": "Testing"}')
+    ('b0000000-0000-0000-0000-000000000002', 'a0000000-0000-0000-0000-000000000001', 'AWS::S3::Bucket', 'test-bucket-564907680089-eu-north-1-an', 'active', '{"Environment": "Testing"}')
 ON CONFLICT (resource_id) DO NOTHING;
 
 -- Normalized Costs
@@ -355,8 +355,8 @@ INSERT INTO tenant_5ebe4340_c5ec_4833_ad93_06abf4609f03.normalized_costs
 VALUES 
     -- Standard Compute Charge
     (
-        'c1000000-0000-0000-0000-000000000001', 'x0000000-0000-0000-0000-000000000001', 
-        'r0000000-0000-0000-0000-000000000001', 
+        'c1000000-0000-0000-0000-000000000001', 'f0000000-0000-0000-0000-000000000001', 
+        'b0000000-0000-0000-0000-000000000001', 
         'AWS', '564907680089', 'AmazonEC2', 'Usage', 0.10175000, 
         '2026-07-15 21:00:00Z', '2026-07-15 22:00:00Z', 
         '{"product_region": "eu-north-1", "operation": "RunInstances", "aws_resource_id": "vol-074a596d821cdf168"}'
@@ -364,8 +364,8 @@ VALUES
     
     -- Free Tier Usage
     (
-        'c2000000-0000-0000-0000-000000000002', 'x0000000-0000-0000-0000-000000000001', 
-        'r0000000-0000-0000-0000-000000000002', 
+        'c2000000-0000-0000-0000-000000000002', 'f0000000-0000-0000-0000-000000000001', 
+        'b0000000-0000-0000-0000-000000000002', 
         'AWS', '564907680089', 'AmazonS3', 'Usage', 0.00000000, 
         '2026-07-01 00:00:00Z', '2026-07-01 01:00:00Z', 
         '{"product_region": "eu-north-1", "pricing_term": "FreeTier", "aws_resource_id": "arn:aws:s3:::test-bucket-564907680089-eu-north-1-an"}'
@@ -373,7 +373,7 @@ VALUES
 
     -- Account-Level Cost (No resource ID)
     (
-        'c3000000-0000-0000-0000-000000000003', 'x0000000-0000-0000-0000-000000000001', 
+        'c3000000-0000-0000-0000-000000000003', 'f0000000-0000-0000-0000-000000000001', 
         NULL, 
         'AWS', '564907680089', 'AWSCloudFormation', 'Other', 1.50000000, 
         '2026-07-15 00:00:00Z', '2026-07-15 23:59:59Z', 
