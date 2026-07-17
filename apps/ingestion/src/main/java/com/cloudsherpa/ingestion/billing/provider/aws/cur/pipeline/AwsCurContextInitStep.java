@@ -16,7 +16,7 @@ public class AwsCurContextInitStep implements AwsCurIngestionPipelineStep {
 
   private final String awsCurTmpDir;
 
-  public AwsCurContextInitStep(@Value("sherpa.billing.aws.cur.tmp-dir") String awsCurTmpDir) {
+  public AwsCurContextInitStep(@Value("${sherpa.billing.aws.cur.tmp-dir}") String awsCurTmpDir) {
     this.awsCurTmpDir = awsCurTmpDir;
   }
 

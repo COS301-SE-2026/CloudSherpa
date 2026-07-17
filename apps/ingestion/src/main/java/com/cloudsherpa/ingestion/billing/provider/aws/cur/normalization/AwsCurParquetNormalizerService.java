@@ -23,7 +23,7 @@ public class AwsCurParquetNormalizerService {
     try (ParquetReader<GenericRecord> reader = parquetReaderService.openParquetReader(path)) {
       GenericRecord curRecord;
       while ((curRecord = reader.read()) != null) {
-        logger.info("CUR record: {}", curRecord);
+        // logger.info("CUR record: {}", curRecord);
       }
     } catch (IOException ioException) {
       logger.error("Failed to initialize parquet reader", ioException);
