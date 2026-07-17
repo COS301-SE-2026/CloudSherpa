@@ -188,11 +188,9 @@ function DetailedFeatures({
                     backgroundOrigin: "border-box",
                     backgroundClip: "padding-box, border-box",
                 }}
-
                 onMouseEnter={(forEnter) => {
                     forEnter.currentTarget.style.transform = "translateY(-1px)";
                 }}
-
                 onMouseLeave={(forEnter) => {
                     forEnter.currentTarget.style.transform = "translateY(0)";
                 }}
@@ -411,11 +409,9 @@ const forFeatureCards = forwardRef<HTMLElement, ForFeatureBlocks>(
                                         animationFillMode: "both",
                                         animationDelay: `${forItem * 70}ms`,
                                     }}
-
                                     onMouseEnter={(forEnter) => {
                                         forEnter.currentTarget.style.transform = "translateY(-3px)";
                                     }}
-
                                     onMouseLeave={(forEnter) => {
                                         forEnter.currentTarget.style.transform = "translateY(0)";
                                     }}

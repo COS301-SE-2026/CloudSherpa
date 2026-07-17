@@ -4,6 +4,7 @@ import { LayoutDashboard, Network, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { useAuthContext } from "@/features/authentication/providers/AuthContext";
+import { updateUserTheme } from "@/lib/fetch/api-preferences";
 import { useLogout } from "@/features/authentication/hooks/useLogout";
 import Image from "next/image";
 
@@ -31,6 +32,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const { logout } = useLogout();
 
     const [mounted, setMounted] = React.useState(false);
+
+    const handleThemeToggle = async () => {
+        const newTheme = theme === "dark" ? "light" : "dark";
+        setTheme(newTheme);
+
+        if (authContext?.user) {
+            try {
+                await updateUserTheme(newTheme);
+            } catch (error) {
+                console.error("Failed to save theme preference:", error);
+            }
+        }
+    };
 
     React.useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -147,10 +161,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     )}
                     {mounted && (
                         <SidebarMenuItem>
-                            <SidebarMenuButton
-                                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                                tooltip="Toggle Theme"
-                            >
+                            <SidebarMenuButton onClick={handleThemeToggle} tooltip="Toggle Theme">
                                 {theme === "dark" ? (
                                     <>
                                         <Sun />

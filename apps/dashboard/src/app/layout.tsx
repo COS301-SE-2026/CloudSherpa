@@ -38,9 +38,11 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             )}
         >
             <body className="min-h-screen overflow-x-hidden">
-                <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
-                    <AuthProvider>{children}</AuthProvider>
-                </ThemeProvider>
+                <AuthProvider>
+                    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+                        {children}
+                    </ThemeProvider>
+                </AuthProvider>
             </body>
         </html>
     );
