@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { LayoutDashboard, Plus, ChevronLeft, ChevronDown, Check, Trash } from "lucide-react";
+import { Plus, ChevronLeft, ChevronDown, Check, Trash } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/atoms/button";
 import { Input } from "@/components/atoms/input";

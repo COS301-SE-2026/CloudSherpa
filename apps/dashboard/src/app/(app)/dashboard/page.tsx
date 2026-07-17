@@ -17,7 +17,7 @@ import { useMetricStream } from "@/features/dashboard/services/sse/metric-stream
 import { useFetchMetrics } from "@/features/dashboard/hooks/useFetchMetrics";
 import { useResourceNameStore } from "@/features/dashboard/stores/resource-store";
 import { useMetricStore } from "@/features/dashboard/stores/metric-store";
-import { fetchDashboards } from "@/lib/fetch/api-dashboard";
+import { fetchDashboards, DashboardDTO } from "@/lib/fetch/api-dashboard";
 import { MetricType } from "@/features/dashboard/types/metric";
 
 function DashboardContent() {
@@ -57,6 +57,45 @@ function DashboardContent() {
         [getMetricList]
     );
 
+    function processFetchedDashboards(fetchedData: DashboardDTO[]) {
+        const dashboardsMap: Record<string, DashboardConfig> = {};
+        const layoutsArray: LayoutItem[] = [];
+        const configsArray: WidgetConfig[] = [];
+
+        for (const db of fetchedData) {
+            dashboardsMap[db.id] = {
+                id: db.id,
+                displayName: db.displayName,
+                timeFrom: db.timeFrom,
+                timeTo: db.timeTo,
+                predefinedTime: db.predefinedTime,
+                current: db.current,
+                layoutItemIds: db.widgets.map((w) => w.id),
+            };
+
+            for (const w of db.widgets) {
+                layoutsArray.push({
+                    id: w.id,
+                    x: w.startX,
+                    y: w.startY,
+                    w: w.width,
+                    h: w.height,
+                    autoPosition: false,
+                });
+
+                configsArray.push({
+                    id: w.id,
+                    type: w.type as ChartType,
+                    displayName: w.displayName,
+                    resourceId: w.resourceId,
+                    metricType: w.metricType as MetricType | null,
+                });
+            }
+        }
+
+        return { dashboardsMap, layoutsArray, configsArray };
+    }
+
     useEffect(() => {
         const loadDashboardData = async () => {
             if (Object.keys(dashboards).length > 0) {
@@ -73,44 +112,9 @@ function DashboardContent() {
             }
             try {
                 const fetchedData = await fetchDashboards();
-
-                const dashboardsMap: Record<string, DashboardConfig> = {};
-                const layoutsArray: LayoutItem[] = [];
-                const configsArray: WidgetConfig[] = [];
-
-                fetchedData.forEach((db) => {
-                    dashboardsMap[db.id] = {
-                        id: db.id,
-                        displayName: db.displayName,
-                        timeFrom: db.timeFrom,
-                        timeTo: db.timeTo,
-                        predefinedTime: db.predefinedTime,
-                        current: db.current,
-                        layoutItemIds: db.widgets.map((w) => w.id),
-                    };
-
-                    db.widgets.forEach((w) => {
-                        layoutsArray.push({
-                            id: w.id,
-                            x: w.startX,
-                            y: w.startY,
-                            w: w.width,
-                            h: w.height,
-                            autoPosition: false,
-                        });
-
-                        configsArray.push({
-                            id: w.id,
-                            type: w.type as ChartType,
-                            displayName: w.displayName,
-                            resourceId: w.resourceId,
-                            metricType: w.metricType as MetricType | null,
-                        });
-                    });
-                });
-
+                const { dashboardsMap, layoutsArray, configsArray } =
+                    processFetchedDashboards(fetchedData);
                 setInitialState(dashboardsMap, layoutsArray, configsArray);
-
                 const currentDb = fetchedData.find((d) => d.current);
                 const defaultId =
                     urlId && dashboardsMap[urlId]

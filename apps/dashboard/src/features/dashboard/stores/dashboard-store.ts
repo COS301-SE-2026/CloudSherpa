@@ -1,13 +1,6 @@
 import { create } from "zustand";
 import { LayoutItem, DashboardConfig, WidgetConfig } from "@/features/dashboard/types/widgets";
-import {
-    deleteWidget,
-    updateWidgetConfig,
-    updateDashboardLayout,
-    createWidget,
-    createDashboard,
-    deleteDashboard,
-} from "@/lib/fetch/api-dashboard";
+import { deleteWidget, updateWidgetConfig, deleteDashboard } from "@/lib/fetch/api-dashboard";
 
 interface DashboardActions {
     createSnapshot: () => void;
@@ -51,9 +44,9 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
         createSnapshot: () =>
             set((state) => ({
                 snapshot: {
-                    dashboards: JSON.parse(JSON.stringify(state.dashboards)),
-                    layouts: JSON.parse(JSON.stringify(state.layouts)),
-                    widgets: JSON.parse(JSON.stringify(state.widgets)),
+                    dashboards: structuredClone(state.dashboards),
+                    layouts: structuredClone(state.layouts),
+                    widgets: structuredClone(state.widgets),
                 },
             })),
 

@@ -9,8 +9,6 @@ import { MetricType, MetricStore } from "@/features/dashboard/types/metric";
 import { useMetricStore } from "@/features/dashboard/stores/metric-store";
 import { useState, useEffect, useRef } from "react";
 import { ChartType, WidgetConfig } from "@/features/dashboard/types/widgets";
-import { updateWidgetConfig } from "@/lib/fetch/api-dashboard";
-
 interface WidgetConfigMenuProps {
     isOpen: boolean;
     onClose: () => void;
