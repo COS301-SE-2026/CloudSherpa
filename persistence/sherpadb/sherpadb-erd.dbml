@@ -131,7 +131,6 @@ Table normalized_costs {
   cost_id uuid
   execution_id uuid [ref: > billing_export_execution.execution_id]
   resource_id uuid [ref: > resource.resource_id]
-  raw_resource_id varchar(512)
   provider provider_enum
   billing_account_id varchar(255)
   service_name varchar(255)

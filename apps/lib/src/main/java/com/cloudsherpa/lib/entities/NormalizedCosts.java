@@ -40,9 +40,6 @@ public class NormalizedCosts {
   @JoinColumn(name = "resource_id", insertable = false, updatable = false)
   private Resource resource;
 
-  @Column(name = "raw_resource_id", length = 512)
-  private String rawResourceId;
-
   @Enumerated(EnumType.STRING)
   @JdbcTypeCode(SqlTypes.NAMED_ENUM)
   @Column(name = "provider", nullable = false, columnDefinition = "public.provider_enum")
@@ -95,10 +92,6 @@ public class NormalizedCosts {
 
   public Resource getResource() {
     return resource;
-  }
-
-  public String getRawResourceId() {
-    return rawResourceId;
   }
 
   public ProviderEnum getProvider() {
