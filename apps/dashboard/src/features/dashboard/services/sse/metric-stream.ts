@@ -22,7 +22,7 @@ const MOCK_INTERVAL_MS = 5_000;
 
 let hasSeededMockMetrics = false;
 
-const API_BASE = process.env['NEXT_PUBLIC_API_URL'];
+const API_BASE = process.env["NEXT_PUBLIC_API_URL"];
 
 const sseUrl = `${API_BASE}/stream`;
 
@@ -37,22 +37,18 @@ type MetricStreamEvent = {
     period_start: string;
     period_end: string;
     recorded_at: string;
-    unit: string;
+    unit: string | null;
 };
 
 function toMetricDto(event: MetricStreamEvent): MetricDTO {
     return {
-        metricId: event.metric_id,
-        accountId: event.account_id,
-        currency: event.currency,
         resourceId: event.resource_id,
-        metricType: event.metric_type,
         metricName: event.metric_name,
+        metricType: event.metric_type,
         metricValue: event.metric_value,
+        unit: event.unit,
         periodStart: event.period_start,
         periodEnd: event.period_end,
-        recordedAt: event.recorded_at,
-        unit: event.unit,
     };
 }
 
@@ -67,7 +63,9 @@ function createMockMetrics(): Metric[] {
             metrics.push({
                 resource_id: resource.id,
                 metricType: resource.metricType,
-                timestamp: new Date(now - (metricValues.length - 1 - index) * MOCK_INTERVAL_MS).toISOString(),
+                timestamp: new Date(
+                    now - (metricValues.length - 1 - index) * MOCK_INTERVAL_MS
+                ).toISOString(),
                 value: Math.min(100, value),
             });
         });
@@ -77,42 +75,41 @@ function createMockMetrics(): Metric[] {
 }
 
 export function useMetricStream() {
-
     const addMetric = useMetricStore((state) => state.addMetric);
     const addMetricFromDto = useMetricStore((state) => state.addMetricFromDto);
     // String or bool?
     const [error, setError] = useState<Error | null>(null);
 
     useEffect(() => {
-            if (!hasSeededMockMetrics) {
-                createMockMetrics().forEach(addMetric);
-                hasSeededMockMetrics = true;
-            }
+        if (!hasSeededMockMetrics) {
+            createMockMetrics().forEach(addMetric);
+            hasSeededMockMetrics = true;
+        }
 
-            const eventSource = new EventSource(sseUrl, { withCredentials: true });
-    
-            eventSource.onopen = () => {
-                console.log("SSE connected");
-                setError(null);
-            };
-    
-            const handleMetric = (event: MessageEvent<string>) => {
-                const metricDto = toMetricDto(JSON.parse(event.data) as MetricStreamEvent);
-                addMetricFromDto(metricDto);
-            };
-    
-            eventSource.onerror = () => {
-                setError(new Error(`Failed to open metric stream connection`));
-                eventSource.close();
-            }
-    
-            eventSource.addEventListener("metric", handleMetric);
-    
-            return () => {
-                eventSource.removeEventListener("metric", handleMetric);
-                eventSource.close();
-            }
-        }, [addMetric, addMetricFromDto])
+        const eventSource = new EventSource(sseUrl, { withCredentials: true });
+
+        eventSource.onopen = () => {
+            console.log("SSE connected");
+            setError(null);
+        };
+
+        const handleMetric = (event: MessageEvent<string>) => {
+            const metricDto = toMetricDto(JSON.parse(event.data) as MetricStreamEvent);
+            addMetricFromDto(metricDto);
+        };
+
+        eventSource.onerror = () => {
+            setError(new Error(`Failed to open metric stream connection`));
+            eventSource.close();
+        };
+
+        eventSource.addEventListener("metric", handleMetric);
+
+        return () => {
+            eventSource.removeEventListener("metric", handleMetric);
+            eventSource.close();
+        };
+    }, [addMetric, addMetricFromDto]);
 
     return { error };
 }

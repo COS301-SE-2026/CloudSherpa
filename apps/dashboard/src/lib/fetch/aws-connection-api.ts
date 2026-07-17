@@ -22,7 +22,6 @@ export interface PersistAwsConnectionRequest {
   resources: ResourceSelectionDto[];
 }
 
-
 export enum AccountType {
   AWS_ACCOUNT = "aws_account",
   AZURE_SUBSCRIPTION = "azure_subscription",
@@ -54,9 +53,8 @@ export interface CloudResource {
   lastUpdated: string;
   createdAt: string;
 }
-export async function createAwsConnection(
-  request: PersistAwsConnectionRequest
-): Promise<void> {
+
+export async function createAwsConnection(request: PersistAwsConnectionRequest): Promise<void> {
   await apiClient<void>("/aws/connections", {
     method: "POST",
     body: JSON.stringify(request),

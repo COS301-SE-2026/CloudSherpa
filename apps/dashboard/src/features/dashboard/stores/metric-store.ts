@@ -1,6 +1,6 @@
-"use client"
-import { create } from 'zustand'
-import { MetricStore, MetricType, Metric } from '@/features/dashboard/types/metric'
+"use client";
+import { create } from "zustand";
+import { MetricStore, MetricType, Metric } from "@/features/dashboard/types/metric";
 /*
     ====EXAMPLE USAGE====
     const cpuMetrics = useMetricStore(
@@ -74,76 +74,72 @@ function upsertMetric(
     return {
         ...seriesByKey,
         [key]: {
-            ...(seriesByKey[key]),
+            ...seriesByKey[key],
             [metric.timestamp]: metric,
         },
     };
 }
 
-export const useMetricStore = create<MetricStore>(
-    (set, get) => ({
-        seriesByKey: {},
+export const useMetricStore = create<MetricStore>((set, get) => ({
+    seriesByKey: {},
 
-        addMetric: (metric) => {
-            set((state) => ({
-                seriesByKey: upsertMetric(state.seriesByKey, metric),
-            }));
-        },
+    addMetric: (metric) => {
+        set((state) => ({
+            seriesByKey: upsertMetric(state.seriesByKey, metric),
+        }));
+    },
 
-        addMetricFromDto: (metricDto) => {
-            const metricType = toMetricType(metricDto.metricName);
+    addMetricFromDto: (metricDto) => {
+        const metricType = toMetricType(metricDto.metricName);
 
-            const metric: Metric = {
-                resource_id: metricDto.resourceId,
-                metricType,
-                timestamp: metricDto.periodStart,
-                value: metricDto.metricValue
+        const metric: Metric = {
+            resource_id: metricDto.resourceId,
+            metricType,
+            timestamp: metricDto.periodStart,
+            value: metricDto.metricValue,
+        };
+
+        set((state) => ({
+            seriesByKey: upsertMetric(state.seriesByKey, metric),
+        }));
+    },
+
+    clearStore: () => {
+        set(() => ({
+            seriesByKey: {},
+        }));
+    },
+
+    getResourceList: () => {
+        const { seriesByKey } = get();
+
+        return Array.from(
+            // set removes duplicates
+            new Set(Object.keys(seriesByKey).map((key) => key.split(":")[0]))
+        );
+    },
+
+    getMetricList: () => {
+        const { seriesByKey } = get();
+
+        const mapMetricTypes: Record<string, Set<MetricType>> = {};
+
+        Object.keys(seriesByKey).forEach((key) => {
+            const resourceId = key.split(":")[0];
+
+            if (!mapMetricTypes[resourceId]) {
+                mapMetricTypes[resourceId] = new Set<MetricType>();
             }
 
-            set((state) => ({
-                seriesByKey: upsertMetric(state.seriesByKey, metric),
-            }));
-        },
+            mapMetricTypes[resourceId].add(key.split(":")[1] as MetricType);
+        });
 
-        clearStore: () => {
-            set(() => ({
-                seriesByKey: {}
-            }));
-        },
+        const finalArray: Record<string, MetricType[]> = {};
 
-        getResourceList: () => {
-            const { seriesByKey } = get();
-
-            return Array.from(
-                // set removes duplicates
-                new Set(
-                    Object.keys(seriesByKey).map((key) => key.split(":")[0])
-                )
-            );
-        },
-
-        getMetricList: () => {
-            const { seriesByKey } = get();
-
-            const mapMetricTypes: Record<string, Set<MetricType>> = {};
-
-            Object.keys(seriesByKey).forEach((key) => {
-                const resourceId = key.split(":")[0];
-
-                if (!mapMetricTypes[resourceId]) {
-                    mapMetricTypes[resourceId] = new Set<MetricType>();
-                }
-
-                mapMetricTypes[resourceId].add(key.split(":")[1] as MetricType);
-            });
-
-            const finalArray: Record<string, MetricType[]> = {};
-
-            for (const [key, value] of Object.entries(mapMetricTypes)) {
-                finalArray[key] = Array.from(value);
-            }
-
-            return finalArray;
+        for (const [key, value] of Object.entries(mapMetricTypes)) {
+            finalArray[key] = Array.from(value);
         }
-    })
-)
+
+        return finalArray;
+    },
+}));

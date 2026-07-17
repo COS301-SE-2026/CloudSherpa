@@ -79,4 +79,8 @@ public class UserPreferences {
   public Boolean getSidebarToggle() {
     return sidebarToggle;
   }
+
+  public void setTheme(String theme) {
+    this.theme = theme;
+  }
 }

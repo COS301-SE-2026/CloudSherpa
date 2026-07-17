@@ -44,21 +44,22 @@ CREATE TABLE public.cloud_connection (
   created_at timestamptz DEFAULT NOW()
 );
 
-CREATE TABLE public.cloud_credential (
-  credential_id uuid PRIMARY KEY,
-  account_id uuid UNIQUE REFERENCES public.cloud_account(account_id) ON DELETE CASCADE,
-  provider public.provider_enum NOT NULL,
-  credential_type public.credential_type_enum NOT NULL,
-  credential_value text NOT NULL,
-  created_at timestamptz DEFAULT NOW()
-);
-
 CREATE TABLE public.cloud_account (
   account_id uuid PRIMARY KEY,
   connection_id uuid REFERENCES public.cloud_connection(connection_id) ON DELETE CASCADE,
   account_type public.account_type_enum NOT NULL,
   ingestion_period public.ingestion_period_enum,
   display_name varchar(255),
+  created_at timestamptz DEFAULT NOW()
+);
+
+
+CREATE TABLE public.cloud_credential (
+  credential_id uuid PRIMARY KEY,
+  account_id uuid UNIQUE REFERENCES public.cloud_account(account_id) ON DELETE CASCADE,
+  provider public.provider_enum NOT NULL,
+  credential_type public.credential_type_enum NOT NULL,
+  credential_value text NOT NULL,
   created_at timestamptz DEFAULT NOW()
 );
 
@@ -87,18 +88,6 @@ CREATE TABLE public.widget_resource (
   resource_id uuid NOT NULL, 
   metric_type public.metric_type_enum NOT NULL
 );
-
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
-
-INSERT INTO public.users (user_id, email, username, password_hash, created_at)
-VALUES (
-  '5ebe4340-c5ec-4833-ad93-06abf4609f03'::uuid,
-  'demo@gmail.com',
-  'demo@gmail.com',
-  crypt('Password@2', gen_salt('bf', 12)),
-  now()
-  )
-ON CONFLICT DO NOTHING;
 
 -- This sits in the public schema so it only has to be written once, but it is 
 -- smart enough to broadcast on a specific tenant's channel dynamically.
@@ -129,7 +118,7 @@ BEGIN
 
     -- Build the resource table
     EXECUTE format($sql$
-        CREATE TABLE %I.resource (
+        CREATE TABLE IF NOT EXISTS %I.resource (
             resource_id uuid PRIMARY KEY,
             account_id uuid REFERENCES public.cloud_account(account_id) ON DELETE CASCADE, 
             resource_type varchar(255) NOT NULL,
@@ -144,12 +133,12 @@ BEGIN
     -- The GIN Index for JSONB Tags
     -- %1$I means "use the first variable (schema_name) and format it safely as an Identifier".
     EXECUTE format($sql$
-        CREATE INDEX ix_%1$s_resource_tags ON %1$I.resource USING GIN (tags);
+        CREATE INDEX IF NOT EXISTS ix_%1$s_resource_tags ON %1$I.resource USING GIN (tags);
     $sql$, schema_name);
 
     -- Build the metrics table
     EXECUTE format($sql$
-        CREATE TABLE %I.normalized_metrics (
+        CREATE TABLE IF NOT EXISTS %I.normalized_metrics (
             metric_id uuid DEFAULT gen_random_uuid(),
             resource_id uuid REFERENCES %I.resource(resource_id) ON DELETE CASCADE,
             recorded_at timestamptz NOT NULL,
@@ -164,13 +153,19 @@ BEGIN
         );
     $sql$, schema_name, schema_name);
 
-    PERFORM create_hypertable(
-        format('%I.normalized_metrics', schema_name), 
-        'period_start'
-    );
+    -- Create hypertable only if the table is not already a hypertable
+    IF NOT EXISTS (
+        SELECT 1 FROM timescaledb_information.hypertables 
+        WHERE hypertable_schema = schema_name AND hypertable_name = 'normalized_metrics'
+    ) THEN
+        PERFORM create_hypertable(
+            format('%I.normalized_metrics', schema_name), 
+            'period_start'
+        );
+    END IF;
 
     EXECUTE format($sql$
-        CREATE INDEX ix_%1$s_resource_metric_time 
+        CREATE INDEX IF NOT EXISTS ix_%1$s_resource_metric_time 
         ON %1$I.normalized_metrics (resource_id, metric_name, period_start DESC);
     $sql$, schema_name);
 
@@ -178,10 +173,24 @@ BEGIN
     -- Attach the trigger specifically to this new user's metrics table, 
     -- but tell it to execute the shared global function we defined in the public shema.
     EXECUTE format($sql$
-        CREATE TRIGGER metric_notify_trigger
+        CREATE OR REPLACE TRIGGER metric_notify_trigger
         AFTER INSERT ON %1$I.normalized_metrics
         FOR EACH ROW EXECUTE FUNCTION public.notify_metric_event();
     $sql$, schema_name);
 
 END;
 $$ LANGUAGE plpgsql;
+
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+INSERT INTO public.users (user_id, email, username, password_hash, created_at)
+VALUES (
+  '5ebe4340-c5ec-4833-ad93-06abf4609f03'::uuid,
+  'demo@gmail.com',
+  'demo@gmail.com',
+  crypt('Password@2', gen_salt('bf', 12)),
+  now()
+  )
+ON CONFLICT DO NOTHING;
+
+SELECT public.create_new_tenant('5ebe4340-c5ec-4833-ad93-06abf4609f03');

@@ -1,0 +1,232 @@
+{
+  "version": "2.0.0",
+  "darkMode": true,
+  "gridEnabling": false,
+  "currentViewName": null,
+  "defaultView": {
+    "detailLevel": "All",
+    "tablePositions": [
+      {
+        "name": "users",
+        "schemaName": "public",
+        "x": 782.6624413086566,
+        "y": -262.4387989753394
+      },
+      {
+        "name": "preferences",
+        "schemaName": "public",
+        "x": 401.04631714850996,
+        "y": -253.81900499164806
+      },
+      {
+        "name": "cloud_connection",
+        "schemaName": "public",
+        "x": 402.85539917975996,
+        "y": 44
+      },
+      {
+        "name": "cloud_account",
+        "schemaName": "public",
+        "x": 733.821695620652,
+        "y": 12
+      },
+      {
+        "name": "cloud_credential",
+        "schemaName": "public",
+        "x": 1170.1535607315868,
+        "y": -19.254357571417984
+      },
+      {
+        "name": "dashboard",
+        "schemaName": "public",
+        "x": 1106.3859624425822,
+        "y": -294.7360844587356
+      },
+      {
+        "name": "widget",
+        "schemaName": "public",
+        "x": 1516.0527908795677,
+        "y": -326.7610423833063
+      },
+      {
+        "name": "widget_resource",
+        "schemaName": "public",
+        "x": 1840.2469870627883,
+        "y": -359.1359562282411
+      },
+      {
+        "name": "resource",
+        "schemaName": "public",
+        "x": 1128.897808737315,
+        "y": 265.7477340628627
+      },
+      {
+        "name": "normalized_metrics",
+        "schemaName": "public",
+        "x": 1654.083810432501,
+        "y": 72.00836653712247
+      },
+      {
+        "name": "normalized_costs",
+        "schemaName": "public",
+        "x": 1649.0831132210742,
+        "y": 455.00627490284194
+      }
+    ],
+    "tableGroupCollapseStates": [],
+    "stickyNoteLayouts": [],
+    "referencePaths": [
+      {
+        "firstFieldNames": [
+          "user_id"
+        ],
+        "firstTableName": "users",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "user_id"
+        ],
+        "secondTableName": "preferences",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "user_id"
+        ],
+        "firstTableName": "users",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "user_id"
+        ],
+        "secondTableName": "cloud_connection",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "connection_id"
+        ],
+        "firstTableName": "cloud_connection",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "connection_id"
+        ],
+        "secondTableName": "cloud_account",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "account_id"
+        ],
+        "firstTableName": "cloud_account",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "account_id"
+        ],
+        "secondTableName": "cloud_credential",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "user_id"
+        ],
+        "firstTableName": "users",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "user_id"
+        ],
+        "secondTableName": "dashboard",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "dashboard_id"
+        ],
+        "firstTableName": "dashboard",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "dashboard_id"
+        ],
+        "secondTableName": "widget",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "widget_id"
+        ],
+        "firstTableName": "widget",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "widget_id"
+        ],
+        "secondTableName": "widget_resource",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "account_id"
+        ],
+        "firstTableName": "cloud_account",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "account_id"
+        ],
+        "secondTableName": "resource",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "resource_id"
+        ],
+        "firstTableName": "resource",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "resource_id"
+        ],
+        "secondTableName": "normalized_metrics",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "resource_id"
+        ],
+        "firstTableName": "resource",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "resource_id"
+        ],
+        "secondTableName": "normalized_costs",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      }
+    ]
+  },
+  "views": {}
+}
