@@ -4,6 +4,7 @@ import { useState } from "react";
 import { LayoutDashboard, Plus, ChevronLeft, ChevronDown, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/atoms/button";
+import { Input } from "@/components/atoms/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/atoms/popover";
 import {
     Command,
@@ -57,16 +58,8 @@ export function DashboardSelector({
             }}
         >
             <PopoverTrigger asChild>
-                <Button
-                    variant="outline"
-                    className="group md:min-w-40 w-fit justify-start text-left font-normal bg-card text-foreground border-border hover:bg-hover/90 hover:text-foreground data-[state=open]:text-foreground data-[state=open]:hover:text-foreground transition-button"
-                >
-                    <div className="flex flex-row items-center overflow-hidden">
-                        <LayoutDashboard className="mr-2 h-4 w-4 shrink-0" />
-                        <span className="truncate">
-                            {selectedDashboard?.displayName || "Select Dashboard"}
-                        </span>
-                    </div>
+                <Button variant="outline" className="group flex justify-between">
+                    {selectedDashboard?.displayName || "Select Dashboard"}
                     <ChevronDown className="ml-2 h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
                 </Button>
             </PopoverTrigger>
@@ -115,28 +108,20 @@ export function DashboardSelector({
                     </Command>
                 ) : (
                     // create new dashboard view
-                    <div className="flex flex-col p-3 animate-in fade-in zoom-in-95 duration-200">
+                    <div className="flex flex-col p-3">
                         <div className="grid grid-cols-[30px_1fr_30px] items-center mb-3">
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => setView("list")}
-                                className="h-7 w-7 hover:bg-hover text-foreground-secondary"
-                            >
+                            <Button variant="ghost" size="icon" onClick={() => setView("list")}>
                                 <ChevronLeft className="h-4 w-4" />
                             </Button>
 
-                            <span className="text-sm font-medium text-foreground text-center">
-                                New Dashboard
-                            </span>
+                            <span className="text-center">New Dashboard</span>
 
                             <div className="w-7" />
                         </div>
 
-                        <input
+                        <Input
                             autoFocus
                             placeholder="e.g. Production AWS Costs"
-                            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                             value={newDashboardName}
                             onChange={(e) => setNewDashboardName(e.target.value)}
                             onKeyDown={(e) => e.key === "Enter" && handleCreate()}

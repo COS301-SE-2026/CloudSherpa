@@ -87,19 +87,16 @@ export function TimePeriodSelector({
             }}
         >
             <PopoverTrigger asChild>
-                <Button
-                    variant="outline"
-                    className="group md:min-w-40 w-9 md:w-fit px-0 md:px-4 justify-center md:justify-start text-left font-normal bg-card text-foreground border-border hover:bg-hover hover:text-foreground data-[state=open]:text-foreground data-[state=open]:hover:text-foreground transition-button"
-                >
+                <Button variant="outline" className="group flex justify-between">
                     {/* Mobile View */}
                     <Filter className="h-4 w-4 block md:hidden" />
 
                     {/* Desktop View */}
-                    <div className="hidden md:flex w-full h-full flex-row items-center">
-                        <CalendarIcon className="mr-2 h-4 w-4" />
+                    <div className="flex flex-row">
+                        <CalendarIcon className="h-4 w-4" />
                         <span className="">Last {getDisplayLabel()}</span>
                     </div>
-                    <ChevronDown className="hidden md:block ml-auto h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                    <ChevronDown className="ml-2 h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
                 </Button>
             </PopoverTrigger>
 
@@ -139,7 +136,7 @@ export function TimePeriodSelector({
                             <CommandGroup>
                                 <CommandItem
                                     onSelect={() => setView("custom")}
-                                    className="cursor-pointer bg-primary text-primary-foreground data-[selected=true]:bg-primary/90 data-[selected=true]:text-primary-foreground font-medium flex justify-center py-2.5 mt-1"
+                                    className="cursor-pointer flex justify-center"
                                 >
                                     <CalendarIcon className="mr-2 h-4 w-4" />
                                     Custom Range
@@ -148,7 +145,7 @@ export function TimePeriodSelector({
                         </CommandList>
                     </Command>
                 ) : (
-                    <div className="flex flex-col p-3 animate-in fade-in zoom-in-95 duration-200">
+                    <div className="flex flex-col p-3 ">
                         <div className="relative flex w-full items-center justify-center mb-3 min-h-8">
                             <Button
                                 variant="ghost"
@@ -173,7 +170,6 @@ export function TimePeriodSelector({
                                 if (range?.from && range?.to) setSelectedPreset("custom");
                             }}
                             numberOfMonths={2}
-                            className="bg-popover text-foreground"
                         />
                     </div>
                 )}
