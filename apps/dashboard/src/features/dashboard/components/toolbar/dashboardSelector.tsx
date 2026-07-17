@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { LayoutDashboard, Plus, ChevronLeft, ChevronDown, Check } from "lucide-react";
+import { LayoutDashboard, Plus, ChevronLeft, ChevronDown, Check, Trash } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/atoms/button";
 import { Input } from "@/components/atoms/input";
@@ -26,6 +26,7 @@ interface DashboardSelectorProps {
     selectedId: string;
     onSelect: (id: string) => void;
     onCreate: (displayName: string) => void;
+    onDelete: (id: string) => void;
 }
 
 export function DashboardSelector({
@@ -33,6 +34,7 @@ export function DashboardSelector({
     selectedId,
     onSelect,
     onCreate,
+    onDelete,
 }: Readonly<DashboardSelectorProps>) {
     const [open, setOpen] = useState(false);
     const [view, setView] = useState<"list" | "create">("list");
@@ -78,19 +80,37 @@ export function DashboardSelector({
                                     <CommandItem
                                         key={d.id}
                                         value={d.displayName}
+                                        className="group flex items-center justify-between cursor-pointer"
                                         onSelect={() => {
                                             onSelect(d.id);
                                             setOpen(false);
                                         }}
-                                        className="cursor-pointer"
                                     >
-                                        <Check
+                                        <div className="flex items-center flex-1 overflow-hidden w-full gap-2">
+                                            <Check
+                                                className={cn(
+                                                    " h-4 w-4 shrink-0",
+                                                    selectedId === d.id
+                                                        ? "opacity-100"
+                                                        : "opacity-0"
+                                                )}
+                                            />
+                                            <span className="truncate">{d.displayName}</span>
+                                        </div>
+
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
                                             className={cn(
-                                                "mr-2 h-4 w-4",
-                                                selectedId === d.id ? "opacity-100" : "opacity-0"
+                                                "h-6 w-6 shrink-0 opacity-0 group-hover:opacity-100"
                                             )}
-                                        />
-                                        {d.displayName}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onDelete(d.id);
+                                            }}
+                                        >
+                                            <Trash className="h-3.5 w-3.5" />
+                                        </Button>
                                     </CommandItem>
                                 ))}
                             </CommandGroup>

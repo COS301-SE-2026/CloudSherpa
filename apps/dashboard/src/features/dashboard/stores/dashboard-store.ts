@@ -1,5 +1,13 @@
 import { create } from "zustand";
 import { LayoutItem, DashboardConfig, WidgetConfig } from "@/features/dashboard/types/widgets";
+import {
+    deleteWidget,
+    updateWidgetConfig,
+    updateDashboardLayout,
+    createWidget,
+    createDashboard,
+    deleteDashboard,
+} from "@/lib/fetch/api-dashboard";
 
 interface DashboardActions {
     createSnapshot: () => void;
@@ -71,16 +79,22 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
                 },
                 activeDashboardId: dashboard.id,
             })),
-        removeDashboard: (id) =>
-            set((state) => {
-                const newDashboards = { ...state.dashboards };
-                delete newDashboards[id];
-                return {
-                    dashboards: newDashboards,
-                    activeDashboardId:
-                        state.activeDashboardId === id ? null : state.activeDashboardId,
-                };
-            }),
+        removeDashboard: async (id) => {
+            try {
+                await deleteDashboard(id);
+                set((state) => {
+                    const newDashboards = { ...state.dashboards };
+                    delete newDashboards[id];
+                    return {
+                        dashboards: newDashboards,
+                        activeDashboardId:
+                            state.activeDashboardId === id ? null : state.activeDashboardId,
+                    };
+                });
+            } catch (e) {
+                console.error("Failed to delete dashboard:", e);
+            }
+        },
         addWidget: (layout, widget) =>
             set((state) => {
                 const activeDashboard = state.activeDashboardId
@@ -106,37 +120,57 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
                     },
                 };
             }),
-        updateWidgetConfig: (widget) =>
-            set((state) => ({
-                widgets: {
-                    ...state.widgets,
-                    [widget.id]: widget,
-                },
-            })),
-        removeWidget: (layoutId, widgetId) =>
-            set((state) => {
-                const newLayouts = { ...state.layouts };
-                delete newLayouts[layoutId];
+        updateWidgetConfig: async (widget) => {
+            try {
+                await updateWidgetConfig(widget.id, {
+                    type: widget.type as string,
+                    displayName: widget.displayName,
+                    resourceId: widget.resourceId,
+                    metricType: widget.metricType as string,
+                });
 
-                const newWidgets = { ...state.widgets };
-                delete newWidgets[widgetId];
+                set((state) => ({
+                    widgets: {
+                        ...state.widgets,
+                        [widget.id]: widget,
+                    },
+                }));
+            } catch (error) {
+                console.error("Failed to persist widget config:", error);
+                throw error;
+            }
+        },
+        removeWidget: async (layoutId, widgetId) => {
+            try {
+                await deleteWidget(widgetId);
+                set((state) => {
+                    const newLayouts = { ...state.layouts };
+                    delete newLayouts[layoutId];
 
-                const newDashboards = { ...state.dashboards };
-                if (state.activeDashboardId && newDashboards[state.activeDashboardId]) {
-                    newDashboards[state.activeDashboardId] = {
-                        ...newDashboards[state.activeDashboardId],
-                        layoutItemIds: newDashboards[state.activeDashboardId].layoutItemIds.filter(
-                            (id) => id !== layoutId
-                        ),
+                    const newWidgets = { ...state.widgets };
+                    delete newWidgets[widgetId];
+
+                    const newDashboards = { ...state.dashboards };
+                    if (state.activeDashboardId && newDashboards[state.activeDashboardId]) {
+                        newDashboards[state.activeDashboardId] = {
+                            ...newDashboards[state.activeDashboardId],
+                            layoutItemIds: newDashboards[
+                                state.activeDashboardId
+                            ].layoutItemIds.filter((id) => id !== layoutId),
+                        };
+                    }
+
+                    return {
+                        layouts: newLayouts,
+                        widgets: newWidgets,
+                        dashboards: newDashboards,
                     };
-                }
-
-                return {
-                    layouts: newLayouts,
-                    widgets: newWidgets,
-                    dashboards: newDashboards,
-                };
-            }),
+                });
+            } catch (error) {
+                console.error("Failed to remove widget");
+                throw error;
+            }
+        },
 
         updateLayouts: (newLayouts) =>
             set((state) => {

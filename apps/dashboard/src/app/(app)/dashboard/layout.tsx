@@ -20,8 +20,14 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
 
     const activeDashboardId = useDashboardStore((state) => state.activeDashboardId);
     const dashboardsMap = useDashboardStore((state) => state.dashboards);
-    const { addDashboard, addWidget, createSnapshot, restoreSnapshot, clearSnapshot } =
-        useDashboardStore((state) => state.actions);
+    const {
+        addDashboard,
+        addWidget,
+        removeDashboard,
+        createSnapshot,
+        restoreSnapshot,
+        clearSnapshot,
+    } = useDashboardStore((state) => state.actions);
 
     const fromMs = useWindowStore((state) => state.fromMs);
     const toMs = useWindowStore((state) => state.toMs);
@@ -62,6 +68,13 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
             }
         },
         [addDashboard, router]
+    );
+
+    const handleDeleteDashboard = useCallback(
+        (id: string) => {
+            removeDashboard(id);
+        },
+        [removeDashboard]
     );
 
     const handleDateRangeChange = useCallback(
@@ -165,6 +178,7 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
                 handleStartEditing={handleStartEditing}
                 handleSaveEdit={handleSaveEdit}
                 handleCancelEdit={handleCancelEdit}
+                onDeleteDashboard={handleDeleteDashboard}
             />
             <div className="flex-1 overflow-y-auto overflow-x-hidden flex flex-col relative">
                 {children}

@@ -27,6 +27,7 @@ export function WidgetConfigMenu({
     existingConfig,
 }: Readonly<WidgetConfigMenuProps>) {
     const [configuration, setConfiguration] = useState<WidgetConfig>(existingConfig);
+    const updateWidget = useDashboardStore((state) => state.actions.updateWidgetConfig);
     const registerWidgetConfigUpdate = useDashboardStore(
         (state: DashboardStore) => state.actions.updateWidgetConfig
     );
@@ -54,18 +55,8 @@ export function WidgetConfigMenu({
     }, [existingConfig]);
 
     const handleSave = async () => {
-        onSave(configuration);
+        updateWidget(configuration);
         onClose();
-        try {
-            await updateWidgetConfig(configuration.id, {
-                type: configuration.type as string,
-                displayName: configuration.displayName,
-                resourceId: configuration.resourceId,
-                metricType: configuration.metricType as string,
-            });
-        } catch (error) {
-            console.error("Failed to save widget configuration to database:", error);
-        }
     };
 
     function setConfigAndRegisterUpdate(newConfig: WidgetConfig) {

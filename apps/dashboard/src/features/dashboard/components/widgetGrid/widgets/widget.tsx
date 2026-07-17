@@ -41,25 +41,11 @@ export default function Widget({ config }: Readonly<WidgetProps>) {
     const { type, displayName, resourceId, metricType, id } = config;
     const ChartComponent = CHART_COMPONENTS[type];
     const [isConfigOpen, setIsConfigOpen] = useState(false);
-    const triggerRef = useRef<HTMLDivElement>(null);
 
     console.log(metricType, resourceId);
 
     const updateStore = useDashboardStore((state) => state.actions.updateWidgetConfig);
     const removeWidget = useDashboardStore((state) => state.actions.removeWidget);
-
-    const handleOptionsClick = () => {
-        if (triggerRef.current) {
-            const event = new MouseEvent("contextmenu", {
-                bubbles: true,
-                cancelable: true,
-                view: window,
-                button: 2,
-                buttons: 2,
-            });
-            triggerRef.current.dispatchEvent(event);
-        }
-    };
 
     const renderChartContent = () => {
         if (!ChartComponent) {
@@ -73,7 +59,7 @@ export default function Widget({ config }: Readonly<WidgetProps>) {
         if (!resourceId || !metricType) {
             return (
                 <div className="flex flex-col w-full h-full items-center justify-center">
-                    <Button>Configure Widget</Button>
+                    <Button onClick={() => setIsConfigOpen(true)}>Configure Widget</Button>
                 </div>
             );
         }

@@ -92,7 +92,7 @@ export function TimePeriodSelector({
                     <Filter className="h-4 w-4 block md:hidden" />
 
                     {/* Desktop View */}
-                    <div className="flex flex-row">
+                    <div className="flex flex-row gap-2">
                         <CalendarIcon className="h-4 w-4" />
                         <span className="">Last {getDisplayLabel()}</span>
                     </div>

@@ -89,19 +89,6 @@ public class DashboardService {
   public void updateDashboardLayout(
       UUID userId, UUID dashboardId, List<WidgetLayoutUpdateDTO> layouts) {
     getDashboardAndVerifyOwnership(userId, dashboardId);
-    // all widgets in db
-    List<Widget> existingWidgets = widgetRepository.findByDashboardId(dashboardId);
-    // ids from incoming widgets
-    List<UUID> incomingWidgetIds = layouts.stream().map(WidgetLayoutUpdateDTO::id).toList();
-    // delete widgets if not present in payload
-    List<Widget> widgetsToDelete =
-        existingWidgets.stream()
-            .filter(widget -> !incomingWidgetIds.contains(widget.getId()))
-            .toList();
-    if (!widgetsToDelete.isEmpty()) {
-      widgetRepository.deleteAll(widgetsToDelete);
-    }
-    // update remaining
     for (WidgetLayoutUpdateDTO layout : layouts) {
       widgetRepository
           .findById(layout.id())
@@ -249,5 +236,23 @@ public class DashboardService {
         dashboard.getPredefinedTime(),
         dashboard.getCurrent(),
         widgetDTOs);
+  }
+
+  @Transactional
+  public void deleteWidget(UUID userId, UUID widgetId) {
+    Widget widget =
+        widgetRepository
+            .findById(widgetId)
+            .orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Widget not found"));
+
+    getDashboardAndVerifyOwnership(userId, widget.getDashboardId());
+
+    List<WidgetResource> resources = widgetResourceRepository.findByWidgetId(widgetId);
+    if (!resources.isEmpty()) {
+      widgetResourceRepository.deleteAll(resources);
+    }
+
+    widgetRepository.delete(widget);
   }
 }

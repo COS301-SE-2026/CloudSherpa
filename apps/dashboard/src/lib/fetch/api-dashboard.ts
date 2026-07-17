@@ -84,3 +84,9 @@ export async function updateWidgetConfig(
         body: JSON.stringify(payload),
     });
 }
+
+export async function deleteWidget(widgetId: string): Promise<void> {
+    await apiClient<void>(`/dashboards/widgets/${widgetId}`, {
+        method: "POST",
+    });
+}

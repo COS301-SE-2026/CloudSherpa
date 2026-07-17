@@ -99,4 +99,15 @@ public class DashboardController {
     WidgetConfigUpdateDTO requestWithUser = request.withUserId(userId);
     return ResponseEntity.ok(dashboardService.updateWidgetConfig(widgetId, requestWithUser));
   }
+
+  @PostMapping("/widgets/{widgetId}")
+  @Operation(summary = "Delete a widget from a dashboard")
+  public ResponseEntity<Void> deleteWidget(
+      @PathVariable UUID widgetId, @AuthenticationPrincipal Jwt jwt) {
+    if (jwt == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    UUID userId = UUID.fromString(jwt.getSubject());
+
+    dashboardService.deleteWidget(userId, widgetId);
+    return ResponseEntity.noContent().build();
+  }
 }
