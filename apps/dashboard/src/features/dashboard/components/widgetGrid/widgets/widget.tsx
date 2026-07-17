@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/atoms/card";
 import { LineChart } from "@/features/dashboard/components/widgetGrid/widgets/charts/LineChart";
 import { GaugeChart } from "@/features/dashboard/components/widgetGrid/widgets/charts/GaugeChart";
@@ -6,8 +6,22 @@ import { MetricType } from "@/features/dashboard/types/metric";
 import { Button } from "@/components/atoms/button";
 import { WidgetConfigMenu } from "@/features/dashboard/components/widgetGrid/widgets/widgetConfigMenu";
 import { WidgetConfig, ChartType } from "@/features/dashboard/types/widgets";
-import { EllipsisVertical } from "lucide-react";
+import { EllipsisVertical, Pencil, Trash } from "lucide-react";
 import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
+import {
+    ContextMenu,
+    ContextMenuContent,
+    ContextMenuItem,
+    ContextMenuSeparator,
+    ContextMenuTrigger,
+} from "@/components/atoms/context-menu";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/atoms/dropdown-menu";
 
 interface BaseChartProps {
     resourceId: string;
@@ -24,13 +38,28 @@ interface WidgetProps {
 }
 
 export default function Widget({ config }: Readonly<WidgetProps>) {
-    const { type, displayName, resourceId, metricType } = config;
+    const { type, displayName, resourceId, metricType, id } = config;
     const ChartComponent = CHART_COMPONENTS[type];
     const [isConfigOpen, setIsConfigOpen] = useState(false);
+    const triggerRef = useRef<HTMLDivElement>(null);
 
     console.log(metricType, resourceId);
 
     const updateStore = useDashboardStore((state) => state.actions.updateWidgetConfig);
+    const removeWidget = useDashboardStore((state) => state.actions.removeWidget);
+
+    const handleOptionsClick = () => {
+        if (triggerRef.current) {
+            const event = new MouseEvent("contextmenu", {
+                bubbles: true,
+                cancelable: true,
+                view: window,
+                button: 2,
+                buttons: 2,
+            });
+            triggerRef.current.dispatchEvent(event);
+        }
+    };
 
     const renderChartContent = () => {
         if (!ChartComponent) {
@@ -43,10 +72,9 @@ export default function Widget({ config }: Readonly<WidgetProps>) {
 
         if (!resourceId || !metricType) {
             return (
-                <Card className="flex flex-col items-center justify-center h-full">
-                    <span>Unconfigured Widget</span>
-                    <span className="text-xs mt-1">Click the menu to set up</span>
-                </Card>
+                <div className="flex flex-col w-full h-full items-center justify-center">
+                    <Button>Configure Widget</Button>
+                </div>
             );
         }
 
@@ -55,21 +83,54 @@ export default function Widget({ config }: Readonly<WidgetProps>) {
 
     return (
         <>
-            <Card className="flex flex-col h-full w-full overflow-hidden">
-                <CardHeader className="flex flex-row items-center justify-between ">
-                    <CardTitle>{displayName}</CardTitle>
-                    <Button
-                        onClick={() => setIsConfigOpen(true)}
-                        className="text-muted-foreground bg-transparent hover:bg-muted/10"
-                    >
-                        <EllipsisVertical />
-                    </Button>
-                </CardHeader>
+            <ContextMenu>
+                <ContextMenuTrigger>
+                    <Card className="flex flex-col h-full w-full overflow-hidden">
+                        <CardHeader className="flex flex-row items-center justify-between ">
+                            <CardTitle>{displayName}</CardTitle>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                                        <EllipsisVertical className="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-fit">
+                                    <DropdownMenuItem onClick={() => setIsConfigOpen(true)}>
+                                        <Pencil className="mr-2 h-4 w-4" />
+                                        Configure Widget
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
+                                        onClick={() => removeWidget(id, id)}
+                                        className="text-destructive focus:text-destructive"
+                                    >
+                                        <Trash className="mr-2 h-4 w-4" />
+                                        Delete Widget
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </CardHeader>
 
-                <CardContent className="flex-1 w-full relative overflow-hidden">
-                    {renderChartContent()}
-                </CardContent>
-            </Card>
+                        <CardContent className="flex-1 w-full relative overflow-hidden">
+                            {renderChartContent()}
+                        </CardContent>
+                    </Card>
+                </ContextMenuTrigger>
+                <ContextMenuContent className="w-48">
+                    <ContextMenuItem onClick={() => setIsConfigOpen(true)}>
+                        <Pencil className="mr-2 h-4 w-4" />
+                        Configure Widget
+                    </ContextMenuItem>
+                    <ContextMenuSeparator />
+                    <ContextMenuItem
+                        onClick={() => removeWidget(id, id)}
+                        className="text-destructive focus:text-destructive"
+                    >
+                        <Trash className="mr-2 h-4 w-4" />
+                        Delete Widget
+                    </ContextMenuItem>
+                </ContextMenuContent>
+            </ContextMenu>
 
             <WidgetConfigMenu
                 isOpen={isConfigOpen}

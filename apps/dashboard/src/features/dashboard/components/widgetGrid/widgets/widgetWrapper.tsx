@@ -28,18 +28,12 @@ export const WidgetWrapper = ({ layout, isEditMode, onDeleteWidget }: WidgetWrap
 
     return (
         <div className="grid-stack-item" {...gridStackAttributes}>
-            <div className="grid-stack-item-content relative !overflow-visible rounded-md group">
+            <div className="grid-stack-item-content relative overflow-visible! rounded-md group">
                 {isEditMode && (
                     <div className="absolute top-2 right-2 z-50 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                         <div className="drag-handle cursor-grab active:cursor-grabbing bg-background border border-border shadow-md p-1 rounded-md text-muted-foreground hover:text-primary transition-all">
                             <GripVertical className="h-3.5 w-3.5" />
                         </div>
-                        <button
-                            onClick={() => onDeleteWidget(id, id)}
-                            className="bg-background border border-border shadow-md p-1 rounded-md text-muted-foreground hover:bg-destructive hover:text-destructive-foreground transition-all"
-                        >
-                            <Trash className="h-3.5 w-3.5" />
-                        </button>
                     </div>
                 )}
 
