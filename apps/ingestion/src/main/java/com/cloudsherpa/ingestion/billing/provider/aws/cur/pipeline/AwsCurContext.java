@@ -77,6 +77,10 @@ public class AwsCurContext {
     this.processedExports = processedExports;
   }
 
+  public void addProcessedExport(String processedExport) {
+    this.processedExports.add(processedExport);
+  }
+
   public List<AwsCurExport> getProcessingExports() {
     return processingExports;
   }
