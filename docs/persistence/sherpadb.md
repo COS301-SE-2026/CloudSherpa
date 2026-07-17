@@ -234,7 +234,7 @@ Stores normalized cloud billing records imported from cloud provider billing exp
 | :--- | :--- | :--- | :--- |
 | **cost_id** | UUID | Primary Key | Unique identifier for each normalized billing record. Together with `usage_start_time`, it forms the composite primary key required by TimescaleDB. |
 | **execution_id** | UUID | Cross-Schema FK | Links directly back to `public.billing_export_execution`. Traces this specific row back to the exact ingestion run that imported it. |
-| **resource_id** | UUID | Foreign Key (Nullable) | Links the billing record to an internal cloud resource (UUID). |
+| **resource_id** | UUID | Foreign Key (Nullable) | Links the billing record to a cloud resource. |
 | **provider** | provider_enum | Not Null | The cloud provider that generated the billing record. |
 | **billing_account_id** | VARCHAR(255) | Not Null | Identifier of the cloud billing account responsible for the charge. |
 | **service_name** | VARCHAR(255) | Not Null | The cloud service that generated the charge (e.g., `AmazonEC2`, `AmazonS3`). |
