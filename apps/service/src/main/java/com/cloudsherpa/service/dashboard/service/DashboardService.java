@@ -77,11 +77,38 @@ public class DashboardService {
   @Transactional
   public void deleteDashboard(UUID userId, UUID dashboardId) {
     Dashboard dashboard = getDashboardAndVerifyOwnership(userId, dashboardId);
-    if (Boolean.TRUE.equals(dashboard.getCurrent())) {
-      throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST, "Cannot delete the current dashboard");
+    boolean wasCurrent = Boolean.TRUE.equals(dashboard.getCurrent());
+
+    List<Widget> widgets = widgetRepository.findByDashboardId(dashboardId);
+    for (Widget widget : widgets) {
+      List<WidgetResource> resources = widgetResourceRepository.findByWidgetId(widget.getId());
+      if (!resources.isEmpty()) {
+        widgetResourceRepository.deleteAll(resources);
+      }
     }
+    if (!widgets.isEmpty()) {
+      widgetRepository.deleteAll(widgets);
+    }
+
     dashboardRepository.delete(dashboard);
+
+    if (wasCurrent) {
+      List<Dashboard> remainingDashboards = dashboardRepository.findByUserId(userId);
+      if (!remainingDashboards.isEmpty()) {
+        Dashboard next = remainingDashboards.get(0);
+        Dashboard promotedDashboard =
+            new Dashboard(
+                next.getId(),
+                next.getUserId(),
+                next.getDisplayName(),
+                next.getTimeFrom(),
+                next.getTimeTo(),
+                next.getPredefinedTime(),
+                true // Mark as current
+                );
+        dashboardRepository.save(promotedDashboard);
+      }
+    }
   }
 
   // batch update dashboard layout after edit mode was saved in frontend

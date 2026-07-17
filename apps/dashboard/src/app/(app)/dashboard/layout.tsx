@@ -71,10 +71,20 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
     );
 
     const handleDeleteDashboard = useCallback(
-        (id: string) => {
+        async (id: string) => {
             removeDashboard(id);
+
+            if (activeDashboardId === id) {
+                const remainingIds = Object.keys(dashboardsMap).filter((dId) => dId !== id);
+
+                if (remainingIds.length > 0) {
+                    router.push(`?id=${remainingIds[0]}`);
+                } else {
+                    router.push(`/dashboard`);
+                }
+            }
         },
-        [removeDashboard]
+        [removeDashboard, activeDashboardId, dashboardsMap, router]
     );
 
     const handleDateRangeChange = useCallback(
