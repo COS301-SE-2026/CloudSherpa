@@ -295,3 +295,89 @@ VALUES (
 ON CONFLICT DO NOTHING;
 
 SELECT public.create_new_tenant('5ebe4340-c5ec-4833-ad93-06abf4609f03');
+
+-- Cloud Connection & Account
+INSERT INTO public.cloud_connection (connection_id, user_id, provider, status)
+VALUES (
+    'c0000000-0000-0000-0000-000000000001', 
+    '5ebe4340-c5ec-4833-ad93-06abf4609f03', 
+    'AWS', 
+    'active'
+)
+ON CONFLICT (connection_id) DO NOTHING;
+
+INSERT INTO public.cloud_account (account_id, connection_id, account_type, ingestion_period, display_name)
+VALUES (
+    'a0000000-0000-0000-0000-000000000001', 
+    'c0000000-0000-0000-0000-000000000001', 
+    'aws_account', 
+    '1h', 
+    'Test Account'
+)
+ON CONFLICT (account_id) DO NOTHING;
+
+-- Billing Export Configuration & Execution Tracking
+INSERT INTO public.billing_export_config (config_id, account_id, bucket_name, export_prefix, export_name)
+VALUES (
+    'e0000000-0000-0000-0000-000000000001', 
+    'a0000000-0000-0000-0000-000000000001', 
+    'cloudsherpa-billing-exports', 
+    'cur-data/', 
+    'CloudSherpaExport-00001'
+)
+ON CONFLICT (config_id) DO NOTHING;
+
+INSERT INTO public.billing_export_execution (execution_id, config_id, status, rows_processed, started_at, completed_at)
+VALUES (
+    'x0000000-0000-0000-0000-000000000001', 
+    'e0000000-0000-0000-0000-000000000001', 
+    'completed', 
+    3, 
+    '2026-07-16 10:00:00Z', 
+    '2026-07-16 10:05:00Z'
+)
+ON CONFLICT (execution_id) DO NOTHING;
+
+-- Tenant Resources
+INSERT INTO tenant_5ebe4340_c5ec_4833_ad93_06abf4609f03.resource 
+    (resource_id, account_id, resource_type, resource_name, status, tags)
+VALUES 
+    -- Discovered EC2 Volume
+    ('r0000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000001', 'AWS::EC2::Volume', 'vol-074a596d821cdf168', 'active', '{"Name": "prod-db-data"}'),
+    
+    -- Discovered S3 Bucket
+    ('r0000000-0000-0000-0000-000000000002', 'a0000000-0000-0000-0000-000000000001', 'AWS::S3::Bucket', 'test-bucket-564907680089-eu-north-1-an', 'active', '{"Environment": "Testing"}')
+ON CONFLICT (resource_id) DO NOTHING;
+
+-- Normalized Costs
+INSERT INTO tenant_5ebe4340_c5ec_4833_ad93_06abf4609f03.normalized_costs 
+    (cost_id, execution_id, resource_id, provider, billing_account_id, service_name, charge_type, cost_amount, usage_start_time, usage_end_time, metadata)
+VALUES 
+    -- Standard Compute Charge
+    (
+        'c1000000-0000-0000-0000-000000000001', 'x0000000-0000-0000-0000-000000000001', 
+        'r0000000-0000-0000-0000-000000000001', 
+        'AWS', '564907680089', 'AmazonEC2', 'Usage', 0.10175000, 
+        '2026-07-15 21:00:00Z', '2026-07-15 22:00:00Z', 
+        '{"product_region": "eu-north-1", "operation": "RunInstances", "aws_resource_id": "vol-074a596d821cdf168"}'
+    ),
+    
+    -- Free Tier Usage
+    (
+        'c2000000-0000-0000-0000-000000000002', 'x0000000-0000-0000-0000-000000000001', 
+        'r0000000-0000-0000-0000-000000000002', 
+        'AWS', '564907680089', 'AmazonS3', 'Usage', 0.00000000, 
+        '2026-07-01 00:00:00Z', '2026-07-01 01:00:00Z', 
+        '{"product_region": "eu-north-1", "pricing_term": "FreeTier", "aws_resource_id": "arn:aws:s3:::test-bucket-564907680089-eu-north-1-an"}'
+    ),
+
+    -- Account-Level Cost (No resource ID)
+    (
+        'c3000000-0000-0000-0000-000000000003', 'x0000000-0000-0000-0000-000000000001', 
+        NULL, 
+        'AWS', '564907680089', 'AWSCloudFormation', 'Other', 1.50000000, 
+        '2026-07-15 00:00:00Z', '2026-07-15 23:59:59Z', 
+        '{"description": "Tax for product code AWSCloudFormation"}'
+    )
+    
+ON CONFLICT (cost_id, usage_start_time) DO NOTHING;
