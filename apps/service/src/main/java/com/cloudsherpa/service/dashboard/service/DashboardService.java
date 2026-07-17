@@ -115,8 +115,8 @@ public class DashboardService {
                         layout.x(),
                         layout.y(),
                         layout.w(),
-                        layout.h());
-                updatedWidget.setDisplayName(widget.getDisplayName());
+                        layout.h(),
+                        widget.getDisplayName());
                 widgetRepository.save(updatedWidget);
               });
     }
@@ -135,7 +135,8 @@ public class DashboardService {
             request.startX(),
             request.startY(),
             request.width(),
-            request.height());
+            request.height(),
+            request.displayName());
     widgetRepository.save(widget);
 
     if (request.resourceId() != null && request.metricType() != null) {
@@ -156,6 +157,7 @@ public class DashboardService {
             .findById(widgetId)
             .orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Widget not found"));
+
     getDashboardAndVerifyOwnership(userId, widget.getDashboardId());
 
     Widget updatedWidget =
@@ -166,7 +168,9 @@ public class DashboardService {
             widget.getStartX(),
             widget.getStartY(),
             widget.getWidth(),
-            widget.getHeight());
+            widget.getHeight(),
+            request.displayName());
+
     widgetRepository.save(updatedWidget);
 
     List<WidgetResource> existingResources = widgetResourceRepository.findByWidgetId(widgetId);
