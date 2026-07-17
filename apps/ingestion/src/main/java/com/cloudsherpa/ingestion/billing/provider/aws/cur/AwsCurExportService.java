@@ -29,7 +29,7 @@ public class AwsCurExportService {
   public void transitionExportStatus(AwsCurExport export, ExecutionStatusEnum status) {
     // update in DB
     BillingExportExecution execution =
-        billingExportExecutionRepository.findById(export.getUuidConfigId()).orElseThrow();
+        billingExportExecutionRepository.findById(export.getUuidExportId()).orElseThrow();
     execution.setStatus(status);
     billingExportExecutionRepository.save(execution);
 
@@ -40,7 +40,7 @@ public class AwsCurExportService {
   @Transactional
   public void updateDbExport(AwsCurExport export) {
     BillingExportExecution execution =
-        billingExportExecutionRepository.findById(export.getUuidConfigId()).orElseThrow();
+        billingExportExecutionRepository.findById(export.getUuidExportId()).orElseThrow();
 
     execution.setRowsProcessed(export.getRowsProcessed());
     execution.setStartedAt(export.getStartedAt());

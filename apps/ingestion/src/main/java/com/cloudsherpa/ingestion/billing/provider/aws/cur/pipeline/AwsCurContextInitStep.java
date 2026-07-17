@@ -1,9 +1,12 @@
 package com.cloudsherpa.ingestion.billing.provider.aws.cur.pipeline;
 
+import com.cloudsherpa.ingestion.billing.BillingExportConfigService;
+import com.cloudsherpa.lib.entities.BillingExportConfig;
 import com.cloudsherpa.lib.entities.BillingExportExecution;
 import com.cloudsherpa.lib.repositories.BillingExportExecutionRepository;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,13 +19,16 @@ public class AwsCurContextInitStep implements AwsCurIngestionPipelineStep {
 
   Logger logger = LoggerFactory.getLogger(AwsCurContextInitStep.class);
   private final BillingExportExecutionRepository billingExportExecutionRepository;
+  private final BillingExportConfigService billingExportConfigService;
   private final String awsCurTmpDir;
 
   public AwsCurContextInitStep(
       @Value("${sherpa.billing.aws.cur.tmp-dir}") String awsCurTmpDir,
-      BillingExportExecutionRepository billingExportExecutionRepository) {
+      BillingExportExecutionRepository billingExportExecutionRepository,
+      BillingExportConfigService billingExportConfigService) {
     this.awsCurTmpDir = awsCurTmpDir;
     this.billingExportExecutionRepository = billingExportExecutionRepository;
+    this.billingExportConfigService = billingExportConfigService;
   }
 
   @Override
@@ -31,9 +37,13 @@ public class AwsCurContextInitStep implements AwsCurIngestionPipelineStep {
     this.logger.info("Initializing AWS CUR Ingestion Pipeline Context");
     getProcessedExports(context);
 
-    context.setBucketName("test-bucket-564907680089-eu-north-1-an");
-    context.setExportPrefix("exports");
-    context.setExportName("CloudSherpaCsvExport");
+    BillingExportConfig billingExportConfig =
+        billingExportConfigService.getAccountBillingExportConfig(
+            UUID.fromString(context.getConfigId()));
+
+    context.setBucketName(billingExportConfig.getBucketName().strip());
+    context.setExportPrefix(billingExportConfig.getExportPrefix());
+    context.setExportName(billingExportConfig.getExportName());
 
     context.setAwsCurTmpDir(Path.of(awsCurTmpDir));
 

@@ -31,6 +31,10 @@ public class AwsCurExport {
     return exportId;
   }
 
+  public UUID getUuidExportId() {
+    return UUID.fromString(exportId);
+  }
+
   public void setExportId(String exportId) {
     this.exportId = exportId;
   }
