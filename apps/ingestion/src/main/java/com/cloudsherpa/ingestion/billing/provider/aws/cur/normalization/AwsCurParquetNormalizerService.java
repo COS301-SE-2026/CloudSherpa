@@ -1,5 +1,6 @@
 package com.cloudsherpa.ingestion.billing.provider.aws.cur.normalization;
 
+import com.cloudsherpa.ingestion.billing.provider.aws.cur.AwsCurExport;
 import com.cloudsherpa.ingestion.billing.provider.aws.cur.deserialization.parquet.ParquetReaderService;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -19,12 +20,16 @@ public class AwsCurParquetNormalizerService {
     this.parquetReaderService = parquetReaderService;
   }
 
-  public void normalize(Path path) {
+  public void normalize(Path path, AwsCurExport export) {
     try (ParquetReader<GenericRecord> reader = parquetReaderService.openParquetReader(path)) {
       GenericRecord curRecord;
+      int rowsProcessed = 0;
       while ((curRecord = reader.read()) != null) {
+        rowsProcessed++;
         // logger.info("CUR record: {}", curRecord);
       }
+
+      export.setRowsProcessed(export.getRowsProcessed() + rowsProcessed);
     } catch (IOException ioException) {
       logger.error("Failed to initialize parquet reader", ioException);
     }

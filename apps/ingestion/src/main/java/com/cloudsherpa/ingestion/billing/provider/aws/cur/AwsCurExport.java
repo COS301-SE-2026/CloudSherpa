@@ -25,6 +25,7 @@ public class AwsCurExport {
     this.tmpPaths = new ArrayList<>();
     this.configId = configId;
     this.executionStatus = ExecutionStatusEnum.pending;
+    this.rowsProcessed = 0;
   }
 
   public String getExportId() {
