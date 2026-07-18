@@ -2,6 +2,7 @@ package com.cloudsherpa.ingestion.billing.provider.aws.cur.normalization;
 
 import com.cloudsherpa.ingestion.billing.BillingExport;
 import com.cloudsherpa.ingestion.billing.CostRecordNormalizer;
+import com.cloudsherpa.ingestion.billing.provider.aws.cur.exceptions.NormalizationException;
 import com.cloudsherpa.lib.entities.ChargeTypeEnum;
 import com.cloudsherpa.lib.entities.NormalizedCosts;
 import com.cloudsherpa.lib.entities.ProviderEnum;
@@ -22,7 +23,8 @@ public class AwsCurParquetRecordNormalizer
   private static final long JULIAN_DAY_OF_UNIX_EPOCH = 2_440_588L;
 
   @Override
-  public NormalizedCosts normalize(GenericRecord costRecord, BillingExport export) {
+  public NormalizedCosts normalize(GenericRecord costRecord, BillingExport export)
+      throws NormalizationException {
     NormalizedCosts normalized = new NormalizedCosts();
 
     normalized.setExecutionId(getExecutionId(export));
@@ -50,7 +52,10 @@ public class AwsCurParquetRecordNormalizer
   @Override
   public String getBillingAccountId(GenericRecord costRecord) {
     Object value = costRecord.get("line_item_usage_account_id");
-    return value == null ? null : value.toString();
+    if (value == null) {
+      throw new NormalizationException("line_item_usage_account_id", "Null value");
+    }
+    return value.toString();
   }
 
   @Override
@@ -67,7 +72,12 @@ public class AwsCurParquetRecordNormalizer
   @Override
   public String getServiceName(GenericRecord costRecord) {
     Object value = costRecord.get("product_servicecode");
-    return value == null ? null : value.toString();
+
+    if (value == null) {
+      throw new NormalizationException("product_servicecode", "Null value");
+    }
+
+    return value.toString();
   }
 
   @Override
@@ -82,7 +92,7 @@ public class AwsCurParquetRecordNormalizer
       return BigDecimal.valueOf(number.doubleValue());
     }
 
-    return null;
+    throw new NormalizationException("line_item_unblended_cost", "Unsupported type or null value");
   }
 
   @Override
@@ -103,7 +113,7 @@ public class AwsCurParquetRecordNormalizer
       return int96ToOffsetDateTime(binary);
     }
 
-    return null;
+    throw new NormalizationException(fieldName, "Unsupported type or null value");
   }
 
   private OffsetDateTime int96ToOffsetDateTime(Binary binary) {

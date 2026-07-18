@@ -1,5 +1,6 @@
 package com.cloudsherpa.ingestion.billing;
 
+import com.cloudsherpa.ingestion.billing.provider.aws.cur.exceptions.NormalizationException;
 import com.cloudsherpa.lib.entities.ChargeTypeEnum;
 import com.cloudsherpa.lib.entities.NormalizedCosts;
 import com.cloudsherpa.lib.entities.ProviderEnum;
@@ -9,7 +10,7 @@ import java.util.UUID;
 
 public interface CostRecordNormalizer<T, E> {
 
-  NormalizedCosts normalize(T costRecord, E export);
+  NormalizedCosts normalize(T costRecord, E export) throws NormalizationException;
 
   UUID getExecutionId(E export);
 

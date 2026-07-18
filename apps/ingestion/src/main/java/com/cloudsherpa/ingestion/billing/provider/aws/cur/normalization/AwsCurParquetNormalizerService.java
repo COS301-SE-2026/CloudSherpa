@@ -2,6 +2,7 @@ package com.cloudsherpa.ingestion.billing.provider.aws.cur.normalization;
 
 import com.cloudsherpa.ingestion.billing.BillingExport;
 import com.cloudsherpa.ingestion.billing.provider.aws.cur.deserialization.parquet.ParquetReaderService;
+import com.cloudsherpa.ingestion.billing.provider.aws.cur.exceptions.NormalizationException;
 import com.cloudsherpa.ingestion.service.SherpaDbPersistenceService;
 import com.cloudsherpa.lib.entities.NormalizedCosts;
 import java.io.IOException;
@@ -35,13 +36,21 @@ public class AwsCurParquetNormalizerService {
       int rowsProcessed = 0;
       while ((curRecord = reader.read()) != null) {
         rowsProcessed++;
-        NormalizedCosts normalizedCostsRecord = recordNormalizer.normalize(curRecord, export);
-        sherpaDbPersistenceService.recordCost(normalizedCostsRecord, userId);
+        normalizeAndWrite(curRecord, export, userId);
       }
 
       export.setRowsProcessed(export.getRowsProcessed() + rowsProcessed);
     } catch (IOException ioException) {
       logger.error("Failed to initialize parquet reader", ioException);
+    }
+  }
+
+  private void normalizeAndWrite(GenericRecord curRecord, BillingExport export, UUID userId) {
+    try {
+      NormalizedCosts normalizedCostsRecord = recordNormalizer.normalize(curRecord, export);
+      sherpaDbPersistenceService.recordCost(normalizedCostsRecord, userId);
+    } catch (NormalizationException normalizationException) {
+      logger.error(normalizationException.getMessage(), normalizationException);
     }
   }
 }
