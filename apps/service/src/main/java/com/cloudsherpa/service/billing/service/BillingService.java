@@ -3,26 +3,37 @@ package com.cloudsherpa.service.billing.service;
 import com.cloudsherpa.lib.repositories.NormalizedCostsRepository;
 import com.cloudsherpa.service.billing.dto.BillingKpiRequest;
 import com.cloudsherpa.service.billing.dto.BillingKpiResponse;
+import com.cloudsherpa.service.config.TenantContext;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.UUID;
+import java.util.regex.Pattern;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class BillingService {
 
   private final NormalizedCostsRepository normalizedCostsRepository;
+  private static final Pattern TENANT_SCHEMA_PATTERN = Pattern.compile("^tenant_[a-f0-9_]{36}$");
+
+  @PersistenceContext private EntityManager entityManager;
 
   public BillingService(NormalizedCostsRepository normalizedCostsRepository) {
     this.normalizedCostsRepository = normalizedCostsRepository;
   }
 
+  @Transactional
   public BillingKpiResponse previewKpi(BillingKpiRequest request) {
+    setTenantSchemaFromContext();
+
     OffsetDateTime fromDate;
     OffsetDateTime toDate;
 
@@ -57,6 +68,27 @@ public class BillingService {
         resourceIds == null ? 0 : resourceIds.size(),
         resolveTimeLabel(request.aggregation()),
         OffsetDateTime.now(ZoneOffset.UTC).toString());
+  }
+
+  private void setTenantSchemaFromContext() {
+    String tenantId = TenantContext.getCurrentTenant();
+
+    if (tenantId == null || tenantId.isBlank()) {
+      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No tenant context available");
+    }
+
+    String schema = normalizeTenantSchema(tenantId);
+    entityManager.createNativeQuery("SET search_path TO " + schema + ", public").executeUpdate();
+  }
+
+  private String normalizeTenantSchema(String tenantId) {
+    String schema = "tenant_" + tenantId.toLowerCase().replace("-", "_");
+
+    if (!TENANT_SCHEMA_PATTERN.matcher(schema).matches()) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid tenant identifier");
+    }
+
+    return schema;
   }
 
   private String resolveTimeLabel(String aggregation) {

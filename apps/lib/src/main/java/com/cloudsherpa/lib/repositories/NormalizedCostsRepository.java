@@ -13,38 +13,21 @@ public interface NormalizedCostsRepository extends JpaRepository<NormalizedCosts
   List<NormalizedCosts> findByUsageStartTimeBetween(OffsetDateTime from, OffsetDateTime to);
   List<NormalizedCosts> findByResourceId(UUID resourceId);
 
-@Query(
+  @Query(
       """
-      -- COALESCE ensures that if there are absolutely no costs for this time period 
-      -- (which would normally return a SQL NULL), it returns a 0 instead. 
-      SELECT COALESCE(SUM(nc.costAmount), 0) 
-       
-      FROM NormalizedCosts nc 
-      
-      -- Filters the records to only include those where the billing start time falls 
-      -- within the provided from/to window. 
-      -- AGGREGATION: Because 'usageStartTime' is the TimescaleDB hypertable 
-      -- partition key, TimescaleDB will completely ignore irrelevant daily/weekly chunks 
-      -- and only scan the exact partitions needed for this date range.
+      SELECT COALESCE(SUM(nc.costAmount), 0)
+      FROM NormalizedCosts nc
       WHERE nc.usageStartTime BETWEEN :fromDate AND :toDate
       """)
   BigDecimal sumTotalCostBetween(
-      @Param("fromDate") OffsetDateTime fromDate, 
-      @Param("toDate") OffsetDateTime toDate);
+      @Param("fromDate") OffsetDateTime fromDate, @Param("toDate") OffsetDateTime toDate);
 
-@Query(
+  @Query(
       """
-      SELECT COALESCE(SUM(nc.costAmount), 0) 
-      
-      FROM NormalizedCosts nc 
-     
+      SELECT COALESCE(SUM(nc.costAmount), 0)
+      FROM NormalizedCosts nc
       WHERE nc.usageStartTime BETWEEN :fromDate AND :toDate
-      
-        -- Filters the sums to ONLY include rows where the internal
-        -- UUID matches the list of UUIDs passed from the frontend.
-        -- PERFORMANCE BOOST: Because we created the index 'ix_tenant_costs_resource_time'
-        -- on (resource_id, usage_start_time), this lookup is lightning fast.
-        AND nc.resourceId IN :resourceIds
+        AND nc.resourceId IN (:resourceIds)
       """)
   BigDecimal sumTotalCostBetweenForResources(
       @Param("fromDate") OffsetDateTime fromDate,
