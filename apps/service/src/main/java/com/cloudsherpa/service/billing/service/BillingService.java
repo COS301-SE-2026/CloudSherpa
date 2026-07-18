@@ -1,6 +1,11 @@
 package com.cloudsherpa.service.billing.service;
 
+import com.cloudsherpa.lib.entities.CloudAccount;
+import com.cloudsherpa.lib.entities.CloudConnection;
+import com.cloudsherpa.lib.repositories.CloudAccountRepository;
+import com.cloudsherpa.lib.repositories.CloudConnectionRepository;
 import com.cloudsherpa.lib.repositories.NormalizedCostsRepository;
+import com.cloudsherpa.service.billing.dto.BillingConnectionResponse;
 import com.cloudsherpa.service.billing.dto.BillingKpiRequest;
 import com.cloudsherpa.service.billing.dto.BillingKpiResponse;
 import com.cloudsherpa.service.config.TenantContext;
@@ -10,6 +15,7 @@ import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -22,12 +28,19 @@ import org.springframework.web.server.ResponseStatusException;
 public class BillingService {
 
   private final NormalizedCostsRepository normalizedCostsRepository;
+  private final CloudConnectionRepository cloudConnectionRepository;
+  private final CloudAccountRepository cloudAccountRepository;
   private static final Pattern TENANT_SCHEMA_PATTERN = Pattern.compile("^tenant_[a-f0-9_]{36}$");
 
   @PersistenceContext private EntityManager entityManager;
 
-  public BillingService(NormalizedCostsRepository normalizedCostsRepository) {
+  public BillingService(
+      NormalizedCostsRepository normalizedCostsRepository,
+      CloudConnectionRepository cloudConnectionRepository,
+      CloudAccountRepository cloudAccountRepository) {
     this.normalizedCostsRepository = normalizedCostsRepository;
+    this.cloudConnectionRepository = cloudConnectionRepository;
+    this.cloudAccountRepository = cloudAccountRepository;
   }
 
   @Transactional
@@ -68,6 +81,23 @@ public class BillingService {
         resourceIds == null ? 0 : resourceIds.size(),
         resolveTimeLabel(request.aggregation()),
         OffsetDateTime.now(ZoneOffset.UTC).toString());
+  }
+
+  public List<BillingConnectionResponse> getConnections(UUID userId) {
+    List<CloudConnection> connections = cloudConnectionRepository.findByUserId(userId);
+    List<BillingConnectionResponse> response = new ArrayList<>();
+
+    for (CloudConnection connection : connections) {
+      List<CloudAccount> accounts = cloudAccountRepository.findByConnectionId(connection.getId());
+
+      for (CloudAccount account : accounts) {
+        response.add(
+            new BillingConnectionResponse(
+                connection.getId(), account.getDisplayName(), connection.getProvider().name()));
+      }
+    }
+
+    return response;
   }
 
   private void setTenantSchemaFromContext() {
