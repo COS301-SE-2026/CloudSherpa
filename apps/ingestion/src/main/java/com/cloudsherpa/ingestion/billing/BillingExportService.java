@@ -1,4 +1,4 @@
-package com.cloudsherpa.ingestion.billing.provider.aws.cur;
+package com.cloudsherpa.ingestion.billing;
 
 import com.cloudsherpa.lib.entities.BillingExportExecution;
 import com.cloudsherpa.lib.entities.ExecutionStatusEnum;
@@ -9,16 +9,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class AwsCurExportService {
+public class BillingExportService {
   private final BillingExportExecutionRepository billingExportExecutionRepository;
 
-  public AwsCurExportService(BillingExportExecutionRepository billingExportExecutionRepository) {
+  public BillingExportService(BillingExportExecutionRepository billingExportExecutionRepository) {
     this.billingExportExecutionRepository = billingExportExecutionRepository;
   }
 
   @Transactional
-  public AwsCurExport initializeExport(String exportId, String configId, List<String> dataFiles) {
-    AwsCurExport newExport = new AwsCurExport(exportId, configId, dataFiles);
+  public BillingExport initializeExport(String exportId, String configId, List<String> dataFiles) {
+    BillingExport newExport = new BillingExport(exportId, configId, dataFiles);
     billingExportExecutionRepository.save(
         new BillingExportExecution(
             UUID.fromString(exportId), UUID.fromString(configId), ExecutionStatusEnum.pending));
@@ -26,7 +26,7 @@ public class AwsCurExportService {
   }
 
   @Transactional
-  public void transitionExportStatus(AwsCurExport export, ExecutionStatusEnum status) {
+  public void transitionExportStatus(BillingExport export, ExecutionStatusEnum status) {
     // update in DB
     BillingExportExecution execution =
         billingExportExecutionRepository.findById(export.getUuidExportId()).orElseThrow();
@@ -38,7 +38,7 @@ public class AwsCurExportService {
   }
 
   @Transactional
-  public void updateDbExport(AwsCurExport export) {
+  public void updateDbExport(BillingExport export) {
     BillingExportExecution execution =
         billingExportExecutionRepository.findById(export.getUuidExportId()).orElseThrow();
 

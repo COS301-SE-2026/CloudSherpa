@@ -1,7 +1,7 @@
 package com.cloudsherpa.ingestion.billing.provider.aws.cur.pipeline;
 
-import com.cloudsherpa.ingestion.billing.provider.aws.cur.AwsCurExport;
-import com.cloudsherpa.ingestion.billing.provider.aws.cur.AwsCurExportService;
+import com.cloudsherpa.ingestion.billing.BillingExport;
+import com.cloudsherpa.ingestion.billing.BillingExportService;
 import com.cloudsherpa.ingestion.billing.provider.aws.cur.deserialization.json.ManifestConfig;
 import com.cloudsherpa.ingestion.provider.aws.services.s3.S3ObjectReference;
 import java.util.List;
@@ -15,9 +15,9 @@ import software.amazon.awssdk.services.s3.model.S3Object;
 @Order(2)
 public class AwsCurManifestStep implements AwsCurIngestionPipelineStep {
   Logger logger = LoggerFactory.getLogger(AwsCurManifestStep.class);
-  private final AwsCurExportService awsCurExportService;
+  private final BillingExportService awsCurExportService;
 
-  public AwsCurManifestStep(AwsCurExportService awsCurExportService) {
+  public AwsCurManifestStep(BillingExportService awsCurExportService) {
     this.awsCurExportService = awsCurExportService;
   }
 
@@ -41,7 +41,7 @@ public class AwsCurManifestStep implements AwsCurIngestionPipelineStep {
           context.getS3().objectToJson(metadataObjectReference, ManifestConfig.class);
       if (!context.getProcessedExports().contains(manifestConfig.getExecutionId())) {
 
-        AwsCurExport newExport =
+        BillingExport newExport =
             awsCurExportService.initializeExport(
                 manifestConfig.getExecutionId(),
                 context.getConfigId(),

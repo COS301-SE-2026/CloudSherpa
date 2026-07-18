@@ -129,4 +129,60 @@ public class NormalizedCosts {
   public Map<String, Object> getMetadata() {
     return metadata;
   }
+
+  public void setCostId(UUID costId) {
+    this.costId = costId;
+  }
+
+  public void setExecutionId(UUID executionId) {
+    this.executionId = executionId;
+  }
+
+  public void setExecution(BillingExportExecution execution) {
+    this.execution = execution;
+  }
+
+  public void setResourceId(UUID resourceId) {
+    this.resourceId = resourceId;
+  }
+
+  public void setResource(Resource resource) {
+    this.resource = resource;
+  }
+
+  public void setProvider(ProviderEnum provider) {
+    this.provider = provider;
+  }
+
+  public void setBillingAccountId(String billingAccountId) {
+    this.billingAccountId = billingAccountId;
+  }
+
+  public void setServiceName(String serviceName) {
+    this.serviceName = serviceName;
+  }
+
+  public void setChargeType(ChargeTypeEnum chargeType) {
+    this.chargeType = chargeType;
+  }
+
+  public void setCostAmount(BigDecimal costAmount) {
+    this.costAmount = costAmount;
+  }
+
+  public void setCurrency(CurrencyEnum currency) {
+    this.currency = currency;
+  }
+
+  public void setUsageStartTime(OffsetDateTime usageStartTime) {
+    this.usageStartTime = usageStartTime;
+  }
+
+  public void setUsageEndTime(OffsetDateTime usageEndTime) {
+    this.usageEndTime = usageEndTime;
+  }
+
+  public void setMetadata(Map<String, Object> metadata) {
+    this.metadata = metadata;
+  }
 }

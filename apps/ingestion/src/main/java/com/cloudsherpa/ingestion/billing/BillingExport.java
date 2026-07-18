@@ -1,4 +1,4 @@
-package com.cloudsherpa.ingestion.billing.provider.aws.cur;
+package com.cloudsherpa.ingestion.billing;
 
 import com.cloudsherpa.lib.entities.ExecutionStatusEnum;
 import java.nio.file.Path;
@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class AwsCurExport {
+public class BillingExport {
   private String exportId;
   private List<String> dataFiles;
   private String encoding;
@@ -19,7 +19,7 @@ public class AwsCurExport {
   private OffsetDateTime completedAt;
   private String errorMessage;
 
-  public AwsCurExport(String exportId, String configId, List<String> dataFiles) {
+  public BillingExport(String exportId, String configId, List<String> dataFiles) {
     this.exportId = exportId;
     this.dataFiles = dataFiles;
     this.tmpPaths = new ArrayList<>();
