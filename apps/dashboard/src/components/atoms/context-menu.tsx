@@ -6,7 +6,9 @@ import { ContextMenu as ContextMenuPrimitive } from "radix-ui";
 import { cn } from "@/lib/utils";
 import { ChevronRightIcon, CheckIcon } from "lucide-react";
 
-function ContextMenu({ ...props }: React.ComponentProps<typeof ContextMenuPrimitive.Root>) {
+function ContextMenu({
+    ...props
+}: Readonly<React.ComponentProps<typeof ContextMenuPrimitive.Root>>) {
     return <ContextMenuPrimitive.Root data-slot="context-menu" {...props} />;
 }
 
@@ -27,11 +29,15 @@ function ContextMenuGroup({ ...props }: React.ComponentProps<typeof ContextMenuP
     return <ContextMenuPrimitive.Group data-slot="context-menu-group" {...props} />;
 }
 
-function ContextMenuPortal({ ...props }: React.ComponentProps<typeof ContextMenuPrimitive.Portal>) {
+function ContextMenuPortal({
+    ...props
+}: Readonly<React.ComponentProps<typeof ContextMenuPrimitive.Portal>>) {
     return <ContextMenuPrimitive.Portal data-slot="context-menu-portal" {...props} />;
 }
 
-function ContextMenuSub({ ...props }: React.ComponentProps<typeof ContextMenuPrimitive.Sub>) {
+function ContextMenuSub({
+    ...props
+}: Readonly<React.ComponentProps<typeof ContextMenuPrimitive.Sub>>) {
     return <ContextMenuPrimitive.Sub data-slot="context-menu-sub" {...props} />;
 }
 

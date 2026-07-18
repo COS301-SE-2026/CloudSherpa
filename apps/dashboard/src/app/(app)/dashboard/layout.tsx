@@ -172,7 +172,7 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
         } catch (error) {
             console.error("Failed to persist new widget", error);
         }
-    }, [addWidget, getMetricList, setIsEditMode, isEditMode, createSnapshot]);
+    }, [addWidget, getMetricList, setIsEditMode, isEditMode, createSnapshot, activeDashboardId]);
 
     return (
         <div className="flex flex-col flex-1 h-full w-full">

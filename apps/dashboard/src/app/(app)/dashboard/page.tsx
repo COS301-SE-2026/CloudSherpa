@@ -76,7 +76,7 @@ function DashboardContent() {
     const fetchResourceNames = useResourceNameStore((state) => state.fetchResources);
     const getMetricList = useMetricStore((state) => state.getMetricList);
 
-    const { setInitialState, removeWidget, updateLayouts, setActiveDashboard } = useDashboardStore(
+    const { setInitialState, updateLayouts, setActiveDashboard } = useDashboardStore(
         (state: DashboardStore) => state.actions
     );
 
@@ -167,13 +167,6 @@ function DashboardContent() {
         );
     }, [activeDashboard, layoutsMap]);
 
-    const handleDeleteWidget = useCallback(
-        (layoutId: string, widgetId: string) => {
-            removeWidget(layoutId, widgetId);
-        },
-        [removeWidget]
-    );
-
     const handleLayoutChange = useCallback(
         (newLayout: LayoutItem[]) => {
             updateLayouts(newLayout);
@@ -208,7 +201,6 @@ function DashboardContent() {
                     dashboardId={activeDashboardId || ""}
                     onLayoutChange={handleLayoutChange}
                     layouts={widgetLayouts}
-                    onDeleteWidget={handleDeleteWidget}
                 />
             );
         }

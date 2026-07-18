@@ -11,15 +11,9 @@ interface GridProps {
     dashboardId: string;
     onLayoutChange: (layout: LayoutItem[]) => void;
     layouts: LayoutItem[];
-    onDeleteWidget: (layoutId: string, widgetId: string) => void;
 }
 
-export default function Grid({
-    isEditMode,
-    onLayoutChange,
-    layouts,
-    onDeleteWidget,
-}: Readonly<GridProps>) {
+export default function Grid({ isEditMode, onLayoutChange, layouts }: Readonly<GridProps>) {
     const gridRef = useRef<HTMLDivElement>(null);
     const gridStackInstance = useRef<GridStack | null>(null);
     const onLayoutChangeRef = useRef(onLayoutChange);
