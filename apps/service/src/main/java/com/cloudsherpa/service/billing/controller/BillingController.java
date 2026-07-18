@@ -3,8 +3,10 @@ package com.cloudsherpa.service.billing.controller;
 import com.cloudsherpa.service.billing.dto.BillingConnectionResponse;
 import com.cloudsherpa.service.billing.dto.BillingKpiRequest;
 import com.cloudsherpa.service.billing.dto.BillingKpiResponse;
+import com.cloudsherpa.service.billing.dto.BillingResourceResponse;
 import com.cloudsherpa.service.billing.service.BillingService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -70,5 +73,31 @@ public class BillingController {
 
     UUID userId = UUID.fromString(jwt.getSubject());
     return ResponseEntity.ok(billingService.getConnections(userId));
+  }
+
+  @Operation(summary = "Get billing resources")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Resources returned successfully",
+            content =
+                @Content(
+                    array =
+                        @ArraySchema(
+                            schema = @Schema(implementation = BillingResourceResponse.class)))),
+        @ApiResponse(responseCode = "401", description = "Unauthenticated")
+      })
+  @GetMapping("/resources")
+  public ResponseEntity<List<BillingResourceResponse>> getResources(
+      @AuthenticationPrincipal Jwt jwt,
+      @RequestParam(name = "connectionId", required = false) UUID connectionId,
+      @RequestParam(name = "search", required = false) String search) {
+    if (jwt == null) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
+    UUID userId = UUID.fromString(jwt.getSubject());
+    return ResponseEntity.ok(billingService.getResources(userId, connectionId, search));
   }
 }

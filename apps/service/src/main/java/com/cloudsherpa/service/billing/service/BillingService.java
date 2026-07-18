@@ -2,12 +2,15 @@ package com.cloudsherpa.service.billing.service;
 
 import com.cloudsherpa.lib.entities.CloudAccount;
 import com.cloudsherpa.lib.entities.CloudConnection;
+import com.cloudsherpa.lib.entities.Resource;
 import com.cloudsherpa.lib.repositories.CloudAccountRepository;
 import com.cloudsherpa.lib.repositories.CloudConnectionRepository;
 import com.cloudsherpa.lib.repositories.NormalizedCostsRepository;
+import com.cloudsherpa.lib.repositories.ResourceRepository;
 import com.cloudsherpa.service.billing.dto.BillingConnectionResponse;
 import com.cloudsherpa.service.billing.dto.BillingKpiRequest;
 import com.cloudsherpa.service.billing.dto.BillingKpiResponse;
+import com.cloudsherpa.service.billing.dto.BillingResourceResponse;
 import com.cloudsherpa.service.config.TenantContext;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -30,6 +33,7 @@ public class BillingService {
   private final NormalizedCostsRepository normalizedCostsRepository;
   private final CloudConnectionRepository cloudConnectionRepository;
   private final CloudAccountRepository cloudAccountRepository;
+  private final ResourceRepository resourceRepository;
   private static final Pattern TENANT_SCHEMA_PATTERN = Pattern.compile("^tenant_[a-f0-9_]{36}$");
 
   @PersistenceContext private EntityManager entityManager;
@@ -37,10 +41,12 @@ public class BillingService {
   public BillingService(
       NormalizedCostsRepository normalizedCostsRepository,
       CloudConnectionRepository cloudConnectionRepository,
-      CloudAccountRepository cloudAccountRepository) {
+      CloudAccountRepository cloudAccountRepository,
+      ResourceRepository resourceRepository) {
     this.normalizedCostsRepository = normalizedCostsRepository;
     this.cloudConnectionRepository = cloudConnectionRepository;
     this.cloudAccountRepository = cloudAccountRepository;
+    this.resourceRepository = resourceRepository;
   }
 
   @Transactional
@@ -98,6 +104,84 @@ public class BillingService {
     }
 
     return response;
+  }
+
+  @Transactional(readOnly = true)
+  public List<BillingResourceResponse> getResources(UUID userId, UUID connectionId, String search) {
+    setTenantSchemaFromContext();
+
+    List<CloudConnection> connections = cloudConnectionRepository.findByUserId(userId);
+    String normalizedSearch = normalizeSearch(search);
+
+    List<BillingResourceResponse> resources = new ArrayList<>();
+
+    for (CloudConnection connection : connections) {
+      if (shouldSkipConnection(connectionId, connection.getId())) {
+        continue;
+      }
+
+      List<CloudAccount> accounts = cloudAccountRepository.findByConnectionId(connection.getId());
+
+      for (CloudAccount account : accounts) {
+        List<Resource> accountResources = resourceRepository.findByAccountId(account.getId());
+
+        for (Resource resource : accountResources) {
+          if (!matchesSearch(resource, normalizedSearch)) {
+            continue;
+          }
+
+          resources.add(
+              new BillingResourceResponse(
+                  resource.getId(),
+                  resource.getResourceName(),
+                  deriveService(resource.getResourceType()),
+                  connection.getProvider().name(),
+                  connection.getId(),
+                  account.getDisplayName()));
+        }
+      }
+    }
+
+    return resources;
+  }
+
+  private boolean shouldSkipConnection(UUID requestedConnectionId, UUID currentConnectionId) {
+    return requestedConnectionId != null && !requestedConnectionId.equals(currentConnectionId);
+  }
+
+  private String normalizeSearch(String search) {
+    return search == null ? "" : search.trim().toLowerCase();
+  }
+
+  private boolean matchesSearch(Resource resource, String normalizedSearch) {
+    if (normalizedSearch.isBlank()) {
+      return true;
+    }
+
+    String resourceName = resource.getResourceName();
+    String resourceId = resource.getId().toString();
+
+    boolean matchesName =
+        resourceName != null && resourceName.toLowerCase().contains(normalizedSearch);
+    boolean matchesId = resourceId.contains(normalizedSearch);
+
+    return matchesName || matchesId;
+  }
+
+  private String deriveService(String resourceType) {
+    if (resourceType == null || resourceType.isBlank()) {
+      return "Unknown";
+    }
+
+    // Resource type strings look like AWS::EC2::Volume.
+    // This pulls out the middle piece, e.g. EC2.
+    String[] parts = resourceType.split("::");
+    if (parts.length >= 2) {
+      return parts[1];
+    }
+
+    // If the format is unexpected, just return the raw value.
+    return resourceType;
   }
 
   private void setTenantSchemaFromContext() {
