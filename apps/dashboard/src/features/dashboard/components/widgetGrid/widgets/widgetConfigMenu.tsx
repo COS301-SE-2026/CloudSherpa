@@ -1,6 +1,6 @@
 "use client";
 
-import { useDashboardStore, DashboardStore } from "@/features/dashboard/stores/dashboard-store";
+import { useDashboardStore} from "@/features/dashboard/stores/dashboard-store";
 import {
     useResourceNameStore,
     ResourceNameStore,
@@ -23,10 +23,9 @@ export function WidgetConfigMenu({
     existingConfig,
 }: Readonly<WidgetConfigMenuProps>) {
     const [configuration, setConfiguration] = useState<WidgetConfig>(existingConfig);
+    const [isSaving, setIsSaving] = useState(false);
     const updateWidget = useDashboardStore((state) => state.actions.updateWidgetConfig);
-    const registerWidgetConfigUpdate = useDashboardStore(
-        (state: DashboardStore) => state.actions.updateWidgetConfig
-    );
+
     const resourceNamesById = useResourceNameStore(
         (state: ResourceNameStore) => state.resourcesById
     );
@@ -48,17 +47,19 @@ export function WidgetConfigMenu({
         }
 
         isFirstRender.current = false;
-    }, [existingConfig]);
+    }, [existingConfig, isOpen]);
 
     const handleSave = async () => {
-        updateWidget(configuration);
-        onClose();
+        setIsSaving(true);
+        try {
+            updateWidget(configuration);
+            onClose();
+        } catch (error) {
+            console.error("Failed to save configuration", error);
+        } finally {
+            setIsSaving(false);
+        }
     };
-
-    function setConfigAndRegisterUpdate(newConfig: WidgetConfig) {
-        setConfiguration(newConfig);
-        registerWidgetConfigUpdate(newConfig);
-    }
 
     if (!isOpen) {
         return null;
@@ -88,7 +89,7 @@ export function WidgetConfigMenu({
                             type="text"
                             value={configuration.displayName || ""}
                             onChange={(e) =>
-                                setConfigAndRegisterUpdate({
+                                setConfiguration({
                                     ...configuration,
                                     displayName: e.target.value,
                                 })
@@ -115,7 +116,7 @@ export function WidgetConfigMenu({
                                 const nextMetricOptions = allAvailableMetrics()[resourceId] ?? [];
                                 const metricType = nextMetricOptions[0] ?? "anon";
 
-                                setConfigAndRegisterUpdate({
+                                setConfiguration({
                                     ...configuration,
                                     resourceId,
                                     metricType,
@@ -149,7 +150,7 @@ export function WidgetConfigMenu({
                                     id="metric-type"
                                     value={configuration.metricType || ""}
                                     onChange={(e) =>
-                                        setConfigAndRegisterUpdate({
+                                        setConfiguration({
                                             ...configuration,
                                             metricType: e.target.value as MetricType,
                                         })
@@ -216,6 +217,7 @@ export function WidgetConfigMenu({
                 <div className="flex justify-end gap-3 border-t border-border px-6 py-4">
                     <button
                         onClick={onClose}
+                        disabled={isSaving}
                         className="px-4 py-2 rounded-lg border border-border text-foreground hover:bg-muted transition-colors"
                     >
                         Cancel
@@ -223,6 +225,7 @@ export function WidgetConfigMenu({
 
                     <button
                         onClick={handleSave}
+                        disabled={isSaving}
                         className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
                     >
                         Save Changes

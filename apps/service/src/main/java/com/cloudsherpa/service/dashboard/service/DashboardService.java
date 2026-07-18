@@ -78,7 +78,7 @@ public class DashboardService {
   public void deleteDashboard(UUID userId, UUID dashboardId) {
     Dashboard dashboard = getDashboardAndVerifyOwnership(userId, dashboardId);
     boolean wasCurrent = Boolean.TRUE.equals(dashboard.getCurrent());
-
+    // clean up dashboard
     List<Widget> widgets = widgetRepository.findByDashboardId(dashboardId);
     for (Widget widget : widgets) {
       List<WidgetResource> resources = widgetResourceRepository.findByWidgetId(widget.getId());
@@ -92,6 +92,7 @@ public class DashboardService {
 
     dashboardRepository.delete(dashboard);
 
+    // chane current if current was deleted
     if (wasCurrent) {
       List<Dashboard> remainingDashboards = dashboardRepository.findByUserId(userId);
       if (!remainingDashboards.isEmpty()) {
