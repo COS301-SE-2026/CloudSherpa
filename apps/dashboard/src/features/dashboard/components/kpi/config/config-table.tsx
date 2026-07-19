@@ -5,6 +5,7 @@ import {
     useReactTable,
     ColumnFiltersState,
     getFilteredRowModel,
+    getPaginationRowModel,
 } from "@tanstack/react-table";
 
 import {
@@ -34,6 +35,7 @@ import {
 import { SearchIcon } from "lucide-react";
 import { FormCountCircle } from "@/components/atoms/form-count-circle";
 import React from "react";
+import { DataTablePagination } from "./config-table-pagination";
 
 interface KPIConfigTableProps<TData, TValue> {
     readonly columns: ColumnDef<TData, TValue>[];
@@ -55,6 +57,7 @@ export function KPIConfigTable<TData, TValue>({
         getCoreRowModel: getCoreRowModel(),
         onColumnFiltersChange: setColumnFilters,
         getFilteredRowModel: getFilteredRowModel(),
+        getPaginationRowModel: getPaginationRowModel(),
         state: {
             columnFilters,
             globalFilter,
@@ -166,6 +169,7 @@ export function KPIConfigTable<TData, TValue>({
                     </TableBody>
                 </Table>
             </div>
+            <DataTablePagination table={table} />
         </>
     );
 }
