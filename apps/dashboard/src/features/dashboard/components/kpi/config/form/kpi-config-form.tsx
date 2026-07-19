@@ -60,9 +60,8 @@ export type KpiConfigFormProps = {
 };
 
 export function KpiConfigForm({ kpiId }: KpiConfigFormProps) {
-    const [startDate, setStartDate] = useState<Date>();
-    const [endDate, setEndDate] = useState<Date>();
     const [title, setTitle] = useState("Tmp title");
+    const [aggregationWindowDays, setAggregationWindowDays] = useState(30);
 
     const [config, setConfig] = useState<KpiWidgetConfig>({
         id: "123",
@@ -77,6 +76,14 @@ export function KpiConfigForm({ kpiId }: KpiConfigFormProps) {
         setConfig((prev) => ({
             ...prev,
             title: newTitle,
+        }));
+    }
+
+    function onAggregationWindowChange(newWindow: number): void {
+        setAggregationWindowDays(newWindow);
+        setConfig((prev) => ({
+            ...prev,
+            aggregationWindowDays: newWindow,
         }));
     }
 
@@ -98,10 +105,8 @@ export function KpiConfigForm({ kpiId }: KpiConfigFormProps) {
                     />
                     <FieldSeparator />
                     <KpiFormTimePeriod
-                        startDate={startDate}
-                        setStartDate={setStartDate}
-                        endDate={endDate}
-                        setEndDate={setEndDate}
+                        aggregationWindowDays={aggregationWindowDays}
+                        onAggregationWindowChange={onAggregationWindowChange}
                     />
                 </Card>
 
