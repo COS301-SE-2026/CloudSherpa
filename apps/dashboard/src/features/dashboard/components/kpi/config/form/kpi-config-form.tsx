@@ -87,7 +87,11 @@ export function KpiConfigForm({ kpiId }: KpiConfigFormProps) {
                     <CardTitle>Preview</CardTitle>
                     <KPIWidget config={config} />
 
-                    <KpiConfigSummary />
+                    <KpiConfigSummary
+                        connections={selectedRows?.map((row) => row.connection) ?? []}
+                        numResources={selectedRows?.length ?? 0}
+                        aggregationWindowDays={aggregationWindowDays}
+                    />
                 </Card>
             </div>
         </main>
