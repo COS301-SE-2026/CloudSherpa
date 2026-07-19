@@ -1,6 +1,7 @@
 package com.cloudsherpa.ingestion.billing.provider.aws.cur.normalization;
 
 import com.cloudsherpa.ingestion.billing.BillingExport;
+import com.cloudsherpa.ingestion.billing.provider.aws.cur.exceptions.NormalizationException;
 import com.cloudsherpa.ingestion.billing.provider.aws.cur.pipeline.AwsCurContext;
 import com.cloudsherpa.ingestion.provider.aws.services.s3.S3ObjectUriReference;
 import com.cloudsherpa.ingestion.service.SherpaDbPersistenceService;
@@ -9,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 import java.util.zip.GZIPInputStream;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -28,9 +30,11 @@ public class AwsCurCsvNormalizerService {
   Logger logger = LoggerFactory.getLogger(AwsCurCsvNormalizerService.class);
 
   private final SherpaDbPersistenceService sherpaDbPersistenceService;
+  private final AwsCurCsvRecordNormalizer awsCurCsvRecordNormalizer;
 
   public AwsCurCsvNormalizerService(SherpaDbPersistenceService sherpaDbPersistenceService) {
     this.sherpaDbPersistenceService = sherpaDbPersistenceService;
+    this.awsCurCsvRecordNormalizer = new AwsCurCsvRecordNormalizer();
   }
 
   public void normalize(String objectUri, AwsCurContext context, BillingExport export) {
@@ -41,11 +45,12 @@ public class AwsCurCsvNormalizerService {
       GetObjectRequest request =
           GetObjectRequest.builder().bucket(s3Uri.bucketName()).key(s3Uri.key()).build();
 
-      normalizeFromCsv(s3, request, export);
+      normalizeFromCsv(s3, request, export, context.getUserUuid());
     }
   }
 
-  private void normalizeFromCsv(S3Client s3, GetObjectRequest request, BillingExport export) {
+  private void normalizeFromCsv(
+      S3Client s3, GetObjectRequest request, BillingExport export, UUID userId) {
     try (ResponseInputStream<GetObjectResponse> s3Stream = s3.getObject(request);
         GZIPInputStream gzipStream = new GZIPInputStream(s3Stream);
         Reader reader =
@@ -60,12 +65,21 @@ public class AwsCurCsvNormalizerService {
       int rowsProcessed = 0;
       for (CSVRecord csvRecord : parser) {
         rowsProcessed++;
-        logger.info("{}", csvRecord);
+        normalizeAndWrite(csvRecord, export, userId);
       }
 
       export.setRowsProcessed(export.getRowsProcessed() + rowsProcessed);
     } catch (IOException exception) {
       throw new RuntimeException("Failed to open CSV Parser ", exception);
+    }
+  }
+
+  private void normalizeAndWrite(CSVRecord costRecord, BillingExport export, UUID userId) {
+    try {
+      sherpaDbPersistenceService.recordCost(
+          awsCurCsvRecordNormalizer.normalize(costRecord, export), userId);
+    } catch (NormalizationException normalizationException) {
+      logger.error(normalizationException.getMessage(), normalizationException);
     }
   }
 }
