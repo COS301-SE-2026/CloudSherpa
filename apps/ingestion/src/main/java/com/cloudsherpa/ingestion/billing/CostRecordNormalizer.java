@@ -14,6 +14,8 @@ public interface CostRecordNormalizer<T, E> {
 
   UUID getExecutionId(E export);
 
+  String getResourceId(T costReord);
+
   ProviderEnum getProvider(T costRecord);
 
   String getBillingAccountId(T costRecord);

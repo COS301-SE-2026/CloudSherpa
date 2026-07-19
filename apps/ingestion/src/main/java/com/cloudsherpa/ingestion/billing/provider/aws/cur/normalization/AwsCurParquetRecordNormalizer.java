@@ -29,6 +29,7 @@ public class AwsCurParquetRecordNormalizer
 
     normalized.setExecutionId(getExecutionId(export));
     normalized.setProvider(getProvider(costRecord));
+    normalized.setResourceId(getResourceId(costRecord));
     normalized.setBillingAccountId(getBillingAccountId(costRecord));
     normalized.setChargeType(getChargeType(costRecord));
     normalized.setServiceName(getServiceName(costRecord));
@@ -42,6 +43,17 @@ public class AwsCurParquetRecordNormalizer
   @Override
   public UUID getExecutionId(BillingExport export) {
     return export.getUuidExportId();
+  }
+
+  @Override
+  public String getResourceId(GenericRecord costRecord) {
+    Object value = costRecord.get("line_item_resource_id");
+
+    if (value == null) {
+      return null;
+    }
+
+    return value.toString();
   }
 
   @Override

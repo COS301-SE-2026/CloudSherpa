@@ -34,7 +34,7 @@ public class NormalizedCosts {
   private BillingExportExecution execution;
 
   @Column(name = "resource_id")
-  private UUID resourceId;
+  private String resourceId;
 
   @ManyToOne
   @JoinColumn(name = "resource_id", insertable = false, updatable = false)
@@ -86,7 +86,7 @@ public class NormalizedCosts {
     return execution;
   }
 
-  public UUID getResourceId() {
+  public String getResourceId() {
     return resourceId;
   }
 
@@ -142,7 +142,7 @@ public class NormalizedCosts {
     this.execution = execution;
   }
 
-  public void setResourceId(UUID resourceId) {
+  public void setResourceId(String resourceId) {
     this.resourceId = resourceId;
   }
 
