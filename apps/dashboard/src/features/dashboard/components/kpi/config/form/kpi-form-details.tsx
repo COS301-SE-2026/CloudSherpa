@@ -8,7 +8,6 @@ import {
 } from "@/components/atoms/field";
 import { Input } from "@/components/atoms/input";
 import { FormCountCircle } from "@/components/atoms/form-count-circle";
-import { Dispatch, SetStateAction } from "react";
 
 type KpiFormDetailsProps = {
     readonly title: string;
