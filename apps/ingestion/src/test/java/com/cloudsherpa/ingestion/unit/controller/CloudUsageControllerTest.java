@@ -5,6 +5,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.cloudsherpa.ingestion.billing.provider.aws.cur.AwsCurIngestionService;
 import com.cloudsherpa.ingestion.controller.CloudUsageController;
 import com.cloudsherpa.ingestion.models.IngestionResult;
 import com.cloudsherpa.ingestion.service.CloudUsageService;
@@ -26,6 +27,7 @@ class CloudUsageControllerTest {
   @Autowired private MockMvc mockMvc;
 
   @MockitoBean private CloudUsageService service;
+  @MockitoBean private AwsCurIngestionService awsCurIngestionService;
 
   @Test
   void ingestEndpointShouldReturn200() throws Exception {
