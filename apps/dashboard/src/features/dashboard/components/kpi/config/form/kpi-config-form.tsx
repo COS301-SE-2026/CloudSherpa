@@ -9,7 +9,10 @@ import { KpiFormTimePeriod } from "./kpi-form-time-period";
 import { KPIWidget } from "../../kpi-widget";
 import { KpiWidgetConfig } from "@/features/dashboard/types/widgets";
 import { KpiConfigSummary } from "../kpi-config-summary";
-import { kpiConfigColumns } from "@/features/dashboard/components/kpi/config/columns";
+import {
+    kpiConfigColumns,
+    KPIConfigTableRow,
+} from "@/features/dashboard/components/kpi/config/columns";
 import { KPIConfigTable } from "@/features/dashboard/components/kpi/config/config-table";
 import { mockKpiConfigRows } from "@/features/dashboard/components/kpi/config/mock-kpi-config-rows";
 
@@ -22,6 +25,7 @@ export type KpiConfigFormProps = {
 export function KpiConfigForm({ kpiId }: KpiConfigFormProps) {
     const [title, setTitle] = useState("Tmp title");
     const [aggregationWindowDays, setAggregationWindowDays] = useState(30);
+    const [selectedRows, setSelectedRows] = useState<KPIConfigTableRow[]>();
 
     const [config, setConfig] = useState<KpiWidgetConfig>({
         id: "123",
@@ -47,6 +51,14 @@ export function KpiConfigForm({ kpiId }: KpiConfigFormProps) {
         }));
     }
 
+    function onSetSelectedRows(rows: KPIConfigTableRow[] | undefined) {
+        setSelectedRows(rows);
+        setConfig((prev) => ({
+            ...prev,
+            resourceIds: rows?.map((row) => row.resourceId) ?? [],
+        }));
+    }
+
     return (
         <main className="flex flex-1 flex-col gap-6 p-6 lg:p-8 w-full mx-auto">
             <div className="flex flex-row gap-6">
@@ -62,6 +74,7 @@ export function KpiConfigForm({ kpiId }: KpiConfigFormProps) {
                         columns={kpiConfigColumns}
                         data={mockKpiConfigRows}
                         connections={mockConnections}
+                        onSetSelectedRows={onSetSelectedRows}
                     />
                     <FieldSeparator />
                     <KpiFormTimePeriod

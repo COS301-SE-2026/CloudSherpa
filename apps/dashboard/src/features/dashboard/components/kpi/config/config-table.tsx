@@ -34,22 +34,25 @@ import {
 } from "@/components/atoms/table";
 import { SearchIcon } from "lucide-react";
 import { FormCountCircle } from "@/components/atoms/form-count-circle";
-import React from "react";
+import React, { useEffect } from "react";
 import { DataTablePagination } from "./config-table-pagination";
 
 interface KPIConfigTableProps<TData, TValue> {
     readonly columns: ColumnDef<TData, TValue>[];
     readonly data: TData[];
     readonly connections: string[];
+    readonly onSetSelectedRows: (rows: TData[]) => void;
 }
 
 export function KPIConfigTable<TData, TValue>({
     columns,
     data,
     connections,
+    onSetSelectedRows,
 }: KPIConfigTableProps<TData, TValue>) {
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
     const [globalFilter, setGlobalFilter] = React.useState("");
+    const [rowSelection, setRowSelection] = React.useState({});
 
     const table = useReactTable({
         data,
@@ -58,11 +61,18 @@ export function KPIConfigTable<TData, TValue>({
         onColumnFiltersChange: setColumnFilters,
         getFilteredRowModel: getFilteredRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
+        onRowSelectionChange: setRowSelection,
         state: {
             columnFilters,
             globalFilter,
+            rowSelection,
         },
     });
+
+    useEffect(() => {
+        const selectedData = table.getSelectedRowModel().rows.map((row) => row.original);
+        onSetSelectedRows(selectedData);
+    }, [rowSelection, table]);
 
     return (
         <>
