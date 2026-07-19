@@ -27,20 +27,27 @@ export function AuthProvider({ children }: AuthProps) {
                     username: "authdisabled@gmail.com",
                     email: "authdisabled@gmail.com",
                 });
-            } else if (user == null) {
-                const response: LoginResponseDto = await apiClient("/auth/me", {
-                    method: "GET",
-                });
+                setIsAuthReady(true);
+            } else {
+                try {
+                    const response: LoginResponseDto = await apiClient("/auth/me", {
+                        method: "GET",
+                    });
 
-                setUser({
-                    userId: response.userId,
-                    username: response.username,
-                    email: response.email,
-                });
+                    setUser({
+                        userId: response.userId,
+                        username: response.username,
+                        email: response.email,
+                    });
+                } catch (error) {
+                    if (error instanceof Error && !error.message.includes("401")) {
+                        console.error("Failed to load auth state", error);
+                    }
+                } finally {
+                    setIsAuthReady(true);
+                }
             }
-            setIsAuthReady(true);
         }
-
         loadAuthState();
     }, []);
 

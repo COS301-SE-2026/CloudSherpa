@@ -10,7 +10,6 @@ export default function viewing({ onDiscoverMoreClick }: ForViewingItems) {
     return (
         <section
             className="relative h-[calc(100vh-65px)] flex flex-col items-center justify-center text-center overflow-hidden px-10 pt-15 pb-0"
-
             style={{
                 background: `
                 radial-gradient(ellipse 40% 50% at 0% 0%, #000 0%, transparent 60%), radial-gradient(ellipse 40% 50% at 100% 0%, #000 0%, transparent 60%),
