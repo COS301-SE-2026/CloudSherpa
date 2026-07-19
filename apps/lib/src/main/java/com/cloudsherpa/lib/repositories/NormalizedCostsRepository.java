@@ -11,7 +11,7 @@ import org.springframework.data.repository.query.Param;
 
 public interface NormalizedCostsRepository extends JpaRepository<NormalizedCosts, UUID> {
   List<NormalizedCosts> findByUsageStartTimeBetween(OffsetDateTime from, OffsetDateTime to);
-  List<NormalizedCosts> findByResourceId(UUID resourceId);
+  List<NormalizedCosts> findByResourceId(String resourceId);
 
   @Query(
       """
@@ -32,5 +32,5 @@ public interface NormalizedCostsRepository extends JpaRepository<NormalizedCosts
   BigDecimal sumTotalCostBetweenForResources(
       @Param("fromDate") OffsetDateTime fromDate,
       @Param("toDate") OffsetDateTime toDate,
-      @Param("resourceIds") List<UUID> resourceIds);
+      @Param("resourceIds") List<String> resourceIds);
 }

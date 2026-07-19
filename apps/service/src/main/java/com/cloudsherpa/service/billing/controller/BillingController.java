@@ -97,7 +97,6 @@ public class BillingController {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
-    UUID userId = UUID.fromString(jwt.getSubject());
-    return ResponseEntity.ok(billingService.getResources(userId, connectionId, search));
+    return ResponseEntity.ok(billingService.getResources(connectionId, search));
   }
 }
