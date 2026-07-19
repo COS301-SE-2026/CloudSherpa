@@ -1,0 +1,59 @@
+package com.cloudsherpa.ingestion.billing.provider.aws.cur.normalization;
+
+import com.cloudsherpa.ingestion.billing.provider.aws.cur.pipeline.AwsCurContext;
+import com.cloudsherpa.ingestion.provider.aws.services.s3.S3ObjectUriReference;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
+import java.util.zip.GZIPInputStream;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import software.amazon.awssdk.core.ResponseInputStream;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
+
+@Service
+public class AwsCurCsvNormalizerService {
+
+  Logger logger = LoggerFactory.getLogger(AwsCurCsvNormalizerService.class);
+
+  public void normalize(String objectUri, AwsCurContext context) {
+    try (S3Client s3 = S3Client.builder().region(Region.EU_NORTH_1).build()) {
+
+      S3ObjectUriReference s3Uri = context.getS3().uriHelper(s3, objectUri);
+
+      GetObjectRequest request =
+          GetObjectRequest.builder().bucket(s3Uri.bucketName()).key(s3Uri.key()).build();
+
+      normalizeFromCsv(s3, request);
+    }
+  }
+
+  private void normalizeFromCsv(S3Client s3, GetObjectRequest request) {
+    try (ResponseInputStream<GetObjectResponse> s3Stream = s3.getObject(request);
+        GZIPInputStream gzipStream = new GZIPInputStream(s3Stream);
+        Reader reader =
+            new BufferedReader(new InputStreamReader(gzipStream, StandardCharsets.UTF_8));
+        CSVParser parser =
+            CSVFormat.DEFAULT
+                .builder()
+                .setHeader()
+                .setSkipHeaderRecord(true)
+                .build()
+                .parse(reader)) {
+      for (CSVRecord csvRecord : parser) {
+        logger.info("{}", csvRecord);
+      }
+    } catch (IOException exception) {
+      throw new RuntimeException("Failed to open CSV Parser ", exception);
+    }
+  }
+}

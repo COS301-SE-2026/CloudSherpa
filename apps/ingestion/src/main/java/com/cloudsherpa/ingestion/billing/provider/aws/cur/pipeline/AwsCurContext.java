@@ -14,7 +14,6 @@ public class AwsCurContext {
 
   Logger logger = LoggerFactory.getLogger(AwsCurContext.class);
 
-  // Runtime dependency
   @JsonIgnore private final AwsS3 s3;
 
   private String bucketName;
@@ -22,7 +21,6 @@ public class AwsCurContext {
   private String exportName;
   private List<String> processedExports;
 
-  // Internal working state while the pipeline is running
   @JsonIgnore private List<AwsCurExport> processingExports;
 
   private List<String> dataFiles;

@@ -63,28 +63,6 @@ public class AwsS3 implements S3Service {
     }
   }
 
-  @Override
-  public void downloadObject(String objectUri, Path destination) {
-
-    try (S3Client s3 = S3Client.builder().region(Region.EU_NORTH_1).build()) {
-
-      S3Uri parsedUri = s3.utilities().parseUri(URI.create(objectUri));
-
-      String bucket =
-          parsedUri
-              .bucket()
-              .orElseThrow(() -> new IllegalArgumentException("S3 URI has no bucket"));
-
-      String key =
-          parsedUri.key().orElseThrow(() -> new IllegalArgumentException("S3 URI has no key"));
-
-      GetObjectRequest request = GetObjectRequest.builder().bucket(bucket).key(key).build();
-
-      logger.info("Downloading S3 object: '{}'", key);
-      s3.getObject(request, destination);
-    }
-  }
-
   private <T> T jsonDeserialization(
       S3Client s3, S3ObjectReference object, GetObjectRequest request, Class<T> jacksonConfig) {
     try (ResponseInputStream<GetObjectResponse> inputStream = s3.getObject(request)) {
@@ -93,5 +71,31 @@ public class AwsS3 implements S3Service {
       throw new RuntimeException(
           "Failed to deserialize S3 object to json: " + object.object().key(), exception);
     }
+  }
+
+  @Override
+  public void downloadObject(String objectUri, Path destination) {
+
+    try (S3Client s3 = S3Client.builder().region(Region.EU_NORTH_1).build()) {
+
+      S3ObjectUriReference s3Uri = uriHelper(s3, objectUri);
+      GetObjectRequest request =
+          GetObjectRequest.builder().bucket(s3Uri.bucketName()).key(s3Uri.key()).build();
+
+      logger.info("Downloading S3 object: '{}'", s3Uri.key());
+      s3.getObject(request, destination);
+    }
+  }
+
+  public S3ObjectUriReference uriHelper(S3Client s3, String objectUri) {
+    S3Uri parsedUri = s3.utilities().parseUri(URI.create(objectUri));
+
+    String bucket =
+        parsedUri.bucket().orElseThrow(() -> new IllegalArgumentException("S3 URI has no bucket"));
+
+    String key =
+        parsedUri.key().orElseThrow(() -> new IllegalArgumentException("S3 URI has no key"));
+
+    return new S3ObjectUriReference(bucket, key);
   }
 }
