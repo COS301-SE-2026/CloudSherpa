@@ -8,5 +8,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface NormalizedCostsRepository extends JpaRepository<NormalizedCosts, UUID> {
   List<NormalizedCosts> findByUsageStartTimeBetween(OffsetDateTime from, OffsetDateTime to);
-  List<NormalizedCosts> findByResourceId(UUID resourceId);
+  List<NormalizedCosts> findByResourceId(String resourceId);
 }

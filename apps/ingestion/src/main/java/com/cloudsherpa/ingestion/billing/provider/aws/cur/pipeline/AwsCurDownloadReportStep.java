@@ -1,5 +1,6 @@
 package com.cloudsherpa.ingestion.billing.provider.aws.cur.pipeline;
 
+import com.cloudsherpa.ingestion.billing.BillingExport;
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
@@ -17,14 +18,14 @@ public class AwsCurDownloadReportStep implements AwsCurIngestionPipelineStep {
 
   @Override
   public void execute(AwsCurContext context) {
-    for (AwsCurExport export : context.getProcessingExports()) {
+    for (BillingExport export : context.getProcessingExports()) {
       if (export.getEncoding().equals("PARQUET")) {
         downloadParquetExport(export, context);
       }
     }
   }
 
-  private void downloadParquetExport(AwsCurExport export, AwsCurContext context) {
+  private void downloadParquetExport(BillingExport export, AwsCurContext context) {
     for (String dataFileUri : export.getDataFiles()) {
       String delimeter = "/";
       String[] splitUri = dataFileUri.split("/");
