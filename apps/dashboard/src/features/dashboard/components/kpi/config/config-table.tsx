@@ -47,6 +47,7 @@ export function KPIConfigTable<TData, TValue>({
     connections,
 }: KPIConfigTableProps<TData, TValue>) {
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+    const [globalFilter, setGlobalFilter] = React.useState("");
 
     const table = useReactTable({
         data,
@@ -56,6 +57,7 @@ export function KPIConfigTable<TData, TValue>({
         getFilteredRowModel: getFilteredRowModel(),
         state: {
             columnFilters,
+            globalFilter,
         },
     });
 
@@ -103,7 +105,11 @@ export function KPIConfigTable<TData, TValue>({
                         <div>
                             <FieldLabel>Search Resources</FieldLabel>
                             <InputGroup className="w-80">
-                                <InputGroupInput placeholder="Search by resource name or ID" />
+                                <InputGroupInput
+                                    placeholder="Search Resources"
+                                    value={globalFilter ?? ""}
+                                    onChange={(e) => setGlobalFilter(e.target.value)}
+                                />
                                 <InputGroupAddon>
                                     <SearchIcon />
                                 </InputGroupAddon>
