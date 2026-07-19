@@ -5,11 +5,55 @@ import { Card, CardTitle } from "@/components/atoms/card";
 import { FieldSeparator } from "@/components/atoms/field";
 import { useState } from "react";
 import { KpiFormDetails } from "./kpi-form-details";
-import { KpiFormResources } from "./kpi-form-resources";
 import { KpiFormTimePeriod } from "./kpi-form-time-period";
 import { KPIWidget } from "../../kpi-widget";
 import { KpiWidgetConfig } from "@/features/dashboard/types/widgets";
 import { KpiConfigSummary } from "../kpi-config-summary";
+import {
+    KPIConfigTableRow,
+    kpiConfigColumns,
+} from "@/features/dashboard/components/kpi/config/columns";
+import { KPIConfigTable } from "@/features/dashboard/components/kpi/config/config-table";
+
+const mockConnections = ["All connections", "Production AWS", "Data AWS", "Finance GCP"];
+
+const mockKpiConfigRows: KPIConfigTableRow[] = [
+    {
+        resourceName: "Production API Gateway",
+        resourceId: "api-gw-prod-01",
+        service: "API Gateway",
+        provider: "AWS",
+        connection: "Production AWS",
+    },
+    {
+        resourceName: "Customer Database",
+        resourceId: "rds-customer-prod",
+        service: "RDS",
+        provider: "AWS",
+        connection: "Production AWS",
+    },
+    {
+        resourceName: "Billing Worker Cluster",
+        resourceId: "eks-billing-workers",
+        service: "EKS",
+        provider: "AWS",
+        connection: "Production AWS",
+    },
+    {
+        resourceName: "Analytics Storage Bucket",
+        resourceId: "s3-analytics-events",
+        service: "S3",
+        provider: "AWS",
+        connection: "Data AWS",
+    },
+    {
+        resourceName: "Cloud Cost Export",
+        resourceId: "bigquery-cost-export",
+        service: "BigQuery",
+        provider: "GCP",
+        connection: "Finance GCP",
+    },
+];
 
 export type KpiConfigFormProps = {
     readonly kpiId: string;
@@ -47,7 +91,11 @@ export function KpiConfigForm({ kpiId }: KpiConfigFormProps) {
                 <Card className="p-6">
                     <KpiFormDetails title={title} onTitleChange={onTitleChange} />
                     <FieldSeparator></FieldSeparator>
-                    <KpiFormResources />
+                    <KPIConfigTable
+                        columns={kpiConfigColumns}
+                        data={mockKpiConfigRows}
+                        connections={mockConnections}
+                    />
                     <FieldSeparator />
                     <KpiFormTimePeriod
                         startDate={startDate}
