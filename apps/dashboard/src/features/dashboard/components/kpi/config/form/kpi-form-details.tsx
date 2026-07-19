@@ -8,8 +8,14 @@ import {
 } from "@/components/atoms/field";
 import { Input } from "@/components/atoms/input";
 import { FormCountCircle } from "@/components/atoms/form-count-circle";
+import { Dispatch, SetStateAction } from "react";
 
-export function KpiFormDetails() {
+type KpiFormDetailsProps = {
+    readonly title: string;
+    readonly onTitleChange: (title: string) => void;
+};
+
+export function KpiFormDetails({ title, onTitleChange }: KpiFormDetailsProps) {
     return (
         <FieldSet>
             <div className="flex flex-row items-center gap-3">
@@ -22,7 +28,13 @@ export function KpiFormDetails() {
             <FieldGroup>
                 <Field>
                     <FieldLabel>Card Title</FieldLabel>
-                    <Input placeholder="Card Title"></Input>
+                    <Input
+                        placeholder="Card Title"
+                        value={title}
+                        onChange={(e) => {
+                            onTitleChange(e.target.value);
+                        }}
+                    ></Input>
                 </Field>
             </FieldGroup>
         </FieldSet>

@@ -11,17 +11,30 @@ import { KPIWidget } from "../../kpi-widget";
 import { KpiWidgetConfig } from "@/features/dashboard/types/widgets";
 import { KpiConfigSummary } from "../kpi-config-summary";
 
-export function KpiConfigForm() {
+export type KpiConfigFormProps = {
+    readonly kpiId: string;
+};
+
+export function KpiConfigForm({ kpiId }: KpiConfigFormProps) {
     const [startDate, setStartDate] = useState<Date>();
     const [endDate, setEndDate] = useState<Date>();
+    const [title, setTitle] = useState("Tmp title");
 
-    const config: KpiWidgetConfig = {
+    const [config, setConfig] = useState<KpiWidgetConfig>({
         id: "123",
         aggregationWindowDays: 30,
         resourceIds: ["1", "2", "3"],
-        title: "Some Title",
+        title: title,
         widgetType: "kpi",
-    };
+    });
+
+    function onTitleChange(newTitle: string): void {
+        setTitle(newTitle);
+        setConfig((prev) => ({
+            ...prev,
+            title: newTitle,
+        }));
+    }
 
     return (
         <main className="flex flex-1 flex-col gap-6 p-6 lg:p-8 w-full mx-auto">
@@ -32,7 +45,7 @@ export function KpiConfigForm() {
             </div>
             <div className="grid grid-cols-[2fr_1fr] gap-4 h-full">
                 <Card className="p-6">
-                    <KpiFormDetails />
+                    <KpiFormDetails title={title} onTitleChange={onTitleChange} />
                     <FieldSeparator></FieldSeparator>
                     <KpiFormResources />
                     <FieldSeparator />
