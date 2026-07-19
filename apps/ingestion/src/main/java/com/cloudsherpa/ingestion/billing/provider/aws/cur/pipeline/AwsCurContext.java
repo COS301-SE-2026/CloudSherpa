@@ -1,26 +1,39 @@
 package com.cloudsherpa.ingestion.billing.provider.aws.cur.pipeline;
 
+import com.cloudsherpa.ingestion.billing.BillingExport;
 import com.cloudsherpa.ingestion.provider.aws.services.s3.AwsS3;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AwsCurContext {
-  // Runtime dependency; should never be included in an API response
+
+  Logger logger = LoggerFactory.getLogger(AwsCurContext.class);
+
   @JsonIgnore private final AwsS3 s3;
 
   private String bucketName;
   private String exportPrefix;
   private String exportName;
   private List<String> processedExports;
+  private final String configId;
+  private final String userId;
 
-  // Internal working state while the pipeline is running
-  @JsonIgnore private List<AwsCurExport> processingExports;
+  @JsonIgnore private List<BillingExport> processingExports;
 
   private List<String> dataFiles;
+  private Path awsCurTmpDir;
 
-  public AwsCurContext() {
+  public AwsCurContext(String userId, String configId) {
     this.s3 = new AwsS3();
+    this.configId = configId;
+    this.userId = userId;
     this.processedExports = new ArrayList<>();
     this.processingExports = new ArrayList<>();
     this.dataFiles = new ArrayList<>();
@@ -70,11 +83,41 @@ public class AwsCurContext {
     this.processedExports = processedExports;
   }
 
-  public List<AwsCurExport> getProcessingExports() {
+  public void addProcessedExport(String processedExport) {
+    this.processedExports.add(processedExport);
+  }
+
+  public List<BillingExport> getProcessingExports() {
     return processingExports;
   }
 
-  public void setProcessingExports(List<AwsCurExport> processingExports) {
+  public void setProcessingExports(List<BillingExport> processingExports) {
     this.processingExports = processingExports;
+  }
+
+  public Path getAwsCurTmpDir() {
+    return awsCurTmpDir;
+  }
+
+  public String getConfigId() {
+    return configId;
+  }
+
+  public String getUserId() {
+    return userId;
+  }
+
+  public UUID getUserUuid() {
+    return UUID.fromString(userId);
+  }
+
+  public void setAwsCurTmpDir(Path awsCurTmpDir) {
+    try {
+      Files.createDirectories(awsCurTmpDir);
+      this.awsCurTmpDir = awsCurTmpDir;
+    } catch (IOException ioException) {
+      logger.error("Failed to create temp dir {}", awsCurTmpDir, ioException);
+      throw new RuntimeException("Failed to set AWS CUR download directory");
+    }
   }
 }

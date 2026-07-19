@@ -1,4 +1,4 @@
-package com.cloudsherpa.ingestion.billing.provider.aws.cur.serialization.json;
+package com.cloudsherpa.ingestion.billing.provider.aws.cur.deserialization.json;
 
 public class DataFile {
   private String key;

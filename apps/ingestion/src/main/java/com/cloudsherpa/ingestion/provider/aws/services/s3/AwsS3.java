@@ -2,19 +2,22 @@ package com.cloudsherpa.ingestion.provider.aws.services.s3;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
+import java.net.URI;
+import java.nio.file.Path;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.S3Uri;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 import software.amazon.awssdk.services.s3.model.S3Object;
 
-public class AwsS3 {
+public class AwsS3 implements S3Service {
 
   private final Logger logger;
   private final ObjectMapper objectMapper;
@@ -24,6 +27,7 @@ public class AwsS3 {
     this.objectMapper = new ObjectMapper();
   }
 
+  @Override
   public List<S3Object> listObjects(String bucketName, String prefix) {
 
     try (S3Client s3 = S3Client.builder().region(Region.EU_NORTH_1).build()) {
@@ -43,28 +47,19 @@ public class AwsS3 {
       }
 
       return response.contents();
-
-    } catch (Exception exception) {
-      logger.error(
-          "Failed to list objects in S3 bucket '{}' with prefix '{}'",
-          bucketName,
-          prefix,
-          exception);
-
-      throw exception;
     }
   }
 
+  @Override
   public <T> T objectToJson(S3ObjectReference object, Class<T> jacksonConfig) {
     try (S3Client s3 = S3Client.builder().region(Region.EU_NORTH_1).build()) {
+      logger.info(
+          "Deserializing object to json: Bucket '{}', Key '{}'",
+          object.bucketName(),
+          object.object().key());
       GetObjectRequest request =
           GetObjectRequest.builder().bucket(object.bucketName()).key(object.object().key()).build();
-
       return jsonDeserialization(s3, object, request, jacksonConfig);
-
-    } catch (Exception exception) {
-      throw new RuntimeException(
-          "Failed to build get object request for S3 object: " + object.object().key(), exception);
     }
   }
 
@@ -76,5 +71,31 @@ public class AwsS3 {
       throw new RuntimeException(
           "Failed to deserialize S3 object to json: " + object.object().key(), exception);
     }
+  }
+
+  @Override
+  public void downloadObject(String objectUri, Path destination) {
+
+    try (S3Client s3 = S3Client.builder().region(Region.EU_NORTH_1).build()) {
+
+      S3ObjectUriReference s3Uri = uriHelper(s3, objectUri);
+      GetObjectRequest request =
+          GetObjectRequest.builder().bucket(s3Uri.bucketName()).key(s3Uri.key()).build();
+
+      logger.info("Downloading S3 object: '{}'", s3Uri.key());
+      s3.getObject(request, destination);
+    }
+  }
+
+  public S3ObjectUriReference uriHelper(S3Client s3, String objectUri) {
+    S3Uri parsedUri = s3.utilities().parseUri(URI.create(objectUri));
+
+    String bucket =
+        parsedUri.bucket().orElseThrow(() -> new IllegalArgumentException("S3 URI has no bucket"));
+
+    String key =
+        parsedUri.key().orElseThrow(() -> new IllegalArgumentException("S3 URI has no key"));
+
+    return new S3ObjectUriReference(bucket, key);
   }
 }

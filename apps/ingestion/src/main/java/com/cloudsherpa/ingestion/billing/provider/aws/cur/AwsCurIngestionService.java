@@ -13,8 +13,8 @@ public class AwsCurIngestionService {
     this.steps = List.copyOf(steps);
   }
 
-  public AwsCurContext execute() {
-    AwsCurContext context = new AwsCurContext();
+  public AwsCurContext execute(String userId, String configId) {
+    AwsCurContext context = new AwsCurContext(userId, configId);
 
     for (AwsCurIngestionPipelineStep step : steps) {
       step.execute(context);

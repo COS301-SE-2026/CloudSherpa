@@ -219,9 +219,8 @@ BEGIN
             -- Traces this specific cost row back to the execution that ingested it.
             execution_id uuid REFERENCES public.billing_export_execution(execution_id) ON DELETE CASCADE,
             
-            -- Connects the cost directly to the resources table. 
             -- Must be nullable because some costs are not tied to a specific resource.
-            resource_id uuid REFERENCES %I.resource(resource_id) ON DELETE SET NULL,
+            resource_id varchar(2048),
 
             provider public.provider_enum NOT NULL,
 
