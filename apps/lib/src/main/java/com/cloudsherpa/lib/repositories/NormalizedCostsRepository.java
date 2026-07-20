@@ -35,9 +35,8 @@ public interface NormalizedCostsRepository extends JpaRepository<NormalizedCosts
     
     @Query(
     value = """
-        SELECT DISTINCT ON (nc.resource_id) nc.*
+        SELECT DISTINCT ON (nc.resource_id, nc.service_name) nc.*
         FROM normalized_costs nc
-        WHERE nc.resource_id IS NOT NULL
         ORDER BY nc.resource_id
         """,
     nativeQuery = true)
