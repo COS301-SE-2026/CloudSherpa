@@ -15,7 +15,7 @@ export type KpiPreviewResponseDto = {
     currency: CurrencyEnum;
     selectedResourcecount: number;
     timeLabel: string;
-    udatedAt: string;
+    updatedAt: string;
 };
 
 export type KpiResource = {

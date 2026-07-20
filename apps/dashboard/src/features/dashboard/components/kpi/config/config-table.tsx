@@ -83,6 +83,54 @@ export function KPIConfigTable<TData, TValue>({
 
     const selectedProvider =
         (table.getColumn("provider")?.getFilterValue() as string | undefined) ?? ALL_PROVIDERS;
+    let tableBodyContent: React.ReactNode;
+
+    if (loading) {
+        tableBodyContent = (
+            <TableRow>
+                <TableCell colSpan={columns.length} className="h-24">
+                    <div className="flex h-full items-center justify-center text-muted-foreground">
+                        <Spinner />
+                    </div>
+                </TableCell>
+            </TableRow>
+        );
+    } else if (error) {
+        tableBodyContent = (
+            <TableRow>
+                <TableCell colSpan={columns.length} className="h-24 text-center">
+                    <div className="flex h-full flex-col items-center justify-center gap-1 text-sm">
+                        <p className="font-medium text-destructive">Failed to load resources</p>
+                    </div>
+                </TableCell>
+            </TableRow>
+        );
+    } else if (table.getRowModel().rows?.length) {
+        tableBodyContent = table.getRowModel().rows.map((row) => (
+            <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                {row.getVisibleCells().map((cell) => (
+                    <TableCell
+                        key={cell.id}
+                        style={{
+                            width: cell.column.getSize(),
+                            maxWidth: cell.column.getSize(),
+                        }}
+                    >
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
+                ))}
+            </TableRow>
+        ));
+    } else {
+        tableBodyContent = (
+            <TableRow>
+                <TableCell colSpan={columns.length} className="h-24 text-center">
+                    No results.
+                </TableCell>
+            </TableRow>
+        );
+    }
+
     return (
         <>
             <FieldSet>
@@ -164,55 +212,7 @@ export function KPIConfigTable<TData, TValue>({
                             </TableRow>
                         ))}
                     </TableHeader>
-                    <TableBody>
-                        {loading ? (
-                            <TableRow>
-                                <TableCell colSpan={columns.length} className="h-24">
-                                    <div className="flex h-full items-center justify-center text-muted-foreground">
-                                        <Spinner />
-                                    </div>
-                                </TableCell>
-                            </TableRow>
-                        ) : error ? (
-                            <TableRow>
-                                <TableCell colSpan={columns.length} className="h-24 text-center">
-                                    <div className="flex h-full flex-col items-center justify-center gap-1 text-sm">
-                                        <p className="font-medium text-destructive">
-                                            Failed to load resources
-                                        </p>
-                                    </div>
-                                </TableCell>
-                            </TableRow>
-                        ) : table.getRowModel().rows?.length ? (
-                            table.getRowModel().rows.map((row) => (
-                                <TableRow
-                                    key={row.id}
-                                    data-state={row.getIsSelected() && "selected"}
-                                >
-                                    {row.getVisibleCells().map((cell) => (
-                                        <TableCell
-                                            key={cell.id}
-                                            style={{
-                                                width: cell.column.getSize(),
-                                                maxWidth: cell.column.getSize(),
-                                            }}
-                                        >
-                                            {flexRender(
-                                                cell.column.columnDef.cell,
-                                                cell.getContext()
-                                            )}
-                                        </TableCell>
-                                    ))}
-                                </TableRow>
-                            ))
-                        ) : (
-                            <TableRow>
-                                <TableCell colSpan={columns.length} className="h-24 text-center">
-                                    No results.
-                                </TableCell>
-                            </TableRow>
-                        )}
-                    </TableBody>
+                    <TableBody>{tableBodyContent}</TableBody>
                 </Table>
             </div>
             <DataTablePagination table={table} />
