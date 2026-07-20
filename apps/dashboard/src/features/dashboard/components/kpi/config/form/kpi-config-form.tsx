@@ -15,8 +15,9 @@ import {
 } from "@/features/dashboard/components/kpi/config/columns";
 import { KPIConfigTable } from "@/features/dashboard/components/kpi/config/config-table";
 import { mockKpiConfigRows } from "@/features/dashboard/components/kpi/config/mock-kpi-config-rows";
+import { CloudProviderEnum } from "@/features/dashboard/types/provider";
 
-const mockConnections = ["All connections", "Production AWS", "Data AWS", "Finance GCP"];
+const providers: CloudProviderEnum[] = ["All Providers", "AWS", "Azure", "GCP"];
 
 export type KpiConfigFormProps = {
     readonly kpiId: string;
@@ -73,7 +74,7 @@ export function KpiConfigForm({ kpiId }: KpiConfigFormProps) {
                     <KPIConfigTable
                         columns={kpiConfigColumns}
                         data={mockKpiConfigRows}
-                        connections={mockConnections}
+                        providers={providers}
                         onSetSelectedRows={onSetSelectedRows}
                     />
                     <FieldSeparator />

@@ -51,8 +51,8 @@ export const kpiConfigColumns: ColumnDef<KPIConfigTableRow>[] = [
         accessorKey: "provider",
         header: "Provider",
     },
-    {
-        accessorKey: "connection",
-        header: "Connection",
-    },
+    // {
+    //     accessorKey: "connection",
+    //     header: "Connection",
+    // },
 ];

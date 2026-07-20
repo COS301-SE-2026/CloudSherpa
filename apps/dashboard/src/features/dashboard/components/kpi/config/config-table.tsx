@@ -36,18 +36,19 @@ import { SearchIcon } from "lucide-react";
 import { FormCountCircle } from "@/components/atoms/form-count-circle";
 import React, { useEffect } from "react";
 import { DataTablePagination } from "./config-table-pagination";
+import { CloudProviderEnum } from "@/features/dashboard/types/provider";
 
 interface KPIConfigTableProps<TData, TValue> {
     readonly columns: ColumnDef<TData, TValue>[];
     readonly data: TData[];
-    readonly connections: string[];
+    readonly providers: CloudProviderEnum[];
     readonly onSetSelectedRows: (rows: TData[]) => void;
 }
 
 export function KPIConfigTable<TData, TValue>({
     columns,
     data,
-    connections,
+    providers,
     onSetSelectedRows,
 }: KPIConfigTableProps<TData, TValue>) {
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
@@ -87,17 +88,17 @@ export function KPIConfigTable<TData, TValue>({
                 <FieldGroup>
                     <div className="grid grid-cols-[1fr_2fr] gap-6">
                         <div>
-                            <FieldLabel>Connection</FieldLabel>
+                            <FieldLabel>Cloud Provider</FieldLabel>
                             <Select
                                 value={
-                                    (table.getColumn("connection")?.getFilterValue() as string) ??
-                                    connections[0]
+                                    (table.getColumn("provider")?.getFilterValue() as string) ??
+                                    providers[0]
                                 }
                                 onValueChange={(value) =>
                                     table
-                                        .getColumn("connection")
+                                        .getColumn("provider")
                                         ?.setFilterValue(
-                                            value === "All connections" ? undefined : value
+                                            value === "All Providers" ? undefined : value
                                         )
                                 }
                             >
@@ -106,9 +107,9 @@ export function KPIConfigTable<TData, TValue>({
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectGroup>
-                                        {connections.map((connection) => (
-                                            <SelectItem key={connection} value={connection}>
-                                                {connection}
+                                        {providers.map((provider) => (
+                                            <SelectItem key={provider} value={provider}>
+                                                {provider}
                                             </SelectItem>
                                         ))}
                                     </SelectGroup>
