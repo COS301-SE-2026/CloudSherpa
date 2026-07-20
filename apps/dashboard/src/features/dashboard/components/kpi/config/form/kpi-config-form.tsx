@@ -18,8 +18,6 @@ import { mockKpiConfigRows } from "@/features/dashboard/components/kpi/config/mo
 import { CloudProviderEnum } from "@/features/dashboard/types/provider";
 import { useFetchTableResources } from "../hooks/useFetchTableResources";
 
-const providers: CloudProviderEnum[] = ["All Providers", "AWS", "Azure", "GCP"];
-
 export type KpiConfigFormProps = {
     readonly kpiId: string;
 };
@@ -85,8 +83,9 @@ export function KpiConfigForm({ kpiId }: KpiConfigFormProps) {
                     <KPIConfigTable
                         columns={kpiConfigColumns}
                         data={tableResources ?? []}
-                        providers={providers}
                         onSetSelectedRows={onSetSelectedRows}
+                        error={tableResourcesFetchError}
+                        loading={tableResourcesLoading}
                     />
                     <FieldSeparator />
                     <KpiFormTimePeriod
@@ -100,7 +99,6 @@ export function KpiConfigForm({ kpiId }: KpiConfigFormProps) {
                     <KPIWidget config={config} />
 
                     <KpiConfigSummary
-                        connections={selectedRows?.map((row) => row.connection) ?? []}
                         numResources={selectedRows?.length ?? 0}
                         aggregationWindowDays={aggregationWindowDays}
                     />

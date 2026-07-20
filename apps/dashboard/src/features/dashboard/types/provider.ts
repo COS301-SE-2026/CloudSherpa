@@ -1,1 +1,1 @@
-export type CloudProviderEnum = "AWS" | "GCP" | "Azure" | "All Providers";
+export type CloudProviderEnum = "AWS" | "GCP" | "Azure";

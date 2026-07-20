@@ -37,19 +37,25 @@ import { FormCountCircle } from "@/components/atoms/form-count-circle";
 import React, { useEffect } from "react";
 import { DataTablePagination } from "./config-table-pagination";
 import { CloudProviderEnum } from "@/features/dashboard/types/provider";
+import { Spinner } from "@/components/atoms/spinner";
 
 interface KPIConfigTableProps<TData, TValue> {
     readonly columns: ColumnDef<TData, TValue>[];
     readonly data: TData[];
-    readonly providers: CloudProviderEnum[];
     readonly onSetSelectedRows: (rows: TData[]) => void;
+    readonly error: boolean;
+    readonly loading: boolean;
 }
+
+const ALL_PROVIDERS = "All Providers";
+const providers: CloudProviderEnum[] = ["AWS", "Azure", "GCP"];
 
 export function KPIConfigTable<TData, TValue>({
     columns,
     data,
-    providers,
     onSetSelectedRows,
+    error,
+    loading,
 }: KPIConfigTableProps<TData, TValue>) {
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
     const [globalFilter, setGlobalFilter] = React.useState("");
@@ -75,6 +81,8 @@ export function KPIConfigTable<TData, TValue>({
         onSetSelectedRows(selectedData);
     }, [rowSelection, table]);
 
+    const selectedProvider =
+        (table.getColumn("provider")?.getFilterValue() as string | undefined) ?? ALL_PROVIDERS;
     return (
         <>
             <FieldSet>
@@ -90,23 +98,23 @@ export function KPIConfigTable<TData, TValue>({
                         <div>
                             <FieldLabel>Cloud Provider</FieldLabel>
                             <Select
-                                value={
-                                    (table.getColumn("provider")?.getFilterValue() as string) ??
-                                    providers[0]
-                                }
+                                value={selectedProvider}
                                 onValueChange={(value) =>
                                     table
                                         .getColumn("provider")
                                         ?.setFilterValue(
-                                            value === "All Providers" ? undefined : value
+                                            value === ALL_PROVIDERS ? undefined : value
                                         )
                                 }
                             >
                                 <SelectTrigger className="w-full">
-                                    <SelectValue />
+                                    <SelectValue placeholder={providers[0]} />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectGroup>
+                                        <SelectItem key={ALL_PROVIDERS} value={ALL_PROVIDERS}>
+                                            {ALL_PROVIDERS}
+                                        </SelectItem>
                                         {providers.map((provider) => (
                                             <SelectItem key={provider} value={provider}>
                                                 {provider}
@@ -154,7 +162,25 @@ export function KPIConfigTable<TData, TValue>({
                         ))}
                     </TableHeader>
                     <TableBody>
-                        {table.getRowModel().rows?.length ? (
+                        {loading ? (
+                            <TableRow>
+                                <TableCell colSpan={columns.length} className="h-24">
+                                    <div className="flex h-full items-center justify-center text-muted-foreground">
+                                        <Spinner />
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        ) : error ? (
+                            <TableRow>
+                                <TableCell colSpan={columns.length} className="h-24 text-center">
+                                    <div className="flex h-full flex-col items-center justify-center gap-1 text-sm">
+                                        <p className="font-medium text-destructive">
+                                            Failed to load resources
+                                        </p>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        ) : table.getRowModel().rows?.length ? (
                             table.getRowModel().rows.map((row) => (
                                 <TableRow
                                     key={row.id}
