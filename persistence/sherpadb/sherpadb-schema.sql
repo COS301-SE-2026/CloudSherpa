@@ -283,100 +283,151 @@ $$ LANGUAGE plpgsql;
 -- ----------------------------------------------------------------
 -- DEMO SEED DATA
 -- ----------------------------------------------------------------
-INSERT INTO public.users (user_id, email, username, password_hash, created_at)
-VALUES (
-  '5ebe4340-c5ec-4833-ad93-06abf4609f03'::uuid,
-  'demo@gmail.com',
-  'demo@gmail.com',
-  crypt('Password@2', gen_salt('bf', 12)),
-  now()
+DO $$
+DECLARE
+  demo_user_id uuid := '5ebe4340-c5ec-4833-ad93-06abf4609f03';
+  demo_connection_id uuid := 'c0000000-0000-0000-0000-000000000001';
+  demo_account_id uuid := 'a0000000-0000-0000-0000-000000000001';
+  demo_config_id uuid := 'e0000000-0000-0000-0000-000000000001';
+  demo_execution_id uuid := 'f0000000-0000-0000-0000-000000000001';
+  demo_resource_id_1 uuid := 'b0000000-0000-0000-0000-000000000001';
+  demo_resource_id_2 uuid := 'b0000000-0000-0000-0000-000000000002';
+  demo_provider public.provider_enum := 'AWS';
+  demo_status public.status_enum := 'active';
+  demo_account_type public.account_type_enum := 'aws_account';
+  demo_ingestion_period public.ingestion_period_enum := '1h';
+  demo_charge_type public.charge_type_enum := 'Usage';
+  demo_other_charge_type public.charge_type_enum := 'Other';
+  demo_completed_status public.execution_status_enum := 'completed';
+  demo_billing_account text := '564907680089';
+BEGIN
+  INSERT INTO public.users (user_id, email, username, password_hash, created_at)
+  VALUES (
+    demo_user_id,
+    'demo@gmail.com',
+    'demo@gmail.com',
+    crypt('Password@2', gen_salt('bf', 12)),
+    now()
   )
-ON CONFLICT DO NOTHING;
+  ON CONFLICT DO NOTHING;
 
-SELECT public.create_new_tenant('5ebe4340-c5ec-4833-ad93-06abf4609f03');
+  PERFORM public.create_new_tenant(demo_user_id);
 
--- Cloud Connection & Account
-INSERT INTO public.cloud_connection (connection_id, user_id, provider, status)
-VALUES (
-    'c0000000-0000-0000-0000-000000000001', 
-    '5ebe4340-c5ec-4833-ad93-06abf4609f03', 
-    'AWS', 
-    'active'
-)
-ON CONFLICT (connection_id) DO NOTHING;
+  -- Cloud Connection & Account
+  INSERT INTO public.cloud_connection (connection_id, user_id, provider, status)
+  VALUES (
+    demo_connection_id,
+    demo_user_id,
+    demo_provider,
+    demo_status
+  )
+  ON CONFLICT (connection_id) DO NOTHING;
 
-INSERT INTO public.cloud_account (account_id, connection_id, account_type, ingestion_period, display_name)
-VALUES (
-    'a0000000-0000-0000-0000-000000000001', 
-    'c0000000-0000-0000-0000-000000000001', 
-    'aws_account', 
-    '1h', 
+  INSERT INTO public.cloud_account (account_id, connection_id, account_type, ingestion_period, display_name)
+  VALUES (
+    demo_account_id,
+    demo_connection_id,
+    demo_account_type,
+    demo_ingestion_period,
     'Test Account'
-)
-ON CONFLICT (account_id) DO NOTHING;
+  )
+  ON CONFLICT (account_id) DO NOTHING;
 
--- Billing Export Configuration & Execution Tracking
-INSERT INTO public.billing_export_config (config_id, account_id, bucket_name, export_prefix, export_name)
-VALUES (
-    'e0000000-0000-0000-0000-000000000001', 
-    'a0000000-0000-0000-0000-000000000001', 
-    'cloudsherpa-billing-exports', 
-    'cur-data/', 
+  -- Billing Export Configuration & Execution Tracking
+  INSERT INTO public.billing_export_config (config_id, account_id, bucket_name, export_prefix, export_name)
+  VALUES (
+    demo_config_id,
+    demo_account_id,
+    'cloudsherpa-billing-exports',
+    'cur-data/',
     'CloudSherpaExport-00001'
-)
-ON CONFLICT (config_id) DO NOTHING;
+  )
+  ON CONFLICT (config_id) DO NOTHING;
 
-INSERT INTO public.billing_export_execution (execution_id, config_id, status, rows_processed, started_at, completed_at)
-VALUES (
-    'a0000000-0000-0000-0000-000000000001', 
-    'e0000000-0000-0000-0000-000000000001', 
-    'completed', 
-    3, 
-    '2026-07-16 10:00:00Z', 
+  INSERT INTO public.billing_export_execution (execution_id, config_id, status, rows_processed, started_at, completed_at)
+  VALUES (
+    demo_execution_id,
+    demo_config_id,
+    demo_completed_status,
+    3,
+    '2026-07-16 10:00:00Z',
     '2026-07-16 10:05:00Z'
-)
-ON CONFLICT (execution_id) DO NOTHING;
+  )
+  ON CONFLICT (execution_id) DO NOTHING;
 
--- Tenant Resources
-INSERT INTO tenant_5ebe4340_c5ec_4833_ad93_06abf4609f03.resource 
-    (resource_id, account_id, resource_type, resource_name, status, tags)
-VALUES 
-    -- Discovered EC2 Volume
-    ('c0000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000001', 'AWS::EC2::Volume', 'vol-074a596d821cdf168', 'active', '{"Name": "prod-db-data"}'),
-    
-    -- Discovered S3 Bucket
-    ('e0000000-0000-0000-0000-000000000002', 'a0000000-0000-0000-0000-000000000001', 'AWS::S3::Bucket', 'test-bucket-564907680089-eu-north-1-an', 'active', '{"Environment": "Testing"}')
-ON CONFLICT (resource_id) DO NOTHING;
+  -- Tenant Resources
+  INSERT INTO tenant_5ebe4340_c5ec_4833_ad93_06abf4609f03.resource
+      (resource_id, account_id, resource_type, resource_name, status, tags)
+  VALUES
+      -- Discovered EC2 Volume
+      (
+        demo_resource_id_1,
+        demo_account_id,
+        'AWS::EC2::Volume',
+        'vol-074a596d821cdf168',
+        demo_status,
+        '{"Name": "prod-db-data"}'
+      ),
 
--- Normalized Costs
-INSERT INTO tenant_5ebe4340_c5ec_4833_ad93_06abf4609f03.normalized_costs 
-    (cost_id, execution_id, resource_id, provider, billing_account_id, service_name, charge_type, cost_amount, usage_start_time, usage_end_time, metadata)
-VALUES 
-    -- Standard Compute Charge
-    (
-        'c1000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000001', 
-        'c0000000-0000-0000-0000-000000000001', 
-        'AWS', '564907680089', 'AmazonEC2', 'Usage', 0.10175000, 
-        '2026-07-15 21:00:00Z', '2026-07-15 22:00:00Z', 
-        '{"product_region": "eu-north-1", "operation": "RunInstances", "aws_resource_id": "vol-074a596d821cdf168"}'
-    ),
-    
-    -- Free Tier Usage
-    (
-        'c2000000-0000-0000-0000-000000000002', 'a0000000-0000-0000-0000-000000000001', 
-        'e0000000-0000-0000-0000-000000000002', 
-        'AWS', '564907680089', 'AmazonS3', 'Usage', 0.00000000, 
-        '2026-07-01 00:00:00Z', '2026-07-01 01:00:00Z', 
-        '{"product_region": "eu-north-1", "pricing_term": "FreeTier", "aws_resource_id": "arn:aws:s3:::test-bucket-564907680089-eu-north-1-an"}'
-    ),
+      -- Discovered S3 Bucket
+      (
+        demo_resource_id_2,
+        demo_account_id,
+        'AWS::S3::Bucket',
+        'test-bucket-564907680089-eu-north-1-an',
+        demo_status,
+        '{"Environment": "Testing"}'
+      )
+  ON CONFLICT (resource_id) DO NOTHING;
 
-    -- Account-Level Cost (No resource ID)
-    (
-        'c3000000-0000-0000-0000-000000000003', 'a0000000-0000-0000-0000-000000000001', 
-        NULL, 
-        'AWS', '564907680089', 'AWSCloudFormation', 'Other', 1.50000000, 
-        '2026-07-15 00:00:00Z', '2026-07-15 23:59:59Z', 
-        '{"description": "Tax for product code AWSCloudFormation"}'
-    )
-    
-ON CONFLICT (cost_id, usage_start_time) DO NOTHING;
+  -- Normalized Costs
+  INSERT INTO tenant_5ebe4340_c5ec_4833_ad93_06abf4609f03.normalized_costs
+      (cost_id, execution_id, resource_id, provider, billing_account_id, service_name, charge_type, cost_amount, usage_start_time, usage_end_time, metadata)
+  VALUES
+      -- Standard Compute Charge
+      (
+          'c1000000-0000-0000-0000-000000000001',
+          demo_execution_id,
+          demo_resource_id_1,
+          demo_provider,
+          demo_billing_account,
+          'AmazonEC2',
+          demo_charge_type,
+          0.10175000,
+          '2026-07-15 21:00:00Z',
+          '2026-07-15 22:00:00Z',
+          '{"product_region": "eu-north-1", "operation": "RunInstances", "aws_resource_id": "vol-074a596d821cdf168"}'
+      ),
+
+      -- Free Tier Usage
+      (
+          'c2000000-0000-0000-0000-000000000002',
+          demo_execution_id,
+          demo_resource_id_2,
+          demo_provider,
+          demo_billing_account,
+          'AmazonS3',
+          demo_charge_type,
+          0.00000000,
+          '2026-07-01 00:00:00Z',
+          '2026-07-01 01:00:00Z',
+          '{"product_region": "eu-north-1", "pricing_term": "FreeTier", "aws_resource_id": "arn:aws:s3:::test-bucket-564907680089-eu-north-1-an"}'
+      ),
+
+      -- Account-Level Cost (No resource ID)
+      (
+          'c3000000-0000-0000-0000-000000000003',
+          demo_execution_id,
+          NULL,
+          demo_provider,
+          demo_billing_account,
+          'AWSCloudFormation',
+          demo_other_charge_type,
+          1.50000000,
+          '2026-07-15 00:00:00Z',
+          '2026-07-15 23:59:59Z',
+          '{"description": "Tax for product code AWSCloudFormation"}'
+      )
+
+  ON CONFLICT (cost_id, usage_start_time) DO NOTHING;
+END $$;

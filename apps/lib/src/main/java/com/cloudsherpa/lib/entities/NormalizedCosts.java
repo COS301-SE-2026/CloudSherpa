@@ -36,10 +36,6 @@ public class NormalizedCosts {
   @Column(name = "resource_id")
   private String resourceId;
 
-  @ManyToOne
-  @JoinColumn(name = "resource_id", insertable = false, updatable = false)
-  private Resource resource;
-
   @Enumerated(EnumType.STRING)
   @JdbcTypeCode(SqlTypes.NAMED_ENUM)
   @Column(name = "provider", nullable = false, columnDefinition = "public.provider_enum")
@@ -88,10 +84,6 @@ public class NormalizedCosts {
 
   public String getResourceId() {
     return resourceId;
-  }
-
-  public Resource getResource() {
-    return resource;
   }
 
   public ProviderEnum getProvider() {
@@ -145,11 +137,7 @@ public class NormalizedCosts {
   public void setResourceId(String resourceId) {
     this.resourceId = resourceId;
   }
-
-  public void setResource(Resource resource) {
-    this.resource = resource;
-  }
-
+  
   public void setProvider(ProviderEnum provider) {
     this.provider = provider;
   }

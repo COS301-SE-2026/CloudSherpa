@@ -101,4 +101,8 @@ public class Resource {
   public StatusEnum getStatus() {
     return status;
   }
+
+  public String getResourceName() {
+    return resourceName;
+  }
 }
