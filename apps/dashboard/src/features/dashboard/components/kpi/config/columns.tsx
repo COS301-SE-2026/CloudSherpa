@@ -35,17 +35,18 @@ export const kpiConfigColumns: ColumnDef<KPIConfigTableRow>[] = [
         enableHiding: false,
     },
     {
-        accessorKey: "resourceName",
-        header: "Resource Name",
+        accessorKey: "service",
+        header: "Service",
     },
+    // {
+    //     accessorKey: "resourceName",
+    //     header: "Resource Name",
+    // },
     {
         accessorKey: "resourceId",
         header: "Resource ID",
     },
-    {
-        accessorKey: "service",
-        header: "Service",
-    },
+
     {
         accessorKey: "provider",
         header: "Provider",
