@@ -24,6 +24,4 @@ export type KpiResource = {
     provider: CloudProviderEnum;
 };
 
-export type KpiResourceResponseDto = {
-    resources: KpiResource[];
-};
+export type KpiResourceResponseDto = KpiResource[];

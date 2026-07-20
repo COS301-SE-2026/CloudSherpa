@@ -12,6 +12,7 @@ export type KPIConfigTableRow = {
 export const kpiConfigColumns: ColumnDef<KPIConfigTableRow>[] = [
     {
         id: "select",
+        size: 10,
         header: ({ table }) => (
             <Checkbox
                 checked={
@@ -35,6 +36,7 @@ export const kpiConfigColumns: ColumnDef<KPIConfigTableRow>[] = [
     {
         accessorKey: "service",
         header: "Service",
+        size: 100,
     },
     // {
     //     accessorKey: "resourceName",
@@ -43,11 +45,22 @@ export const kpiConfigColumns: ColumnDef<KPIConfigTableRow>[] = [
     {
         accessorKey: "resourceId",
         header: "Resource ID",
+        size: 200,
+        cell: ({ getValue }) => {
+            const value = getValue<string>();
+
+            return (
+                <div className="truncate cursor-text" title={value}>
+                    {value ?? "No Resource ID"}
+                </div>
+            );
+        },
     },
 
     {
         accessorKey: "provider",
         header: "Provider",
+        size: 50,
     },
     // {
     //     accessorKey: "connection",
