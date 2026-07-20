@@ -1,6 +1,5 @@
 package com.cloudsherpa.service.billing.dto;
 
-import java.util.UUID;
+import com.cloudsherpa.lib.entities.ProviderEnum;
 
-public record BillingResourceResponse(
-    String resourceId, String service, String provider, UUID connectionId, String connectionName) {}
+public record BillingResourceResponse(String resourceId, String service, ProviderEnum provider) {}
