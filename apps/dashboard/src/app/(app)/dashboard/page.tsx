@@ -46,6 +46,7 @@ function DashboardContent() {
             return {
                 id,
                 title,
+                widgetType: "chart",
                 chartType,
                 resourceId,
                 metricType: resourceId ? (metricsByResource[resourceId]?.[0] ?? "anon") : "anon",
