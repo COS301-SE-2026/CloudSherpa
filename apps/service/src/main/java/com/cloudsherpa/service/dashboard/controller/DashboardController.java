@@ -10,7 +10,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.UUID;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -34,7 +33,6 @@ public class DashboardController {
   @GetMapping
   @Operation(summary = "Get all user dashboards with their widgets")
   public ResponseEntity<List<DashboardDTO>> getUserDashboards(@AuthenticationPrincipal Jwt jwt) {
-    if (jwt == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     UUID userId = UUID.fromString(jwt.getSubject());
 
     return ResponseEntity.ok(dashboardService.getDashboardsByUserId(userId));
@@ -44,7 +42,6 @@ public class DashboardController {
   @Operation(summary = "Create a new blank dashboard")
   public ResponseEntity<DashboardDTO> createDashboard(
       @RequestBody DashboardCreateDTO request, @AuthenticationPrincipal Jwt jwt) {
-    if (jwt == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     UUID userId = UUID.fromString(jwt.getSubject());
     DashboardCreateDTO requestWithUser = request.withUserId(userId);
     return ResponseEntity.ok(dashboardService.createDashboard(requestWithUser));
@@ -54,7 +51,6 @@ public class DashboardController {
   @Operation(summary = "Delete a dashboard")
   public ResponseEntity<Void> deleteDashboard(
       @PathVariable UUID dashboardId, @AuthenticationPrincipal Jwt jwt) {
-    if (jwt == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     UUID userId = UUID.fromString(jwt.getSubject());
 
     dashboardService.deleteDashboard(userId, dashboardId);
@@ -67,7 +63,6 @@ public class DashboardController {
       @PathVariable UUID dashboardId,
       @RequestBody List<WidgetLayoutUpdateDTO> layouts,
       @AuthenticationPrincipal Jwt jwt) {
-    if (jwt == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     UUID userId = UUID.fromString(jwt.getSubject());
 
     dashboardService.updateDashboardLayout(userId, dashboardId, layouts);
@@ -80,7 +75,6 @@ public class DashboardController {
       @PathVariable UUID dashboardId,
       @RequestBody WidgetDTO request,
       @AuthenticationPrincipal Jwt jwt) {
-    if (jwt == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     UUID userId = UUID.fromString(jwt.getSubject());
     WidgetDTO requestWithUser = request.withUserId(userId);
 
@@ -93,7 +87,6 @@ public class DashboardController {
       @PathVariable UUID widgetId,
       @RequestBody WidgetConfigUpdateDTO request,
       @AuthenticationPrincipal Jwt jwt) {
-    if (jwt == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     UUID userId = UUID.fromString(jwt.getSubject());
 
     WidgetConfigUpdateDTO requestWithUser = request.withUserId(userId);
@@ -104,7 +97,6 @@ public class DashboardController {
   @Operation(summary = "Delete a widget from a dashboard")
   public ResponseEntity<Void> deleteWidget(
       @PathVariable UUID widgetId, @AuthenticationPrincipal Jwt jwt) {
-    if (jwt == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     UUID userId = UUID.fromString(jwt.getSubject());
 
     dashboardService.deleteWidget(userId, widgetId);
