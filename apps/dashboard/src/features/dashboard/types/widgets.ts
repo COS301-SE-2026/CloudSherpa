@@ -10,14 +10,6 @@ export type LayoutItem = {
     autoPosition?: boolean;
 };
 
-export type WidgetConfig = {
-    id: string;
-    chartType: ChartType;
-    title: string;
-    resourceId: string;
-    metricType: MetricType;
-};
-
 export type DashboardConfig = {
     id: string;
     name: string;
@@ -40,3 +32,23 @@ export type ChartThemeTokens = {
     chartColors: string[];
     gridOpacity: number;
 };
+
+export type BaseWidgetConfig = {
+    id: string;
+    title: string;
+};
+
+export type ChartWidgetConfig = BaseWidgetConfig & {
+    widgetType: "chart";
+    chartType: ChartType;
+    resourceId: string;
+    metricType: MetricType;
+};
+
+export type KpiWidgetConfig = BaseWidgetConfig & {
+    widgetType: "kpi";
+    resourceIds: string[];
+    aggregationWindowDays: number;
+};
+
+export type WidgetConfig = ChartWidgetConfig | KpiWidgetConfig;

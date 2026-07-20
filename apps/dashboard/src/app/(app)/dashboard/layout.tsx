@@ -76,6 +76,7 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
 
         const newConfig: WidgetConfig = {
             id: widgetId,
+            widgetType: "chart",
             title: "New Widget (Click to Customize)",
             chartType: "line",
             resourceId: resourceId,

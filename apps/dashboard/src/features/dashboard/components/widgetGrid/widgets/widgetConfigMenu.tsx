@@ -8,15 +8,15 @@ import {
 import { MetricType, MetricStore } from "@/features/dashboard/types/metric";
 import { useMetricStore } from "@/features/dashboard/stores/metric-store";
 import { useState, useEffect, useRef } from "react";
-import { WidgetConfig } from "@/features/dashboard/types/widgets";
+import { ChartWidgetConfig } from "@/features/dashboard/types/widgets";
 
 interface WidgetConfigMenuProps {
     isOpen: boolean;
 
     onClose: () => void;
-    onSave: (config: WidgetConfig) => void;
+    onSave: (config: ChartWidgetConfig) => void;
 
-    existingConfig: WidgetConfig;
+    existingConfig: ChartWidgetConfig;
 }
 
 // This is shared (used for dashboard store), perhaps we can move it to types
@@ -29,7 +29,7 @@ export function WidgetConfigMenu({
 
     existingConfig,
 }: Readonly<WidgetConfigMenuProps>) {
-    const [configuration, setConfiguration] = useState<WidgetConfig>(existingConfig);
+    const [configuration, setConfiguration] = useState<ChartWidgetConfig>(existingConfig);
     const registerWidgetConfigUpdate = useDashboardStore(
         (state: DashboardStore) => state.actions.updateWidgetConfig
     );
@@ -61,7 +61,7 @@ export function WidgetConfigMenu({
         onClose();
     };
 
-    function setConfigAndRegisterUpdate(newConfig: WidgetConfig) {
+    function setConfigAndRegisterUpdate(newConfig: ChartWidgetConfig) {
         setConfiguration(newConfig);
         registerWidgetConfigUpdate(newConfig);
     }
