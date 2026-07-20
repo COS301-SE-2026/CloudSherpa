@@ -14,12 +14,19 @@ export interface ResourceSelectionDto {
     active: boolean;
 }
 
+export interface BillingConfigDto {
+    bucketName: string;
+    exportPrefix: string;
+    exportName: string;
+}
+
 export interface PersistAwsConnectionRequest {
     userId: string;
     displayName: string;
     ingestionPeriod: string;
     credentials: AwsCredentialsDto;
     resources: ResourceSelectionDto[];
+    billingConfig: BillingConfigDto;
 }
 
 export async function createAwsConnection(request: PersistAwsConnectionRequest): Promise<void> {
