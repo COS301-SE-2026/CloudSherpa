@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 interface ToolbarProps {
     isEditMode: boolean;
     handleAddWidget: () => void;
+    handleAddKpi: () => void;
     handleStartEditing: () => void;
     handleSaveEdit: () => void;
     handleCancelEdit: () => void;
@@ -16,6 +17,7 @@ interface ToolbarProps {
 export default function EditButton({
     isEditMode,
     handleAddWidget,
+    handleAddKpi,
     handleStartEditing,
     handleSaveEdit,
     handleCancelEdit,
@@ -50,6 +52,13 @@ export default function EditButton({
                         className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm order-1 md:order-3"
                     >
                         Add Widget
+                    </Button>
+                    <Button
+                        size="sm"
+                        onClick={() => handleAddKpi()}
+                        className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm order-1 md:order-3"
+                    >
+                        Add KPI
                     </Button>
                 </>
             )}

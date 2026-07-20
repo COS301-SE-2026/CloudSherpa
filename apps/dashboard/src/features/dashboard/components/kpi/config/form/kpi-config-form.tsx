@@ -96,7 +96,7 @@ export function KpiConfigForm({ kpiId }: KpiConfigFormProps) {
 
                 <Card className="p-6">
                     <CardTitle>Preview</CardTitle>
-                    <KPIWidget config={config} />
+                    <KPIWidget config={config} preview />
 
                     <KpiConfigSummary
                         numResources={selectedRows?.length ?? 0}

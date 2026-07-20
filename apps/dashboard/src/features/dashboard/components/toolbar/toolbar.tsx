@@ -10,6 +10,7 @@ interface ToolbarProps {
     dashboards: DashboardStub[];
     isEditMode: boolean;
     handleAddWidget: () => void;
+    handleAddKpi: () => void;
     handleStartEditing: () => void;
     handleSaveEdit: () => void;
     handleCancelEdit: () => void;
@@ -24,6 +25,7 @@ export default function Toolbar({
     dashboards,
     isEditMode,
     handleAddWidget,
+    handleAddKpi,
     handleStartEditing,
     handleSaveEdit,
     handleCancelEdit,
@@ -48,6 +50,7 @@ export default function Toolbar({
                     handleSaveEdit={handleSaveEdit}
                     handleCancelEdit={handleCancelEdit}
                     handleAddWidget={handleAddWidget}
+                    handleAddKpi={handleAddKpi}
                 />
             </div>
             <div>

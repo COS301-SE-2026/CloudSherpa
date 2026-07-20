@@ -1,15 +1,19 @@
 "use client";
 
-import { Card } from "@/components/atoms/card";
+import { Card, CardHeader, CardTitle } from "@/components/atoms/card";
 import { KpiWidgetConfig } from "../../types/widgets";
 import { useFetchKpiValue } from "./config/hooks/useFetchKpiValue";
 import { Spinner } from "@/components/atoms/spinner";
+import { Button } from "@/components/atoms/button";
+import { EllipsisVertical } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface WidgetProps {
     readonly config: KpiWidgetConfig;
+    readonly preview?: boolean;
 }
 
-export function KPIWidget({ config }: WidgetProps) {
+export function KPIWidget({ config, preview = false }: WidgetProps) {
     const { kpiPreview, loadingKpiValue } = useFetchKpiValue(config);
     const options: Intl.DateTimeFormatOptions = {
         year: "numeric",
@@ -22,9 +26,19 @@ export function KPIWidget({ config }: WidgetProps) {
         ? new Date(kpiPreview.updatedAt).toLocaleDateString("en-GB", options)
         : "unknown";
 
+    const router = useRouter();
+
     return (
-        <Card className="flex flex-col gap-4 p-6 bg-muted/40">
-            <h1 className="text-lg font-bold">{config.title}</h1>
+        <Card className={`flex flex-col gap-4 p-6 ${preview ? "bg-muted/40" : ""}`}>
+            <CardHeader className="flex flex-row items-center justify-between p-0">
+                <CardTitle>{config.title}</CardTitle>
+                <Button
+                    onClick={() => router.push("/edit/kpi")}
+                    className="text-muted-foreground bg-transparent hover:bg-muted/10"
+                >
+                    <EllipsisVertical />
+                </Button>
+            </CardHeader>
             {loadingKpiValue ? (
                 <Spinner />
             ) : (

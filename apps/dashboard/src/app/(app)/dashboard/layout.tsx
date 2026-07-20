@@ -6,12 +6,19 @@ import Toolbar from "@/features/dashboard/components/toolbar/toolbar";
 import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
 import { useWindowStore } from "@/features/dashboard/stores/window-store";
 import { useMetricStore } from "@/features/dashboard/stores/metric-store";
-import { LayoutItem, WidgetConfig } from "@/features/dashboard/types/widgets";
+import { KpiWidgetConfig, LayoutItem, WidgetConfig } from "@/features/dashboard/types/widgets";
 import {
     ToolbarProvider,
     useToolbar,
 } from "@/features/dashboard/components/toolbar/toolbarProvider";
 import { DateRange } from "react-day-picker";
+
+function generateWidgetIds() {
+    const widgetId = crypto.randomUUID();
+    const layoutId = crypto.randomUUID();
+
+    return { widgetId, layoutId };
+}
 
 function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode }>) {
     const router = useRouter();
@@ -68,9 +75,32 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
         setIsEditMode(false);
     }, [setIsEditMode]);
 
+    const handleAddKpi = useCallback(() => {
+        const { widgetId, layoutId } = generateWidgetIds();
+
+        const newKpiConfig: KpiWidgetConfig = {
+            id: widgetId,
+            widgetType: "kpi",
+            title: "New KPI",
+            resourceIds: [],
+            aggregationWindowDays: 30,
+        };
+
+        const newLayout: LayoutItem = {
+            id: layoutId,
+            widgetId: widgetId,
+            x: 0,
+            y: 0,
+            w: 4,
+            h: 4,
+            autoPosition: true,
+        };
+
+        addWidget(newLayout, newKpiConfig);
+    }, [addWidget]);
+
     const handleAddWidget = useCallback(() => {
-        const widgetId = crypto.randomUUID();
-        const layoutId = crypto.randomUUID();
+        const { widgetId, layoutId } = generateWidgetIds();
         const metricsByResource = getMetricList();
         const resourceId = Object.keys(metricsByResource)[0];
 
@@ -107,6 +137,7 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
                 dateRange={dateRange}
                 onDateRangeChange={handleDateRangeChange}
                 handleAddWidget={handleAddWidget}
+                handleAddKpi={handleAddKpi}
                 handleStartEditing={handleStartEditing}
                 handleSaveEdit={handleSaveEdit}
                 handleCancelEdit={handleCancelEdit}
