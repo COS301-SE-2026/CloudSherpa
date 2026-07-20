@@ -10,11 +10,19 @@ import {
     getCloudResources,
 } from "@/lib/fetch/cloud-resource-api";
 
+export interface BillingConfig {
+    prefix: string;
+    bucketName: string;
+    exportName: string;
+}
+
 interface PropsForStepTwo {
     credentials: CloudCredentials | null;
-
-    onNext: (selectedServices: string[], resources: ResourceDetail[]) => void;
-
+    onNext: (
+        selectedServices: string[],
+        resources: ResourceDetail[],
+        billingConfig: BillingConfig
+    ) => void;
     onBack: () => void;
 }
 
@@ -24,6 +32,9 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
     const [permissions, setPermissions] = useState<AwsPolicy | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [prefix, setPrefix] = useState("");
+    const [bucketName, setBucketName] = useState("");
+    const [exportName, setExportName] = useState("");
 
     const toggleService = (serviceId: string) => {
         setServicesSelected((prev) =>
@@ -60,8 +71,34 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
         fetchPermissions();
     }, [servicesSelected]);
 
-    const handleSubmit = async (forHandlingSubmit: React.SubmitEvent<HTMLFormElement>) => {
+    const getExtendedPermissions = (): AwsPolicy | null => {
+        if (!permissions) return null;
+
+        const extendedPolicy: AwsPolicy = {
+            Version: permissions.Version,
+            Statement: [...permissions.Statement],
+        };
+
+        const targetBucket = bucketName || "YOUR_BUCKET_NAME";
+
+        extendedPolicy.Statement.push({
+            Effect: "Allow",
+            Action: ["s3:GetObject", "s3:ListBucket"],
+            Resource: [`arn:aws:s3:::${targetBucket}`, `arn:aws:s3:::${targetBucket}/*`],
+        });
+
+        return extendedPolicy;
+    };
+
+    const displayPermissions = getExtendedPermissions();
+
+    const handleSubmit = async (forHandlingSubmit: React.FormEvent<HTMLFormElement>) => {
         forHandlingSubmit.preventDefault();
+
+        if (!prefix || !bucketName || !exportName) {
+            setError("Please fill out all billing configuration fields.");
+            return;
+        }
 
         try {
             setLoading(true);
@@ -78,7 +115,8 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
                 return;
             }
             setLoading(false);
-            onNext(servicesSelected, resources);
+
+            onNext(servicesSelected, resources, { prefix, bucketName, exportName });
         } catch (err) {
             console.error(err);
 
@@ -109,7 +147,7 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
                     </div>
 
                     <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-                        Select Services
+                        Configure Billing & Services
                     </h2>
                     {error && (
                         <div className="mt-3 rounded-sm bg-destructive/5 p-3 text-destructive text-sm">
@@ -118,11 +156,72 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
                     )}
 
                     <p className="mt-2 text-muted-foreground/70">
-                        Choose which AWS services you want to monitor.
+                        Set up your billing export location and choose which AWS services to
+                        monitor.
                     </p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-8">
+                    <div className="space-y-4">
+                        <h3 className="text-foreground text-sm font-semibold uppercase tracking-wider opacity-60">
+                            Billing Configuration
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label
+                                    htmlFor="bucketName"
+                                    className="text-sm font-medium text-foreground"
+                                >
+                                    S3 Bucket Name
+                                </label>
+                                <input
+                                    id="bucketName"
+                                    type="text"
+                                    value={bucketName}
+                                    onChange={(e) => setBucketName(e.target.value)}
+                                    placeholder="e.g., my-billing-reports-bucket"
+                                    className="w-full p-2 rounded-md border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label
+                                    htmlFor="exportName"
+                                    className="text-sm font-medium text-foreground"
+                                >
+                                    Export Name
+                                </label>
+                                <input
+                                    id="exportName"
+                                    type="text"
+                                    value={exportName}
+                                    onChange={(e) => setExportName(e.target.value)}
+                                    placeholder="e.g., daily-cost-export"
+                                    className="w-full p-2 rounded-md border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                                />
+                            </div>
+
+                            <div className="space-y-2 md:col-span-2">
+                                <label
+                                    htmlFor="prefix"
+                                    className="text-sm font-medium text-foreground"
+                                >
+                                    Prefix / Path
+                                </label>
+                                <input
+                                    id="prefix"
+                                    type="text"
+                                    value={prefix}
+                                    onChange={(e) => setPrefix(e.target.value)}
+                                    placeholder="e.g., cur-reports/2023/"
+                                    className="w-full p-2 rounded-md border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr className="border-border" />
+
                     <div>
                         <div className="flex justify-between items-center mb-4">
                             <h3 className="text-foreground text-sm font-semibold uppercase tracking-wider opacity-60">
@@ -176,14 +275,18 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
                                 Please add the following permissions to the newly created IAM user:
                             </p>
                             <pre className="bg-card p-4 rounded-lg overflow-x-auto text-xs font-mono text-foreground whitespace-pre-wrap">
-                                {permissions ? JSON.stringify(permissions, null, 2) : "{}"}
+                                {displayPermissions
+                                    ? JSON.stringify(displayPermissions, null, 2)
+                                    : "{}"}
                             </pre>
 
                             <button
                                 type="button"
                                 onClick={() => {
                                     navigator.clipboard.writeText(
-                                        permissions ? JSON.stringify(permissions, null, 2) : "{}"
+                                        displayPermissions
+                                            ? JSON.stringify(displayPermissions, null, 2)
+                                            : "{}"
                                     );
                                 }}
                                 className="mt-3 text-primary hover:text-accent text-sm transition-colors"
