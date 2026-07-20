@@ -4,11 +4,9 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/atoms/checkbox";
 
 export type KPIConfigTableRow = {
-    resourceName: string;
     resourceId: string;
     service: string;
     provider: string;
-    connection: string;
 };
 
 export const kpiConfigColumns: ColumnDef<KPIConfigTableRow>[] = [

@@ -3,7 +3,7 @@
 import { Button } from "@/components/atoms/button";
 import { Card, CardTitle } from "@/components/atoms/card";
 import { FieldSeparator } from "@/components/atoms/field";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { KpiFormDetails } from "./kpi-form-details";
 import { KpiFormTimePeriod } from "./kpi-form-time-period";
 import { KPIWidget } from "../../kpi-widget";
@@ -16,6 +16,7 @@ import {
 import { KPIConfigTable } from "@/features/dashboard/components/kpi/config/config-table";
 import { mockKpiConfigRows } from "@/features/dashboard/components/kpi/config/mock-kpi-config-rows";
 import { CloudProviderEnum } from "@/features/dashboard/types/provider";
+import { useFetchTableResources } from "../hooks/useFetchTableResources";
 
 const providers: CloudProviderEnum[] = ["All Providers", "AWS", "Azure", "GCP"];
 
@@ -27,11 +28,21 @@ export function KpiConfigForm({ kpiId }: KpiConfigFormProps) {
     const [title, setTitle] = useState("Tmp title");
     const [aggregationWindowDays, setAggregationWindowDays] = useState(30);
     const [selectedRows, setSelectedRows] = useState<KPIConfigTableRow[]>();
+    const { fetchTableResources, tableResourcesFetchError, tableResourcesLoading, tableResources } =
+        useFetchTableResources();
+
+    useEffect(() => {
+        async function fetchResources() {
+            await fetchTableResources();
+        }
+
+        fetchResources();
+    }, []);
 
     const [config, setConfig] = useState<KpiWidgetConfig>({
         id: "123",
         aggregationWindowDays: 30,
-        resourceIds: ["1", "2", "3"],
+        resourceIds: [],
         title: title,
         widgetType: "kpi",
     });
@@ -73,7 +84,7 @@ export function KpiConfigForm({ kpiId }: KpiConfigFormProps) {
                     <FieldSeparator></FieldSeparator>
                     <KPIConfigTable
                         columns={kpiConfigColumns}
-                        data={mockKpiConfigRows}
+                        data={tableResources ?? []}
                         providers={providers}
                         onSetSelectedRows={onSetSelectedRows}
                     />
