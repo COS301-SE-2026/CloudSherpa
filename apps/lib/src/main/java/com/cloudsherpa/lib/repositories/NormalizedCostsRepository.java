@@ -1,18 +1,17 @@
 package com.cloudsherpa.lib.repositories;
 
-import com.cloudsherpa.lib.entities.NormalizedCosts;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface NormalizedCostsRepository extends JpaRepository<NormalizedCosts, UUID> {
-  List<NormalizedCosts> findByUsageStartTimeBetween(OffsetDateTime from, OffsetDateTime to);
-  List<NormalizedCosts> findByResourceId(String resourceId);
+import com.cloudsherpa.lib.entities.NormalizedCosts;
 
+public interface NormalizedCostsRepository extends JpaRepository<NormalizedCosts, UUID> {
   @Query(
       """
       SELECT COALESCE(SUM(nc.costAmount), 0)
@@ -33,4 +32,14 @@ public interface NormalizedCostsRepository extends JpaRepository<NormalizedCosts
       @Param("fromDate") OffsetDateTime fromDate,
       @Param("toDate") OffsetDateTime toDate,
       @Param("resourceIds") List<String> resourceIds);
+    
+    @Query(
+    value = """
+        SELECT DISTINCT ON (nc.resource_id) nc.*
+        FROM normalized_costs nc
+        WHERE nc.resource_id IS NOT NULL
+        ORDER BY nc.resource_id
+        """,
+    nativeQuery = true)
+    List<NormalizedCosts> findDistinctByResourceId();
 }
