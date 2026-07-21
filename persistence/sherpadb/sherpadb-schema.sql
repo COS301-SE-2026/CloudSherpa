@@ -288,6 +288,20 @@ $$ LANGUAGE plpgsql;
 DO $$
 DECLARE
   demo_user_id uuid := '5ebe4340-c5ec-4833-ad93-06abf4609f03';
+  demo_connection_id uuid := 'c0000000-0000-0000-0000-000000000001';
+  demo_account_id uuid := 'a0000000-0000-0000-0000-000000000001';
+  demo_config_id uuid := 'e0000000-0000-0000-0000-000000000001';
+  demo_execution_id uuid := 'f0000000-0000-0000-0000-000000000001';
+  demo_resource_id_1 uuid := 'b0000000-0000-0000-0000-000000000001';
+  demo_resource_id_2 uuid := 'b0000000-0000-0000-0000-000000000002';
+  demo_provider public.provider_enum := 'AWS';
+  demo_status public.status_enum := 'active';
+  demo_account_type public.account_type_enum := 'aws_account';
+  demo_ingestion_period public.ingestion_period_enum := '1h';
+  demo_charge_type public.charge_type_enum := 'Usage';
+  demo_other_charge_type public.charge_type_enum := 'Other';
+  demo_completed_status public.execution_status_enum := 'completed';
+  demo_billing_account text := '564907680089';
 BEGIN
   INSERT INTO public.users (user_id, email, username, password_hash, created_at)
   VALUES (
@@ -300,4 +314,24 @@ BEGIN
   ON CONFLICT DO NOTHING;
 
   PERFORM public.create_new_tenant(demo_user_id);
+
+  -- Cloud Connection & Account
+  INSERT INTO public.cloud_connection (connection_id, user_id, provider, status)
+  VALUES (
+    demo_connection_id,
+    demo_user_id,
+    demo_provider,
+    demo_status
+  )
+  ON CONFLICT (connection_id) DO NOTHING;
+
+  INSERT INTO public.cloud_account (account_id, connection_id, account_type, ingestion_period, display_name)
+  VALUES (
+    demo_account_id,
+    demo_connection_id,
+    demo_account_type,
+    demo_ingestion_period,
+    'Test Account'
+  )
+  ON CONFLICT (account_id) DO NOTHING;
 END $$;

@@ -19,6 +19,7 @@ public class AwsCurCsvRecordNormalizer implements CostRecordNormalizer<CSVRecord
     NormalizedCosts normalized = new NormalizedCosts();
 
     normalized.setExecutionId(getExecutionId(export));
+    normalized.setChargeId(getChargeId(costRecord));
     normalized.setResourceId(getResourceId(costRecord));
     normalized.setProvider(getProvider(costRecord));
     normalized.setBillingAccountId(getBillingAccountId(costRecord));
@@ -34,6 +35,11 @@ public class AwsCurCsvRecordNormalizer implements CostRecordNormalizer<CSVRecord
   @Override
   public UUID getExecutionId(BillingExport export) {
     return export.getUuidExportId();
+  }
+
+  @Override
+  public String getChargeId(CSVRecord costRecord) {
+    return getResourceId(costRecord) + "%%%" + getServiceName(costRecord);
   }
 
   @Override
