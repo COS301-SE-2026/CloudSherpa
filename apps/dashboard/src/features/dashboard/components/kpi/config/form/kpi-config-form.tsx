@@ -40,17 +40,18 @@ export function KpiConfigForm({ kpiId }: KpiConfigFormProps) {
                   title: "Default",
                   aggregationWindowDays: 30,
                   widgetType: "kpi",
-                  resourceIds: [],
+                  chargeIds: [],
               }
     );
 
     useEffect(() => {
+        console.log("fetch resources triggered");
         async function fetchResources() {
             await fetchTableResources();
         }
 
         fetchResources();
-    }, [fetchTableResources, kpiId]);
+    }, []);
 
     function onTitleChange(newTitle: string): void {
         setConfig((prev) => ({
@@ -101,6 +102,7 @@ export function KpiConfigForm({ kpiId }: KpiConfigFormProps) {
                         columns={kpiConfigColumns}
                         data={tableResources ?? []}
                         onSetSelectedRows={onSetSelectedRows}
+                        selectedChargeIds={config.chargeIds}
                         error={tableResourcesFetchError}
                         loading={tableResourcesLoading}
                     />

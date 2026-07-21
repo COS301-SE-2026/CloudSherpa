@@ -46,7 +46,7 @@ export function KPIWidget({ config, preview = false }: WidgetProps) {
             ) : (
                 <h1 className="text-xl">${kpiPreview?.value.toFixed(5)}</h1>
             )}
-            <p>Accross {config.resourceIds.length} Resources</p>
+            <p>Accross {config.chargeIds.length} Resources</p>
             <div className="flex flex-row justify-between">
                 <p>Last {config.aggregationWindowDays} days</p>
                 {loadingKpiValue ? <Spinner /> : <p>Updated {formattedUpdatedAtDate}</p>}

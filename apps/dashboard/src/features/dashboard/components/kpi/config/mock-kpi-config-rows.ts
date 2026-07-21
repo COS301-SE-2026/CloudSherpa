@@ -2,7 +2,7 @@ import type { KPIConfigTableRow } from "@/features/dashboard/components/kpi/conf
 
 type MockKpiResourceTuple = [
     resourceName: string,
-    resourceId: string,
+    chargeId: string,
     service: string,
     provider: string,
     connection: string,
@@ -44,11 +44,10 @@ const mockKpiResourceTuples: MockKpiResourceTuple[] = [
 ];
 
 export const mockKpiConfigRows: KPIConfigTableRow[] = mockKpiResourceTuples.map(
-    ([resourceName, resourceId, service, provider, connection]) => ({
-        resourceName,
-        resourceId,
-        service,
-        provider,
-        connection,
+    ([resourceName, chargeId, service, provider]) => ({
+        chargeId: chargeId,
+        resourceId: chargeId,
+        service: service,
+        provider: provider,
     })
 );

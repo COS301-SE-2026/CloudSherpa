@@ -6,6 +6,7 @@ import {
     ColumnFiltersState,
     getFilteredRowModel,
     getPaginationRowModel,
+    RowSelectionState,
 } from "@tanstack/react-table";
 
 import {
@@ -38,11 +39,13 @@ import React, { useEffect } from "react";
 import { DataTablePagination } from "./config-table-pagination";
 import { CloudProviderEnum } from "@/features/dashboard/types/provider";
 import { Spinner } from "@/components/atoms/spinner";
+import { KPIConfigTableRow } from "./columns";
 
-interface KPIConfigTableProps<TData, TValue> {
-    readonly columns: ColumnDef<TData, TValue>[];
-    readonly data: TData[];
-    readonly onSetSelectedRows: (rows: TData[]) => void;
+interface KPIConfigTableProps<TValue> {
+    readonly columns: ColumnDef<KPIConfigTableRow, TValue>[];
+    readonly data: KPIConfigTableRow[];
+    readonly onSetSelectedRows: (rows: KPIConfigTableRow[]) => void;
+    readonly selectedChargeIds: string[];
     readonly error: boolean;
     readonly loading: boolean;
 }
@@ -50,16 +53,24 @@ interface KPIConfigTableProps<TData, TValue> {
 const ALL_PROVIDERS = "All Providers";
 const providers: CloudProviderEnum[] = ["AWS", "Azure", "GCP"];
 
-export function KPIConfigTable<TData, TValue>({
+export function KPIConfigTable<TValue>({
     columns,
     data,
     onSetSelectedRows,
+    selectedChargeIds,
     error,
     loading,
-}: KPIConfigTableProps<TData, TValue>) {
+}: KPIConfigTableProps<TValue>) {
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
     const [globalFilter, setGlobalFilter] = React.useState("");
-    const [rowSelection, setRowSelection] = React.useState({});
+    const [rowSelection, setRowSelection] = React.useState(
+        data.reduce<RowSelectionState>((accumelator, row, index) => {
+            if (selectedChargeIds.includes(row.chargeId)) {
+                accumelator[row.chargeId] = true;
+            }
+            return accumelator;
+        }, {})
+    );
 
     const table = useReactTable({
         data,
@@ -69,6 +80,7 @@ export function KPIConfigTable<TData, TValue>({
         getFilteredRowModel: getFilteredRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
         onRowSelectionChange: setRowSelection,
+        getRowId: (row) => row.chargeId,
         state: {
             columnFilters,
             globalFilter,

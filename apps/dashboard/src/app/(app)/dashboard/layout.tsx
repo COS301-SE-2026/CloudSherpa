@@ -82,7 +82,7 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
             id: widgetId,
             widgetType: "kpi",
             title: "New KPI",
-            resourceIds: [],
+            chargeIds: [],
             aggregationWindowDays: 30,
         };
 

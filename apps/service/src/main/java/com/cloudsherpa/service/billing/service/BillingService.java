@@ -81,9 +81,17 @@ public class BillingService {
     List<BillingResourceResponse> response = new ArrayList<>();
 
     for (NormalizedCosts resource : resources) {
-      response.add(
-          new BillingResourceResponse(
-              resource.getResourceId(), resource.getServiceName(), resource.getProvider()));
+      if (resource.getResourceId() == null) {
+        response.add(
+            new BillingResourceResponse(
+                resource.getServiceName() + "NoIdentifier",
+                resource.getServiceName(),
+                resource.getProvider()));
+      } else {
+        response.add(
+            new BillingResourceResponse(
+                resource.getResourceId(), resource.getServiceName(), resource.getProvider()));
+      }
     }
 
     return response;

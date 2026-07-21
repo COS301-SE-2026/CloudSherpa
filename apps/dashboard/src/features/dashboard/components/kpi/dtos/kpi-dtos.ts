@@ -3,7 +3,7 @@ import { CloudProviderEnum } from "@/features/dashboard/types/provider";
 
 export type KpiPreviewRequestDto = {
     title: string;
-    resourceIds: string[];
+    chargeIds: string[];
     from: string;
     to: string;
     aggregation: string;
@@ -13,15 +13,16 @@ export type KpiPreviewResponseDto = {
     title: string;
     value: number;
     currency: CurrencyEnum;
-    selectedResourcecount: number;
+    selectedChargeCount: number;
     timeLabel: string;
     updatedAt: string;
 };
 
-export type KpiResource = {
+export type KpiCharge = {
+    chargeId: string;
     resourceId: string;
     service: string;
     provider: CloudProviderEnum;
 };
 
-export type KpiResourceResponseDto = KpiResource[];
+export type KpiResourceResponseDto = KpiCharge[];

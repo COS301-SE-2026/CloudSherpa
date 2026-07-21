@@ -13,10 +13,11 @@ export function useFetchTableResources() {
     async function fetchTableResources() {
         try {
             const resources: KpiResourceResponseDto =
-                await apiClient<KpiResourceResponseDto>("/billing/resources");
+                await apiClient<KpiResourceResponseDto>("/billing/charges");
             console.log(resources);
             setTableResources(
                 resources.map((resource) => ({
+                    chargeId: resource.chargeId,
                     resourceId: resource.resourceId,
                     service: resource.service,
                     provider: resource.provider,
