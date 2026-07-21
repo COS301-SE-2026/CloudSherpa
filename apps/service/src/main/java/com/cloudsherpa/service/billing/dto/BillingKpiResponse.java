@@ -3,9 +3,8 @@ package com.cloudsherpa.service.billing.dto;
 import java.math.BigDecimal;
 
 public record BillingKpiResponse(
-    String title,
     BigDecimal value,
     String currency,
-    int selectedResourceCount,
+    int selectedChargeCount,
     String timeLabel,
     String updatedAt) {}

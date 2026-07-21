@@ -1,0 +1,109 @@
+"use client";
+
+import { Button } from "@/components/atoms/button";
+import { Card, CardTitle } from "@/components/atoms/card";
+import { FieldSeparator } from "@/components/atoms/field";
+import { useEffect, useState } from "react";
+import { KpiFormDetails } from "./kpi-form-details";
+import { KpiFormTimePeriod } from "./kpi-form-time-period";
+import { KPIWidget } from "../../kpi-widget";
+import { KpiWidgetConfig } from "@/features/dashboard/types/widgets";
+import { KpiConfigSummary } from "../kpi-config-summary";
+import {
+    kpiConfigColumns,
+    KPIConfigTableRow,
+} from "@/features/dashboard/components/kpi/config/columns";
+import { KPIConfigTable } from "@/features/dashboard/components/kpi/config/config-table";
+import { mockKpiConfigRows } from "@/features/dashboard/components/kpi/config/mock-kpi-config-rows";
+import { CloudProviderEnum } from "@/features/dashboard/types/provider";
+import { useFetchTableResources } from "../hooks/useFetchTableResources";
+
+export type KpiConfigFormProps = {
+    readonly kpiId: string;
+};
+
+export function KpiConfigForm({ kpiId }: KpiConfigFormProps) {
+    const [title, setTitle] = useState("Tmp title");
+    const [aggregationWindowDays, setAggregationWindowDays] = useState(30);
+    const [selectedRows, setSelectedRows] = useState<KPIConfigTableRow[]>();
+    const { fetchTableResources, tableResourcesFetchError, tableResourcesLoading, tableResources } =
+        useFetchTableResources();
+
+    useEffect(() => {
+        async function fetchResources() {
+            await fetchTableResources();
+        }
+
+        fetchResources();
+    }, []);
+
+    const [config, setConfig] = useState<KpiWidgetConfig>({
+        id: "123",
+        aggregationWindowDays: 30,
+        resourceIds: [],
+        title: title,
+        widgetType: "kpi",
+    });
+
+    function onTitleChange(newTitle: string): void {
+        setTitle(newTitle);
+        setConfig((prev) => ({
+            ...prev,
+            title: newTitle,
+        }));
+    }
+
+    function onAggregationWindowChange(newWindow: number): void {
+        setAggregationWindowDays(newWindow);
+        setConfig((prev) => ({
+            ...prev,
+            aggregationWindowDays: newWindow,
+        }));
+    }
+
+    function onSetSelectedRows(rows: KPIConfigTableRow[] | undefined) {
+        setSelectedRows(rows);
+        setConfig((prev) => ({
+            ...prev,
+            resourceIds: rows?.map((row) => row.resourceId) ?? [],
+        }));
+    }
+
+    return (
+        <main className="flex flex-1 flex-col gap-6 p-6 lg:p-8 w-full mx-auto">
+            <div className="flex flex-row gap-6">
+                <h1 className="text-2xl">KPI Configuration</h1>
+                <Button variant={"default"}>Save KPI</Button>
+                <Button variant={"secondary"}>Cancel</Button>
+            </div>
+            <div className="grid grid-cols-[2fr_1fr] gap-4 h-full">
+                <Card className="p-6">
+                    <KpiFormDetails title={title} onTitleChange={onTitleChange} />
+                    <FieldSeparator></FieldSeparator>
+                    <KPIConfigTable
+                        columns={kpiConfigColumns}
+                        data={tableResources ?? []}
+                        onSetSelectedRows={onSetSelectedRows}
+                        error={tableResourcesFetchError}
+                        loading={tableResourcesLoading}
+                    />
+                    <FieldSeparator />
+                    <KpiFormTimePeriod
+                        aggregationWindowDays={aggregationWindowDays}
+                        onAggregationWindowChange={onAggregationWindowChange}
+                    />
+                </Card>
+
+                <Card className="p-6">
+                    <CardTitle>Preview</CardTitle>
+                    <KPIWidget config={config} />
+
+                    <KpiConfigSummary
+                        numResources={selectedRows?.length ?? 0}
+                        aggregationWindowDays={aggregationWindowDays}
+                    />
+                </Card>
+            </div>
+        </main>
+    );
+}

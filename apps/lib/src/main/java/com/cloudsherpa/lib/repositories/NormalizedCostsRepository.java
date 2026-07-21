@@ -26,19 +26,19 @@ public interface NormalizedCostsRepository extends JpaRepository<NormalizedCosts
       SELECT COALESCE(SUM(nc.costAmount), 0)
       FROM NormalizedCosts nc
       WHERE nc.usageStartTime BETWEEN :fromDate AND :toDate
-        AND nc.resourceId IN (:resourceIds)
+        AND nc.chargeId IN (:chargeIds)
       """)
   BigDecimal sumTotalCostBetweenForResources(
       @Param("fromDate") OffsetDateTime fromDate,
       @Param("toDate") OffsetDateTime toDate,
-      @Param("resourceIds") List<String> resourceIds);
+      @Param(":chargeIds") List<String> chargeIds);
     
     @Query(
     value = """
-        SELECT DISTINCT ON (nc.resource_id, nc.service_name) nc.*
+        SELECT DISTINCT ON nc.charge_id nc.*
         FROM normalized_costs nc
-        ORDER BY nc.resource_id
+        ORDER BY nc.charge_id
         """,
     nativeQuery = true)
-    List<NormalizedCosts> findDistinctByResourceId();
+    List<NormalizedCosts> findDistinctByChargeId();
 }

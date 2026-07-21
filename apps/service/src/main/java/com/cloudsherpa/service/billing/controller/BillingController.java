@@ -1,8 +1,8 @@
 package com.cloudsherpa.service.billing.controller;
 
+import com.cloudsherpa.service.billing.dto.BillingChargeResponse;
 import com.cloudsherpa.service.billing.dto.BillingKpiRequest;
 import com.cloudsherpa.service.billing.dto.BillingKpiResponse;
-import com.cloudsherpa.service.billing.dto.BillingResourceResponse;
 import com.cloudsherpa.service.billing.service.BillingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -59,10 +59,10 @@ public class BillingController {
                 @Content(
                     array =
                         @ArraySchema(
-                            schema = @Schema(implementation = BillingResourceResponse.class))))
+                            schema = @Schema(implementation = BillingChargeResponse.class))))
       })
-  @GetMapping("/resources")
-  public ResponseEntity<List<BillingResourceResponse>> getResources() {
-    return ResponseEntity.ok(billingService.getResources());
+  @GetMapping("/charges")
+  public ResponseEntity<List<BillingChargeResponse>> getResources() {
+    return ResponseEntity.ok(billingService.getCharges());
   }
 }

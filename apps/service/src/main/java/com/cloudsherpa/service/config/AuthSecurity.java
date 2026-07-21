@@ -25,7 +25,9 @@ public class AuthSecurity {
     // Different servlet filters based on dev or prod
     if (mode.equals("dev")) {
       return http.cors(cors -> cors.configurationSource(corsConfigurationSource))
-          .securityMatcher("/auth/register", "/auth/login", "/auth/logout")
+          // Exclude paths from auth
+          .securityMatcher(
+              "/auth/register", "/auth/login", "/auth/logout", "/v3/api-docs/**", "/swagger-ui/**")
           .csrf(csrf -> csrf.disable())
           .sessionManagement(
               session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

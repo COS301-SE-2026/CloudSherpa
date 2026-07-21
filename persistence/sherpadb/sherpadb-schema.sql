@@ -222,6 +222,8 @@ BEGIN
             -- Must be nullable because some costs are not tied to a specific resource.
             resource_id varchar(2048),
 
+            charge_id varchar(2128),
+
             provider public.provider_enum NOT NULL,
 
             -- Maps to CUR: line_item_usage_account_id
@@ -332,102 +334,4 @@ BEGIN
     'Test Account'
   )
   ON CONFLICT (account_id) DO NOTHING;
-
-  -- Billing Export Configuration & Execution Tracking
-  INSERT INTO public.billing_export_config (config_id, account_id, bucket_name, export_prefix, export_name)
-  VALUES (
-    demo_config_id,
-    demo_account_id,
-    'cloudsherpa-billing-exports',
-    'cur-data/',
-    'CloudSherpaExport-00001'
-  )
-  ON CONFLICT (config_id) DO NOTHING;
-
-  INSERT INTO public.billing_export_execution (execution_id, config_id, status, rows_processed, started_at, completed_at)
-  VALUES (
-    demo_execution_id,
-    demo_config_id,
-    demo_completed_status,
-    3,
-    '2026-07-16 10:00:00Z',
-    '2026-07-16 10:05:00Z'
-  )
-  ON CONFLICT (execution_id) DO NOTHING;
-
-  -- Tenant Resources
-  INSERT INTO tenant_5ebe4340_c5ec_4833_ad93_06abf4609f03.resource
-      (resource_id, account_id, resource_type, resource_name, status, tags)
-  VALUES
-      -- Discovered EC2 Volume
-      (
-        demo_resource_id_1,
-        demo_account_id,
-        'AWS::EC2::Volume',
-        'vol-074a596d821cdf168',
-        demo_status,
-        '{"Name": "prod-db-data"}'
-      ),
-
-      -- Discovered S3 Bucket
-      (
-        demo_resource_id_2,
-        demo_account_id,
-        'AWS::S3::Bucket',
-        'test-bucket-564907680089-eu-north-1-an',
-        demo_status,
-        '{"Environment": "Testing"}'
-      )
-  ON CONFLICT (resource_id) DO NOTHING;
-
-  -- Normalized Costs
-  INSERT INTO tenant_5ebe4340_c5ec_4833_ad93_06abf4609f03.normalized_costs
-      (cost_id, execution_id, resource_id, provider, billing_account_id, service_name, charge_type, cost_amount, usage_start_time, usage_end_time, metadata)
-  VALUES
-      -- Standard Compute Charge
-      (
-          'c1000000-0000-0000-0000-000000000001',
-          demo_execution_id,
-          demo_resource_id_1,
-          demo_provider,
-          demo_billing_account,
-          'AmazonEC2',
-          demo_charge_type,
-          0.10175000,
-          '2026-07-15 21:00:00Z',
-          '2026-07-15 22:00:00Z',
-          '{"product_region": "eu-north-1", "operation": "RunInstances", "aws_resource_id": "vol-074a596d821cdf168"}'
-      ),
-
-      -- Free Tier Usage
-      (
-          'c2000000-0000-0000-0000-000000000002',
-          demo_execution_id,
-          demo_resource_id_2,
-          demo_provider,
-          demo_billing_account,
-          'AmazonS3',
-          demo_charge_type,
-          0.00000000,
-          '2026-07-01 00:00:00Z',
-          '2026-07-01 01:00:00Z',
-          '{"product_region": "eu-north-1", "pricing_term": "FreeTier", "aws_resource_id": "arn:aws:s3:::test-bucket-564907680089-eu-north-1-an"}'
-      ),
-
-      -- Account-Level Cost (No resource ID)
-      (
-          'c3000000-0000-0000-0000-000000000003',
-          demo_execution_id,
-          NULL,
-          demo_provider,
-          demo_billing_account,
-          'AWSCloudFormation',
-          demo_other_charge_type,
-          1.50000000,
-          '2026-07-15 00:00:00Z',
-          '2026-07-15 23:59:59Z',
-          '{"description": "Tax for product code AWSCloudFormation"}'
-      )
-
-  ON CONFLICT (cost_id, usage_start_time) DO NOTHING;
 END $$;
