@@ -105,4 +105,8 @@ public class Resource {
   public StatusEnum getStatus() {
     return status;
   }
+  
+  public void setStatus(StatusEnum status) {
+    this.status = status;
+  }
 }
