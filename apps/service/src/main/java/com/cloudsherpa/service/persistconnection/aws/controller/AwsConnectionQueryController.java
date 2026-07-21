@@ -2,6 +2,8 @@ package com.cloudsherpa.service.persistconnection.aws.controller;
 
 import com.cloudsherpa.lib.entities.CloudAccount;
 import com.cloudsherpa.lib.entities.Resource;
+import com.cloudsherpa.service.persistconnection.aws.dto.CloudAccountDetailsResponse;
+import com.cloudsherpa.service.persistconnection.aws.dto.ResourceCountResponse;
 import com.cloudsherpa.service.persistconnection.aws.service.AwsConnectionQueryService;
 import java.util.List;
 import java.util.UUID;
@@ -36,9 +38,28 @@ public class AwsConnectionQueryController {
     return ResponseEntity.status(HttpStatus.OK).body(accounts);
   }
 
-  @GetMapping("/resources")
+  @GetMapping("/accounts/{accountId}")
+  public ResponseEntity<CloudAccountDetailsResponse> getAccount(
+      @AuthenticationPrincipal Jwt jwt, @PathVariable UUID accountId) {
+
+    if (jwt == null) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
+    UUID userId = UUID.fromString(jwt.getSubject());
+
+    List<CloudAccount> accounts = queryService.getAccountConnections(userId);
+
+    if (accounts.stream().noneMatch(account -> account.getId().equals(accountId))) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
+
+    return ResponseEntity.ok(queryService.getAccountDetails(accountId));
+  }
+
+  @GetMapping("/accounts/{accountId}/resources")
   public ResponseEntity<List<Resource>> getResourcesForAccount(
-      @AuthenticationPrincipal Jwt jwt, UUID accountId) {
+      @AuthenticationPrincipal Jwt jwt, @PathVariable UUID accountId) {
     if (jwt == null) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
@@ -49,7 +70,25 @@ public class AwsConnectionQueryController {
       List<Resource> resources = queryService.getResourcesForAccount(accountId);
       return ResponseEntity.status(HttpStatus.OK).body(resources);
     }
-    // Unauthorized if the user requests resources from an account they don't own
-    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    // Not found if the user requests resources from an account they don't own
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+  }
+
+  @GetMapping("/accounts/{accountId}/resources/count")
+  public ResponseEntity<ResourceCountResponse> getResourceCount(
+      @AuthenticationPrincipal Jwt jwt, @PathVariable UUID accountId) {
+    if (jwt == null) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
+    UUID userId = UUID.fromString(jwt.getSubject());
+    List<CloudAccount> accounts = queryService.getAccountConnections(userId);
+    if (accounts.stream().anyMatch(account -> account.getId().equals(accountId))) {
+      long numResources = queryService.getResourceCountForAccount(accountId);
+      return ResponseEntity.status(HttpStatus.OK).body(new ResourceCountResponse(numResources));
+    }
+
+    // Not found if the user requests resource count from an account they don't own
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
   }
 }
