@@ -32,12 +32,14 @@ export function KPIWidget({ config, preview = false }: WidgetProps) {
         <Card className={`flex flex-col gap-4 p-6 ${preview ? "bg-muted/40" : ""}`}>
             <CardHeader className="flex flex-row items-center justify-between p-0">
                 <CardTitle>{config.title}</CardTitle>
-                <Button
-                    onClick={() => router.push("/edit/kpi")}
-                    className="text-muted-foreground bg-transparent hover:bg-muted/10"
-                >
-                    <EllipsisVertical />
-                </Button>
+                {!preview && (
+                    <Button
+                        onClick={() => router.push(`/edit/kpi/${config.id}`)}
+                        className="text-muted-foreground bg-transparent hover:bg-muted/10"
+                    >
+                        <EllipsisVertical />
+                    </Button>
+                )}
             </CardHeader>
             {loadingKpiValue ? (
                 <Spinner />

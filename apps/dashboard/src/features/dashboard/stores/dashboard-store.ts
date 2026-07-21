@@ -6,6 +6,7 @@ interface DashboardActions {
     addDashboard: (dashboard: DashboardConfig) => void;
     removeDashboard: (id: string) => void;
     addWidget: (layout: LayoutItem, widget: WidgetConfig) => void;
+    getWidget: (id: string) => WidgetConfig | undefined;
     updateWidgetConfig: (widget: WidgetConfig) => void;
     removeWidget: (layoutId: string, widgetId: string) => void;
     updateLayouts: (newLayouts: LayoutItem[]) => void;
@@ -24,7 +25,7 @@ export interface DashboardStore {
     actions: DashboardActions;
 }
 
-export const useDashboardStore = create<DashboardStore>((set) => ({
+export const useDashboardStore = create<DashboardStore>((set, get) => ({
     activeDashboardId: null,
     dashboards: {},
     layouts: {},
@@ -124,6 +125,12 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
                 layouts: layoutsMap,
                 widgets: widgetsMap,
             });
+        },
+
+        getWidget: (id) => {
+            const currentWidgets = get().widgets;
+
+            return currentWidgets[id];
         },
     },
 }));
