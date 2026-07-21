@@ -20,57 +20,48 @@ export default function Colours() {
 
     return (
         <div className="space-y-12">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                    <h2 className="text-3xl font-bold">Colour System</h2>
-                    <p className="text-neutral-500 mt-1">
-                        Our dynamic colour scales generated directly from tokens.
-                    </p>
-                </div>
-
-                <Popover open={colourFormatOpen} onOpenChange={setColourFormatOpen}>
-                    <PopoverTrigger asChild>
-                        <Button
-                            variant="outline"
-                            role="combobox"
-                            aria-expanded={colourFormatOpen}
-                            className="w-30 justify-between uppercase"
-                        >
-                            {selectedFormat}
-                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                        </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="p-0 w-30">
-                        <Command>
-                            <CommandList>
-                                <CommandEmpty>No formats found</CommandEmpty>
-                                <CommandGroup>
-                                    {(["hex", "rgb", "hsl"] as ColorFormat[]).map((format) => (
-                                        <CommandItem
-                                            key={format}
-                                            value={format}
-                                            onSelect={() => {
-                                                setSelectedFormat(format);
-                                                setColourFormatOpen(false);
-                                            }}
-                                        >
-                                            <Check
-                                                className={cn(
-                                                    "mr-2 h-4 w-4",
-                                                    selectedFormat === format
-                                                        ? "opacity-100"
-                                                        : "opacity-0"
-                                                )}
-                                            />
-                                            <span className="uppercase">{format}</span>
-                                        </CommandItem>
-                                    ))}
-                                </CommandGroup>
-                            </CommandList>
-                        </Command>
-                    </PopoverContent>
-                </Popover>
-            </div>
+            <Popover open={colourFormatOpen} onOpenChange={setColourFormatOpen}>
+                <PopoverTrigger asChild>
+                    <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={colourFormatOpen}
+                        className="w-30 justify-between uppercase"
+                    >
+                        {selectedFormat}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                </PopoverTrigger>
+                <PopoverContent className="p-0 w-30">
+                    <Command>
+                        <CommandList>
+                            <CommandEmpty>No formats found</CommandEmpty>
+                            <CommandGroup>
+                                {(["hex", "rgb", "hsl"] as ColorFormat[]).map((format) => (
+                                    <CommandItem
+                                        key={format}
+                                        value={format}
+                                        onSelect={() => {
+                                            setSelectedFormat(format);
+                                            setColourFormatOpen(false);
+                                        }}
+                                    >
+                                        <Check
+                                            className={cn(
+                                                "mr-2 h-4 w-4",
+                                                selectedFormat === format
+                                                    ? "opacity-100"
+                                                    : "opacity-0"
+                                            )}
+                                        />
+                                        <span className="uppercase">{format}</span>
+                                    </CommandItem>
+                                ))}
+                            </CommandGroup>
+                        </CommandList>
+                    </Command>
+                </PopoverContent>
+            </Popover>
 
             <div className="space-y-10">
                 {rawTokens.colors.map((palette) => (

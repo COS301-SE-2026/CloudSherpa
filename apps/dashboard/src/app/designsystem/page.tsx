@@ -1,5 +1,6 @@
 "use client";
 import Colours from "@/design-system/colours/components/colours";
+import Typography from "@/design-system/typography/components/typography";
 
 export default function DesignSystem() {
     return (
@@ -27,6 +28,17 @@ export default function DesignSystem() {
                             </p>
                         </div>
                         <Colours />
+                    </section>
+
+                    <section>
+                        <div className="border-b border-neutral-200 dark:border-neutral-800 pb-4 mb-8">
+                            <h2 className="text-2xl md:text-3xl font-bold">2. Typography</h2>
+                            <p className="text-neutral-500 mt-2">
+                                Our Typography system is geared toward data representation by using
+                                compact fonts while keeping visibility and clarity in mind
+                            </p>
+                        </div>
+                        <Typography />
                     </section>
                 </div>
             </div>
