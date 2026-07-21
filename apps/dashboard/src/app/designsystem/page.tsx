@@ -1,6 +1,7 @@
 "use client";
 import Colours from "@/design-system/colours/components/colours";
 import Typography from "@/design-system/typography/components/typography";
+import LayoutAndSpacing from "@/design-system/layout-and-spacing/components/layoutAndSpacing";
 
 export default function DesignSystem() {
     return (
@@ -20,7 +21,7 @@ export default function DesignSystem() {
 
                 <div className="flex flex-col gap-16">
                     <section>
-                        <div className="border-b border-neutral-200 dark:border-neutral-800 pb-4 mb-8">
+                        <div className="border-b pb-4 mb-8">
                             <h2 className="text-2xl md:text-3xl font-bold">1. Colour Palette</h2>
                             <p className="text-neutral-500 mt-2">
                                 Our refined colour system, built for WCAG 2.2 AA compliance and
@@ -31,7 +32,7 @@ export default function DesignSystem() {
                     </section>
 
                     <section>
-                        <div className="border-b border-neutral-200 dark:border-neutral-800 pb-4 mb-8">
+                        <div className="border-b pb-4 mb-8">
                             <h2 className="text-2xl md:text-3xl font-bold">2. Typography</h2>
                             <p className="text-neutral-500 mt-2">
                                 Our Typography system is geared toward data representation by using
@@ -39,6 +40,20 @@ export default function DesignSystem() {
                             </p>
                         </div>
                         <Typography />
+                    </section>
+
+                    <section>
+                        <div className="border-b pb-4 mb-8">
+                            <h2 className="text-2xl md:text-3xl font-bold">
+                                3. Layout and Spacing
+                            </h2>
+                            <p className="text-neutral-500 mt-2">
+                                Once again our layout and spacing is geared toward compact design to
+                                allow space for efficient data representation without sacrificing
+                                clarity.
+                            </p>
+                        </div>
+                        <LayoutAndSpacing />
                     </section>
                 </div>
             </div>

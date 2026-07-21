@@ -1,63 +1,44 @@
-import { Font_Family } from "@/design-system/typography/types/typography";
+"use client";
+
+import { useMemo } from "react";
 import {
     createColumnHelper,
     flexRender,
     getCoreRowModel,
     useReactTable,
 } from "@tanstack/react-table";
-import { useMemo } from "react";
+import { Spacing } from "@/design-system/layout-and-spacing/types/layoutAndSpacing";
 
-interface FontFamilyProps {
-    FontFamilies: Font_Family[];
+interface SpacingsProps {
+    spacings: Spacing[];
 }
 
-const columnHelper = createColumnHelper<Font_Family>();
+const columnHelper = createColumnHelper<Spacing>();
 
-export default function FontFamily({ FontFamilies }: Readonly<FontFamilyProps>) {
+export default function SpacingsProps({ spacings }: Readonly<SpacingsProps>) {
     const columns = useMemo(
         () => [
             columnHelper.accessor("name", {
                 header: "Token",
-                cell: (info) => (
-                    <span className="text-brand-600 dark:text-brand-400">
-                        text-{info.getValue()}
-                    </span>
-                ),
+                cell: (info) => <span>p/m-{info.getValue()}</span>,
             }),
             columnHelper.accessor("value", {
                 header: "Value",
-                cell: (info) => <span className=" text-neutral-500">{info.getValue()}</span>,
-            }),
-            columnHelper.display({
-                id: "preview",
-                header: "Preview",
-                cell: (info) => {
-                    const size = info.row.original;
-                    return (
-                        <div
-                            className="truncate text-foreground"
-                            style={{
-                                fontSize: `var(--font-size-${size.name}, ${size.value})`,
-                            }}
-                        >
-                            Cloud analytics and finops solution
-                        </div>
-                    );
-                },
+                cell: (info) => <span className="text-neutral-500">{info.getValue()}</span>,
             }),
         ],
         []
     );
 
     const table = useReactTable({
-        data: FontFamilies,
+        data: spacings,
         columns,
         getCoreRowModel: getCoreRowModel(),
     });
 
     return (
         <div className="space-y-4 mb-8">
-            <h3 className="text-2xl font-bold">Font Families</h3>
+            <h3 className="text-2xl font-bold">Spacing</h3>
             <div className="w-full border border-neutral-200 dark:border-neutral-800 rounded-lg overflow-hidden">
                 <table className="min-w-full text-sm text-left">
                     <thead className="bg-neutral-50 dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800">
