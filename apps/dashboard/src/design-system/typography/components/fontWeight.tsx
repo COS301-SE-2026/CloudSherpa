@@ -33,7 +33,7 @@ const columns = [
                         fontWeight: `var(--font-weight-${weight.name}, ${weight.value})`,
                     }}
                 >
-                    Cloud analytics and finops solution
+                    Your finops solution
                 </div>
             );
         },

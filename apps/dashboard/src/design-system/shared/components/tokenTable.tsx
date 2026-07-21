@@ -21,7 +21,7 @@ export function TokenTable<TData>({ title, columns, data }: Readonly<TokenTableP
         <div className="space-y-4 mb-8">
             <h3 className="text-2xl font-bold">{title}</h3>
             <div className="w-full border border-neutral-200 dark:border-neutral-800 rounded-lg overflow-hidden">
-                <table className="min-w-full text-sm text-left">
+                <table className="min-w-full text-sm text-left table-fixed">
                     <thead className="bg-neutral-50 dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800">
                         {table.getHeaderGroups().map((headerGroup) => (
                             <tr key={headerGroup.id}>
@@ -29,6 +29,8 @@ export function TokenTable<TData>({ title, columns, data }: Readonly<TokenTableP
                                     <th
                                         key={header.id}
                                         className="px-4 py-3 font-semibold text-neutral-700 dark:text-neutral-300"
+                                        //dynamically allocate equal width columns for consistent look and feel
+                                        style={{ width: `${100 / columns.length}%` }}
                                     >
                                         {header.isPlaceholder
                                             ? null

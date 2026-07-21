@@ -34,7 +34,7 @@ const columns = [
                         fontSize: `var(--font-size-${size.name}, ${size.value})`,
                     }}
                 >
-                    Cloud analytics and finops solution
+                    Your finops solution
                 </div>
             );
         },

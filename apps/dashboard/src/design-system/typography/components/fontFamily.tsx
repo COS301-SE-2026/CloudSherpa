@@ -29,7 +29,7 @@ const columns = [
                         fontFamily: `var(--font-family-${size.name}, ${size.value})`,
                     }}
                 >
-                    Cloud analytics and finops solution
+                    your finops solution
                 </div>
             );
         },
