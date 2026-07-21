@@ -158,7 +158,8 @@ export default function StepThree({
 
   const groupedResources = groupResourcesByCategory(resources);
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+
+  const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     setSaving(true);

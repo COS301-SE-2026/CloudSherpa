@@ -258,9 +258,7 @@ export default function ConfigureConnection() {
                       variant="ghost"
                       size="icon"
                       onClick={() =>
-                        router.push(
-                          `/connections/${accountId}/resources`
-                        )
+                        router.push(`/manageConnections/${accountId}/resources`)
                       }
                       className="h-6 w-6 text-muted-foreground hover:text-foreground"
                     >
@@ -275,6 +273,6 @@ export default function ConfigureConnection() {
             </CardContent>
           </Card>
         </div>
-      </div>
+      </div >
     );
 }

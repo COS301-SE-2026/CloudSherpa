@@ -16,6 +16,7 @@ interface ToolbarProps {
     selectedDashboardId: string;
     onDashboardChange: (id: string) => void;
     onCreateDashboard: (name: string) => void;
+    onDeleteDashboard: (id: string) => void;
     dateRange: DateRange | undefined;
     onDateRangeChange: (range: DateRange | undefined) => void;
 }
@@ -30,6 +31,7 @@ export default function Toolbar({
     selectedDashboardId,
     onDashboardChange,
     onCreateDashboard,
+    onDeleteDashboard,
     dateRange,
     onDateRangeChange,
 }: Readonly<ToolbarProps>) {
@@ -41,6 +43,7 @@ export default function Toolbar({
                     selectedId={selectedDashboardId}
                     onSelect={onDashboardChange}
                     onCreate={onCreateDashboard}
+                    onDelete={onDeleteDashboard}
                 />
                 <EditButton
                     isEditMode={isEditMode}
