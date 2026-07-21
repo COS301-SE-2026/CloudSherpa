@@ -35,6 +35,7 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
     const [prefix, setPrefix] = useState("");
     const [bucketName, setBucketName] = useState("");
     const [exportName, setExportName] = useState("");
+    const [savedBillingConfig, setSavedBillingConfig] = useState<BillingConfig | null>(null);
 
     const toggleService = (serviceId: string) => {
         setServicesSelected((prev) =>
@@ -72,25 +73,55 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
     }, [servicesSelected]);
 
     const getExtendedPermissions = (): AwsPolicy | null => {
-        if (!permissions) return null;
+        const baseStatements = permissions?.Statement ?? [];
+        const version = permissions?.Version ?? "2012-10-17";
 
-        const extendedPolicy: AwsPolicy = {
-            Version: permissions.Version,
-            Statement: [...permissions.Statement],
+        if (!savedBillingConfig && baseStatements.length === 0) {
+            return null;
+        }
+
+        const targetBucket = (savedBillingConfig?.bucketName ?? "").trim() || "bucket-name";
+        const cleanPrefix = (savedBillingConfig?.prefix ?? "").trim().replace(/^\/+|\/+$/g, "");
+        const exportPath = cleanPrefix ? `${cleanPrefix}/*` : "*";
+
+        const billingStatements = savedBillingConfig
+            ? [
+                  {
+                      Sid: "AllowBucketListing",
+                      Effect: "Allow",
+                      Action: ["s3:ListBucket"],
+                      Resource: [`arn:aws:s3:::${targetBucket}`],
+                  },
+                  {
+                      Sid: "AllowExportGetObject",
+                      Effect: "Allow",
+                      Action: ["s3:GetObject"],
+                      Resource: [`arn:aws:s3:::${targetBucket}/${exportPath}`],
+                  },
+              ]
+            : [];
+
+        return {
+            Version: version,
+            Statement: [...baseStatements, ...billingStatements],
         };
-
-        const targetBucket = bucketName || "YOUR_BUCKET_NAME";
-
-        extendedPolicy.Statement.push({
-            Effect: "Allow",
-            Action: ["s3:GetObject", "s3:ListBucket"],
-            Resource: [`arn:aws:s3:::${targetBucket}`, `arn:aws:s3:::${targetBucket}/*`],
-        });
-
-        return extendedPolicy;
     };
 
     const displayPermissions = getExtendedPermissions();
+
+    const handleSaveBillingConfig = () => {
+        if (!prefix || !bucketName || !exportName) {
+            setError("Please fill out all billing configuration fields before saving.");
+            return;
+        }
+
+        setSavedBillingConfig({
+            prefix: prefix.trim(),
+            bucketName: bucketName.trim(),
+            exportName: exportName.trim(),
+        });
+        setError("");
+    };
 
     const handleSubmit = async (forHandlingSubmit: React.FormEvent<HTMLFormElement>) => {
         forHandlingSubmit.preventDefault();
@@ -154,18 +185,24 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
                             {error}
                         </div>
                     )}
-
-                    <p className="mt-2 text-muted-foreground/70">
-                        Set up your billing export location and choose which AWS services to
-                        monitor.
-                    </p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-8">
-                    <div className="space-y-4">
-                        <h3 className="text-foreground text-sm font-semibold uppercase tracking-wider opacity-60">
-                            Billing Configuration
-                        </h3>
+                    <section className="rounded-lg border border-primary/30 bg-primary/5 p-4 space-y-4">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                            <h3 className="text-foreground text-sm font-semibold uppercase tracking-wider">
+                                Billing Export Configuration
+                            </h3>
+                            <span className="rounded-full bg-primary/15 px-2 py-1 text-xs font-medium text-primary">
+                                Account-wide cost scope
+                            </span>
+                        </div>
+
+                        <p className="text-sm text-muted-foreground">
+                            Billing monitoring applies to all eligible costs in your billing export.
+                            The service selection below does not limit billing coverage.
+                        </p>
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <label
@@ -218,30 +255,53 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
                                 />
                             </div>
                         </div>
-                    </div>
 
-                    <hr className="border-border" />
+                        <div className="flex items-center gap-3 pt-2">
+                            <Button
+                                type="button"
+                                onClick={handleSaveBillingConfig}
+                                className="bg-primary hover:bg-accent hover:text-accent-foreground text-primary-foreground px-4 py-2 rounded-md transition-all duration-200 font-medium"
+                            >
+                                Save Billing Config
+                            </Button>
+                            {savedBillingConfig && (
+                                <span className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded px-2 py-1">
+                                    Billing config saved. IAM policy now includes billing export
+                                    access.
+                                </span>
+                            )}
+                        </div>
+                    </section>
 
-                    <div>
-                        <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-foreground text-sm font-semibold uppercase tracking-wider opacity-60">
-                                SERVICES WE OFFER
+                    <section className="rounded-lg border border-border bg-background p-4">
+                        <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+                            <h3 className="text-foreground text-sm font-semibold uppercase tracking-wider opacity-80">
+                                Services for Resource Discovery
                             </h3>
 
-                            <button
-                                type="button"
-                                onClick={forHandlingAllSelected}
-                                className="text-primary hover:text-accent text-sm transition-colors"
-                            >
-                                {servicesSelected.length === availableServices.length
-                                    ? "Deselect All"
-                                    : "Select All"}
-                            </button>
+                            <div className="flex items-center gap-3">
+                                <button
+                                    type="button"
+                                    onClick={forHandlingAllSelected}
+                                    className="text-primary hover:text-accent text-sm transition-colors"
+                                >
+                                    {servicesSelected.length === availableServices.length
+                                        ? "Deselect All"
+                                        : "Select All"}
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="mb-4 rounded-md border border-amber-300/60 bg-amber-50 p-3 text-sm text-amber-900">
+                            Billing ingestion is not limited to the services or resources selected
+                            here. These selections are used for resource discovery and setup
+                            guidance only.
                         </div>
 
                         <div className="space-y-3">
                             {availableServices.map((service) => (
                                 <button
+                                    type="button"
                                     key={service.id}
                                     onClick={() => toggleService(service.id)}
                                     className="flex items-start gap-3 p-4 bg-background rounded-lg border border-border hover:border-primary/40 transition-all cursor-pointer w-full"
@@ -263,16 +323,17 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
                                 </button>
                             ))}
                         </div>
-                    </div>
+                    </section>
 
                     <div className="pt-4">
                         <h3 className="text-foreground text-sm font-semibold uppercase tracking-wider opacity-60 mb-3">
-                            Grant IAM permissions
+                            IAM Permissions for Discovery + Billing Export Access
                         </h3>
 
                         <div className="bg-background rounded-lg p-4 border border-border">
                             <p className="text-foreground text-sm mb-3">
-                                Please add the following permissions to the newly created IAM user:
+                                Add this IAM policy to your user. It includes selected-service
+                                discovery permissions and billing export S3 read access.
                             </p>
                             <pre className="bg-card p-4 rounded-lg overflow-x-auto text-xs font-mono text-foreground whitespace-pre-wrap">
                                 {displayPermissions
