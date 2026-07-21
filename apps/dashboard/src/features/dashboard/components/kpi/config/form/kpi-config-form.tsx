@@ -67,11 +67,10 @@ export function KpiConfigForm({ kpiId }: KpiConfigFormProps) {
         }));
     }
 
-    function onSetSelectedRows(rows: KPIConfigTableRow[] | undefined) {
-        setSelectedRows(rows);
+    function onSelectedChargeIdsChange(chargeIds: string[]) {
         setConfig((prev) => ({
             ...prev,
-            resourceIds: rows?.map((row) => row.resourceId) ?? [],
+            chargeIds: chargeIds,
         }));
     }
 
@@ -98,14 +97,16 @@ export function KpiConfigForm({ kpiId }: KpiConfigFormProps) {
                 <Card className="p-6">
                     <KpiFormDetails title={config.title} onTitleChange={onTitleChange} />
                     <FieldSeparator></FieldSeparator>
-                    <KPIConfigTable
-                        columns={kpiConfigColumns}
-                        data={tableResources ?? []}
-                        onSetSelectedRows={onSetSelectedRows}
-                        selectedChargeIds={config.chargeIds}
-                        error={tableResourcesFetchError}
-                        loading={tableResourcesLoading}
-                    />
+                    {config.id != "123" && (
+                        <KPIConfigTable
+                            columns={kpiConfigColumns}
+                            data={tableResources ?? []}
+                            onSetChargeIdsChange={onSelectedChargeIdsChange}
+                            selectedChargeIds={config.chargeIds}
+                            error={tableResourcesFetchError}
+                            loading={tableResourcesLoading}
+                        />
+                    )}
                     <FieldSeparator />
                     <KpiFormTimePeriod
                         aggregationWindowDays={config.aggregationWindowDays}
@@ -122,7 +123,7 @@ export function KpiConfigForm({ kpiId }: KpiConfigFormProps) {
                     )}
 
                     <KpiConfigSummary
-                        numResources={selectedRows?.length ?? 0}
+                        numResources={config.chargeIds.length ?? 0}
                         aggregationWindowDays={config.aggregationWindowDays}
                     />
                 </Card>

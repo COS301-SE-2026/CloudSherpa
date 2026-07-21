@@ -24,6 +24,7 @@ export function useFetchKpiValue(config: KpiWidgetConfig) {
                     to: new Date().toISOString(),
                     aggregation: "sum",
                 };
+
                 const preview: KpiPreviewResponseDto = await apiClient("/billing/kpis/preview", {
                     method: "POST",
                     body: JSON.stringify(payload),

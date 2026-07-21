@@ -31,11 +31,11 @@ public interface NormalizedCostsRepository extends JpaRepository<NormalizedCosts
   BigDecimal sumTotalCostBetweenForResources(
       @Param("fromDate") OffsetDateTime fromDate,
       @Param("toDate") OffsetDateTime toDate,
-      @Param(":chargeIds") List<String> chargeIds);
+      @Param("chargeIds") List<String> chargeIds);
     
     @Query(
     value = """
-        SELECT DISTINCT ON nc.charge_id nc.*
+        SELECT DISTINCT ON (nc.charge_id) nc.*
         FROM normalized_costs nc
         ORDER BY nc.charge_id
         """,
