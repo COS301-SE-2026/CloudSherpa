@@ -197,12 +197,6 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
                                 Account-wide cost scope
                             </span>
                         </div>
-
-                        <p className="text-sm text-muted-foreground">
-                            Billing monitoring applies to all eligible costs in your billing export.
-                            The service selection below does not limit billing coverage.
-                        </p>
-
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <label
@@ -276,7 +270,7 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
                     <section className="rounded-lg border border-border bg-background p-4">
                         <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
                             <h3 className="text-foreground text-sm font-semibold uppercase tracking-wider opacity-80">
-                                Services for Resource Discovery
+                                Services for Usage Monitoring & Resource Discovery
                             </h3>
 
                             <div className="flex items-center gap-3">
@@ -293,9 +287,9 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
                         </div>
 
                         <div className="mb-4 rounded-md border border-amber-300/60 bg-amber-50 p-3 text-sm text-amber-900">
-                            Billing ingestion is not limited to the services or resources selected
-                            here. These selections are used for resource discovery and setup
-                            guidance only.
+                            Billing ingestion is account-wide and not limited by selected services.
+                            Select services to discover resources and monitor usage metrics
+                            alongside billing trends.
                         </div>
 
                         <div className="space-y-3">
