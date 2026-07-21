@@ -53,8 +53,10 @@ export default function Shades({ name, shades, format }: Readonly<ShadesProps>) 
                                     isCopied ? "opacity-100 z-10" : "opacity-0 -z-10"
                                 }`}
                             >
-                                <Check className="w-5 h-5" />
-                                <span className="font-semibold text-xs">Copied!</span>
+                                <Check className="w-5 h-5 text-card-foreground!" />
+                                <span className="text-card-foreground! font-semibold text-xs">
+                                    Copied!
+                                </span>
                             </div>
                         </Card>
                     );
