@@ -11,15 +11,9 @@ interface GridProps {
     dashboardId: string;
     onLayoutChange: (layout: LayoutItem[]) => void;
     layouts: LayoutItem[];
-    onDeleteWidget: (layoutId: string, widgetId: string) => void;
 }
 
-export default function Grid({
-    isEditMode,
-    onLayoutChange,
-    layouts,
-    onDeleteWidget,
-}: Readonly<GridProps>) {
+export default function Grid({ isEditMode, onLayoutChange, layouts }: Readonly<GridProps>) {
     const gridRef = useRef<HTMLDivElement>(null);
     const gridStackInstance = useRef<GridStack | null>(null);
     const onLayoutChangeRef = useRef(onLayoutChange);
@@ -53,13 +47,13 @@ export default function Grid({
                 gridRef.current
             );
 
-            gridStackInstance.current.on("change", (_event, nodes) => {
-                if (gridStackInstance.current && isEditModeRef.current && nodes) {
+            gridStackInstance.current.on("change", () => {
+                if (gridStackInstance.current && isEditModeRef.current) {
                     const fullLayout = gridStackInstance.current.save(
                         false,
                         false,
                         (node, w: GridStackWidget) => {
-                            (w as LayoutItem).widgetId = node.el?.dataset.widgetId || "";
+                            (w as LayoutItem).id = String(node.id || "");
                         }
                     ) as LayoutItem[];
                     onLayoutChangeRef.current(fullLayout);
@@ -150,12 +144,7 @@ export default function Grid({
         <div className="bg-background min-h-screen">
             <div ref={gridRef} className="grid-stack">
                 {layouts.map((l) => (
-                    <WidgetWrapper
-                        key={l.id}
-                        layout={l}
-                        isEditMode={isEditMode}
-                        onDeleteWidget={onDeleteWidget}
-                    />
+                    <WidgetWrapper key={l.id} layout={l} isEditMode={isEditMode} />
                 ))}
             </div>
         </div>
