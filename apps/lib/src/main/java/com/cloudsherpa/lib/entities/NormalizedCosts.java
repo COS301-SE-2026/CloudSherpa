@@ -181,4 +181,8 @@ public class NormalizedCosts {
   public void setMetadata(Map<String, Object> metadata) {
     this.metadata = metadata;
   }
+
+  public void setChargeId(String chargeId) {
+    this.chargeId = chargeId;
+  }
 }
