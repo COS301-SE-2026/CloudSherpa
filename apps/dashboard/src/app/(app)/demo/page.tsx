@@ -11,7 +11,7 @@ const MOCK_CHART_WIDGETS: WidgetConfig[] = [
     {
         id: "mock-widget-1",
         widgetType: "chart",
-        chartType: "line",
+        chartType: "line_chart",
         title: "Server CPU Load (Mock)",
         resourceId: "demo-server-01",
         metricType: "cpu",
@@ -19,7 +19,7 @@ const MOCK_CHART_WIDGETS: WidgetConfig[] = [
     {
         id: "mock-widget-2",
         widgetType: "chart",
-        chartType: "gauge",
+        chartType: "gauge_chart",
         title: "Memory Utilization (Mock)",
         resourceId: "demo-server-01",
         metricType: "memory",

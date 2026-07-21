@@ -146,9 +146,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <div className="px-2 py-1.5 text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
-                            {!authContext?.isAuthReady
-                                ? "Loading..."
-                                : authContext?.user?.email || "Not logged in"}
+                            {authContext?.isAuthReady
+                                ? authContext.user?.email || "Not logged in"
+                                : "Loading..."}
                         </div>
                     </SidebarMenuItem>
 

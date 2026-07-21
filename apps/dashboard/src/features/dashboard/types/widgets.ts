@@ -2,7 +2,6 @@ import { MetricType } from "@/features/dashboard/types/metric";
 
 export type LayoutItem = {
     id: string;
-    widgetId: string;
     x: number;
     y: number;
     w: number;
@@ -12,18 +11,21 @@ export type LayoutItem = {
 
 export type DashboardConfig = {
     id: string;
-    name: string;
-    description?: string;
+    displayName: string;
+    timeFrom: string | null;
+    timeTo: string | null;
+    predefinedTime: string;
+    current: boolean;
     layoutItemIds: string[];
 };
 
 export type DashboardStub = {
     id: string;
-    label: string;
+    displayName: string;
 };
 
 // update every time a new chart is added
-export type ChartType = "line" | "gauge";
+export type ChartType = "line_chart" | "gauge_chart";
 
 export type ChartThemeTokens = {
     textColor: string;
@@ -35,14 +37,14 @@ export type ChartThemeTokens = {
 
 export type BaseWidgetConfig = {
     id: string;
-    title: string;
+    displayName: string | null;
 };
 
 export type ChartWidgetConfig = BaseWidgetConfig & {
     widgetType: "chart";
-    chartType: ChartType;
-    resourceId: string;
-    metricType: MetricType;
+    type: ChartType;
+    resourceId: string | null;
+    metricType: MetricType | null;
 };
 
 export type KpiWidgetConfig = BaseWidgetConfig & {

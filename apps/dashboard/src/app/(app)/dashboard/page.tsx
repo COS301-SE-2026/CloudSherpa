@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect, Suspense, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useToolbar } from "@/features/dashboard/components/toolbar/toolbarProvider";
 
 import { Spinner } from "@/components/atoms/spinner";
 import Grid from "@/features/dashboard/components/widgetGrid/grid";
@@ -16,6 +17,48 @@ import { useMetricStream } from "@/features/dashboard/services/sse/metric-stream
 import { useFetchMetrics } from "@/features/dashboard/hooks/useFetchMetrics";
 import { useResourceNameStore } from "@/features/dashboard/stores/resource-store";
 import { useMetricStore } from "@/features/dashboard/stores/metric-store";
+import { fetchDashboards, DashboardDTO } from "@/lib/fetch/api-dashboard";
+import { MetricType } from "@/features/dashboard/types/metric";
+
+function processFetchedDashboards(fetchedData: DashboardDTO[]) {
+    const dashboardsMap: Record<string, DashboardConfig> = {};
+    const layoutsArray: LayoutItem[] = [];
+    const configsArray: WidgetConfig[] = [];
+
+    for (const db of fetchedData) {
+        dashboardsMap[db.id] = {
+            id: db.id,
+            displayName: db.displayName,
+            timeFrom: db.timeFrom,
+            timeTo: db.timeTo,
+            predefinedTime: db.predefinedTime,
+            current: db.current,
+            layoutItemIds: db.widgets.map((w) => w.id),
+        };
+
+        for (const w of db.widgets) {
+            layoutsArray.push({
+                id: w.id,
+                x: w.startX,
+                y: w.startY,
+                w: w.width,
+                h: w.height,
+                autoPosition: false,
+            });
+
+            configsArray.push({
+                id: w.id,
+                type: w.type as ChartType,
+                widgetType: "chart",
+                displayName: w.displayName,
+                resourceId: w.resourceId,
+                metricType: w.metricType as MetricType | null,
+            });
+        }
+    }
+
+    return { dashboardsMap, layoutsArray, configsArray };
+}
 
 function DashboardContent() {
     const { error: streamError } = useMetricStream();
@@ -23,7 +66,7 @@ function DashboardContent() {
     const searchParams = useSearchParams();
     const urlId = searchParams.get("id");
     const [isLoading, setIsLoading] = useState(true);
-    const [isEditMode] = useState(false);
+    const { isEditMode } = useToolbar();
 
     const dashboards = useDashboardStore((state: DashboardStore) => state.dashboards);
     const activeDashboardId = useDashboardStore((state: DashboardStore) => state.activeDashboardId);
@@ -34,20 +77,20 @@ function DashboardContent() {
     const fetchResourceNames = useResourceNameStore((state) => state.fetchResources);
     const getMetricList = useMetricStore((state) => state.getMetricList);
 
-    const { setInitialState, removeWidget, updateLayouts, setActiveDashboard } = useDashboardStore(
+    const { setInitialState, updateLayouts, setActiveDashboard } = useDashboardStore(
         (state: DashboardStore) => state.actions
     );
 
     const createDefaultWidgetConfig = useCallback(
-        (id: string, title: string, chartType: ChartType): WidgetConfig => {
+        (id: string, displayName: string, type: ChartType): WidgetConfig => {
             const metricsByResource = getMetricList();
             const resourceId = Object.keys(metricsByResource)[0];
 
             return {
                 id,
-                title,
                 widgetType: "chart",
-                chartType,
+                displayName,
+                type,
                 resourceId,
                 metricType: resourceId ? (metricsByResource[resourceId]?.[0] ?? "anon") : "anon",
             };
@@ -57,59 +100,44 @@ function DashboardContent() {
 
     useEffect(() => {
         const loadDashboardData = async () => {
-            // only initialize if we don't have any dashboards in the store yet make full use of zustand caching.
-            setIsLoading(true);
+            if (Object.keys(dashboards).length > 0) {
+                setIsLoading(false);
+                return;
+            }
 
-            // Leverage fact that dashboards need to be loaded into mem to trigger initial metric fetch
             await fetchResourceNames();
-
             if (metricFetchLoad) {
                 return;
             }
-
             if (metricFetchError) {
                 setIsLoading(false);
-                return;
             }
+            try {
+                const fetchedData = await fetchDashboards();
+                const { dashboardsMap, layoutsArray, configsArray } =
+                    processFetchedDashboards(fetchedData);
+                setInitialState(dashboardsMap, layoutsArray, configsArray);
+                const currentDb = fetchedData.find((d) => d.current);
+                let defaultId = fetchedData[0]?.id;
 
-            if (Object.keys(dashboards).length === 0) {
-                // Some info that helped me whilst debugging, this is so that there are mock widgets
-                // once the dashboard loads
-                const initialConfigs: WidgetConfig[] = [
-                    createDefaultWidgetConfig("w-1", "Live CPU Usage (Mock)", "line"),
-                    createDefaultWidgetConfig("w-2", "Live Memory (Mock)", "gauge"),
-                ];
-                const initialLayouts: LayoutItem[] = [
-                    { id: "l-1", widgetId: "w-1", x: 0, y: 0, w: 6, h: 4 },
-                    { id: "l-2", widgetId: "w-2", x: 4, y: 0, w: 6, h: 4 },
-                ];
-                const initialDashboards: Record<string, DashboardConfig> = {
-                    "ds-1": {
-                        id: "ds-1",
-                        name: "Global Cost Overview",
-                        layoutItemIds: ["l-1", "l-2"],
-                    },
-                    "ds-2": { id: "ds-2", name: "AWS Production Metrics", layoutItemIds: [] },
-                    "ds-3": { id: "ds-3", name: "Azure Spending Forecast", layoutItemIds: [] },
-                };
-                setInitialState(initialDashboards, initialLayouts, initialConfigs);
-
-                const dashboardIds = Object.keys(initialDashboards);
-                if (urlId && initialDashboards[urlId]) {
-                    setActiveDashboard(urlId);
-                } else if (dashboardIds.length > 0) {
-                    const defaultId = dashboardIds[0];
-                    setActiveDashboard(defaultId);
-                    router.replace(`?id=${defaultId}`);
+                if (urlId && dashboardsMap[urlId]) {
+                    defaultId = urlId;
+                } else if (currentDb) {
+                    defaultId = currentDb.id;
                 }
-                setIsLoading(false);
-            } else {
-                // if we already have data, just ensure not stuck in loading state
+
+                if (defaultId) {
+                    setActiveDashboard(defaultId);
+                    if (urlId !== defaultId) {
+                        router.replace(`?id=${defaultId}`);
+                    }
+                }
+            } catch (error) {
+                console.error("Failed to load dashboards from API", error);
+            } finally {
                 setIsLoading(false);
             }
         };
-
-        //note: reactMemo is an option for components that re-render a lot (apparently)
 
         loadDashboardData();
     }, [
@@ -140,13 +168,6 @@ function DashboardContent() {
                 .filter((l): l is LayoutItem => !!l) ?? []
         );
     }, [activeDashboard, layoutsMap]);
-
-    const handleDeleteWidget = useCallback(
-        (layoutId: string, widgetId: string) => {
-            removeWidget(layoutId, widgetId);
-        },
-        [removeWidget]
-    );
 
     const handleLayoutChange = useCallback(
         (newLayout: LayoutItem[]) => {
@@ -182,7 +203,6 @@ function DashboardContent() {
                     dashboardId={activeDashboardId || ""}
                     onLayoutChange={handleLayoutChange}
                     layouts={widgetLayouts}
-                    onDeleteWidget={handleDeleteWidget}
                 />
             );
         }
