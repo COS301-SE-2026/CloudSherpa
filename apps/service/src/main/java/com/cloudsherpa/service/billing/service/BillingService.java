@@ -2,9 +2,9 @@ package com.cloudsherpa.service.billing.service;
 
 import com.cloudsherpa.lib.entities.NormalizedCosts;
 import com.cloudsherpa.lib.repositories.NormalizedCostsRepository;
+import com.cloudsherpa.service.billing.dto.BillingChargeResponse;
 import com.cloudsherpa.service.billing.dto.BillingKpiRequest;
 import com.cloudsherpa.service.billing.dto.BillingKpiResponse;
-import com.cloudsherpa.service.billing.dto.BillingResourceResponse;
 import com.cloudsherpa.service.config.TenantContext;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -51,39 +51,41 @@ public class BillingService {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid date range");
     }
 
-    List<String> resourceIds = request.resourceIds();
+    List<String> chargeIds = request.chargeIds();
     BigDecimal totalCost;
 
-    if (resourceIds == null || resourceIds.isEmpty()) {
+    if (chargeIds == null || chargeIds.isEmpty()) {
       totalCost =
           normalizedCostsRepository.sumTotalCostBetween(
               fromDate, toDate); // when the user didn't give access to resource_id
     } else {
       totalCost =
-          normalizedCostsRepository.sumTotalCostBetweenForResources(fromDate, toDate, resourceIds);
+          normalizedCostsRepository.sumTotalCostBetweenForResources(fromDate, toDate, chargeIds);
     }
 
     return new BillingKpiResponse(
-        request.title(),
         totalCost,
         "USD", // this is the default value for AWS costs, maybe should convert it to ZAR??
-        resourceIds == null ? 0 : resourceIds.size(),
+        chargeIds == null ? 0 : chargeIds.size(),
         resolveTimeLabel(request.aggregation()),
         OffsetDateTime.now(ZoneOffset.UTC).toString());
   }
 
   @Transactional(readOnly = true)
-  public List<BillingResourceResponse> getResources() {
+  public List<BillingChargeResponse> getCharges() {
     setTenantSchemaFromContext();
 
-    List<NormalizedCosts> resources = normalizedCostsRepository.findDistinctByResourceId();
+    List<NormalizedCosts> charges = normalizedCostsRepository.findDistinctByChargeId();
 
-    List<BillingResourceResponse> response = new ArrayList<>();
+    List<BillingChargeResponse> response = new ArrayList<>();
 
-    for (NormalizedCosts resource : resources) {
+    for (NormalizedCosts charge : charges) {
       response.add(
-          new BillingResourceResponse(
-              resource.getResourceId(), resource.getServiceName(), resource.getProvider()));
+          new BillingChargeResponse(
+              charge.getResourceId(),
+              charge.getChargeId(),
+              charge.getServiceName(),
+              charge.getProvider()));
     }
 
     return response;

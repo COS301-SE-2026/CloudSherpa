@@ -36,6 +36,9 @@ public class NormalizedCosts {
   @Column(name = "resource_id")
   private String resourceId;
 
+    @Column(name = "charge_id")
+    private String chargeId;
+
   @Enumerated(EnumType.STRING)
   @JdbcTypeCode(SqlTypes.NAMED_ENUM)
   @Column(name = "provider", nullable = false, columnDefinition = "public.provider_enum")
@@ -84,6 +87,11 @@ public class NormalizedCosts {
 
   public String getResourceId() {
     return resourceId;
+  }
+
+  public String getChargeId()
+  {
+    return chargeId;
   }
 
   public ProviderEnum getProvider() {
