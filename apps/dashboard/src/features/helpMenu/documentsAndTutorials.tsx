@@ -15,6 +15,73 @@ import * as TabsPrimitive from "@radix-ui/react-tabs"; //using this instead of t
 - can search for smtg in particular
 */
 
+interface BrowseCategory{
+    id : string;
+    label : string;
+    description : string;
+    icon : ComponentType <{className? : string; strokeWidth? : number}>;
+}
+
+const BROWSECATEGORIES : BrowseCategory[] = [
+    {id : "gettingStarted", label : "Getting started",
+     description : "Get to know CloudSherpa", icon : Rocket
+    },
+
+    {id : "connections", label : "Connections",
+     description : "Connect your AWS account", icon : Plug
+    },
+
+    {id : "resources", label : "Resources",
+     description : "Manage your resources", icon : Boxes
+    },
+];
+
+interface Documents{
+    id : string;
+    name : string;
+    category : string;
+    timeToRead : number;
+}
+
+const DOCUMENTS : Documents[] = [
+    {id : "document1", name : "Connecting your AWS account",
+     category : "Connections", timeToRead : 3
+    },
+
+    {id : "document2", name : "How to manage your reasources",
+     category : "Resources", timeToRead : 3
+    },
+];
+
+const TUTFILTERS = ["All", "Getting started", "Connections", "Resources"] as const;
+
+type FilterForTutorials = (typeof TUTFILTERS)[number];
+
+interface Tutorials{
+    id : string;
+    name : string;
+    description : string;
+    category : Exclude<FilterForTutorials, "All">;
+    lengthOfVideo : string;
+}
+
+const TUTORIALS : Tutorials[] = [
+    {id : "tutorial1", name : "Getting started with CloudSherpa",
+     description : "Learn by watching how to navigate about CloudSherpa", category : "Getting started",
+     lengthOfVideo : "1:50",
+    },
+
+    {id : "tutorial2", name : "Managing your AWS connections",
+     description : "Connect your first cloud provider & explore the dashboard", category : "Connections",
+     lengthOfVideo : "1:50",
+    },
+
+    {id : "tutorial3", name : "Configuring your resources",
+     description : "Add and remove resources for a specific connection", category : "Resources",
+     lengthOfVideo : "1:50",
+    },
+];
+
 export default function DocumentsAndTutorials(){
     const [search, setSearch] = useState("");
     
