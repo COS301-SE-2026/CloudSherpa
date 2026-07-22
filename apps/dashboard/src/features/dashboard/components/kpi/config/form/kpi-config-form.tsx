@@ -52,7 +52,7 @@ export function KpiConfigForm({ kpiId }: KpiConfigFormProps) {
     function onTitleChange(newTitle: string): void {
         setConfig((prev) => ({
             ...prev,
-            title: newTitle,
+            displayName: newTitle,
         }));
     }
 
