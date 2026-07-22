@@ -42,7 +42,7 @@ export type BaseWidgetConfig = {
 
 export type ChartWidgetConfig = BaseWidgetConfig & {
     widgetType: "chart";
-    type: ChartType;
+    chartType: ChartType;
     resourceId: string | null;
     metricType: MetricType | null;
 };

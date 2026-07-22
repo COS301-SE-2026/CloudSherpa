@@ -75,7 +75,7 @@ export async function createWidget(dashboardId: string, payload: WidgetDTO): Pro
     });
 }
 
-export async function updateWidgetConfig(
+export async function updateChartWidgetConfig(
     widgetId: string,
     payload: WidgetConfigUpdateDTO
 ): Promise<WidgetDTO> {

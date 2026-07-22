@@ -15,11 +15,11 @@ import {
 } from "@/features/dashboard/components/toolbar/toolbarProvider";
 import { DateRange } from "react-day-picker";
 
-function generateWidgetIds() {
-    const widgetId = crypto.randomUUID();
-    const layoutId = crypto.randomUUID();
+// The layout ID and widget IDs are shared, i.e. layout id ===  widget_id, hence only one UUID is generated
+function generateSharedId() {
+    const sharedId = crypto.randomUUID();
 
-    return { widgetId, layoutId };
+    return { sharedId };
 }
 
 function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode }>) {
@@ -136,10 +136,10 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
     }, [setIsEditMode, restoreSnapshot]);
 
     const handleAddKpi = useCallback(() => {
-        const { widgetId, layoutId } = generateWidgetIds();
+        const { sharedId } = generateSharedId();
 
         const newKpiConfig: KpiWidgetConfig = {
-            id: widgetId,
+            id: sharedId,
             widgetType: "kpi",
             displayName: "New KPI",
             chargeIds: [],
@@ -147,8 +147,7 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
         };
 
         const newLayout: LayoutItem = {
-            id: layoutId,
-            // widgetId: widgetId,
+            id: sharedId,
             x: 0,
             y: 0,
             w: 4,
@@ -162,7 +161,7 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
     const handleAddWidget = useCallback(async () => {
         if (!activeDashboardId) return;
 
-        const sharedId = crypto.randomUUID();
+        const { sharedId } = generateSharedId();
         const metricsByResource = getMetricList();
         const resourceId = Object.keys(metricsByResource)[0];
 
@@ -170,7 +169,7 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
             widgetType: "chart",
             id: sharedId,
             displayName: "New Widget (Click to Customize)",
-            type: "line_chart",
+            chartType: "line_chart",
             resourceId: resourceId,
             metricType: resourceId ? (metricsByResource[resourceId]?.[0] ?? "anon") : "anon",
         };
@@ -193,7 +192,7 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
         try {
             await createWidget(activeDashboardId, {
                 id: newConfig.id,
-                type: newConfig.type,
+                type: newConfig.chartType,
                 displayName: newConfig.displayName,
                 startX: newLayout.x,
                 startY: newLayout.y,

@@ -1,6 +1,12 @@
 import { create } from "zustand";
-import { LayoutItem, DashboardConfig, WidgetConfig } from "@/features/dashboard/types/widgets";
-import { deleteWidget, updateWidgetConfig, deleteDashboard } from "@/lib/fetch/api-dashboard";
+import {
+    LayoutItem,
+    DashboardConfig,
+    WidgetConfig,
+    ChartWidgetConfig,
+    KpiWidgetConfig,
+} from "@/features/dashboard/types/widgets";
+import { deleteWidget, updateChartWidgetConfig, deleteDashboard } from "@/lib/fetch/api-dashboard";
 
 interface DashboardActions {
     createSnapshot: () => void;
@@ -11,7 +17,8 @@ interface DashboardActions {
     removeDashboard: (id: string) => void;
     addWidget: (layout: LayoutItem, widget: WidgetConfig) => void;
     getWidget: (id: string) => WidgetConfig | undefined;
-    updateWidgetConfig: (widget: WidgetConfig) => void;
+    updateChartWidgetConfig: (widget: ChartWidgetConfig) => void;
+    updateKpiWidgetConfig: (widget: KpiWidgetConfig) => void;
     removeWidget: (layoutId: string, widgetId: string) => void;
     updateLayouts: (newLayouts: LayoutItem[]) => void;
     setInitialState: (
@@ -128,10 +135,10 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
                     },
                 };
             }),
-        updateWidgetConfig: async (widget) => {
+        updateChartWidgetConfig: async (widget) => {
             try {
-                await updateWidgetConfig(widget.id, {
-                    type: widget.type as string,
+                await updateChartWidgetConfig(widget.id, {
+                    type: widget.chartType as string,
                     displayName: widget.displayName,
                     resourceId: widget.resourceId,
                     metricType: widget.metricType as string,
@@ -147,6 +154,14 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
                 console.error("Failed to persist widget config:", error);
                 throw error;
             }
+        },
+        updateKpiWidgetConfig: (widget) => {
+            set((state) => ({
+                widgets: {
+                    ...state.widgets,
+                    [widget.id]: widget,
+                },
+            }));
         },
         removeWidget: async (layoutId, widgetId) => {
             try {

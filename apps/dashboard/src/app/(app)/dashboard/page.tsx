@@ -48,7 +48,7 @@ function processFetchedDashboards(fetchedData: DashboardDTO[]) {
 
             configsArray.push({
                 id: w.id,
-                type: w.type as ChartType,
+                chartType: w.type as ChartType,
                 widgetType: "chart",
                 displayName: w.displayName,
                 resourceId: w.resourceId,
@@ -82,7 +82,7 @@ function DashboardContent() {
     );
 
     const createDefaultWidgetConfig = useCallback(
-        (id: string, displayName: string, type: ChartType): WidgetConfig => {
+        (id: string, displayName: string, chartType: ChartType): WidgetConfig => {
             const metricsByResource = getMetricList();
             const resourceId = Object.keys(metricsByResource)[0];
 
@@ -90,7 +90,7 @@ function DashboardContent() {
                 id,
                 widgetType: "chart",
                 displayName,
-                type,
+                chartType,
                 resourceId,
                 metricType: resourceId ? (metricsByResource[resourceId]?.[0] ?? "anon") : "anon",
             };

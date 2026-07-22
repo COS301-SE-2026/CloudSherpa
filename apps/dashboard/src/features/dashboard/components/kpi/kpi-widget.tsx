@@ -31,7 +31,7 @@ export function KPIWidget({ config, preview = false }: WidgetProps) {
     return (
         <Card className={`flex flex-col gap-4 p-6 ${preview ? "bg-muted/40" : ""}`}>
             <CardHeader className="flex flex-row items-center justify-between p-0">
-                <CardTitle>{config.title}</CardTitle>
+                <CardTitle>{config.displayName}</CardTitle>
                 {!preview && (
                     <Button
                         onClick={() => router.push(`/edit/kpi/${config.id}`)}

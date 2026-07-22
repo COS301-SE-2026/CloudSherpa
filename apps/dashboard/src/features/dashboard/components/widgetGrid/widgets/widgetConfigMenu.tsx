@@ -96,12 +96,12 @@ export function WidgetConfigMenu({
         }
     }
 
-    const updateWidget = useDashboardStore((state) => state.actions.updateWidgetConfig);
+    const updateChartWidget = useDashboardStore((state) => state.actions.updateChartWidgetConfig);
 
     const handleSave = async () => {
         setIsSaving(true);
         try {
-            updateWidget(configuration);
+            updateChartWidget(configuration);
             onClose();
         } catch (error) {
             console.error("Failed to save configuration", error);
@@ -264,9 +264,9 @@ export function WidgetConfigMenu({
                                     className="justify-between w-full"
                                     disabled={isSaving}
                                 >
-                                    {configuration.type
+                                    {configuration.chartType
                                         ? CHART_TYPE_OPTIONS.find(
-                                              (opt) => opt.value === configuration.type
+                                              (opt) => opt.value === configuration.chartType
                                           )?.label
                                         : "Select chart type..."}
                                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -285,7 +285,7 @@ export function WidgetConfigMenu({
                                                     onSelect={(currentValue) => {
                                                         setConfiguration({
                                                             ...configuration,
-                                                            type: currentValue as ChartType,
+                                                            chartType: currentValue as ChartType,
                                                         });
                                                         setChartOpen(false);
                                                     }}
@@ -293,7 +293,7 @@ export function WidgetConfigMenu({
                                                     <Check
                                                         className={cn(
                                                             "mr-2 h-4 w-4",
-                                                            configuration.type === opt.value
+                                                            configuration.chartType === opt.value
                                                                 ? "opacity-100"
                                                                 : "opacity-0"
                                                         )}

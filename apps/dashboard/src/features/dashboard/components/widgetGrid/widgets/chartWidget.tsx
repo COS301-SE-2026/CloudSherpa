@@ -38,8 +38,8 @@ interface WidgetProps {
 }
 
 export function ChartWidget({ config }: Readonly<WidgetProps>) {
-    const { type, displayName, resourceId, metricType, id } = config;
-    const ChartComponent = CHART_COMPONENTS[type];
+    const { chartType, displayName, resourceId, metricType, id } = config;
+    const ChartComponent = CHART_COMPONENTS[chartType];
     const [isConfigOpen, setIsConfigOpen] = useState(false);
 
     const removeWidget = useDashboardStore((state) => state.actions.removeWidget);
@@ -48,7 +48,7 @@ export function ChartWidget({ config }: Readonly<WidgetProps>) {
         if (!ChartComponent) {
             return (
                 <div className="flex items-center justify-center h-full text-muted-foreground italic text-xs">
-                    Unknown Chart Type: {type}
+                    Unknown Chart Type: {chartType}
                 </div>
             );
         }

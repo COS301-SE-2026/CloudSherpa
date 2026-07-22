@@ -16,7 +16,7 @@ export function useFetchKpiValue(config: KpiWidgetConfig) {
 
             try {
                 const payload: KpiPreviewRequestDto = {
-                    title: config.title,
+                    title: config.displayName ?? "No Title",
                     chargeIds: config.chargeIds,
                     from: new Date(
                         new Date().setDate(new Date().getDate() - config.aggregationWindowDays)
