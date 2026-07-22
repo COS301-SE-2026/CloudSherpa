@@ -75,6 +75,7 @@ export default function ConfigureConnection() {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void loadConnection();
   }, [accountId]);
 
