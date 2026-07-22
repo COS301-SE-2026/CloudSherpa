@@ -174,6 +174,29 @@ export function HelpMenu(){
             })}
           </div>
 
+          {searchFaQuestion.length>0 && (
+            <>
+              <div className = "flex items-center gap-2 px-4 py-1.5">
+                <span className = "h-px flex-1 bg-border"/>
+
+                <span className = "text-[10px] font-medium uppercase tracking-wider text-muted-foreground"> Frequently asked </span>
+
+                <span className = "h-px flex-1 bg-border"/>
+              </div>
+
+              <Accordion type = "single" collapsible className = "px-2 pb-2">
+                {searchFaQuestion.map((question) => (
+                  <AccordionItem key = {question.id} value = {question.id} className = "border-none px-0.5">
+                    <AccordionTrigger className="rounded-md px-2 py-2 text-[12.5px] font-medium text-foreground hover:bg-accent hover:no-underline"> {question.question} </AccordionTrigger>
+
+                    <AccordionContent className = "px-2 pb-2.5 text-[12px] leading-relaxed text-muted-foreground"> {question.answer} </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+
+            </>
+          )}
+
         </PopoverContent>
       </Popover>
 
