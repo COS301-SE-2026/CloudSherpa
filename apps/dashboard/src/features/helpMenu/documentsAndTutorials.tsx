@@ -127,6 +127,18 @@ export default function DocumentsAndTutorials(){
                 </div>
             </div>
 
+            {/* these are for the dosc and tutorials tabs */}
+            <div className = "mx-auto max-w-[820px] px-6">
+                <TabsPrimitive.Root value = {activeTab} onValueChange = {(value) => setActiveTab(value as "documents" | "tutorials")}>
+                    <TabsPrimitive.List className = "flex items-stretch justify-start gap-6 border-b border-border">
+                        <TabsPrimitive.Trigger value = "documents" className = "flex items-center gap-1.5 border-b-2 border-transparent pb-3 text-[13px] font-medium text-muted-foreground transition-colors data-[state=active]:border-primary data-[state=active]:text-foreground"> <BookOpen className = "h-3.5 w-3.5" strokeWidth = {1.75} /> Documents </TabsPrimitive.Trigger>
+
+                        <TabsPrimitive.Trigger value = "tutorials" className = "flex items-center gap-1.5 border-b-2 border-transparent pb-3 text-[13px] font-medium text-muted-foreground transition-colors data-[state=active]:border-primary data-[state=active]:text-foreground"> <PlayCircle className = "h-3.5 w-3.5" strokeWidth = {1.75} /> Tutorials </TabsPrimitive.Trigger>
+                    </TabsPrimitive.List>
+
+                </TabsPrimitive.Root>
+            </div>
+
         </div>
     );
 }
