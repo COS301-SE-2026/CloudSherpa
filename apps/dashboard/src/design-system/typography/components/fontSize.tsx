@@ -12,11 +12,7 @@ const columnHelper = createColumnHelper<Font_Size>();
 const columns = [
     columnHelper.accessor("name", {
         header: "Token",
-        cell: (info) => (
-            <span className="font-mono">
-                text-{info.getValue()}
-            </span>
-        ),
+        cell: (info) => <span className="font-mono">text-{info.getValue()}</span>,
     }),
     columnHelper.accessor("value", {
         header: "Value",
@@ -46,7 +42,8 @@ export default function FontSize({ FontSizes }: Readonly<FontSizeProps>) {
             title="Font Sizes"
             columns={columns}
             data={FontSizes}
-            description="some text about font sizes"
+            description="Our font sizes are small with an emphasis on space efficiency. The headings and text font sizes are geared towards large complex forms where it is necessary to create visual hierarchy , although subtle, 
+            to help the user navigate easier"
         />
     );
 }

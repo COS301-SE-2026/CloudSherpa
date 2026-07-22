@@ -11,11 +11,7 @@ const columnHelper = createColumnHelper<Font_Weight>();
 const columns = [
     columnHelper.accessor("name", {
         header: "Token",
-        cell: (info) => (
-            <span className="font-mono">
-                text-{info.getValue()}
-            </span>
-        ),
+        cell: (info) => <span className="font-mono">text-{info.getValue()}</span>,
     }),
     columnHelper.accessor("value", {
         header: "Value",
@@ -46,7 +42,8 @@ export default function FontWeight({ Font_Weights }: Readonly<FontWeightProps>) 
             title="Font Weights"
             columns={columns}
             data={Font_Weights}
-            description="Some text about font weights"
+            description="Font weights are a good way of representing importance and hierarchy between headers, titles, paragraphs and subscripts. Text with heavier weights draw more attention and is important
+            users eyes and help them understand the UI easier and faster. A UI without appropriate font weights allocated to different text can feel chaotic and difficult to comprehend. "
         />
     );
 }

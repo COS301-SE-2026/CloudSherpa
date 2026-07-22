@@ -14,13 +14,14 @@ import { ColorFormat } from "@/design-system/colours/types/colours";
 import Shades from "@/design-system/colours/components/shades";
 import rawTokens from "@/app/tokens/docs/design-tokens.json";
 import SemanticColours from "./semanticColours";
+import SubSectionHeading from "@/design-system/shared/components/subsectionHeading";
 
 export default function Colours() {
     const [colourFormatOpen, setColourFormatOpen] = useState(false);
     const [selectedFormat, setSelectedFormat] = useState<ColorFormat>("hex");
 
     return (
-        <div className="space-y-12">
+        <div className="space-y-6">
             <Popover open={colourFormatOpen} onOpenChange={setColourFormatOpen}>
                 <PopoverTrigger asChild>
                     <Button
@@ -64,14 +65,12 @@ export default function Colours() {
                 </PopoverContent>
             </Popover>
 
-            <div className="space-y-10">
-                <div className="mb-8">
-                    <h2 className="text-2xl font-bold tracking-tight mb-2">Primitive Colours</h2>
-                    <p className="text-muted-foreground max-w-2xl">
-                        Foreground and background pairs that automatically adapt across light and
-                        dark themes. Click any swatch to copy its Tailwind utility class.
-                    </p>
-                </div>
+            <div className="space-y-6">
+                <SubSectionHeading
+                    title="Primitive Colours"
+                    description="These primitive colour represent the basic building blocks of our colour themes, like a predefined library of predefined colours we can swap out at any time in our semantic colour 
+                    mapping to fit our needs."
+                />
                 {rawTokens.colors.map((palette) => (
                     <Shades
                         key={palette.name}
@@ -82,14 +81,12 @@ export default function Colours() {
                 ))}
             </div>
 
-            <div className="space-y-10">
-                <div className="mb-8">
-                    <h2 className="text-2xl font-bold tracking-tight mb-2">Semantic Roles</h2>
-                    <p className="text-muted-foreground max-w-2xl">
-                        Foreground and background pairs that automatically adapt across light and
-                        dark themes. Click any swatch to copy its Tailwind utility class.
-                    </p>
-                </div>
+            <div className="space-y-6">
+                <SubSectionHeading
+                    title="Semantic Colours"
+                    description="These semantic colours are based on the token that are predefined by Shadcn/ui when the library is first initialized and are tweaked to map to our primitive colour ranges
+                    to fit the CloudSherpa aesthetic perfectly."
+                />
                 <SemanticColours />
             </div>
         </div>

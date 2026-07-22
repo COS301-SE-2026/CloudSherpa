@@ -25,7 +25,10 @@ export default function Breakpoints({ breakpoints }: Readonly<BreakPointsoProps>
             title="Breakpoints"
             columns={columns}
             data={breakpoints}
-            description="some text about breakpoints"
+            description="Breakpoints are crucial for a responsive design. Each breakpoint represents a screen size. We design our ui with a mobile first approach in mind to align with the breakpoints. 
+            If the current screen the user is viewing CloudSherpa on exceeds a specific breakpoint size like 640 pixels in width then it signals our ui to update either the layout or size of the components being 
+            rendered on screen to change or enlarge to fit the new screen size. An example use case would be <button className='w-30 md:w-40'/> where w-30 represents the mobile button width and w-40 the width defined for the button 
+            for screens larger than 640 pixels, meaning small screens."
         />
     );
 }

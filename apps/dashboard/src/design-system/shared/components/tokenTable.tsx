@@ -2,6 +2,7 @@
 
 import { ColumnDef, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { Card } from "@/components/atoms/card";
+import SubSectionHeading from "./subsectionHeading";
 
 interface TokenTableProps<TData> {
     title: string;
@@ -26,10 +27,7 @@ export function TokenTable<TData>({
 
     return (
         <div className="space-y-6">
-            <div>
-                <h2 className="text-2xl font-bold tracking-tight mb-2">{title}</h2>
-                <p className="text-muted-foreground max-w-2xl">{description}</p>
-            </div>
+            <SubSectionHeading title={title} description={description} />
             <Card>
                 <table className="min-w-full text-left table-fixed">
                     <thead className="border-b">

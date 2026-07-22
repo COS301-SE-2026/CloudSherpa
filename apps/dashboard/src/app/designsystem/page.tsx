@@ -2,7 +2,8 @@
 import Colours from "@/design-system/colours/components/colours";
 import Typography from "@/design-system/typography/components/typography";
 import LayoutAndSpacing from "@/design-system/layout-and-spacing/components/layoutAndSpacing";
-import HeroAnimation from "@/design-system/shared/components/heroAnimation";
+import Components from "@/design-system/components/components/components";
+import LogoAndIconography from "@/design-system/logo-and-icons/components/logoAndIconography";
 import { useState } from "react";
 import { ChevronsUpDown, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -21,6 +22,7 @@ const sections = [
     { value: "typography", label: "2. Typography System" },
     { value: "layout", label: "3. Layout & Spacing" },
     { value: "components", label: "4. Components" },
+    { value: "logo-and-iconography", label: "5. Logo & Iconography" },
 ];
 
 export default function DesignSystem() {
@@ -95,7 +97,6 @@ export default function DesignSystem() {
             </div>
             <div className="mx-auto w-full max-w-7xl px-4 sm:px-8 py-12 md:py-16">
                 <header className="mb-12 md:mb-16 overflow-hidden">
-                    <HeroAnimation />
                     <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-4">
                         CloudSherpa Design System
                     </h1>
@@ -114,8 +115,10 @@ export default function DesignSystem() {
                                 1. Colour Palette
                             </h2>
                             <p className="text-muted-foreground">
-                                Our refined colour system, built for WCAG 2.2 AA compliance and
-                                semantic clarity.
+                                Primitive and Semantic colour ranges that can be found in
+                                CloudSherpa, representing our brand colours and base ui component
+                                backgrounds and foregrounds that defines the feel of the
+                                application.
                             </p>
                         </div>
                         <Colours />
@@ -140,8 +143,8 @@ export default function DesignSystem() {
                                 3. Layout and Spacing
                             </h2>
                             <p className="text-muted-foreground">
-                                This category is based on our projects structural geometry. and
-                                stuff like that.
+                                This category defines the structural geometry of CloudSherpa, and
+                                defines the form of the application.
                             </p>
                         </div>
                         <LayoutAndSpacing />
@@ -153,10 +156,24 @@ export default function DesignSystem() {
                                 4. Components
                             </h2>
                             <p className="text-muted-foreground">
-                                This category runs through all of the components used in our
-                                project.
+                                The components are the culmination of all the primitive building
+                                blocks previously defined in the design system.
                             </p>
                         </div>
+                        <Components />
+                    </section>
+
+                    <section id="logo-and-iconography">
+                        <div className="border-b pb-4 mb-8">
+                            <h2 className="text-2xl md:text-3xl font-bold text-foreground">
+                                5. Logo and Iconography
+                            </h2>
+                            <p className="text-muted-foreground">
+                                This category showcases our Logo as well as the icon set used in
+                                CloudSherpa.
+                            </p>
+                        </div>
+                        <LogoAndIconography />
                     </section>
                 </div>
             </div>

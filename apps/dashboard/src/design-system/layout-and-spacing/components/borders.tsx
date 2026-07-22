@@ -1,4 +1,5 @@
 import { Border } from "@/design-system/layout-and-spacing/types/layoutAndSpacing";
+import SubSectionHeading from "@/design-system/shared/components/subsectionHeading";
 
 interface BordersProps {
     borders: Border[];
@@ -7,13 +8,13 @@ interface BordersProps {
 export default function Borders({ borders }: Readonly<BordersProps>) {
     return (
         <div className="space-y-6">
-            <div>
-                <h2 className="text-2xl font-bold tracking-tight mb-2">Border Widths</h2>
-                <p className="text-muted-foreground max-w-2xl">
-                    The structural scale of border thicknesses used to define component boundaries
-                    and dividers.
-                </p>
-            </div>
+            <SubSectionHeading
+                title="Borders"
+                description="Since we use Shadcn as our component library, borders are important, because the creator of shadcn much preferred a flat look for the ui and preferred borders over 
+            drop shadows. This sits well with our use case since a flashy ui that pops out to the user could potentially be distracting for some users, this is a minor inconvenience but affects the feel of CloudSherpa.
+            We want the attention to be on the charts without having the ui feel 'muddy' thats why the use of borders are important. Luckily they are baked into the shadcn/ui components and don't need to be added manually
+            The most commonly used borders in our project is border-0 and border-1. "
+            />
 
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 md:gap-8">
                 {borders.map((r) => {
