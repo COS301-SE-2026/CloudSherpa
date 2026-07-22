@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.UUID;
 
 public record KpiWidgetConfigUpdateDTO(
-    UUID userId,
+    UUID id,
     String widgetType,
     String displayName,
     List<UUID> chargeIds,

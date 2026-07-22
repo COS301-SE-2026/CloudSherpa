@@ -46,6 +46,10 @@ public class ChartResource {
     return widgetChartId;
   }
 
+  public void setWidgetChartId(UUID widgetChartId) {
+    this.widgetChartId = widgetChartId;
+  }
+
   public Widget getWidget() {
     return widget;
   }
@@ -54,7 +58,15 @@ public class ChartResource {
     return resourceId;
   }
 
+  public void setResourceId(UUID resourceId) {
+    this.resourceId = resourceId;
+  }
+
   public String getMetricType() {
     return metricType;
+  }
+
+  public void setMetricType(String metricType) {
+    this.metricType = metricType;
   }
 }

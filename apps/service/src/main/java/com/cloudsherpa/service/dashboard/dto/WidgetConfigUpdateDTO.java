@@ -16,17 +16,13 @@ import java.util.UUID;
 })
 public sealed interface WidgetConfigUpdateDTO
     permits ChartWidgetConfigUpdateDTO, KpiWidgetConfigUpdateDTO {
-  UUID userId();
+  UUID id();
 
   String widgetType();
 
   String displayName();
 
   WidgetConfigUpdateDTO withUserId(UUID userId);
-
-  default String chartType() {
-    return null;
-  }
 
   default UUID resourceId() {
     return null;

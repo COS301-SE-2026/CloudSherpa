@@ -56,4 +56,8 @@ public class WidgetChart {
   public ChartTypeEnum getChartType() {
     return chartType;
   }
+
+  public void setChartType(ChartTypeEnum chartType) {
+    this.chartType = chartType;
+  }
 }

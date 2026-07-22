@@ -58,20 +58,30 @@ public class ChartWidgetService {
     chartResourceRepository.save(chartResource);
   }
 
-  public void updateChartWidget(ChartWidgetConfigUpdateDTO chartWidgetDto) {}
+  @Transactional
+  public void updateChartWidget(ChartWidgetConfigUpdateDTO updateChartWidgetDto) {
+    WidgetChart widgetChart = getWidgetChartByWidgetId(updateChartWidgetDto.id());
+    widgetChart.setChartType(updateChartWidgetDto.chartType());
+    List<ChartResource> resources =
+        chartResourceRepository.findByWidgetChartId(widgetChart.getId());
+
+    if (resources.isEmpty()) {
+      throw new IllegalStateException("No chart resource for chart id " + widgetChart.getId());
+    }
+
+    ChartResource resource = resources.get(0);
+    resource.setMetricType(updateChartWidgetDto.metricType());
+    resource.setResourceId(updateChartWidgetDto.resourceId());
+
+    widgetChartRepository.save(widgetChart);
+    chartResourceRepository.save(resource);
+  }
 
   public ChartWidgetDTO mapToChartWidgetDTO(UUID userId, ChartWidgetDTO widget) {
 
     UUID resourceId = null;
     String metricType = null;
-    List<WidgetChart> chartIdLookup = widgetChartRepository.findByWidgetId(widget.id());
-
-    if (chartIdLookup.isEmpty()) {
-      throw new IllegalStateException(
-          "No chart persistence found for widget: " + widget.id().toString());
-    }
-
-    UUID chartId = chartIdLookup.get(0).getId();
+    UUID chartId = getWidgetChartByWidgetId(widget.id()).getId();
 
     List<ChartResource> resources = chartResourceRepository.findByWidgetChartId(chartId);
 
@@ -92,5 +102,15 @@ public class ChartWidgetService {
         widget.chartType(),
         resourceId,
         metricType);
+  }
+
+  private WidgetChart getWidgetChartByWidgetId(UUID widgetId) {
+    List<WidgetChart> widgetChartLookup = widgetChartRepository.findByWidgetId(widgetId);
+
+    if (widgetChartLookup.isEmpty()) {
+      throw new IllegalStateException("Failed to find chart widget with id " + widgetId.toString());
+    }
+
+    return widgetChartLookup.get(0);
   }
 }
