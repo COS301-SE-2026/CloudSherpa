@@ -26,6 +26,11 @@ interface PropsForStepThree {
     ingestionPeriod: string;
     credentials: AwsCredentialsDto;
     resources: ResourceDetail[];
+    billingConfig: {
+        bucketName: string;
+        prefix: string;
+        exportName: string;
+    };
     onComplete: (ingestionPeriod: string) => void;
     onBack: () => void;
 }
@@ -143,6 +148,7 @@ export default function StepThree({
     ingestionPeriod,
     credentials,
     resources,
+    billingConfig,
     onComplete,
     onBack,
 }: Readonly<PropsForStepThree>) {
@@ -177,6 +183,11 @@ export default function StepThree({
                     tags: resource.tags,
                     active: selectedResources.includes(resource.resourceId),
                 })),
+                billingConfig: {
+                    bucketName: billingConfig.bucketName,
+                    exportPrefix: billingConfig.prefix,
+                    exportName: billingConfig.exportName,
+                },
             };
 
             await createAwsConnection(request);

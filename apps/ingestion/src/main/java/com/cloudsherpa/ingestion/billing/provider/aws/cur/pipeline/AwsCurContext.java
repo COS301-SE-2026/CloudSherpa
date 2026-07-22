@@ -1,6 +1,7 @@
 package com.cloudsherpa.ingestion.billing.provider.aws.cur.pipeline;
 
 import com.cloudsherpa.ingestion.billing.BillingExport;
+import com.cloudsherpa.ingestion.connector.CloudCredentials;
 import com.cloudsherpa.ingestion.provider.aws.services.s3.AwsS3;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.IOException;
@@ -21,11 +22,13 @@ public class AwsCurContext {
   private String bucketName;
   private String exportPrefix;
   private String exportName;
+  private UUID accountId;
   private List<String> processedExports;
   private final String configId;
   private final String userId;
 
   @JsonIgnore private List<BillingExport> processingExports;
+  @JsonIgnore private CloudCredentials credentials;
 
   private List<String> dataFiles;
   private Path awsCurTmpDir;
@@ -41,6 +44,14 @@ public class AwsCurContext {
 
   public AwsS3 getS3() {
     return s3;
+  }
+
+  public CloudCredentials getCredentials() {
+    return credentials;
+  }
+
+  public void setCredentials(CloudCredentials credentials) {
+    this.credentials = credentials;
   }
 
   public String getBucketName() {
@@ -65,6 +76,14 @@ public class AwsCurContext {
 
   public void setExportName(String exportName) {
     this.exportName = exportName;
+  }
+
+  public UUID getAccountId() {
+    return accountId;
+  }
+
+  public void setAccountId(UUID accountId) {
+    this.accountId = accountId;
   }
 
   public List<String> getDataFiles() {

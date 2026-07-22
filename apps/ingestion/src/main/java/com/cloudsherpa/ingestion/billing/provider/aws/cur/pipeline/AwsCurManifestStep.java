@@ -27,6 +27,7 @@ public class AwsCurManifestStep implements AwsCurIngestionPipelineStep {
         context
             .getS3()
             .listObjects(
+                context.getCredentials(),
                 context.getBucketName(),
                 context.getExportPrefix() + "/" + context.getExportName() + "/metadata");
 
@@ -38,7 +39,10 @@ public class AwsCurManifestStep implements AwsCurIngestionPipelineStep {
       S3ObjectReference metadataObjectReference =
           new S3ObjectReference(context.getBucketName(), metadataFile);
       ManifestConfig manifestConfig =
-          context.getS3().objectToJson(metadataObjectReference, ManifestConfig.class);
+          context
+              .getS3()
+              .objectToJson(
+                  context.getCredentials(), metadataObjectReference, ManifestConfig.class);
       if (!context.getProcessedExports().contains(manifestConfig.getExecutionId())) {
 
         BillingExport newExport =
