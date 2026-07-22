@@ -24,11 +24,11 @@ public class WidgetChart {
   private Widget widget;
 
   @Column(name = "chart_type", nullable = false, length = 50)
-  private String chartType;
+  private ChartTypeEnum chartType;
 
   protected WidgetChart() {}
 
-  public WidgetChart(UUID id, UUID widgetId, String chartType) {
+  public WidgetChart(UUID id, UUID widgetId, ChartTypeEnum chartType) {
     this.id = id;
     this.widgetId = widgetId;
     this.chartType = chartType;
@@ -46,7 +46,7 @@ public class WidgetChart {
     return widget;
   }
 
-  public String getChartType() {
+  public ChartTypeEnum getChartType() {
     return chartType;
   }
 }

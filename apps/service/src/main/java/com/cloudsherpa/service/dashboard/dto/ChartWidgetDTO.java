@@ -1,5 +1,6 @@
 package com.cloudsherpa.service.dashboard.dto;
 
+import com.cloudsherpa.lib.entities.ChartTypeEnum;
 import java.util.UUID;
 
 public record ChartWidgetDTO(
@@ -11,7 +12,7 @@ public record ChartWidgetDTO(
     Integer startY,
     Integer width,
     Integer height,
-    String chartType,
+    ChartTypeEnum chartType,
     UUID resourceId,
     String metricType)
     implements WidgetDTO {
