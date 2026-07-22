@@ -6,6 +6,7 @@ import {
     ColumnFiltersState,
     getFilteredRowModel,
     getPaginationRowModel,
+    RowSelectionState,
 } from "@tanstack/react-table";
 
 import {
@@ -34,15 +35,17 @@ import {
 } from "@/components/atoms/table";
 import { SearchIcon } from "lucide-react";
 import { FormCountCircle } from "@/components/atoms/form-count-circle";
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { DataTablePagination } from "./config-table-pagination";
 import { CloudProviderEnum } from "@/features/dashboard/types/provider";
 import { Spinner } from "@/components/atoms/spinner";
+import { KPIConfigTableRow } from "./columns";
 
-interface KPIConfigTableProps<TData, TValue> {
-    readonly columns: ColumnDef<TData, TValue>[];
-    readonly data: TData[];
-    readonly onSetSelectedRows: (rows: TData[]) => void;
+interface KPIConfigTableProps<TValue> {
+    readonly columns: ColumnDef<KPIConfigTableRow, TValue>[];
+    readonly data: KPIConfigTableRow[];
+    readonly onSetChargeIdsChange: (chargeIds: string[]) => void;
+    readonly selectedChargeIds: string[];
     readonly error: boolean;
     readonly loading: boolean;
 }
@@ -50,16 +53,23 @@ interface KPIConfigTableProps<TData, TValue> {
 const ALL_PROVIDERS = "All Providers";
 const providers: CloudProviderEnum[] = ["AWS", "Azure", "GCP"];
 
-export function KPIConfigTable<TData, TValue>({
+export function KPIConfigTable<TValue>({
     columns,
     data,
-    onSetSelectedRows,
+    onSetChargeIdsChange,
+    selectedChargeIds,
     error,
     loading,
-}: KPIConfigTableProps<TData, TValue>) {
+}: KPIConfigTableProps<TValue>) {
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
     const [globalFilter, setGlobalFilter] = React.useState("");
-    const [rowSelection, setRowSelection] = React.useState({});
+    // Memoized to prevent infinite rerenders (when using useEffect with rowSelection as dependency)
+    // when the initial RowSelectionState is set, so it will only change when selectedChargeIds is different
+    // from the currently memoized selectedChargeIds
+    const rowSelection = useMemo<RowSelectionState>(
+        () => Object.fromEntries(selectedChargeIds.map((chargeId) => [chargeId, true])),
+        [selectedChargeIds]
+    );
 
     const table = useReactTable({
         data,
@@ -68,18 +78,22 @@ export function KPIConfigTable<TData, TValue>({
         onColumnFiltersChange: setColumnFilters,
         getFilteredRowModel: getFilteredRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
-        onRowSelectionChange: setRowSelection,
+        onRowSelectionChange: (updater) => {
+            // tanstack behaviour: updater takes old RowSelectionState as argument and returns the new RowSelectionState based on
+            // what was now selected
+            const next = typeof updater === "function" ? updater(rowSelection) : updater;
+            // RowSelectionState comprises of an object that has a key value pair for each row id where
+            // the key is the row id (here set by below code getRowId) and the value is the boolean, hence
+            // we filter on nex[chargeId] which resolves to a boolean
+            onSetChargeIdsChange(Object.keys(next).filter((chargeId) => next[chargeId]));
+        },
+        getRowId: (row) => row.chargeId,
         state: {
             columnFilters,
             globalFilter,
             rowSelection,
         },
     });
-
-    useEffect(() => {
-        const selectedData = table.getSelectedRowModel().rows.map((row) => row.original);
-        onSetSelectedRows(selectedData);
-    }, [rowSelection, table]);
 
     const selectedProvider =
         (table.getColumn("provider")?.getFilterValue() as string | undefined) ?? ALL_PROVIDERS;

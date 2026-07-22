@@ -17,13 +17,14 @@ export function useFetchKpiValue(config: KpiWidgetConfig) {
             try {
                 const payload: KpiPreviewRequestDto = {
                     title: config.title,
-                    resourceIds: config.resourceIds,
+                    chargeIds: config.chargeIds,
                     from: new Date(
                         new Date().setDate(new Date().getDate() - config.aggregationWindowDays)
                     ).toISOString(),
                     to: new Date().toISOString(),
                     aggregation: "sum",
                 };
+
                 const preview: KpiPreviewResponseDto = await apiClient("/billing/kpis/preview", {
                     method: "POST",
                     body: JSON.stringify(payload),
@@ -43,7 +44,7 @@ export function useFetchKpiValue(config: KpiWidgetConfig) {
         }
 
         fetchKpiValue();
-    }, [config.resourceIds, config.aggregationWindowDays]);
+    }, [config.chargeIds, config.aggregationWindowDays]);
 
     return { loadingKpiValue, fetchKpiValueError, kpiPreview };
 }

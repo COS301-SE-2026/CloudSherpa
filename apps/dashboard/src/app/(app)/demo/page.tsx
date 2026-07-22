@@ -31,7 +31,7 @@ const MOCK_KPI_WIDGETS: WidgetConfig[] = [
         id: "mock-kpi-widget-1",
         title: "Mock KPI 1",
         widgetType: "kpi",
-        resourceIds: ["resource-1"],
+        chargeIds: ["resource-1"],
         aggregationWindowDays: 30,
     },
 ];

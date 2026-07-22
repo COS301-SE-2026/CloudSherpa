@@ -47,7 +47,7 @@ export type ChartWidgetConfig = BaseWidgetConfig & {
 
 export type KpiWidgetConfig = BaseWidgetConfig & {
     widgetType: "kpi";
-    resourceIds: string[];
+    chargeIds: string[];
     aggregationWindowDays: number;
 };
 

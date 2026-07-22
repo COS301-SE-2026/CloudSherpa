@@ -4,6 +4,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/atoms/checkbox";
 
 export type KPIConfigTableRow = {
+    chargeId: string;
     resourceId: string;
     service: string;
     provider: string;

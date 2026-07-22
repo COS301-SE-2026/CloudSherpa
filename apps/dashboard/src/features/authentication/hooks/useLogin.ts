@@ -10,7 +10,6 @@ export function useLogin() {
     const router = useRouter();
 
     async function login(loginPayload: LoginRequestDto, redirect?: boolean) {
-        console.log(authContext);
         const loginResult = await authContext?.login(loginPayload);
 
         if (loginResult) {
