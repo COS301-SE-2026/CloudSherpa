@@ -49,12 +49,6 @@
         "y": -326.7610423833063
       },
       {
-        "name": "widget_resource",
-        "schemaName": "public",
-        "x": 1840.2469870627883,
-        "y": -359.1359562282411
-      },
-      {
         "name": "resource",
         "schemaName": "public",
         "x": 1255.7447812873766,
@@ -83,6 +77,30 @@
         "schemaName": "public",
         "x": 2026.8707768127092,
         "y": -52.137205607904036
+      },
+      {
+        "name": "widget_kpi",
+        "schemaName": "public",
+        "x": 1681.9208319368613,
+        "y": -559.0371378359391
+      },
+      {
+        "name": "kpi_charges",
+        "schemaName": "public",
+        "x": 1939.4233711501834,
+        "y": -589.9274449920866
+      },
+      {
+        "name": "widget_chart",
+        "schemaName": "public",
+        "x": 1240.4400928082587,
+        "y": -559.0371378359391
+      },
+      {
+        "name": "chart_resource",
+        "schemaName": "public",
+        "x": 924.5486804469767,
+        "y": -591.0371378359391
       }
     ],
     "tableGroupCollapseStates": [],
@@ -234,6 +252,216 @@
           "resource_id"
         ],
         "secondTableName": "normalized_costs",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "account_id"
+        ],
+        "firstTableName": "cloud_account",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "account_id"
+        ],
+        "secondTableName": "billing_export_config",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "config_id"
+        ],
+        "firstTableName": "billing_export_config",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "config_id"
+        ],
+        "secondTableName": "billing_export_execution",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "widget_id"
+        ],
+        "firstTableName": "widget",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "widget_id"
+        ],
+        "secondTableName": "widget_kpi",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "kpi_id"
+        ],
+        "firstTableName": "widget_kpi",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "widget_kpi"
+        ],
+        "secondTableName": "kpi_charges",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "widget_id"
+        ],
+        "firstTableName": "widget",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "widget_id"
+        ],
+        "secondTableName": "widget_chart",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "widget_id"
+        ],
+        "firstTableName": "widget",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "widget__id"
+        ],
+        "secondTableName": "chart_resource",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "execution_id"
+        ],
+        "firstTableName": "billing_export_execution",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "execution_id"
+        ],
+        "secondTableName": "normalized_costs",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "widget_id"
+        ],
+        "firstTableName": "widget",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "widget_c_id"
+        ],
+        "secondTableName": "chart_resource",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "widget_id"
+        ],
+        "firstTableName": "widget",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "widget_ch_id"
+        ],
+        "secondTableName": "chart_resource",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "widget_id"
+        ],
+        "firstTableName": "widget",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "widget_cha_id"
+        ],
+        "secondTableName": "chart_resource",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "widget_id"
+        ],
+        "firstTableName": "widget",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "widget_char_id"
+        ],
+        "secondTableName": "chart_resource",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "widget_id"
+        ],
+        "firstTableName": "widget",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "widget_chart_id"
+        ],
+        "secondTableName": "chart_resource",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "widget_id"
+        ],
+        "firstTableName": "widget_chart",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "widget_chart_id"
+        ],
+        "secondTableName": "chart_resource",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "chart_id"
+        ],
+        "firstTableName": "widget_chart",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "widget_chart_id"
+        ],
+        "secondTableName": "chart_resource",
         "secondSchemaName": "public",
         "secondRelation": "*",
         "checkPoints": []
