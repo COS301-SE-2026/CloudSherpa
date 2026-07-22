@@ -36,5 +36,12 @@ const columns = [
     }),
 ];
 export default function SpacingsProps({ spacings }: Readonly<SpacingsProps>) {
-    return <TokenTable title="Spacing" columns={columns} data={spacings} />;
+    return (
+        <TokenTable
+            title="Spacing"
+            columns={columns}
+            data={spacings}
+            description="some text relating to the spacing category"
+        />
+    );
 }

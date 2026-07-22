@@ -11,7 +11,7 @@ export default function Typography() {
             <FontFamily FontFamilies={typography.family} />
             <FontSize FontSizes={typography.size} />
             <FontWeight Font_Weights={typography.weight} />
-            <div className="mb-8">
+            <div>
                 <h2 className="text-2xl font-bold tracking-tight mb-2">Primitive Colours</h2>
                 <p className="text-muted-foreground max-w-2xl">
                     Foreground and background pairs that automatically adapt across light and dark

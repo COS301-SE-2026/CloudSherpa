@@ -20,5 +20,12 @@ const columns = [
 ];
 
 export default function Breakpoints({ breakpoints }: Readonly<BreakPointsoProps>) {
-    return <TokenTable title="Breakpoints" columns={columns} data={breakpoints} />;
+    return (
+        <TokenTable
+            title="Breakpoints"
+            columns={columns}
+            data={breakpoints}
+            description="some text about breakpoints"
+        />
+    );
 }

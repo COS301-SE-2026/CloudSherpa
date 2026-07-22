@@ -2,16 +2,14 @@
 import Colours from "@/design-system/colours/components/colours";
 import Typography from "@/design-system/typography/components/typography";
 import LayoutAndSpacing from "@/design-system/layout-and-spacing/components/layoutAndSpacing";
-import { useEffect, useRef, useState } from "react";
-import { Search, ChevronsUpDown, Check } from "lucide-react";
+import { useState } from "react";
+import { ChevronsUpDown, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/atoms/button";
-import { Input } from "@/components/atoms/input";
 import {
     Command,
     CommandEmpty,
     CommandGroup,
-    CommandInput,
     CommandItem,
     CommandList,
 } from "@/components/atoms/command";
@@ -136,9 +134,8 @@ export default function DesignSystem() {
                                 3. Layout and Spacing
                             </h2>
                             <p className="text-muted-foreground">
-                                Once again our layout and spacing is geared toward compact design to
-                                allow space for efficient data representation without sacrificing
-                                clarity.
+                                This category is based on our projects structural geometry. and
+                                stuff like that.
                             </p>
                         </div>
                         <LayoutAndSpacing />
