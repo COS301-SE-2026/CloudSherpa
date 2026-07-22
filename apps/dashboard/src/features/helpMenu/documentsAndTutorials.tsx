@@ -87,6 +87,17 @@ export default function DocumentsAndTutorials(){
     
     const [activeTab, setActiveTab] = useState<"documents" | "tutorials">("documents");
 
+    const searchDocument = useMemo(() => {
+        if(!search.trim()){
+            return DOCUMENTS;
+        }
+
+        const searchQuery = search.toLowerCase();
+
+        return DOCUMENTS.filter((documents) => documents.name.toLowerCase().includes(searchQuery) || documents.category.toLowerCase().includes(searchQuery));
+
+    }, [search]);
+
     return(
         <div className = "min-h-screen bg-background">
 
@@ -135,6 +146,60 @@ export default function DocumentsAndTutorials(){
 
                         <TabsPrimitive.Trigger value = "tutorials" className = "flex items-center gap-1.5 border-b-2 border-transparent pb-3 text-[13px] font-medium text-muted-foreground transition-colors data-[state=active]:border-primary data-[state=active]:text-foreground"> <PlayCircle className = "h-3.5 w-3.5" strokeWidth = {1.75} /> Tutorials </TabsPrimitive.Trigger>
                     </TabsPrimitive.List>
+
+                {/* this is for the docs */}
+                <TabsPrimitive.Content value = "documents" className = "mt-6 pb-16">
+                    <h2 className = "mb-3 text-[11px] font-medium uppercase tracking-wider text-muted-foreground"> Browse by category </h2>
+
+                    <div className = "grid grid-cols-3 gap-3">
+                        {BROWSECATEGORIES.map((forCategories) => {
+                            const Icons = forCategories.icon;
+
+                            return(
+                                <Card key = {forCategories.id} role = "button" tabIndex = {0} className = "cursor-pointer border-border bg-muted/40 transition-colors hover:border-primary/50">
+                                    <CardContent className = "flex items-start gap-3 p-4">
+                                        <span className = "flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-muted text-primary"> <Icons className = "h-4 w-4" strokeWidth = {1.75}/> </span>
+
+                                        <span className = "min-w-0">
+                                            <span className = "block text-[13px] font-medium text-foreground"> {forCategories.label} </span>
+
+                                            <span className = "mt-0.5 block text-[12px] text-muted-foreground"> {forCategories.description} </span>
+                                        </span>
+                                    </CardContent>
+                                </Card>
+                            );
+                        })}
+                    </div>
+
+                    <h2 className = "mb-3 mt-8 text-[11px] font-medium uppercase tracking-wider text-muted-foreground"> Popular documents </h2>
+
+                    {searchDocument.length > 0 && (
+                        <div className = "grid grid-cols-3 gap-3">
+                            <div className = "col-span-2 flex flex-col gap-3">
+                                {searchDocument.map((docs) => (
+                                    <Card key = {docs.id} className = "cursor-pointer gap-0 overflow-hidden border-border bg-muted/40 p-0 transition-color hover:border-primary/50">
+                                        <Button variant = "ghost" className = "h-auto w-full items-center justify-between rounded-none px-4 py-3 text-left hover:bg-transparent">
+
+                                            <span className = "min-w-0">
+                                                <span className = "block text-[13px] font-normal text-foreground"> {docs.name} </span>
+                                                <span className = "mt-0.5 flex items-center gap-2 text-[11.5px] font-normal text-muted-foreground">
+                                                    <span> {docs.category} </span>
+                                                    <span> &middot; </span>
+
+                                                    <span className = "flex items-center gap-1"> <Clock className = "h-3 w-3" strokeWidth = {1.75}/> {docs.timeToRead}min read </span>
+                                                </span>
+                                            </span>
+
+                                            <ArrowRight className = "h-3.5 w-3.5 shrink-0 text-muted-foreground" strokeWidth = {1.75}/>
+
+                                        </Button>
+                                    </Card>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                </TabsPrimitive.Content>
 
                 </TabsPrimitive.Root>
             </div>
