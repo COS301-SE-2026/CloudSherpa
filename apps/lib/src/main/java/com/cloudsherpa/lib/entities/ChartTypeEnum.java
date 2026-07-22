@@ -1,6 +1,6 @@
 package com.cloudsherpa.lib.entities;
 
 public enum ChartTypeEnum {
-    guage_chart,
+    gauge_chart,
     line_chart
 }

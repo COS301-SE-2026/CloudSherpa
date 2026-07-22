@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -74,14 +75,14 @@ public class DashboardController {
 
   @PostMapping("/{dashboardId}/widgets")
   @Operation(summary = "Add a new widget to a dashboard")
-  public ResponseEntity<WidgetDTO> createChartWidget(
+  public ResponseEntity<Void> createChartWidget(
       @PathVariable UUID dashboardId,
       @RequestBody WidgetDTO request,
       @AuthenticationPrincipal Jwt jwt) {
     UUID userId = UUID.fromString(jwt.getSubject());
     WidgetDTO requestWithUser = request.withUserId(userId);
 
-    return ResponseEntity.ok(dashboardService.createWidget(dashboardId, requestWithUser));
+    return ResponseEntity.status(HttpStatus.CREATED).build();
   }
 
   @PostMapping("/{dashboardId}/widgets/kpi")

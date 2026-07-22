@@ -16,11 +16,11 @@ public class ChartResource {
   @Column(name = "chart_resource_id", nullable = false)
   private UUID id;
 
-  @Column(name = "chart_id", nullable = false)
+  @Column(name = "widget_chart_id", nullable = false)
   private UUID widgetChartId;
 
   @ManyToOne
-  @JoinColumn(name = "widget_id", nullable = false, insertable = false, updatable = false)
+  @JoinColumn(name = "widget_chart_id", nullable = false, insertable = false, updatable = false)
   private Widget widget;
 
   @Column(name = "resource_id", nullable = false)

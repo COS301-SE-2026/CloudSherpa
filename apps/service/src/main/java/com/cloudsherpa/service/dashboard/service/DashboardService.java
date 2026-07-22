@@ -132,12 +132,12 @@ public class DashboardService {
 
   // add new widget to specific dashboard
   @Transactional
-  public WidgetDTO createWidget(UUID dashboardId, WidgetDTO request) {
+  public void createWidget(UUID dashboardId, WidgetDTO request) {
     UUID userId = request.userId();
     getDashboardAndVerifyOwnership(userId, dashboardId);
     switch (request) {
       case KpiWidgetDTO kpi -> kpiWidgetService.createKpiWidget(kpi);
-      case ChartWidgetDTO chart -> chartWidgetService.createChartWidget(chart);
+      case ChartWidgetDTO chart -> chartWidgetService.createChartWidget(chart, dashboardId);
     }
   }
 
