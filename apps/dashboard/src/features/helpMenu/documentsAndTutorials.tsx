@@ -113,6 +113,20 @@ export default function DocumentsAndTutorials(){
                 </Breadcrumb>
             </div>
 
+            <div className = "mx-auto max-w-[820px] px-6 pb-8 pt-16 text-center">
+                <div className = "mx-auto max-w-[440px]">
+                    <h1 className = "text-[22px] font-medium text-foreground"> How can we help? </h1>
+
+                    <p className = "mt-2 text-[14px] text-muted-foreground"> Search documents and tutorials, or broswe below </p>
+                </div>
+
+                <div className = "relative mt-6">
+                    <Search className = "pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" strokeWidth = {1.75} />
+
+                    <Input value = {search} onChange = {(change) => setSearch(change.target.value)} placeholder = "Search Help" className = "h-10 border-border bg-muted pl-9 text-[13px]" />
+                </div>
+            </div>
+
         </div>
     );
 }
