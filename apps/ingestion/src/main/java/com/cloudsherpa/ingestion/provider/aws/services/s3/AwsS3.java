@@ -1,5 +1,7 @@
 package com.cloudsherpa.ingestion.provider.aws.services.s3;
 
+import com.cloudsherpa.ingestion.connector.CloudCredentials;
+import com.cloudsherpa.ingestion.provider.aws.factory.AwsClientFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.net.URI;
@@ -8,7 +10,6 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.core.ResponseInputStream;
-import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3Uri;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
@@ -28,11 +29,11 @@ public class AwsS3 implements S3Service {
   }
 
   @Override
-  public List<S3Object> listObjects(String bucketName, String prefix) {
+  public List<S3Object> listObjects(
+      CloudCredentials credentials, String bucketName, String prefix) {
 
-    try (S3Client s3 = S3Client.builder().region(Region.EU_NORTH_1).build()) {
+    try (S3Client s3 = buildClient(credentials)) {
       logger.info("Listing objects in S3 bucket '{}' with prefix '{}'", bucketName, prefix);
-      // Using local credentials for development
       ListObjectsV2Request.Builder request = ListObjectsV2Request.builder().bucket(bucketName);
 
       if (prefix != null && !prefix.isBlank()) {
@@ -51,8 +52,9 @@ public class AwsS3 implements S3Service {
   }
 
   @Override
-  public <T> T objectToJson(S3ObjectReference object, Class<T> jacksonConfig) {
-    try (S3Client s3 = S3Client.builder().region(Region.EU_NORTH_1).build()) {
+  public <T> T objectToJson(
+      CloudCredentials credentials, S3ObjectReference object, Class<T> jacksonConfig) {
+    try (S3Client s3 = buildClient(credentials)) {
       logger.info(
           "Deserializing object to json: Bucket '{}', Key '{}'",
           object.bucketName(),
@@ -74,9 +76,9 @@ public class AwsS3 implements S3Service {
   }
 
   @Override
-  public void downloadObject(String objectUri, Path destination) {
+  public void downloadObject(CloudCredentials credentials, String objectUri, Path destination) {
 
-    try (S3Client s3 = S3Client.builder().region(Region.EU_NORTH_1).build()) {
+    try (S3Client s3 = buildClient(credentials)) {
 
       S3ObjectUriReference s3Uri = uriHelper(s3, objectUri);
       GetObjectRequest request =
@@ -97,5 +99,12 @@ public class AwsS3 implements S3Service {
         parsedUri.key().orElseThrow(() -> new IllegalArgumentException("S3 URI has no key"));
 
     return new S3ObjectUriReference(bucket, key);
+  }
+
+  private S3Client buildClient(CloudCredentials credentials) {
+    return S3Client.builder()
+        .region(AwsClientFactory.region(credentials))
+        .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
+        .build();
   }
 }
