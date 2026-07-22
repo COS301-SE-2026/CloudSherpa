@@ -96,6 +96,30 @@ const SHORTCUT : KeyboardShortcuts[] = [
 export function HelpMenu(){
   const [open, setOpen] = useState(false);
 
+  const [search, setSearch] = useState("");
+
+  const searchLinks = useMemo(() => {
+    if(!search.trim()){
+      return LINKS;
+    }
+
+    const searchQuery = search.toLowerCase();
+
+    return LINKS.filter((filteredLinks) => filteredLinks.label.toLowerCase().includes(searchQuery) || filteredLinks.description.toLowerCase().includes(searchQuery),);
+
+  }, [search]);
+
+  const searchFaQuestion = useMemo(() => {
+    if(!search.trim()){
+      return QUESTION;
+    }
+
+    const searchQuery = search.toLowerCase();
+
+    return QUESTION.filter((filteredFaQuestions) => filteredFaQuestions.question.toLowerCase().includes(searchQuery) || filteredFaQuestions.answer.toLowerCase().includes(searchQuery),);
+
+  }, [search]);
+
   return(
     <>
       <Popover open = {open} onOpenChange = {setOpen}>
@@ -106,6 +130,14 @@ export function HelpMenu(){
         <PopoverContent align = "end" sideOffset = {8} className = "w-[360px] border-border bg-popover p-0 text-popover-foreground">
           <div className = "border-b border-border px-4 py-3.5">
             <span className = "text-[13px] font-medium text-foreground"> Help &amp; resources </span>
+          </div>
+
+          <div className = "px-3 pt-3">
+            <div className = "relative">
+              <Search className = "pointer-events-none absolute left-2.5 top-1/2 h-3 w-3.5 -translate-y-1/2 text-muted-foreground" strokeWidth = {1.75}/>
+
+              <Input value = {search} onChange = {(change) => setSearch(change.target.value)} placeholder = "Search help" className = "h-8 border-border bg-background pl-8 text-[13px]"/>
+            </div>
           </div>
 
         </PopoverContent>
