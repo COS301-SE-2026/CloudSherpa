@@ -107,8 +107,8 @@ CREATE TABLE IF NOT EXISTS public.widget (
   display_name varchar(100)
 );
 
-CREATE TABLE IF NOT EXISTS public.widget_resource (
-  widget_resource_id uuid PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS public.chart_resource (
+  chart_resource_id uuid PRIMARY KEY,
   widget_id uuid REFERENCES public.widget(widget_id) ON DELETE CASCADE,
   resource_id uuid NOT NULL, 
   metric_type public.metric_type_enum NOT NULL
