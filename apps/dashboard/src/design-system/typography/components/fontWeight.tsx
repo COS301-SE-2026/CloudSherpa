@@ -41,5 +41,12 @@ const columns = [
 ];
 
 export default function FontWeight({ Font_Weights }: Readonly<FontWeightProps>) {
-    return <TokenTable title="Font Weights" columns={columns} data={Font_Weights} />;
+    return (
+        <TokenTable
+            title="Font Weights"
+            columns={columns}
+            data={Font_Weights}
+            description="Some text about font weights"
+        />
+    );
 }

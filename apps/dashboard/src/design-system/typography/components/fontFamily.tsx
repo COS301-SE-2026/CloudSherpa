@@ -29,7 +29,7 @@ const columns = [
                         fontFamily: `var(--font-family-${size.name}, ${size.value})`,
                     }}
                 >
-                    your finops solution
+                    yYur finops solution
                 </div>
             );
         },
@@ -37,5 +37,12 @@ const columns = [
 ];
 
 export default function FontFamily({ FontFamilies }: Readonly<FontFamilyProps>) {
-    return <TokenTable title="Font Families" columns={columns} data={FontFamilies} />;
+    return (
+        <TokenTable
+            title="Font Families"
+            columns={columns}
+            data={FontFamilies}
+            description="some text about font families"
+        />
+    );
 }

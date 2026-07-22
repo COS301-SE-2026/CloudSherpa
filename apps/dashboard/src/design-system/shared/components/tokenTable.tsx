@@ -1,16 +1,23 @@
 "use client";
 
 import { ColumnDef, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
+import { Card } from "@/components/atoms/card";
 
 interface TokenTableProps<TData> {
     title: string;
+    description: string;
     //Im disabling this since we do know what will be passed in to the columns, it is just easier to use type any since multiple types of data are being passed to the component, so it should be safe
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     columns: ColumnDef<TData, any>[];
     data: TData[];
 }
 
-export function TokenTable<TData>({ title, columns, data }: Readonly<TokenTableProps<TData>>) {
+export function TokenTable<TData>({
+    title,
+    description,
+    columns,
+    data,
+}: Readonly<TokenTableProps<TData>>) {
     const table = useReactTable({
         data,
         columns,
@@ -19,17 +26,19 @@ export function TokenTable<TData>({ title, columns, data }: Readonly<TokenTableP
 
     return (
         <div className="space-y-4 mb-8">
-            <h3 className="text-2xl font-bold">{title}</h3>
-            <div className="w-full border border-neutral-200 dark:border-neutral-800 rounded-lg overflow-hidden">
-                <table className="min-w-full text-sm text-left table-fixed">
-                    <thead className="bg-neutral-50 dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800">
+            <div className="mb-8">
+                <h2 className="text-2xl font-bold tracking-tight mb-2">{title}</h2>
+                <p className="text-muted-foreground max-w-2xl">{description}</p>
+            </div>
+            <Card>
+                <table className="min-w-full text-left table-fixed">
+                    <thead className="border-b">
                         {table.getHeaderGroups().map((headerGroup) => (
                             <tr key={headerGroup.id}>
                                 {headerGroup.headers.map((header) => (
                                     <th
                                         key={header.id}
-                                        className="px-4 py-3 font-semibold text-neutral-700 dark:text-neutral-300"
-                                        //dynamically allocate equal width columns for consistent look and feel
+                                        className="px-4 pb-3 font-semibold text-card-foreground"
                                         style={{ width: `${100 / columns.length}%` }}
                                     >
                                         {header.isPlaceholder
@@ -43,12 +52,9 @@ export function TokenTable<TData>({ title, columns, data }: Readonly<TokenTableP
                             </tr>
                         ))}
                     </thead>
-                    <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
+                    <tbody className="divide-y pb-none">
                         {table.getRowModel().rows.map((row) => (
-                            <tr
-                                key={row.id}
-                                className="hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-colors"
-                            >
+                            <tr key={row.id}>
                                 {row.getVisibleCells().map((cell) => (
                                     <td key={cell.id} className="px-4 py-3">
                                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -58,7 +64,7 @@ export function TokenTable<TData>({ title, columns, data }: Readonly<TokenTableP
                         ))}
                     </tbody>
                 </table>
-            </div>
+            </Card>
         </div>
     );
 }

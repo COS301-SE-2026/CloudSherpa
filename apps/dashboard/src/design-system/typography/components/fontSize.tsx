@@ -41,5 +41,12 @@ const columns = [
     }),
 ];
 export default function FontSize({ FontSizes }: Readonly<FontSizeProps>) {
-    return <TokenTable title="Font Sizes" columns={columns} data={FontSizes} />;
+    return (
+        <TokenTable
+            title="Font Sizes"
+            columns={columns}
+            data={FontSizes}
+            description="some text about font sizes"
+        />
+    );
 }

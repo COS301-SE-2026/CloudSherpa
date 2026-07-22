@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { ColorFormat } from "@/design-system/colours/types/colours";
 import Shades from "@/design-system/colours/components/shades";
 import rawTokens from "@/app/tokens/docs/design-tokens.json";
+import SemanticColours from "./semanticColours";
 
 export default function Colours() {
     const [colourFormatOpen, setColourFormatOpen] = useState(false);
@@ -64,6 +65,13 @@ export default function Colours() {
             </Popover>
 
             <div className="space-y-10">
+                <div className="mb-8">
+                    <h2 className="text-2xl font-bold tracking-tight mb-2">Primitive Colours</h2>
+                    <p className="text-muted-foreground max-w-2xl">
+                        Foreground and background pairs that automatically adapt across light and
+                        dark themes. Click any swatch to copy its Tailwind utility class.
+                    </p>
+                </div>
                 {rawTokens.colors.map((palette) => (
                     <Shades
                         key={palette.name}
@@ -72,6 +80,17 @@ export default function Colours() {
                         format={selectedFormat}
                     />
                 ))}
+            </div>
+
+            <div className="space-y-10">
+                <div className="mb-8">
+                    <h2 className="text-2xl font-bold tracking-tight mb-2">Semantic Roles</h2>
+                    <p className="text-muted-foreground max-w-2xl">
+                        Foreground and background pairs that automatically adapt across light and
+                        dark themes. Click any swatch to copy its Tailwind utility class.
+                    </p>
+                </div>
+                <SemanticColours />
             </div>
         </div>
     );
