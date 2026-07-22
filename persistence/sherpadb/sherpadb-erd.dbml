@@ -83,8 +83,14 @@ Table widget {
   display_name varchar(100)
 }
 
-Table widget_resource {
-  widget_resource_id uuid [pk]
+Table widget_kpi {
+  kpi_id uuid [pk]
+  widget_id uuid [ref: > widget.widget_id]
+  aggregation integer
+}
+
+Table chart_resource {
+  chart_resource_id uuid [pk]
   widget_id uuid [ref: > widget.widget_id]
   resource_id uuid
   metric_type metric_type_enum
