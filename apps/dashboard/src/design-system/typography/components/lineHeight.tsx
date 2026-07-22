@@ -11,10 +11,10 @@ export default function LineHeight({ LineHeights }: Readonly<LineHeightProps>) {
             {LineHeights.map((lh) => (
                 <Card key={lh.name} className="flex flex-col">
                     <CardHeader className="pb-3">
-                        <CardTitle className="font-mono text-sm text-brand-600 dark:text-brand-400">
+                        <CardTitle>
                             leading-{lh.name}
                         </CardTitle>
-                        <CardDescription className="font-mono text-xs">{lh.value}</CardDescription>
+                        <CardDescription className="text-xs">{lh.value}</CardDescription>
                     </CardHeader>
 
                     <CardContent className="grow pt-0">

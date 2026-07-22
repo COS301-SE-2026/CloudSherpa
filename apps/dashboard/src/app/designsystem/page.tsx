@@ -2,6 +2,7 @@
 import Colours from "@/design-system/colours/components/colours";
 import Typography from "@/design-system/typography/components/typography";
 import LayoutAndSpacing from "@/design-system/layout-and-spacing/components/layoutAndSpacing";
+import HeroAnimation from "@/design-system/shared/components/heroAnimation";
 import { useState } from "react";
 import { ChevronsUpDown, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -19,6 +20,7 @@ const sections = [
     { value: "colours", label: "1. Colour Palette" },
     { value: "typography", label: "2. Typography System" },
     { value: "layout", label: "3. Layout & Spacing" },
+    { value: "components", label: "4. Components" },
 ];
 
 export default function DesignSystem() {
@@ -35,7 +37,10 @@ export default function DesignSystem() {
 
     return (
         <main className="min-h-screen">
-            <div className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 shadow-sm">
+            <div className="pointer-events-none fixed inset-0 -z-10 h-full w-full bg-background">
+                <div className="absolute inset-0 bg-[radial-gradient(#00000022_1px,transparent_1px)] dark:bg-[radial-gradient(#ffffff22_1px,transparent_1px)] bg-size-[24px_24px] mask-[radial-gradient(ellipse_100%_100%_at_50%_0%,#000_40%,transparent_100%)"></div>
+            </div>
+            <div className="sticky top-0 z-50 w-full bg-popover border-b backdrop-blur supports-backdrop-filter:bg-background/60 shadow-sm">
                 <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-8 gap-4">
                     <Popover open={open} onOpenChange={setOpen}>
                         <PopoverTrigger asChild>
@@ -89,7 +94,8 @@ export default function DesignSystem() {
                 </div>
             </div>
             <div className="mx-auto w-full max-w-7xl px-4 sm:px-8 py-12 md:py-16">
-                <header className="mb-12 md:mb-16">
+                <header className="mb-12 md:mb-16 overflow-hidden">
+                    <HeroAnimation />
                     <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-4">
                         CloudSherpa Design System
                     </h1>
@@ -139,6 +145,18 @@ export default function DesignSystem() {
                             </p>
                         </div>
                         <LayoutAndSpacing />
+                    </section>
+
+                    <section id="components">
+                        <div className="border-b pb-4 mb-8">
+                            <h2 className="text-2xl md:text-3xl font-bold text-foreground">
+                                4. Components
+                            </h2>
+                            <p className="text-muted-foreground">
+                                This category runs through all of the components used in our
+                                project.
+                            </p>
+                        </div>
                     </section>
                 </div>
             </div>

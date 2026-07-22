@@ -13,14 +13,14 @@ const columns = [
     columnHelper.accessor("name", {
         header: "Token",
         cell: (info) => (
-            <span className="font-mono text-brand-600 dark:text-brand-400">
+            <span className="font-mono">
                 text-{info.getValue()}
             </span>
         ),
     }),
     columnHelper.accessor("value", {
         header: "Value",
-        cell: (info) => <span className="font-mono text-neutral-500">{info.getValue()}</span>,
+        cell: (info) => <span className="font-mono text-muted-foreground">{info.getValue()}</span>,
     }),
     columnHelper.display({
         id: "preview",

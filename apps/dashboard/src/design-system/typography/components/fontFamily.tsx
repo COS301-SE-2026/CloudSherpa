@@ -1,7 +1,5 @@
 import { Font_Family } from "@/design-system/typography/types/typography";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/atoms/card";
-import { CachedRouteKind } from "next/dist/server/response-cache";
-
 interface FontFamilyProps {
     FontFamilies: Font_Family[];
 }

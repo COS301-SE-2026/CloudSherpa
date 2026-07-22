@@ -14,7 +14,7 @@
     --secondary: var(--color-neutral-800);
     --secondary-foreground: var(--color-neutral-50);
     --muted: var(--color-neutral-800);
-    --muted-foreground: var(--color-neutral-400);
+    --muted-foreground: var(--color-neutral-300);
     --accent: var(--color-neutral-800);
     --accent-foreground: var(--color-neutral-50);
     --destructive: var(--color-red-600);

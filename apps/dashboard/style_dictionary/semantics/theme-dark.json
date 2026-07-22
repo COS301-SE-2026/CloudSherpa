@@ -17,7 +17,7 @@
             "secondary-foreground": { "$type": "color", "$value": "{color.neutral.50}" },
 
             "muted": { "$type": "color", "$value": "{color.neutral.800}" },
-            "muted-foreground": { "$type": "color", "$value": "{color.neutral.400}" },
+            "muted-foreground": { "$type": "color", "$value": "{color.neutral.300}" },
 
             "accent": { "$type": "color", "$value": "{color.neutral.800}" },
             "accent-foreground": { "$type": "color", "$value": "{color.neutral.50}" },

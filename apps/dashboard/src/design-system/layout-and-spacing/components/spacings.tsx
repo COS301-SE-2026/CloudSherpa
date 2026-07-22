@@ -17,7 +17,7 @@ const columns = [
     }),
     columnHelper.accessor("value", {
         header: "Value",
-        cell: (info) => <span className="text-neutral-500">{info.getValue()}</span>,
+        cell: (info) => <span className="text-muted-foreground">{info.getValue()}</span>,
     }),
     columnHelper.display({
         id: "preview",
