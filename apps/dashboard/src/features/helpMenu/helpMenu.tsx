@@ -172,6 +172,11 @@ export function HelpMenu(){
                 </button>
               );
             })}
+
+            {searchLinks.length === 0 && searchFaQuestion.length === 0 && (
+              <p className = "px-2.5 py-6 text-center text-[12.5px] text-muted-foreground"> No results for &quot;{search}&quot; </p>
+            )}
+
           </div>
 
           {searchFaQuestion.length>0 && (
