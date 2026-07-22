@@ -24,7 +24,7 @@ public class Widget {
   private Dashboard dashboard;
 
   @Column(name = "type", nullable = false, length = 50)
-  private String type;
+  private TypeEnum type;
 
   @Column(name = "start_x", nullable = false)
   private Integer startX;
@@ -46,7 +46,7 @@ public class Widget {
   public Widget(
       UUID id,
       UUID dashboardId,
-      String type,
+      TypeEnum type,
       Integer startX,
       Integer startY,
       Integer width,
@@ -74,7 +74,7 @@ public class Widget {
     return dashboard;
   }
 
-  public String getType() {
+  public TypeEnum getType() {
     return type;
   }
 
