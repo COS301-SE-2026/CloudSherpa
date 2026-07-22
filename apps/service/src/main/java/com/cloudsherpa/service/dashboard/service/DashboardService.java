@@ -2,12 +2,14 @@ package com.cloudsherpa.service.dashboard.service;
 
 import com.cloudsherpa.lib.entities.Dashboard;
 import com.cloudsherpa.lib.entities.Widget;
-import com.cloudsherpa.lib.entities.WidgetResource;
 import com.cloudsherpa.lib.repositories.DashboardRepository;
 import com.cloudsherpa.lib.repositories.DashboardWidgetRepository;
-import com.cloudsherpa.lib.repositories.WidgetResourceRepository;
+import com.cloudsherpa.service.dashboard.dto.ChartWidgetConfigUpdateDTO;
+import com.cloudsherpa.service.dashboard.dto.ChartWidgetDTO;
 import com.cloudsherpa.service.dashboard.dto.DashboardCreateDTO;
 import com.cloudsherpa.service.dashboard.dto.DashboardDTO;
+import com.cloudsherpa.service.dashboard.dto.KpiWidgetConfigUpdateDTO;
+import com.cloudsherpa.service.dashboard.dto.KpiWidgetDTO;
 import com.cloudsherpa.service.dashboard.dto.WidgetConfigUpdateDTO;
 import com.cloudsherpa.service.dashboard.dto.WidgetDTO;
 import com.cloudsherpa.service.dashboard.dto.WidgetLayoutUpdateDTO;
@@ -22,15 +24,18 @@ import org.springframework.web.server.ResponseStatusException;
 public class DashboardService {
   private final DashboardRepository dashboardRepository;
   private final DashboardWidgetRepository widgetRepository;
-  private final WidgetResourceRepository widgetResourceRepository;
+  private final ChartWidgetService chartWidgetService;
+  private final KpiWidgetService kpiWidgetService;
 
   public DashboardService(
       DashboardRepository dashboardRepository,
       DashboardWidgetRepository widgetRepository,
-      WidgetResourceRepository widgetResourceRepository) {
+      ChartWidgetService chartWidgetService,
+      KpiWidgetService kpiWidgetService) {
     this.dashboardRepository = dashboardRepository;
     this.widgetRepository = widgetRepository;
-    this.widgetResourceRepository = widgetResourceRepository;
+    this.chartWidgetService = chartWidgetService;
+    this.kpiWidgetService = kpiWidgetService;
   }
 
   // get all dashboards owned by user
@@ -78,18 +83,6 @@ public class DashboardService {
   public void deleteDashboard(UUID userId, UUID dashboardId) {
     Dashboard dashboard = getDashboardAndVerifyOwnership(userId, dashboardId);
     boolean wasCurrent = Boolean.TRUE.equals(dashboard.getCurrent());
-    // clean up dashboard
-    List<Widget> widgets = widgetRepository.findByDashboardId(dashboardId);
-    for (Widget widget : widgets) {
-      List<WidgetResource> resources = widgetResourceRepository.findByWidgetId(widget.getId());
-      if (!resources.isEmpty()) {
-        widgetResourceRepository.deleteAll(resources);
-      }
-    }
-    if (!widgets.isEmpty()) {
-      widgetRepository.deleteAll(widgets);
-    }
-
     dashboardRepository.delete(dashboard);
 
     // chane current if current was deleted
@@ -142,25 +135,10 @@ public class DashboardService {
   public WidgetDTO createWidget(UUID dashboardId, WidgetDTO request) {
     UUID userId = request.userId();
     getDashboardAndVerifyOwnership(userId, dashboardId);
-    Widget widget =
-        new Widget(
-            request.id() != null ? request.id() : UUID.randomUUID(),
-            dashboardId,
-            request.type(),
-            request.startX(),
-            request.startY(),
-            request.width(),
-            request.height(),
-            request.displayName());
-    widgetRepository.save(widget);
-
-    if (request.resourceId() != null && request.metricType() != null) {
-      WidgetResource resource =
-          new WidgetResource(
-              UUID.randomUUID(), widget.getId(), request.resourceId(), request.metricType());
-      widgetResourceRepository.save(resource);
+    switch (request) {
+      case KpiWidgetDTO kpi -> kpiWidgetService.createKpiWidget(kpi);
+      case ChartWidgetDTO chart -> chartWidgetService.createChartWidget(chart);
     }
-    return request;
   }
 
   // update specific widget's visual or data configuration
@@ -175,42 +153,12 @@ public class DashboardService {
 
     getDashboardAndVerifyOwnership(userId, widget.getDashboardId());
 
-    Widget updatedWidget =
-        new Widget(
-            widget.getId(),
-            widget.getDashboardId(),
-            request.type(),
-            widget.getStartX(),
-            widget.getStartY(),
-            widget.getWidth(),
-            widget.getHeight(),
-            request.displayName());
-
-    widgetRepository.save(updatedWidget);
-
-    List<WidgetResource> existingResources = widgetResourceRepository.findByWidgetId(widgetId);
-    if (!existingResources.isEmpty()) {
-      widgetResourceRepository.deleteAll(existingResources);
+    switch (request) {
+      case KpiWidgetConfigUpdateDTO kpi -> kpiWidgetService.updateKpiWidget(kpi);
+      case ChartWidgetConfigUpdateDTO chart -> chartWidgetService.updateChartWidget(chart);
     }
 
-    if (request.resourceId() != null && request.metricType() != null) {
-      WidgetResource resource =
-          new WidgetResource(
-              UUID.randomUUID(), widgetId, request.resourceId(), request.metricType());
-      widgetResourceRepository.save(resource);
-    }
-
-    return new WidgetDTO(
-        userId,
-        updatedWidget.getId(),
-        updatedWidget.getType(),
-        updatedWidget.getDisplayName(),
-        updatedWidget.getStartX(),
-        updatedWidget.getStartY(),
-        updatedWidget.getWidth(),
-        updatedWidget.getHeight(),
-        request.resourceId(),
-        request.metricType());
+    return null;
   }
 
   private Dashboard getDashboardAndVerifyOwnership(UUID userId, UUID dashboardId) {
@@ -225,6 +173,19 @@ public class DashboardService {
     return dashboard;
   }
 
+  @Transactional
+  public void deleteWidget(UUID userId, UUID widgetId) {
+    Widget widget =
+        widgetRepository
+            .findById(widgetId)
+            .orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Widget not found"));
+
+    getDashboardAndVerifyOwnership(userId, widget.getDashboardId());
+
+    widgetRepository.delete(widget);
+  }
+
   private DashboardDTO mapToDashboardDTO(Dashboard dashboard) {
     List<Widget> widgets = widgetRepository.findByDashboardId(dashboard.getId());
 
@@ -235,12 +196,12 @@ public class DashboardService {
                   UUID resourceId = null;
                   String metricType = null;
 
-                  List<WidgetResource> resources =
-                      widgetResourceRepository.findByWidgetId(widget.getId());
-                  if (!resources.isEmpty()) {
-                    resourceId = resources.get(0).getResourceId();
-                    metricType = resources.get(0).getMetricType();
-                  }
+                  // List<WidgetResource> resources =
+                  //     widgetResourceRepository.findByWidgetId(widget.getId());
+                  // if (!resources.isEmpty()) {
+                  //   resourceId = resources.get(0).getResourceId();
+                  //   metricType = resources.get(0).getMetricType();
+                  // }
 
                   return new WidgetDTO(
                       dashboard.getUserId(),
@@ -266,21 +227,7 @@ public class DashboardService {
         widgetDTOs);
   }
 
-  @Transactional
-  public void deleteWidget(UUID userId, UUID widgetId) {
-    Widget widget =
-        widgetRepository
-            .findById(widgetId)
-            .orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Widget not found"));
-
-    getDashboardAndVerifyOwnership(userId, widget.getDashboardId());
-
-    List<WidgetResource> resources = widgetResourceRepository.findByWidgetId(widgetId);
-    if (!resources.isEmpty()) {
-      widgetResourceRepository.deleteAll(resources);
-    }
-
-    widgetRepository.delete(widget);
+  private KpiWidgetDTO mapToKpiWidgetDTO(UUID userId, Widget widget) {
+    // stubbed
   }
 }

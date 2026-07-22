@@ -1,10 +1,46 @@
 package com.cloudsherpa.service.dashboard.dto;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import java.util.List;
 import java.util.UUID;
 
-public record WidgetConfigUpdateDTO(
-    UUID userId, String type, String displayName, UUID resourceId, String metricType) {
-  public WidgetConfigUpdateDTO withUserId(UUID userId) {
-    return new WidgetConfigUpdateDTO(userId, type, displayName, resourceId, metricType);
+@JsonTypeInfo(
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.EXISTING_PROPERTY,
+    property = "widgetType",
+    visible = true)
+@JsonSubTypes({
+  @JsonSubTypes.Type(value = ChartWidgetConfigUpdateDTO.class, name = "chart"),
+  @JsonSubTypes.Type(value = KpiWidgetConfigUpdateDTO.class, name = "kpi")
+})
+public sealed interface WidgetConfigUpdateDTO
+    permits ChartWidgetConfigUpdateDTO, KpiWidgetConfigUpdateDTO {
+  UUID userId();
+
+  String widgetType();
+
+  String displayName();
+
+  WidgetConfigUpdateDTO withUserId(UUID userId);
+
+  default String chartType() {
+    return null;
+  }
+
+  default UUID resourceId() {
+    return null;
+  }
+
+  default String metricType() {
+    return null;
+  }
+
+  default List<UUID> chargeIds() {
+    return List.of();
+  }
+
+  default Integer aggregationWindowDays() {
+    return null;
   }
 }
