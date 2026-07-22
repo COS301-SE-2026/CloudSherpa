@@ -111,19 +111,19 @@ CREATE TABLE IF NOT EXISTS public.widget_kpi (
   kpi_id uuid PRIMARY KEY,
   widget_id uuid REFERENCES public.widget(widget_id) ON DELETE CASCADE,
   aggregation integer NOT NULL
-)
+);
 
 CREATE TABLE IF NOT EXISTS public.kpi_charges (
   kpi_charges_id uuid PRIMARY KEY,
   widget_kpi_id uuid REFERENCES public.widget_kpi(kpi_id) NOT NULL,
   charge_id varchar (2128) NOT NULL
-)
+);
 
 CREATE TABLE IF NOT EXISTS public.widget_chart (
   chart_id uuid PRIMARY KEY,
   widget_id uuid REFERENCES public.widget(widget_id) ON DELETE CASCADE,
   chart_type public.chart_type_enum NOT NULL
-)
+);
 
 CREATE TABLE IF NOT EXISTS public.chart_resource (
   chart_resource_id uuid PRIMARY KEY,
