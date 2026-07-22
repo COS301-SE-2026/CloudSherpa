@@ -8,6 +8,7 @@ import {Button} from "@/components/atoms/button";
 import {Input} from "@/components/atoms/input";
 import {Badge} from "@/components/atoms/badge";
 import * as TabsPrimitive from "@radix-ui/react-tabs"; //using this instead of tabs bc i want to create my own styling of the tabs
+import { useRouter } from "next/navigation";
 
 /*
 - users should be able to view documents and videos about nav around cloudsherpa
@@ -19,20 +20,21 @@ interface BrowseCategory{
     id : string;
     label : string;
     description : string;
+    href? : string;
     icon : ComponentType <{className? : string; strokeWidth? : number}>;
 }
 
 const BROWSECATEGORIES : BrowseCategory[] = [
     {id : "gettingStarted", label : "Getting started",
-     description : "Get to know CloudSherpa", icon : Rocket
+     description : "Get to know CloudSherpa", href : "/helpMenu/documents/gettingStarted", icon : Rocket
     },
 
     {id : "connections", label : "Connections",
-     description : "Connect your AWS account", icon : Plug
+     description : "Connect your AWS account", href : "/helpMenu/documents/connections", icon : Plug
     },
 
     {id : "resources", label : "Resources",
-     description : "Manage your resources", icon : Boxes
+     description : "Manage your resources", href : "/helpMenu/documents/resources", icon : Boxes
     },
 ];
 
@@ -83,6 +85,8 @@ const TUTORIALS : Tutorials[] = [
 ];
 
 export default function DocumentsAndTutorials(){
+    const router = useRouter();
+
     const [search, setSearch] = useState("");
     
     const [activeTab, setActiveTab] = useState<"documents" | "tutorials">("documents");
@@ -171,8 +175,24 @@ export default function DocumentsAndTutorials(){
                             const Icons = forCategories.icon;
 
                             return(
-                                <Card key = {forCategories.id} role = "button" tabIndex = {0} className = "cursor-pointer border-border bg-muted/40 transition-colors hover:border-primary/50">
-                                    <CardContent className = "flex items-start gap-3 p-4">
+                                <Card
+                                    key = {forCategories.id} role="button" tabIndex={0}
+
+                                    onClick = {() => {
+                                        if(forCategories.href){
+                                            router.push(forCategories.href);
+                                        }
+                                    }}
+
+                                    onKeyDown = {(change) => {
+                                        if((change.key === "Enter" || change.key === " ") && forCategories.href){
+                                            router.push(forCategories.href);
+                                        }
+                                    }}
+
+                                    className = "cursor-pointer border-border bg-muted/40 transition-colors hover:border-primary/50"
+
+>                                   <CardContent className = "flex items-start gap-3 p-4">
                                         <span className = "flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-muted text-primary"> <Icons className = "h-4 w-4" strokeWidth = {1.75}/> </span>
 
                                         <span className = "min-w-0">

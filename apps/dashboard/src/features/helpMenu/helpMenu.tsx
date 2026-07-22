@@ -1,12 +1,13 @@
 "use client";
 
 import {useMemo, useState, type ComponentType} from "react";
-import {HelpCircle, Search, BookOpen, PlayCircle, Command, MessageCircle, ArrowUpRight} from "lucide-react";
+import {HelpCircle, Search, BookOpen, PlayCircle, Command, Laptop, ArrowUpRight} from "lucide-react";
 import {Button} from "@/components/atoms/button";
 import {Input} from "@/components/atoms/input";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/atoms/popover";
 import {Accordion, AccordionContent, AccordionItem, AccordionTrigger} from "@/components/atoms/accordion";
 import {Dialog, DialogHeader, DialogContent, DialogTitle} from "@/components/atoms/dialog";
+import {useRouter} from "next/navigation";
 
 /* 
 - the page needs to provide info about how to nav around clousherpa
@@ -27,12 +28,12 @@ interface LinksForHelp{
 const LINKS : LinksForHelp[] = [
   { id : "help center", label : "Help Center",
     description : "Browse documents and guides", icon : BookOpen,
-    href : "documentsAndTutorials",
+    href : "/helpMenu/documentsAndTutorials",
   },
 
   { id : "tutorials", label : "Tutorials",
     description : "Step-by-step CloudSherpa walkthroughs", icon : PlayCircle,
-    href : "/documentsAndTutorials",
+    href : "/helpMenu/documentsAndTutorials",
   },
 
   { id : "shortcut", label : "Keyboard Shortcuts",
@@ -41,7 +42,7 @@ const LINKS : LinksForHelp[] = [
   },
 
   { id : "first time user", label : "First time user",
-    description : "Learn by watching", icon : MessageCircle,
+    description : "Learn by watching", icon : Laptop,
     action : "first time user",
   },
 ];
@@ -61,26 +62,26 @@ const QUESTION : FaQuestion[] = [
 
   {
     id : "question2",
-    question : "How do I connect my cloud provider?",
-    answer : "Go to Connection Manager and click on Add. Follow the steps of the wizard by entering your credentials and selecting your services and resource to be monitored. You have then successfully connected your cloud provider!",
+    question : "Can I have more than one connection?",
+    answer : "Yes, you can add and remove connections via the Connection manager.",
   },
 
   {
     id : "question3",
-    question : "How do I connect my cloud provider?",
-    answer : "Go to Connection Manager and click on Add. Follow the steps of the wizard by entering your credentials and selecting your services and resource to be monitored. You have then successfully connected your cloud provider!",
+    question : "Can I customize my dashboard?",
+    answer : "Yes, you can add widgets that are displayed with charts that you prefer. You can add more than one dashboard. You can also choose what you would like to monitor on your dashboard.",
   },
 
   {
     id : "question4",
-    question : "How do I connect my cloud provider?",
-    answer : "Go to Connection Manager and click on Add. Follow the steps of the wizard by entering your credentials and selecting your services and resource to be monitored. You have then successfully connected your cloud provider!",
+    question : "What are the main features of CloudSherpa?",
+    answer : "CloudSherpa provides multi-cloud data ingestion, normalization and an interactive finOps dashboard.",
   },
 
   {
     id : "question5",
-    question : "How do I connect my cloud provider?",
-    answer : "Go to Connection Manager and click on Add. Follow the steps of the wizard by entering your credentials and selecting your services and resource to be monitored. You have then successfully connected your cloud provider!",
+    question : "How does CloudSherpa handle data normalization for cloud providers like AWS?",
+    answer : "CloudSherpa normalizes AWS data by ingesting and converting it into a standardized format, making it consistent with other cloud providers for unified analysis.",
   },
 ];
 
@@ -94,6 +95,8 @@ const SHORTCUT : KeyboardShortcuts[] = [
 ];
 
 export function HelpMenu(){
+  const router = useRouter();
+
   const [open, setOpen] = useState(false);
 
   const [search, setSearch] = useState("");
@@ -132,7 +135,9 @@ export function HelpMenu(){
     //need to add one for a first time user
 
     if(link.href){
-      window.open(link.href, "_blank", "noopener,noreferrer");
+      setOpen(false);
+
+      router.push(link.href);
     }
   }
 
