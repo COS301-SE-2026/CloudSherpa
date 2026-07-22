@@ -16,8 +16,8 @@ public class ChartResource {
   @Column(name = "chart_resource_id", nullable = false)
   private UUID id;
 
-  @Column(name = "widget_id", nullable = false)
-  private UUID widgetId;
+  @Column(name = "chart_id", nullable = false)
+  private UUID widgetChartId;
 
   @ManyToOne
   @JoinColumn(name = "widget_id", nullable = false, insertable = false, updatable = false)
@@ -31,9 +31,9 @@ public class ChartResource {
 
   protected ChartResource() {}
 
-  public ChartResource(UUID id, UUID widgetId, UUID resourceId, String metricType) {
+  public ChartResource(UUID id, UUID widgetChartId, UUID resourceId, String metricType) {
     this.id = id;
-    this.widgetId = widgetId;
+    this.widgetChartId = widgetChartId;
     this.resourceId = resourceId;
     this.metricType = metricType;
   }
@@ -43,7 +43,7 @@ public class ChartResource {
   }
 
   public UUID getWidgetId() {
-    return widgetId;
+    return widgetChartId;
   }
 
   public Widget getWidget() {
