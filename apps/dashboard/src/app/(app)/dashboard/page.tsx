@@ -26,6 +26,8 @@ function processFetchedDashboards(fetchedData: DashboardDTO[]) {
     const configsArray: WidgetConfig[] = [];
 
     for (const db of fetchedData) {
+        // const layoutItemIds = Array.prototype.concat(chartIds, kpiIds);
+
         dashboardsMap[db.id] = {
             id: db.id,
             displayName: db.displayName,
@@ -33,7 +35,8 @@ function processFetchedDashboards(fetchedData: DashboardDTO[]) {
             timeTo: db.timeTo,
             predefinedTime: db.predefinedTime,
             current: db.current,
-            layoutItemIds: db.widgets.map((w) => w.id),
+            // layoutItemIds: db.widgets.map((w) => w.id),
+            layoutItemIds: db.widgets.map((widget) => widget.id),
         };
 
         for (const w of db.widgets) {
@@ -46,14 +49,24 @@ function processFetchedDashboards(fetchedData: DashboardDTO[]) {
                 autoPosition: false,
             });
 
-            configsArray.push({
-                id: w.id,
-                chartType: w.type as ChartType,
-                widgetType: "chart",
-                displayName: w.displayName,
-                resourceId: w.resourceId,
-                metricType: w.metricType as MetricType | null,
-            });
+            if (w.type === "chart") {
+                configsArray.push({
+                    id: w.id,
+                    chartType: w.chartType,
+                    widgetType: "chart",
+                    displayName: w.displayName,
+                    resourceId: w.resourceId,
+                    metricType: w.metricType as MetricType | null,
+                });
+            } else if (w.type == "kpi") {
+                configsArray.push({
+                    id: w.id,
+                    widgetType: "kpi",
+                    displayName: w.displayName,
+                    chargeIds: w.chargeIds,
+                    aggregationWindowDays: w.aggregationWindow,
+                });
+            }
         }
     }
 

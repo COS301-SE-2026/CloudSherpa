@@ -1,16 +1,32 @@
+import { ChartType } from "@/features/dashboard/types/widgets";
 import apiClient from "@/lib/fetch/api-client";
 
-export interface WidgetDTO {
+// export type WidgetTypeEnum = "kpi" | "chart";
+
+export interface BaseWidgetDTO {
     id: string;
-    type: string;
+    type: "kpi" | "chart";
     displayName: string | null;
     startX: number;
     startY: number;
     width: number;
     height: number;
+}
+
+export interface ChartWidgetDTO extends BaseWidgetDTO {
+    type: "chart";
+    chartType: ChartType;
     resourceId: string | null;
     metricType: string | null;
 }
+
+export interface KpiWidgetDto extends BaseWidgetDTO {
+    type: "kpi";
+    chargeIds: string[];
+    aggregationWindow: number;
+}
+
+type WidgetDto = ChartWidgetDTO | KpiWidgetDto;
 
 export interface DashboardDTO {
     id: string;
@@ -19,7 +35,7 @@ export interface DashboardDTO {
     timeTo: string | null;
     predefinedTime: string;
     current: boolean;
-    widgets: WidgetDTO[];
+    widgets: WidgetDto[];
 }
 
 export interface DashboardCreateDTO {
@@ -68,8 +84,11 @@ export async function updateDashboardLayout(
     });
 }
 
-export async function createWidget(dashboardId: string, payload: WidgetDTO): Promise<WidgetDTO> {
-    return await apiClient<WidgetDTO>(`/dashboards/${dashboardId}/widgets`, {
+export async function createChartWidget(
+    dashboardId: string,
+    payload: ChartWidgetDTO
+): Promise<ChartWidgetDTO> {
+    return await apiClient<ChartWidgetDTO>(`/dashboards/${dashboardId}/widgets`, {
         method: "POST",
         body: JSON.stringify(payload),
     });
@@ -78,8 +97,8 @@ export async function createWidget(dashboardId: string, payload: WidgetDTO): Pro
 export async function updateChartWidgetConfig(
     widgetId: string,
     payload: WidgetConfigUpdateDTO
-): Promise<WidgetDTO> {
-    return await apiClient<WidgetDTO>(`/dashboards/widgets/${widgetId}/config`, {
+): Promise<ChartWidgetDTO> {
+    return await apiClient<ChartWidgetDTO>(`/dashboards/widgets/${widgetId}/config`, {
         method: "POST",
         body: JSON.stringify(payload),
     });
