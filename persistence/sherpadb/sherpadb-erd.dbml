@@ -89,6 +89,12 @@ Table widget_kpi {
   aggregation integer
 }
 
+Table kpi_charges {
+  kpi_charges_id uuid [pk]
+  widget_kpi uuid [ref: > widget_kpi.kpi_id]
+  charge_id varchar(2128)
+}
+
 Table widget_chart {
   chart_id uuid [pk]
   widget_id uuid [ref: > widget.widget_id]
