@@ -70,7 +70,7 @@ export async function createDashboard(payload: DashboardCreateDTO): Promise<Dash
 }
 export async function deleteDashboard(dashboardId: string): Promise<void> {
     await apiClient<void>(`/dashboards/${dashboardId}`, {
-        method: "POST",
+        method: "DELETE",
     });
 }
 
@@ -79,16 +79,13 @@ export async function updateDashboardLayout(
     layouts: WidgetLayoutUpdateDTO[]
 ): Promise<void> {
     await apiClient<void>(`/dashboards/${dashboardId}/layout`, {
-        method: "POST",
+        method: "PUT",
         body: JSON.stringify(layouts),
     });
 }
 
-export async function createChartWidget(
-    dashboardId: string,
-    payload: ChartWidgetDTO
-): Promise<ChartWidgetDTO> {
-    return await apiClient<ChartWidgetDTO>(`/dashboards/${dashboardId}/widgets`, {
+export async function createWidget(dashboardId: string, payload: WidgetDto): Promise<WidgetDto> {
+    return await apiClient<WidgetDto>(`/dashboards/${dashboardId}/widgets`, {
         method: "POST",
         body: JSON.stringify(payload),
     });
@@ -99,13 +96,13 @@ export async function updateChartWidgetConfig(
     payload: WidgetConfigUpdateDTO
 ): Promise<ChartWidgetDTO> {
     return await apiClient<ChartWidgetDTO>(`/dashboards/widgets/${widgetId}/config`, {
-        method: "POST",
+        method: "PATCH",
         body: JSON.stringify(payload),
     });
 }
 
 export async function deleteWidget(widgetId: string): Promise<void> {
     await apiClient<void>(`/dashboards/widgets/${widgetId}`, {
-        method: "POST",
+        method: "DELETE",
     });
 }
