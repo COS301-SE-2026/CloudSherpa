@@ -9,10 +9,7 @@ import { KpiFormTimePeriod } from "./kpi-form-time-period";
 import { KPIWidget } from "../../kpi-widget";
 import { KpiWidgetConfig } from "@/features/dashboard/types/widgets";
 import { KpiConfigSummary } from "../kpi-config-summary";
-import {
-    kpiConfigColumns,
-    KPIConfigTableRow,
-} from "@/features/dashboard/components/kpi/config/columns";
+import { kpiConfigColumns } from "@/features/dashboard/components/kpi/config/columns";
 import { KPIConfigTable } from "@/features/dashboard/components/kpi/config/config-table";
 // import { mockKpiConfigRows } from "@/features/dashboard/components/kpi/config/mock-kpi-config-rows";
 // import { CloudProviderEnum } from "@/features/dashboard/types/provider";
@@ -24,11 +21,10 @@ export type KpiConfigFormProps = {
 };
 
 export function KpiConfigForm({ kpiId }: KpiConfigFormProps) {
-    const [selectedRows, setSelectedRows] = useState<KPIConfigTableRow[]>();
     const { fetchTableResources, tableResourcesFetchError, tableResourcesLoading, tableResources } =
         useFetchTableResources();
     const getWidget = useDashboardStore((state) => state.actions.getWidget);
-    const updateWidget = useDashboardStore((state) => state.actions.updateWidgetConfig);
+    const updateWidget = useDashboardStore((state) => state.actions.updateKpiWidgetConfig);
     const [isSaving, setIsSaving] = useState(false);
     const widgetConfig = getWidget(kpiId);
     const getWidgetError = widgetConfig === undefined;
@@ -37,7 +33,7 @@ export function KpiConfigForm({ kpiId }: KpiConfigFormProps) {
             ? widgetConfig
             : {
                   id: "123",
-                  title: "Default",
+                  displayName: "Default",
                   aggregationWindowDays: 30,
                   widgetType: "kpi",
                   chargeIds: [],
@@ -56,7 +52,7 @@ export function KpiConfigForm({ kpiId }: KpiConfigFormProps) {
     function onTitleChange(newTitle: string): void {
         setConfig((prev) => ({
             ...prev,
-            title: newTitle,
+            displayName: newTitle,
         }));
     }
 
@@ -95,7 +91,10 @@ export function KpiConfigForm({ kpiId }: KpiConfigFormProps) {
             </div>
             <div className="grid grid-cols-[2fr_1fr] gap-4 h-full">
                 <Card className="p-6">
-                    <KpiFormDetails title={config.title} onTitleChange={onTitleChange} />
+                    <KpiFormDetails
+                        title={config.displayName ?? "No Title"}
+                        onTitleChange={onTitleChange}
+                    />
                     <FieldSeparator></FieldSeparator>
                     {config.id != "123" && (
                         <KPIConfigTable

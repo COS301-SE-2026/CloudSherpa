@@ -1,9 +1,8 @@
 "use client";
 
-import * as React from "react";
 import { useState } from "react";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, ChevronLeft, ChevronDown, Filter } from "lucide-react";
+import { Calendar as CalendarIcon, ChevronLeft, ChevronDown, Filter, Check } from "lucide-react";
 import { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/atoms/button";
@@ -11,6 +10,14 @@ import { Calendar } from "@/components/atoms/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/atoms/popover";
 import { useWindowStore } from "@/features/dashboard/stores/window-store";
 import { TimeWindowPreset } from "@/features/dashboard/types/timewindow";
+import {
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandItem,
+    CommandList,
+    CommandSeparator,
+} from "@/components/atoms/command";
 
 type DurationPreset = Exclude<TimeWindowPreset, "custom">;
 
@@ -79,63 +86,65 @@ export function TimePeriodSelector({
             }}
         >
             <PopoverTrigger asChild>
-                <Button
-                    variant="outline"
-                    className="group md:min-w-40 w-9 md:w-fit px-0 md:px-4 justify-center md:justify-start text-left font-normal bg-card text-foreground border-border hover:bg-hover hover:text-foreground data-[state=open]:text-foreground data-[state=open]:hover:text-foreground transition-button"
-                >
+                <Button variant="outline" className="group flex justify-between">
                     {/* Mobile View */}
                     <Filter className="h-4 w-4 block md:hidden" />
 
                     {/* Desktop View */}
-                    <div className="hidden md:flex w-full h-full flex-row items-center">
-                        <CalendarIcon className="mr-2 h-4 w-4" />
+                    <div className="flex flex-row gap-2">
+                        <CalendarIcon className="h-4 w-4" />
                         <span className="">Last {getDisplayLabel()}</span>
                     </div>
-                    <ChevronDown className="hidden md:block ml-auto h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                    <ChevronDown className="ml-2 h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
                 </Button>
             </PopoverTrigger>
 
             <PopoverContent
                 className="p-0 w-auto bg-popover border-border-strong shadow-xl"
-                align="start"
+                align="end"
             >
                 {view === "presets" ? (
-                    <div className="flex flex-col p-1 w-44">
-                        <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            Range Presets
-                        </div>
-
-                        {presets.map((p) => (
-                            <Button
-                                key={p.id}
-                                variant="ghost"
-                                className={cn(
-                                    "justify-start font-normal transition-button",
-                                    selectedPreset === p.id
-                                        ? "bg-active text-primary-foreground"
-                                        : "text-foreground-secondary hover:bg-hover hover:text-foreground"
-                                )}
-                                onClick={() => {
-                                    setSelectedPreset(p.id);
-                                    onDateChange(getPresetRange(p.id));
-                                    setOpen(false);
-                                }}
-                            >
-                                {p.label}
-                            </Button>
-                        ))}
-
-                        <div className="h-px bg-border-subtle my-1 w-full" />
-                        <Button
-                            variant="ghost"
-                            className="justify-start font-medium text-accent hover:bg-accent hover:text-secondary transition-button"
-                            onClick={() => setView("custom")}
-                        >
-                            Custom Range
-                        </Button>
-                    </div>
+                    <Command className="w-50">
+                        <CommandList className="max-h-none">
+                            <CommandEmpty>No preset found.</CommandEmpty>
+                            <CommandGroup heading="Range Presets">
+                                {presets.map((p) => (
+                                    <CommandItem
+                                        key={p.id}
+                                        value={p.label}
+                                        onSelect={() => {
+                                            setSelectedPreset(p.id);
+                                            onDateChange(getPresetRange(p.id));
+                                            setOpen(false);
+                                        }}
+                                        className="cursor-pointer"
+                                    >
+                                        <Check
+                                            className={cn(
+                                                "mr-2 h-4 w-4",
+                                                selectedPreset === p.id
+                                                    ? "opacity-100"
+                                                    : "opacity-0"
+                                            )}
+                                        />
+                                        {p.label}
+                                    </CommandItem>
+                                ))}
+                            </CommandGroup>
+                            <CommandSeparator />
+                            <CommandGroup>
+                                <CommandItem
+                                    onSelect={() => setView("custom")}
+                                    className="cursor-pointer flex justify-center"
+                                >
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    Custom Range
+                                </CommandItem>
+                            </CommandGroup>
+                        </CommandList>
+                    </Command>
                 ) : (
-                    <div className="flex flex-col p-3 animate-in fade-in zoom-in-95 duration-200">
+                    <div className="flex flex-col p-3 ">
                         <div className="relative flex w-full items-center justify-center mb-3 min-h-8">
                             <Button
                                 variant="ghost"
@@ -160,7 +169,6 @@ export function TimePeriodSelector({
                                 if (range?.from && range?.to) setSelectedPreset("custom");
                             }}
                             numberOfMonths={2}
-                            className="bg-popover text-foreground"
                         />
                     </div>
                 )}

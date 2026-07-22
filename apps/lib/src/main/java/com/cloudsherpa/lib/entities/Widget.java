@@ -50,7 +50,8 @@ public class Widget {
       Integer startX,
       Integer startY,
       Integer width,
-      Integer height) {
+      Integer height,
+      String displayName) {
     this.id = id;
     this.dashboardId = dashboardId;
     this.type = type;
@@ -58,6 +59,7 @@ public class Widget {
     this.startY = startY;
     this.width = width;
     this.height = height;
+    this.displayName = displayName; 
   }
 
   public UUID getId() {
@@ -95,4 +97,5 @@ public class Widget {
   public String getDisplayName() {
     return displayName;
   }
+
 }

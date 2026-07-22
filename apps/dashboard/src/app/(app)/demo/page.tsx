@@ -11,16 +11,16 @@ const MOCK_CHART_WIDGETS: WidgetConfig[] = [
     {
         id: "mock-widget-1",
         widgetType: "chart",
-        chartType: "line",
-        title: "Server CPU Load (Mock)",
+        chartType: "line_chart",
+        displayName: "Server CPU Load (Mock)",
         resourceId: "demo-server-01",
         metricType: "cpu",
     },
     {
         id: "mock-widget-2",
         widgetType: "chart",
-        chartType: "gauge",
-        title: "Memory Utilization (Mock)",
+        chartType: "gauge_chart",
+        displayName: "Memory Utilization (Mock)",
         resourceId: "demo-server-01",
         metricType: "memory",
     },
@@ -29,7 +29,7 @@ const MOCK_CHART_WIDGETS: WidgetConfig[] = [
 const MOCK_KPI_WIDGETS: WidgetConfig[] = [
     {
         id: "mock-kpi-widget-1",
-        title: "Mock KPI 1",
+        displayName: "Mock KPI 1",
         widgetType: "kpi",
         chargeIds: ["resource-1"],
         aggregationWindowDays: 30,
@@ -41,7 +41,6 @@ export default function DemoPage() {
 
     useEffect(() => {
         const now = Date.now();
-
         const secureRandom = () => {
             const a = new Uint32Array(1);
             crypto.getRandomValues(a);

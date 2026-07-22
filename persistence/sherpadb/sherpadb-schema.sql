@@ -19,6 +19,7 @@ CREATE TYPE public.predefined_time_enum AS ENUM ('last_1h', 'last_24h', 'last_7d
 CREATE TYPE public.type_enum AS ENUM ('line_chart', 'guage_chart');
 CREATE TYPE public.execution_status_enum AS ENUM ('pending', 'processing', 'completed', 'failed');
 
+
 -- Differentiates actual compute usage from other types.
 -- Maps to CUR: line_item_line_item_type
 CREATE TYPE public.charge_type_enum AS ENUM ('Usage', 'Other'); 
@@ -90,10 +91,12 @@ CREATE TABLE IF NOT EXISTS public.billing_export_execution (
 
 CREATE TABLE IF NOT EXISTS public.dashboard (
   dashboard_id uuid PRIMARY KEY,
+  display_name varchar(255) NOT NULL,
   user_id uuid REFERENCES public.users(user_id) ON DELETE CASCADE,
   time_from timestamptz,
   time_to timestamptz,
-  predefined_time public.predefined_time_enum
+  predefined_time public.predefined_time_enum,
+  current boolean DEFAULT false
 );
 
 CREATE TABLE IF NOT EXISTS public.widget (
