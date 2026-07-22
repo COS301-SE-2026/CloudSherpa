@@ -87,6 +87,8 @@ export default function DocumentsAndTutorials(){
     
     const [activeTab, setActiveTab] = useState<"documents" | "tutorials">("documents");
 
+    const [filterTutorials, setFilterTutorials] = useState<FilterForTutorials>("All");
+
     const searchDocument = useMemo(() => {
         if(!search.trim()){
             return DOCUMENTS;
@@ -97,6 +99,19 @@ export default function DocumentsAndTutorials(){
         return DOCUMENTS.filter((documents) => documents.name.toLowerCase().includes(searchQuery) || documents.category.toLowerCase().includes(searchQuery));
 
     }, [search]);
+
+    const filteredTutorials = useMemo(() => {
+        const categories = filterTutorials === "All" ? TUTORIALS : TUTORIALS.filter((tutorial) => tutorial.category === filterTutorials);
+
+        if(!search.trim()){
+            return categories;
+        }
+
+        const searchQuery = search.toLowerCase();
+        
+        return categories.filter((tutorial) => tutorial.name.toLowerCase().includes(searchQuery) || tutorial.description.toLowerCase().includes(searchQuery));
+
+    }, [search, filterTutorials]);
 
     return(
         <div className = "min-h-screen bg-background">
@@ -198,6 +213,43 @@ export default function DocumentsAndTutorials(){
                             </div>
                         </div>
                     )}
+
+                </TabsPrimitive.Content>
+
+                {/* this is for the tut tabs */}
+                <TabsPrimitive.Content value = "tutorials" className = "mt-6 pb-16">
+                    <div className = "mb-6 flex items-center gap-1.5">
+                        {TUTFILTERS.map((filtered) => {
+                            const activeTabs = filterTutorials === filtered;
+
+                            return(
+                                <Button key = {filtered} size = "sm" variant = {activeTabs ? "default" : "secondary"} className = "h-auto rounded-full px-3 py-1.5 text-[12px] font-medium" onClick = {() => setFilterTutorials(filtered)} > {filtered} </Button>
+                            );
+                        })}
+                    </div>
+
+                    <div className = "grid grid-cols-3 gap-4">
+                        {filteredTutorials.map((tuts) => (
+                            <Card key = {tuts.id} role = "button" tabIndex = {0} className = "cursor-pointer gap-0 overflow-hidden border-border p-0 transition-colors hover:border-primary/50">
+                                <div className = "relative flex h-[110px] items-center justify-center bg-muted-foreground/10">
+                                    <span className = "flex h-9 w-9 items-center justify-center rounded-full bg-background/80"> <Play className = "h-4 w-4 fill-foreground text-foreground" strokeWidth = {0}/> </span>
+
+                                    <Badge variant = "secondary" className = "absolute bottom-2 right-2 text-[10px]"> {tuts.lengthOfVideo} </Badge>
+                                </div>
+
+                                <CardContent className = "bg-muted/40 px-3.5 py-3">
+                                    <p className = "text-[13px] font-medium text-foreground"> {tuts.name} </p>
+
+                                    <p className = "mt-1 text-[12px] leading-snug text-muted-foreground"> {tuts.description} </p>
+                                </CardContent>
+                            </Card>
+                        ))}
+
+                        {filteredTutorials.length === 0 && (
+                            <p className = "col-span-3 py-8 text-center text-[12.5px] text-muted-foreground"> No tutorials available. </p>
+                        )}
+
+                    </div>
 
                 </TabsPrimitive.Content>
 
