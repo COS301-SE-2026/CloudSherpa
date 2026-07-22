@@ -2,6 +2,9 @@ package com.cloudsherpa.lib.repositories;
 
 import com.cloudsherpa.lib.entities.CloudAccount;
 import com.cloudsherpa.lib.entities.CloudConnection;
+import java.time.OffsetDateTime;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.UUID;
@@ -19,4 +22,26 @@ public interface CloudAccountRepository extends JpaRepository<CloudAccount, UUID
 
   // Find by CloudConnection object
   List<CloudAccount> findByConnection(CloudConnection connection);
+  
+  // Find all active accounts due for usage ingestion
+  @Query("""
+        SELECT a
+        FROM CloudAccount a
+        JOIN FETCH a.connection c
+        WHERE c.status = com.cloudsherpa.lib.entities.StatusEnum.ACTIVE
+          AND a.nextUsageIngestion <= :now
+        """)
+    List<CloudAccount> findAccountsDueForUsageIngestion(
+        @Param("now") OffsetDateTime now);
+   
+  // Find all active accounts due for billing ingestion
+  @Query("""
+        SELECT a
+        FROM CloudAccount a
+        JOIN FETCH a.connection c
+        WHERE c.status = com.cloudsherpa.lib.entities.StatusEnum.ACTIVE
+          AND a.nextBillingIngestion <= :now
+        """)
+    List<CloudAccount> findAccountsDueForBillingIngestion(
+        @Param("now") OffsetDateTime now);
 }

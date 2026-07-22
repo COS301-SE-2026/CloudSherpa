@@ -59,9 +59,44 @@ CREATE TABLE public.cloud_account (
   account_type public.account_type_enum NOT NULL,
   ingestion_period public.ingestion_period_enum,
   display_name varchar(255),
-  created_at timestamptz DEFAULT NOW()
+  created_at timestamptz DEFAULT NOW(),
+  last_usage_ingestion timestamptz DEFAULT NOW(),
+  next_usage_ingestion timestamptz DEFAULT NOW(),
+  last_billing_ingestion timestamptz DEFAULT NOW(),
+  next_billing_ingestion timestamptz DEFAULT NOW()
 );
+CREATE TABLE public.offered_metric (
+    offered_metric_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
 
+    provider public.provider_enum NOT NULL,
+
+    -- e.g. AWS/EC2, AWS/RDS, compute.googleapis.com/instance
+    service_type varchar(255) NOT NULL,
+
+    -- e.g. CPUUtilization, NetworkIn, cpu/utilization
+    metric_name varchar(255) NOT NULL,
+
+    -- Resource identifier dimension
+    -- AWS examples:
+    --   InstanceId
+    --   DBInstanceIdentifier
+    -- GCP examples:
+    --   instance_id
+    --   database_id
+    identifier_field varchar(100) NOT NULL,
+
+    -- Optional because AWS metrics already know their unit,
+    -- while GCP does not.
+    expected_unit varchar(50),
+
+    description text,
+
+    CONSTRAINT uq_offered_metric UNIQUE (
+        provider,
+        service_type,
+        metric_name
+    )
+);
 CREATE TABLE public.dashboard (
   dashboard_id uuid PRIMARY KEY,
   user_id uuid REFERENCES public.users(user_id) ON DELETE CASCADE,
@@ -100,6 +135,73 @@ VALUES (
   )
 ON CONFLICT DO NOTHING;
 
+INSERT INTO public.offered_metric (
+    provider,
+    service_type,
+    metric_name,
+    identifier_field,
+    expected_unit,
+    description
+)
+VALUES
+-- AWS EC2
+('AWS', 'AWS/EC2', 'CPUUtilization', 'InstanceId', NULL, 'Average CPU utilization'),
+('AWS', 'AWS/EC2', 'NetworkIn', 'InstanceId', NULL, 'Incoming network traffic'),
+('AWS', 'AWS/EC2', 'NetworkOut', 'InstanceId', NULL, 'Outgoing network traffic'),
+('AWS', 'AWS/EC2', 'DiskReadBytes', 'InstanceId', NULL, 'Bytes read from disks'),
+('AWS', 'AWS/EC2', 'DiskWriteBytes', 'InstanceId', NULL, 'Bytes written to disks'),
+('AWS', 'AWS/EC2', 'StatusCheckFailed', 'InstanceId', NULL, 'Instance status checks'),
+
+-- AWS ECS
+('AWS', 'AWS/ECS', 'CPUUtilization', 'ClusterName', NULL, 'Cluster CPU utilization'),
+('AWS', 'AWS/ECS', 'MemoryUtilization', 'ClusterName', NULL, 'Cluster memory utilization'),
+('AWS', 'AWS/ECS', 'CPUReservation', 'ClusterName', NULL, 'Reserved CPU'),
+('AWS', 'AWS/ECS', 'MemoryReservation', 'ClusterName', NULL, 'Reserved memory'),
+
+-- AWS EKS
+('AWS', 'AWS/EKS', 'cluster_failed_request_count', 'ClusterName', NULL, 'Failed API requests'),
+('AWS', 'AWS/EKS', 'cluster_node_count', 'ClusterName', NULL, 'Number of worker nodes'),
+('AWS', 'AWS/EKS', 'cluster_request_total', 'ClusterName', NULL, 'API request count'),
+
+-- AWS Lambda
+('AWS', 'AWS/Lambda', 'Invocations', 'FunctionName', NULL, 'Function invocations'),
+('AWS', 'AWS/Lambda', 'Errors', 'FunctionName', NULL, 'Function errors'),
+('AWS', 'AWS/Lambda', 'Duration', 'FunctionName', NULL, 'Execution duration'),
+('AWS', 'AWS/Lambda', 'ConcurrentExecutions', 'FunctionName', NULL, 'Concurrent executions'),
+('AWS', 'AWS/Lambda', 'Throttles', 'FunctionName', NULL, 'Function throttles'),
+
+-- AWS RDS
+('AWS', 'AWS/RDS', 'CPUUtilization', 'DBInstanceIdentifier', NULL, 'CPU utilization'),
+('AWS', 'AWS/RDS', 'DatabaseConnections', 'DBInstanceIdentifier', NULL, 'Open database connections'),
+('AWS', 'AWS/RDS', 'FreeStorageSpace', 'DBInstanceIdentifier', NULL, 'Remaining storage'),
+('AWS', 'AWS/RDS', 'ReadLatency', 'DBInstanceIdentifier', NULL, 'Read latency'),
+('AWS', 'AWS/RDS', 'WriteLatency', 'DBInstanceIdentifier', NULL, 'Write latency'),
+('AWS', 'AWS/RDS', 'FreeableMemory', 'DBInstanceIdentifier', NULL, 'Available memory'),
+
+-- AWS ElastiCache
+('AWS', 'AWS/ElastiCache', 'CPUUtilization', 'CacheClusterId', NULL, 'CPU utilization'),
+('AWS', 'AWS/ElastiCache', 'CurrConnections', 'CacheClusterId', NULL, 'Current connections'),
+('AWS', 'AWS/ElastiCache', 'Evictions', 'CacheClusterId', NULL, 'Evicted keys'),
+('AWS', 'AWS/ElastiCache', 'FreeableMemory', 'CacheClusterId', NULL, 'Available memory'),
+('AWS', 'AWS/ElastiCache', 'NetworkBytesIn', 'CacheClusterId', NULL, 'Incoming network bytes'),
+('AWS', 'AWS/ElastiCache', 'NetworkBytesOut', 'CacheClusterId', NULL, 'Outgoing network bytes'),
+
+-- AWS OpenSearch
+('AWS', 'AWS/OpenSearch', 'CPUUtilization', 'DomainName', NULL, 'CPU utilization'),
+('AWS', 'AWS/OpenSearch', 'JVMMemoryPressure', 'DomainName', NULL, 'JVM memory pressure'),
+('AWS', 'AWS/OpenSearch', 'FreeStorageSpace', 'DomainName', NULL, 'Available storage'),
+('AWS', 'AWS/OpenSearch', 'ClusterIndexWritesBlocked', 'DomainName', NULL, 'Index writes blocked'),
+('AWS', 'AWS/OpenSearch', 'SearchLatency', 'DomainName', NULL, 'Search latency'),
+
+-- AWS Redshift
+('AWS', 'AWS/Redshift', 'CPUUtilization', 'ClusterIdentifier', NULL, 'CPU utilization'),
+('AWS', 'AWS/Redshift', 'HealthStatus', 'ClusterIdentifier', NULL, 'Cluster health'),
+('AWS', 'AWS/Redshift', 'DatabaseConnections', 'ClusterIdentifier', NULL, 'Database connections'),
+('AWS', 'AWS/Redshift', 'PercentageDiskSpaceUsed', 'ClusterIdentifier', NULL, 'Disk utilization'),
+('AWS', 'AWS/Redshift', 'ReadIOPS', 'ClusterIdentifier', NULL, 'Read IOPS'),
+('AWS', 'AWS/Redshift', 'WriteIOPS', 'ClusterIdentifier', NULL, 'Write IOPS')
+
+ON CONFLICT DO NOTHING;
 -- This sits in the public schema so it only has to be written once, but it is 
 -- smart enough to broadcast on a specific tenant's channel dynamically.
 CREATE OR REPLACE FUNCTION public.notify_metric_event() 
