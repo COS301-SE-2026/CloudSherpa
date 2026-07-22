@@ -89,6 +89,12 @@ Table widget_kpi {
   aggregation integer
 }
 
+Table widget_chart {
+  chart_id uuid [pk]
+  widget_id uuid [ref: > widget.widget_id]
+  chart_type chart_type_enum
+}
+
 Table chart_resource {
   chart_resource_id uuid [pk]
   widget_id uuid [ref: > widget.widget_id]
