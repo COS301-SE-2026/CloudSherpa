@@ -21,7 +21,6 @@ const icons = [
     { name: "chevron-up", icon: <ChevronUp /> },
     { name: "sidebar", icon: <Sidebar /> },
     { name: "chevrons-up-down", icon: <ChevronsUpDown /> },
-    { name: "sidebar", icon: <Sidebar /> },
 ];
 
 export default function Icons() {
