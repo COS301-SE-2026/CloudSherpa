@@ -48,7 +48,8 @@ public class DashboardController {
       @RequestBody DashboardCreateDTO request, @AuthenticationPrincipal Jwt jwt) {
     UUID userId = UUID.fromString(jwt.getSubject());
     DashboardCreateDTO requestWithUser = request.withUserId(userId);
-    return ResponseEntity.ok(dashboardService.createDashboard(requestWithUser));
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .body(dashboardService.createDashboard(requestWithUser));
   }
 
   @DeleteMapping("/{dashboardId}")
@@ -80,13 +81,8 @@ public class DashboardController {
       @RequestBody WidgetDTO request,
       @AuthenticationPrincipal Jwt jwt) {
     UUID userId = UUID.fromString(jwt.getSubject());
-
+    dashboardService.createWidget(userId, dashboardId, request);
     return ResponseEntity.status(HttpStatus.CREATED).build();
-  }
-
-  @PostMapping("/{dashboardId}/widgets/kpi")
-  public void createKpiWidget(@PathVariable UUID dashboardId) {
-    // To be implemented
   }
 
   @PatchMapping("/widgets/{widgetId}/config")
@@ -96,9 +92,7 @@ public class DashboardController {
       @RequestBody WidgetConfigUpdateDTO request,
       @AuthenticationPrincipal Jwt jwt) {
     UUID userId = UUID.fromString(jwt.getSubject());
-
-    WidgetConfigUpdateDTO requestWithUser = request.withUserId(userId);
-    return ResponseEntity.ok(dashboardService.updateWidgetConfig(widgetId, requestWithUser));
+    return ResponseEntity.ok(dashboardService.updateWidgetConfig(userId, widgetId, request));
   }
 
   @DeleteMapping("/widgets/{widgetId}")
@@ -106,7 +100,6 @@ public class DashboardController {
   public ResponseEntity<Void> deleteWidget(
       @PathVariable UUID widgetId, @AuthenticationPrincipal Jwt jwt) {
     UUID userId = UUID.fromString(jwt.getSubject());
-
     dashboardService.deleteWidget(userId, widgetId);
     return ResponseEntity.noContent().build();
   }
