@@ -1,6 +1,7 @@
 package com.cloudsherpa.service.dashboard.service;
 
 import com.cloudsherpa.lib.entities.Dashboard;
+import com.cloudsherpa.lib.entities.PredefinedTimeEnum;
 import com.cloudsherpa.lib.entities.Widget;
 import com.cloudsherpa.lib.repositories.DashboardRepository;
 import com.cloudsherpa.lib.repositories.DashboardWidgetRepository;
@@ -71,7 +72,7 @@ public class DashboardService {
             request.displayName(),
             null,
             null,
-            "last_24h",
+            PredefinedTimeEnum.last_24h,
             true);
 
     dashboardRepository.save(newDashboard);
@@ -214,7 +215,7 @@ public class DashboardService {
         dashboard.getDisplayName(),
         dashboard.getTimeFrom(),
         dashboard.getTimeTo(),
-        dashboard.getPredefinedTime(),
+        dashboard.getPredefinedTime() != null ? dashboard.getPredefinedTime().name() : null,
         dashboard.getCurrent(),
         widgetDTOs);
   }
