@@ -135,9 +135,25 @@ public class DashboardService {
   public void createWidget(UUID dashboardId, WidgetDTO request) {
     UUID userId = request.userId();
     getDashboardAndVerifyOwnership(userId, dashboardId);
+
+    // Save in shared widget table
+    Widget newWidget =
+        new Widget(
+            request.id(),
+            dashboardId,
+            request.widgetType(),
+            request.startX(),
+            request.startY(),
+            request.width(),
+            request.height(),
+            request.displayName());
+
+    widgetRepository.save(newWidget);
+
+    // widget type specific persistence
     switch (request) {
       case KpiWidgetDTO kpi -> kpiWidgetService.createKpiWidget(kpi);
-      case ChartWidgetDTO chart -> chartWidgetService.createChartWidget(chart, dashboardId);
+      case ChartWidgetDTO chart -> chartWidgetService.createChartWidget(chart);
     }
   }
 

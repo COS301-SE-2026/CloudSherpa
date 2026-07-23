@@ -1,7 +1,6 @@
 package com.cloudsherpa.service.dashboard.service;
 
 import com.cloudsherpa.lib.entities.ChartResource;
-import com.cloudsherpa.lib.entities.Widget;
 import com.cloudsherpa.lib.entities.WidgetChart;
 import com.cloudsherpa.lib.repositories.ChartResourceRepository;
 import com.cloudsherpa.lib.repositories.DashboardWidgetRepository;
@@ -29,21 +28,11 @@ public class ChartWidgetService {
   }
 
   @Transactional
-  public void createChartWidget(ChartWidgetDTO chartWidgetDto, UUID dashboardId) {
+  public void createChartWidget(ChartWidgetDTO chartWidgetDto) {
 
     UUID widgetChartId = UUID.randomUUID();
     UUID chartResourceId = UUID.randomUUID();
 
-    Widget newWidget =
-        new Widget(
-            chartWidgetDto.id(),
-            dashboardId,
-            chartWidgetDto.widgetType(),
-            chartWidgetDto.startX(),
-            chartWidgetDto.startY(),
-            chartWidgetDto.width(),
-            chartWidgetDto.height(),
-            chartWidgetDto.displayName());
     WidgetChart newWidgetChart =
         new WidgetChart(widgetChartId, chartWidgetDto.id(), chartWidgetDto.chartType());
     ChartResource chartResource =
@@ -53,7 +42,6 @@ public class ChartWidgetService {
             chartWidgetDto.resourceId(),
             chartWidgetDto.metricType());
 
-    dashboardWidgetRepository.save(newWidget);
     widgetChartRepository.save(newWidgetChart);
     chartResourceRepository.save(chartResource);
   }
