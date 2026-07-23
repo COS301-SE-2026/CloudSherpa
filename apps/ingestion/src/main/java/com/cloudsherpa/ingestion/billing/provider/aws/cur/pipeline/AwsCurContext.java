@@ -5,6 +5,7 @@ import com.cloudsherpa.ingestion.connector.CloudCredentials;
 import com.cloudsherpa.ingestion.provider.aws.services.s3.AwsS3;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -136,7 +137,7 @@ public class AwsCurContext {
       this.awsCurTmpDir = awsCurTmpDir;
     } catch (IOException ioException) {
       logger.error("Failed to create temp dir {}", awsCurTmpDir, ioException);
-      throw new RuntimeException("Failed to set AWS CUR download directory");
+      throw new UncheckedIOException("Failed to set AWS CUR download directory", ioException);
     }
   }
 }

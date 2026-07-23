@@ -2,6 +2,7 @@ package com.cloudsherpa.ingestion.billing.provider.aws.cur.pipeline;
 
 import com.cloudsherpa.ingestion.billing.BillingExport;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -42,7 +43,7 @@ public class AwsCurDownloadReportStep implements AwsCurIngestionPipelineStep {
       } catch (FileAlreadyExistsException fileAlreadyExistsException) {
         logger.info("Directory already exists, skipping creation");
       } catch (IOException ioException) {
-        throw new RuntimeException("Could not create directory", ioException);
+        throw new UncheckedIOException("Could not create directory", ioException);
       }
 
       export.addTmpPath(reportPath);

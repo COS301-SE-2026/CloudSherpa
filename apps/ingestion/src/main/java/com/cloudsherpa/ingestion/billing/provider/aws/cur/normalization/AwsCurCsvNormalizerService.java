@@ -10,6 +10,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import java.util.zip.GZIPInputStream;
@@ -74,7 +75,7 @@ public class AwsCurCsvNormalizerService {
 
       export.setRowsProcessed(export.getRowsProcessed() + rowsProcessed);
     } catch (IOException exception) {
-      throw new RuntimeException("Failed to open CSV Parser ", exception);
+      throw new UncheckedIOException("Failed to open CSV Parser ", exception);
     }
   }
 

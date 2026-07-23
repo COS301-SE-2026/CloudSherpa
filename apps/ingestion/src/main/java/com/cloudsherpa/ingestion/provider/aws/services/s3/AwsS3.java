@@ -4,6 +4,7 @@ import com.cloudsherpa.ingestion.connector.CloudCredentials;
 import com.cloudsherpa.ingestion.provider.aws.factory.AwsClientFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.List;
@@ -70,7 +71,7 @@ public class AwsS3 implements S3Service {
     try (ResponseInputStream<GetObjectResponse> inputStream = s3.getObject(request)) {
       return objectMapper.readValue(inputStream, jacksonConfig);
     } catch (IOException exception) {
-      throw new RuntimeException(
+      throw new UncheckedIOException(
           "Failed to deserialize S3 object to json: " + object.object().key(), exception);
     }
   }
