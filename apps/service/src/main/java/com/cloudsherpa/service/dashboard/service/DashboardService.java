@@ -132,8 +132,7 @@ public class DashboardService {
 
   // add new widget to specific dashboard
   @Transactional
-  public void createWidget(UUID dashboardId, WidgetDTO request) {
-    UUID userId = request.userId();
+  public void createWidget(UUID userId, UUID dashboardId, WidgetDTO request) {
     getDashboardAndVerifyOwnership(userId, dashboardId);
 
     // Save in shared widget table
@@ -159,8 +158,7 @@ public class DashboardService {
 
   // update specific widget's visual or data configuration
   @Transactional
-  public WidgetDTO updateWidgetConfig(UUID widgetId, WidgetConfigUpdateDTO request) {
-    UUID userId = request.userId();
+  public WidgetDTO updateWidgetConfig(UUID userId, UUID widgetId, WidgetConfigUpdateDTO request) {
     Widget widget =
         widgetRepository
             .findById(widgetId)

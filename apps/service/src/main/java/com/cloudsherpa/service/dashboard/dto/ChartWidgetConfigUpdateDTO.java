@@ -10,10 +10,4 @@ public record ChartWidgetConfigUpdateDTO(
     ChartTypeEnum chartType,
     UUID resourceId,
     String metricType)
-    implements WidgetConfigUpdateDTO {
-  @Override
-  public WidgetConfigUpdateDTO withUserId(UUID userId) {
-    return new ChartWidgetConfigUpdateDTO(
-        userId, widgetType, displayName, chartType, resourceId, metricType);
-  }
-}
+    implements WidgetConfigUpdateDTO {}

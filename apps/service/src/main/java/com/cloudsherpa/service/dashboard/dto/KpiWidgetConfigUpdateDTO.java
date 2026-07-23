@@ -9,10 +9,4 @@ public record KpiWidgetConfigUpdateDTO(
     String displayName,
     List<UUID> chargeIds,
     Integer aggregationWindowDays)
-    implements WidgetConfigUpdateDTO {
-  @Override
-  public WidgetConfigUpdateDTO withUserId(UUID userId) {
-    return new KpiWidgetConfigUpdateDTO(
-        userId, widgetType, displayName, chargeIds, aggregationWindowDays);
-  }
-}
+    implements WidgetConfigUpdateDTO {}

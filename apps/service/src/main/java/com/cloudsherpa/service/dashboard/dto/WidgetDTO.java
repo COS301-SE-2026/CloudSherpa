@@ -4,8 +4,6 @@ import com.cloudsherpa.lib.entities.TypeEnum;
 import java.util.UUID;
 
 public sealed interface WidgetDTO permits KpiWidgetDTO, ChartWidgetDTO {
-  UUID userId();
-
   UUID id();
 
   TypeEnum widgetType();
@@ -19,6 +17,4 @@ public sealed interface WidgetDTO permits KpiWidgetDTO, ChartWidgetDTO {
   Integer width();
 
   Integer height();
-
-  WidgetDTO withUserId(UUID userId);
 }

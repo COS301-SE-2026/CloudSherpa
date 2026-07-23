@@ -80,7 +80,6 @@ public class DashboardController {
       @RequestBody WidgetDTO request,
       @AuthenticationPrincipal Jwt jwt) {
     UUID userId = UUID.fromString(jwt.getSubject());
-    WidgetDTO requestWithUser = request.withUserId(userId);
 
     return ResponseEntity.status(HttpStatus.CREATED).build();
   }

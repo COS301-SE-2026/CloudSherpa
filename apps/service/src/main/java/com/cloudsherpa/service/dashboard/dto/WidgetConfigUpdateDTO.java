@@ -22,8 +22,6 @@ public sealed interface WidgetConfigUpdateDTO
 
   String displayName();
 
-  WidgetConfigUpdateDTO withUserId(UUID userId);
-
   default UUID resourceId() {
     return null;
   }

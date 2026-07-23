@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.UUID;
 
 public record KpiWidgetDTO(
-    UUID userId,
     UUID id,
     TypeEnum widgetType,
     String displayName,
@@ -18,7 +17,6 @@ public record KpiWidgetDTO(
     implements WidgetDTO {
   public WidgetDTO withUserId(UUID userId) {
     return new KpiWidgetDTO(
-        userId,
         id,
         widgetType,
         displayName,

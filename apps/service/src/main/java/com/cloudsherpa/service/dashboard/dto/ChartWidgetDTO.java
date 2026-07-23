@@ -5,7 +5,6 @@ import com.cloudsherpa.lib.entities.TypeEnum;
 import java.util.UUID;
 
 public record ChartWidgetDTO(
-    UUID userId,
     UUID id,
     TypeEnum widgetType,
     String displayName,
@@ -19,7 +18,6 @@ public record ChartWidgetDTO(
     implements WidgetDTO {
   public WidgetDTO withUserId(UUID userId) {
     return new ChartWidgetDTO(
-        userId,
         id,
         widgetType,
         displayName,

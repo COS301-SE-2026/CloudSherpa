@@ -3,7 +3,6 @@ package com.cloudsherpa.service.dashboard.service;
 import com.cloudsherpa.lib.entities.ChartResource;
 import com.cloudsherpa.lib.entities.WidgetChart;
 import com.cloudsherpa.lib.repositories.ChartResourceRepository;
-import com.cloudsherpa.lib.repositories.DashboardWidgetRepository;
 import com.cloudsherpa.lib.repositories.WidgetChartRepository;
 import com.cloudsherpa.service.dashboard.dto.ChartWidgetConfigUpdateDTO;
 import com.cloudsherpa.service.dashboard.dto.ChartWidgetDTO;
@@ -16,15 +15,12 @@ import org.springframework.stereotype.Service;
 public class ChartWidgetService {
   private final WidgetChartRepository widgetChartRepository;
   private final ChartResourceRepository chartResourceRepository;
-  private final DashboardWidgetRepository dashboardWidgetRepository;
 
   public ChartWidgetService(
       WidgetChartRepository widgetChartRepository,
-      ChartResourceRepository chartResourceRepository,
-      DashboardWidgetRepository dashboardWidgetRepository) {
+      ChartResourceRepository chartResourceRepository) {
     this.widgetChartRepository = widgetChartRepository;
     this.chartResourceRepository = chartResourceRepository;
-    this.dashboardWidgetRepository = dashboardWidgetRepository;
   }
 
   @Transactional
@@ -79,7 +75,6 @@ public class ChartWidgetService {
     }
 
     return new ChartWidgetDTO(
-        userId,
         widget.id(),
         widget.widgetType(),
         widget.displayName(),
