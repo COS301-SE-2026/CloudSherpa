@@ -15,18 +15,4 @@ public record ChartWidgetDTO(
     ChartTypeEnum chartType,
     UUID resourceId,
     String metricType)
-    implements WidgetDTO {
-  public WidgetDTO withUserId(UUID userId) {
-    return new ChartWidgetDTO(
-        id,
-        widgetType,
-        displayName,
-        startX,
-        startY,
-        width,
-        height,
-        chartType,
-        resourceId,
-        metricType);
-  }
-}
+    implements WidgetDTO {}

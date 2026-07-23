@@ -203,33 +203,7 @@ public class DashboardService {
   private DashboardDTO mapToDashboardDTO(Dashboard dashboard) {
     List<Widget> widgets = widgetRepository.findByDashboardId(dashboard.getId());
 
-    List<WidgetDTO> widgetDTOs =
-        widgets.stream()
-            .map(
-                widget -> {
-                  UUID resourceId = null;
-                  String metricType = null;
-
-                  // List<WidgetResource> resources =
-                  //     widgetResourceRepository.findByWidgetId(widget.getId());
-                  // if (!resources.isEmpty()) {
-                  //   resourceId = resources.get(0).getResourceId();
-                  //   metricType = resources.get(0).getMetricType();
-                  // }
-
-                  return new WidgetDTO(
-                      dashboard.getUserId(),
-                      widget.getId(),
-                      widget.getType(),
-                      widget.getDisplayName(),
-                      widget.getStartX(),
-                      widget.getStartY(),
-                      widget.getWidth(),
-                      widget.getHeight(),
-                      resourceId,
-                      metricType);
-                })
-            .toList();
+    List<WidgetDTO> widgetDTOs = widgets.stream().map(this::mapToWidgetDTO).toList();
 
     return new DashboardDTO(
         dashboard.getId(),
@@ -241,7 +215,10 @@ public class DashboardService {
         widgetDTOs);
   }
 
-  private KpiWidgetDTO mapToKpiWidgetDTO(UUID userId, Widget widget) {
-    // stubbed
+  private WidgetDTO mapToWidgetDTO(Widget widget) {
+    return switch (widget.getType()) {
+      case CHART -> chartWidgetService.mapToChartWidgetDTO(widget);
+      case KPI -> kpiWidgetService.mapToKpiWidgetDTO(widget);
+    };
   }
 }

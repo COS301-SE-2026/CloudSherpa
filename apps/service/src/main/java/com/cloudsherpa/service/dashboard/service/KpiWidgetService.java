@@ -1,6 +1,8 @@
 package com.cloudsherpa.service.dashboard.service;
 
 import com.cloudsherpa.lib.entities.KpiCharge;
+import com.cloudsherpa.lib.entities.TypeEnum;
+import com.cloudsherpa.lib.entities.Widget;
 import com.cloudsherpa.lib.entities.WidgetKpi;
 import com.cloudsherpa.lib.repositories.KpiChargeRepository;
 import com.cloudsherpa.lib.repositories.WidgetKpiRepository;
@@ -83,5 +85,23 @@ public class KpiWidgetService {
     KpiCharge kpiCharge = new KpiCharge(kpiChargesId, widgetKpiId, chargeId);
     kpiChargeRepository.save(kpiCharge);
     return kpiCharge;
+  }
+
+  public KpiWidgetDTO mapToKpiWidgetDTO(Widget widget) {
+    WidgetKpi widgetKpi = getWidgetKpiByWidgetId(widget.getId());
+    List<KpiCharge> kpiChargesLookup = kpiChargeRepository.findByWidgetKpiId(widget.getId());
+
+    List<String> kpiCharges = kpiChargesLookup.stream().map(KpiCharge::getChargeId).toList();
+
+    return new KpiWidgetDTO(
+        widget.getId(),
+        TypeEnum.KPI,
+        widget.getDisplayName(),
+        widget.getStartX(),
+        widget.getStartY(),
+        widget.getWidth(),
+        widget.getHeight(),
+        kpiCharges,
+        widgetKpi.getAggregation());
   }
 }
