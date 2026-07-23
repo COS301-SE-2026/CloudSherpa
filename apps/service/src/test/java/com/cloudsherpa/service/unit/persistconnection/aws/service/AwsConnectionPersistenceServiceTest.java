@@ -26,6 +26,7 @@ import com.cloudsherpa.service.persistconnection.aws.dto.ResourceSelectionDto;
 import com.cloudsherpa.service.persistconnection.aws.service.AwsConnectionPersistenceService;
 import com.cloudsherpa.service.persistconnection.aws.service.CredentialEncryptionService;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -96,13 +97,16 @@ class AwsConnectionPersistenceServiceTest {
             OffsetDateTime.now());
 
     savedAccount =
-        new CloudAccount(
-            UUID.randomUUID(),
-            existingConnection.getId(),
-            AccountTypeEnum.aws_account,
-            "Production",
-            "300",
-            OffsetDateTime.now());
+        new CloudAccount.Builder()
+            .id(UUID.randomUUID())
+            .connectionId(existingConnection.getId())
+            .accountType(AccountTypeEnum.aws_account)
+            .displayName("Production")
+            .ingestionPeriod("300")
+            .createdAt(OffsetDateTime.now(ZoneOffset.UTC))
+            .nextUsageIngestion(OffsetDateTime.now(ZoneOffset.UTC).plusSeconds(300))
+            .nextUsageIngestion(OffsetDateTime.now(ZoneOffset.UTC).plusHours(12))
+            .build();
   }
 
   private void mockExistingConnection() {

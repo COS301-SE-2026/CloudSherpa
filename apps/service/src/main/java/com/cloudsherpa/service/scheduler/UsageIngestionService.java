@@ -56,10 +56,11 @@ public class UsageIngestionService {
   @Transactional
   public void ingest(UUID accountId) {
     ObjectMapper mapper = new ObjectMapper();
-    CloudAccount account = cloudAccountRepository
-        .findById(accountId)
-        .orElseThrow(
-            () -> new IllegalArgumentException("Cloud account not found: " + accountId));
+    CloudAccount account =
+        cloudAccountRepository
+            .findById(accountId)
+            .orElseThrow(
+                () -> new IllegalArgumentException("Cloud account not found: " + accountId));
     CloudCredential credential = cloudCredentialRepository.findByAccountId(accountId).getFirst();
     String decryptedCredential = encryptionService.decrypt(credential.getCredentialValue());
     Instant ingestionEndTime = Instant.now().truncatedTo(ChronoUnit.MINUTES);
@@ -77,30 +78,35 @@ public class UsageIngestionService {
       List<Resource> resources = resourceRepository.findByAccountId(accountId);
 
       List<ServiceScope> serviceScopes = new ArrayList<>();
-      for (String serviceType : resources.stream().map(Resource::getResourceType).distinct().toList()) {
+      for (String serviceType :
+          resources.stream().map(Resource::getResourceType).distinct().toList()) {
         ServiceScope serviceScope = new ServiceScope();
         serviceScope.setName(serviceType);
         List<Metric> metrics = new ArrayList<>();
-        List<OfferedMetric> offeredMetrics = offeredMetricRepository
-            .findByProviderAndServiceType(account.getConnection().getProvider(), serviceType);
-        offeredMetrics.forEach(offeredMetric -> {
-          Metric metric = new Metric();
-          metric.setName(offeredMetric.getMetricName());
-          metric.setUnit(offeredMetric.getExpectedUnit());
-          metrics.add(metric);
-        });
+        List<OfferedMetric> offeredMetrics =
+            offeredMetricRepository.findByProviderAndServiceType(
+                account.getConnection().getProvider(), serviceType);
+        offeredMetrics.forEach(
+            offeredMetric -> {
+              Metric metric = new Metric();
+              metric.setName(offeredMetric.getMetricName());
+              metric.setUnit(offeredMetric.getExpectedUnit());
+              metrics.add(metric);
+            });
         serviceScope.setMetrics(metrics);
-        List<Resource> serviceTypeResources = resources.stream()
-            .filter(resource -> resource.getResourceType() == serviceType)
-            .toList();
+        List<Resource> serviceTypeResources =
+            resources.stream()
+                .filter(resource -> resource.getResourceType() == serviceType)
+                .toList();
 
         List<Instance> instances = new ArrayList<>();
-        serviceTypeResources.forEach(serviceTypeResource -> {
-          Instance instance = new Instance();
-          instance.setIdentifier(serviceTypeResource.getResourceIdentifier());
-          instance.setRegion(serviceTypeResource.getRegion());
-          instances.add(instance);
-        });
+        serviceTypeResources.forEach(
+            serviceTypeResource -> {
+              Instance instance = new Instance();
+              instance.setIdentifier(serviceTypeResource.getResourceIdentifier());
+              instance.setRegion(serviceTypeResource.getRegion());
+              instances.add(instance);
+            });
         InstanceScope instanceScope = new InstanceScope();
         instanceScope.setIdentifierName(offeredMetrics.getFirst().getIdentifierField());
         instanceScope.setInstances(instances);
@@ -111,7 +117,8 @@ public class UsageIngestionService {
       List<AccountScope> accountScopes = new ArrayList<>();
       accountScopes.add(accountScope);
       request.setScopes(accountScopes);
-      AwsCredentialsDto decryptedCredentialsDto = mapper.readValue(decryptedCredential, AwsCredentialsDto.class);
+      AwsCredentialsDto decryptedCredentialsDto =
+          mapper.readValue(decryptedCredential, AwsCredentialsDto.class);
       CloudCredentials credentials = new CloudCredentials();
       credentials.setAccessKey(decryptedCredentialsDto.accessKeyId());
       credentials.setSecretKey(decryptedCredentialsDto.secretAccessKey());

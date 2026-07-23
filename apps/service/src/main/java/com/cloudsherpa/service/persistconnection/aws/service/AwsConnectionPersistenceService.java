@@ -75,13 +75,17 @@ public class AwsConnectionPersistenceService {
       CloudConnection connection, PersistAwsConnectionRequest request) {
 
     CloudAccount account =
-        new CloudAccount(
-            UUID.randomUUID(),
-            connection.getId(),
-            AccountTypeEnum.aws_account,
-            request.displayName(),
-            request.ingestionPeriod().toString(),
-            OffsetDateTime.now(ZoneOffset.UTC));
+        new CloudAccount.Builder()
+            .id(UUID.randomUUID())
+            .connectionId(connection.getId())
+            .accountType(AccountTypeEnum.aws_account)
+            .displayName(request.displayName())
+            .ingestionPeriod(request.ingestionPeriod().toString())
+            .createdAt(OffsetDateTime.now(ZoneOffset.UTC))
+            .nextUsageIngestion(
+                OffsetDateTime.now(ZoneOffset.UTC).plusSeconds(request.ingestionPeriod()))
+            .nextUsageIngestion(OffsetDateTime.now(ZoneOffset.UTC).plusHours(12))
+            .build();
 
     return cloudAccountRepository.save(account);
   }

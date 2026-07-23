@@ -1,6 +1,7 @@
 package com.cloudsherpa.service.scheduler;
 
 import com.cloudsherpa.lib.entities.CloudAccount;
+import com.cloudsherpa.lib.entities.StatusEnum;
 import com.cloudsherpa.lib.repositories.CloudAccountRepository;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -29,7 +30,8 @@ public class UsageScheduler {
   public void scheduleUsageJobs() {
 
     List<CloudAccount> dueAccounts =
-        repository.findAccountsDueForUsageIngestion(OffsetDateTime.now(ZoneOffset.UTC));
+        repository.findAccountsDueForUsageIngestion(
+            OffsetDateTime.now(ZoneOffset.UTC), StatusEnum.active);
 
     dueAccounts.forEach(
         account -> jobScheduler.enqueue(() -> usageIngestionJob.ingest(account.getId())));
