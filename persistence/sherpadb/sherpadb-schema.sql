@@ -244,7 +244,7 @@ BEGIN
             status public.status_enum,
             tags jsonb,
             last_updated timestamptz DEFAULT NOW(),
-            created_at timestamptz DEFAULT NOW()
+            created_at timestamptz DEFAULT NOW(),
 
             CONSTRAINT uq_resource_identity
         UNIQUE (
