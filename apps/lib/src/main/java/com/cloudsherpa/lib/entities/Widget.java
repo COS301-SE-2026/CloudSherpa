@@ -2,11 +2,15 @@ package com.cloudsherpa.lib.entities;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.util.UUID;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "widget", schema = "public")
@@ -23,8 +27,10 @@ public class Widget {
   @JoinColumn(name = "dashboard_id", nullable = false, insertable = false, updatable = false)
   private Dashboard dashboard;
 
-  @Column(name = "type", nullable = false, length = 50)
-  private String type;
+  @Enumerated(EnumType.STRING)
+  @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+  @Column(name = "type", nullable = false, columnDefinition = "public.type_enum")
+  private WidgetTypeEnum type;
 
   @Column(name = "start_x", nullable = false)
   private Integer startX;
@@ -46,7 +52,7 @@ public class Widget {
   public Widget(
       UUID id,
       UUID dashboardId,
-      String type,
+      WidgetTypeEnum type,
       Integer startX,
       Integer startY,
       Integer width,
@@ -59,7 +65,7 @@ public class Widget {
     this.startY = startY;
     this.width = width;
     this.height = height;
-    this.displayName = displayName; 
+    this.displayName = displayName;
   }
 
   public UUID getId() {
@@ -74,7 +80,7 @@ public class Widget {
     return dashboard;
   }
 
-  public String getType() {
+  public WidgetTypeEnum getType() {
     return type;
   }
 
@@ -97,5 +103,4 @@ public class Widget {
   public String getDisplayName() {
     return displayName;
   }
-
 }

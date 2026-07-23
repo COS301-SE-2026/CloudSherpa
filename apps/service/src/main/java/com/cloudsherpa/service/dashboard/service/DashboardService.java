@@ -1,8 +1,10 @@
 package com.cloudsherpa.service.dashboard.service;
 
 import com.cloudsherpa.lib.entities.Dashboard;
+import com.cloudsherpa.lib.entities.PredefinedTimeEnum;
 import com.cloudsherpa.lib.entities.Widget;
 import com.cloudsherpa.lib.entities.WidgetResource;
+import com.cloudsherpa.lib.entities.WidgetTypeEnum;
 import com.cloudsherpa.lib.repositories.DashboardRepository;
 import com.cloudsherpa.lib.repositories.DashboardWidgetRepository;
 import com.cloudsherpa.lib.repositories.WidgetResourceRepository;
@@ -66,7 +68,7 @@ public class DashboardService {
             request.displayName(),
             null,
             null,
-            "last_24h",
+            PredefinedTimeEnum.last_24h,
             true);
 
     dashboardRepository.save(newDashboard);
@@ -146,7 +148,7 @@ public class DashboardService {
         new Widget(
             request.id() != null ? request.id() : UUID.randomUUID(),
             dashboardId,
-            request.type(),
+            WidgetTypeEnum.valueOf(request.type()),
             request.startX(),
             request.startY(),
             request.width(),
@@ -179,7 +181,7 @@ public class DashboardService {
         new Widget(
             widget.getId(),
             widget.getDashboardId(),
-            request.type(),
+            WidgetTypeEnum.valueOf(request.type()),
             widget.getStartX(),
             widget.getStartY(),
             widget.getWidth(),
@@ -203,7 +205,7 @@ public class DashboardService {
     return new WidgetDTO(
         userId,
         updatedWidget.getId(),
-        updatedWidget.getType(),
+        updatedWidget.getType().name(),
         updatedWidget.getDisplayName(),
         updatedWidget.getStartX(),
         updatedWidget.getStartY(),
@@ -245,7 +247,7 @@ public class DashboardService {
                   return new WidgetDTO(
                       dashboard.getUserId(),
                       widget.getId(),
-                      widget.getType(),
+                      widget.getType().name(),
                       widget.getDisplayName(),
                       widget.getStartX(),
                       widget.getStartY(),
@@ -261,7 +263,7 @@ public class DashboardService {
         dashboard.getDisplayName(),
         dashboard.getTimeFrom(),
         dashboard.getTimeTo(),
-        dashboard.getPredefinedTime(),
+        dashboard.getPredefinedTime() != null ? dashboard.getPredefinedTime().name() : null,
         dashboard.getCurrent(),
         widgetDTOs);
   }
