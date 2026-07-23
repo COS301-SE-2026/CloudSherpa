@@ -30,7 +30,7 @@ public sealed interface WidgetConfigUpdateDTO
     return null;
   }
 
-  default List<UUID> chargeIds() {
+  default List<String> chargeIds() {
     return List.of();
   }
 

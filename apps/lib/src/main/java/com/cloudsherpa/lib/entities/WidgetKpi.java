@@ -49,4 +49,8 @@ public class WidgetKpi {
     public Integer getAggregation() {
         return aggregation;
     }
+
+    public void setAggregation(Integer aggregation) {
+        this.aggregation = aggregation;
+    }
 }

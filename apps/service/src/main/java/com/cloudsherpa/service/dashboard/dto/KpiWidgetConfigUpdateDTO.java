@@ -7,6 +7,6 @@ public record KpiWidgetConfigUpdateDTO(
     UUID id,
     String widgetType,
     String displayName,
-    List<UUID> chargeIds,
+    List<String> chargeIds,
     Integer aggregationWindowDays)
     implements WidgetConfigUpdateDTO {}
