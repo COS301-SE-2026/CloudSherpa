@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 import { ColorFormat } from "@/design-system/colours/types/colours";
 import Shades from "@/design-system/colours/components/shades";
 import rawTokens from "@/app/tokens/docs/design-tokens.json";
-import SemanticColours from "./semanticColours";
+import SemColours from "@/design-system/colours/components/semColours";
 import SubSectionHeading from "@/design-system/shared/components/subsectionHeading";
 
 export default function Colours() {
@@ -87,7 +87,7 @@ export default function Colours() {
                     description="These semantic colours are based on the token that are predefined by Shadcn/ui when the library is first initialized and are tweaked to map to our primitive colour ranges
                     to fit the CloudSherpa aesthetic perfectly."
                 />
-                <SemanticColours />
+                <SemColours />
             </div>
         </div>
     );
