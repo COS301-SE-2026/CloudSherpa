@@ -3,7 +3,7 @@
 import { Card } from "@/components/atoms/card"; // Adjust if you use /ui/card
 import { useState, useRef } from "react";
 import { Check } from "lucide-react";
-import { Button } from "@/components/atoms/button"
+import { Button } from "@/components/atoms/button";
 
 // Explicitly mapping the Background (Left) and Foreground (Right) halves
 const semanticPairs = [
@@ -128,12 +128,11 @@ export default function SemanticColours() {
                     <h3 className="text-lg font-bold tracking-tight">{pair.name}</h3>
 
                     <Card className="flex flex-row w-full h-32 md:h-40 overflow-hidden rounded-xl border-border shadow-sm p-0 gap-0">
-                        <Button
-                            role="button"
+                        <button
                             tabIndex={0}
                             onClick={() => handleCopy(pair.leftLabel)}
                             onKeyDown={(e) => handleKeyDown(e, pair.leftLabel)}
-                            className={`relative group/swatch flex-1 hover:flex-[4] focus-visible:flex-[4] transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] cursor-pointer overflow-hidden border-r border-black/10 dark:border-white/10 outline-none ${pair.leftBg} ${pair.leftText}`}
+                            className={`h-full rounded-none relative group/swatch flex-1 hover:flex-4 focus-visible:flex-4 transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] cursor-pointer overflow-hidden border-r border-black/10 dark:border-white/10 outline-none ${pair.leftBg} ${pair.leftText}`}
                             title={`Copy ${pair.leftLabel}`}
                         >
                             <div className="absolute top-3 w-full flex justify-center transition-opacity duration-300 group-hover/swatch:opacity-0 group-focus-visible/swatch:opacity-0">
@@ -142,20 +141,19 @@ export default function SemanticColours() {
                             <div className="absolute bottom-4 left-4 min-w-35 flex flex-col opacity-0 group-hover/swatch:opacity-100 group-focus-visible/swatch:opacity-100 transition-all duration-500 translate-y-4 group-hover/swatch:translate-y-0 group-focus-visible/swatch:translate-y-0">
                                 <div className="font-bold font-mono text-xs">{pair.leftLabel}</div>
                             </div>
-                            {/* Copied Success Overlay */}
+                            {/* overlay */}
                             <div
                                 className={`absolute inset-0 flex flex-col items-center justify-center bg-black/30 backdrop-blur-sm transition-all duration-300 ${copiedClass === pair.leftLabel ? "opacity-100 z-20" : "opacity-0 -z-10"}`}
                             >
                                 <Check className="w-6 h-6 text-white drop-shadow-md" />
                             </div>
-                        </Button>
+                        </button>
 
-                        <Button
-                            role="button"
+                        <button
                             tabIndex={0}
                             onClick={() => handleCopy(pair.rightLabel)}
                             onKeyDown={(e) => handleKeyDown(e, pair.rightLabel)}
-                            className={`relative group/swatch flex-1 hover:flex-[4] focus-visible:flex-[4] transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] cursor-pointer overflow-hidden outline-none ${pair.rightBg} ${pair.rightText}`}
+                            className={`h-full rounded-none relative group/swatch flex-1 hover:flex-4 focus-visible:flex-4 transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] cursor-pointer overflow-hidden outline-none ${pair.rightBg} ${pair.rightText}`}
                             title={`Copy ${pair.rightLabel}`}
                         >
                             <div className="absolute top-3 w-full flex justify-center transition-opacity duration-300 group-hover/swatch:opacity-0 group-focus-visible/swatch:opacity-0">
@@ -164,12 +162,13 @@ export default function SemanticColours() {
                             <div className="absolute bottom-4 left-4 min-w-35 flex flex-col opacity-0 group-hover/swatch:opacity-100 group-focus-visible/swatch:opacity-100 transition-all duration-500 translate-y-4 group-hover/swatch:translate-y-0 group-focus-visible/swatch:translate-y-0">
                                 <div className="font-bold font-mono text-xs">{pair.rightLabel}</div>
                             </div>
+                            {/* overlay */}
                             <div
                                 className={`absolute inset-0 flex flex-col items-center justify-center bg-black/30 backdrop-blur-sm transition-all duration-300 ${copiedClass === pair.rightLabel ? "opacity-100 z-20" : "opacity-0 -z-10"}`}
                             >
                                 <Check className="w-6 h-6 text-white drop-shadow-md" />
                             </div>
-                        </Button>
+                        </button>
                     </Card>
                 </div>
             ))}
