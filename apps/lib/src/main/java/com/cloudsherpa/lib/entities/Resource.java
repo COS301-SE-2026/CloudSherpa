@@ -85,6 +85,10 @@ public class Resource {
   public String getResourceType() {
     return resourceType;
   }
+  
+  public String getResourceName() {
+    return resourceName;
+  }
 
   public Map<String, Object> getTags() {
     return tags;
@@ -100,5 +104,9 @@ public class Resource {
 
   public StatusEnum getStatus() {
     return status;
+  }
+  
+  public void setStatus(StatusEnum status) {
+    this.status = status;
   }
 }
