@@ -10,15 +10,15 @@ import { useWindowStore } from "@/features/dashboard/stores/window-store";
 const MOCK_WIDGETS: WidgetConfig[] = [
     {
         id: "mock-widget-1",
-        chartType: "line",
-        title: "Server CPU Load (Mock)",
+        type: "line_chart",
+        displayName: "Server CPU Load (Mock)",
         resourceId: "demo-server-01",
         metricType: "cpu",
     },
     {
         id: "mock-widget-2",
-        chartType: "gauge",
-        title: "Memory Utilization (Mock)",
+        type: "gauge_chart",
+        displayName: "Memory Utilization (Mock)",
         resourceId: "demo-server-01",
         metricType: "memory",
     },
