@@ -115,14 +115,14 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
   @Override
   public List<String> getAllOfferedServices() {
     List<String> services = new ArrayList<>();
-    services.add("EC2");
-    services.add("ECS");
-    services.add("EKS");
-    services.add("Lambda");
-    services.add("RDS");
-    services.add("ElastiCache");
-    services.add("OpenSearch");
-    services.add("RedShift");
+    services.add("AWS/EC2");
+    services.add("AWS/ECS");
+    services.add("AWS/EKS");
+    services.add("AWS/Lambda");
+    services.add("AWS/RDS");
+    services.add("AWS/ElastiCache");
+    services.add("AWS/OpenSearch");
+    services.add("AWS/RedShift");
 
     return services;
   }
@@ -202,10 +202,8 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
       client =
           CloudWatchClient.builder()
               .credentialsProvider(StaticCredentialsProvider.create(awsCredentials))
-              .region(Region.of(credentials.getAwsRegion()))
               .build();
     }
-
     try {
       client.listMetrics();
       return true;

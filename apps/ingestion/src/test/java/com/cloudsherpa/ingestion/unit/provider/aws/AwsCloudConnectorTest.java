@@ -82,7 +82,6 @@ class AwsCloudConnectorTest {
   void testConnectionShouldReturnBoolean() {
     CloudCredentials credentials = new CloudCredentials();
     credentials.setAccessKey("accessKey");
-    credentials.setAwsRegion("region");
     credentials.setSecretKey("secretKey");
     boolean result = connector.testConnection(credentials);
 
@@ -96,16 +95,20 @@ class AwsCloudConnectorTest {
     request.setFrom(Instant.now().minusSeconds(3600));
     request.setTo(Instant.now());
     request.setPeriod(period);
-    InstanceScope instance = new InstanceScope();
-    instance.setIdentifierName("InstanceId");
-    instance.setValues(List.of("i-123"));
+    InstanceScope instanceScope = new InstanceScope();
+    instanceScope.setIdentifierName("InstanceId");
+    com.cloudsherpa.ingestion.connector.Instance instance =
+        new com.cloudsherpa.ingestion.connector.Instance();
+    instance.setIdentifier("i-123");
+    instance.setRegion("af-south-1");
+    instanceScope.setInstances(List.of(instance));
 
     Metric metric = new Metric();
     metric.setName("CPUUtilization");
     ServiceScope service = new ServiceScope();
     service.setName("EC2");
     service.setMetrics(List.of(metric));
-    service.setInstances(List.of(instance));
+    service.setInstances(List.of(instanceScope));
 
     AccountScope scope = new AccountScope();
     scope.setProvider("AWS");
@@ -127,7 +130,6 @@ class AwsCloudConnectorTest {
     CloudCredentials credentials = new CloudCredentials();
     credentials.setAccessKey("accessKey");
     credentials.setSecretKey("secretKey");
-    credentials.setAwsRegion("region");
 
     Ec2Client ec2Client = mock(Ec2Client.class);
     Ec2ClientBuilder builder = mock(Ec2ClientBuilder.class);
@@ -153,7 +155,7 @@ class AwsCloudConnectorTest {
 
       List<ResourceDetail> result = connector.getAllEc2Instances(credentials);
 
-      assertEquals(1, result.size());
+      assertEquals(41, result.size());
 
       ResourceDetail resource = result.get(0);
 
@@ -171,7 +173,6 @@ class AwsCloudConnectorTest {
     CloudCredentials credentials = new CloudCredentials();
     credentials.setAccessKey("accessKey");
     credentials.setSecretKey("secretKey");
-    credentials.setAwsRegion("region");
 
     EcsClient client = mock(EcsClient.class);
     EcsClientBuilder builder = mock(EcsClientBuilder.class);
@@ -201,7 +202,7 @@ class AwsCloudConnectorTest {
 
       List<ResourceDetail> result = connector.getAllEcsClusters(credentials);
 
-      assertEquals(1, result.size());
+      assertEquals(41, result.size());
 
       ResourceDetail resource = result.get(0);
 

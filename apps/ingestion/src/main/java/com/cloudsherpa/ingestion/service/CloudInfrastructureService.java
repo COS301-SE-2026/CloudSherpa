@@ -72,7 +72,8 @@ public class CloudInfrastructureService {
   private CloudAccount ensureCloudAccount(UUID connectionId, String cloudAccountId) {
 
     // The method converts the cloud provider's string ID into a deterministic UUID
-    // This ensures that the same id we get from AWS response always maps to the same UUID
+    // This ensures that the same id we get from AWS response always maps to the
+    // same UUID
     // in our db to avoid duplicates
     UUID accountUuid = UUID.nameUUIDFromBytes(cloudAccountId.getBytes());
 
@@ -82,13 +83,14 @@ public class CloudInfrastructureService {
     }
 
     CloudAccount newAccount =
-        new CloudAccount(
-            accountUuid,
-            connectionId,
-            AccountTypeEnum.aws_account,
-            cloudAccountId,
-            null,
-            OffsetDateTime.now());
+        new CloudAccount.Builder()
+            .id(accountUuid)
+            .connectionId(connectionId)
+            .accountType(AccountTypeEnum.aws_account)
+            .displayName(cloudAccountId)
+            .ingestionPeriod(null)
+            .createdAt(OffsetDateTime.now())
+            .build();
 
     return accountRepo.save(newAccount);
   }
@@ -104,15 +106,18 @@ public class CloudInfrastructureService {
     }
 
     Resource newResource =
-        new Resource(
-            resourceUuid,
-            accountId,
-            resourceType,
-            cloudResourceId,
-            StatusEnum.active,
-            null,
-            OffsetDateTime.now(),
-            OffsetDateTime.now());
+        new Resource.Builder()
+            .id(resourceUuid)
+            .accountId(accountId)
+            .resourceType(resourceType)
+            .resourceIdentifier(cloudResourceId)
+            .status(StatusEnum.active)
+            .region("af-south-1")
+            .resourceName("resource")
+            .lastUpdated(OffsetDateTime.now())
+            .createdAt(OffsetDateTime.now())
+            .build();
+
     return resourceRepo.save(newResource);
   }
 }
