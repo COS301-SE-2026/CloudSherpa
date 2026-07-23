@@ -14,7 +14,7 @@ CREATE TYPE public.currency_enum AS ENUM ('USD', 'EUR', 'ZAR');
 CREATE TYPE public.language_enum AS ENUM ('en', 'es', 'fr');
 CREATE TYPE public.ingestion_period_enum AS ENUM ('1m', '5m', '1h');
 CREATE TYPE public.predefined_time_enum AS ENUM ('last_1h', 'last_24h', 'last_7d');
-CREATE TYPE public.type_enum AS ENUM ('line_chart', 'guage_chart');
+CREATE TYPE public.type_enum AS ENUM ('line_chart', 'gauge_chart');
 
 -- Global Tables in Public Schema
 -- These tables use ON DELETE CASCADE so if a user deletes their account, 
@@ -41,15 +41,6 @@ CREATE TABLE public.cloud_connection (
   user_id uuid REFERENCES public.users(user_id) ON DELETE CASCADE,
   provider public.provider_enum NOT NULL,
   status public.status_enum DEFAULT 'active',
-  created_at timestamptz DEFAULT NOW()
-);
-
-CREATE TABLE public.cloud_credential (
-  credential_id uuid PRIMARY KEY,
-  account_id uuid UNIQUE REFERENCES public.cloud_account(account_id) ON DELETE CASCADE,
-  provider public.provider_enum NOT NULL,
-  credential_type public.credential_type_enum NOT NULL,
-  credential_value text NOT NULL,
   created_at timestamptz DEFAULT NOW()
 );
 
@@ -97,12 +88,24 @@ CREATE TABLE public.offered_metric (
         metric_name
     )
 );
+
+CREATE TABLE public.cloud_credential (
+  credential_id uuid PRIMARY KEY,
+  account_id uuid UNIQUE REFERENCES public.cloud_account(account_id) ON DELETE CASCADE,
+  provider public.provider_enum NOT NULL,
+  credential_type public.credential_type_enum NOT NULL,
+  credential_value text NOT NULL,
+  created_at timestamptz DEFAULT NOW()
+);
+
 CREATE TABLE public.dashboard (
   dashboard_id uuid PRIMARY KEY,
+  display_name varchar(255) NOT NULL,
   user_id uuid REFERENCES public.users(user_id) ON DELETE CASCADE,
   time_from timestamptz,
   time_to timestamptz,
-  predefined_time public.predefined_time_enum
+  predefined_time public.predefined_time_enum,
+  current boolean DEFAULT false
 );
 
 CREATE TABLE public.widget (
@@ -231,7 +234,7 @@ BEGIN
 
     -- Build the resource table
     EXECUTE format($sql$
-        CREATE TABLE %I.resource (
+        CREATE TABLE IF NOT EXISTS %I.resource (
             resource_id uuid PRIMARY KEY,
             account_id uuid REFERENCES public.cloud_account(account_id) ON DELETE CASCADE, 
             resource_type varchar(255) NOT NULL,
@@ -256,12 +259,12 @@ BEGIN
     -- The GIN Index for JSONB Tags
     -- %1$I means "use the first variable (schema_name) and format it safely as an Identifier".
     EXECUTE format($sql$
-        CREATE INDEX ix_%1$s_resource_tags ON %1$I.resource USING GIN (tags);
+        CREATE INDEX IF NOT EXISTS ix_%1$s_resource_tags ON %1$I.resource USING GIN (tags);
     $sql$, schema_name);
 
     -- Build the metrics table
     EXECUTE format($sql$
-        CREATE TABLE %I.normalized_metrics (
+        CREATE TABLE IF NOT EXISTS %I.normalized_metrics (
             metric_id uuid DEFAULT gen_random_uuid(),
             resource_id uuid REFERENCES %I.resource(resource_id) ON DELETE CASCADE,
             recorded_at timestamptz NOT NULL,
@@ -276,13 +279,19 @@ BEGIN
         );
     $sql$, schema_name, schema_name);
 
-    PERFORM create_hypertable(
-        format('%I.normalized_metrics', schema_name), 
-        'period_start'
-    );
+    -- Create hypertable only if the table is not already a hypertable
+    IF NOT EXISTS (
+        SELECT 1 FROM timescaledb_information.hypertables 
+        WHERE hypertable_schema = schema_name AND hypertable_name = 'normalized_metrics'
+    ) THEN
+        PERFORM create_hypertable(
+            format('%I.normalized_metrics', schema_name), 
+            'period_start'
+        );
+    END IF;
 
     EXECUTE format($sql$
-        CREATE INDEX ix_%1$s_resource_metric_time 
+        CREATE INDEX IF NOT EXISTS ix_%1$s_resource_metric_time 
         ON %1$I.normalized_metrics (resource_id, metric_name, period_start DESC);
     $sql$, schema_name);
 
@@ -290,10 +299,24 @@ BEGIN
     -- Attach the trigger specifically to this new user's metrics table, 
     -- but tell it to execute the shared global function we defined in the public shema.
     EXECUTE format($sql$
-        CREATE TRIGGER metric_notify_trigger
+        CREATE OR REPLACE TRIGGER metric_notify_trigger
         AFTER INSERT ON %1$I.normalized_metrics
         FOR EACH ROW EXECUTE FUNCTION public.notify_metric_event();
     $sql$, schema_name);
 
 END;
 $$ LANGUAGE plpgsql;
+
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+INSERT INTO public.users (user_id, email, username, password_hash, created_at)
+VALUES (
+  '5ebe4340-c5ec-4833-ad93-06abf4609f03'::uuid,
+  'demo@gmail.com',
+  'demo@gmail.com',
+  crypt('Password@2', gen_salt('bf', 12)),
+  now()
+  )
+ON CONFLICT DO NOTHING;
+
+SELECT public.create_new_tenant('5ebe4340-c5ec-4833-ad93-06abf4609f03');

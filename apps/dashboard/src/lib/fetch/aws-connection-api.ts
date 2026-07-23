@@ -22,7 +22,6 @@ export interface PersistAwsConnectionRequest {
   resources: ResourceSelectionDto[];
 }
 
-
 export enum AccountType {
   AWS_ACCOUNT = "aws_account",
   AZURE_SUBSCRIPTION = "azure_subscription",

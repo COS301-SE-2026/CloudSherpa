@@ -20,6 +20,9 @@ public class Dashboard {
   @Column(name = "user_id", nullable = false)
   private UUID userId;
 
+  @Column(name = "display_name", length = 255)
+  private String displayName;
+
   @ManyToOne
   @JoinColumn(name = "user_id", nullable = false, insertable = false, updatable = false)
   private User user;
@@ -33,19 +36,26 @@ public class Dashboard {
   @Column(name = "predefined_time", length = 50)
   private String predefinedTime;
 
+  @Column(name = "current", nullable = false)
+  private Boolean current;
+
   protected Dashboard() {}
 
   public Dashboard(
       UUID id,
       UUID userId,
+      String displayName,
       OffsetDateTime timeFrom,
       OffsetDateTime timeTo,
-      String predefinedTime) {
+      String predefinedTime,
+      Boolean current) {
     this.id = id;
     this.userId = userId;
+    this.displayName = displayName;
     this.timeFrom = timeFrom;
     this.timeTo = timeTo;
     this.predefinedTime = predefinedTime;
+    this.current = current;
   }
 
   public UUID getId() {
@@ -54,6 +64,10 @@ public class Dashboard {
 
   public UUID getUserId() {
     return userId;
+  }
+
+  public String getDisplayName() {
+    return displayName;
   }
 
   public User getUser() {
@@ -70,5 +84,9 @@ public class Dashboard {
 
   public String getPredefinedTime() {
     return predefinedTime;
+  }
+
+  public Boolean getCurrent() {
+    return current;
   }
 }
