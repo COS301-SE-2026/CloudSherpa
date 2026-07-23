@@ -7,6 +7,7 @@ import com.cloudsherpa.lib.entities.Resource;
 import com.cloudsherpa.lib.repositories.CloudAccountRepository;
 import com.cloudsherpa.lib.repositories.CloudConnectionRepository;
 import com.cloudsherpa.lib.repositories.ResourceRepository;
+import com.cloudsherpa.service.persistconnection.aws.dto.CloudAccountDetailsResponse;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -50,7 +51,27 @@ public class AwsConnectionQueryService {
     return connections.isEmpty() ? null : connections.getFirst();
   }
 
+  public CloudAccountDetailsResponse getAccountDetails(UUID accountId) {
+    CloudAccount account =
+        cloudAccountRepository
+            .findById(accountId)
+            .orElseThrow(
+                () -> new IllegalArgumentException("No cloud account found with id " + accountId));
+
+    return new CloudAccountDetailsResponse(
+        account.getId(),
+        account.getDisplayName(),
+        account.getAccountType(),
+        account.getConnection().getUser().getEmail(),
+        account.getIngestionPeriod(),
+        account.getCreatedAt());
+  }
+
   public List<Resource> getResourcesForAccount(UUID accountId) {
     return resourceRepository.findByAccountId(accountId);
+  }
+
+  public long getResourceCountForAccount(UUID accountId) {
+    return resourceRepository.countByAccountId(accountId);
   }
 }
