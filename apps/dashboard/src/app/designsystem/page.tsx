@@ -17,6 +17,20 @@ import {
 } from "@/components/atoms/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/atoms/popover";
 
+interface HeaderProps {
+    title: string;
+    description: string;
+}
+
+function Header({ title, description }: Readonly<HeaderProps>) {
+    return (
+        <div className="border-b pb-4 mb-8">
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground">{title}</h2>
+            <p className="text-muted-foreground">{description}</p>
+        </div>
+    );
+}
+
 const sections = [
     { value: "colours", label: "1. Colour Palette" },
     { value: "typography", label: "2. Typography System" },
@@ -110,69 +124,49 @@ export default function DesignSystem() {
 
                 <div className="flex flex-col gap-16">
                     <section id="colours">
-                        <div className="border-b pb-4 mb-8">
-                            <h2 className="text-2xl md:text-3xl font-bold text-foreground">
-                                1. Colour Palette
-                            </h2>
-                            <p className="text-muted-foreground">
-                                Primitive and Semantic colour ranges that can be found in
+                        <Header
+                            title="1.Colour Palette"
+                            description="Primitive and Semantic colour ranges that can be found in
                                 CloudSherpa, representing our brand colours and base ui component
                                 backgrounds and foregrounds that defines the feel of the
-                                application.
-                            </p>
-                        </div>
+                                application."
+                        />
                         <Colours />
                     </section>
 
                     <section id="typography">
-                        <div className="border-b pb-4 mb-8">
-                            <h2 className="text-2xl md:text-3xl font-bold text-foreground">
-                                2. Typography
-                            </h2>
-                            <p className="text-muted-foreground">
-                                Our Typography system is geared toward data representation by using
-                                compact fonts while keeping visibility and clarity in mind
-                            </p>
-                        </div>
+                        <Header
+                            title="2. Typography"
+                            description="Our Typography system is geared toward data representation by using
+                                compact fonts while keeping visibility and clarity in mind"
+                        />
                         <Typography />
                     </section>
 
                     <section id="layout">
-                        <div className="border-b pb-4 mb-8">
-                            <h2 className="text-2xl md:text-3xl font-bold text-foreground">
-                                3. Layout and Spacing
-                            </h2>
-                            <p className="text-muted-foreground">
-                                This category defines the structural geometry of CloudSherpa, and
-                                defines the form of the application.
-                            </p>
-                        </div>
+                        <Header
+                            title="3. Layout and Spacing"
+                            description="This category defines the structural geometry of CloudSherpa, and
+                                defines the form of the application."
+                        />
                         <LayoutAndSpacing />
                     </section>
 
                     <section id="components">
-                        <div className="border-b pb-4 mb-8">
-                            <h2 className="text-2xl md:text-3xl font-bold text-foreground">
-                                4. Components
-                            </h2>
-                            <p className="text-muted-foreground">
-                                The components are the culmination of all the primitive building
-                                blocks previously defined in the design system.
-                            </p>
-                        </div>
+                        <Header
+                            title="4. Components"
+                            description="The components are the culmination of all the primitive building
+                                blocks previously defined in the design system."
+                        />
                         <Components />
                     </section>
 
                     <section id="logo-and-iconography">
-                        <div className="border-b pb-4 mb-8">
-                            <h2 className="text-2xl md:text-3xl font-bold text-foreground">
-                                5. Logo and Iconography
-                            </h2>
-                            <p className="text-muted-foreground">
-                                This category showcases our Logo as well as the icon set used in
-                                CloudSherpa.
-                            </p>
-                        </div>
+                        <Header
+                            title="5. Logo and Iconography"
+                            description="This category showcases our Logo as well as the icon set used in
+                                CloudSherpa."
+                        />
                         <LogoAndIconography />
                     </section>
                 </div>

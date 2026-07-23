@@ -3,6 +3,7 @@
 import { Card } from "@/components/atoms/card"; // Adjust if you use /ui/card
 import { useState, useRef } from "react";
 import { Check } from "lucide-react";
+import { Button } from "@/components/atoms/button"
 
 // Explicitly mapping the Background (Left) and Foreground (Right) halves
 const semanticPairs = [
@@ -127,7 +128,7 @@ export default function SemanticColours() {
                     <h3 className="text-lg font-bold tracking-tight">{pair.name}</h3>
 
                     <Card className="flex flex-row w-full h-32 md:h-40 overflow-hidden rounded-xl border-border shadow-sm p-0 gap-0">
-                        <div
+                        <Button
                             role="button"
                             tabIndex={0}
                             onClick={() => handleCopy(pair.leftLabel)}
@@ -147,9 +148,9 @@ export default function SemanticColours() {
                             >
                                 <Check className="w-6 h-6 text-white drop-shadow-md" />
                             </div>
-                        </div>
+                        </Button>
 
-                        <div
+                        <Button
                             role="button"
                             tabIndex={0}
                             onClick={() => handleCopy(pair.rightLabel)}
@@ -168,7 +169,7 @@ export default function SemanticColours() {
                             >
                                 <Check className="w-6 h-6 text-white drop-shadow-md" />
                             </div>
-                        </div>
+                        </Button>
                     </Card>
                 </div>
             ))}
