@@ -1,4 +1,4 @@
-package com.cloudsherpa.service.scheduler;
+package com.cloudsherpa.ingestion.scheduler;
 
 import java.util.UUID;
 import org.jobrunr.jobs.annotations.Job;

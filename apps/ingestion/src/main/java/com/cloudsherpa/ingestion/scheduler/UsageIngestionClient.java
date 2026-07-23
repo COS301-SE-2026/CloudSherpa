@@ -1,26 +1,18 @@
-package com.cloudsherpa.service.scheduler;
+package com.cloudsherpa.ingestion.scheduler;
 
-import com.cloudsherpa.service.scheduler.dto.IngestionRequestEvent;
-import com.cloudsherpa.service.scheduler.dto.IngestionResult;
+import com.cloudsherpa.ingestion.controller.CloudUsageController;
+import com.cloudsherpa.ingestion.models.IngestionRequestEvent;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClient;
 
 @Service
 public class UsageIngestionClient {
+  private final CloudUsageController usageController;
 
-  private final RestClient restClient;
-
-  public UsageIngestionClient(RestClient restClient) {
-    this.restClient = restClient;
+  public UsageIngestionClient(CloudUsageController usageController) {
+    this.usageController = usageController;
   }
 
-  public IngestionResult ingest(IngestionRequestEvent request) {
-
-    return restClient
-        .post()
-        .uri("/api/events/ingest")
-        .body(request)
-        .retrieve()
-        .body(IngestionResult.class);
+  public void ingest(IngestionRequestEvent request) {
+    usageController.ingest(request);
   }
 }

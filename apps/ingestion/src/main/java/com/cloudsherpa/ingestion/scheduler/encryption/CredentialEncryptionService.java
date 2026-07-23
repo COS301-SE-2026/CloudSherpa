@@ -1,4 +1,4 @@
-package com.cloudsherpa.service.persistconnection.aws.service;
+package com.cloudsherpa.ingestion.scheduler.encryption;
 
 import jakarta.annotation.PostConstruct;
 import java.nio.charset.StandardCharsets;

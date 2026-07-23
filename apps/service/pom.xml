@@ -98,16 +98,6 @@
 			<version>2.8.17</version>
     </dependency>
     <dependency>
-      <groupId>org.jobrunr</groupId>
-      <artifactId>jobrunr-spring-boot-3-starter</artifactId>
-      <version>7.4.1</version>
-    </dependency>
-  	<dependency>
-      <groupId>org.jobrunr</groupId>
-      <artifactId>jobrunr</artifactId>
-      <version>7.4.1</version>
-    </dependency>
-    <dependency>
 			<groupId>com.cloudsherpa</groupId>
 			<artifactId>lib</artifactId>
 			<version>${project.version}</version>

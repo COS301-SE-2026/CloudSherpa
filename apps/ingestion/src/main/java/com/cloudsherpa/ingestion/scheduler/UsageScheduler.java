@@ -1,4 +1,4 @@
-package com.cloudsherpa.service.scheduler;
+package com.cloudsherpa.ingestion.scheduler;
 
 import com.cloudsherpa.lib.entities.CloudAccount;
 import com.cloudsherpa.lib.entities.StatusEnum;
