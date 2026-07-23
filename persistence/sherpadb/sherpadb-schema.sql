@@ -117,7 +117,7 @@ CREATE TABLE IF NOT EXISTS public.widget_kpi (
 
 CREATE TABLE IF NOT EXISTS public.kpi_charges (
   kpi_charges_id uuid PRIMARY KEY,
-  widget_kpi_id uuid REFERENCES public.widget_kpi(kpi_id) NOT NULL,
+  widget_kpi_id uuid REFERENCES public.widget_kpi(kpi_id) NOT NULL ON DELETE CASCADE,
   charge_id varchar (2128) NOT NULL
 );
 

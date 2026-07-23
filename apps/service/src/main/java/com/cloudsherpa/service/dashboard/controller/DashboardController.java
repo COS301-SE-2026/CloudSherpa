@@ -76,23 +76,24 @@ public class DashboardController {
 
   @PostMapping("/{dashboardId}/widgets")
   @Operation(summary = "Add a new widget to a dashboard")
-  public ResponseEntity<Void> createChartWidget(
+  public ResponseEntity<WidgetDTO> createChartWidget(
       @PathVariable UUID dashboardId,
       @RequestBody WidgetDTO request,
       @AuthenticationPrincipal Jwt jwt) {
     UUID userId = UUID.fromString(jwt.getSubject());
-    dashboardService.createWidget(userId, dashboardId, request);
-    return ResponseEntity.status(HttpStatus.CREATED).build();
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .body(dashboardService.createWidget(userId, dashboardId, request));
   }
 
   @PatchMapping("/widgets/{widgetId}/config")
   @Operation(summary = "Update a widget's visual or data configuration")
-  public ResponseEntity<WidgetDTO> updateWidgetConfig(
+  public ResponseEntity<Void> updateWidgetConfig(
       @PathVariable UUID widgetId,
       @RequestBody WidgetConfigUpdateDTO request,
       @AuthenticationPrincipal Jwt jwt) {
     UUID userId = UUID.fromString(jwt.getSubject());
-    return ResponseEntity.ok(dashboardService.updateWidgetConfig(userId, widgetId, request));
+    dashboardService.updateWidgetConfig(userId, widgetId, request);
+    return ResponseEntity.ok().build();
   }
 
   @DeleteMapping("/widgets/{widgetId}")

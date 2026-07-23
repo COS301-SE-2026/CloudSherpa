@@ -27,11 +27,10 @@ public class KpiWidgetService {
   }
 
   @Transactional
-  public void createKpiWidget(KpiWidgetDTO kpiWidgetDTO) {
+  public void createKpiWidget(UUID widgetId, KpiWidgetDTO kpiWidgetDTO) {
     UUID kpiId = UUID.randomUUID();
 
-    WidgetKpi widgetKpi =
-        new WidgetKpi(kpiId, kpiWidgetDTO.id(), kpiWidgetDTO.aggregationWindowDays());
+    WidgetKpi widgetKpi = new WidgetKpi(kpiId, widgetId, kpiWidgetDTO.aggregationWindowDays());
     widgetKpiRepository.save(widgetKpi);
 
     for (String chargeId : kpiWidgetDTO.chargeIds()) {
@@ -89,7 +88,7 @@ public class KpiWidgetService {
 
   public KpiWidgetDTO mapToKpiWidgetDTO(Widget widget) {
     WidgetKpi widgetKpi = getWidgetKpiByWidgetId(widget.getId());
-    List<KpiCharge> kpiChargesLookup = kpiChargeRepository.findByWidgetKpiId(widget.getId());
+    List<KpiCharge> kpiChargesLookup = kpiChargeRepository.findByWidgetKpiId(widgetKpi.getId());
 
     List<String> kpiCharges = kpiChargesLookup.stream().map(KpiCharge::getChargeId).toList();
 

@@ -125,20 +125,24 @@ public class DashboardService {
                         layout.w(),
                         layout.h(),
                         widget.getDisplayName());
-                widgetRepository.save(updatedWidget);
+                if (widget.getDashboardId().equals(dashboardId)) {
+                  widgetRepository.save(updatedWidget);
+                }
               });
     }
   }
 
   // add new widget to specific dashboard
   @Transactional
-  public void createWidget(UUID userId, UUID dashboardId, WidgetDTO request) {
+  public WidgetDTO createWidget(UUID userId, UUID dashboardId, WidgetDTO request) {
     getDashboardAndVerifyOwnership(userId, dashboardId);
+
+    UUID widgetId = (request.id() != null) ? request.id() : UUID.randomUUID();
 
     // Save in shared widget table
     Widget newWidget =
         new Widget(
-            request.id(),
+            widgetId,
             dashboardId,
             request.widgetType(),
             request.startX(),
@@ -151,14 +155,16 @@ public class DashboardService {
 
     // widget type specific persistence
     switch (request) {
-      case KpiWidgetDTO kpi -> kpiWidgetService.createKpiWidget(kpi);
-      case ChartWidgetDTO chart -> chartWidgetService.createChartWidget(chart);
+      case KpiWidgetDTO kpi -> kpiWidgetService.createKpiWidget(widgetId, kpi);
+      case ChartWidgetDTO chart -> chartWidgetService.createChartWidget(widgetId, chart);
     }
+
+    return mapToWidgetDTO(newWidget);
   }
 
   // update specific widget's visual or data configuration
   @Transactional
-  public WidgetDTO updateWidgetConfig(UUID userId, UUID widgetId, WidgetConfigUpdateDTO request) {
+  public void updateWidgetConfig(UUID userId, UUID widgetId, WidgetConfigUpdateDTO request) {
     Widget widget =
         widgetRepository
             .findById(widgetId)
@@ -171,8 +177,6 @@ public class DashboardService {
       case KpiWidgetConfigUpdateDTO kpi -> kpiWidgetService.updateKpiWidget(kpi);
       case ChartWidgetConfigUpdateDTO chart -> chartWidgetService.updateChartWidget(chart);
     }
-
-    return null;
   }
 
   private Dashboard getDashboardAndVerifyOwnership(UUID userId, UUID dashboardId) {

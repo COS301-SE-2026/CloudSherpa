@@ -25,13 +25,13 @@ public class ChartWidgetService {
   }
 
   @Transactional
-  public void createChartWidget(ChartWidgetDTO chartWidgetDto) {
+  public void createChartWidget(UUID widgetId, ChartWidgetDTO chartWidgetDto) {
 
     UUID widgetChartId = UUID.randomUUID();
     UUID chartResourceId = UUID.randomUUID();
 
     WidgetChart newWidgetChart =
-        new WidgetChart(widgetChartId, chartWidgetDto.id(), chartWidgetDto.chartType());
+        new WidgetChart(widgetChartId, widgetId, chartWidgetDto.chartType());
     ChartResource chartResource =
         new ChartResource(
             chartResourceId,
@@ -80,7 +80,7 @@ public class ChartWidgetService {
         widget.getType(),
         widget.getDisplayName(),
         widget.getStartX(),
-        widget.getStartX(),
+        widget.getStartY(),
         widget.getWidth(),
         widget.getHeight(),
         chart.getChartType(),

@@ -11,8 +11,8 @@ import java.util.UUID;
     property = "widgetType",
     visible = true)
 @JsonSubTypes({
-  @JsonSubTypes.Type(value = ChartWidgetConfigUpdateDTO.class, name = "chart"),
-  @JsonSubTypes.Type(value = KpiWidgetConfigUpdateDTO.class, name = "kpi")
+  @JsonSubTypes.Type(value = ChartWidgetConfigUpdateDTO.class, name = "CHART"),
+  @JsonSubTypes.Type(value = KpiWidgetConfigUpdateDTO.class, name = "KPI")
 })
 public sealed interface WidgetConfigUpdateDTO
     permits ChartWidgetConfigUpdateDTO, KpiWidgetConfigUpdateDTO {
