@@ -36,7 +36,7 @@ const normalizedDocsFormat = {
                     position,
                     hex,
                     rgb: chromaColor.css("rgb"),
-                    hsl: chromaColor.css("hsl").replace(/,/g, ""),
+                    hsl: chromaColor.css("hsl").replaceAll(",", ""),
                 });
             } else if (category === "spacing") {
                 docs.spacing.push({ name: token.path[1], value: extractValue(token) });

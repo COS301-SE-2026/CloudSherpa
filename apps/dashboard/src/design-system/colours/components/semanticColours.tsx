@@ -4,99 +4,34 @@ import { Card } from "@/components/atoms/card";
 import { useState, useRef } from "react";
 import { Check } from "lucide-react";
 
-const semanticPairs = [
-    {
-        name: "Background",
-        leftBg: "bg-background",
-        leftText: "text-foreground",
-        leftLabel: "bg-background",
-        rightBg: "bg-foreground",
-        rightText: "text-background",
-        rightLabel: "text-foreground",
-    },
-    {
-        name: "Card",
-        leftBg: "bg-card",
-        leftText: "text-card-foreground",
-        leftLabel: "bg-card",
-        rightBg: "bg-card-foreground",
-        rightText: "text-card",
-        rightLabel: "text-card-foreground",
-    },
-    {
-        name: "Popover",
-        leftBg: "bg-popover",
-        leftText: "text-popover-foreground",
-        leftLabel: "bg-popover",
-        rightBg: "bg-popover-foreground",
-        rightText: "text-popover",
-        rightLabel: "text-popover-foreground",
-    },
-    {
-        name: "Primary",
-        leftBg: "bg-primary",
-        leftText: "text-primary-foreground",
-        leftLabel: "bg-primary",
-        rightBg: "bg-primary-foreground",
-        rightText: "text-primary",
-        rightLabel: "text-primary-foreground",
-    },
-    {
-        name: "Secondary",
-        leftBg: "bg-secondary",
-        leftText: "text-secondary-foreground",
-        leftLabel: "bg-secondary",
-        rightBg: "bg-secondary-foreground",
-        rightText: "text-secondary",
-        rightLabel: "text-secondary-foreground",
-    },
-    {
-        name: "Muted",
-        leftBg: "bg-muted",
-        leftText: "text-muted-foreground",
-        leftLabel: "bg-muted",
-        rightBg: "bg-muted-foreground",
-        rightText: "text-muted",
-        rightLabel: "text-muted-foreground",
-    },
-    {
-        name: "Accent",
-        leftBg: "bg-accent",
-        leftText: "text-accent-foreground",
-        leftLabel: "bg-accent",
-        rightBg: "bg-accent-foreground",
-        rightText: "text-accent",
-        rightLabel: "text-accent-foreground",
-    },
-    {
-        name: "Destructive",
-        leftBg: "bg-destructive",
-        leftText: "text-destructive-foreground",
-        leftLabel: "bg-destructive",
-        rightBg: "bg-destructive-foreground",
-        rightText: "text-destructive",
-        rightLabel: "text-destructive-foreground",
-    },
-    {
-        name: "Success",
-        leftBg: "bg-success",
-        leftText: "text-success-foreground",
-        leftLabel: "bg-success",
-        rightBg: "bg-success-foreground",
-        rightText: "text-success",
-        rightLabel: "text-success-foreground",
-    },
-    {
-        name: "Warning",
-        leftBg: "bg-warning",
-        leftText: "text-warning-foreground",
-        leftLabel: "bg-warning",
-        rightBg: "bg-warning-foreground",
-        rightText: "text-warning",
-        rightLabel: "text-warning-foreground",
-    },
+const semanticNames = [
+    "background",
+    "card",
+    "popover",
+    "primary",
+    "secondary",
+    "muted",
+    "accent",
+    "destructive",
+    "success",
+    "warning",
 ];
 
+const generateSemanticPair = (baseName: string) => {
+    const title = baseName.charAt(0).toUpperCase() + baseName.slice(1);
+
+    const foregroundName = baseName === "background" ? "foreground" : `${baseName}-foreground`;
+
+    return {
+        name: title,
+        leftBg: `bg-${baseName}`,
+        leftText: `text-${foregroundName}`,
+        leftLabel: `bg-${baseName}`,
+        rightBg: `bg-${foregroundName}`,
+        rightText: `text-${baseName}`,
+        rightLabel: `text-${foregroundName}`,
+    };
+};
 interface ExpandingHalfProps {
     label: string;
     text: string;
@@ -126,6 +61,7 @@ function ExpandingHalf({ bg, label, text }: Readonly<ExpandingHalfProps>) {
     };
     return (
         <button
+            type="button"
             tabIndex={0}
             onClick={() => handleCopy(label)}
             onKeyDown={(e) => handleKeyDown(e, label)}
@@ -149,9 +85,10 @@ function ExpandingHalf({ bg, label, text }: Readonly<ExpandingHalfProps>) {
 }
 
 export default function SemanticColours() {
+    const pairs = semanticNames.map(generateSemanticPair);
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
-            {semanticPairs.map((pair) => (
+            {pairs.map((pair) => (
                 <div key={pair.name} className="space-y-3">
                     <h3 className="text-lg font-bold tracking-tight">{pair.name}</h3>
 
