@@ -21,6 +21,7 @@ import {
 } from "@/components/atoms/accordion";
 import { Dialog, DialogHeader, DialogContent, DialogTitle } from "@/components/atoms/dialog";
 import { useRouter } from "next/navigation";
+import {useNextStep} from "nextstepjs";
 
 /* 
 - the page needs to provide info about how to nav around clousherpa
@@ -118,6 +119,8 @@ interface KeyboardShortcuts {
 const SHORTCUT: KeyboardShortcuts[] = [{ key: ["ENTER"], function: "Submit form" }];
 
 export function HelpMenu() {
+    const {startNextStep} = useNextStep();
+    
     const router = useRouter();
 
     const [open, setOpen] = useState(false);
@@ -161,7 +164,11 @@ export function HelpMenu() {
             return;
         }
 
-        //need to add one for a first time user
+        if(link.action === "first time user"){
+            setOpen(false);
+            startNextStep("dashboard");
+            return;
+        }
 
         if (link.href) {
             setOpen(false);

@@ -72,6 +72,7 @@ interface Documents {
     name: string;
     category: string;
     timeToRead: number;
+    href : string;
 }
 
 const DOCUMENTS: Documents[] = [
@@ -80,6 +81,7 @@ const DOCUMENTS: Documents[] = [
         name: "Connecting your AWS account",
         category: "Connections",
         timeToRead: 3,
+        href : "/helpMenu/documents/connections"
     },
 
     {
@@ -87,6 +89,7 @@ const DOCUMENTS: Documents[] = [
         name: "How to manage your reasources",
         category: "Resources",
         timeToRead: 3,
+        href : "/helpMenu/documents/resources"
     },
 ];
 
@@ -327,12 +330,26 @@ export default function DocumentsAndTutorials() {
                                 <div className="col-span-2 flex flex-col gap-3">
                                     {searchDocument.map((docs) => (
                                         <Card
-                                            key={docs.id}
+                                            key={docs.id} role = "button" tabIndex = {0}
+
+                                            onClick = {() => router.push(docs.href)}
+
+                                            onKeyDown = {(keyPress) => {
+                                                if(keyPress.key === "Enter" || keyPress.key === " "){
+                                                    router.push(docs.href);
+                                                }
+                                            }}
+
                                             className="cursor-pointer gap-0 overflow-hidden border-border bg-muted/40 p-0 transition-color hover:border-primary/50"
                                         >
                                             <Button
                                                 variant="ghost"
                                                 className="h-auto w-full items-center justify-between rounded-none px-4 py-3 text-left hover:bg-transparent"
+
+                                                onClick = {(clicked) => {
+                                                    clicked.stopPropagation();
+                                                    router.push(docs.href);
+                                                }}
                                             >
                                                 <span className="min-w-0">
                                                     <span className="block text-[13px] font-normal text-foreground">
