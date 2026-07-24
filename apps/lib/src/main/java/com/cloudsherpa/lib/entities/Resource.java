@@ -2,6 +2,8 @@ package com.cloudsherpa.lib.entities;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -11,8 +13,6 @@ import java.util.Map;
 import java.util.UUID;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 
 @Entity
 @Table(name = "resource")
@@ -86,6 +86,10 @@ public class Resource {
     return resourceType;
   }
 
+  public String getResourceName() {
+    return resourceName;
+  }
+
   public Map<String, Object> getTags() {
     return tags;
   }
@@ -102,7 +106,7 @@ public class Resource {
     return status;
   }
 
-  public String getResourceName() {
-    return resourceName;
+  public void setStatus(StatusEnum status) {
+    this.status = status;
   }
 }

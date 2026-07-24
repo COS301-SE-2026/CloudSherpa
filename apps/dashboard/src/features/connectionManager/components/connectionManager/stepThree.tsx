@@ -193,7 +193,7 @@ export default function StepThree({
             await createAwsConnection(request);
 
             onComplete(period);
-            router.push("/dashboard");
+            router.push("/manageConnections");
         } catch (err) {
             setError(err instanceof Error ? err.message : "Unable to create AWS connection.");
         } finally {

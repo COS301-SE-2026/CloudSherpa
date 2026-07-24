@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,6 +58,70 @@ public class AwsConnectionPersistenceService {
     createCredential(account, request.credentials());
     createResources(account, request.resources());
     createBillingExportConfig(account, request.billingConfig());
+  }
+
+  @Transactional
+  public boolean updateAccountName(UUID userId, UUID accountId, String name) {
+    Optional<CloudAccount> accountOpt = cloudAccountRepository.findById(accountId);
+
+    if (accountOpt.isEmpty()) {
+      return false;
+    }
+    CloudAccount account = accountOpt.get();
+
+    UUID accountOwnerId = account.getConnection().getUserId();
+
+    if (!accountOwnerId.equals(userId)) {
+      return false;
+    }
+    account.setDisplayName(name);
+    cloudAccountRepository.save(account);
+
+    return true;
+  }
+
+  @Transactional
+  public boolean deleteAccount(UUID userId, UUID accountId) {
+    Optional<CloudAccount> accountOpt = cloudAccountRepository.findById(accountId);
+
+    if (accountOpt.isEmpty()) {
+      return false;
+    }
+    CloudAccount account = accountOpt.get();
+
+    UUID accountOwnerId = account.getConnection().getUserId();
+
+    if (!accountOwnerId.equals(userId)) {
+      return false;
+    }
+    resourceRepository.findByAccountId(accountId).forEach(resourceRepository::delete);
+    cloudAccountRepository.delete(account);
+
+    return true;
+  }
+
+  @Transactional
+  public boolean updateResourceStatus(UUID userId, UUID resourceId, StatusEnum status) {
+
+    Optional<Resource> resourceOpt = resourceRepository.findById(resourceId);
+
+    if (resourceOpt.isEmpty()) {
+      return false;
+    }
+
+    Resource resource = resourceOpt.get();
+
+    UUID resourceOwnerId = resource.getAccount().getConnection().getUserId();
+
+    if (!resourceOwnerId.equals(userId)) {
+      return false;
+    }
+
+    resource.setStatus(status);
+
+    resourceRepository.save(resource);
+
+    return true;
   }
 
   private CloudConnection getOrCreateConnection(PersistAwsConnectionRequest request) {
