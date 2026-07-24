@@ -12,26 +12,8 @@ import com.cloudsherpa.ingestion.models.UsageRecordModel;
 import com.cloudsherpa.ingestion.provider.aws.monitoring.AwsCloudWatchMetricProvider;
 import com.cloudsherpa.ingestion.provider.aws.monitoring.CloudWatchMetricProvider;
 import com.cloudsherpa.ingestion.provider.aws.monitoring.MockCloudWatchMetricProvider;
-import com.cloudsherpa.ingestion.provider.aws.services.ec2.AwsEc2Service;
-import com.cloudsherpa.ingestion.provider.aws.services.ec2.Ec2Service;
-import com.cloudsherpa.ingestion.provider.aws.services.ecs.AwsEcsService;
-import com.cloudsherpa.ingestion.provider.aws.services.ecs.EcsService;
-import com.cloudsherpa.ingestion.provider.aws.services.eks.AwsEksService;
-import com.cloudsherpa.ingestion.provider.aws.services.eks.EksService;
-import com.cloudsherpa.ingestion.provider.aws.services.elasticache.AwsElastiCacheService;
-import com.cloudsherpa.ingestion.provider.aws.services.elasticache.ElastiCacheService;
-import com.cloudsherpa.ingestion.provider.aws.services.lambda.AwsLambdaService;
-import com.cloudsherpa.ingestion.provider.aws.services.lambda.LambdaService;
-import com.cloudsherpa.ingestion.provider.aws.services.opensearch.AwsOpenSearchService;
-import com.cloudsherpa.ingestion.provider.aws.services.opensearch.OpenSearchService;
-import com.cloudsherpa.ingestion.provider.aws.services.rds.AwsRdsService;
-import com.cloudsherpa.ingestion.provider.aws.services.rds.RdsService;
-import com.cloudsherpa.ingestion.provider.aws.services.redshift.AwsRedshiftService;
-import com.cloudsherpa.ingestion.provider.aws.services.redshift.RedshiftService;
 import com.cloudsherpa.ingestion.provider.scanner.ResourceDiscoveryService;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
@@ -44,31 +26,13 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
 
   private final CloudWatchMetricProvider metricProvider;
   private final CloudWatchMetricProvider mockMetricProvider;
-  private final Ec2Service ec2Service;
-  private final EcsService ecsService;
-  private final EksService eksService;
-  private final LambdaService lambdaService;
-  private final RdsService rdsService;
-  private final ElastiCacheService elasticacheService;
-  private final OpenSearchService opensearchService;
-  private final RedshiftService redshiftService;
   private final ResourceDiscoveryService discoveryService;
 
   public AwsCloudConnector(ResourceDiscoveryService resourceDiscoveryService) {
     metricProvider = new AwsCloudWatchMetricProvider();
     mockMetricProvider = new MockCloudWatchMetricProvider();
-    ec2Service = new AwsEc2Service();
-    ecsService = new AwsEcsService();
-    eksService = new AwsEksService();
-    lambdaService = new AwsLambdaService();
-    rdsService = new AwsRdsService();
-    elasticacheService = new AwsElastiCacheService();
-    opensearchService = new AwsOpenSearchService();
-    redshiftService = new AwsRedshiftService();
     discoveryService = resourceDiscoveryService;
   }
-
-  private static final Logger log = LoggerFactory.getLogger(AwsCloudConnector.class);
 
   @Override
   public List<UsageRecordModel> fetchUsage(
