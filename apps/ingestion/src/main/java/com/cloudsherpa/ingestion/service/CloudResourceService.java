@@ -9,9 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Service;
 
-/**
- * Intermediary between the CloudResourceController and the ingestion pipeline.
- */
+/** Intermediary between the CloudResourceController and the ingestion pipeline. */
 @Service
 public class CloudResourceService {
   private final CloudConnectorFactory factory;
@@ -27,7 +25,8 @@ public class CloudResourceService {
     return services;
   }
 
-  public List<ResourceDetail> getAllResources(String provider, CloudCredentials credentials, List<String> services) {
+  public List<ResourceDetail> getAllResources(
+      String provider, CloudCredentials credentials, List<String> services) {
     List<ResourceDetail> resources = new ArrayList<>();
     CloudConnector connector = factory.getConnector(provider);
     resources.addAll(connector.getAllResources(credentials, services));

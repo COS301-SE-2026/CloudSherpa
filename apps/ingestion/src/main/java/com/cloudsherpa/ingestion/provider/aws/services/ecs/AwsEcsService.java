@@ -19,10 +19,11 @@ public class AwsEcsService implements EcsService {
   public List<RegionalArn> getAllEcsClusterArns(CloudCredentials credentials) {
     List<RegionalArn> regionalArns = new ArrayList<>();
     for (Region region : Region.regions()) {
-      try (EcsClient ecs = EcsClient.builder()
-          .region(region)
-          .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
-          .build()) {
+      try (EcsClient ecs =
+          EcsClient.builder()
+              .region(region)
+              .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
+              .build()) {
 
         regionalArns.add(new RegionalArn(ecs.listClusters().clusterArns(), region));
       } catch (Exception e) {
@@ -37,24 +38,27 @@ public class AwsEcsService implements EcsService {
   public List<ResourceDetail> getAllEcsClustersWithTags(CloudCredentials credentials) {
     List<ResourceDetail> resources = new ArrayList<>();
     for (Region region : Region.regions()) {
-      try (EcsClient ecs = EcsClient.builder()
-          .region(region)
-          .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
-          .build()) {
+      try (EcsClient ecs =
+          EcsClient.builder()
+              .region(region)
+              .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
+              .build()) {
 
         List<String> clusterArns = ecs.listClusters().clusterArns();
 
-        DescribeClustersResponse response = ecs
-            .describeClusters(r -> r.clusters(clusterArns).include(ClusterField.TAGS));
+        DescribeClustersResponse response =
+            ecs.describeClusters(r -> r.clusters(clusterArns).include(ClusterField.TAGS));
 
         resources.addAll(
             response.clusters().stream()
                 .map(
                     cluster -> {
-                      Map<String, String> tags = cluster.tags().stream()
-                          .collect(Collectors.toMap(Tag::key, Tag::value, (a, b) -> b));
-                      String name = ResourceDetail.resolveName(
-                          cluster.clusterName(), cluster.clusterName(), tags);
+                      Map<String, String> tags =
+                          cluster.tags().stream()
+                              .collect(Collectors.toMap(Tag::key, Tag::value, (a, b) -> b));
+                      String name =
+                          ResourceDetail.resolveName(
+                              cluster.clusterName(), cluster.clusterName(), tags);
                       return new ResourceDetail(
                           name, name, "ClusterName", "AWS/ECS", region.id(), tags);
                     })

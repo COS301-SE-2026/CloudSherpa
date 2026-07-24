@@ -25,12 +25,14 @@ public class AwsOpenSearchService implements OpenSearchService {
     List<DomainInfo> domains = new ArrayList<>();
     List<RegionalDomain> regionalDomains = new ArrayList<>();
     for (Region region : Region.regions()) {
-      try (OpenSearchClient client = OpenSearchClient.builder()
-          .region(region)
-          .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
-          .build()) {
+      try (OpenSearchClient client =
+          OpenSearchClient.builder()
+              .region(region)
+              .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
+              .build()) {
 
-        ListDomainNamesResponse response = client.listDomainNames(ListDomainNamesRequest.builder().build());
+        ListDomainNamesResponse response =
+            client.listDomainNames(ListDomainNamesRequest.builder().build());
         domains = response.domainNames();
         regionalDomains.add(new RegionalDomain(domains, region));
       } catch (Exception e) {
@@ -46,21 +48,24 @@ public class AwsOpenSearchService implements OpenSearchService {
     List<ResourceDetail> resources = new ArrayList<>();
 
     for (RegionalDomain regionalDomainInfo : getAllOpenSearchDomains(credentials)) {
-      try (OpenSearchClient client = OpenSearchClient.builder()
-          .region(regionalDomainInfo.region())
-          .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
-          .build()) {
+      try (OpenSearchClient client =
+          OpenSearchClient.builder()
+              .region(regionalDomainInfo.region())
+              .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
+              .build()) {
         for (DomainInfo domainInfo : regionalDomainInfo.domains()) {
-          DescribeDomainResponse domainResponse = client.describeDomain(
-              DescribeDomainRequest.builder().domainName(domainInfo.domainName()).build());
+          DescribeDomainResponse domainResponse =
+              client.describeDomain(
+                  DescribeDomainRequest.builder().domainName(domainInfo.domainName()).build());
 
           DomainStatus domain = domainResponse.domainStatus();
 
-          Map<String, String> tags = client
-              .listTags(ListTagsRequest.builder().arn(domain.arn()).build())
-              .tagList()
-              .stream()
-              .collect(Collectors.toMap(Tag::key, Tag::value, (a, b) -> b));
+          Map<String, String> tags =
+              client
+                  .listTags(ListTagsRequest.builder().arn(domain.arn()).build())
+                  .tagList()
+                  .stream()
+                  .collect(Collectors.toMap(Tag::key, Tag::value, (a, b) -> b));
           String name = ResourceDetail.resolveName(domain.domainName(), domain.domainName(), tags);
           resources.add(
               new ResourceDetail(

@@ -19,10 +19,11 @@ public class AwsRedshiftService implements RedshiftService {
   public List<RegionalCluster> getAllRedshiftClusters(CloudCredentials credentials) {
     List<RegionalCluster> regionalClusters = new ArrayList<>();
     for (Region region : Region.regions()) {
-      try (RedshiftClient client = RedshiftClient.builder()
-          .region(region)
-          .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
-          .build()) {
+      try (RedshiftClient client =
+          RedshiftClient.builder()
+              .region(region)
+              .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
+              .build()) {
 
         DescribeClustersResponse response = client.describeClusters();
         regionalClusters.add(new RegionalCluster(response.clusters(), region));
@@ -45,8 +46,9 @@ public class AwsRedshiftService implements RedshiftService {
     for (RegionalCluster regionalCluster : getAllRedshiftClusters(credentials)) {
       for (Cluster cluster : regionalCluster.clusters()) {
         Map<String, String> tags = getTagsForCluster(cluster);
-        String name = ResourceDetail.resolveName(
-            cluster.clusterIdentifier(), cluster.clusterIdentifier(), tags);
+        String name =
+            ResourceDetail.resolveName(
+                cluster.clusterIdentifier(), cluster.clusterIdentifier(), tags);
         resources.add(
             new ResourceDetail(
                 cluster.clusterIdentifier(),

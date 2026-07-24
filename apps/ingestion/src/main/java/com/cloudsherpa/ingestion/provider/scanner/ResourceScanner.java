@@ -1,9 +1,8 @@
 package com.cloudsherpa.ingestion.provider.scanner;
 
-import java.util.List;
-
 import com.cloudsherpa.ingestion.connector.CloudCredentials;
 import com.cloudsherpa.ingestion.models.ResourceDetail;
+import java.util.List;
 
 public interface ResourceScanner {
 

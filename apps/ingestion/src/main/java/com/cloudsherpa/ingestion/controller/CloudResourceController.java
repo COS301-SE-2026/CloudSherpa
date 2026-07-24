@@ -16,7 +16,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "Cloud Resource Discovery", description = "Endpoints for discovering which services and resources are available from cloud providers")
+@Tag(
+    name = "Cloud Resource Discovery",
+    description =
+        "Endpoints for discovering which services and resources are available from cloud providers")
 @RestController
 @RequestMapping("/api/cloud-resources")
 public class CloudResourceController {
@@ -27,32 +30,62 @@ public class CloudResourceController {
     this.cloudResourceService = cloudResourceService;
   }
 
-  @Operation(summary = "Get all supported services for a cloud provider", description = "Retrieves a list of all services that can be monitored by CloudSherpa for a given provider")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Cloud services successfully returned", content = @Content(mediaType = "application/json", schema = @Schema(implementation = List.class)))
-  })
+  @Operation(
+      summary = "Get all supported services for a cloud provider",
+      description =
+          "Retrieves a list of all services that can be monitored by CloudSherpa for a given provider")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Cloud services successfully returned",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = List.class)))
+      })
   @PostMapping("/services")
   public List<String> getAllOfferedServices(
-      @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Cloud provider name (e.g. aws, azure, gcp)", required = true, content = @Content(schema = @Schema(implementation = String.class))) @RequestBody String provider) {
+      @io.swagger.v3.oas.annotations.parameters.RequestBody(
+              description = "Cloud provider name (e.g. aws, azure, gcp)",
+              required = true,
+              content = @Content(schema = @Schema(implementation = String.class)))
+          @RequestBody
+          String provider) {
 
     return cloudResourceService.getAllOfferedServices(provider);
   }
 
-  @Operation(summary = "Get all resources for a cloud provider", description = "Retrieves all discoverable resources for a cloud provider using the supplied credentials")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Resources successfully returned", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResourceDetail.class)))
-  })
+  @Operation(
+      summary = "Get all resources for a cloud provider",
+      description =
+          "Retrieves all discoverable resources for a cloud provider using the supplied credentials")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Resources successfully returned",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ResourceDetail.class)))
+      })
   @PostMapping("/resources/{provider}")
   public List<ResourceDetail> getAllResources(
-      @PathVariable String provider, @RequestBody CloudCredentials credentials, @RequestBody List<String> services) {
+      @PathVariable String provider,
+      @RequestBody CloudCredentials credentials,
+      @RequestBody List<String> services) {
 
     return cloudResourceService.getAllResources(provider, credentials, services);
   }
 
-  @Operation(summary = "Generate AWS IAM policy", description = "Generates a least-privilege AWS IAM policy for the selected services")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "IAM policy successfully generated")
-  })
+  @Operation(
+      summary = "Generate AWS IAM policy",
+      description = "Generates a least-privilege AWS IAM policy for the selected services")
+  @ApiResponses(
+      value = {
+        @ApiResponse(responseCode = "200", description = "IAM policy successfully generated")
+      })
   @PostMapping("/aws/permissions")
   public String generateAwsPermissionsPolicy(@RequestBody List<String> services) {
 

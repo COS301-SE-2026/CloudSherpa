@@ -1,12 +1,10 @@
 package com.cloudsherpa.ingestion.provider.aws.services.opensearch;
 
-import java.util.List;
-
-import org.springframework.stereotype.Component;
-
 import com.cloudsherpa.ingestion.connector.CloudCredentials;
 import com.cloudsherpa.ingestion.models.ResourceDetail;
 import com.cloudsherpa.ingestion.provider.scanner.ResourceScanner;
+import java.util.List;
+import org.springframework.stereotype.Component;
 
 @Component
 public class AwsOpenSearchScanner implements ResourceScanner {
