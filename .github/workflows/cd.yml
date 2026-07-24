@@ -12,6 +12,10 @@ on:
             - "infra/deployment/**"
             - ".github/workflows/cd.yml"
     pull_request:
+        types:
+          - opened
+          - synchronize
+          - reopened
         branches:
             - staging
             - main
