@@ -1,11 +1,12 @@
 package com.cloudsherpa.service.dashboard.dto;
 
 import com.cloudsherpa.lib.entities.ChartTypeEnum;
+import com.cloudsherpa.lib.entities.TypeEnum;
 import java.util.UUID;
 
 public record ChartWidgetConfigUpdateDTO(
     UUID id,
-    String widgetType,
+    TypeEnum widgetType,
     String displayName,
     ChartTypeEnum chartType,
     UUID resourceId,

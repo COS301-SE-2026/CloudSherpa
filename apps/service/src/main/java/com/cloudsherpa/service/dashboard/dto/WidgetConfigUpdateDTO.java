@@ -1,5 +1,6 @@
 package com.cloudsherpa.service.dashboard.dto;
 
+import com.cloudsherpa.lib.entities.TypeEnum;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.util.List;
@@ -18,7 +19,7 @@ public sealed interface WidgetConfigUpdateDTO
     permits ChartWidgetConfigUpdateDTO, KpiWidgetConfigUpdateDTO {
   UUID id();
 
-  String widgetType();
+  TypeEnum widgetType();
 
   String displayName();
 

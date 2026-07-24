@@ -84,23 +84,47 @@ public class Widget {
     return type;
   }
 
+  public void setType(TypeEnum type) {
+    this.type = type;
+  }
+
   public Integer getStartX() {
     return startX;
+  }
+
+  public void setStartX(Integer startX) {
+    this.startX = startX;
   }
 
   public Integer getStartY() {
     return startY;
   }
 
+  public void setStartY(Integer startY) {
+    this.startY = startY;
+  }
+
   public Integer getWidth() {
     return width;
+  }
+
+  public void setWidth(Integer width) {
+    this.width = width;
   }
 
   public Integer getHeight() {
     return height;
   }
 
+  public void setHeight(Integer height) {
+    this.height = height;
+  }
+
   public String getDisplayName() {
     return displayName;
+  }
+
+  public void setDisplayName(String displayName) {
+    this.displayName = displayName;
   }
 }

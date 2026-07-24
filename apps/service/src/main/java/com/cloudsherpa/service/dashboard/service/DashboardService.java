@@ -174,6 +174,12 @@ public class DashboardService {
 
     getDashboardAndVerifyOwnership(userId, widget.getDashboardId());
 
+    // update mutable widget shared table fields
+    widget.setDisplayName(request.displayName());
+    widget.setType(request.widgetType());
+
+    widgetRepository.save(widget);
+
     switch (request) {
       case KpiWidgetConfigUpdateDTO kpi -> kpiWidgetService.updateKpiWidget(kpi);
       case ChartWidgetConfigUpdateDTO chart -> chartWidgetService.updateChartWidget(chart);
