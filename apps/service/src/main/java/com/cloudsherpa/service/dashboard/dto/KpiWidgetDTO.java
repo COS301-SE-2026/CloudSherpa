@@ -14,17 +14,4 @@ public record KpiWidgetDTO(
     Integer height,
     List<String> chargeIds,
     Integer aggregationWindowDays)
-    implements WidgetDTO {
-  public WidgetDTO withUserId(UUID userId) {
-    return new KpiWidgetDTO(
-        id,
-        widgetType,
-        displayName,
-        startX,
-        startY,
-        width,
-        height,
-        chargeIds,
-        aggregationWindowDays);
-  }
-}
+    implements WidgetDTO {}
