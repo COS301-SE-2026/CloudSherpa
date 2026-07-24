@@ -17,12 +17,12 @@
     --muted-foreground: var(--color-neutral-500);
     --accent: var(--color-neutral-100);
     --accent-foreground: var(--color-neutral-900);
-    --destructive: var(--color-error-500);
-    --destructive-foreground: var(--color-error-50);
-    --success: var(--color-success-500);
-    --success-foreground: var(--color-success-50);
-    --warning: var(--color-warning-500);
-    --warning-foreground: var(--color-warning-50);
+    --destructive: var(--color-red-500);
+    --destructive-foreground: var(--color-red-50);
+    --success: var(--color-green-500);
+    --success-foreground: var(--color-green-50);
+    --warning: var(--color-orange-500);
+    --warning-foreground: var(--color-orange-50);
     --border: var(--color-neutral-200);
     --input: var(--color-neutral-200);
     --ring: var(--color-brand-500);

@@ -22,14 +22,14 @@
             "accent": { "$type": "color", "$value": "{color.neutral.100}" },
             "accent-foreground": { "$type": "color", "$value": "{color.neutral.900}" },
 
-            "destructive": { "$type": "color", "$value": "{color.error.500}" },
-            "destructive-foreground": { "$type": "color", "$value": "{color.error.50}" },
+            "destructive": { "$type": "color", "$value": "{color.red.500}" },
+            "destructive-foreground": { "$type": "color", "$value": "{color.red.50}" },
 
-            "success": { "$type": "color", "$value": "{color.success.500}" },
-            "success-foreground": { "$type": "color", "$value": "{color.success.50}" },
+            "success": { "$type": "color", "$value": "{color.green.500}" },
+            "success-foreground": { "$type": "color", "$value": "{color.green.50}" },
 
-            "warning": { "$type": "color", "$value": "{color.warning.500}" },
-            "warning-foreground": { "$type": "color", "$value": "{color.warning.50}" },
+            "warning": { "$type": "color", "$value": "{color.orange.500}" },
+            "warning-foreground": { "$type": "color", "$value": "{color.orange.50}" },
 
             "border": { "$type": "color", "$value": "{color.neutral.200}" },
             "input": { "$type": "color", "$value": "{color.neutral.200}" },

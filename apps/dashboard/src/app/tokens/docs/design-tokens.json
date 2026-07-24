@@ -1,0 +1,573 @@
+{
+    "colors": [
+        {
+            "name": "brand",
+            "shades": [
+                {
+                    "position": 50,
+                    "hex": "#eff6ff",
+                    "rgb": "rgb(239 246 255)",
+                    "hsl": "hsl(213.75deg 100% 96.86%)"
+                },
+                {
+                    "position": 100,
+                    "hex": "#dbeafe",
+                    "rgb": "rgb(219 234 254)",
+                    "hsl": "hsl(214.29deg 94.59% 92.75%)"
+                },
+                {
+                    "position": 200,
+                    "hex": "#bedbff",
+                    "rgb": "rgb(190 219 255)",
+                    "hsl": "hsl(213.23deg 100% 87.25%)"
+                },
+                {
+                    "position": 300,
+                    "hex": "#8ec5ff",
+                    "rgb": "rgb(142 197 255)",
+                    "hsl": "hsl(210.8deg 100% 77.84%)"
+                },
+                {
+                    "position": 400,
+                    "hex": "#51a2ff",
+                    "rgb": "rgb(81 162 255)",
+                    "hsl": "hsl(212.07deg 100% 65.88%)"
+                },
+                {
+                    "position": 500,
+                    "hex": "#2b7fff",
+                    "rgb": "rgb(43 127 255)",
+                    "hsl": "hsl(216.23deg 100% 58.43%)"
+                },
+                {
+                    "position": 600,
+                    "hex": "#155dfc",
+                    "rgb": "rgb(21 93 252)",
+                    "hsl": "hsl(221.3deg 97.47% 53.53%)"
+                },
+                {
+                    "position": 700,
+                    "hex": "#1447e6",
+                    "rgb": "rgb(20 71 230)",
+                    "hsl": "hsl(225.43deg 84% 49.02%)"
+                },
+                {
+                    "position": 800,
+                    "hex": "#193cb8",
+                    "rgb": "rgb(25 60 184)",
+                    "hsl": "hsl(226.79deg 76.08% 40.98%)"
+                },
+                {
+                    "position": 900,
+                    "hex": "#1c398e",
+                    "rgb": "rgb(28 57 142)",
+                    "hsl": "hsl(224.74deg 67.06% 33.33%)"
+                },
+                {
+                    "position": 950,
+                    "hex": "#162456",
+                    "rgb": "rgb(22 36 86)",
+                    "hsl": "hsl(226.88deg 59.26% 21.18%)"
+                }
+            ]
+        },
+        {
+            "name": "neutral",
+            "shades": [
+                {
+                    "position": 50,
+                    "hex": "#e3e9ef",
+                    "rgb": "rgb(227 233 239)",
+                    "hsl": "hsl(210deg 27.27% 91.37%)"
+                },
+                {
+                    "position": 100,
+                    "hex": "#d8dee4",
+                    "rgb": "rgb(216 222 228)",
+                    "hsl": "hsl(210deg 18.18% 87.06%)"
+                },
+                {
+                    "position": 200,
+                    "hex": "#c0c6cc",
+                    "rgb": "rgb(192 198 204)",
+                    "hsl": "hsl(210deg 10.53% 77.65%)"
+                },
+                {
+                    "position": 300,
+                    "hex": "#a9afb5",
+                    "rgb": "rgb(169 175 181)",
+                    "hsl": "hsl(210deg 7.5% 68.63%)"
+                },
+                {
+                    "position": 400,
+                    "hex": "#91979d",
+                    "rgb": "rgb(145 151 157)",
+                    "hsl": "hsl(210deg 5.77% 59.22%)"
+                },
+                {
+                    "position": 500,
+                    "hex": "#797f85",
+                    "rgb": "rgb(121 127 133)",
+                    "hsl": "hsl(210deg 4.72% 49.8%)"
+                },
+                {
+                    "position": 600,
+                    "hex": "#62686e",
+                    "rgb": "rgb(98 104 110)",
+                    "hsl": "hsl(210deg 5.77% 40.78%)"
+                },
+                {
+                    "position": 700,
+                    "hex": "#3f454b",
+                    "rgb": "rgb(63 69 75)",
+                    "hsl": "hsl(210deg 8.7% 27.06%)"
+                },
+                {
+                    "position": 800,
+                    "hex": "#33393f",
+                    "rgb": "rgb(51 57 63)",
+                    "hsl": "hsl(210deg 10.53% 22.35%)"
+                },
+                {
+                    "position": 900,
+                    "hex": "#1c2228",
+                    "rgb": "rgb(28 34 40)",
+                    "hsl": "hsl(210deg 17.65% 13.33%)"
+                },
+                {
+                    "position": 950,
+                    "hex": "#151b21",
+                    "rgb": "rgb(21 27 33)",
+                    "hsl": "hsl(210deg 22.22% 10.59%)"
+                }
+            ]
+        },
+        {
+            "name": "red",
+            "shades": [
+                {
+                    "position": 50,
+                    "hex": "#fbe9e9",
+                    "rgb": "rgb(251 233 233)",
+                    "hsl": "hsl(0deg 69.23% 94.9%)"
+                },
+                {
+                    "position": 100,
+                    "hex": "#f7d4d4",
+                    "rgb": "rgb(247 212 212)",
+                    "hsl": "hsl(0deg 68.63% 90%)"
+                },
+                {
+                    "position": 200,
+                    "hex": "#efa9a9",
+                    "rgb": "rgb(239 169 169)",
+                    "hsl": "hsl(0deg 68.63% 80%)"
+                },
+                {
+                    "position": 300,
+                    "hex": "#e77e7e",
+                    "rgb": "rgb(231 126 126)",
+                    "hsl": "hsl(0deg 68.63% 70%)"
+                },
+                {
+                    "position": 400,
+                    "hex": "#df5353",
+                    "rgb": "rgb(223 83 83)",
+                    "hsl": "hsl(0deg 68.63% 60%)"
+                },
+                {
+                    "position": 500,
+                    "hex": "#d72828",
+                    "rgb": "rgb(215 40 40)",
+                    "hsl": "hsl(0deg 68.63% 50%)"
+                },
+                {
+                    "position": 600,
+                    "hex": "#ac2020",
+                    "rgb": "rgb(172 32 32)",
+                    "hsl": "hsl(0deg 68.63% 40%)"
+                },
+                {
+                    "position": 700,
+                    "hex": "#811818",
+                    "rgb": "rgb(129 24 24)",
+                    "hsl": "hsl(0deg 68.63% 30%)"
+                },
+                {
+                    "position": 800,
+                    "hex": "#561010",
+                    "rgb": "rgb(86 16 16)",
+                    "hsl": "hsl(0deg 68.63% 20%)"
+                },
+                {
+                    "position": 900,
+                    "hex": "#2b0808",
+                    "rgb": "rgb(43 8 8)",
+                    "hsl": "hsl(0deg 68.63% 10%)"
+                },
+                {
+                    "position": 950,
+                    "hex": "#1e0606",
+                    "rgb": "rgb(30 6 6)",
+                    "hsl": "hsl(0deg 66.67% 7.06%)"
+                }
+            ]
+        },
+        {
+            "name": "orange",
+            "shades": [
+                {
+                    "position": 50,
+                    "hex": "#fbf3e9",
+                    "rgb": "rgb(251 243 233)",
+                    "hsl": "hsl(33.33deg 69.23% 94.9%)"
+                },
+                {
+                    "position": 100,
+                    "hex": "#f7e6d4",
+                    "rgb": "rgb(247 230 212)",
+                    "hsl": "hsl(30.86deg 68.63% 90%)"
+                },
+                {
+                    "position": 200,
+                    "hex": "#f0cda8",
+                    "rgb": "rgb(240 205 168)",
+                    "hsl": "hsl(30.83deg 70.59% 80%)"
+                },
+                {
+                    "position": 300,
+                    "hex": "#e8b47d",
+                    "rgb": "rgb(232 180 125)",
+                    "hsl": "hsl(30.84deg 69.93% 70%)"
+                },
+                {
+                    "position": 400,
+                    "hex": "#e09b52",
+                    "rgb": "rgb(224 155 82)",
+                    "hsl": "hsl(30.85deg 69.61% 60%)"
+                },
+                {
+                    "position": 500,
+                    "hex": "#d98226",
+                    "rgb": "rgb(217 130 38)",
+                    "hsl": "hsl(30.84deg 70.2% 50%)"
+                },
+                {
+                    "position": 600,
+                    "hex": "#ad681f",
+                    "rgb": "rgb(173 104 31)",
+                    "hsl": "hsl(30.85deg 69.61% 40%)"
+                },
+                {
+                    "position": 700,
+                    "hex": "#824e17",
+                    "rgb": "rgb(130 78 23)",
+                    "hsl": "hsl(30.84deg 69.93% 30%)"
+                },
+                {
+                    "position": 800,
+                    "hex": "#57340f",
+                    "rgb": "rgb(87 52 15)",
+                    "hsl": "hsl(30.83deg 70.59% 20%)"
+                },
+                {
+                    "position": 900,
+                    "hex": "#2b1a08",
+                    "rgb": "rgb(43 26 8)",
+                    "hsl": "hsl(30.86deg 68.63% 10%)"
+                },
+                {
+                    "position": 950,
+                    "hex": "#1e1205",
+                    "rgb": "rgb(30 18 5)",
+                    "hsl": "hsl(31.2deg 71.43% 6.86%)"
+                }
+            ]
+        },
+        {
+            "name": "green",
+            "shades": [
+                {
+                    "position": 50,
+                    "hex": "#ebfbea",
+                    "rgb": "rgb(235 251 234)",
+                    "hsl": "hsl(116.47deg 68% 95.1%)"
+                },
+                {
+                    "position": 100,
+                    "hex": "#d7f7d4",
+                    "rgb": "rgb(215 247 212)",
+                    "hsl": "hsl(114.86deg 68.63% 90%)"
+                },
+                {
+                    "position": 200,
+                    "hex": "#b0eeaa",
+                    "rgb": "rgb(176 238 170)",
+                    "hsl": "hsl(114.71deg 66.67% 80%)"
+                },
+                {
+                    "position": 300,
+                    "hex": "#88e67f",
+                    "rgb": "rgb(136 230 127)",
+                    "hsl": "hsl(114.76deg 67.32% 70%)"
+                },
+                {
+                    "position": 400,
+                    "hex": "#60dd55",
+                    "rgb": "rgb(96 221 85)",
+                    "hsl": "hsl(115.15deg 66.67% 60%)"
+                },
+                {
+                    "position": 500,
+                    "hex": "#38d52a",
+                    "rgb": "rgb(56 213 42)",
+                    "hsl": "hsl(115.09deg 67.06% 50%)"
+                },
+                {
+                    "position": 600,
+                    "hex": "#2daa22",
+                    "rgb": "rgb(45 170 34)",
+                    "hsl": "hsl(115.15deg 66.67% 40%)"
+                },
+                {
+                    "position": 700,
+                    "hex": "#228019",
+                    "rgb": "rgb(34 128 25)",
+                    "hsl": "hsl(114.76deg 67.32% 30%)"
+                },
+                {
+                    "position": 800,
+                    "hex": "#175511",
+                    "rgb": "rgb(23 85 17)",
+                    "hsl": "hsl(114.71deg 66.67% 20%)"
+                },
+                {
+                    "position": 900,
+                    "hex": "#0b2b08",
+                    "rgb": "rgb(11 43 8)",
+                    "hsl": "hsl(114.86deg 68.63% 10%)"
+                },
+                {
+                    "position": 950,
+                    "hex": "#081e06",
+                    "rgb": "rgb(8 30 6)",
+                    "hsl": "hsl(115deg 66.67% 7.06%)"
+                }
+            ]
+        }
+    ],
+    "spacing": [
+        {
+            "name": "0",
+            "value": "0px"
+        },
+        {
+            "name": "1",
+            "value": "0.25rem"
+        },
+        {
+            "name": "2",
+            "value": "0.5rem"
+        },
+        {
+            "name": "3",
+            "value": "0.75rem"
+        },
+        {
+            "name": "4",
+            "value": "1rem"
+        },
+        {
+            "name": "5",
+            "value": "1.25rem"
+        },
+        {
+            "name": "6",
+            "value": "1.5rem"
+        },
+        {
+            "name": "8",
+            "value": "2rem"
+        },
+        {
+            "name": "10",
+            "value": "2.5rem"
+        },
+        {
+            "name": "12",
+            "value": "3rem"
+        },
+        {
+            "name": "16",
+            "value": "4rem"
+        }
+    ],
+    "borders": [
+        {
+            "name": "0",
+            "value": "0px"
+        },
+        {
+            "name": "1",
+            "value": "1px"
+        },
+        {
+            "name": "2",
+            "value": "2px"
+        },
+        {
+            "name": "4",
+            "value": "4px"
+        },
+        {
+            "name": "8",
+            "value": "8px"
+        }
+    ],
+    "breakpoints": [
+        {
+            "name": "sm",
+            "value": "640px"
+        },
+        {
+            "name": "md",
+            "value": "768px"
+        },
+        {
+            "name": "lg",
+            "value": "1024px"
+        },
+        {
+            "name": "xl",
+            "value": "1280px"
+        },
+        {
+            "name": "2xl",
+            "value": "1536px"
+        }
+    ],
+    "radii": [
+        {
+            "name": "base",
+            "value": "0.625rem"
+        },
+        {
+            "name": "sm",
+            "value": "0.375rem"
+        },
+        {
+            "name": "md",
+            "value": "0.5rem"
+        },
+        {
+            "name": "lg",
+            "value": "0.625rem"
+        },
+        {
+            "name": "xl",
+            "value": "0.875rem"
+        },
+        {
+            "name": "2xl",
+            "value": "1.125rem"
+        },
+        {
+            "name": "3xl",
+            "value": "1.375rem"
+        },
+        {
+            "name": "4xl",
+            "value": "1.625rem"
+        },
+        {
+            "name": "full",
+            "value": "9999px"
+        }
+    ],
+    "typography": {
+        "family": [
+            {
+                "name": "sans",
+                "value": "var(--font-sans), ui-sans-serif, system-ui, sans-serif"
+            },
+            {
+                "name": "mono",
+                "value": "var(--font-mono), ui-monospace, SFMono-Regular, monospace"
+            }
+        ],
+        "size": [
+            {
+                "name": "xs",
+                "value": "0.75rem"
+            },
+            {
+                "name": "sm",
+                "value": "0.875rem"
+            },
+            {
+                "name": "base",
+                "value": "1rem"
+            },
+            {
+                "name": "lg",
+                "value": "1.125rem"
+            },
+            {
+                "name": "xl",
+                "value": "1.25rem"
+            },
+            {
+                "name": "2xl",
+                "value": "1.5rem"
+            },
+            {
+                "name": "3xl",
+                "value": "1.875rem"
+            }
+        ],
+        "weight": [
+            {
+                "name": "normal",
+                "value": "400"
+            },
+            {
+                "name": "medium",
+                "value": "500"
+            },
+            {
+                "name": "semibold",
+                "value": "600"
+            },
+            {
+                "name": "bold",
+                "value": "700"
+            }
+        ],
+        "lineHeight": [
+            {
+                "name": "none",
+                "value": 1
+            },
+            {
+                "name": "tight",
+                "value": 1.25
+            },
+            {
+                "name": "snug",
+                "value": 1.375
+            },
+            {
+                "name": "normal",
+                "value": 1.5
+            },
+            {
+                "name": "relaxed",
+                "value": 1.625
+            },
+            {
+                "name": "loose",
+                "value": 2
+            }
+        ]
+    }
+}
