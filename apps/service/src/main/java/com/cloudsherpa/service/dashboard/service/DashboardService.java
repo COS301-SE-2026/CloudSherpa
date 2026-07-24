@@ -215,7 +215,7 @@ public class DashboardService {
         dashboard.getDisplayName(),
         dashboard.getTimeFrom(),
         dashboard.getTimeTo(),
-        dashboard.getPredefinedTime() != null ? dashboard.getPredefinedTime().name() : null,
+        dashboard.getPredefinedTime() != null ? dashboard.getPredefinedTime() : null,
         dashboard.getCurrent(),
         widgetDTOs);
   }

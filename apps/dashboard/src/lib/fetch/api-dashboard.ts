@@ -1,11 +1,9 @@
 import { ChartType } from "@/features/dashboard/types/widgets";
 import apiClient from "@/lib/fetch/api-client";
 
-// export type WidgetTypeEnum = "kpi" | "chart";
-
 export interface BaseWidgetDTO {
     id: string;
-    type: "kpi" | "chart";
+    widgetType: "KPI" | "CHART";
     displayName: string | null;
     startX: number;
     startY: number;
@@ -14,16 +12,16 @@ export interface BaseWidgetDTO {
 }
 
 export interface ChartWidgetDTO extends BaseWidgetDTO {
-    type: "chart";
+    widgetType: "CHART";
     chartType: ChartType;
     resourceId: string | null;
     metricType: string | null;
 }
 
 export interface KpiWidgetDto extends BaseWidgetDTO {
-    type: "kpi";
+    widgetType: "KPI";
     chargeIds: string[];
-    aggregationWindow: number;
+    aggregationWindowDays: number;
 }
 
 type WidgetDto = ChartWidgetDTO | KpiWidgetDto;
@@ -51,12 +49,20 @@ export interface WidgetLayoutUpdateDTO {
     h: number;
 }
 
-export interface WidgetConfigUpdateDTO {
-    type: string;
+export interface ChartWidgetConfigUpdateDTO {
+    widgetType: "CHART";
+    chartType: ChartType;
     displayName: string | null;
     resourceId: string | null;
     metricType: string | null;
 }
+
+export interface KpiWidgetConfigUpdateDTO {
+    widgetType: "KPT";
+    aggregationWindowDays: number;
+    chartIds: string[];
+}
+
 export async function fetchDashboards(): Promise<DashboardDTO[]> {
     return await apiClient<DashboardDTO[]>("/dashboards", {
         method: "GET",
@@ -93,7 +99,7 @@ export async function createWidget(dashboardId: string, payload: WidgetDto): Pro
 
 export async function updateChartWidgetConfig(
     widgetId: string,
-    payload: WidgetConfigUpdateDTO
+    payload: ChartWidgetConfigUpdateDTO
 ): Promise<ChartWidgetDTO> {
     return await apiClient<ChartWidgetDTO>(`/dashboards/widgets/${widgetId}/config`, {
         method: "PATCH",

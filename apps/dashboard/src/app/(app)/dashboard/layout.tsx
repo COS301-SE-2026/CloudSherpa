@@ -192,7 +192,8 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
         try {
             await createWidget(activeDashboardId, {
                 id: newConfig.id,
-                type: newConfig.chartType,
+                widgetType: "CHART",
+                chartType: newConfig.chartType,
                 displayName: newConfig.displayName,
                 startX: newLayout.x,
                 startY: newLayout.y,

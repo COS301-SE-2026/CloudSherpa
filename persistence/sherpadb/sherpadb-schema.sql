@@ -10,7 +10,6 @@ CREATE TYPE public.provider_enum AS ENUM ('AWS', 'AZURE', 'GCP');
 CREATE TYPE public.status_enum AS ENUM ('active', 'disabled');
 CREATE TYPE public.credential_type_enum AS ENUM ('access_key', 'oauth');
 CREATE TYPE public.account_type_enum AS ENUM ('aws_account', 'azure_subscription', 'gcp_project');
-CREATE TYPE public.metric_type_enum AS ENUM ('cost', 'usage', 'performance');
 CREATE TYPE public.theme_enum AS ENUM ('light', 'dark');
 CREATE TYPE public.currency_enum AS ENUM ('USD', 'EUR', 'ZAR');
 CREATE TYPE public.language_enum AS ENUM ('en', 'es', 'fr');
@@ -117,7 +116,7 @@ CREATE TABLE IF NOT EXISTS public.widget_kpi (
 
 CREATE TABLE IF NOT EXISTS public.kpi_charges (
   kpi_charges_id uuid PRIMARY KEY,
-  widget_kpi_id uuid REFERENCES public.widget_kpi(kpi_id) NOT NULL ON DELETE CASCADE,
+  widget_kpi_id uuid NOT NULL REFERENCES public.widget_kpi(kpi_id) ON DELETE CASCADE,
   charge_id varchar (2128) NOT NULL
 );
 
@@ -131,7 +130,7 @@ CREATE TABLE IF NOT EXISTS public.chart_resource (
   chart_resource_id uuid PRIMARY KEY,
   widget_chart_id uuid REFERENCES public.widget_chart(chart_id) ON DELETE CASCADE,
   resource_id uuid NOT NULL, 
-  metric_type public.metric_type_enum NOT NULL
+  metric_type varchar(50) NOT NULL
 );
 
 -- ----------------------------------------------------------------
@@ -193,7 +192,7 @@ BEGIN
             metric_id uuid DEFAULT gen_random_uuid(),
             resource_id uuid REFERENCES %I.resource(resource_id) ON DELETE CASCADE,
             recorded_at timestamptz NOT NULL,
-            metric_type public.metric_type_enum NOT NULL,
+            metric_type varchar(50) NOT NULL,
             metric_name varchar(255) NOT NULL,
             metric_value numeric NOT NULL,
             unit varchar(50),

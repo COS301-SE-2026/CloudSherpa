@@ -138,7 +138,8 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
         updateChartWidgetConfig: async (widget) => {
             try {
                 await updateChartWidgetConfig(widget.id, {
-                    type: widget.chartType as string,
+                    widgetType: "CHART",
+                    chartType: widget.chartType,
                     displayName: widget.displayName,
                     resourceId: widget.resourceId,
                     metricType: widget.metricType as string,

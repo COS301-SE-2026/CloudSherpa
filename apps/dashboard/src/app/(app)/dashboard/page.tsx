@@ -49,7 +49,7 @@ function processFetchedDashboards(fetchedData: DashboardDTO[]) {
                 autoPosition: false,
             });
 
-            if (w.type === "chart") {
+            if (w.widgetType === "CHART") {
                 configsArray.push({
                     id: w.id,
                     chartType: w.chartType,
@@ -58,13 +58,13 @@ function processFetchedDashboards(fetchedData: DashboardDTO[]) {
                     resourceId: w.resourceId,
                     metricType: w.metricType as MetricType | null,
                 });
-            } else if (w.type == "kpi") {
+            } else if (w.widgetType === "KPI") {
                 configsArray.push({
                     id: w.id,
                     widgetType: "kpi",
                     displayName: w.displayName,
                     chargeIds: w.chargeIds,
-                    aggregationWindowDays: w.aggregationWindow,
+                    aggregationWindowDays: w.aggregationWindowDays,
                 });
             }
         }
@@ -118,7 +118,7 @@ function DashboardContent() {
                 return;
             }
 
-            await fetchResourceNames();
+            // await fetchResourceNames();
             if (metricFetchLoad) {
                 return;
             }
@@ -161,8 +161,8 @@ function DashboardContent() {
         fetchResourceNames,
         urlId,
         createDefaultWidgetConfig,
-        metricFetchLoad,
-        metricFetchError,
+        // metricFetchLoad,
+        // metricFetchError,
     ]);
 
     // sync Zustand store when the URL changes (i.e browser back/forward buttons)

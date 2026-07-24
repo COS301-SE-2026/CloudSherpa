@@ -105,7 +105,7 @@ Table chart_resource {
   chart_resource_id uuid [pk]
   widget_chart_id uuid [ref: > widget_chart.chart_id]
   resource_id uuid
-  metric_type metric_type_enum
+  metric_type varchar(50)
 }
 
 // ==========================================
@@ -131,7 +131,7 @@ Table normalized_metrics {
   metric_id uuid
   resource_id uuid [ref: > resource.resource_id]
   recorded_at timestamptz
-  metric_type metric_type_enum
+  metric_type varchar(50)
   metric_name varchar(255)
   metric_value numeric
   unit varchar(50)
