@@ -10,6 +10,7 @@ export interface ResourceSelectionDto {
   resourceId: string;
   resourceType: string;
   resourceName: string;
+  region: string;
   tags: Record<string, string>;
   active: boolean;
 }

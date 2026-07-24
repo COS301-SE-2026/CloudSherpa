@@ -7,4 +7,6 @@ public record ResourceDetailDto(
     String name,
     String resourceType,
     String serviceCategory,
-    Map<String, String> tags) {}
+    String region,
+    Map<String, String> tags) {
+}

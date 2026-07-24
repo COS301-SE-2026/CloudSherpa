@@ -175,6 +175,7 @@ export default function StepThree({
           resourceId: resource.resourceId,
           resourceType: resource.serviceCategory,
           resourceName: resource.name,
+          region: resource.region,
           tags: resource.tags,
           active: selectedResources.includes(resource.resourceId),
         })),
@@ -244,7 +245,7 @@ export default function StepThree({
                 htmlFor="ingestionPeriod"
                 className="text-foreground text-sm font-medium"
               >
-                Ingestion period (seconds)
+                Ingestion interval (seconds)
               </Label>
 
               <TooltipProvider>
@@ -272,11 +273,11 @@ export default function StepThree({
 
                   <TooltipContent>
                     <p>
-                      Recommended ingestion period: {recommendedPeriod}{" "}
+                      Recommended ingestion interval: {recommendedPeriod}{" "}
                       seconds based on {selectedResources.length} selected
                       resources. Setting the period to a lower value could
                       incur costs due to CloudWatch API free tier limits. The
-                      ingestion period determines the frequency of dashboard
+                      ingestion interval determines the frequency of dashboard
                       timeseries updates.
                     </p>
                   </TooltipContent>
