@@ -38,7 +38,7 @@ public class AwsConnector implements CloudConnector {
   }
 
   @Override
-  public List<ResourceDetail> getAllResources(CloudCredentials credentials) {
+  public List<ResourceDetail> getAllResources(CloudCredentials credentials, List<String> serviceTypes) {
     return new ArrayList<>();
   }
 

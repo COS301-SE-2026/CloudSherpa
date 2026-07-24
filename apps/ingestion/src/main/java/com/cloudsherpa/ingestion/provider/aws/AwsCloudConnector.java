@@ -128,7 +128,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
   }
 
   @Override
-  public List<ResourceDetail> getAllResources(CloudCredentials credentials) {
+  public List<ResourceDetail> getAllResources(CloudCredentials credentials, List<String> serviceTypes) {
     List<ResourceDetail> resources = new ArrayList<>();
 
     try {
@@ -190,19 +190,17 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
 
   @Override
   public boolean testConnection(CloudCredentials credentials) {
-    CloudWatchClient client =
-        CloudWatchClient.builder()
-            .credentialsProvider(DefaultCredentialsProvider.create())
-            .region(Region.EU_NORTH_1)
-            .build();
+    CloudWatchClient client = CloudWatchClient.builder()
+        .credentialsProvider(DefaultCredentialsProvider.create())
+        .region(Region.EU_NORTH_1)
+        .build();
 
     if (credentials != null) {
-      AwsBasicCredentials awsCredentials =
-          AwsBasicCredentials.create(credentials.getAccessKey(), credentials.getSecretKey());
-      client =
-          CloudWatchClient.builder()
-              .credentialsProvider(StaticCredentialsProvider.create(awsCredentials))
-              .build();
+      AwsBasicCredentials awsCredentials = AwsBasicCredentials.create(credentials.getAccessKey(),
+          credentials.getSecretKey());
+      client = CloudWatchClient.builder()
+          .credentialsProvider(StaticCredentialsProvider.create(awsCredentials))
+          .build();
     }
     try {
       client.listMetrics();
