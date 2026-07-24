@@ -59,7 +59,9 @@ export interface ChartWidgetConfigUpdateDTO {
 }
 
 export interface KpiWidgetConfigUpdateDTO {
+    id: string;
     widgetType: "KPI";
+    displayName: string | null;
     aggregationWindowDays: number;
     chargeIds: string[];
 }
@@ -103,6 +105,16 @@ export async function updateChartWidgetConfig(
     payload: ChartWidgetConfigUpdateDTO
 ): Promise<ChartWidgetDTO> {
     return await apiClient<ChartWidgetDTO>(`/dashboards/widgets/${widgetId}/config`, {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+    });
+}
+
+export async function updateKpiWidgetConfig(
+    widgetId: string,
+    payload: KpiWidgetConfigUpdateDTO
+): Promise<KpiWidgetDto> {
+    return await apiClient<KpiWidgetDto>(`/dashboards/widgets/${widgetId}/config`, {
         method: "PATCH",
         body: JSON.stringify(payload),
     });

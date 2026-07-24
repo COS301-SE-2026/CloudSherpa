@@ -41,14 +41,14 @@ export type BaseWidgetConfig = {
 };
 
 export type ChartWidgetConfig = BaseWidgetConfig & {
-    widgetType: "chart";
+    widgetType: "CHART";
     chartType: ChartType;
     resourceId: string | null;
     metricType: MetricType | null;
 };
 
 export type KpiWidgetConfig = BaseWidgetConfig & {
-    widgetType: "kpi";
+    widgetType: "KPI";
     chargeIds: string[];
     aggregationWindowDays: number;
 };

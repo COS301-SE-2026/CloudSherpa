@@ -9,7 +9,7 @@ interface WidgetProps {
 export default function Widget({ config }: Readonly<WidgetProps>) {
     return (
         <>
-            {config.widgetType === "chart" ? (
+            {config.widgetType === "CHART" ? (
                 <ChartWidget config={config} />
             ) : (
                 <KPIWidget config={config} />

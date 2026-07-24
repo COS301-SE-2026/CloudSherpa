@@ -6,7 +6,12 @@ import {
     ChartWidgetConfig,
     KpiWidgetConfig,
 } from "@/features/dashboard/types/widgets";
-import { deleteWidget, updateChartWidgetConfig, deleteDashboard } from "@/lib/fetch/api-dashboard";
+import {
+    deleteWidget,
+    updateChartWidgetConfig,
+    deleteDashboard,
+    updateKpiWidgetConfig,
+} from "@/lib/fetch/api-dashboard";
 
 interface DashboardActions {
     createSnapshot: () => void;
@@ -157,13 +162,26 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
                 throw error;
             }
         },
-        updateKpiWidgetConfig: (widget) => {
-            set((state) => ({
-                widgets: {
-                    ...state.widgets,
-                    [widget.id]: widget,
-                },
-            }));
+        updateKpiWidgetConfig: async (widget) => {
+            try {
+                await updateKpiWidgetConfig(widget.id, {
+                    id: widget.id,
+                    displayName: widget.displayName,
+                    widgetType: "KPI",
+                    aggregationWindowDays: widget.aggregationWindowDays,
+                    chargeIds: widget.chargeIds,
+                });
+
+                set((state) => ({
+                    widgets: {
+                        ...state.widgets,
+                        [widget.id]: widget,
+                    },
+                }));
+            } catch (error) {
+                console.log("Failed to persist kpi widget config: ", error);
+                throw error;
+            }
         },
         removeWidget: async (layoutId, widgetId) => {
             try {

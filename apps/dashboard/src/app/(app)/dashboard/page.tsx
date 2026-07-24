@@ -53,7 +53,7 @@ function processFetchedDashboards(fetchedData: DashboardDTO[]) {
                 configsArray.push({
                     id: w.id,
                     chartType: w.chartType,
-                    widgetType: "chart",
+                    widgetType: "CHART",
                     displayName: w.displayName,
                     resourceId: w.resourceId,
                     metricType: w.metricType as MetricType | null,
@@ -61,7 +61,7 @@ function processFetchedDashboards(fetchedData: DashboardDTO[]) {
             } else if (w.widgetType === "KPI") {
                 configsArray.push({
                     id: w.id,
-                    widgetType: "kpi",
+                    widgetType: "KPI",
                     displayName: w.displayName,
                     chargeIds: w.chargeIds,
                     aggregationWindowDays: w.aggregationWindowDays,
@@ -101,7 +101,7 @@ function DashboardContent() {
 
             return {
                 id,
-                widgetType: "chart",
+                widgetType: "CHART",
                 displayName,
                 chartType,
                 resourceId,

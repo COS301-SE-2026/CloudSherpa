@@ -29,13 +29,13 @@ export function KpiConfigForm({ kpiId }: KpiConfigFormProps) {
     const widgetConfig = getWidget(kpiId);
     const getWidgetError = widgetConfig === undefined;
     const [config, setConfig] = useState<KpiWidgetConfig>(() =>
-        widgetConfig?.widgetType == "kpi"
+        widgetConfig?.widgetType == "KPI"
             ? widgetConfig
             : {
                   id: "123",
                   displayName: "Default",
                   aggregationWindowDays: 30,
-                  widgetType: "kpi",
+                  widgetType: "KPI",
                   chargeIds: [],
               }
     );
