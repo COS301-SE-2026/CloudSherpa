@@ -34,7 +34,7 @@ FROM eclipse-temurin:21-jre AS prod
 
 WORKDIR /app
 COPY --from=build /app/apps/ingestion/target/*.jar app.jar
-RUN useradd ingestionuser && chown -R ingestionuser:ingestionuser /tmp/sherpa
+RUN useradd ingestionuser && mkdir -p /tmp/sherpa/aws/cur && chown -R ingestionuser:ingestionuser /tmp/sherpa
 USER ingestionuser
 
 EXPOSE 8080
