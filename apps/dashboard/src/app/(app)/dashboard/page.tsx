@@ -120,13 +120,16 @@ function DashboardContent() {
 
             await fetchResourceNames();
             if (metricFetchLoad) {
+                // console.log("here")
                 return;
             }
             if (metricFetchError) {
                 setIsLoading(false);
             }
             try {
+                console.log("here");
                 const fetchedData = await fetchDashboards();
+                console.log(fetchedData);
                 const { dashboardsMap, layoutsArray, configsArray } =
                     processFetchedDashboards(fetchedData);
                 setInitialState(dashboardsMap, layoutsArray, configsArray);
@@ -161,9 +164,11 @@ function DashboardContent() {
         fetchResourceNames,
         urlId,
         createDefaultWidgetConfig,
-        // metricFetchLoad,
+        metricFetchLoad,
         // metricFetchError,
     ]);
+
+    useEffect(() => {}, [dashboards]);
 
     // sync Zustand store when the URL changes (i.e browser back/forward buttons)
     useEffect(() => {
