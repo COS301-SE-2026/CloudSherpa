@@ -10,16 +10,14 @@ CREATE TYPE public.provider_enum AS ENUM ('AWS', 'AZURE', 'GCP');
 CREATE TYPE public.status_enum AS ENUM ('active', 'disabled');
 CREATE TYPE public.credential_type_enum AS ENUM ('access_key', 'oauth');
 CREATE TYPE public.account_type_enum AS ENUM ('aws_account', 'azure_subscription', 'gcp_project');
-CREATE TYPE public.metric_type_enum AS ENUM ('cost', 'usage', 'performance');
 CREATE TYPE public.theme_enum AS ENUM ('light', 'dark');
 CREATE TYPE public.currency_enum AS ENUM ('USD', 'EUR', 'ZAR');
 CREATE TYPE public.language_enum AS ENUM ('en', 'es', 'fr');
 CREATE TYPE public.ingestion_period_enum AS ENUM ('1m', '5m', '1h');
 CREATE TYPE public.predefined_time_enum AS ENUM ('last_1h', 'last_24h', 'last_7d');
-CREATE TYPE public.type_enum AS ENUM ('line_chart', 'guage_chart');
+CREATE TYPE public.type_enum AS ENUM ('KPI', 'CHART');
 CREATE TYPE public.execution_status_enum AS ENUM ('pending', 'processing', 'completed', 'failed');
-
-
+CREATE TYPE PUBLIC.chart_type_enum AS ENUM ('gauge_chart', 'line_chart');
 -- Differentiates actual compute usage from other types.
 -- Maps to CUR: line_item_line_item_type
 CREATE TYPE public.charge_type_enum AS ENUM ('Usage', 'Other'); 
@@ -110,11 +108,29 @@ CREATE TABLE IF NOT EXISTS public.widget (
   display_name varchar(100)
 );
 
-CREATE TABLE IF NOT EXISTS public.widget_resource (
-  widget_resource_id uuid PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS public.widget_kpi (
+  kpi_id uuid PRIMARY KEY,
   widget_id uuid REFERENCES public.widget(widget_id) ON DELETE CASCADE,
-  resource_id uuid NOT NULL, 
-  metric_type public.metric_type_enum NOT NULL
+  aggregation integer NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS public.kpi_charges (
+  kpi_charges_id uuid PRIMARY KEY,
+  widget_kpi_id uuid NOT NULL REFERENCES public.widget_kpi(kpi_id) ON DELETE CASCADE,
+  charge_id varchar (2128) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS public.widget_chart (
+  chart_id uuid PRIMARY KEY,
+  widget_id uuid REFERENCES public.widget(widget_id) ON DELETE CASCADE,
+  chart_type public.chart_type_enum NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS public.chart_resource (
+  chart_resource_id uuid PRIMARY KEY,
+  widget_chart_id uuid REFERENCES public.widget_chart(chart_id) ON DELETE CASCADE,
+  resource_id uuid, 
+  metric_type varchar(50)
 );
 
 -- ----------------------------------------------------------------
@@ -176,7 +192,7 @@ BEGIN
             metric_id uuid DEFAULT gen_random_uuid(),
             resource_id uuid REFERENCES %I.resource(resource_id) ON DELETE CASCADE,
             recorded_at timestamptz NOT NULL,
-            metric_type public.metric_type_enum NOT NULL,
+            metric_type varchar(50) NOT NULL,
             metric_name varchar(255) NOT NULL,
             metric_value numeric NOT NULL,
             unit varchar(50),

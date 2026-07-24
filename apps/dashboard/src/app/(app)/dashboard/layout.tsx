@@ -135,12 +135,15 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
         setIsEditMode(false);
     }, [setIsEditMode, restoreSnapshot]);
 
-    const handleAddKpi = useCallback(() => {
+    const handleAddKpi = useCallback(async () => {
+        if (!activeDashboardId) {
+            return;
+        }
         const { sharedId } = generateSharedId();
 
         const newKpiConfig: KpiWidgetConfig = {
             id: sharedId,
-            widgetType: "kpi",
+            widgetType: "KPI",
             displayName: "New KPI",
             chargeIds: [],
             aggregationWindowDays: 30,
@@ -156,7 +159,19 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
         };
 
         addWidget(newLayout, newKpiConfig);
-    }, [addWidget]);
+
+        try {
+            await createWidget(activeDashboardId, {
+                ...newKpiConfig,
+                startX: newLayout.x,
+                startY: newLayout.y,
+                width: newLayout.w,
+                height: newLayout.h,
+            });
+        } catch (error) {
+            console.error("Failed to persist new widget", error);
+        }
+    }, [addWidget, activeDashboardId]);
 
     const handleAddWidget = useCallback(async () => {
         if (!activeDashboardId) return;
@@ -166,7 +181,7 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
         const resourceId = Object.keys(metricsByResource)[0];
 
         const newConfig: WidgetConfig = {
-            widgetType: "chart",
+            widgetType: "CHART",
             id: sharedId,
             displayName: "New Widget (Click to Customize)",
             chartType: "line_chart",
@@ -192,7 +207,8 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
         try {
             await createWidget(activeDashboardId, {
                 id: newConfig.id,
-                type: newConfig.chartType,
+                widgetType: "CHART",
+                chartType: newConfig.chartType,
                 displayName: newConfig.displayName,
                 startX: newLayout.x,
                 startY: newLayout.y,

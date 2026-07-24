@@ -10,12 +10,16 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -44,10 +48,11 @@ public class DashboardController {
       @RequestBody DashboardCreateDTO request, @AuthenticationPrincipal Jwt jwt) {
     UUID userId = UUID.fromString(jwt.getSubject());
     DashboardCreateDTO requestWithUser = request.withUserId(userId);
-    return ResponseEntity.ok(dashboardService.createDashboard(requestWithUser));
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .body(dashboardService.createDashboard(requestWithUser));
   }
 
-  @PostMapping("/{dashboardId}")
+  @DeleteMapping("/{dashboardId}")
   @Operation(summary = "Delete a dashboard")
   public ResponseEntity<Void> deleteDashboard(
       @PathVariable UUID dashboardId, @AuthenticationPrincipal Jwt jwt) {
@@ -57,7 +62,7 @@ public class DashboardController {
     return ResponseEntity.noContent().build();
   }
 
-  @PostMapping("/{dashboardId}/layout")
+  @PutMapping("/{dashboardId}/layout")
   @Operation(summary = "Batch update the sizes and positions of all widgets on a dashboard")
   public ResponseEntity<Void> updateDashboardLayout(
       @PathVariable UUID dashboardId,
@@ -71,34 +76,31 @@ public class DashboardController {
 
   @PostMapping("/{dashboardId}/widgets")
   @Operation(summary = "Add a new widget to a dashboard")
-  public ResponseEntity<WidgetDTO> createWidget(
+  public ResponseEntity<WidgetDTO> createChartWidget(
       @PathVariable UUID dashboardId,
       @RequestBody WidgetDTO request,
       @AuthenticationPrincipal Jwt jwt) {
     UUID userId = UUID.fromString(jwt.getSubject());
-    WidgetDTO requestWithUser = request.withUserId(userId);
-
-    return ResponseEntity.ok(dashboardService.createWidget(dashboardId, requestWithUser));
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .body(dashboardService.createWidget(userId, dashboardId, request));
   }
 
-  @PostMapping("/widgets/{widgetId}/config")
+  @PatchMapping("/widgets/{widgetId}/config")
   @Operation(summary = "Update a widget's visual or data configuration")
-  public ResponseEntity<WidgetDTO> updateWidgetConfig(
+  public ResponseEntity<Void> updateWidgetConfig(
       @PathVariable UUID widgetId,
       @RequestBody WidgetConfigUpdateDTO request,
       @AuthenticationPrincipal Jwt jwt) {
     UUID userId = UUID.fromString(jwt.getSubject());
-
-    WidgetConfigUpdateDTO requestWithUser = request.withUserId(userId);
-    return ResponseEntity.ok(dashboardService.updateWidgetConfig(widgetId, requestWithUser));
+    dashboardService.updateWidgetConfig(userId, widgetId, request);
+    return ResponseEntity.ok().build();
   }
 
-  @PostMapping("/widgets/{widgetId}")
+  @DeleteMapping("/widgets/{widgetId}")
   @Operation(summary = "Delete a widget from a dashboard")
   public ResponseEntity<Void> deleteWidget(
       @PathVariable UUID widgetId, @AuthenticationPrincipal Jwt jwt) {
     UUID userId = UUID.fromString(jwt.getSubject());
-
     dashboardService.deleteWidget(userId, widgetId);
     return ResponseEntity.noContent().build();
   }

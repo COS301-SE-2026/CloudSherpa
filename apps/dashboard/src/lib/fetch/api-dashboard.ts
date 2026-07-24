@@ -1,16 +1,30 @@
+import { ChartType } from "@/features/dashboard/types/widgets";
 import apiClient from "@/lib/fetch/api-client";
 
-export interface WidgetDTO {
+export interface BaseWidgetDTO {
     id: string;
-    type: string;
+    widgetType: "KPI" | "CHART";
     displayName: string | null;
     startX: number;
     startY: number;
     width: number;
     height: number;
+}
+
+export interface ChartWidgetDTO extends BaseWidgetDTO {
+    widgetType: "CHART";
+    chartType: ChartType;
     resourceId: string | null;
     metricType: string | null;
 }
+
+export interface KpiWidgetDto extends BaseWidgetDTO {
+    widgetType: "KPI";
+    chargeIds: string[];
+    aggregationWindowDays: number;
+}
+
+type WidgetDto = ChartWidgetDTO | KpiWidgetDto;
 
 export interface DashboardDTO {
     id: string;
@@ -19,7 +33,7 @@ export interface DashboardDTO {
     timeTo: string | null;
     predefinedTime: string;
     current: boolean;
-    widgets: WidgetDTO[];
+    widgets: WidgetDto[];
 }
 
 export interface DashboardCreateDTO {
@@ -35,12 +49,23 @@ export interface WidgetLayoutUpdateDTO {
     h: number;
 }
 
-export interface WidgetConfigUpdateDTO {
-    type: string;
+export interface ChartWidgetConfigUpdateDTO {
+    id: string;
+    widgetType: "CHART";
+    chartType: ChartType;
     displayName: string | null;
     resourceId: string | null;
     metricType: string | null;
 }
+
+export interface KpiWidgetConfigUpdateDTO {
+    id: string;
+    widgetType: "KPI";
+    displayName: string | null;
+    aggregationWindowDays: number;
+    chargeIds: string[];
+}
+
 export async function fetchDashboards(): Promise<DashboardDTO[]> {
     return await apiClient<DashboardDTO[]>("/dashboards", {
         method: "GET",
@@ -54,7 +79,7 @@ export async function createDashboard(payload: DashboardCreateDTO): Promise<Dash
 }
 export async function deleteDashboard(dashboardId: string): Promise<void> {
     await apiClient<void>(`/dashboards/${dashboardId}`, {
-        method: "POST",
+        method: "DELETE",
     });
 }
 
@@ -63,13 +88,13 @@ export async function updateDashboardLayout(
     layouts: WidgetLayoutUpdateDTO[]
 ): Promise<void> {
     await apiClient<void>(`/dashboards/${dashboardId}/layout`, {
-        method: "POST",
+        method: "PUT",
         body: JSON.stringify(layouts),
     });
 }
 
-export async function createWidget(dashboardId: string, payload: WidgetDTO): Promise<WidgetDTO> {
-    return await apiClient<WidgetDTO>(`/dashboards/${dashboardId}/widgets`, {
+export async function createWidget(dashboardId: string, payload: WidgetDto): Promise<WidgetDto> {
+    return await apiClient<WidgetDto>(`/dashboards/${dashboardId}/widgets`, {
         method: "POST",
         body: JSON.stringify(payload),
     });
@@ -77,16 +102,26 @@ export async function createWidget(dashboardId: string, payload: WidgetDTO): Pro
 
 export async function updateChartWidgetConfig(
     widgetId: string,
-    payload: WidgetConfigUpdateDTO
-): Promise<WidgetDTO> {
-    return await apiClient<WidgetDTO>(`/dashboards/widgets/${widgetId}/config`, {
-        method: "POST",
+    payload: ChartWidgetConfigUpdateDTO
+): Promise<ChartWidgetDTO> {
+    return await apiClient<ChartWidgetDTO>(`/dashboards/widgets/${widgetId}/config`, {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+    });
+}
+
+export async function updateKpiWidgetConfig(
+    widgetId: string,
+    payload: KpiWidgetConfigUpdateDTO
+): Promise<KpiWidgetDto> {
+    return await apiClient<KpiWidgetDto>(`/dashboards/widgets/${widgetId}/config`, {
+        method: "PATCH",
         body: JSON.stringify(payload),
     });
 }
 
 export async function deleteWidget(widgetId: string): Promise<void> {
     await apiClient<void>(`/dashboards/widgets/${widgetId}`, {
-        method: "POST",
+        method: "DELETE",
     });
 }

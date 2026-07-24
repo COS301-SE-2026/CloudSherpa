@@ -10,7 +10,7 @@ import { useWindowStore } from "@/features/dashboard/stores/window-store";
 const MOCK_CHART_WIDGETS: WidgetConfig[] = [
     {
         id: "mock-widget-1",
-        widgetType: "chart",
+        widgetType: "CHART",
         chartType: "line_chart",
         displayName: "Server CPU Load (Mock)",
         resourceId: "demo-server-01",
@@ -18,7 +18,7 @@ const MOCK_CHART_WIDGETS: WidgetConfig[] = [
     },
     {
         id: "mock-widget-2",
-        widgetType: "chart",
+        widgetType: "CHART",
         chartType: "gauge_chart",
         displayName: "Memory Utilization (Mock)",
         resourceId: "demo-server-01",
@@ -30,7 +30,7 @@ const MOCK_KPI_WIDGETS: WidgetConfig[] = [
     {
         id: "mock-kpi-widget-1",
         displayName: "Mock KPI 1",
-        widgetType: "kpi",
+        widgetType: "KPI",
         chargeIds: ["resource-1"],
         aggregationWindowDays: 30,
     },
