@@ -32,7 +32,7 @@ export default function TablesShowcase() {
         <div className="space-y-6">
             <TokenTable
                 title="Tables"
-                description="Considering CloudSherpa is a data heavy project, tables are indispensable part of our design. We use tanstack tables instead of shadcn tables since it has quality of life features baked in like 
+                description="Considering CloudSherpa is a data heavy project, tables are indispensable part of our design. We use tanstack tables instead of shadcn tables since it has quality of life features baked in like
                 predefined support for pagination, filtering etc."
                 columns={columns}
                 data={mockDataArray}

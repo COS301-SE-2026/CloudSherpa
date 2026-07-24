@@ -7,20 +7,32 @@ import { useMetricStore } from "@/features/dashboard/stores/metric-store";
 import { MetricSeries } from "@/features/dashboard/types/metric";
 import { useWindowStore } from "@/features/dashboard/stores/window-store";
 
-const MOCK_WIDGETS: WidgetConfig[] = [
+const MOCK_CHART_WIDGETS: WidgetConfig[] = [
     {
         id: "mock-widget-1",
-        type: "line_chart",
+        widgetType: "CHART",
+        chartType: "line_chart",
         displayName: "Server CPU Load (Mock)",
         resourceId: "demo-server-01",
         metricType: "cpu",
     },
     {
         id: "mock-widget-2",
-        type: "gauge_chart",
+        widgetType: "CHART",
+        chartType: "gauge_chart",
         displayName: "Memory Utilization (Mock)",
         resourceId: "demo-server-01",
         metricType: "memory",
+    },
+];
+
+const MOCK_KPI_WIDGETS: WidgetConfig[] = [
+    {
+        id: "mock-kpi-widget-1",
+        displayName: "Mock KPI 1",
+        widgetType: "KPI",
+        chargeIds: ["resource-1"],
+        aggregationWindowDays: 30,
     },
 ];
 
@@ -29,7 +41,6 @@ export default function DemoPage() {
 
     useEffect(() => {
         const now = Date.now();
-
         const secureRandom = () => {
             const a = new Uint32Array(1);
             crypto.getRandomValues(a);
@@ -85,7 +96,7 @@ export default function DemoPage() {
         <div className="p-8 min-h-screen bg-background">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-[350px]">
                 {isReady &&
-                    MOCK_WIDGETS.map((config) => (
+                    [...MOCK_CHART_WIDGETS, ...MOCK_KPI_WIDGETS].map((config) => (
                         <div key={config.id} className="w-full h-full">
                             <Widget config={config} />
                         </div>

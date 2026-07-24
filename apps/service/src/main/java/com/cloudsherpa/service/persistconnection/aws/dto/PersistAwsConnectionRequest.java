@@ -5,12 +5,14 @@ import java.util.UUID;
 
 public record PersistAwsConnectionRequest(
     UUID userId,
+    String accountId,
     String displayName,
     Integer ingestionPeriod,
     AwsCredentialsDto credentials,
-    List<ResourceSelectionDto> resources) {
+    List<ResourceSelectionDto> resources,
+    BillingConfigDto billingConfig) {
   public PersistAwsConnectionRequest withUserId(UUID userId) {
     return new PersistAwsConnectionRequest(
-        userId, displayName, ingestionPeriod, credentials, resources);
+        userId, accountId, displayName, ingestionPeriod, credentials, resources, billingConfig);
   }
 }

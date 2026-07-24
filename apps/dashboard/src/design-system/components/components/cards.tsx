@@ -13,7 +13,7 @@ export default function Cards() {
         <div className="space-y-6">
             <SubSectionHeading
                 title="Cards"
-                description="Cards are versatile. It's an easy way to create components with a formal and consistent structure since it makes use of 
+                description="Cards are versatile. It's an easy way to create components with a formal and consistent structure since it makes use of
             header,title,description,content and footer card components for easy and clean implementation."
             />
             <Card className="w-50">

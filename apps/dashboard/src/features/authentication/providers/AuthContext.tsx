@@ -6,6 +6,9 @@ import { LoginRequestDto } from "../types/dtos/auth/LoginRequestDto";
 import { LoginResponseDto } from "../types/dtos/auth/LoginResponseDto";
 import apiClient from "@/lib/fetch/api-client";
 
+const DISABLE_AUTH = process.env["NEXT_PUBLIC_DISABLE_AUTH"];
+const NODE_ENV = process.env["NODE_ENV"];
+
 type AuthProps = {
     readonly children: React.ReactNode;
 };
@@ -18,25 +21,33 @@ export function AuthProvider({ children }: AuthProps) {
 
     useEffect(() => {
         async function loadAuthState() {
-            try {
-                const response: LoginResponseDto = await apiClient("/auth/me", {
-                    method: "GET",
-                });
-
+            if (NODE_ENV !== "production" && DISABLE_AUTH === "true") {
                 setUser({
-                    userId: response.userId,
-                    username: response.username,
-                    email: response.email,
+                    userId: "",
+                    username: "authdisabled@gmail.com",
+                    email: "authdisabled@gmail.com",
                 });
-            } catch (error) {
-                if (error instanceof Error && !error.message.includes("401")) {
-                    console.error("Failed to load auth state", error);
-                }
-            } finally {
                 setIsAuthReady(true);
+            } else {
+                try {
+                    const response: LoginResponseDto = await apiClient("/auth/me", {
+                        method: "GET",
+                    });
+
+                    setUser({
+                        userId: response.userId,
+                        username: response.username,
+                        email: response.email,
+                    });
+                } catch (error) {
+                    if (error instanceof Error && !error.message.includes("401")) {
+                        console.error("Failed to load auth state", error);
+                    }
+                } finally {
+                    setIsAuthReady(true);
+                }
             }
         }
-
         loadAuthState();
     }, []);
 

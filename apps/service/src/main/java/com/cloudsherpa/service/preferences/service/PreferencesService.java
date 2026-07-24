@@ -1,5 +1,8 @@
 package com.cloudsherpa.service.preferences.service;
 
+import com.cloudsherpa.lib.entities.CurrencyEnum;
+import com.cloudsherpa.lib.entities.LanguageEnum;
+import com.cloudsherpa.lib.entities.ThemeEnum;
 import com.cloudsherpa.lib.entities.UserPreferences;
 import com.cloudsherpa.lib.repositories.PreferencesRepository;
 import java.util.UUID;
@@ -16,17 +19,26 @@ public class PreferencesService {
   }
 
   public String getUserTheme(UUID userId) {
-    return preferencesRepository.findById(userId).map(UserPreferences::getTheme).orElse("light");
+    return preferencesRepository
+        .findById(userId)
+        .map(UserPreferences::getTheme)
+        .map(ThemeEnum::name)
+        .orElse("dark");
   }
 
   @Transactional
   public void updateTheme(UUID userId, String newTheme) {
+    ThemeEnum theme = ThemeEnum.valueOf(newTheme.toLowerCase());
+
     UserPreferences prefs =
         preferencesRepository
             .findById(userId)
-            .orElseGet(() -> new UserPreferences(userId, newTheme, null, "USD", "en", true));
+            .orElseGet(
+                () ->
+                    new UserPreferences(
+                        userId, theme, null, CurrencyEnum.USD, LanguageEnum.en, true));
 
-    prefs.setTheme(newTheme.toLowerCase());
+    prefs.setTheme(theme);
     preferencesRepository.save(prefs);
   }
 }

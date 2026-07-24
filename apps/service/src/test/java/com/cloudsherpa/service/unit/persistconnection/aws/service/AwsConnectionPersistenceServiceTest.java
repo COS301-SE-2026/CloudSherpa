@@ -16,11 +16,13 @@ import com.cloudsherpa.lib.entities.CloudCredential;
 import com.cloudsherpa.lib.entities.ProviderEnum;
 import com.cloudsherpa.lib.entities.Resource;
 import com.cloudsherpa.lib.entities.StatusEnum;
+import com.cloudsherpa.lib.repositories.BillingExportConfigRepository;
 import com.cloudsherpa.lib.repositories.CloudAccountRepository;
 import com.cloudsherpa.lib.repositories.CloudConnectionRepository;
 import com.cloudsherpa.lib.repositories.CloudCredentialRepository;
 import com.cloudsherpa.lib.repositories.ResourceRepository;
 import com.cloudsherpa.service.persistconnection.aws.dto.AwsCredentialsDto;
+import com.cloudsherpa.service.persistconnection.aws.dto.BillingConfigDto;
 import com.cloudsherpa.service.persistconnection.aws.dto.PersistAwsConnectionRequest;
 import com.cloudsherpa.service.persistconnection.aws.dto.ResourceSelectionDto;
 import com.cloudsherpa.service.persistconnection.aws.service.AwsConnectionPersistenceService;
@@ -52,6 +54,8 @@ class AwsConnectionPersistenceServiceTest {
 
   @Mock private ResourceRepository resourceRepository;
 
+  @Mock private BillingExportConfigRepository billingExportConfigRepository;
+
   @InjectMocks private AwsConnectionPersistenceService service;
 
   @Captor private ArgumentCaptor<CloudConnection> connectionCaptor;
@@ -78,14 +82,18 @@ class AwsConnectionPersistenceServiceTest {
 
     ResourceSelectionDto disabledResource =
         new ResourceSelectionDto("i-23456", "S3", "bucket-1", "af-south-1", Map.of(), false);
+    BillingConfigDto billingConfig =
+        new BillingConfigDto("billing-bucket", "exports/", "daily-cost-export");
 
     request =
         new PersistAwsConnectionRequest(
             UUID.randomUUID(),
+            null,
             "Production",
             300,
             credentials,
-            List.of(activeResource, disabledResource));
+            List.of(activeResource, disabledResource),
+            billingConfig);
 
     existingConnection =
         new CloudConnection(
@@ -246,10 +254,12 @@ class AwsConnectionPersistenceServiceTest {
     PersistAwsConnectionRequest emptyRequest =
         new PersistAwsConnectionRequest(
             request.userId(),
+            request.accountId(),
             request.displayName(),
             request.ingestionPeriod(),
             request.credentials(),
-            List.of());
+            List.of(),
+            request.billingConfig());
 
     when(cloudConnectionRepository.findByUserIdAndProvider(request.userId(), ProviderEnum.AWS))
         .thenReturn(List.of(existingConnection));
@@ -273,10 +283,12 @@ class AwsConnectionPersistenceServiceTest {
     PersistAwsConnectionRequest requestWithNullTags =
         new PersistAwsConnectionRequest(
             request.userId(),
+            request.accountId(),
             request.displayName(),
             request.ingestionPeriod(),
             request.credentials(),
-            List.of(resource));
+            List.of(resource),
+            request.billingConfig());
 
     when(cloudConnectionRepository.findByUserIdAndProvider(request.userId(), ProviderEnum.AWS))
         .thenReturn(List.of(existingConnection));

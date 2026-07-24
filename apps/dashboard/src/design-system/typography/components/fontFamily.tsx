@@ -10,8 +10,8 @@ export default function FontFamily({ FontFamilies }: Readonly<FontFamilyProps>) 
         <div className="space-y-6">
             <SubSectionHeading
                 title="Font Families"
-                description="Our font families consist of the overarching Geist font created by vercel. It is modern and professional. The Sans version has a more traditional feel and is 
-            our primary font family and is used by most text in CloudSherpa and the Mono version is slightly simpler and is used by the smallest text in cloudSherpa like subscripts, badges and x- and y-axis values where the 
+                description="Our font families consist of the overarching Geist font created by vercel. It is modern and professional. The Sans version has a more traditional feel and is
+            our primary font family and is used by most text in CloudSherpa and the Mono version is slightly simpler and is used by the smallest text in cloudSherpa like subscripts, badges and x- and y-axis values where the
             simpler font helps legibility at the smaller scale"
             />
             {FontFamilies.map((family) => (

@@ -10,7 +10,7 @@ export default function Borders({ borders }: Readonly<BordersProps>) {
         <div className="space-y-6">
             <SubSectionHeading
                 title="Borders"
-                description="Since we use Shadcn as our component library, borders are important, because the creator of shadcn much preferred a flat look for the ui and preferred borders over 
+                description="Since we use Shadcn as our component library, borders are important, because the creator of shadcn much preferred a flat look for the ui and preferred borders over
             drop shadows. This sits well with our use case since a flashy ui that pops out to the user could potentially be distracting for some users, this is a minor inconvenience but affects the feel of CloudSherpa.
             We want the attention to be on the charts without having the ui feel 'muddy' thats why the use of borders are important. Luckily they are baked into the shadcn/ui components and don't need to be added manually
             The most commonly used borders in our project is border-0 and border-1. "

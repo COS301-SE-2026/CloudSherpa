@@ -5,6 +5,12 @@ import StepTwo from "./stepTwo";
 import StepThree from "./stepThree";
 import { ResourceDetail } from "@/lib/fetch/cloud-resource-api";
 
+interface BillingConfig {
+    prefix: string;
+    bucketName: string;
+    exportName: string;
+}
+
 interface WizardData {
     credentials: {
         accessKey: string;
@@ -16,6 +22,7 @@ interface WizardData {
     selectedServices: string[];
     selectedInstances: string[];
     resources: ResourceDetail[];
+    billingConfig: BillingConfig | null;
 }
 
 export default function WizardSetup() {
@@ -28,6 +35,7 @@ export default function WizardSetup() {
         selectedServices: [],
         selectedInstances: [],
         resources: [],
+        billingConfig: null,
     });
 
     const handleStepOneNext = (data: {
@@ -48,11 +56,16 @@ export default function WizardSetup() {
 
         setStep(2);
     };
-    const handleStepTwoNext = (selectedServices: string[], resources: ResourceDetail[]) => {
+    const handleStepTwoNext = (
+        selectedServices: string[],
+        resources: ResourceDetail[],
+        billingConfig: BillingConfig
+    ) => {
         setWizardData({
             ...wizardData,
             selectedServices,
             resources,
+            billingConfig,
         });
 
         setStep(3);
@@ -92,6 +105,7 @@ export default function WizardSetup() {
                     ingestionPeriod={""}
                     credentials={wizardData.credentials!}
                     resources={wizardData.resources}
+                    billingConfig={wizardData.billingConfig!}
                     onComplete={handleStepThreeComplete}
                     onBack={handleBack}
                 />

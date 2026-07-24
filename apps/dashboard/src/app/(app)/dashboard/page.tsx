@@ -26,6 +26,8 @@ function processFetchedDashboards(fetchedData: DashboardDTO[]) {
     const configsArray: WidgetConfig[] = [];
 
     for (const db of fetchedData) {
+        // const layoutItemIds = Array.prototype.concat(chartIds, kpiIds);
+
         dashboardsMap[db.id] = {
             id: db.id,
             displayName: db.displayName,
@@ -33,7 +35,8 @@ function processFetchedDashboards(fetchedData: DashboardDTO[]) {
             timeTo: db.timeTo,
             predefinedTime: db.predefinedTime,
             current: db.current,
-            layoutItemIds: db.widgets.map((w) => w.id),
+            // layoutItemIds: db.widgets.map((w) => w.id),
+            layoutItemIds: db.widgets.map((widget) => widget.id),
         };
 
         for (const w of db.widgets) {
@@ -46,13 +49,24 @@ function processFetchedDashboards(fetchedData: DashboardDTO[]) {
                 autoPosition: false,
             });
 
-            configsArray.push({
-                id: w.id,
-                type: w.type as ChartType,
-                displayName: w.displayName,
-                resourceId: w.resourceId,
-                metricType: w.metricType as MetricType | null,
-            });
+            if (w.widgetType === "CHART") {
+                configsArray.push({
+                    id: w.id,
+                    chartType: w.chartType,
+                    widgetType: "CHART",
+                    displayName: w.displayName,
+                    resourceId: w.resourceId,
+                    metricType: w.metricType as MetricType | null,
+                });
+            } else if (w.widgetType === "KPI") {
+                configsArray.push({
+                    id: w.id,
+                    widgetType: "KPI",
+                    displayName: w.displayName,
+                    chargeIds: w.chargeIds,
+                    aggregationWindowDays: w.aggregationWindowDays,
+                });
+            }
         }
     }
 
@@ -81,14 +95,15 @@ function DashboardContent() {
     );
 
     const createDefaultWidgetConfig = useCallback(
-        (id: string, displayName: string, type: ChartType): WidgetConfig => {
+        (id: string, displayName: string, chartType: ChartType): WidgetConfig => {
             const metricsByResource = getMetricList();
             const resourceId = Object.keys(metricsByResource)[0];
 
             return {
                 id,
+                widgetType: "CHART",
                 displayName,
-                type,
+                chartType,
                 resourceId,
                 metricType: resourceId ? (metricsByResource[resourceId]?.[0] ?? "anon") : "anon",
             };
@@ -105,13 +120,16 @@ function DashboardContent() {
 
             await fetchResourceNames();
             if (metricFetchLoad) {
+                // console.log("here")
                 return;
             }
             if (metricFetchError) {
                 setIsLoading(false);
             }
             try {
+                console.log("here");
                 const fetchedData = await fetchDashboards();
+                console.log(fetchedData);
                 const { dashboardsMap, layoutsArray, configsArray } =
                     processFetchedDashboards(fetchedData);
                 setInitialState(dashboardsMap, layoutsArray, configsArray);
@@ -147,8 +165,10 @@ function DashboardContent() {
         urlId,
         createDefaultWidgetConfig,
         metricFetchLoad,
-        metricFetchError,
+        // metricFetchError,
     ]);
+
+    useEffect(() => {}, [dashboards]);
 
     // sync Zustand store when the URL changes (i.e browser back/forward buttons)
     useEffect(() => {
