@@ -50,6 +50,7 @@ export interface WidgetLayoutUpdateDTO {
 }
 
 export interface ChartWidgetConfigUpdateDTO {
+    id: string;
     widgetType: "CHART";
     chartType: ChartType;
     displayName: string | null;
@@ -58,9 +59,9 @@ export interface ChartWidgetConfigUpdateDTO {
 }
 
 export interface KpiWidgetConfigUpdateDTO {
-    widgetType: "KPT";
+    widgetType: "KPI";
     aggregationWindowDays: number;
-    chartIds: string[];
+    chargeIds: string[];
 }
 
 export async function fetchDashboards(): Promise<DashboardDTO[]> {

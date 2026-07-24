@@ -165,7 +165,7 @@ public class DashboardService {
 
   // update specific widget's visual or data configuration
   @Transactional
-  public void updateWidgetConfig(UUID userId, UUID widgetId, WidgetConfigUpdateDTO request) {
+  public WidgetDTO updateWidgetConfig(UUID userId, UUID widgetId, WidgetConfigUpdateDTO request) {
     Widget widget =
         widgetRepository
             .findById(widgetId)
@@ -178,6 +178,8 @@ public class DashboardService {
       case KpiWidgetConfigUpdateDTO kpi -> kpiWidgetService.updateKpiWidget(kpi);
       case ChartWidgetConfigUpdateDTO chart -> chartWidgetService.updateChartWidget(chart);
     }
+
+    return mapToWidgetDTO(widget);
   }
 
   private Dashboard getDashboardAndVerifyOwnership(UUID userId, UUID dashboardId) {

@@ -118,7 +118,7 @@ function DashboardContent() {
                 return;
             }
 
-            // await fetchResourceNames();
+            await fetchResourceNames();
             if (metricFetchLoad) {
                 return;
             }

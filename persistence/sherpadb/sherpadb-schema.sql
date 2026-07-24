@@ -129,8 +129,8 @@ CREATE TABLE IF NOT EXISTS public.widget_chart (
 CREATE TABLE IF NOT EXISTS public.chart_resource (
   chart_resource_id uuid PRIMARY KEY,
   widget_chart_id uuid REFERENCES public.widget_chart(chart_id) ON DELETE CASCADE,
-  resource_id uuid NOT NULL, 
-  metric_type varchar(50) NOT NULL
+  resource_id uuid, 
+  metric_type varchar(50)
 );
 
 -- ----------------------------------------------------------------

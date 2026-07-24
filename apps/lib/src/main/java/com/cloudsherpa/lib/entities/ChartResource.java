@@ -23,10 +23,10 @@ public class ChartResource {
   @JoinColumn(name = "widget_chart_id", nullable = false, insertable = false, updatable = false)
   private Widget widget;
 
-  @Column(name = "resource_id", nullable = false)
+  @Column(name = "resource_id")
   private UUID resourceId;
 
-  @Column(name = "metric_type", nullable = false, length = 50)
+  @Column(name = "metric_type", length = 50)
   private String metricType;
 
   protected ChartResource() {}
