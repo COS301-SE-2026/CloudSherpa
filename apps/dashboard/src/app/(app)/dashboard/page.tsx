@@ -127,9 +127,7 @@ function DashboardContent() {
                 setIsLoading(false);
             }
             try {
-                console.log("here");
                 const fetchedData = await fetchDashboards();
-                console.log(fetchedData);
                 const { dashboardsMap, layoutsArray, configsArray } =
                     processFetchedDashboards(fetchedData);
                 setInitialState(dashboardsMap, layoutsArray, configsArray);
