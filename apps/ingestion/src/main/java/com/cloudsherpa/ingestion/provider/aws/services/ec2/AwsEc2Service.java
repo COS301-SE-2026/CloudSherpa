@@ -20,11 +20,10 @@ public class AwsEc2Service implements Ec2Service {
   public List<RegionalInstance> getAllEc2Instances(CloudCredentials credentials) {
     List<RegionalInstance> resources = new ArrayList<>();
     for (Region region : Region.regions()) {
-      try (Ec2Client ec2 =
-          Ec2Client.builder()
-              .region(region)
-              .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
-              .build()) {
+      try (Ec2Client ec2 = Ec2Client.builder()
+          .region(region)
+          .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
+          .build()) {
 
         DescribeInstancesResponse response = ec2.describeInstances();
 
@@ -55,14 +54,13 @@ public class AwsEc2Service implements Ec2Service {
 
     for (RegionalInstance instance : instances) {
       Map<String, String> tags = getTagsForInstance(instance.instance());
-      String instanceName =
-          ResourceDetail.resolveName(instance.instance().instanceId(), null, tags);
+      String instanceName = ResourceDetail.resolveName(instance.instance().instanceId(), null, tags);
       resources.add(
           new ResourceDetail(
               instance.instance().instanceId(),
               instanceName,
               "InstanceId",
-              "EC2",
+              "AWS/EC2",
               instance.region().id(),
               tags));
     }

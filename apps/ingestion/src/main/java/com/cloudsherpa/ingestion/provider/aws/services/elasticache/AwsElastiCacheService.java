@@ -21,11 +21,10 @@ public class AwsElastiCacheService implements ElastiCacheService {
     List<String> clusterArns = new ArrayList<>();
     List<RegionalArn> regionalArns = new ArrayList<>();
     for (Region region : Region.regions()) {
-      try (ElastiCacheClient client =
-          ElastiCacheClient.builder()
-              .region(region)
-              .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
-              .build()) {
+      try (ElastiCacheClient client = ElastiCacheClient.builder()
+          .region(region)
+          .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
+          .build()) {
         DescribeCacheClustersResponse response = client.describeCacheClusters();
 
         for (CacheCluster cluster : response.cacheClusters()) {
@@ -46,11 +45,10 @@ public class AwsElastiCacheService implements ElastiCacheService {
   public List<ResourceDetail> getAllElastiCacheClustersWithTags(CloudCredentials credentials) {
     List<ResourceDetail> resources = new ArrayList<>();
     for (Region region : Region.regions()) {
-      try (ElastiCacheClient client =
-          ElastiCacheClient.builder()
-              .region(region)
-              .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
-              .build()) {
+      try (ElastiCacheClient client = ElastiCacheClient.builder()
+          .region(region)
+          .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
+          .build()) {
 
         DescribeCacheClustersResponse response = client.describeCacheClusters();
 
@@ -59,18 +57,16 @@ public class AwsElastiCacheService implements ElastiCacheService {
           Map<String, String> tags = Collections.emptyMap();
 
           if (cluster.arn() != null) {
-            tags =
-                client.listTagsForResource(r -> r.resourceName(cluster.arn())).tagList().stream()
-                    .collect(Collectors.toMap(Tag::key, Tag::value, (a, b) -> b));
+            tags = client.listTagsForResource(r -> r.resourceName(cluster.arn())).tagList().stream()
+                .collect(Collectors.toMap(Tag::key, Tag::value, (a, b) -> b));
           }
-          String name =
-              ResourceDetail.resolveName(cluster.cacheClusterId(), cluster.cacheClusterId(), tags);
+          String name = ResourceDetail.resolveName(cluster.cacheClusterId(), cluster.cacheClusterId(), tags);
           resources.add(
               new ResourceDetail(
                   cluster.cacheClusterId(),
                   name,
                   "CacheClusterId",
-                  "ELASTICACHE",
+                  "AWS/ElastiCache",
                   region.id(),
                   tags));
         }

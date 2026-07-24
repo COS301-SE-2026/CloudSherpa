@@ -20,11 +20,10 @@ public class AwsRdsService implements RdsService {
     List<DBInstance> instances = new ArrayList<>();
     List<RegionalDbInstance> regionalInstances = new ArrayList<>();
     for (Region region : Region.regions()) {
-      try (RdsClient rds =
-          RdsClient.builder()
-              .region(region)
-              .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
-              .build()) {
+      try (RdsClient rds = RdsClient.builder()
+          .region(region)
+          .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
+          .build()) {
 
         DescribeDbInstancesResponse response = rds.describeDBInstances();
         instances = response.dbInstances();
@@ -42,27 +41,24 @@ public class AwsRdsService implements RdsService {
     List<ResourceDetail> resources = new ArrayList<>();
 
     for (RegionalDbInstance db : getAllRdsInstances(credentials)) {
-      try (RdsClient rds =
-          RdsClient.builder()
-              .region(db.region())
-              .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
-              .build()) {
+      try (RdsClient rds = RdsClient.builder()
+          .region(db.region())
+          .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
+          .build()) {
         for (DBInstance dbInfo : db.domains()) {
-          Map<String, String> tags =
-              rds
-                  .listTagsForResource(r -> r.resourceName(dbInfo.dbInstanceArn()))
-                  .tagList()
-                  .stream()
-                  .collect(Collectors.toMap(Tag::key, Tag::value, (a, b) -> b));
-          String name =
-              ResourceDetail.resolveName(
-                  dbInfo.dbInstanceIdentifier(), dbInfo.dbInstanceIdentifier(), tags);
+          Map<String, String> tags = rds
+              .listTagsForResource(r -> r.resourceName(dbInfo.dbInstanceArn()))
+              .tagList()
+              .stream()
+              .collect(Collectors.toMap(Tag::key, Tag::value, (a, b) -> b));
+          String name = ResourceDetail.resolveName(
+              dbInfo.dbInstanceIdentifier(), dbInfo.dbInstanceIdentifier(), tags);
           resources.add(
               new ResourceDetail(
                   dbInfo.dbInstanceIdentifier(),
                   name,
                   "DBInstanceIdentifier",
-                  "RDS",
+                  "AWS/RDS",
                   db.region().id(),
                   tags));
         }

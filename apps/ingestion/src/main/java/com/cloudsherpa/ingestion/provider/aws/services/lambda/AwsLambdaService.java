@@ -18,11 +18,10 @@ public class AwsLambdaService implements LambdaService {
     List<String> functionArns = new ArrayList<>();
     List<RegionalArn> regionalArns = new ArrayList<>();
     for (Region region : Region.regions()) {
-      try (LambdaClient lambda =
-          LambdaClient.builder()
-              .region(region)
-              .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
-              .build()) {
+      try (LambdaClient lambda = LambdaClient.builder()
+          .region(region)
+          .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
+          .build()) {
 
         ListFunctionsResponse response = lambda.listFunctions();
 
@@ -42,11 +41,10 @@ public class AwsLambdaService implements LambdaService {
   public List<ResourceDetail> getAllLambdaFunctionsWithTags(CloudCredentials credentials) {
     List<ResourceDetail> resources = new ArrayList<>();
     for (Region region : Region.regions()) {
-      try (LambdaClient lambda =
-          LambdaClient.builder()
-              .region(region)
-              .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
-              .build()) {
+      try (LambdaClient lambda = LambdaClient.builder()
+          .region(region)
+          .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
+          .build()) {
 
         ListFunctionsResponse response = lambda.listFunctions();
 
@@ -55,7 +53,7 @@ public class AwsLambdaService implements LambdaService {
           String name = ResourceDetail.resolveName(fn.functionName(), fn.functionName(), tags);
           resources.add(
               new ResourceDetail(
-                  fn.functionName(), name, "FunctionName", "LAMBDA", region.id(), tags));
+                  fn.functionName(), name, "FunctionName", "AWS/Lambda", region.id(), tags));
         }
       } catch (Exception e) {
         System.out.println(
