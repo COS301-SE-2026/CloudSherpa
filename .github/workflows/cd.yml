@@ -93,8 +93,8 @@ jobs:
         - name: Install dashboard dependencies
           if: github.event_name == 'pull_request'
           working-directory: apps/dashboard
-          run: npm ci
-          
+          run: npm ci --ignore-scripts
+
         - name: Set up playwright
           if: github.event_name == 'pull_request'
           working-directory: apps/dashboard
