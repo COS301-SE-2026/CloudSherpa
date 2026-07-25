@@ -27,6 +27,7 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
     const { isEditMode, setIsEditMode } = useToolbar();
 
     const activeDashboardId = useDashboardStore((state) => state.activeDashboardId);
+    const hasActiveDashboard = Boolean(activeDashboardId);
     const dashboardsMap = useDashboardStore((state) => state.dashboards);
     const {
         addDashboard,
@@ -97,15 +98,17 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
 
     const handleDateRangeChange = useCallback(
         (range: DateRange | undefined) => {
+            if (!activeDashboardId) return;
             if (range?.from && range?.to) setWindow(range.from, range.to);
         },
-        [setWindow]
+        [activeDashboardId, setWindow]
     );
 
     const handleStartEditing = useCallback(() => {
+        if (!activeDashboardId) return;
         createSnapshot();
         setIsEditMode(true);
-    }, [setIsEditMode, createSnapshot]);
+    }, [activeDashboardId, setIsEditMode, createSnapshot]);
 
     const handleSaveEdit = useCallback(async () => {
         clearSnapshot();
@@ -227,6 +230,7 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
             <Toolbar
                 dashboards={dashboardStubs}
                 isEditMode={isEditMode}
+                hasActiveDashboard={hasActiveDashboard}
                 selectedDashboardId={activeDashboardId || ""}
                 onDashboardChange={handleDashboardChange}
                 onCreateDashboard={handleCreateDashboard}

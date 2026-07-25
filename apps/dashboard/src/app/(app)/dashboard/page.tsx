@@ -127,9 +127,7 @@ function DashboardContent() {
                 setIsLoading(false);
             }
             try {
-                console.log("here");
                 const fetchedData = await fetchDashboards();
-                console.log(fetchedData);
                 const { dashboardsMap, layoutsArray, configsArray } =
                     processFetchedDashboards(fetchedData);
                 setInitialState(dashboardsMap, layoutsArray, configsArray);
@@ -250,10 +248,7 @@ function DashboardContent() {
                 </div>
             )}
 
-            <main
-                className="flex-1 overflow-y-auto overflow-x-hidden m-3 flex flex-col"
-                data-testid="dashboard"
-            >
+            <main className="flex-1 overflow-x-hidden m-3 flex flex-col" data-testid="dashboard">
                 {renderMainContent()}
             </main>
         </>

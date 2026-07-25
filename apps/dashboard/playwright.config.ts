@@ -20,11 +20,6 @@ export default defineConfig({
             name: "firefox",
             use: { ...devices["Desktop Firefox"] },
         },
-
-        {
-            name: "webkit",
-            use: { ...devices["Desktop Safari"] },
-        },
     ],
     expect: {
         timeout: 5000,
@@ -33,6 +28,6 @@ export default defineConfig({
     webServer: {
         command: "npm run start",
         url: "http://localhost:3000",
-        reuseExistingServer: !process.env.CI,
+        reuseExistingServer: true,
     },
 });

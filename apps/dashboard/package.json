@@ -11,7 +11,8 @@
         "test:watch": "vitest",
         "test:e2e": "playwright test",
         "format:check": "prettier . --check",
-        "format:fix": "prettier . --write"
+        "format:fix": "prettier . --write",
+        "playwright:install": "playwright install --with-deps"
     },
     "dependencies": {
         "@aws-sdk/util-endpoints": "^3.996.16",
