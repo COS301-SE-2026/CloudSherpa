@@ -1,7 +1,7 @@
 package com.cloudsherpa.lib.projections;
 
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 public interface AggregatedMetric 
@@ -11,7 +11,7 @@ public interface AggregatedMetric
     String getMetricType();
     BigDecimal getMetricValue();
     String getUnit();
-    OffsetDateTime getPeriodStart();
-    OffsetDateTime getPeriodEnd();
+    Instant getPeriodStart();
+    Instant getPeriodEnd();
     Long getSampleCount();
 }
