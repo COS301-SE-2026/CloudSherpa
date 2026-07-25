@@ -12,8 +12,6 @@
     },
     "iconLibrary": "lucide",
     "rtl": false,
-    "menuColor": "default",
-    "menuAccent": "subtle",
     "aliases": {
         "components": "@/components",
         "utils": "@/lib/utils",
@@ -21,7 +19,7 @@
         "lib": "@/lib",
         "hooks": "@/hooks"
     },
-    "registries": {
-        "@aceternity": "https://ui.aceternity.com/registry/{name}.json"
-    }
+    "menuColor": "default",
+    "menuAccent": "subtle",
+    "registries": {}
 }
