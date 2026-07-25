@@ -63,7 +63,6 @@ public class UsageIngestionService {
                 () -> new IllegalArgumentException("Cloud account not found: " + accountId));
     CloudCredential credential = cloudCredentialRepository.findByAccountId(accountId).getFirst();
     String decryptedCredential = encryptionService.decrypt(credential.getCredentialValue());
-    System.out.println(decryptedCredential);
     Instant ingestionEndTime = Instant.now().truncatedTo(ChronoUnit.MINUTES);
     try {
       IngestionRequestEvent request = new IngestionRequestEvent();
@@ -132,12 +131,6 @@ public class UsageIngestionService {
       CloudCredentials credentials = new CloudCredentials();
       credentials.setAccessKey(decryptedCredentialsDto.accessKeyId());
       credentials.setSecretKey(decryptedCredentialsDto.secretAccessKey());
-      System.out.println(
-          "Credentials with access key: "
-              + decryptedCredentialsDto.accessKeyId()
-              + " and secret key: "
-              + decryptedCredentialsDto.secretAccessKey()
-              + " found");
       request.setCredentials(credentials);
 
       client.ingest(request);
