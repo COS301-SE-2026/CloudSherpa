@@ -102,7 +102,7 @@ jobs:
           if: github.event_name == 'pull_request'
           working-directory: apps/dashboard
           run: |
-            npm run test:e2e:ci
+            npm run test:e2e
         
         - name: Compose Down
           if: github.event_name == 'pull_request' && always()
