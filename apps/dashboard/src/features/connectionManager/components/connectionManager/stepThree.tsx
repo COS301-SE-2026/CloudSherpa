@@ -28,6 +28,7 @@ interface PropsForStepThree {
   resources: ResourceDetail[];
   billingConfig: {
     bucketName: string;
+    bucketRegion: string;
     prefix: string;
     exportName: string;
   };
@@ -187,6 +188,7 @@ export default function StepThree({
         })),
         billingConfig: {
           bucketName: billingConfig.bucketName,
+          bucketRegion: billingConfig.bucketRegion,
           exportPrefix: billingConfig.prefix,
           exportName: billingConfig.exportName,
         },

@@ -8,6 +8,7 @@ import { ResourceDetail } from "@/lib/fetch/cloud-resource-api";
 interface BillingConfig {
   prefix: string;
   bucketName: string;
+  bucketRegion: string;
   exportName: string;
 }
 

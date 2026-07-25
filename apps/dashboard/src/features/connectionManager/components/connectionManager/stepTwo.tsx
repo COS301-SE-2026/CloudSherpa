@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/atoms/button";
+import { Label } from "@/components/atoms/label";
 import {
   CloudCredentials,
   ResourceDetail,
@@ -13,6 +14,7 @@ import {
 export interface BillingConfig {
   prefix: string;
   bucketName: string;
+  bucketRegion: string;
   exportName: string;
 }
 
@@ -25,6 +27,21 @@ interface PropsForStepTwo {
   ) => void;
   onBack: () => void;
 }
+const regions = [
+  "us-east-1",
+  "us-east-2",
+  "us-west-1",
+  "us-west-2",
+  "af-south-1",
+  "ap-south-1",
+  "ap-southeast-1",
+  "ap-southeast-2",
+  "ap-northeast-1",
+  "eu-west-1",
+  "eu-north-1",
+  "eu-central-1",
+  "sa-east-1",
+];
 
 export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsForStepTwo>) {
   const [availableServices, setAvailableServices] = useState<{ id: string; name: string }[]>([]);
@@ -34,6 +51,7 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
   const [error, setError] = useState("");
   const [prefix, setPrefix] = useState("");
   const [bucketName, setBucketName] = useState("");
+  const [bucketRegion, setBucketRegion] = useState("");
   const [exportName, setExportName] = useState("");
   const [savedBillingConfig, setSavedBillingConfig] = useState<BillingConfig | null>(null);
 
@@ -118,6 +136,7 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
     setSavedBillingConfig({
       prefix: prefix.trim(),
       bucketName: bucketName.trim(),
+      bucketRegion: bucketRegion,
       exportName: exportName.trim(),
     });
     setError("");
@@ -147,7 +166,7 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
       }
       setLoading(false);
 
-      onNext(servicesSelected, resources, { prefix, bucketName, exportName });
+      onNext(servicesSelected, resources, { prefix, bucketName, bucketRegion, exportName });
     } catch (err) {
       console.error(err);
 
@@ -248,6 +267,25 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
                   className="w-full p-2 rounded-md border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="region" className="text-foreground text-sm font-medium">
+                  Bucket region
+                </Label>
+
+                <select
+                  id="region"
+                  value={bucketRegion}
+                  onChange={(e) => setBucketRegion(e.target.value)}
+                  className="w-full bg-background border-border rounded-md px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all cursor-pointer"
+                >
+                  {regions.map((region) => (
+                    <option key={region} value={region} className="bg-card">
+                      {region}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
             </div>
 
             <div className="flex items-center gap-3 pt-2">
@@ -371,7 +409,7 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
           </div>
         </form>
       </div>
-    </div>
+    </div >
   );
 };
 
