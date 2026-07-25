@@ -66,7 +66,7 @@ jobs:
               echo "INGESTION_IMAGE=${{ steps.login-ecr.outputs.registry }}/cloudsherpa:ingestion-${{ github.sha }}" >> "$GITHUB_ENV"
               echo "SERVICE_IMAGE=${{ steps.login-ecr.outputs.registry }}/cloudsherpa:service-${{ github.sha }}" >> "$GITHUB_ENV"
               echo "DASHBOARD_IMAGE=${{ steps.login-ecr.outputs.registry }}/cloudsherpa:dashboard-${{ github.sha }}" >> "$GITHUB_ENV"
-              if [ ${{ github.ref_name }} = 'main' )]; then
+              if [ ${{ github.ref_name }} = "main" ]; then
                 echo "API_URL=${{ vars.NEXT_PUBLIC_API_URL_PRODUCTION }}" >> "$GITHUB_ENV"
               else
                 echo "API_URL=${{ vars.NEXT_PUBLIC_API_URL_STAGING }}" >> "$GITHUB_ENV"
@@ -89,7 +89,12 @@ jobs:
         - name: Build Dashboard
           run: |
             docker build -f apps/dashboard/Dockerfile -t "$DASHBOARD_IMAGE" --build-arg API_URL="$API_URL" apps/dashboard
-        
+
+        - name: Install dashboard dependencies
+          if: github.event_name == 'pull_request'
+          working-directory: apps/dashboard
+          run: npm ci
+          
         - name: Set up playwright
           if: github.event_name == 'pull_request'
           working-directory: apps/dashboard
@@ -117,7 +122,7 @@ jobs:
             REGISTRY: ${{ steps.login-ecr.outputs.registry }}
             REPOSITORY: cloudsherpa
           run: |
-            docker push $INGESTION_IMAGE"
+            docker push "$INGESTION_IMAGE"
 
         - name: Push Service Image
           if: github.event_name == 'push'
@@ -125,7 +130,7 @@ jobs:
             REGISTRY: ${{ steps.login-ecr.outputs.registry }}
             REPOSITORY: cloudsherpa
           run: |
-            docker push $SERVICE_IMAGE
+            docker push "$SERVICE_IMAGE"
 
         - name: Push Dashboard Image
           if: github.event_name == 'push'
