@@ -20,11 +20,13 @@ interface ToolbarProps {
     onDeleteDashboard: (id: string) => void;
     dateRange: DateRange | undefined;
     onDateRangeChange: (range: DateRange | undefined) => void;
+    hasActiveDashboard: boolean;
 }
 
 export default function Toolbar({
     dashboards,
     isEditMode,
+    hasActiveDashboard,
     handleAddWidget,
     handleAddKpi,
     handleStartEditing,
@@ -47,18 +49,24 @@ export default function Toolbar({
                     onCreate={onCreateDashboard}
                     onDelete={onDeleteDashboard}
                 />
-                <EditButton
-                    isEditMode={isEditMode}
-                    handleStartEditing={handleStartEditing}
-                    handleSaveEdit={handleSaveEdit}
-                    handleCancelEdit={handleCancelEdit}
-                    handleAddWidget={handleAddWidget}
-                    handleAddKpi={handleAddKpi}
-                />
+
+                {hasActiveDashboard && (
+                    <EditButton
+                        isEditMode={isEditMode}
+                        handleStartEditing={handleStartEditing}
+                        handleSaveEdit={handleSaveEdit}
+                        handleCancelEdit={handleCancelEdit}
+                        handleAddWidget={handleAddWidget}
+                        handleAddKpi={handleAddKpi}
+                    />
+                )}
             </div>
-            <div>
-                <TimePeriodSelector date={dateRange} onDateChange={onDateRangeChange} />
-            </div>
+
+            {hasActiveDashboard && (
+                <div>
+                    <TimePeriodSelector date={dateRange} onDateChange={onDateRangeChange} />
+                </div>
+            )}
         </header>
     );
 }
