@@ -39,8 +39,24 @@ export function DashboardSelector({
     const [open, setOpen] = useState(false);
     const [view, setView] = useState<"list" | "create">("list");
     const [newDashboardName, setNewDashboardName] = useState("");
+    const [searchQuery, setSearchQuery] = useState("");
 
     const selectedDashboard = dashboards.find((d) => d.id === selectedId);
+
+    const normalizedQuery = searchQuery.trim();
+    const hasExactNameMatch = dashboards.some(
+        (d) => d.displayName.trim().toLowerCase() === normalizedQuery.toLowerCase()
+    );
+    const canCreateFromSearch = normalizedQuery.length > 0 && !hasExactNameMatch;
+
+    const handleCreateFromSearch = () => {
+        if (!canCreateFromSearch) return;
+        onCreate(normalizedQuery);
+        setSearchQuery("");
+        setNewDashboardName("");
+        setView("list");
+        setOpen(false);
+    };
 
     const handleCreate = () => {
         if (newDashboardName.trim()) {
@@ -57,6 +73,7 @@ export function DashboardSelector({
             onOpenChange={(val) => {
                 setOpen(val);
                 if (!val) setView("list");
+                setSearchQuery("");
             }}
         >
             <PopoverTrigger asChild>
@@ -72,7 +89,12 @@ export function DashboardSelector({
             >
                 {view === "list" ? (
                     <Command>
-                        <CommandInput placeholder="Search dashboards..." className="h-9" />
+                        <CommandInput
+                            placeholder="Search dashboards..."
+                            className="h-9"
+                            value={searchQuery}
+                            onValueChange={setSearchQuery}
+                        />
                         <CommandList>
                             <CommandEmpty>No dashboard found.</CommandEmpty>
                             <CommandGroup heading="My Dashboards">
@@ -114,15 +136,29 @@ export function DashboardSelector({
                                     </CommandItem>
                                 ))}
                             </CommandGroup>
+                            {canCreateFromSearch && (
+                                <CommandGroup>
+                                    <CommandItem
+                                        value={"create " + normalizedQuery}
+                                        onSelect={handleCreateFromSearch}
+                                        className="cursor-pointer"
+                                    >
+                                        <Plus className="mr-2 h-4 w-4" />
+                                        Create dashboard &quot;{normalizedQuery}&quot;
+                                    </CommandItem>
+                                </CommandGroup>
+                            )}
                             <CommandSeparator />
                             <CommandGroup>
-                                <CommandItem
-                                    onSelect={() => setView("create")}
-                                    className="cursor-pointer"
-                                >
-                                    <Plus className="mr-2 h-4 w-4" />
-                                    Create New Dashboard
-                                </CommandItem>
+                                {!canCreateFromSearch && (
+                                    <CommandItem
+                                        onSelect={() => setView("create")}
+                                        className="cursor-pointer"
+                                    >
+                                        <Plus className="mr-2 h-4 w-4" />
+                                        Create New Dashboard
+                                    </CommandItem>
+                                )}
                             </CommandGroup>
                         </CommandList>
                     </Command>
