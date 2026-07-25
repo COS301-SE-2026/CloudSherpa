@@ -1,4 +1,4 @@
-package com.cloudsherpa.ingestion.scheduler;
+package com.cloudsherpa.ingestion.scheduler.usage;
 
 import com.cloudsherpa.ingestion.connector.AccountScope;
 import com.cloudsherpa.ingestion.connector.CloudCredentials;

@@ -65,7 +65,6 @@ CREATE TABLE IF NOT EXISTS public.cloud_account (
 CREATE TABLE public.offered_metric (
     offered_metric_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
 
-<<<<<<< HEAD
     provider public.provider_enum NOT NULL,
 
     -- e.g. AWS/EC2, AWS/RDS, compute.googleapis.com/instance
@@ -96,10 +95,8 @@ CREATE TABLE public.offered_metric (
     )
 );
 
-CREATE TABLE public.cloud_credential (
-=======
+
 CREATE TABLE IF NOT EXISTS public.cloud_credential (
->>>>>>> dev
   credential_id uuid PRIMARY KEY,
   account_id uuid UNIQUE REFERENCES public.cloud_account(account_id) ON DELETE CASCADE,
   provider public.provider_enum NOT NULL,
@@ -155,7 +152,6 @@ CREATE TABLE IF NOT EXISTS public.widget_kpi (
   aggregation integer NOT NULL
 );
 
-<<<<<<< HEAD
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 INSERT INTO public.users (user_id, email, username, password_hash, created_at)
@@ -237,7 +233,6 @@ VALUES
 ON CONFLICT DO NOTHING;
 -- This sits in the public schema so it only has to be written once, but it is 
 -- smart enough to broadcast on a specific tenant's channel dynamically.
-=======
 CREATE TABLE IF NOT EXISTS public.kpi_charges (
   kpi_charges_id uuid PRIMARY KEY,
   widget_kpi_id uuid NOT NULL REFERENCES public.widget_kpi(kpi_id) ON DELETE CASCADE,
@@ -260,7 +255,6 @@ CREATE TABLE IF NOT EXISTS public.chart_resource (
 -- ----------------------------------------------------------------
 -- GLOBAL FUNCTIONS
 -- ----------------------------------------------------------------
->>>>>>> dev
 CREATE OR REPLACE FUNCTION public.notify_metric_event() 
 RETURNS TRIGGER AS $$
 BEGIN
@@ -468,9 +462,6 @@ BEGIN
   )
   ON CONFLICT DO NOTHING;
 
-<<<<<<< HEAD
-SELECT public.create_new_tenant('5ebe4340-c5ec-4833-ad93-06abf4609f03');
-=======
   PERFORM public.create_new_tenant(demo_user_id);
 
   -- Cloud Connection & Account
@@ -493,4 +484,4 @@ SELECT public.create_new_tenant('5ebe4340-c5ec-4833-ad93-06abf4609f03');
   )
   ON CONFLICT (account_id) DO NOTHING;
 END $$;
->>>>>>> dev
+

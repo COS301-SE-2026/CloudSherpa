@@ -1,4 +1,4 @@
-package com.cloudsherpa.ingestion.scheduler;
+package com.cloudsherpa.ingestion.scheduler.billing;
 
 import com.cloudsherpa.lib.entities.CloudAccount;
 import com.cloudsherpa.lib.entities.StatusEnum;
@@ -11,22 +11,22 @@ import org.jobrunr.scheduling.JobScheduler;
 import org.springframework.stereotype.Component;
 
 @Component
-public class UsageScheduler {
+public class BillingScheduler {
 
   private final CloudAccountRepository repository;
   private final JobScheduler jobScheduler;
-  private final UsageIngestionJob usageIngestionJob;
+  private final BillingIngestionJob billingIngestionJob;
 
-  public UsageScheduler(
+  public BillingScheduler(
       JobScheduler jobScheduler,
       CloudAccountRepository repository,
-      UsageIngestionJob usageIngestionJob) {
+      BillingIngestionJob billingIngestionJob) {
     this.jobScheduler = jobScheduler;
     this.repository = repository;
-    this.usageIngestionJob = usageIngestionJob;
+    this.billingIngestionJob = billingIngestionJob;
   }
 
-  @Recurring(id = "usage-scanner", cron = "*/30 * * * * *") // we run every 30 seconds
+  @Recurring(id = "usage-scanner", cron = "*/1800 * * * * *") // we run every 30 minutes
   public void scheduleUsageJobs() {
 
     List<CloudAccount> dueAccounts =
@@ -34,6 +34,6 @@ public class UsageScheduler {
             OffsetDateTime.now(ZoneOffset.UTC), StatusEnum.active);
 
     dueAccounts.forEach(
-        account -> jobScheduler.enqueue(() -> usageIngestionJob.ingest(account.getId())));
+        account -> jobScheduler.enqueue(() -> billingIngestionJob.ingest(account.getId())));
   }
 }
