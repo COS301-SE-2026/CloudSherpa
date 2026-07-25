@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+"use client";
+
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/atoms/card";
 import { LineChart } from "@/features/dashboard/components/widgetGrid/widgets/charts/LineChart";
 import { GaugeChart } from "@/features/dashboard/components/widgetGrid/widgets/charts/GaugeChart";
@@ -6,7 +7,7 @@ import { MetricType } from "@/features/dashboard/types/metric";
 import { Button } from "@/components/atoms/button";
 import { ChartType, ChartWidgetConfig } from "@/features/dashboard/types/widgets";
 import { EllipsisVertical, Pencil, Trash } from "lucide-react";
-import router from "next/router";
+import { useRouter } from "next/navigation";
 import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
 import {
     ContextMenu,
@@ -41,7 +42,7 @@ interface WidgetProps {
 export function ChartWidget({ config, preview = false }: Readonly<WidgetProps>) {
     const { chartType, displayName, resourceId, metricType, id } = config;
     const ChartComponent = CHART_COMPONENTS[chartType];
-
+    const router = useRouter();
     const removeWidget = useDashboardStore((state) => state.actions.removeWidget);
 
     const renderChartContent = () => {
@@ -65,7 +66,7 @@ export function ChartWidget({ config, preview = false }: Readonly<WidgetProps>) 
     };
 
     const handleConfigure = () => {
-        router.push(`/dashboard/chart/${id}`);
+        router.push(`/edit/chart/${id}`);
     };
 
     return (
