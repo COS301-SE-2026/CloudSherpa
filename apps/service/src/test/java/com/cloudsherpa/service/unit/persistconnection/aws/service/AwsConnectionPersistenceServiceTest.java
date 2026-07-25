@@ -91,7 +91,7 @@ class AwsConnectionPersistenceServiceTest {
         new ResourceSelectionDto(
             "i-23456", "S3", "BucketName", "bucket-1", "af-south-1", Map.of(), false);
     BillingConfigDto billingConfig =
-        new BillingConfigDto("billing-bucket", "exports/", "daily-cost-export");
+        new BillingConfigDto("billing-bucket", "eu-north-1", "exports/", "daily-cost-export");
 
     request =
         new PersistAwsConnectionRequest(

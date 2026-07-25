@@ -158,7 +158,7 @@ public class AwsConnectionPersistenceService {
             .lastUsageIngestion(now)
             .nextUsageIngestion(
                 OffsetDateTime.now(ZoneOffset.UTC).plusSeconds(request.ingestionPeriod()))
-            .nextBillingIngestion(OffsetDateTime.now(ZoneOffset.UTC).plusHours(12))
+            .nextBillingIngestion(OffsetDateTime.now(ZoneOffset.UTC).plusHours(6))
             .build();
 
     return cloudAccountRepository.save(account);
@@ -213,6 +213,7 @@ public class AwsConnectionPersistenceService {
             UUID.randomUUID(),
             account.getId(),
             billingConfig.bucketName(),
+            billingConfig.bucketRegion(),
             billingConfig.exportPrefix(),
             billingConfig.exportName(),
             OffsetDateTime.now(ZoneOffset.UTC));

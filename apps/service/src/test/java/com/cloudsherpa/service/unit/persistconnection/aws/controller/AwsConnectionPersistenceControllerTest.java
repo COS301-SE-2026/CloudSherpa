@@ -58,7 +58,7 @@ class AwsConnectionPersistenceControllerTest {
             true);
 
     BillingConfigDto billingConfig =
-        new BillingConfigDto("billing-bucket", "exports/", "daily-cost-export");
+        new BillingConfigDto("billing-bucket", "eu-north-1", "exports/", "daily-cost-export");
 
     request =
         new PersistAwsConnectionRequest(
