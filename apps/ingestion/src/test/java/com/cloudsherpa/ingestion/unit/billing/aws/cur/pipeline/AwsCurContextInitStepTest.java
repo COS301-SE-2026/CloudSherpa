@@ -13,6 +13,9 @@ import com.cloudsherpa.lib.entities.CloudCredential;
 import com.cloudsherpa.lib.entities.ExecutionStatusEnum;
 import com.cloudsherpa.lib.repositories.BillingExportExecutionRepository;
 import com.cloudsherpa.lib.repositories.CloudCredentialRepository;
+
+import software.amazon.awssdk.regions.Region;
+
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -27,13 +30,17 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class AwsCurContextInitStepTest {
 
-  @Mock BillingExportExecutionRepository billingExportExecutionRepository;
+  @Mock
+  BillingExportExecutionRepository billingExportExecutionRepository;
 
-  @Mock BillingExportConfigService billingExportConfigService;
+  @Mock
+  BillingExportConfigService billingExportConfigService;
 
-  @Mock CloudCredentialRepository cloudCredentialRepository;
+  @Mock
+  CloudCredentialRepository cloudCredentialRepository;
 
-  @TempDir Path tempDir;
+  @TempDir
+  Path tempDir;
 
   UUID configUuid;
   UUID accountId;
@@ -57,38 +64,35 @@ class AwsCurContextInitStepTest {
 
     context = new AwsCurContext(userId, configId);
 
-    validConfig =
-        new BillingExportConfig(
-            configUuid,
-            accountId,
-            " test-bucket ",
-            "cur-prefix",
-            "cur-export",
-            OffsetDateTime.now());
+    validConfig = new BillingExportConfig(
+        configUuid,
+        accountId,
+        " test-bucket ",
+        "eu-north-1",
+        "cur-prefix",
+        "cur-export",
+        OffsetDateTime.now());
 
-    String credentialJson =
-        """
-                {
-                  "accessKeyId": "test-access-key",
-                  "secretAccessKey": "test-secret-key"
-                }
-                """;
+    String credentialJson = """
+        {
+          "accessKeyId": "test-access-key",
+          "secretAccessKey": "test-secret-key"
+        }
+        """;
 
-    validCredential =
-        new CloudCredential(
-            UUID.randomUUID(),
-            accountId,
-            "AWS",
-            "access-key",
-            credentialJson,
-            OffsetDateTime.now());
+    validCredential = new CloudCredential(
+        UUID.randomUUID(),
+        accountId,
+        "AWS",
+        "access-key",
+        credentialJson,
+        OffsetDateTime.now());
 
-    step =
-        new AwsCurContextInitStep(
-            tempDir.toString(),
-            billingExportExecutionRepository,
-            billingExportConfigService,
-            cloudCredentialRepository);
+    step = new AwsCurContextInitStep(
+        tempDir.toString(),
+        billingExportExecutionRepository,
+        billingExportConfigService,
+        cloudCredentialRepository);
   }
 
   @Test
@@ -120,6 +124,7 @@ class AwsCurContextInitStepTest {
 
     // assert
     assertEquals("test-bucket", context.getBucketName());
+    assertEquals(Region.EU_NORTH_1, context.getBucketRegion());
     assertEquals("cur-prefix", context.getExportPrefix());
     assertEquals("cur-export", context.getExportName());
     assertEquals(accountId, context.getAccountId());
@@ -150,7 +155,6 @@ class AwsCurContextInitStepTest {
     // assert
     assertEquals("test-access-key", context.getCredentials().getAccessKey());
     assertEquals("test-secret-key", context.getCredentials().getSecretKey());
-    assertEquals("eu-north-1", context.getCredentials().getAwsRegion());
   }
 
   @Test
@@ -176,20 +180,18 @@ class AwsCurContextInitStepTest {
         .thenReturn(validConfig);
     mockProcessedExport(validBillingExportId);
 
-    String credentialInvalidJson =
-        """
-                  accessKeyId": "test-access-key",
-                  "secretAccessKey": "test-secret-key"
-                """;
+    String credentialInvalidJson = """
+          accessKeyId": "test-access-key",
+          "secretAccessKey": "test-secret-key"
+        """;
 
-    CloudCredential invalidCredential =
-        new CloudCredential(
-            UUID.randomUUID(),
-            accountId,
-            "AWS",
-            "access-key",
-            credentialInvalidJson,
-            OffsetDateTime.now());
+    CloudCredential invalidCredential = new CloudCredential(
+        UUID.randomUUID(),
+        accountId,
+        "AWS",
+        "access-key",
+        credentialInvalidJson,
+        OffsetDateTime.now());
 
     when(cloudCredentialRepository.findByAccountIdAndProvider(accountId, "AWS"))
         .thenReturn(List.of(invalidCredential));
@@ -206,8 +208,8 @@ class AwsCurContextInitStepTest {
   }
 
   private void mockProcessedExport(UUID billingExportId) {
-    BillingExportExecution billingExportExecution =
-        new BillingExportExecution(billingExportId, configUuid, ExecutionStatusEnum.completed);
+    BillingExportExecution billingExportExecution = new BillingExportExecution(billingExportId, configUuid,
+        ExecutionStatusEnum.completed);
 
     when(billingExportExecutionRepository.findAll()).thenReturn(List.of(billingExportExecution));
   }

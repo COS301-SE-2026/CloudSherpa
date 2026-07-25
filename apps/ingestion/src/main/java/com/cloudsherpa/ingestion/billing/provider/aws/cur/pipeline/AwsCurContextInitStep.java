@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
+import software.amazon.awssdk.regions.Region;
 
 @Component
 @Order(1)
@@ -51,6 +52,7 @@ public class AwsCurContextInitStep implements AwsCurIngestionPipelineStep {
             UUID.fromString(context.getConfigId()));
 
     context.setBucketName(billingExportConfig.getBucketName().strip());
+    context.setBucketRegion(Region.of(billingExportConfig.getBucketRegion()));
     context.setExportPrefix(billingExportConfig.getExportPrefix());
     context.setExportName(billingExportConfig.getExportName());
     context.setAccountId(billingExportConfig.getAccountId());
@@ -84,7 +86,6 @@ public class AwsCurContextInitStep implements AwsCurIngestionPipelineStep {
       CloudCredentials cloudCredentials = new CloudCredentials();
       cloudCredentials.setAccessKey(awsCredentials.getAccessKeyId());
       cloudCredentials.setSecretKey(awsCredentials.getSecretAccessKey());
-      cloudCredentials.setAwsRegion("eu-north-1");
 
       context.setCredentials(cloudCredentials);
     } catch (JsonProcessingException jsonProcessingException) {
