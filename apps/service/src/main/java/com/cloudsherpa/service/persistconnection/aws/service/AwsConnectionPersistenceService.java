@@ -138,7 +138,7 @@ public class AwsConnectionPersistenceService {
 
   private CloudAccount createAccount(
       CloudConnection connection, PersistAwsConnectionRequest request) {
-
+    OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
     CloudAccount account =
         new CloudAccount.Builder()
             .id(UUID.randomUUID())
@@ -146,10 +146,12 @@ public class AwsConnectionPersistenceService {
             .accountType(AccountTypeEnum.aws_account)
             .displayName(request.displayName())
             .ingestionPeriod(request.ingestionPeriod().toString())
-            .createdAt(OffsetDateTime.now(ZoneOffset.UTC))
+            .createdAt(now)
+            .lastBillingIngestion(now)
+            .lastUsageIngestion(now)
             .nextUsageIngestion(
                 OffsetDateTime.now(ZoneOffset.UTC).plusSeconds(request.ingestionPeriod()))
-            .nextUsageIngestion(OffsetDateTime.now(ZoneOffset.UTC).plusHours(12))
+            .nextBillingIngestion(OffsetDateTime.now(ZoneOffset.UTC).plusHours(12))
             .build();
 
     return cloudAccountRepository.save(account);
@@ -183,9 +185,10 @@ public class AwsConnectionPersistenceService {
                     new Resource.Builder()
                         .id(UUID.randomUUID())
                         .accountId(account.getId())
-                        .resourceType(r.resourceType())
+                        .resourceType(r.serviceType())
                         .resourceName(r.resourceName())
                         .resourceIdentifier(r.resourceId())
+                        .resourceIdentifierType(r.resourceType())
                         .region(r.region())
                         .status(r.active() ? StatusEnum.active : StatusEnum.disabled)
                         .tags(r.tags())

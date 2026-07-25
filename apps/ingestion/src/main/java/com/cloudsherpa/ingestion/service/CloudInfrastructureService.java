@@ -111,6 +111,7 @@ public class CloudInfrastructureService {
             .accountId(accountId)
             .resourceType(resourceType)
             .resourceIdentifier(cloudResourceId)
+            .resourceIdentifierType("InstanceId")
             .status(StatusEnum.active)
             .region("af-south-1")
             .resourceName("resource")

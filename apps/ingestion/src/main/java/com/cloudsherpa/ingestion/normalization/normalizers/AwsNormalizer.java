@@ -9,7 +9,6 @@ public class AwsNormalizer implements Normalizer {
     if (r == null) {
       return null;
     }
-
     String metricId = UUID.randomUUID().toString();
     String resourceId = r.getResourceId();
     String accountId = r.getAccountId();

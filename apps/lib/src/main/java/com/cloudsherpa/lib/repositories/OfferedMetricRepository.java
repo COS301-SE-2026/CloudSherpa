@@ -15,4 +15,9 @@ public interface OfferedMetricRepository extends JpaRepository<OfferedMetric, UU
   List<OfferedMetric> findByProviderAndServiceType(
       ProviderEnum provider,
       String serviceType);
+
+  List<OfferedMetric> findByProviderAndServiceTypeAndIdentifierField(
+      ProviderEnum provider,
+      String serviceType, String identifierField);
+
 }

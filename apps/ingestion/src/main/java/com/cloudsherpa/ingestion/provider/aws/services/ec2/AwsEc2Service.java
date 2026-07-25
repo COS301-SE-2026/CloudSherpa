@@ -66,7 +66,6 @@ public class AwsEc2Service implements Ec2Service {
               instance.region().id(),
               tags));
     }
-
     return resources;
   }
 }

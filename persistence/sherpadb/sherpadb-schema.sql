@@ -240,6 +240,7 @@ BEGIN
             resource_type varchar(255) NOT NULL,
             resource_name varchar(255) NOT NULL,
             resource_identifier varchar(255) NOT NULL,
+            resource_identifier_type varchar(255) NOT NULL,
             region varchar(100) NOT NULL,
             status public.status_enum,
             tags jsonb,

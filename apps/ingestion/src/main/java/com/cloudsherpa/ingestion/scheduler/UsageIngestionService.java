@@ -63,6 +63,7 @@ public class UsageIngestionService {
                 () -> new IllegalArgumentException("Cloud account not found: " + accountId));
     CloudCredential credential = cloudCredentialRepository.findByAccountId(accountId).getFirst();
     String decryptedCredential = encryptionService.decrypt(credential.getCredentialValue());
+    System.out.println(decryptedCredential);
     Instant ingestionEndTime = Instant.now().truncatedTo(ChronoUnit.MINUTES);
     try {
       IngestionRequestEvent request = new IngestionRequestEvent();
@@ -96,21 +97,30 @@ public class UsageIngestionService {
         serviceScope.setMetrics(metrics);
         List<Resource> serviceTypeResources =
             resources.stream()
-                .filter(resource -> resource.getResourceType() == serviceType)
+                .filter(resource -> resource.getResourceType().equals(serviceType))
                 .toList();
 
-        List<Instance> instances = new ArrayList<>();
-        serviceTypeResources.forEach(
-            serviceTypeResource -> {
-              Instance instance = new Instance();
-              instance.setIdentifier(serviceTypeResource.getResourceIdentifier());
-              instance.setRegion(serviceTypeResource.getRegion());
-              instances.add(instance);
-            });
-        InstanceScope instanceScope = new InstanceScope();
-        instanceScope.setIdentifierName(offeredMetrics.getFirst().getIdentifierField());
-        instanceScope.setInstances(instances);
-
+        List<InstanceScope> instanceScopes = new ArrayList<>();
+        for (String resourceIdentifierType :
+            serviceTypeResources.stream()
+                .map(Resource::getResourceIdentifierType)
+                .distinct()
+                .toList()) {
+          InstanceScope instanceScope = new InstanceScope();
+          instanceScope.setIdentifierName(resourceIdentifierType);
+          List<Instance> instances = new ArrayList<>();
+          for (Resource identifierSpecificResource :
+              resourceRepository.findByAccountIdAndResourceTypeAndResourceIdentifierType(
+                  accountId, serviceType, resourceIdentifierType)) {
+            Instance instance = new Instance();
+            instance.setIdentifier(identifierSpecificResource.getResourceIdentifier());
+            instance.setRegion(identifierSpecificResource.getRegion());
+            instances.add(instance);
+          }
+          instanceScope.setInstances(instances);
+          instanceScopes.add(instanceScope);
+        }
+        serviceScope.setInstances(instanceScopes);
         serviceScopes.add(serviceScope);
       }
       accountScope.setServiceScopes(serviceScopes);
@@ -122,6 +132,12 @@ public class UsageIngestionService {
       CloudCredentials credentials = new CloudCredentials();
       credentials.setAccessKey(decryptedCredentialsDto.accessKeyId());
       credentials.setSecretKey(decryptedCredentialsDto.secretAccessKey());
+      System.out.println(
+          "Credentials with access key: "
+              + decryptedCredentialsDto.accessKeyId()
+              + " and secret key: "
+              + decryptedCredentialsDto.secretAccessKey()
+              + " found");
       request.setCredentials(credentials);
 
       client.ingest(request);

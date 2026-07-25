@@ -37,6 +37,9 @@ public class Resource {
   @Column(name = "resource_identifier", nullable = false, length = 255)
   private String resourceIdentifier;
 
+  @Column(name = "resource_identifier_type", nullable = false, length = 255)
+  private String resourceIdentifierType;
+
   @Column(name = "region", nullable = false, length = 100)
   private String region;
 
@@ -64,6 +67,7 @@ public class Resource {
     this.resourceType = builder.resourceType;
     this.resourceName = builder.resourceName;
     this.resourceIdentifier = builder.resourceIdentifier;
+    this.resourceIdentifierType = builder.resourceIdentifierType;
     this.region = builder.region;
     this.status = builder.status;
     this.tags = builder.tags;
@@ -77,6 +81,7 @@ public class Resource {
     private String resourceType;
     private String resourceName;
     private String resourceIdentifier;
+    private String resourceIdentifierType;
     private String region;
     private StatusEnum status;
     private Map<String, Object> tags;
@@ -105,6 +110,11 @@ public class Resource {
 
     public Builder resourceIdentifier(String resourceIdentifier) {
       this.resourceIdentifier = resourceIdentifier;
+      return this;
+    }
+
+    public Builder resourceIdentifierType(String resourceIdentifierType) {
+      this.resourceIdentifierType = resourceIdentifierType;
       return this;
     }
 
@@ -160,6 +170,10 @@ public class Resource {
 
   public String getResourceIdentifier() {
     return resourceIdentifier;
+  }
+
+  public String getResourceIdentifierType() {
+    return resourceIdentifierType;
   }
 
   public String getRegion() {

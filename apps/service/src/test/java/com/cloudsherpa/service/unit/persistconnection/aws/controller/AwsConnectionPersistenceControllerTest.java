@@ -48,7 +48,13 @@ class AwsConnectionPersistenceControllerTest {
 
     ResourceSelectionDto resource =
         new ResourceSelectionDto(
-            "i-12345", "EC2", "instance-1", "af-south-1", Map.of("Environment", "Prod"), true);
+            "i-12345",
+            "EC2",
+            "instanceId",
+            "instance-1",
+            "af-south-1",
+            Map.of("Environment", "Prod"),
+            true);
 
     request =
         new PersistAwsConnectionRequest(null, "Production", 300, credentials, List.of(resource));

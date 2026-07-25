@@ -29,6 +29,8 @@ public interface ResourceRepository extends JpaRepository<Resource, UUID> {
       String resourceType,
       String resourceIdentifier,
       String region);
+  // Find a resource by its account, type, and identifier type
+  List<Resource> findByAccountIdAndResourceTypeAndResourceIdentifierType(UUID accountId, String resourceType, String resourceIdentifierType);
 
   // Find the number of resources with a specific accountId
   long countByAccountId(UUID accountId);

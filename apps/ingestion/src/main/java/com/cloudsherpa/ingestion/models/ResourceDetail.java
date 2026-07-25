@@ -35,6 +35,10 @@ public class ResourceDetail {
     return name;
   }
 
+  public String getRegion() {
+    return region;
+  }
+
   public String getResourceType() {
     return resourceType;
   }

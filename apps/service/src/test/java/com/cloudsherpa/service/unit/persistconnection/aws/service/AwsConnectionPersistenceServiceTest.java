@@ -75,10 +75,17 @@ class AwsConnectionPersistenceServiceTest {
     AwsCredentialsDto credentials = new AwsCredentialsDto("accessKey", "secretKey");
     ResourceSelectionDto activeResource =
         new ResourceSelectionDto(
-            "i-12345", "EC2", "instance-1", "af-south-1", Map.of("Environment", "Prod"), true);
+            "i-12345",
+            "EC2",
+            "instanceId",
+            "instance-1",
+            "af-south-1",
+            Map.of("Environment", "Prod"),
+            true);
 
     ResourceSelectionDto disabledResource =
-        new ResourceSelectionDto("i-23456", "S3", "bucket-1", "af-south-1", Map.of(), false);
+        new ResourceSelectionDto(
+            "i-23456", "S3", "BucketName", "bucket-1", "af-south-1", Map.of(), false);
 
     request =
         new PersistAwsConnectionRequest(
@@ -272,7 +279,8 @@ class AwsConnectionPersistenceServiceTest {
   void shouldHandleNullTags() {
 
     ResourceSelectionDto resource =
-        new ResourceSelectionDto("i-12345", "EC2", "instance-1", "af-south-1", null, true);
+        new ResourceSelectionDto(
+            "i-12345", "EC2", "instanceId", "instance-1", "af-south-1", null, true);
 
     PersistAwsConnectionRequest requestWithNullTags =
         new PersistAwsConnectionRequest(

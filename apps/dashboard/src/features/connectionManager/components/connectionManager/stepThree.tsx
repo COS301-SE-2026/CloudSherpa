@@ -173,7 +173,8 @@ export default function StepThree({
         credentials,
         resources: resources.map((resource): ResourceSelectionDto => ({
           resourceId: resource.resourceId,
-          resourceType: resource.serviceCategory,
+          serviceType: resource.serviceCategory,
+          resourceType: resource.resourceType,
           resourceName: resource.name,
           region: resource.region,
           tags: resource.tags,
