@@ -91,7 +91,7 @@ jobs:
         - name: Set up playwright
           if: github.event_name == 'pull_request'
           working-directory: apps/dashboard
-          run: npx playwright install --with-deps
+          run: npm run playwright:install
 
         - name: Compose Up
           if: github.event_name == 'pull_request'
