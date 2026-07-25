@@ -7,6 +7,7 @@ import static org.mockito.Mockito.*;
 
 import com.cloudsherpa.service.persistconnection.aws.controller.AwsConnectionPersistenceController;
 import com.cloudsherpa.service.persistconnection.aws.dto.AwsCredentialsDto;
+import com.cloudsherpa.service.persistconnection.aws.dto.BillingConfigDto;
 import com.cloudsherpa.service.persistconnection.aws.dto.PersistAwsConnectionRequest;
 import com.cloudsherpa.service.persistconnection.aws.dto.ResourceSelectionDto;
 import com.cloudsherpa.service.persistconnection.aws.service.AwsConnectionPersistenceService;
@@ -56,8 +57,12 @@ class AwsConnectionPersistenceControllerTest {
             Map.of("Environment", "Prod"),
             true);
 
+    BillingConfigDto billingConfig =
+        new BillingConfigDto("billing-bucket", "exports/", "daily-cost-export");
+
     request =
-        new PersistAwsConnectionRequest(null, "Production", 300, credentials, List.of(resource));
+        new PersistAwsConnectionRequest(
+            null, null, "Production", 300, credentials, List.of(resource), billingConfig);
   }
 
   @Test

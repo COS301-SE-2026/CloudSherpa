@@ -7,20 +7,20 @@ import { Button } from "@/components/atoms/button";
 import { Card, CardContent } from "@/components/atoms/card";
 import { ArrowLeft, ExternalLink, Pencil, Info } from "lucide-react";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
 } from "@/components/atoms/tooltip";
 import { useParams, useRouter } from "next/navigation";
 
 import {
-  CloudAccountDetails,
-  CloudResource,
-  ResourceStatus,
-  getAwsAccount,
-  getAwsAccountResources,
-  updateAwsAccountName
+    CloudAccountDetails,
+    CloudResource,
+    ResourceStatus,
+    getAwsAccount,
+    getAwsAccountResources,
+    updateAwsAccountName,
 } from "@/lib/fetch/aws-connection-api";
 /*
 - the user should be able to veiw details about a particular connectio here
@@ -30,250 +30,270 @@ import {
 */
 
 export default function ConfigureConnection() {
-  const params = useParams();
-  const router = useRouter();
+    const params = useParams();
+    const router = useRouter();
 
-  const accountId = params.connectionId as string;
+    const accountId = params.connectionId as string;
 
-  const [account, setAccount] = useState<CloudAccountDetails | null>(null);
+    const [account, setAccount] = useState<CloudAccountDetails | null>(null);
 
-  const [resources, setResources] = useState<CloudResource[]>([]);
+    const [resources, setResources] = useState<CloudResource[]>([]);
 
-  const [connectionName, setConnectionName] = useState("");
+    const [connectionName, setConnectionName] = useState("");
 
-  const [newName, setNewName] = useState("");
+    const [newName, setNewName] = useState("");
 
-  const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(true);
 
-  const [isChanging, setIsChanging] = useState(false);
+    const [isChanging, setIsChanging] = useState(false);
 
+    async function loadConnection() {
+        try {
+            const [accountResponse, resourcesResponse] = await Promise.all([
+                getAwsAccount(accountId),
+                getAwsAccountResources(accountId),
+            ]);
 
-  async function loadConnection() {
-    try {
-      const [accountResponse, resourcesResponse] =
-        await Promise.all([
-          getAwsAccount(accountId),
-          getAwsAccountResources(accountId),
-        ]);
+            setAccount(accountResponse);
 
-      setAccount(accountResponse);
+            setConnectionName(accountResponse.displayName);
+            setNewName(accountResponse.displayName);
 
-      setConnectionName(accountResponse.displayName);
-      setNewName(accountResponse.displayName);
-
-      setResources(
-        resourcesResponse.filter(
-          (resource) =>
-            resource.status === ResourceStatus.ACTIVE
-        )
-      );
-    } catch (err) {
-      console.error("Failed to load connection", err);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    void loadConnection();
-  }, [accountId]);
-
-  const handlingEditing = () => {
-    setNewName(connectionName);
-    setIsChanging(true);
-  };
-
-  const handlingSave = async () => {
-    if (newName.trim() === connectionName) { //no name change, so we don't send a request
-      setIsChanging(false);
-      return;
+            setResources(
+                resourcesResponse.filter((resource) => resource.status === ResourceStatus.ACTIVE)
+            );
+        } catch (err) {
+            console.error("Failed to load connection", err);
+        } finally {
+            setLoading(false);
+        }
     }
 
-    try {
-      await updateAwsAccountName(accountId, newName.trim());
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        void loadConnection();
+    }, [accountId]);
 
-      setConnectionName(newName.trim());
-      setIsChanging(false);
-    } catch (err) {
-      console.error("Failed to update connection name", err);
-    }
-  };
+    const handlingEditing = () => {
+        setNewName(connectionName);
+        setIsChanging(true);
+    };
 
-  const handlingCancel = () => {
-    setNewName(connectionName);
-    setIsChanging(false);
-  };
+    const handlingSave = async () => {
+        if (newName.trim() === connectionName) {
+            //no name change, so we don't send a request
+            setIsChanging(false);
+            return;
+        }
 
-  if (loading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        Loading...
-      </div>
-    );
-  } else
-    return (
-      <div className="min-h-screen bg-background text-foreground">
-        {/* this is fro the heading of the page */}
-        <div className="px-8 py-4 border-b border-border">
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => router.push("/manageConnections")}
-              className="text-muted-foreground hover:text-foreground h-8 w-8"
-            >
-              <ArrowLeft size={18} />
-            </Button>
+        try {
+            await updateAwsAccountName(accountId, newName.trim());
 
-            <div>
-              <h1 className="text-xl font-semibold text-foreground">
-                {" "}
-                {connectionName}{" "}
-              </h1>
-            </div>
-          </div>
-        </div>
+            setConnectionName(newName.trim());
+            setIsChanging(false);
+        } catch (err) {
+            console.error("Failed to update connection name", err);
+        }
+    };
 
-        <div className="px-8 py-8">
-          {/* this is for the connection details */}
-          <div className="flex items-center gap-2 mb-3">
-            <h2 className="text-base font-medium text-foreground"> Connection details </h2>
+    const handlingCancel = () => {
+        setNewName(connectionName);
+        setIsChanging(false);
+    };
 
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger>
-                  <Info size={15} className="text-muted-foreground cursor-pointer" />
-                </TooltipTrigger>
+    if (loading) {
+        return <div className="flex h-screen items-center justify-center">Loading...</div>;
+    } else
+        return (
+            <div className="min-h-screen bg-background text-foreground">
+                {/* this is fro the heading of the page */}
+                <div className="px-8 py-4 border-b border-border">
+                    <div className="flex items-center gap-3">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => router.push("/manageConnections")}
+                            className="text-muted-foreground hover:text-foreground h-8 w-8"
+                        >
+                            <ArrowLeft size={18} />
+                        </Button>
 
-                <TooltipContent className="max-w-xs flex flex-col gap-2">
-                  <p className="font-medium text-sm"> Configuration of connection </p>
-                  <p className="text-xs leading-relaxed">
-                    {" "}
-                    A connection links your cloud provider account to CloudSherpa
-                    for cost monitoring{" "}
-                  </p>
-                  <p className="text-xs leading-relaxed">
-                    {" "}
-                    You can rename this connection at any time using the pencil icon
-                    next to the connection name{" "}
-                  </p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-          <Card className="mb-8 bg-card border-border">
-            <CardContent className="p-0">
-              <div className="flex items-center justify-between px-5 py-3">
-                <span className="text-sm text-muted-foreground"> Connection name </span>
-
-                <div className="flex items-center gap-2">
-                  {isChanging ? (
-                    <>
-                      <Input
-                        autoFocus
-                        value={newName}
-                        onChange={(change) => setNewName(change.target.value)}
-                        className="h-7 text-sm w-36 bg-transparent border-border text-foreground focus-visible:ring-ring"
-                      />
-
-                      <Button
-                        size="sm"
-                        onClick={handlingSave}
-                        className="h-7 text-xs px-3 bg-primary text-primary-foreground hover:bg-primary/90"
-                      >
-                        {" "}
-                        Save{" "}
-                      </Button>
-
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={handlingCancel}
-                        className="h-7 text-xs px-3 text-muted-foreground hover:text-foreground"
-                      >
-                        {" "}
-                        Cancel{" "}
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      <span className="text-sm text-foreground border border-border rounded px-2 py-0.5">
-                        {" "}
-                        {connectionName}{" "}
-                      </span>
-
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={handlingEditing}
-                        className="h-6 w-6 text-muted-foreground hover:text-foreground"
-                      >
-                        {" "}
-                        <Pencil size={14} />{" "}
-                      </Button>
-                    </>
-                  )}
+                        <div>
+                            <h1 className="text-xl font-semibold text-foreground">
+                                {" "}
+                                {connectionName}{" "}
+                            </h1>
+                        </div>
+                    </div>
                 </div>
-              </div>
 
-              <Separator className="bg-border" />
+                <div className="px-8 py-8">
+                    {/* this is for the connection details */}
+                    <div className="flex items-center gap-2 mb-3">
+                        <h2 className="text-base font-medium text-foreground">
+                            {" "}
+                            Connection details{" "}
+                        </h2>
 
-              <div className="flex items-center justify-between px-5 py-3">
-                <span className="text-sm text-muted-foreground"> Provider </span>
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger>
+                                    <Info
+                                        size={15}
+                                        className="text-muted-foreground cursor-pointer"
+                                    />
+                                </TooltipTrigger>
 
-                <span className="text-xs font-medium px-3 py-1 rounded bg-success text-success-foreground">
-                  {" "}
-                  {account?.accountType.replace("_", " ")}{" "}
-                </span>
-              </div>
+                                <TooltipContent className="max-w-xs flex flex-col gap-2">
+                                    <p className="font-medium text-sm">
+                                        {" "}
+                                        Configuration of connection{" "}
+                                    </p>
+                                    <p className="text-xs leading-relaxed">
+                                        {" "}
+                                        A connection links your cloud provider account to
+                                        CloudSherpa for cost monitoring{" "}
+                                    </p>
+                                    <p className="text-xs leading-relaxed">
+                                        {" "}
+                                        You can rename this connection at any time using the pencil
+                                        icon next to the connection name{" "}
+                                    </p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    </div>
+                    <Card className="mb-8 bg-card border-border">
+                        <CardContent className="p-0">
+                            <div className="flex items-center justify-between px-5 py-3">
+                                <span className="text-sm text-muted-foreground">
+                                    {" "}
+                                    Connection name{" "}
+                                </span>
 
-              <Separator className="bg-border" />
+                                <div className="flex items-center gap-2">
+                                    {isChanging ? (
+                                        <>
+                                            <Input
+                                                autoFocus
+                                                value={newName}
+                                                onChange={(change) =>
+                                                    setNewName(change.target.value)
+                                                }
+                                                className="h-7 text-sm w-36 bg-transparent border-border text-foreground focus-visible:ring-ring"
+                                            />
 
-              <div className="flex items-center justify-between px-5 py-3">
-                <span className="text-sm text-muted-foreground"> Account linked </span>
+                                            <Button
+                                                size="sm"
+                                                onClick={handlingSave}
+                                                className="h-7 text-xs px-3 bg-primary text-primary-foreground hover:bg-primary/90"
+                                            >
+                                                {" "}
+                                                Save{" "}
+                                            </Button>
 
-                <span className="text-sm text-foreground"> {account?.accountEmail} </span>
-              </div>
-            </CardContent>
-          </Card>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={handlingCancel}
+                                                className="h-7 text-xs px-3 text-muted-foreground hover:text-foreground"
+                                            >
+                                                {" "}
+                                                Cancel{" "}
+                                            </Button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <span className="text-sm text-foreground border border-border rounded px-2 py-0.5">
+                                                {" "}
+                                                {connectionName}{" "}
+                                            </span>
 
-          {/* this is for the attached resources */}
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-base font-medium text-foreground"> Attached resources </h2>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={handlingEditing}
+                                                className="h-6 w-6 text-muted-foreground hover:text-foreground"
+                                            >
+                                                {" "}
+                                                <Pencil size={14} />{" "}
+                                            </Button>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
 
-            <span className="text-sm font-medium text-success">
-              {" "}
-              {resources.length} resources{" "}
-            </span>
-          </div>
+                            <Separator className="bg-border" />
 
-          <Card className="bg-card border-border">
-            <CardContent className="p-0">
-              {resources.map((resource, index) => (
-                <React.Fragment key={resource.id}>
-                  <div className="flex items-center justify-between px-5 py-3">
-                    <span className="text-sm text-foreground"> {resource.resourceName} </span>
+                            <div className="flex items-center justify-between px-5 py-3">
+                                <span className="text-sm text-muted-foreground"> Provider </span>
 
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() =>
-                        router.push(`/manageConnections/${accountId}/resources`)
-                      }
-                      className="h-6 w-6 text-muted-foreground hover:text-foreground"
-                    >
-                      <ExternalLink size={15} />
-                    </Button>                 </div>
+                                <span className="text-xs font-medium px-3 py-1 rounded bg-success text-success-foreground">
+                                    {" "}
+                                    {account?.accountType.replace("_", " ")}{" "}
+                                </span>
+                            </div>
 
-                  {index !== resources.length - 1 && (
-                    <Separator className="bg-border" />
-                  )}
-                </React.Fragment>
-              ))}
-            </CardContent>
-          </Card>
-        </div>
-      </div >
-    );
+                            <Separator className="bg-border" />
+
+                            <div className="flex items-center justify-between px-5 py-3">
+                                <span className="text-sm text-muted-foreground">
+                                    {" "}
+                                    Account linked{" "}
+                                </span>
+
+                                <span className="text-sm text-foreground">
+                                    {" "}
+                                    {account?.accountEmail}{" "}
+                                </span>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* this is for the attached resources */}
+                    <div className="flex items-center justify-between mb-3">
+                        <h2 className="text-base font-medium text-foreground">
+                            {" "}
+                            Attached resources{" "}
+                        </h2>
+
+                        <span className="text-sm font-medium text-success">
+                            {" "}
+                            {resources.length} resources{" "}
+                        </span>
+                    </div>
+
+                    <Card className="bg-card border-border">
+                        <CardContent className="p-0">
+                            {resources.map((resource, index) => (
+                                <React.Fragment key={resource.id}>
+                                    <div className="flex items-center justify-between px-5 py-3">
+                                        <span className="text-sm text-foreground">
+                                            {" "}
+                                            {resource.resourceName}{" "}
+                                        </span>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() =>
+                                                router.push(
+                                                    `/manageConnections/${accountId}/resources`
+                                                )
+                                            }
+                                            className="h-6 w-6 text-muted-foreground hover:text-foreground"
+                                        >
+                                            <ExternalLink size={15} />
+                                        </Button>{" "}
+                                    </div>
+
+                                    {index !== resources.length - 1 && (
+                                        <Separator className="bg-border" />
+                                    )}
+                                </React.Fragment>
+                            ))}
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
+        );
 }

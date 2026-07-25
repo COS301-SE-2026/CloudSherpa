@@ -1,8 +1,8 @@
 # SherpaDB ERD and Architecture Overview
 
 This document describes the database architecture used for CloudSherpa. The system uses a **Hybrid Multi-Tenant Architecture** built on PostgreSQL and TimescaleDB:
-1. **Global Schema (`public`):** The shared space for all users. It holds global data like user accounts, UI preferences, and dashboard layouts.
-2. **Tenant Schemas (`tenant_<uuid>`):** A private, isolated database space created uniquely for each customer. This holds their massive lists of cloud resources and time-series metrics without mixing them up with other customers.
+1. **Global Schema (`public`):** The shared space for all users. It holds global data like user accounts, UI preferences, and dashboard layouts, as well as billing export configurations.
+2. **Tenant Schemas (`tenant_<uuid>`):** A private, isolated database space created uniquely for each customer. This holds their cloud resources, time-series metrics, and normalized billing data without mixing them up with other customers.
 
 ## Local Database Access (pgAdmin)
 To view and manage the database locally during development, you can use the bundled pgAdmin container:
@@ -35,12 +35,14 @@ To view and manage the database locally during development, you can use the bund
 | **ingestion_period_enum**| `1m`, `5m`, `1h` | How often our system fetches new data from the cloud. |
 | **predefined_time_enum** | `last_1h`, `last_24h`, `last_7d` | Quick-select time filters for viewing dashboards. |
 | **type_enum** | `line_chart`, `guage_chart` | The specific type of visual chart used in a widget. |
+| **execution_status_enum**| `pending`, `processing`, `completed`, `failed` | Tracks the state of a billing export file ingestion run. |
+| **charge_type_enum** | `Usage`, `Other` | Distinguishes actual resource usage charges from other billing line items such as taxes, credits, refunds, and support charges. |
 
 ---
 
 ## Global Infrastructure (Public Schema)
 
-These tables are centralized. They handle core system data, user access, and how the app looks.
+These tables are centralized. They handle core system data, user access, billing configurations, and how the app looks.
 
 ### users
 The people who log into the application.
@@ -76,6 +78,18 @@ The main link connecting a user to their cloud provider (like a bridge to AWS or
 | **status** | status_enum | Default `active` | Set to 'disabled' to temporarily pause data syncing. |
 | **created_at** | TIMESTAMPTZ | Default NOW() | When this connection was first created. |
 
+### cloud_account
+Represents a specific sub-account inside the cloud provider (like an AWS Account or GCP Project) where resources actually live.
+
+| Column Name | Data Type | Key/Constraint | Description |
+| :--- | :--- | :--- | :--- |
+| **account_id** | UUID | Primary Key | The unique ID for this cloud account. |
+| **connection_id** | UUID | Foreign Key | Links back to the main connection bridge. |
+| **account_type** | account_type_enum | Not Null | e.g., 'aws_account' vs 'azure_subscription'. |
+| **ingestion_period**| ingestion_period_enum | Nullable | How often we pull data for this account (e.g., every 5m). |
+| **display_name** | VARCHAR(255) | Nullable | A custom name the user gave this account (e.g., "Production AWS"). |
+| **created_at** | TIMESTAMPTZ | Default NOW() | When we first synced this account. |
+
 ### cloud_credential
 Securely stores the passwords, API keys, or tokens needed to safely talk to the cloud provider.
 
@@ -99,17 +113,30 @@ Securely stores the passwords, API keys, or tokens needed to safely talk to the 
 }
 ```
 
-### cloud_account
-Represents a specific sub-account inside the cloud provider (like an AWS Account or GCP Project) where resources actually live.
+### billing_export_config
+Stores the configuration details (like S3 bucket information) required to locate and import billing exports (e.g., AWS CUR) for a specific cloud account.
 
 | Column Name | Data Type | Key/Constraint | Description |
 | :--- | :--- | :--- | :--- |
-| **account_id** | UUID | Primary Key | The unique ID for this cloud account. |
-| **connection_id** | UUID | Foreign Key | Links back to the main connection bridge. |
-| **account_type** | account_type_enum | Not Null | e.g., 'aws_account' vs 'azure_subscription'. |
-| **ingestion_period**| ingestion_period_enum | Nullable | How often we pull data for this account (e.g., every 5m). |
-| **display_name** | VARCHAR(255) | Nullable | A custom name the user gave this account (e.g., "Production AWS"). |
-| **created_at** | TIMESTAMPTZ | Default NOW() | When we first synced this account. |
+| **config_id** | UUID | Primary Key | Unique ID for this billing export configuration. |
+| **account_id** | UUID | Foreign Key | Links to the cloud account this export belongs to. |
+| **bucket_name** | VARCHAR(255) | Not Null | The name of the storage bucket where the export is saved. |
+| **export_prefix** | VARCHAR(255) | Nullable | The folder path/prefix inside the bucket. |
+| **export_name** | VARCHAR(255) | Not Null | The exact name of the billing export. |
+| **created_at** | TIMESTAMPTZ | Default NOW() | When this configuration was added. |
+
+### billing_export_execution
+Tracks every time the cost engine runs to process a new billing export file (like a `.parquet` file).
+
+| Column Name | Data Type | Key/Constraint | Description |
+| :--- | :--- | :--- | :--- |
+| **execution_id** | UUID | Primary Key | Unique identifier for this specific ingestion run. |
+| **config_id** | UUID | Foreign Key | Links to the billing export configuration. |
+| **status** | execution_status_enum | Default `pending` | The current state of the ingestion (`processing`, `failed`, etc.). |
+| **rows_processed** | INTEGER | Default `0` | How many rows were successfully parsed and saved. |
+| **started_at** | TIMESTAMPTZ | Default NOW() | When the ingestion process started. |
+| **completed_at** | TIMESTAMPTZ | Nullable | When the ingestion process successfully finished. |
+| **error_message** | TEXT | Nullable | Logs the error details if the ingestion failed. |
 
 ### dashboard
 A user's custom page used for viewing groups of charts and metrics.
@@ -189,6 +216,7 @@ The giant, fast-moving table that holds every single metric data point (CPU spik
 
 | Column Name | Data Type | Key/Constraint | Description |
 | :--- | :--- | :--- | :--- |
+| **metric_id** | UUID | Primary Key | Unique identifier for each metric record. Together with `period_start`, it forms the composite primary key required by TimescaleDB. |
 | **resource_id** | UUID | Foreign Key | The specific resource this data point belongs to. |
 | **recorded_at** | TIMESTAMPTZ | Not Null | The exact moment our system received and saved this data. |
 | **metric_type** | metric_type_enum | Not Null | Is this a `cost`, `usage`, or `performance` metric? |
@@ -199,7 +227,28 @@ The giant, fast-moving table that holds every single metric data point (CPU spik
 | **period_start**| TIMESTAMPTZ | Hypertable Key | **Partition Column.** The start time of the measurement window (e.g., 12:00 PM). Frontend charts use this to sort data. |
 | **period_end** | TIMESTAMPTZ | Not Null | The end time of the measurement window (e.g., 12:05 PM). |
 
----
+### normalized_costs
+Stores normalized cloud billing records imported from cloud provider billing exports (such as the AWS Cost and Usage Report). This table stores financial information used for cost reporting, dashboards, and long-term billing analysis.
+
+| Column Name | Data Type | Key/Constraint | Description |
+| :--- | :--- | :--- | :--- |
+| **cost_id** | UUID | Primary Key | Unique identifier for each normalized billing record. Together with `usage_start_time`, it forms the composite primary key required by TimescaleDB. |
+| **execution_id** | UUID | Cross-Schema FK | Links directly back to `public.billing_export_execution`. Traces this specific row back to the exact ingestion run that imported it. |
+| **resource_id** | UUID | Foreign Key (Nullable) | Links the billing record to a cloud resource. |
+| **provider** | provider_enum | Not Null | The cloud provider that generated the billing record. |
+| **billing_account_id** | VARCHAR(255) | Not Null | Identifier of the cloud billing account responsible for the charge. |
+| **service_name** | VARCHAR(255) | Not Null | The cloud service that generated the charge (e.g., `AmazonEC2`, `AmazonS3`). |
+| **charge_type** | charge_type_enum | Not Null | Distinguishes usage charges from all other billing line items. |
+| **cost_amount** | NUMERIC(16,8) | Not Null | Value of the billing record. |
+| **currency** | currency_enum | Default `USD` | Currency in which the billing record was reported. |
+| **usage_start_time** | TIMESTAMPTZ | Hypertable Key | Beginning of the billing interval used for TimescaleDB partitioning. |
+| **usage_end_time** | TIMESTAMPTZ | Not Null | End of the billing interval. |
+| **metadata** | JSONB | Default `{}` | Stores provider-specific billing information that is not part of the standardized schema. |
+
+#### Cost Data Design
+Unlike performance metrics, billing records are not always associated with a single resource. Charges such as taxes, support plans, subscriptions, credits, and refunds apply to an account rather than an individual cloud resource. For this reason, `resource_id` is intentionally nullable while still allowing direct resource-level cost analysis whenever a resource exists.
+
+The `metadata` JSONB column preserves additional provider-specific billing attributes without requiring schema changes whenever cloud providers introduce new billing fields. This allows CloudSherpa to retain all imported billing information while maintaining a consistent normalized schema.
 
 ## Advanced Database Architecture Features
 
@@ -214,6 +263,25 @@ Because the `normalized_metrics` table will easily hit millions or billions of r
 CREATE INDEX ix_tenant_123e_resource_metric_time 
 ON tenant_123e.normalized_metrics (resource_id, metric_name, period_start DESC);
 ```
+
+The `normalized_costs` table is also implemented as a **TimescaleDB hypertable**. Since cloud billing data continuously accumulates over months or years, partitioning the table by `usage_start_time` enables efficient time-based queries while keeping insert performance high.
+
+To optimize the most common financial queries, two additional indexes are maintained:
+
+```sql
+CREATE INDEX ix_tenant_123e_costs_resource_time
+ON tenant_123e.normalized_costs (resource_id, usage_start_time DESC);
+
+CREATE INDEX ix_tenant_123e_costs_service_time
+ON tenant_123e.normalized_costs (service_name, usage_start_time DESC);
+```
+
+These indexes optimize queries such as:
+
+- Cost history for an individual cloud resource.
+- Historical cost trends for a specific cloud service.
+- Dashboard visualizations showing costs over time.
+- Financial reporting grouped by resources or services.
 
 ### 2. Real-Time Event Broadcasting
 When new metrics hit the database, we want the live frontend dashboards to update instantly without needing to constantly ask the database "Are there any updates?"
@@ -235,3 +303,48 @@ When new metrics hit the database, we want the live frontend dashboards to updat
   "period_end": "2026-05-18T13:25:00.000Z"
 }
 ```
+
+### 3. Dynamic Tenant Provisioning
+CloudSherpa automatically provisions a completely isolated schema whenever a new tenant is created.
+
+Rather than maintaining a single shared table containing data from every customer, the backend executes the `create_new_tenant()` function, which dynamically creates a dedicated schema named `tenant_<uuid>`.
+
+During tenant creation the function automatically:
+
+- Creates the tenant schema.
+- Creates the `resource` table.
+- Creates the `normalized_metrics` hypertable.
+- Creates the `normalized_costs` hypertable.
+- Creates all required indexes.
+- Registers the PostgreSQL trigger used for real-time metric notifications.
+
+This approach provides strong tenant isolation while allowing every tenant to share the same application code and database instance.
+
+### 4. Hybrid Multi-Tenant Architecture
+
+CloudSherpa separates global application data from tenant-specific operational data.
+
+The **public** schema tables:
+
+- User accounts
+- User preferences
+- Cloud connections
+- Cloud accounts
+- Cloud credentials
+- Billing export configurations & executions
+- Dashboards
+- Widgets
+
+Each **tenant** schema tables:
+
+- Cloud resources
+- Time-series performance metrics
+- Normalized billing records
+
+This architecture provides several advantages:
+
+- Strong logical isolation between customers.
+- Simpler backup and migration of individual tenants.
+- Efficient TimescaleDB partitioning for time-series workloads.
+- Shared authentication and application metadata.
+- Scalable storage for operational and financial cloud data without mixing customer datasets.

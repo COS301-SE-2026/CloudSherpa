@@ -2,6 +2,10 @@ name: CloudSherpa Dashboard CI
 
 on:
     pull_request:
+        types:
+          - opened
+          - synchronize
+          - reopened
         branches:
             - dev
             - main

@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.cloudsherpa.ingestion.billing.provider.aws.cur.AwsCurIngestionService;
 import com.cloudsherpa.ingestion.connector.CloudConnectorFactory;
 import com.cloudsherpa.ingestion.controller.CloudUsageController;
 import com.cloudsherpa.ingestion.models.UsageRecordModel;
@@ -34,6 +35,8 @@ class CloudUsageControllerIntegrationTest {
   static class TestApp {}
 
   @Autowired private MockMvc mockMvc;
+
+  @MockitoBean private AwsCurIngestionService awsCurIngestionService;
 
   @MockitoBean private CloudConnectorFactory connectorFactory;
 

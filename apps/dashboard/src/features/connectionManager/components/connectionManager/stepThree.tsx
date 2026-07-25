@@ -26,6 +26,11 @@ interface PropsForStepThree {
   ingestionPeriod: string;
   credentials: AwsCredentialsDto;
   resources: ResourceDetail[];
+  billingConfig: {
+    bucketName: string;
+    prefix: string;
+    exportName: string;
+  };
   onComplete: (ingestionPeriod: string) => void;
   onBack: () => void;
 }
@@ -143,6 +148,7 @@ export default function StepThree({
   ingestionPeriod,
   credentials,
   resources,
+  billingConfig,
   onComplete,
   onBack,
 }: Readonly<PropsForStepThree>) {
@@ -157,7 +163,6 @@ export default function StepThree({
   const recommendedPeriod = selectedResources.length * 5 * 20;
 
   const groupedResources = groupResourcesByCategory(resources);
-
 
   const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -180,6 +185,11 @@ export default function StepThree({
           tags: resource.tags,
           active: selectedResources.includes(resource.resourceId),
         })),
+        billingConfig: {
+          bucketName: billingConfig.bucketName,
+          exportPrefix: billingConfig.prefix,
+          exportName: billingConfig.exportName,
+        },
       };
 
       await createAwsConnection(request);
@@ -255,18 +265,18 @@ export default function StepThree({
                     <button
                       type="button"
                       className="
-              flex
-              items-center
-              justify-center
-              w-5
-              h-5
-              rounded-full
-              text-xs
-              text-muted-foreground
-              hover:text-foreground
-              border
-              border-border
-            "
+                flex
+                items-center
+                justify-center
+                w-5
+                h-5
+                rounded-full
+                text-xs
+                text-muted-foreground
+                hover:text-foreground
+                border
+                border-border
+                "
                     >
                       ?
                     </button>
@@ -276,7 +286,7 @@ export default function StepThree({
                     <p>
                       Recommended ingestion interval: {recommendedPeriod}{" "}
                       seconds based on {selectedResources.length} selected
-                      resources. Setting the period to a lower value could
+                      resources. Setting the interval to a lower value could
                       incur costs due to CloudWatch API free tier limits. The
                       ingestion interval determines the frequency of dashboard
                       timeseries updates.
@@ -320,12 +330,13 @@ export default function StepThree({
             <p className="text-xs text-muted-foreground/70">
               Recommended: {recommendedPeriod} seconds
             </p>
-          </div>
+          </div >
           {error && (
             <div className="rounded-md border border-red-500 bg-red-50 p-3 text-sm text-red-700">
               {error}
             </div>
-          )}
+          )
+          }
           <div className="flex justify-between pt-6">
             <Button
               type="button"
@@ -344,8 +355,8 @@ export default function StepThree({
               {saving ? "Saving..." : "Finish"}
             </Button>
           </div>
-        </form>
-      </div>
-    </div>
+        </form >
+      </div >
+    </div >
   );
 }

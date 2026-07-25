@@ -2,12 +2,17 @@ name: Service CI
 
 on:
     pull_request:
+        types:
+          - opened
+          - synchronize
+          - reopened
         branches:
             - dev
             - main
         paths:
           - apps/service/**
           - .github/workflows/service-ci.yml
+        
 jobs:
     service-validation:
         runs-on: ubuntu-latest

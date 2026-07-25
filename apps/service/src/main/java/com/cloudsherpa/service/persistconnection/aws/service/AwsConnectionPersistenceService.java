@@ -1,17 +1,20 @@
 package com.cloudsherpa.service.persistconnection.aws.service;
 
 import com.cloudsherpa.lib.entities.AccountTypeEnum;
+import com.cloudsherpa.lib.entities.BillingExportConfig;
 import com.cloudsherpa.lib.entities.CloudAccount;
 import com.cloudsherpa.lib.entities.CloudConnection;
 import com.cloudsherpa.lib.entities.CloudCredential;
 import com.cloudsherpa.lib.entities.ProviderEnum;
 import com.cloudsherpa.lib.entities.Resource;
 import com.cloudsherpa.lib.entities.StatusEnum;
+import com.cloudsherpa.lib.repositories.BillingExportConfigRepository;
 import com.cloudsherpa.lib.repositories.CloudAccountRepository;
 import com.cloudsherpa.lib.repositories.CloudConnectionRepository;
 import com.cloudsherpa.lib.repositories.CloudCredentialRepository;
 import com.cloudsherpa.lib.repositories.ResourceRepository;
 import com.cloudsherpa.service.persistconnection.aws.dto.AwsCredentialsDto;
+import com.cloudsherpa.service.persistconnection.aws.dto.BillingConfigDto;
 import com.cloudsherpa.service.persistconnection.aws.dto.PersistAwsConnectionRequest;
 import com.cloudsherpa.service.persistconnection.aws.dto.ResourceSelectionDto;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -31,18 +34,21 @@ public class AwsConnectionPersistenceService {
   private final CloudCredentialRepository cloudCredentialRepository;
   private final CredentialEncryptionService encryptionService;
   private final ResourceRepository resourceRepository;
+  private final BillingExportConfigRepository billingExportConfigRepository;
 
   public AwsConnectionPersistenceService(
       CloudConnectionRepository cloudConnectionRepository,
       CloudAccountRepository cloudAccountRepository,
       CloudCredentialRepository cloudCredentialRepository,
       CredentialEncryptionService encryptionService,
-      ResourceRepository resourceRepository) {
+      ResourceRepository resourceRepository,
+      BillingExportConfigRepository billingExportConfigRepository) {
     this.cloudConnectionRepository = cloudConnectionRepository;
     this.cloudAccountRepository = cloudAccountRepository;
     this.cloudCredentialRepository = cloudCredentialRepository;
     this.encryptionService = encryptionService;
     this.resourceRepository = resourceRepository;
+    this.billingExportConfigRepository = billingExportConfigRepository;
   }
 
   @Transactional
@@ -51,6 +57,7 @@ public class AwsConnectionPersistenceService {
     CloudAccount account = createAccount(connection, request);
     createCredential(account, request.credentials());
     createResources(account, request.resources());
+    createBillingExportConfig(account, request.billingConfig());
   }
 
   @Transactional
@@ -198,5 +205,18 @@ public class AwsConnectionPersistenceService {
             .toList();
 
     resourceRepository.saveAll(entities);
+  }
+
+  private void createBillingExportConfig(CloudAccount account, BillingConfigDto billingConfig) {
+    BillingExportConfig config =
+        new BillingExportConfig(
+            UUID.randomUUID(),
+            account.getId(),
+            billingConfig.bucketName(),
+            billingConfig.exportPrefix(),
+            billingConfig.exportName(),
+            OffsetDateTime.now(ZoneOffset.UTC));
+
+    billingExportConfigRepository.save(config);
   }
 }
