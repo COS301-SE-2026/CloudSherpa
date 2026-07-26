@@ -16,6 +16,6 @@ jobs:
     ingestion-validation:
         uses: ./.github/workflows/spring-ci.yml
         with:
-          application-path: apps/service
+          application-path: apps/ingestion
           sonar-project-key: CloudSherpa-ingestion
           sonar-project-name: 'CloudSherpa Ingestion' 
