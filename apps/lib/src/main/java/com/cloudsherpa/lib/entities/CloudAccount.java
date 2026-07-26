@@ -79,6 +79,10 @@ public class CloudAccount {
     return displayName;
   }
 
+  public void setDisplayName(String name) {
+    this.displayName = name;
+  }
+
   public String getIngestionPeriod() {
     return ingestionPeriod;
   }

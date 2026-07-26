@@ -11,6 +11,7 @@ interface ToolbarProps {
     dashboards: DashboardStub[];
     isEditMode: boolean;
     handleAddWidget: () => void;
+    handleAddKpi: () => void;
     handleStartEditing: () => void;
     handleSaveEdit: () => void;
     handleCancelEdit: () => void;
@@ -20,12 +21,15 @@ interface ToolbarProps {
     onDeleteDashboard: (id: string) => void;
     dateRange: DateRange | undefined;
     onDateRangeChange: (range: DateRange | undefined) => void;
+    hasActiveDashboard: boolean;
 }
 
 export default function Toolbar({
     dashboards,
     isEditMode,
+    hasActiveDashboard,
     handleAddWidget,
+    handleAddKpi,
     handleStartEditing,
     handleSaveEdit,
     handleCancelEdit,
@@ -46,18 +50,25 @@ export default function Toolbar({
                     onCreate={onCreateDashboard}
                     onDelete={onDeleteDashboard}
                 />
-                <EditButton
-                    isEditMode={isEditMode}
-                    handleStartEditing={handleStartEditing}
-                    handleSaveEdit={handleSaveEdit}
-                    handleCancelEdit={handleCancelEdit}
-                    handleAddWidget={handleAddWidget}
-                />
+
+                {hasActiveDashboard && (
+                    <EditButton
+                        isEditMode={isEditMode}
+                        handleStartEditing={handleStartEditing}
+                        handleSaveEdit={handleSaveEdit}
+                        handleCancelEdit={handleCancelEdit}
+                        handleAddWidget={handleAddWidget}
+                        handleAddKpi={handleAddKpi}
+                    />
+                )}
             </div>
-            <div className="flex flex-row items-center gap-2">
-                <TimePeriodSelector date={dateRange} onDateChange={onDateRangeChange} />
+
+            {hasActiveDashboard && (
+                <div className="flex flex-row items-center gap-2">
+                    <TimePeriodSelector date={dateRange} onDateChange={onDateRangeChange} />
                 <HelpMenu />
-            </div>
+                </div>
+            )}
         </header>
     );
 }

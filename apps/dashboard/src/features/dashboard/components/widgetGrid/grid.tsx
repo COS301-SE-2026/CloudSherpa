@@ -141,7 +141,7 @@ export default function Grid({ isEditMode, onLayoutChange, layouts }: Readonly<G
     }, [isEditMode]);
 
     return (
-        <div className="bg-background min-h-screen">
+        <div className="bg-background h-full min-h-0">
             <div ref={gridRef} className="grid-stack">
                 {layouts.map((l) => (
                     <WidgetWrapper key={l.id} layout={l} isEditMode={isEditMode} />

@@ -1,0 +1,83 @@
+services:
+  ingestion:
+    image: ${INGESTION_IMAGE}
+    container_name: ingestion
+    ports:
+      - "8081:8080"
+    environment:
+      POSTGRES_HOST: sherpa-db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: sherpadb
+      POSTGRES_USER: cloudsherpa
+      POSTGRES_PASSWORD: mock_pass
+      SPRING_PROFILES_ACTIVE: dev
+    depends_on:
+      sherpa-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "localhost:8080/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    
+  service:
+    image: ${SERVICE_IMAGE}
+    container_name: service
+    ports:
+      - "8083:8080"
+    environment:
+      POSTGRES_HOST: sherpa-db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: sherpadb
+      POSTGRES_USER: cloudsherpa
+      POSTGRES_PASSWORD: mock_pass
+      AUTH_JWT_SECRET: mock_secret_32_chars_long_value_123456
+      AUTH_JWT_EXP_MINUTES: 60
+      SPRING_PROFILES_ACTIVE: dev
+      AES_ENCRYPTION_KEY: FEAQKb55DXR2FICZk4MFk3d1YhP7sjZEkLuuKcr7ISY=
+      DASHBOARD_HOST: http://localhost:3000,https://cloudsherpa.gjjcs.org
+      INGESTION_BASE_URL: http://ingestion:8080
+    depends_on:
+      sherpa-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "localhost:8080/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+  
+  dashboard:
+    image: ${DASHBOARD_IMAGE}
+    container_name: dashboard
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8083
+      DISABLE_AUTH: false
+      NEXT_PUBLIC_DISABLE_AUTH: false
+    depends_on:
+      service:
+        condition: service_healthy
+
+  sherpa-db:
+    image: timescale/timescaledb:2.16.1-pg16
+    container_name: sherpa-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: sherpadb
+      POSTGRES_USER: cloudsherpa
+      POSTGRES_PASSWORD: mock_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - sherpa_db_data:/var/lib/postgresql/data
+      - ../persistence/sherpadb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  sherpa_db_data: 
+  # Ensures that the data is persistent across docker compose down / up 

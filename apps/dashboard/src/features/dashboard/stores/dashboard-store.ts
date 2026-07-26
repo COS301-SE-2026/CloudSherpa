@@ -1,6 +1,17 @@
 import { create } from "zustand";
-import { LayoutItem, DashboardConfig, WidgetConfig } from "@/features/dashboard/types/widgets";
-import { deleteWidget, updateWidgetConfig, deleteDashboard } from "@/lib/fetch/api-dashboard";
+import {
+    LayoutItem,
+    DashboardConfig,
+    WidgetConfig,
+    ChartWidgetConfig,
+    KpiWidgetConfig,
+} from "@/features/dashboard/types/widgets";
+import {
+    deleteWidget,
+    updateChartWidgetConfig,
+    deleteDashboard,
+    updateKpiWidgetConfig,
+} from "@/lib/fetch/api-dashboard";
 
 interface DashboardActions {
     createSnapshot: () => void;
@@ -10,7 +21,9 @@ interface DashboardActions {
     addDashboard: (dashboard: DashboardConfig) => void;
     removeDashboard: (id: string) => void;
     addWidget: (layout: LayoutItem, widget: WidgetConfig) => void;
-    updateWidgetConfig: (widget: WidgetConfig) => void;
+    getWidget: (id: string) => WidgetConfig | undefined;
+    updateChartWidgetConfig: (widget: ChartWidgetConfig) => void;
+    updateKpiWidgetConfig: (widget: KpiWidgetConfig) => void;
     removeWidget: (layoutId: string, widgetId: string) => void;
     updateLayouts: (newLayouts: LayoutItem[]) => void;
     setInitialState: (
@@ -18,6 +31,7 @@ interface DashboardActions {
         layouts: LayoutItem[],
         widgets: WidgetConfig[]
     ) => void;
+    reset: () => void;
 }
 
 export interface DashboardStore {
@@ -33,7 +47,7 @@ export interface DashboardStore {
     actions: DashboardActions;
 }
 
-export const useDashboardStore = create<DashboardStore>((set) => ({
+export const useDashboardStore = create<DashboardStore>((set, get) => ({
     activeDashboardId: null,
     dashboards: {},
     layouts: {},
@@ -127,10 +141,12 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
                     },
                 };
             }),
-        updateWidgetConfig: async (widget) => {
+        updateChartWidgetConfig: async (widget) => {
             try {
-                await updateWidgetConfig(widget.id, {
-                    type: widget.type as string,
+                await updateChartWidgetConfig(widget.id, {
+                    id: widget.id,
+                    widgetType: "CHART",
+                    chartType: widget.chartType,
                     displayName: widget.displayName,
                     resourceId: widget.resourceId,
                     metricType: widget.metricType as string,
@@ -144,6 +160,27 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
                 }));
             } catch (error) {
                 console.error("Failed to persist widget config:", error);
+                throw error;
+            }
+        },
+        updateKpiWidgetConfig: async (widget) => {
+            try {
+                await updateKpiWidgetConfig(widget.id, {
+                    id: widget.id,
+                    displayName: widget.displayName,
+                    widgetType: "KPI",
+                    aggregationWindowDays: widget.aggregationWindowDays,
+                    chargeIds: widget.chargeIds,
+                });
+
+                set((state) => ({
+                    widgets: {
+                        ...state.widgets,
+                        [widget.id]: widget,
+                    },
+                }));
+            } catch (error) {
+                console.log("Failed to persist kpi widget config: ", error);
                 throw error;
             }
         },
@@ -231,6 +268,22 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
                 layouts: layoutsMap,
                 widgets: widgetsMap,
                 activeDashboardId: activeDashboard ? activeDashboard.id : null,
+            });
+        },
+
+        getWidget: (id) => {
+            const currentWidgets = get().widgets;
+
+            return currentWidgets[id];
+        },
+
+        reset: () => {
+            set({
+                activeDashboardId: null,
+                dashboards: {},
+                layouts: {},
+                widgets: {},
+                snapshot: null,
             });
         },
     },
