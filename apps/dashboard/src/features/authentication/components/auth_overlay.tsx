@@ -1,7 +1,15 @@
 "use client";
 
 import { Button } from "@/components/atoms/button";
+import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
+
+const AuthAnimation = dynamic(() => import("@/features/authentication/components/authanimation"), {
+    ssr: false,
+    loading: () => (
+        <div className="absolute top-1/2 left-0 w-full h-[50%] -translate-y-1/2 bg-transparent" />
+    ),
+});
 
 interface OverlayProps {
     isSignUp: boolean;
@@ -17,9 +25,10 @@ export function AuthOverlay({ isSignUp, toggle }: Readonly<OverlayProps>) {
                 isSignUp ? "-translate-x-full" : ""
             )}
         >
+            <AuthAnimation />
             <div
                 className={cn(
-                    "relative -left-full h-full w-[200%] transform transition-transform duration-700 ease-in-out bg-secondary",
+                    "relative -left-full h-full w-[200%] transform transition-transform duration-700 ease-in-out",
                     isSignUp ? "translate-x-1/2" : "translate-x-0"
                 )}
             >
@@ -36,7 +45,7 @@ export function AuthOverlay({ isSignUp, toggle }: Readonly<OverlayProps>) {
                     </p>
 
                     <Button
-                        variant="outline"
+                        variant="default"
                         className="w-40  text-primary-foreground hover:bg-primary-foreground hover:text-primary hover:border-none transition-all duration-300"
                         onClick={() => toggle(false)}
                     >
@@ -57,7 +66,7 @@ export function AuthOverlay({ isSignUp, toggle }: Readonly<OverlayProps>) {
                     </p>
 
                     <Button
-                        variant="outline"
+                        variant="default"
                         className="w-40  text-primary-foreground hover:bg-primary-foreground hover:text-primary hover:border-none  transition-all duration-300"
                         onClick={() => toggle(true)}
                     >
