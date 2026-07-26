@@ -4,8 +4,8 @@ import { AppSidebar } from "@/components/molecules/app-sidebar";
 
 //added these for the onboarding
 import {NextStepProvider, NextStep} from "nextstepjs";
-import {dashboardTour} from "@/features/onboarding/dashboardTour";
-import tourCard from "@/features/onboarding/tourCard";
+import {dashboardTour} from "@/features/onBoarding/dashboardTour";
+import tourCard from "@/features/onBoarding/tourCard";
 
 export default function AppWrapper({ children }: Readonly<{ children: React.ReactNode }>) {
     return (
