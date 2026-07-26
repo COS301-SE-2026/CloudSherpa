@@ -54,7 +54,7 @@ export function useRegistration() {
             }
 
             setRegistrationFailure(true);
-            setRegistrationSuccess(true);
+            setRegistrationSuccess(false);
         }
     }
 
