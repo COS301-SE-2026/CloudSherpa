@@ -74,7 +74,7 @@ export function HeroAndNavBar({scrolled} : Readonly<PropsForNavBarHero>){
 
           
           <Button asChild className = "mb-10 transition-transform hover:scale-[1.03]"> 
-            <Link href = "/login">
+            <Link href = "/login" role = "button">
               Get Started 
             </Link>
           </Button>
