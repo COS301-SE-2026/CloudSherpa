@@ -9,6 +9,7 @@ import com.cloudsherpa.ingestion.connector.ServiceScope;
 import com.cloudsherpa.ingestion.models.IngestionRequestEvent;
 import com.cloudsherpa.ingestion.scheduler.dto.AwsCredentialsDto;
 import com.cloudsherpa.ingestion.scheduler.encryption.CredentialEncryptionService;
+import com.cloudsherpa.ingestion.service.TenantSchemaService;
 import com.cloudsherpa.lib.entities.CloudAccount;
 import com.cloudsherpa.lib.entities.CloudCredential;
 import com.cloudsherpa.lib.entities.OfferedMetric;
@@ -37,6 +38,7 @@ public class UsageIngestionService {
   private final ResourceRepository resourceRepository;
   private final OfferedMetricRepository offeredMetricRepository;
   private final CredentialEncryptionService encryptionService;
+  private final TenantSchemaService tenantSchemaService;
 
   public UsageIngestionService(
       UsageIngestionClient client,
@@ -44,13 +46,15 @@ public class UsageIngestionService {
       CloudCredentialRepository cloudCredentialRepository,
       ResourceRepository resourceRepository,
       OfferedMetricRepository offeredMetricRepository,
-      CredentialEncryptionService encryptionService) {
+      CredentialEncryptionService encryptionService,
+      TenantSchemaService tenantSchemaService) {
     this.client = client;
     this.cloudAccountRepository = cloudAccountRepository;
     this.cloudCredentialRepository = cloudCredentialRepository;
     this.resourceRepository = resourceRepository;
     this.offeredMetricRepository = offeredMetricRepository;
     this.encryptionService = encryptionService;
+    this.tenantSchemaService = tenantSchemaService;
   }
 
   @Transactional
@@ -100,6 +104,7 @@ public class UsageIngestionService {
                 .toList();
 
         List<InstanceScope> instanceScopes = new ArrayList<>();
+        tenantSchemaService.useTenantSchema(account.getConnection().getUserId());
         for (String resourceIdentifierType :
             serviceTypeResources.stream()
                 .map(Resource::getResourceIdentifierType)
@@ -134,6 +139,7 @@ public class UsageIngestionService {
       request.setCredentials(credentials);
 
       client.ingest(request);
+      tenantSchemaService.usePublicSchema();
       account.setLastUsageIngestion(ingestionEndTime.atOffset(ZoneOffset.UTC));
 
       account.setNextUsageIngestion(

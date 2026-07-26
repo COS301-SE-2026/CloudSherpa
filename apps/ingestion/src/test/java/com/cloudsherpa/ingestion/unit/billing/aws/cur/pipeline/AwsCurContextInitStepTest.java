@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import com.cloudsherpa.ingestion.billing.BillingExportConfigService;
 import com.cloudsherpa.ingestion.billing.provider.aws.cur.pipeline.AwsCurContext;
 import com.cloudsherpa.ingestion.billing.provider.aws.cur.pipeline.AwsCurContextInitStep;
+import com.cloudsherpa.ingestion.scheduler.encryption.CredentialEncryptionService;
 import com.cloudsherpa.lib.entities.BillingExportConfig;
 import com.cloudsherpa.lib.entities.BillingExportExecution;
 import com.cloudsherpa.lib.entities.CloudCredential;
@@ -33,6 +34,8 @@ class AwsCurContextInitStepTest {
   @Mock BillingExportConfigService billingExportConfigService;
 
   @Mock CloudCredentialRepository cloudCredentialRepository;
+
+  @Mock CredentialEncryptionService encryptionService;
 
   @TempDir Path tempDir;
 
@@ -90,7 +93,8 @@ class AwsCurContextInitStepTest {
             tempDir.toString(),
             billingExportExecutionRepository,
             billingExportConfigService,
-            cloudCredentialRepository);
+            cloudCredentialRepository,
+            encryptionService);
   }
 
   @Test
@@ -196,6 +200,9 @@ class AwsCurContextInitStepTest {
     when(cloudCredentialRepository.findByAccountIdAndProvider(accountId, "AWS"))
         .thenReturn(List.of(invalidCredential));
 
+    when(encryptionService.decrypt(invalidCredential.getCredentialValue()))
+        .thenReturn(invalidCredential.getCredentialValue());
+
     // act & assert
     assertThrows(IllegalStateException.class, () -> step.execute(context));
   }
@@ -203,8 +210,12 @@ class AwsCurContextInitStepTest {
   private void mockValidConfigAndCredential() {
     when(billingExportConfigService.getAccountBillingExportConfig(configUuid))
         .thenReturn(validConfig);
+
     when(cloudCredentialRepository.findByAccountIdAndProvider(accountId, "AWS"))
         .thenReturn(List.of(validCredential));
+
+    when(encryptionService.decrypt(validCredential.getCredentialValue()))
+        .thenReturn(validCredential.getCredentialValue());
   }
 
   private void mockProcessedExport(UUID billingExportId) {
