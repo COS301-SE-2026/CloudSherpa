@@ -25,15 +25,18 @@ const CHART_COMPONENTS: Record<ChartType, React.ComponentType<BaseChartProps>> =
 
 interface WidgetProps {
     config: ChartWidgetConfig;
-    readonly preview?: boolean;
+    preview?: boolean;
+    isEditMode?: boolean;
 }
 
-export function ChartWidget({ config, preview = false }: Readonly<WidgetProps>) {
+export function ChartWidget({
+    config,
+    preview = false,
+    isEditMode = false,
+}: Readonly<WidgetProps>) {
     const { chartType, displayName, resourceId, metricType, id } = config;
     const ChartComponent = CHART_COMPONENTS[chartType];
     const router = useRouter();
-
-    const { isEditMode } = useToolbar();
 
     const removeWidget = useDashboardStore((state) => state.actions.removeWidget);
 
@@ -72,7 +75,7 @@ export function ChartWidget({ config, preview = false }: Readonly<WidgetProps>) 
             onConfigure={handleConfigure}
             onDelete={() => removeWidget(id, id)}
             isEditMode={isEditMode}
-            preview={true}
+            preview={preview}
         >
             <Card className="flex flex-col h-full w-full overflow-hidden">
                 <CardHeader className="flex flex-row items-center justify-between ">

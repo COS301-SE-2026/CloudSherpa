@@ -22,8 +22,6 @@ export function ChartConfigForm({ chartId }: ChartConfigFormProps) {
     const getWidget = useDashboardStore((state) => state.actions.getWidget);
     const updateWidget = useDashboardStore((state) => state.actions.updateChartWidgetConfig);
 
-    const [isSaving, setIsSaving] = useState(false);
-
     const widgetConfig = getWidget(chartId) as ChartWidgetConfig | undefined;
     const getWidgetError = widgetConfig === undefined;
 
@@ -39,6 +37,10 @@ export function ChartConfigForm({ chartId }: ChartConfigFormProps) {
             }
     );
 
+    const [isSaving, setIsSaving] = useState(false);
+    const isComplete = !config.resourceId || !config.metricType;
+    const isDisabled = getWidgetError || isSaving || isComplete;
+
     function handleSave() {
         setIsSaving(true);
         updateWidget(config);
@@ -50,11 +52,7 @@ export function ChartConfigForm({ chartId }: ChartConfigFormProps) {
         <main className="flex flex-1 flex-col gap-6 p-6 lg:p-8 w-full mx-auto">
             <div className="flex flex-row gap-6">
                 <h1 className="text-2xl">Chart Configuration</h1>
-                <Button
-                    variant="default"
-                    disabled={getWidgetError || isSaving}
-                    onClick={handleSave}
-                >
+                <Button variant="default" disabled={isDisabled} onClick={handleSave}>
                     {isSaving ? "Saving..." : "Save Chart"}
                 </Button>
                 <Button variant="secondary" onClick={() => router.back()}>
