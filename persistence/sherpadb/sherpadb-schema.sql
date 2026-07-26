@@ -327,7 +327,7 @@ BEGIN
     demo_user_id,
     'demo@gmail.com',
     'demo@gmail.com',
-    crypt('Password@2', gen_salt('bf', 12)),
+    '$2a$12$rNCHRjp9ay9nEJmQIBfH5uqt6qQUuEj72/rD2ETdLe00lz7Mlh.0C',
     now()
   )
   ON CONFLICT DO NOTHING;
