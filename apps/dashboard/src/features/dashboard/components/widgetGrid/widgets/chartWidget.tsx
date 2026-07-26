@@ -6,23 +6,12 @@ import { GaugeChart } from "@/features/dashboard/components/widgetGrid/widgets/c
 import { MetricType } from "@/features/dashboard/types/metric";
 import { Button } from "@/components/atoms/button";
 import { ChartType, ChartWidgetConfig } from "@/features/dashboard/types/widgets";
-import { EllipsisVertical, Pencil, Trash } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
-import {
-    ContextMenu,
-    ContextMenuContent,
-    ContextMenuItem,
-    ContextMenuSeparator,
-    ContextMenuTrigger,
-} from "@/components/atoms/context-menu";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/atoms/dropdown-menu";
+import { useToolbar } from "@/features/dashboard/components/toolbar/toolbarProvider";
+import { WidgetMenu } from "@/features/dashboard/components/widgetMenu";
+import { WidgetDropdown } from "@/features/dashboard/components/widgetDropdown";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 interface BaseChartProps {
     resourceId: string;
@@ -43,6 +32,9 @@ export function ChartWidget({ config, preview = false }: Readonly<WidgetProps>) 
     const { chartType, displayName, resourceId, metricType, id } = config;
     const ChartComponent = CHART_COMPONENTS[chartType];
     const router = useRouter();
+
+    const { isEditMode } = useToolbar();
+
     const removeWidget = useDashboardStore((state) => state.actions.removeWidget);
 
     const renderChartContent = () => {
@@ -56,8 +48,14 @@ export function ChartWidget({ config, preview = false }: Readonly<WidgetProps>) 
 
         if (!resourceId || !metricType) {
             return (
-                <div className="flex flex-col w-full h-full items-center justify-center">
-                    <Button onClick={handleConfigure}>Configure Widget</Button>
+                <div className="flex flex-col w-full h-full items-center justify-center gap-2">
+                    {isEditMode ? (
+                        <p className="text-xs text-muted-foreground italic">
+                            Save dashboard changes before configuring this widget.
+                        </p>
+                    ) : (
+                        <Button onClick={handleConfigure}>Configure Widget</Button>
+                    )}
                 </div>
             );
         }
@@ -70,55 +68,26 @@ export function ChartWidget({ config, preview = false }: Readonly<WidgetProps>) 
     };
 
     return (
-        <ContextMenu>
-            <ContextMenuTrigger>
-                <Card className="flex flex-col h-full w-full overflow-hidden">
-                    <CardHeader className="flex flex-row items-center justify-between ">
-                        <CardTitle>{displayName}</CardTitle>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                    <EllipsisVertical className="h-4 w-4" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-fit">
-                                <DropdownMenuItem onClick={() => handleConfigure()}>
-                                    <Pencil className="mr-2 h-4 w-4" />
-                                    Configure Widget
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                    onClick={() => removeWidget(id, id)}
-                                    className="text-destructive focus:text-destructive"
-                                >
-                                    <Trash className="mr-2 h-4 w-4" />
-                                    Delete Widget
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </CardHeader>
+        <WidgetMenu
+            onConfigure={handleConfigure}
+            onDelete={() => removeWidget(id, id)}
+            isEditMode={isEditMode}
+            preview={true}
+        >
+            <Card className="flex flex-col h-full w-full overflow-hidden">
+                <CardHeader className="flex flex-row items-center justify-between ">
+                    <CardTitle>{displayName}</CardTitle>
+                    <WidgetDropdown
+                        onConfigure={handleConfigure}
+                        onDelete={() => removeWidget(id, id)}
+                        isEditMode={isEditMode}
+                    />
+                </CardHeader>
 
-                    <CardContent className="flex-1 w-full relative overflow-hidden">
-                        {renderChartContent()}
-                    </CardContent>
-                </Card>
-            </ContextMenuTrigger>
-            {!preview && (
-                <ContextMenuContent className="w-48">
-                    <ContextMenuItem onClick={() => handleConfigure()}>
-                        <Pencil className="mr-2 h-4 w-4" />
-                        Configure Widget
-                    </ContextMenuItem>
-                    <ContextMenuSeparator />
-                    <ContextMenuItem
-                        onClick={() => removeWidget(id, id)}
-                        className="text-destructive focus:text-destructive"
-                    >
-                        <Trash className="mr-2 h-4 w-4" />
-                        Delete Widget
-                    </ContextMenuItem>
-                </ContextMenuContent>
-            )}
-        </ContextMenu>
+                <CardContent className="flex-1 w-full relative overflow-hidden">
+                    {renderChartContent()}
+                </CardContent>
+            </Card>
+        </WidgetMenu>
     );
 }

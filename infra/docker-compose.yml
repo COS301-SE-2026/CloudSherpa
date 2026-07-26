@@ -13,6 +13,11 @@ services:
     depends_on:
       sherpa-db:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "localhost:8080/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
     
   service:
     build:
@@ -28,6 +33,11 @@ services:
     depends_on:
       sherpa-db:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "localhost:8080/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
   
   dashboard:
     build:
@@ -40,6 +50,9 @@ services:
       - "3000:3000"
     env_file:
       - ../apps/dashboard/.env
+    depends_on:
+      service:
+        condition: service_healthy
 
   sherpa-db:
     image: timescale/timescaledb:2.16.1-pg16

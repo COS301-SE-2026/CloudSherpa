@@ -186,7 +186,7 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
         const newConfig: WidgetConfig = {
             widgetType: "CHART",
             id: sharedId,
-            displayName: "New Widget (Click to Customize)",
+            displayName: "New Chart",
             chartType: "line_chart",
             resourceId: resourceId,
             metricType: resourceId ? (metricsByResource[resourceId]?.[0] ?? "anon") : "anon",

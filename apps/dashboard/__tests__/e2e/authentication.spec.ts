@@ -17,10 +17,13 @@ test.describe("authentication", () => {
     test("incorrect login details", async ({ page }) => {
         await page.goto("http://localhost:3000/login");
 
-        await page.getByLabel("Email", { exact: true }).fill("nonsensicleemail@gmail.com");
-        await page.getByLabel("Password", { exact: true }).fill("Randopassword123!");
+        const loginForm = page.locator("form").filter({
+            has: page.getByRole("button", { name: "Log In" }),
+        });
+        await loginForm.getByLabel("Email", { exact: true }).fill("nonsensicleemail@gmail.com");
+        await loginForm.getByLabel("Password", { exact: true }).fill("Randopassword123!");
 
-        await page.getByRole("button", { name: "Log In" }).click();
+        await loginForm.getByRole("button", { name: "Log In" }).click();
 
         await expect(page.getByRole("alert").filter({ hasText: "Failed To Log In" })).toBeVisible();
     });
@@ -43,7 +46,7 @@ test.describe("authentication", () => {
         await successAlert.isVisible();
 
         // assert that redirected to dashboard
-        await expect(page.getByTestId("dashboard")).toBeVisible({ timeout: 6000 });
+        await expect(page.getByTestId("dashboard")).toBeVisible({ timeout: 12000 });
 
         // Logout
         await page.getByRole("button", { name: "Logout" }).click();

@@ -4,6 +4,7 @@ import { useWindowStore } from "@/features/dashboard/stores/window-store";
 import { MetricDTO } from "@/features/dashboard/types/dtos/metrics/MetricDto";
 import { TimeWindowPreset } from "@/features/dashboard/types/timewindow";
 import { useCallback, useEffect, useState } from "react";
+import { useAuthContext } from "@/features/authentication/providers/AuthContext";
 
 type MetricStoreState = ReturnType<typeof useMetricStore.getState>;
 type WindowStoreState = ReturnType<typeof useWindowStore.getState>;
@@ -26,8 +27,9 @@ function toAggregationInterval(preset: TimeWindowPreset): "daily" | "weekly" | "
 }
 
 export function useFetchMetrics() {
+    const { isAuthReady, isAuthenticated } = useAuthContext();
     const [metricFetchError, setMetricFetchError] = useState<Error | null>(null);
-    const [metricFetchLoad, setMetricFetchLoad] = useState(true);
+    const [metricFetchLoad, setMetricFetchLoad] = useState(false);
 
     const addMetricFromDto = useMetricStore((state: MetricStoreState) => state.addMetricFromDto);
     const clearMetricStore = useMetricStore((state: MetricStoreState) => state.clearStore);
@@ -65,10 +67,14 @@ export function useFetchMetrics() {
     }, [addMetricFromDto, clearMetricStore, fromMs, toMs, selectedPreset]);
 
     useEffect(() => {
+        if (!isAuthReady || !isAuthenticated) {
+            return;
+        }
+
         queueMicrotask(() => {
             void fetchMetrics();
         });
-    }, [fetchMetrics]);
+    }, [fetchMetrics, isAuthReady, isAuthenticated]);
 
     return { fetchMetrics, metricFetchError, metricFetchLoad };
 }

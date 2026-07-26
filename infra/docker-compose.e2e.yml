@@ -1,17 +1,16 @@
 services:
   ingestion:
-    build:
-      context: ..
-      dockerfile: apps/ingestion/Dockerfile
-      target: dev
-    image: cloudsherpa-ingestion:dev
+    image: ${INGESTION_IMAGE}
     container_name: ingestion
     ports:
       - "8081:8080"
-    env_file:
-      - ../apps/ingestion/.env
-    volumes:
-      - ../apps/ingestion:/app
+    environment:
+      POSTGRES_HOST: sherpa-db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: sherpadb
+      POSTGRES_USER: cloudsherpa
+      POSTGRES_PASSWORD: mock_pass
+      SPRING_PROFILES_ACTIVE: dev
     depends_on:
       sherpa-db:
         condition: service_healthy
@@ -22,20 +21,22 @@ services:
       retries: 10
     
   service:
-    build:
-      context: ..
-      dockerfile: apps/service/Dockerfile
-      target: dev
-    image: cloudsherpa-service:dev
+    image: ${SERVICE_IMAGE}
     container_name: service
     ports:
       - "8083:8080"
-    env_file:
-      - ../apps/service/.env
     environment:
+      POSTGRES_HOST: sherpa-db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: sherpadb
+      POSTGRES_USER: cloudsherpa
+      POSTGRES_PASSWORD: mock_pass
+      AUTH_JWT_SECRET: mock_secret_32_chars_long_value_123456
+      AUTH_JWT_EXP_MINUTES: 60
+      SPRING_PROFILES_ACTIVE: dev
+      AES_ENCRYPTION_KEY: FEAQKb55DXR2FICZk4MFk3d1YhP7sjZEkLuuKcr7ISY=
+      DASHBOARD_HOST: http://localhost:3000,https://cloudsherpa.gjjcs.org
       INGESTION_BASE_URL: http://ingestion:8080
-    volumes:
-      - ../apps/service:/app
     depends_on:
       sherpa-db:
         condition: service_healthy
@@ -46,20 +47,14 @@ services:
       retries: 10
   
   dashboard:
-    build:
-      context: ../apps/dashboard
-      dockerfile: Dockerfile
-      target: dev
-    image: cloudsherpa-dashboard:latest
+    image: ${DASHBOARD_IMAGE}
     container_name: dashboard
     ports:
       - "3000:3000"
-    volumes:
-      - ../apps/dashboard:/app
-      - /app/node_modules
-      - /app/.next
-    env_file:
-      - ../apps/dashboard/.env
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8083
+      DISABLE_AUTH: false
+      NEXT_PUBLIC_DISABLE_AUTH: false
     depends_on:
       service:
         condition: service_healthy
@@ -68,8 +63,10 @@ services:
     image: timescale/timescaledb:2.16.1-pg16
     container_name: sherpa-db
     restart: unless-stopped
-    env_file:
-      - ../persistence/sherpadb/.env
+    environment:
+      POSTGRES_DB: sherpadb
+      POSTGRES_USER: cloudsherpa
+      POSTGRES_PASSWORD: mock_pass
     ports:
       - "5432:5432"
     volumes:
@@ -81,19 +78,6 @@ services:
       timeout: 3s
       retries: 20
 
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    container_name: pgadmin
-    ports:
-      - "5050:80"
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@example.com
-      PGADMIN_DEFAULT_PASSWORD: admin
-    depends_on:
-      - sherpa-db
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
-  
 volumes:
   sherpa_db_data: 
-  pgadmin_data:
+  # Ensures that the data is persistent across docker compose down / up 
