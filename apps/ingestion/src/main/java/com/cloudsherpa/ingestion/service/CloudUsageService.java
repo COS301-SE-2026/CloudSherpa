@@ -105,7 +105,6 @@ public class CloudUsageService {
 
     for (UsageRecordModel r : usageRecords) {
       NormalizedMetric normalized = normalizer.normalize(r);
-
       if (normalized != null) {
         try {
           writeToSherpaDb(normalized, r, userId);

@@ -26,7 +26,7 @@ public class BillingScheduler {
     this.billingIngestionJob = billingIngestionJob;
   }
 
-  @Recurring(id = "usage-scanner", cron = "*/1800 * * * * *") // we run every 30 minutes
+  @Recurring(id = "billing-scanner", cron = "*/300 * * * * *") // we run every 5 minutes
   public void scheduleUsageJobs() {
 
     List<CloudAccount> dueAccounts =

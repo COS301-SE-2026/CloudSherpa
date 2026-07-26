@@ -132,6 +132,7 @@ public class AwsCloudWatchMetricProvider implements CloudWatchMetricProvider {
       r.setMetricName(context.metric());
       r.setValue(dp.average());
       r.setUnit(dp.unit().name());
+      r.setRegion(client.serviceClientConfiguration().region().id().toString());
       r.setTimestamp(dp.timestamp());
       r.setIngestionTimestamp(Instant.now());
       r.setRecordId(UUID.randomUUID());

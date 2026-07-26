@@ -63,6 +63,9 @@ public class AwsEcsService implements EcsService {
                           name, name, "ClusterName", "AWS/ECS", region.id(), tags);
                     })
                 .toList());
+      } catch (Exception e) {
+        System.out.println(
+            "Skipping ECS discovery for region " + region.id() + ": " + e.getMessage());
       }
     }
     return resources;
