@@ -20,3 +20,4 @@ jobs:
           application-path: apps/service
           sonar-project-key: CloudSherpa-service
           sonar-project-name: 'CloudSherpa Service' 
+        secrets: inherit

@@ -19,3 +19,4 @@ jobs:
           application-path: apps/ingestion
           sonar-project-key: CloudSherpa-ingestion
           sonar-project-name: 'CloudSherpa Ingestion' 
+        secrets: inherit
