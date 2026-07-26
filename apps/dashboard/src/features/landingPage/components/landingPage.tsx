@@ -1,47 +1,41 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
-import Navigation from "@/features/landingPage/components/navigation";
-import View from "@/features/landingPage/components/view";
-import FeatureCards from "@/features/landingPage/components/featureCards";
 
-//this is for the main landing page components
-export default function LandingPage() {
-    const [showFeatures, setShowFeatures] = useState(false);
-    const featuresRef = useRef<HTMLElement>(null);
-    const [hasAnimated, setHasAnimated] = useState(false);
+import {useState, useEffect} from "react";
+import {HeroAndNavBar} from "./navigationAndHero";
+import {Problem} from "./problem";
+import {Solution} from "./solution";
+import {HowItWorks} from "./howItWorks";
+import {WhoItsFor} from "./whoItsFor";
+import {Features} from "./featureCards";
 
-    useEffect(() => {
-        const forScrollHandling = () => {
-            if (featuresRef.current && !hasAnimated) {
-                const forBlock = featuresRef.current.getBoundingClientRect();
-                const forVisability = forBlock.top <= window.innerHeight * 0.7;
+/*
+- combines all ages
+*/
 
-                if (forVisability) {
-                    setShowFeatures(true);
-                    setHasAnimated(true);
-                }
-            }
-        };
+export default function LandingPage(){
+  const [scrolled, setScrolled] = useState(false);
 
-        window.addEventListener("scroll", forScrollHandling);
-        forScrollHandling();
+  useEffect(() => {
+    const handlingScrolling = () => setScrolled(window.scrollY>24);
+    window.addEventListener("scroll", handlingScrolling, {passive : true});
 
-        return () => window.removeEventListener("scroll", forScrollHandling);
-    }, [hasAnimated]);
+    return () => window.removeEventListener("scroll", handlingScrolling);
+  }, []);
 
-    //this is called when the user clicks on the discover more button
-    const handlesScrollToFeatures = () => {
-        setShowFeatures(true);
-        setHasAnimated(true);
+  return(
+    <div className = "relative min-h-screen bg-background text-foreground">
+      <div className = "relative z-10">
 
-        featuresRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    };
+        <HeroAndNavBar scrolled = {scrolled}/>
+        <Problem/>
 
-    return (
-        <div className="min-h-screen bg-[#030712] text-[#CBD5E1]">
-            <Navigation clickOnFeatures={handlesScrollToFeatures} />
-            <View onDiscoverMoreClick={handlesScrollToFeatures} />
-            <FeatureCards ref={featuresRef} showingFeatureCards={showFeatures} />
-        </div>
-    );
+        <Solution/>
+        <Features/>
+
+        <HowItWorks/>
+        <WhoItsFor/>
+
+      </div>
+    </div>
+  )
 }
