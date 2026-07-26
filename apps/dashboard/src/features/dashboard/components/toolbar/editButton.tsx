@@ -51,7 +51,7 @@ export default function EditButton({
                         onClick={() => handleAddWidget()}
                         className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm order-1 md:order-3"
                     >
-                        Add Widget
+                        Add Chart
                     </Button>
                     <Button
                         size="sm"

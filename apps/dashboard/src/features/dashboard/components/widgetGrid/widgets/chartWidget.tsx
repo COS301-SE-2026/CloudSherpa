@@ -8,6 +8,7 @@ import { WidgetConfigMenu } from "@/features/dashboard/components/widgetGrid/wid
 import { ChartType, ChartWidgetConfig } from "@/features/dashboard/types/widgets";
 import { EllipsisVertical, Pencil, Trash } from "lucide-react";
 import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
+import { useToolbar } from "@/features/dashboard/components/toolbar/toolbarProvider";
 import {
     ContextMenu,
     ContextMenuContent,
@@ -42,6 +43,14 @@ export function ChartWidget({ config }: Readonly<WidgetProps>) {
     const ChartComponent = CHART_COMPONENTS[chartType];
     const [isConfigOpen, setIsConfigOpen] = useState(false);
 
+    const { isEditMode } = useToolbar();
+
+    const openConfig = () => {
+        if (!isEditMode) {
+            setIsConfigOpen(true);
+        }
+    };
+
     const removeWidget = useDashboardStore((state) => state.actions.removeWidget);
 
     const renderChartContent = () => {
@@ -55,8 +64,14 @@ export function ChartWidget({ config }: Readonly<WidgetProps>) {
 
         if (!resourceId || !metricType) {
             return (
-                <div className="flex flex-col w-full h-full items-center justify-center">
-                    <Button onClick={() => setIsConfigOpen(true)}>Configure Widget</Button>
+                <div className="flex flex-col w-full h-full items-center justify-center gap-2">
+                    {isEditMode ? (
+                        <p className="text-xs text-muted-foreground italic">
+                            Save dashboard changes before configuring this widget.
+                        </p>
+                    ) : (
+                        <Button onClick={openConfig}>Configure Widget</Button>
+                    )}
                 </div>
             );
         }
@@ -78,7 +93,7 @@ export function ChartWidget({ config }: Readonly<WidgetProps>) {
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" className="w-fit">
-                                    <DropdownMenuItem onClick={() => setIsConfigOpen(true)}>
+                                    <DropdownMenuItem onClick={openConfig} disabled={isEditMode}>
                                         <Pencil className="mr-2 h-4 w-4" />
                                         Configure Widget
                                     </DropdownMenuItem>
@@ -100,7 +115,7 @@ export function ChartWidget({ config }: Readonly<WidgetProps>) {
                     </Card>
                 </ContextMenuTrigger>
                 <ContextMenuContent className="w-48">
-                    <ContextMenuItem onClick={() => setIsConfigOpen(true)}>
+                    <ContextMenuItem onClick={openConfig} disabled={isEditMode}>
                         <Pencil className="mr-2 h-4 w-4" />
                         Configure Widget
                     </ContextMenuItem>
