@@ -19,6 +19,7 @@ import { useResourceNameStore } from "@/features/dashboard/stores/resource-store
 import { useMetricStore } from "@/features/dashboard/stores/metric-store";
 import { fetchDashboards, DashboardDTO } from "@/lib/fetch/api-dashboard";
 import { MetricType } from "@/features/dashboard/types/metric";
+import { useAuthContext } from "@/features/authentication/providers/AuthContext";
 
 function processFetchedDashboards(fetchedData: DashboardDTO[]) {
     const dashboardsMap: Record<string, DashboardConfig> = {};
@@ -84,6 +85,7 @@ function DashboardContent() {
     const dashboards = useDashboardStore((state: DashboardStore) => state.dashboards);
     const activeDashboardId = useDashboardStore((state: DashboardStore) => state.activeDashboardId);
     const layoutsMap = useDashboardStore((state: DashboardStore) => state.layouts);
+    const { isAuthReady, isAuthenticated } = useAuthContext();
 
     // Metrics and resource name stores
     const { metricFetchError, metricFetchLoad } = useFetchMetrics();
@@ -115,6 +117,10 @@ function DashboardContent() {
         const loadDashboardData = async () => {
             if (Object.keys(dashboards).length > 0) {
                 setIsLoading(false);
+                return;
+            }
+
+            if (!isAuthReady || !isAuthenticated) {
                 return;
             }
 
@@ -163,6 +169,8 @@ function DashboardContent() {
         urlId,
         createDefaultWidgetConfig,
         metricFetchLoad,
+        isAuthReady,
+        isAuthenticated,
         // metricFetchError,
     ]);
 
