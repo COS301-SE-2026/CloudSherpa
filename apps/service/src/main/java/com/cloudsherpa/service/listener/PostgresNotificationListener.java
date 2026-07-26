@@ -98,15 +98,8 @@ public class PostgresNotificationListener implements SmartLifecycle {
 
     // We check for any connection errors or database failures.
     try {
-      if (connection == null || connection.isClosed()) {
-        // Try to rebuild the connection
-        initialize();
-
-        // If it's still null, the DB is unreachable. We exit the method gracefully.
-        // Spring will try running this method again in 2 seconds.
-        if (pgConnection == null) {
-          return;
-        }
+      if (!checkConnection()) {
+        return;
       }
     } catch (SQLException e) {
       return;
@@ -165,10 +158,28 @@ public class PostgresNotificationListener implements SmartLifecycle {
   private void loadAndListenTenantMetricEvents() throws SQLException {
     try (Statement stmt = connection.createStatement()) {
       for (String channel : activeListeners.getTenantMetricChannels()) {
-        stmt.execute("LISTEN " + channel);
+        stmt.addBatch(
+            "LISTEN " // NOSONAR Dynamically constructing query is the only way to subscribe
+                + channel);
+        // to tenant metric event channels
         logger.info("Listening for Postgres notifications on {}", channel);
       }
     }
+  }
+
+  private boolean checkConnection() throws SQLException {
+    if (connection == null || connection.isClosed()) {
+      // Try to rebuild the connection
+      initialize();
+
+      // If it's still null, the DB is unreachable. We exit the method gracefully.
+      // Spring will try running this method again in 2 seconds.
+      if (pgConnection == null) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   // SmartLifecycle: called by Spring when the context starts.
