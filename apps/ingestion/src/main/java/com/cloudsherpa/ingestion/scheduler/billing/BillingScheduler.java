@@ -27,11 +27,10 @@ public class BillingScheduler {
   }
 
   @Recurring(id = "billing-scanner", cron = "*/300 * * * * *") // we run every 5 minutes
-  public void scheduleUsageJobs() {
+  public void scheduleBillingJobs() {
 
-    List<CloudAccount> dueAccounts =
-        repository.findAccountsDueForUsageIngestion(
-            OffsetDateTime.now(ZoneOffset.UTC), StatusEnum.active);
+    List<CloudAccount> dueAccounts = repository.findAccountsDueForBillingIngestion(
+        OffsetDateTime.now(ZoneOffset.UTC), StatusEnum.active);
 
     dueAccounts.forEach(
         account -> jobScheduler.enqueue(() -> billingIngestionJob.ingest(account.getId())));
