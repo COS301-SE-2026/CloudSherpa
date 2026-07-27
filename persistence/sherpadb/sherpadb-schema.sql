@@ -152,18 +152,6 @@ CREATE TABLE IF NOT EXISTS public.widget_kpi (
   aggregation integer NOT NULL
 );
 
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
-
-INSERT INTO public.users (user_id, email, username, password_hash, created_at)
-VALUES (
-  '5ebe4340-c5ec-4833-ad93-06abf4609f03'::uuid,
-  'demo@gmail.com',
-  'demo@gmail.com',
-  crypt('Password@2', gen_salt('bf', 12)),
-  now()
-  )
-ON CONFLICT DO NOTHING;
-
 INSERT INTO public.offered_metric (
     provider,
     service_type,
