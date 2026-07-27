@@ -8,6 +8,7 @@ import com.cloudsherpa.ingestion.connector.CloudConnectorFactory;
 import com.cloudsherpa.ingestion.models.IngestionRequestEvent;
 import com.cloudsherpa.ingestion.models.IngestionResult;
 import com.cloudsherpa.ingestion.models.UsageRecordModel;
+import com.cloudsherpa.ingestion.normalization.normalizers.AwsNormalizer;
 import com.cloudsherpa.ingestion.provider.aws.AwsCloudConnector;
 import com.cloudsherpa.ingestion.provider.scanner.ResourceDiscoveryService;
 import com.cloudsherpa.ingestion.service.CloudUsageService;
@@ -23,18 +24,20 @@ class CloudUsageServiceIntegrationTest {
   private AwsCloudConnector connector;
   private CloudUsageService service;
   private ResourceDiscoveryService discoveryService;
+  private AwsNormalizer normalizer;
 
   @BeforeEach
   void setUp() {
 
     factory = mock(CloudConnectorFactory.class);
     persistenceService = mock(SherpaDbPersistenceService.class);
+    normalizer = mock(AwsNormalizer.class);
 
     connector = spy(new AwsCloudConnector(discoveryService));
 
     when(factory.getConnector("AWS")).thenReturn(connector);
 
-    service = new CloudUsageService(factory, persistenceService);
+    service = new CloudUsageService(factory, persistenceService, normalizer);
   }
 
   @Test

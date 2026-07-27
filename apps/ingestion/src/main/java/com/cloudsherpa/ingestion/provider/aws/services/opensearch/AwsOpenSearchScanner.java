@@ -4,12 +4,14 @@ import com.cloudsherpa.ingestion.connector.CloudCredentials;
 import com.cloudsherpa.ingestion.models.ResourceDetail;
 import com.cloudsherpa.ingestion.provider.scanner.ResourceScanner;
 import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class AwsOpenSearchScanner implements ResourceScanner {
   private final OpenSearchService opensearchService;
 
+  @Autowired
   public AwsOpenSearchScanner() {
     this.opensearchService = new AwsOpenSearchService();
   }

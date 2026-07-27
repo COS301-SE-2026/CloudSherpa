@@ -7,6 +7,7 @@ import com.cloudsherpa.ingestion.provider.aws.model.RegionalArn;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.ecs.EcsClient;
@@ -15,6 +16,8 @@ import software.amazon.awssdk.services.ecs.model.DescribeClustersResponse;
 import software.amazon.awssdk.services.ecs.model.Tag;
 
 public class AwsEcsService implements EcsService {
+  Logger logger = Logger.getLogger(getClass().getName());
+
   @Override
   public List<RegionalArn> getAllEcsClusterArns(CloudCredentials credentials) {
     List<RegionalArn> regionalArns = new ArrayList<>();
@@ -27,8 +30,7 @@ public class AwsEcsService implements EcsService {
 
         regionalArns.add(new RegionalArn(ecs.listClusters().clusterArns(), region));
       } catch (Exception e) {
-        System.out.println(
-            "Skipping ECS discovery for region " + region.id() + ": " + e.getMessage());
+        logger.info("Skipping ECS discovery for region " + region.id() + ": " + e.getMessage());
       }
     }
     return regionalArns;
@@ -64,8 +66,7 @@ public class AwsEcsService implements EcsService {
                     })
                 .toList());
       } catch (Exception e) {
-        System.out.println(
-            "Skipping ECS discovery for region " + region.id() + ": " + e.getMessage());
+        logger.info("Skipping ECS discovery for region " + region.id() + ": " + e.getMessage());
       }
     }
     return resources;

@@ -39,12 +39,7 @@ public class AwsCloudWatchMetricProvider implements CloudWatchMetricProvider {
         request
             .getPeriod(); // contract: ensure that the request does not return over 1000 datapoints
     // ((to-from)/period)
-    if (period <= 0) {
-      throw new IllegalArgumentException("Period must be > 0");
-    }
-    if ((Duration.between(request.getFrom(), request.getTo()).getSeconds()) / period > 1440) {
-      throw new IllegalArgumentException("AWS will not return over 1440 datapoints per metric");
-    }
+    validatePeriod(request, period);
     CloudWatchClient client = defaultClient;
 
     List<UsageRecordModel> result = new ArrayList<>();
@@ -63,15 +58,7 @@ public class AwsCloudWatchMetricProvider implements CloudWatchMetricProvider {
                   .value(instanceValue.getIdentifier())
                   .build();
           if (request.getCredentials() != null) {
-            AwsBasicCredentials credentials =
-                AwsBasicCredentials.create(
-                    request.getCredentials().getAccessKey(),
-                    request.getCredentials().getSecretKey());
-            client =
-                CloudWatchClient.builder()
-                    .credentialsProvider(StaticCredentialsProvider.create(credentials))
-                    .region(Region.of(instanceValue.getRegion()))
-                    .build();
+            createClient(request, instanceValue.getRegion());
           }
 
           for (Metric metric :
@@ -132,7 +119,7 @@ public class AwsCloudWatchMetricProvider implements CloudWatchMetricProvider {
       r.setMetricName(context.metric());
       r.setValue(dp.average());
       r.setUnit(dp.unit().name());
-      r.setRegion(client.serviceClientConfiguration().region().id().toString());
+      r.setRegion(client.serviceClientConfiguration().region().id());
       r.setTimestamp(dp.timestamp());
       r.setIngestionTimestamp(Instant.now());
       r.setRecordId(UUID.randomUUID());
@@ -148,5 +135,31 @@ public class AwsCloudWatchMetricProvider implements CloudWatchMetricProvider {
     }
 
     return records;
+  }
+
+  private CloudWatchClient createClient(IngestionRequestEvent request, String region) {
+
+    if (request.getCredentials() == null) {
+      return defaultClient;
+    }
+
+    AwsBasicCredentials credentials =
+        AwsBasicCredentials.create(
+            request.getCredentials().getAccessKey(), request.getCredentials().getSecretKey());
+
+    return CloudWatchClient.builder()
+        .credentialsProvider(StaticCredentialsProvider.create(credentials))
+        .region(Region.of(region))
+        .build();
+  }
+
+  private void validatePeriod(IngestionRequestEvent request, int period) {
+    if (period <= 0) {
+      throw new IllegalArgumentException("Period must be > 0");
+    }
+
+    if (Duration.between(request.getFrom(), request.getTo()).getSeconds() / period > 1440) {
+      throw new IllegalArgumentException("AWS will not return over 1440 datapoints per metric");
+    }
   }
 }

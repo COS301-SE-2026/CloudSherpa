@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 
 import com.cloudsherpa.ingestion.connector.*;
 import com.cloudsherpa.ingestion.models.*;
+import com.cloudsherpa.ingestion.normalization.normalizers.AwsNormalizer;
 import com.cloudsherpa.ingestion.service.CloudUsageService;
 import com.cloudsherpa.ingestion.service.SherpaDbPersistenceService;
 import java.time.Instant;
@@ -20,14 +21,15 @@ class CloudUsageServiceTest {
   private CloudConnectorFactory factory;
   private SherpaDbPersistenceService persistenceService;
   private CloudUsageService service;
+  private AwsNormalizer normalizer;
 
   @BeforeEach
   void setUp() {
 
     factory = mock(CloudConnectorFactory.class);
     persistenceService = mock(SherpaDbPersistenceService.class);
-
-    service = new CloudUsageService(factory, persistenceService);
+    normalizer = mock(AwsNormalizer.class);
+    service = new CloudUsageService(factory, persistenceService, normalizer);
   }
 
   @Test

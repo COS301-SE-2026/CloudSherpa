@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.elasticache.ElastiCacheClient;
@@ -16,6 +17,8 @@ import software.amazon.awssdk.services.elasticache.model.DescribeCacheClustersRe
 import software.amazon.awssdk.services.elasticache.model.Tag;
 
 public class AwsElastiCacheService implements ElastiCacheService {
+  Logger logger = Logger.getLogger(getClass().getName());
+
   @Override
   public List<RegionalArn> getAllElastiCacheClusterArns(CloudCredentials credentials) {
     List<String> clusterArns = new ArrayList<>();
@@ -35,7 +38,7 @@ public class AwsElastiCacheService implements ElastiCacheService {
         }
         regionalArns.add(new RegionalArn(clusterArns, region));
       } catch (Exception e) {
-        System.out.println(
+        logger.info(
             "Skipping ElastiCache discovery for region " + region.id() + ": " + e.getMessage());
       }
     }
@@ -75,7 +78,7 @@ public class AwsElastiCacheService implements ElastiCacheService {
                   tags));
         }
       } catch (Exception e) {
-        System.out.println(
+        logger.info(
             "Skipping ElastiCache discovery for region " + region.id() + ": " + e.getMessage());
       }
     }

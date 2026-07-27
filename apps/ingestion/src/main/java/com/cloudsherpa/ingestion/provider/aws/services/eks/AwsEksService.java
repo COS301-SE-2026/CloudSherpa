@@ -6,11 +6,14 @@ import com.cloudsherpa.ingestion.provider.aws.factory.AwsClientFactory;
 import com.cloudsherpa.ingestion.provider.aws.model.RegionalArn;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.eks.EksClient;
 import software.amazon.awssdk.services.eks.model.Cluster;
 
 public class AwsEksService implements EksService {
+  Logger logger = Logger.getLogger(getClass().getName());
+
   @Override
   public List<RegionalArn> getAllEksClusterArns(CloudCredentials credentials) {
     List<RegionalArn> regionalArns = new ArrayList<>();
@@ -23,8 +26,7 @@ public class AwsEksService implements EksService {
 
         regionalArns.add(new RegionalArn(eks.listClusters().clusters(), region));
       } catch (Exception e) {
-        System.out.println(
-            "Skipping EKS discovery for region " + region.id() + ": " + e.getMessage());
+        logger.info("Skipping EKS discovery for region " + region.id() + ": " + e.getMessage());
       }
     }
     return regionalArns;
@@ -54,8 +56,7 @@ public class AwsEksService implements EksService {
                   cluster.tags()));
         }
       } catch (Exception e) {
-        System.out.println(
-            "Skipping EKS discovery for region " + region.id() + ": " + e.getMessage());
+        logger.info("Skipping EKS discovery for region " + region.id() + ": " + e.getMessage());
       }
     }
 

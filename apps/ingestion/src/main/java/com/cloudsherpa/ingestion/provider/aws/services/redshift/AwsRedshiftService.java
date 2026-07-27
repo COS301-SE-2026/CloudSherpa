@@ -7,6 +7,7 @@ import com.cloudsherpa.ingestion.provider.aws.model.RegionalCluster;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.redshift.RedshiftClient;
@@ -15,6 +16,8 @@ import software.amazon.awssdk.services.redshift.model.DescribeClustersResponse;
 import software.amazon.awssdk.services.redshift.model.Tag;
 
 public class AwsRedshiftService implements RedshiftService {
+  Logger logger = Logger.getLogger(getClass().getName());
+
   @Override
   public List<RegionalCluster> getAllRedshiftClusters(CloudCredentials credentials) {
     List<RegionalCluster> regionalClusters = new ArrayList<>();
@@ -28,7 +31,7 @@ public class AwsRedshiftService implements RedshiftService {
         DescribeClustersResponse response = client.describeClusters();
         regionalClusters.add(new RegionalCluster(response.clusters(), region));
       } catch (Exception e) {
-        System.out.println(
+        logger.info(
             "Skipping Redshift discovery for region " + region.id() + ": " + e.getMessage());
       }
     }

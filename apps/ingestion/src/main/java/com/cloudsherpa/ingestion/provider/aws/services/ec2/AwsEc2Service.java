@@ -7,6 +7,7 @@ import com.cloudsherpa.ingestion.provider.aws.model.RegionalInstance;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.ec2.Ec2Client;
@@ -16,6 +17,8 @@ import software.amazon.awssdk.services.ec2.model.Reservation;
 import software.amazon.awssdk.services.ec2.model.Tag;
 
 public class AwsEc2Service implements Ec2Service {
+  Logger logger = Logger.getLogger(getClass().getName());
+
   @Override
   public List<RegionalInstance> getAllEc2Instances(CloudCredentials credentials) {
     List<RegionalInstance> resources = new ArrayList<>();
@@ -35,8 +38,7 @@ public class AwsEc2Service implements Ec2Service {
           }
         }
       } catch (Exception e) {
-        System.out.println(
-            "Skipping EC2 discovery for region " + region.id() + ": " + e.getMessage());
+        logger.info("Skipping EC2 discovery for region " + region.id() + ": " + e.getMessage());
       }
     }
 

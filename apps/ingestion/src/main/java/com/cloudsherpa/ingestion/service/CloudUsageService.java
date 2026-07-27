@@ -24,14 +24,17 @@ import org.springframework.stereotype.Service;
 public class CloudUsageService {
   private final CloudConnectorFactory factory;
   private final SherpaDbPersistenceService sherpaDbPersistenceService;
-  private final AwsNormalizer normalizer = new AwsNormalizer();
+  private final AwsNormalizer normalizer;
 
   Logger logger = Logger.getLogger(getClass().getName());
 
   public CloudUsageService(
-      CloudConnectorFactory factory, SherpaDbPersistenceService sherpaDbPersistenceService) {
+      CloudConnectorFactory factory,
+      SherpaDbPersistenceService sherpaDbPersistenceService,
+      AwsNormalizer normalizer) {
     this.factory = factory;
     this.sherpaDbPersistenceService = sherpaDbPersistenceService;
+    this.normalizer = normalizer;
   }
 
   public IngestionResult ingest(IngestionRequestEvent request) {

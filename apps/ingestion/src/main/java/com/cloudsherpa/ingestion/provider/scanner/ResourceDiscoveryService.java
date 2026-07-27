@@ -38,7 +38,7 @@ public class ResourceDiscoveryService {
 
   public List<String> getServices(String provider) {
     return scanners.keySet().stream()
-        .filter(key -> key.provider() == provider)
+        .filter(key -> key.provider().equals(provider))
         .map(ScannerKey::serviceName)
         .toList();
   }

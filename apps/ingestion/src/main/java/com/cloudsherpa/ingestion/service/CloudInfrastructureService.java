@@ -46,8 +46,19 @@ public class CloudInfrastructureService {
     CloudAccount account = ensureCloudAccount(connection.getId(), r.getAccountId());
 
     // Step 3: Create/fetch Resource (account -> resource instance)
+    UUID resourceTableIdent =
+        resourceRepo
+            .findByAccountIdAndResourceTypeAndResourceIdentifierAndRegion(
+                UUID.fromString(r.getAccountId()),
+                r.getServiceName(),
+                r.getResourceId(),
+                r.getRegion())
+            .map(Resource::getId)
+            .orElse(null);
+    String resourceId =
+        resourceTableIdent != null ? resourceTableIdent.toString() : "noResourceFound";
 
-    return ensureResource(account.getId(), r.getResourceId(), r.getResourceType());
+    return ensureResource(account.getId(), resourceId, r.getResourceType());
   }
 
   // Ensures CloudConnection exists for user + provider combination.

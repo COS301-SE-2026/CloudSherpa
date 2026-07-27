@@ -3,7 +3,6 @@ package com.cloudsherpa.ingestion.scheduler.billing;
 import com.cloudsherpa.lib.entities.CloudAccount;
 import com.cloudsherpa.lib.repositories.BillingExportConfigRepository;
 import com.cloudsherpa.lib.repositories.CloudAccountRepository;
-import com.cloudsherpa.lib.repositories.CloudConnectionRepository;
 import jakarta.transaction.Transactional;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -19,7 +18,6 @@ public class BillingIngestionService {
   public BillingIngestionService(
       BillingIngestionClient client,
       CloudAccountRepository cloudAccountRepository,
-      CloudConnectionRepository cloudConnectionRepository,
       BillingExportConfigRepository billingExportConfigRepository) {
     this.client = client;
     this.cloudAccountRepository = cloudAccountRepository;

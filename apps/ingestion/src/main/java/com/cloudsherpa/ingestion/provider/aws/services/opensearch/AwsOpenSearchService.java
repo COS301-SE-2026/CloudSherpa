@@ -7,6 +7,7 @@ import com.cloudsherpa.ingestion.provider.aws.model.RegionalDomain;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.opensearch.OpenSearchClient;
@@ -20,6 +21,8 @@ import software.amazon.awssdk.services.opensearch.model.ListTagsRequest;
 import software.amazon.awssdk.services.opensearch.model.Tag;
 
 public class AwsOpenSearchService implements OpenSearchService {
+  Logger logger = Logger.getLogger(getClass().getName());
+
   @Override
   public List<RegionalDomain> getAllOpenSearchDomains(CloudCredentials credentials) {
     List<DomainInfo> domains = new ArrayList<>();
@@ -36,7 +39,7 @@ public class AwsOpenSearchService implements OpenSearchService {
         domains = response.domainNames();
         regionalDomains.add(new RegionalDomain(domains, region));
       } catch (Exception e) {
-        System.out.println(
+        logger.info(
             "Skipping OpenSearch discovery for region " + region.id() + ": " + e.getMessage());
       }
     }
@@ -77,7 +80,7 @@ public class AwsOpenSearchService implements OpenSearchService {
                   tags));
         }
       } catch (Exception e) {
-
+        // Regional logging messages handled by child function
       }
     }
     return resources;

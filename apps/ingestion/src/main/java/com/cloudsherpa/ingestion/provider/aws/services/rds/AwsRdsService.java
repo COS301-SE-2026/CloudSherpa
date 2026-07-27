@@ -7,6 +7,7 @@ import com.cloudsherpa.ingestion.provider.aws.model.RegionalDbInstance;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.rds.RdsClient;
@@ -15,6 +16,8 @@ import software.amazon.awssdk.services.rds.model.DescribeDbInstancesResponse;
 import software.amazon.awssdk.services.rds.model.Tag;
 
 public class AwsRdsService implements RdsService {
+  Logger logger = Logger.getLogger(getClass().getName());
+
   @Override
   public List<RegionalDbInstance> getAllRdsInstances(CloudCredentials credentials) {
     List<DBInstance> instances = new ArrayList<>();
@@ -30,8 +33,7 @@ public class AwsRdsService implements RdsService {
         instances = response.dbInstances();
         regionalInstances.add(new RegionalDbInstance(instances, region));
       } catch (Exception e) {
-        System.out.println(
-            "Skipping RDS discovery for region " + region.id() + ": " + e.getMessage());
+        logger.info("Skipping RDS discovery for region " + region.id() + ": " + e.getMessage());
       }
     }
     return regionalInstances;
@@ -67,6 +69,7 @@ public class AwsRdsService implements RdsService {
                   tags));
         }
       } catch (Exception e) {
+        // Regional logging messages handled by child function
       }
     }
 

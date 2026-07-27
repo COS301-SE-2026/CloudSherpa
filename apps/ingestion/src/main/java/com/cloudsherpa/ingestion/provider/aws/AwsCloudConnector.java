@@ -77,6 +77,7 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
       client =
           CloudWatchClient.builder()
               .credentialsProvider(StaticCredentialsProvider.create(awsCredentials))
+              .region(Region.EU_NORTH_1)
               .build();
     }
     try {

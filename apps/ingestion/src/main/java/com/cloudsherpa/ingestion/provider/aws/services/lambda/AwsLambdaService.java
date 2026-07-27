@@ -7,12 +7,15 @@ import com.cloudsherpa.ingestion.provider.aws.model.RegionalArn;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.lambda.LambdaClient;
 import software.amazon.awssdk.services.lambda.model.FunctionConfiguration;
 import software.amazon.awssdk.services.lambda.model.ListFunctionsResponse;
 
 public class AwsLambdaService implements LambdaService {
+  Logger logger = Logger.getLogger(getClass().getName());
+
   @Override
   public List<RegionalArn> getAllLambdaFunctionArns(CloudCredentials credentials) {
     List<String> functionArns = new ArrayList<>();
@@ -31,8 +34,7 @@ public class AwsLambdaService implements LambdaService {
         }
         regionalArns.add(new RegionalArn(functionArns, region));
       } catch (Exception e) {
-        System.out.println(
-            "Skipping Lambda discovery for region " + region.id() + ": " + e.getMessage());
+        logger.info("Skipping Lambda discovery for region " + region.id() + ": " + e.getMessage());
       }
     }
     return regionalArns;
@@ -58,8 +60,7 @@ public class AwsLambdaService implements LambdaService {
                   fn.functionName(), name, "FunctionName", "AWS/Lambda", region.id(), tags));
         }
       } catch (Exception e) {
-        System.out.println(
-            "Skipping Lambda discovery for region " + region.id() + ": " + e.getMessage());
+        logger.info("Skipping Lambda discovery for region " + region.id() + ": " + e.getMessage());
       }
     }
     return resources;

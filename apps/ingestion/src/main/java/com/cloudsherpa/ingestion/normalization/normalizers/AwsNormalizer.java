@@ -2,15 +2,35 @@ package com.cloudsherpa.ingestion.normalization.normalizers;
 
 import com.cloudsherpa.ingestion.models.UsageRecordModel;
 import com.cloudsherpa.ingestion.normalization.model.NormalizedMetric;
+import com.cloudsherpa.lib.entities.Resource;
+import com.cloudsherpa.lib.repositories.ResourceRepository;
 import java.util.UUID;
+import org.springframework.stereotype.Component;
 
+@Component
 public class AwsNormalizer implements Normalizer {
+  private final ResourceRepository resourceRepository;
+
+  public AwsNormalizer(ResourceRepository resourceRepository) {
+    this.resourceRepository = resourceRepository;
+  }
+
   public NormalizedMetric normalize(UsageRecordModel r) {
     if (r == null) {
       return null;
     }
+
+    UUID resourceTableIdent =
+        resourceRepository
+            .findByAccountIdAndResourceTypeAndResourceIdentifierAndRegion(
+                UUID.fromString(r.getAccountId()),
+                r.getServiceName(),
+                r.getResourceId(),
+                r.getRegion())
+            .map(Resource::getId)
+            .orElse(null);
     String metricId = UUID.randomUUID().toString();
-    String resourceId = r.getResourceId();
+    String resourceId = resourceTableIdent != null ? resourceTableIdent.toString() : null;
     String accountId = r.getAccountId();
     String metricType = "usage";
 

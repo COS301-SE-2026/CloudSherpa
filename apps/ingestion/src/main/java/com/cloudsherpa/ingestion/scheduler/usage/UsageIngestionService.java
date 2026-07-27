@@ -20,7 +20,6 @@ import com.cloudsherpa.lib.repositories.CloudCredentialRepository;
 import com.cloudsherpa.lib.repositories.OfferedMetricRepository;
 import com.cloudsherpa.lib.repositories.ResourceRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import java.time.Instant;
@@ -63,10 +62,11 @@ public class UsageIngestionService {
 
   @Transactional
   public void ingest(UUID accountId) {
-    CloudAccount account = cloudAccountRepository
-        .findById(accountId)
-        .orElseThrow(
-            () -> new IllegalArgumentException("Cloud account not found: " + accountId));
+    CloudAccount account =
+        cloudAccountRepository
+            .findById(accountId)
+            .orElseThrow(
+                () -> new IllegalArgumentException("Cloud account not found: " + accountId));
     CloudCredential credential = cloudCredentialRepository.findByAccountId(accountId).getFirst();
     String decryptedCredential = encryptionService.decrypt(credential.getCredentialValue());
     Instant ingestionEndTime = Instant.now().truncatedTo(ChronoUnit.MINUTES);
@@ -85,12 +85,14 @@ public class UsageIngestionService {
       List<Resource> resources = resourceRepository.findByAccountId(accountId);
 
       List<ServiceScope> serviceScopes = new ArrayList<>();
-      for (String serviceType : resources.stream().map(Resource::getResourceType).distinct().toList()) {
+      for (String serviceType :
+          resources.stream().map(Resource::getResourceType).distinct().toList()) {
         ServiceScope serviceScope = new ServiceScope();
         serviceScope.setName(serviceType);
         List<Metric> metrics = new ArrayList<>();
-        List<OfferedMetric> offeredMetrics = offeredMetricRepository.findByProviderAndServiceType(
-            account.getConnection().getProvider(), serviceType);
+        List<OfferedMetric> offeredMetrics =
+            offeredMetricRepository.findByProviderAndServiceType(
+                account.getConnection().getProvider(), serviceType);
         offeredMetrics.forEach(
             offeredMetric -> {
               Metric metric = new Metric();
@@ -99,23 +101,25 @@ public class UsageIngestionService {
               metrics.add(metric);
             });
         serviceScope.setMetrics(metrics);
-        List<Resource> serviceTypeResources = resources.stream()
-            .filter(resource -> resource.getResourceType().equals(serviceType))
-            .toList();
+        List<Resource> serviceTypeResources =
+            resources.stream()
+                .filter(resource -> resource.getResourceType().equals(serviceType))
+                .toList();
 
         List<InstanceScope> instanceScopes = new ArrayList<>();
-        for (String resourceIdentifierType : serviceTypeResources.stream()
-            .map(Resource::getResourceIdentifierType)
-            .distinct()
-            .toList()) {
+        for (String resourceIdentifierType :
+            serviceTypeResources.stream()
+                .map(Resource::getResourceIdentifierType)
+                .distinct()
+                .toList()) {
           InstanceScope instanceScope = new InstanceScope();
           instanceScope.setIdentifierName(resourceIdentifierType);
           List<Instance> instances = new ArrayList<>();
-          for (Resource identifierSpecificResource : resourceRepository
-              .findByAccountIdAndResourceTypeAndResourceIdentifierType(
+          for (Resource identifierSpecificResource :
+              resourceRepository.findByAccountIdAndResourceTypeAndResourceIdentifierType(
                   accountId, serviceType, resourceIdentifierType)) {
             if (identifierSpecificResource.getStatus() == StatusEnum.disabled) {
-              continue; // don't ingest inactive resources;
+              continue; // don't ingest inactive resources
             }
             Instance instance = new Instance();
             instance.setIdentifier(identifierSpecificResource.getResourceIdentifier());
@@ -132,7 +136,8 @@ public class UsageIngestionService {
       List<AccountScope> accountScopes = new ArrayList<>();
       accountScopes.add(accountScope);
       request.setScopes(accountScopes);
-      AwsCredentialsDto decryptedCredentialsDto = mapper.readValue(decryptedCredential, AwsCredentialsDto.class);
+      AwsCredentialsDto decryptedCredentialsDto =
+          mapper.readValue(decryptedCredential, AwsCredentialsDto.class);
       CloudCredentials credentials = new CloudCredentials();
       credentials.setAccessKey(decryptedCredentialsDto.accessKeyId());
       credentials.setSecretKey(decryptedCredentialsDto.secretAccessKey());
@@ -148,8 +153,6 @@ public class UsageIngestionService {
 
       cloudAccountRepository.save(account);
 
-    } catch (JsonMappingException e) {
-      e.printStackTrace();
     } catch (JsonProcessingException e) {
       e.printStackTrace();
     }
