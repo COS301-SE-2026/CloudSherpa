@@ -58,7 +58,7 @@ public class AwsCloudWatchMetricProvider implements CloudWatchMetricProvider {
                   .value(instanceValue.getIdentifier())
                   .build();
           if (request.getCredentials() != null) {
-            createClient(request, instanceValue.getRegion());
+            client = createClient(request, instanceValue.getRegion());
           }
 
           for (Metric metric :
