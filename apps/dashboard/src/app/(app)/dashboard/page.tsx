@@ -20,6 +20,7 @@ import { useMetricStore } from "@/features/dashboard/stores/metric-store";
 import { fetchDashboards, DashboardDTO } from "@/lib/fetch/api-dashboard";
 import { MetricType } from "@/features/dashboard/types/metric";
 import { useAuthContext } from "@/features/authentication/providers/AuthContext";
+import { useWindowStore } from "@/features/dashboard/stores/window-store";
 
 function processFetchedDashboards(fetchedData: DashboardDTO[]) {
     const dashboardsMap: Record<string, DashboardConfig> = {};
@@ -92,6 +93,8 @@ function DashboardContent() {
     const fetchResourceNames = useResourceNameStore((state) => state.fetchResources);
     const getMetricList = useMetricStore((state) => state.getMetricList);
 
+    const setWindow = useWindowStore((state) => state.setWindow);
+
     const { setInitialState, updateLayouts, setActiveDashboard } = useDashboardStore(
         (state: DashboardStore) => state.actions
     );
@@ -148,6 +151,11 @@ function DashboardContent() {
 
                 if (defaultId) {
                     setActiveDashboard(defaultId);
+
+                    const to = new Date();
+                    const from = new Date(to.getTime() - 7 * 24 * 60 * 60 * 1000);
+                    setWindow(from, to);
+
                     if (urlId !== defaultId) {
                         router.replace(`?id=${defaultId}`);
                     }
