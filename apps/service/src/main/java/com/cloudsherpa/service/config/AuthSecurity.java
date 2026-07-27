@@ -25,7 +25,13 @@ public class AuthSecurity {
     // Different servlet filters based on dev or prod
     if (mode.equals("dev")) {
       return http.cors(cors -> cors.configurationSource(corsConfigurationSource))
-          .securityMatcher("/auth/register", "/auth/login", "/auth/logout", "/swagger/**", "/v3/**")
+          .securityMatcher(
+              "/auth/register",
+              "/auth/login",
+              "/auth/logout",
+              "/swagger/**",
+              "/v3/**",
+              "/actuator/**")
           .csrf(csrf -> csrf.disable())
           .sessionManagement(
               session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -33,7 +39,7 @@ public class AuthSecurity {
           .build();
     } else {
       return http.cors(cors -> cors.configurationSource(corsConfigurationSource))
-          .securityMatcher("/auth/register", "/auth/login", "/auth/logout")
+          .securityMatcher("/auth/register", "/auth/login", "/auth/logout", "/actuator/health")
           .csrf(csrf -> csrf.disable())
           .sessionManagement(
               session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

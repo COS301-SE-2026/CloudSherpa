@@ -6,13 +6,16 @@ services:
       target: prod
     image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/cloudsherpa:ingestion-${IMAGE_TAG}
     container_name: ingestion
-    ports:
-      - "8081:8080"
     env_file:
       - apps/ingestion/.env
     depends_on:
       sherpa-db:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "localhost:8080/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
     
   service:
     build:
@@ -28,6 +31,11 @@ services:
     depends_on:
       sherpa-db:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "localhost:8080/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
   
   dashboard:
     build:
@@ -40,6 +48,9 @@ services:
       - "3000:3000"
     env_file:
       - apps/dashboard/.env
+    depends_on:
+      service:
+        condition: service_healthy
 
   sherpa-db:
     image: timescale/timescaledb:2.16.1-pg16
@@ -47,8 +58,6 @@ services:
     restart: unless-stopped
     env_file:
       - persistence/sherpadb/.env
-    ports:
-      - "5432:5432"
     volumes:
       - sherpa_db_data:/var/lib/postgresql/data
       - ./persistence/sherpadb:/docker-entrypoint-initdb.d:ro
@@ -58,6 +67,19 @@ services:
       timeout: 3s
       retries: 20
 
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    ports:
+      - "5050:80"
+    env_file:
+      - persistence/sherpadb/.env
+    depends_on:
+      - sherpa-db
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+
 volumes:
   sherpa_db_data: 
+  pgadmin_data:
   # Ensures that the data is persistent across docker compose down / up 

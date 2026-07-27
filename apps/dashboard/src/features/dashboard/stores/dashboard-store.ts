@@ -31,6 +31,7 @@ interface DashboardActions {
         layouts: LayoutItem[],
         widgets: WidgetConfig[]
     ) => void;
+    reset: () => void;
 }
 
 export interface DashboardStore {
@@ -274,6 +275,16 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
             const currentWidgets = get().widgets;
 
             return currentWidgets[id];
+        },
+
+        reset: () => {
+            set({
+                activeDashboardId: null,
+                dashboards: {},
+                layouts: {},
+                widgets: {},
+                snapshot: null,
+            });
         },
     },
 }));
