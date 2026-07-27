@@ -18,6 +18,7 @@ import {
     CommandList,
 } from "@/components/atoms/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/atoms/popover";
+import Changelog from "@/design-system/changelog/components/changelog";
 
 interface HeaderProps {
     title: string;
@@ -41,6 +42,7 @@ const sections = [
     { value: "components", label: "5. Components" },
     { value: "logo", label: "6. Logo" },
     { value: "iconography", label: "7. Iconography" },
+    { value: "changelog", label: "8. Changelog" },
 ];
 
 export default function DesignSystem() {
@@ -135,7 +137,6 @@ export default function DesignSystem() {
                         communication (alerts without panic).
                     </p>
                 </header>
-
                 <div className="flex flex-col gap-16">
                     <section id="voice-and-tone">
                         <Header
@@ -201,6 +202,15 @@ export default function DesignSystem() {
                                 CloudSherpa."
                         />
                         <Iconography />
+                    </section>
+
+                    <section id="Changelog">
+                        <Header
+                            title="Changelog"
+                            description="A log of all changes brought about to our colour palette. Due to contrast issues we had to reimplement our colour palette. We went from a very blue UI to 
+                            a more muted palatable colour with a blue hue."
+                        />
+                        <Changelog />
                     </section>
                 </div>
             </div>

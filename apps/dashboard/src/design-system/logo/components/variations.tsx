@@ -9,7 +9,7 @@ export default function Variations() {
                 description="Our logo adapts to different contexts. Always use the provided SVG assets. The logo should never be stretched or warped in any way."
             />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card className="flex flex-col">
+                <Card className="light flex flex-col">
                     <CardHeader>
                         <CardTitle>Primary (Full Colour) </CardTitle>
                         <span className="text-small">
@@ -40,7 +40,7 @@ export default function Variations() {
                     </CardContent>
                 </Card>
 
-                <Card className="flex flex-col">
+                <Card className="light flex flex-col">
                     <CardHeader>
                         <CardTitle>Icon Only (Restricted Space)</CardTitle>
                         <span className="text-small">
@@ -56,7 +56,7 @@ export default function Variations() {
                     </CardContent>
                 </Card>
 
-                <Card className="flex flex-col">
+                <Card className="light flex flex-col">
                     <CardHeader>
                         <CardTitle>Monotone (Watermarks / Print)</CardTitle>
                         <span className="text-small">
