@@ -8,6 +8,7 @@ import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
 import { useRouter } from "next/navigation";
 import { WidgetDropdown } from "@/features/dashboard/components/widgetDropdown";
 import { WidgetMenu } from "@/features/dashboard/components/widgetMenu";
+import { cn } from "@/lib/utils";
 
 interface WidgetProps {
     config: KpiWidgetConfig;
@@ -47,7 +48,10 @@ export function KPIWidget({ config, preview = false, isEditMode = false }: Reado
             onDelete={() => removeWidget(id, id)}
         >
             <Card
-                className={`flex flex-col gap-4 p-6 h-full w-full ${preview ? "bg-muted/40" : ""}`}
+                className={cn(
+                    "flex flex-col gap-4 p-6 w-full justify-between",
+                    preview ? "bg-muted/40 h-full md:h-64" : "h-full"
+                )}
             >
                 <CardHeader className="flex flex-row items-center justify-between p-0">
                     <CardTitle>{config.displayName}</CardTitle>

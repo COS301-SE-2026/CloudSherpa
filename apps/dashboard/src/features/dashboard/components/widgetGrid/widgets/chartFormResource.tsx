@@ -25,10 +25,7 @@ import {
 } from "@/components/atoms/command";
 
 import { ChartWidgetConfig } from "@/features/dashboard/types/widgets";
-import {
-    useResourceNameStore,
-    ResourceNameStore,
-} from "@/features/dashboard/stores/resource-store";
+``;
 import { MetricType, MetricStore } from "@/features/dashboard/types/metric";
 import { useMetricStore } from "@/features/dashboard/stores/metric-store";
 import { useConnectionStore } from "@/features/dashboard/stores/connection-store";
@@ -53,9 +50,6 @@ export function ChartFormResource({ config, setConfig }: ChartFormResourceProps)
     const [providerOpen, setProviderOpen] = useState(false);
 
     // Store Hooks
-    const resourceNamesById = useResourceNameStore(
-        (state: ResourceNameStore) => state.resourcesById
-    );
     const allAvailableMetrics = useMetricStore((state: MetricStore) => state.getMetricList);
 
     const [selectedProvider, setSelectedProvider] = useState<string>("aws");
@@ -299,10 +293,10 @@ export function ChartFormResource({ config, setConfig }: ChartFormResourceProps)
                                 <CommandList>
                                     <CommandEmpty>No metric type found.</CommandEmpty>
                                     <CommandGroup>
-                                        {availableMetrics.map((type) => (
+                                        {availableMetrics.map((metric) => (
                                             <CommandItem
-                                                key={type}
-                                                value={type}
+                                                key={metric}
+                                                value={metric}
                                                 onSelect={(currentValue) => {
                                                     setConfig((prev) => ({
                                                         ...prev,
@@ -314,12 +308,12 @@ export function ChartFormResource({ config, setConfig }: ChartFormResourceProps)
                                                 <Check
                                                     className={cn(
                                                         "mr-2 h-4 w-4",
-                                                        config.metricType === type
+                                                        config.metricType === metric
                                                             ? "opacity-100"
                                                             : "opacity-0"
                                                     )}
                                                 />
-                                                {type.toUpperCase()}
+                                                {metric.toUpperCase()}
                                             </CommandItem>
                                         ))}
                                     </CommandGroup>
