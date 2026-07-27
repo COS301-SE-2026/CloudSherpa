@@ -68,7 +68,7 @@ export default function Colours() {
             <div className="space-y-6">
                 <SubSectionHeading
                     title="Primitive Colours"
-                    description="These primitive colour represent the basic building blocks of our colour themes, like a predefined library of predefined colours we can swap out at any time in our semantic colour 
+                    description="These primitive colour represent the basic building blocks of our colour themes, like a predefined library of predefined colours we can swap out at any time in our semantic colour
                     mapping to fit our needs."
                 />
                 {rawTokens.colors.map((palette) => (

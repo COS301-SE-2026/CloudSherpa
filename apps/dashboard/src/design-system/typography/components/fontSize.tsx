@@ -42,7 +42,7 @@ export default function FontSize({ FontSizes }: Readonly<FontSizeProps>) {
             title="Font Sizes"
             columns={columns}
             data={FontSizes}
-            description="Our font sizes are small with an emphasis on space efficiency. The headings and text font sizes are geared towards large complex forms where it is necessary to create visual hierarchy , although subtle, 
+            description="Our font sizes are small with an emphasis on space efficiency. The headings and text font sizes are geared towards large complex forms where it is necessary to create visual hierarchy , although subtle,
             to help the user navigate easier"
         />
     );

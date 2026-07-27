@@ -2,6 +2,10 @@ name: Ingestion CI
 
 on:
     pull_request:
+        types:
+          - opened
+          - synchronize
+          - reopened
         branches:
             - dev
             - main
@@ -10,43 +14,9 @@ on:
           - .github/workflows/ingestion-ci.yml
 jobs:
     ingestion-validation:
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout Repo
-              uses: actions/checkout@v5
-            
-            - name: Set up JDK
-              uses: actions/setup-java@v5
-              with:
-                distribution: 'temurin'
-                java-version: 21
-            
-            - name: Cache Maven Packages
-              uses: actions/cache@v5
-              # Keys: If dependencies change, load old cache, maven only downloads missing/changed deps
-              with:
-                path: ~/.m2/repository
-                key: ${{ runner.os }}-maven-${{ hashFiles('pom.xml') }}
-                restore-keys: ${{ runner.os }}-maven
-
-            - name: Cache SonarQube packages
-              uses: actions/cache@v5
-              with:
-                path: ~/.sonar/cache
-                key: ${{ runner.os }}-sonar
-                restore-keys: ${{ runner.os }}-sonar
-
-            - name: Make Maven Wrapper Executable
-              run: chmod +x mvnw
-            
-            - name: Install libs
-              run: ./mvnw install -pl apps/lib -DskipTests  
-
-            - name: Lint
-              run: ./mvnw checkstyle:check -pl apps/ingestion
-            
-            - name: Build, Unit Test and SonarQube Analysis
-              env:
-                SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-                SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-              run: ./mvnw -B -f apps/ingestion/pom.xml verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.qualitygate.wait=true -Dsonar.projectKey=CloudSherpa-ingestion -Dsonar.projectName='CloudSherpa Ingestion'
+        uses: ./.github/workflows/spring-ci.yml
+        with:
+          application-path: apps/ingestion
+          sonar-project-key: CloudSherpa-ingestion
+          sonar-project-name: 'CloudSherpa Ingestion' 
+        secrets: inherit

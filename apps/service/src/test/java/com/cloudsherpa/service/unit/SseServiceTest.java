@@ -7,20 +7,19 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.cloudsherpa.service.sse.SseService;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-@ExtendWith(MockitoExtension.class)
 class SseServiceTest {
+  private static final UUID USER_ID = UUID.randomUUID();
 
   @Test
   void serviceSubscribeReturnsNonNull() {
     SseService service = new SseService();
     service.start();
 
-    SseEmitter emitter = service.subscribe();
+    SseEmitter emitter = service.subscribe(USER_ID);
     assertNotNull(emitter);
   }
 
@@ -46,10 +45,10 @@ class SseServiceTest {
   void subscribeReturnsNullAfterStop() {
     SseService service = new SseService();
     service.start();
-    service.subscribe();
+    service.subscribe(USER_ID);
     service.stop();
 
-    assertNull(service.subscribe());
+    assertNull(service.subscribe(USER_ID));
   }
 
   // Broadcast tests. These are weak, but do not want to refactor SseService just to make
@@ -60,7 +59,7 @@ class SseServiceTest {
     SseService service = new SseService();
     service.stop();
 
-    assertDoesNotThrow(() -> service.broadcast("event", "data"));
+    assertDoesNotThrow(() -> service.broadcast(USER_ID, "event", "data"));
   }
 
   @Test
@@ -68,7 +67,7 @@ class SseServiceTest {
     SseService service = new SseService();
     service.start();
 
-    assertDoesNotThrow(() -> service.broadcast("event", "data"));
+    assertDoesNotThrow(() -> service.broadcast(USER_ID, "event", "data"));
   }
 
   @Test
@@ -76,6 +75,6 @@ class SseServiceTest {
     SseService service = new SseService();
     service.start();
 
-    assertDoesNotThrow(() -> service.broadcast(null, "data"));
+    assertDoesNotThrow(() -> service.broadcast(USER_ID, null, "data"));
   }
 }

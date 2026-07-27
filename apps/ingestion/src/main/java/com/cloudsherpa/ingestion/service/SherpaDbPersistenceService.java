@@ -4,9 +4,10 @@ package com.cloudsherpa.ingestion.service;
 
 import com.cloudsherpa.ingestion.models.UsageRecordModel;
 import com.cloudsherpa.ingestion.normalization.model.NormalizedMetric;
-import com.cloudsherpa.lib.entities.MetricTypeEnum;
+import com.cloudsherpa.lib.entities.NormalizedCosts;
 import com.cloudsherpa.lib.entities.NormalizedMetrics;
 import com.cloudsherpa.lib.entities.Resource;
+import com.cloudsherpa.lib.repositories.NormalizedCostsRepository;
 import com.cloudsherpa.lib.repositories.NormalizedMetricsRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -23,15 +24,19 @@ import org.springframework.transaction.annotation.Transactional;
 public class SherpaDbPersistenceService {
 
   private final NormalizedMetricsRepository metricsRepo;
+  private final NormalizedCostsRepository normalizedCostsRepository;
   private final CloudInfrastructureService infrastructureService;
   private static final Pattern TENANT_SCHEMA_PATTERN = Pattern.compile("^tenant_[a-f0-9_]{36}$");
 
   @PersistenceContext private EntityManager entityManager;
 
   public SherpaDbPersistenceService(
-      NormalizedMetricsRepository metricsRepo, CloudInfrastructureService infrastructureService) {
+      NormalizedMetricsRepository metricsRepo,
+      CloudInfrastructureService infrastructureService,
+      NormalizedCostsRepository normalizedCostsRepository) {
     this.metricsRepo = metricsRepo;
     this.infrastructureService = infrastructureService;
+    this.normalizedCostsRepository = normalizedCostsRepository;
   }
 
   private void setTenantSchema(UUID userId) {
@@ -62,19 +67,15 @@ public class SherpaDbPersistenceService {
           OffsetDateTime.ofInstant(Instant.ofEpochMilli(metric.getPeriodEnd()), ZoneOffset.UTC);
     }
 
-    MetricTypeEnum metricTypeEnum;
-    try {
-      metricTypeEnum = MetricTypeEnum.valueOf(metric.getMetricType().toLowerCase());
-    } catch (Exception ex) {
-      metricTypeEnum = MetricTypeEnum.usage;
-    }
+    String metricType =
+        metric.getMetricType() != null ? metric.getMetricType().toLowerCase() : "usage";
 
     // Create the new entity representing the row in the normalized_metrics table.
     NormalizedMetrics newMetric =
         new NormalizedMetrics.Builder()
             .resourceId(resourceUuid)
             .recordedAt(OffsetDateTime.now())
-            .metricType(metricTypeEnum)
+            .metricType(metricType)
             .metricName(metric.getMetricName())
             .metricValue(BigDecimal.valueOf(metric.getMetricValue()))
             .unit(metric.getUnit())
@@ -89,6 +90,12 @@ public class SherpaDbPersistenceService {
     // Because an INSERT happens here, PostgreSQL immediately executes the `metric_notify_trigger`
     // defined in sherpadb-schema.sql, broadcasting the JSON event.
     metricsRepo.save(newMetric);
+  }
+
+  @Transactional
+  public void recordCost(NormalizedCosts normalizedCosts, UUID userId) {
+    setTenantSchema(userId);
+    normalizedCostsRepository.save(normalizedCosts);
   }
 
   private String normalizeTenantSchema(UUID userId) {

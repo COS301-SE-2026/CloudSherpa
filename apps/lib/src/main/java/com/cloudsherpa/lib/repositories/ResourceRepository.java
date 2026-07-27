@@ -22,6 +22,9 @@ public interface ResourceRepository extends JpaRepository<Resource, UUID> {
   // Find by CloudAccount object
   List<Resource> findByAccount(CloudAccount account);
 
+  // Find the number of resources with a specific accountId
+  long countByAccountId(UUID accountId);
+
   @Query("select r.id as id, r.resourceType as resourceType from Resource r")
   List<ResourceNames> findResourceNames();
 }

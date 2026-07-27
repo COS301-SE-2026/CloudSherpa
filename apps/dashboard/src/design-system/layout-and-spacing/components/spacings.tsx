@@ -41,8 +41,8 @@ export default function SpacingsProps({ spacings }: Readonly<SpacingsProps>) {
             title="Spacing"
             columns={columns}
             data={spacings}
-            description="Spacing is one of the most important factors for our ui. Our spacing scale is setup to be compact but keep legibility in mind. However consistency is key since inconsistent use of spacing 
-            can lead to the ui feeling 'off' or strange, which is why our use of Shadcn/ui is an a big asset since it handles most spacing and layout 
+            description="Spacing is one of the most important factors for our ui. Our spacing scale is setup to be compact but keep legibility in mind. However consistency is key since inconsistent use of spacing
+            can lead to the ui feeling 'off' or strange, which is why our use of Shadcn/ui is an a big asset since it handles most spacing and layout
             based on our defined token values and ensures helps prevent inconsistent spacing, padding and margins"
         />
     );

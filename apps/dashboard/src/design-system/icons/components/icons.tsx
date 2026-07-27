@@ -28,7 +28,7 @@ export default function Icons() {
         <div className="space-y-6">
             <SubSectionHeading
                 title="Icons"
-                description="Icons convey meaning better than words by leveraging users previous experiences and the connotation to it, for example a calender icon has the connotation of looking up or marking a data in some calender. 
+                description="Icons convey meaning better than words by leveraging users previous experiences and the connotation to it, for example a calender icon has the connotation of looking up or marking a data in some calender.
              can be used by importing it at the top of the component and using it like a component ie. <Eye/>"
             />
 

@@ -6,19 +6,28 @@ import Toolbar from "@/features/dashboard/components/toolbar/toolbar";
 import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
 import { useWindowStore } from "@/features/dashboard/stores/window-store";
 import { useMetricStore } from "@/features/dashboard/stores/metric-store";
-import { LayoutItem, WidgetConfig } from "@/features/dashboard/types/widgets";
+import { KpiWidgetConfig, LayoutItem, WidgetConfig } from "@/features/dashboard/types/widgets";
 import { createDashboard, updateDashboardLayout, createWidget } from "@/lib/fetch/api-dashboard";
+
 import {
     ToolbarProvider,
     useToolbar,
 } from "@/features/dashboard/components/toolbar/toolbarProvider";
 import { DateRange } from "react-day-picker";
 
+// The layout ID and widget IDs are shared, i.e. layout id ===  widget_id, hence only one UUID is generated
+function generateSharedId() {
+    const sharedId = crypto.randomUUID();
+
+    return { sharedId };
+}
+
 function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode }>) {
     const router = useRouter();
     const { isEditMode, setIsEditMode } = useToolbar();
 
     const activeDashboardId = useDashboardStore((state) => state.activeDashboardId);
+    const hasActiveDashboard = Boolean(activeDashboardId);
     const dashboardsMap = useDashboardStore((state) => state.dashboards);
     const {
         addDashboard,
@@ -89,15 +98,17 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
 
     const handleDateRangeChange = useCallback(
         (range: DateRange | undefined) => {
+            if (!activeDashboardId) return;
             if (range?.from && range?.to) setWindow(range.from, range.to);
         },
-        [setWindow]
+        [activeDashboardId, setWindow]
     );
 
     const handleStartEditing = useCallback(() => {
+        if (!activeDashboardId) return;
         createSnapshot();
         setIsEditMode(true);
-    }, [setIsEditMode, createSnapshot]);
+    }, [activeDashboardId, setIsEditMode, createSnapshot]);
 
     const handleSaveEdit = useCallback(async () => {
         clearSnapshot();
@@ -127,17 +138,56 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
         setIsEditMode(false);
     }, [setIsEditMode, restoreSnapshot]);
 
+    const handleAddKpi = useCallback(async () => {
+        if (!activeDashboardId) {
+            return;
+        }
+        const { sharedId } = generateSharedId();
+
+        const newKpiConfig: KpiWidgetConfig = {
+            id: sharedId,
+            widgetType: "KPI",
+            displayName: "New KPI",
+            chargeIds: [],
+            aggregationWindowDays: 30,
+        };
+
+        const newLayout: LayoutItem = {
+            id: sharedId,
+            x: 0,
+            y: 0,
+            w: 4,
+            h: 4,
+            autoPosition: true,
+        };
+
+        addWidget(newLayout, newKpiConfig);
+
+        try {
+            await createWidget(activeDashboardId, {
+                ...newKpiConfig,
+                startX: newLayout.x,
+                startY: newLayout.y,
+                width: newLayout.w,
+                height: newLayout.h,
+            });
+        } catch (error) {
+            console.error("Failed to persist new widget", error);
+        }
+    }, [addWidget, activeDashboardId]);
+
     const handleAddWidget = useCallback(async () => {
         if (!activeDashboardId) return;
 
-        const sharedId = crypto.randomUUID();
+        const { sharedId } = generateSharedId();
         const metricsByResource = getMetricList();
         const resourceId = Object.keys(metricsByResource)[0];
 
         const newConfig: WidgetConfig = {
+            widgetType: "CHART",
             id: sharedId,
-            displayName: "New Widget (Click to Customize)",
-            type: "line_chart",
+            displayName: "New Chart",
+            chartType: "line_chart",
             resourceId: resourceId,
             metricType: resourceId ? (metricsByResource[resourceId]?.[0] ?? "anon") : "anon",
         };
@@ -160,7 +210,8 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
         try {
             await createWidget(activeDashboardId, {
                 id: newConfig.id,
-                type: newConfig.type,
+                widgetType: "CHART",
+                chartType: newConfig.chartType,
                 displayName: newConfig.displayName,
                 startX: newLayout.x,
                 startY: newLayout.y,
@@ -179,12 +230,14 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
             <Toolbar
                 dashboards={dashboardStubs}
                 isEditMode={isEditMode}
+                hasActiveDashboard={hasActiveDashboard}
                 selectedDashboardId={activeDashboardId || ""}
                 onDashboardChange={handleDashboardChange}
                 onCreateDashboard={handleCreateDashboard}
                 dateRange={dateRange}
                 onDateRangeChange={handleDateRangeChange}
                 handleAddWidget={handleAddWidget}
+                handleAddKpi={handleAddKpi}
                 handleStartEditing={handleStartEditing}
                 handleSaveEdit={handleSaveEdit}
                 handleCancelEdit={handleCancelEdit}

@@ -1,13 +1,16 @@
 package com.cloudsherpa.service.dashboard.service;
 
 import com.cloudsherpa.lib.entities.Dashboard;
+import com.cloudsherpa.lib.entities.PredefinedTimeEnum;
 import com.cloudsherpa.lib.entities.Widget;
-import com.cloudsherpa.lib.entities.WidgetResource;
 import com.cloudsherpa.lib.repositories.DashboardRepository;
 import com.cloudsherpa.lib.repositories.DashboardWidgetRepository;
-import com.cloudsherpa.lib.repositories.WidgetResourceRepository;
+import com.cloudsherpa.service.dashboard.dto.ChartWidgetConfigUpdateDTO;
+import com.cloudsherpa.service.dashboard.dto.ChartWidgetDTO;
 import com.cloudsherpa.service.dashboard.dto.DashboardCreateDTO;
 import com.cloudsherpa.service.dashboard.dto.DashboardDTO;
+import com.cloudsherpa.service.dashboard.dto.KpiWidgetConfigUpdateDTO;
+import com.cloudsherpa.service.dashboard.dto.KpiWidgetDTO;
 import com.cloudsherpa.service.dashboard.dto.WidgetConfigUpdateDTO;
 import com.cloudsherpa.service.dashboard.dto.WidgetDTO;
 import com.cloudsherpa.service.dashboard.dto.WidgetLayoutUpdateDTO;
@@ -22,15 +25,18 @@ import org.springframework.web.server.ResponseStatusException;
 public class DashboardService {
   private final DashboardRepository dashboardRepository;
   private final DashboardWidgetRepository widgetRepository;
-  private final WidgetResourceRepository widgetResourceRepository;
+  private final ChartWidgetService chartWidgetService;
+  private final KpiWidgetService kpiWidgetService;
 
   public DashboardService(
       DashboardRepository dashboardRepository,
       DashboardWidgetRepository widgetRepository,
-      WidgetResourceRepository widgetResourceRepository) {
+      ChartWidgetService chartWidgetService,
+      KpiWidgetService kpiWidgetService) {
     this.dashboardRepository = dashboardRepository;
     this.widgetRepository = widgetRepository;
-    this.widgetResourceRepository = widgetResourceRepository;
+    this.chartWidgetService = chartWidgetService;
+    this.kpiWidgetService = kpiWidgetService;
   }
 
   // get all dashboards owned by user
@@ -66,7 +72,7 @@ public class DashboardService {
             request.displayName(),
             null,
             null,
-            "last_24h",
+            PredefinedTimeEnum.last_24h,
             true);
 
     dashboardRepository.save(newDashboard);
@@ -78,18 +84,6 @@ public class DashboardService {
   public void deleteDashboard(UUID userId, UUID dashboardId) {
     Dashboard dashboard = getDashboardAndVerifyOwnership(userId, dashboardId);
     boolean wasCurrent = Boolean.TRUE.equals(dashboard.getCurrent());
-    // clean up dashboard
-    List<Widget> widgets = widgetRepository.findByDashboardId(dashboardId);
-    for (Widget widget : widgets) {
-      List<WidgetResource> resources = widgetResourceRepository.findByWidgetId(widget.getId());
-      if (!resources.isEmpty()) {
-        widgetResourceRepository.deleteAll(resources);
-      }
-    }
-    if (!widgets.isEmpty()) {
-      widgetRepository.deleteAll(widgets);
-    }
-
     dashboardRepository.delete(dashboard);
 
     // chane current if current was deleted
@@ -132,41 +126,46 @@ public class DashboardService {
                         layout.w(),
                         layout.h(),
                         widget.getDisplayName());
-                widgetRepository.save(updatedWidget);
+                if (widget.getDashboardId().equals(dashboardId)) {
+                  widgetRepository.save(updatedWidget);
+                }
               });
     }
   }
 
   // add new widget to specific dashboard
   @Transactional
-  public WidgetDTO createWidget(UUID dashboardId, WidgetDTO request) {
-    UUID userId = request.userId();
+  public WidgetDTO createWidget(UUID userId, UUID dashboardId, WidgetDTO request) {
     getDashboardAndVerifyOwnership(userId, dashboardId);
-    Widget widget =
+
+    UUID widgetId = (request.id() != null) ? request.id() : UUID.randomUUID();
+
+    // Save in shared widget table
+    Widget newWidget =
         new Widget(
-            request.id() != null ? request.id() : UUID.randomUUID(),
+            widgetId,
             dashboardId,
-            request.type(),
+            request.widgetType(),
             request.startX(),
             request.startY(),
             request.width(),
             request.height(),
             request.displayName());
-    widgetRepository.save(widget);
 
-    if (request.resourceId() != null && request.metricType() != null) {
-      WidgetResource resource =
-          new WidgetResource(
-              UUID.randomUUID(), widget.getId(), request.resourceId(), request.metricType());
-      widgetResourceRepository.save(resource);
+    widgetRepository.save(newWidget);
+
+    // widget type specific persistence
+    switch (request) {
+      case KpiWidgetDTO kpi -> kpiWidgetService.createKpiWidget(widgetId, kpi);
+      case ChartWidgetDTO chart -> chartWidgetService.createChartWidget(widgetId, chart);
     }
-    return request;
+
+    return mapToWidgetDTO(newWidget);
   }
 
   // update specific widget's visual or data configuration
   @Transactional
-  public WidgetDTO updateWidgetConfig(UUID widgetId, WidgetConfigUpdateDTO request) {
-    UUID userId = request.userId();
+  public WidgetDTO updateWidgetConfig(UUID userId, UUID widgetId, WidgetConfigUpdateDTO request) {
     Widget widget =
         widgetRepository
             .findById(widgetId)
@@ -175,42 +174,18 @@ public class DashboardService {
 
     getDashboardAndVerifyOwnership(userId, widget.getDashboardId());
 
-    Widget updatedWidget =
-        new Widget(
-            widget.getId(),
-            widget.getDashboardId(),
-            request.type(),
-            widget.getStartX(),
-            widget.getStartY(),
-            widget.getWidth(),
-            widget.getHeight(),
-            request.displayName());
+    // update mutable widget shared table fields
+    widget.setDisplayName(request.displayName());
+    widget.setType(request.widgetType());
 
-    widgetRepository.save(updatedWidget);
+    widgetRepository.save(widget);
 
-    List<WidgetResource> existingResources = widgetResourceRepository.findByWidgetId(widgetId);
-    if (!existingResources.isEmpty()) {
-      widgetResourceRepository.deleteAll(existingResources);
+    switch (request) {
+      case KpiWidgetConfigUpdateDTO kpi -> kpiWidgetService.updateKpiWidget(kpi);
+      case ChartWidgetConfigUpdateDTO chart -> chartWidgetService.updateChartWidget(chart);
     }
 
-    if (request.resourceId() != null && request.metricType() != null) {
-      WidgetResource resource =
-          new WidgetResource(
-              UUID.randomUUID(), widgetId, request.resourceId(), request.metricType());
-      widgetResourceRepository.save(resource);
-    }
-
-    return new WidgetDTO(
-        userId,
-        updatedWidget.getId(),
-        updatedWidget.getType(),
-        updatedWidget.getDisplayName(),
-        updatedWidget.getStartX(),
-        updatedWidget.getStartY(),
-        updatedWidget.getWidth(),
-        updatedWidget.getHeight(),
-        request.resourceId(),
-        request.metricType());
+    return mapToWidgetDTO(widget);
   }
 
   private Dashboard getDashboardAndVerifyOwnership(UUID userId, UUID dashboardId) {
@@ -225,47 +200,6 @@ public class DashboardService {
     return dashboard;
   }
 
-  private DashboardDTO mapToDashboardDTO(Dashboard dashboard) {
-    List<Widget> widgets = widgetRepository.findByDashboardId(dashboard.getId());
-
-    List<WidgetDTO> widgetDTOs =
-        widgets.stream()
-            .map(
-                widget -> {
-                  UUID resourceId = null;
-                  String metricType = null;
-
-                  List<WidgetResource> resources =
-                      widgetResourceRepository.findByWidgetId(widget.getId());
-                  if (!resources.isEmpty()) {
-                    resourceId = resources.get(0).getResourceId();
-                    metricType = resources.get(0).getMetricType();
-                  }
-
-                  return new WidgetDTO(
-                      dashboard.getUserId(),
-                      widget.getId(),
-                      widget.getType(),
-                      widget.getDisplayName(),
-                      widget.getStartX(),
-                      widget.getStartY(),
-                      widget.getWidth(),
-                      widget.getHeight(),
-                      resourceId,
-                      metricType);
-                })
-            .toList();
-
-    return new DashboardDTO(
-        dashboard.getId(),
-        dashboard.getDisplayName(),
-        dashboard.getTimeFrom(),
-        dashboard.getTimeTo(),
-        dashboard.getPredefinedTime(),
-        dashboard.getCurrent(),
-        widgetDTOs);
-  }
-
   @Transactional
   public void deleteWidget(UUID userId, UUID widgetId) {
     Widget widget =
@@ -276,11 +210,28 @@ public class DashboardService {
 
     getDashboardAndVerifyOwnership(userId, widget.getDashboardId());
 
-    List<WidgetResource> resources = widgetResourceRepository.findByWidgetId(widgetId);
-    if (!resources.isEmpty()) {
-      widgetResourceRepository.deleteAll(resources);
-    }
-
     widgetRepository.delete(widget);
+  }
+
+  private DashboardDTO mapToDashboardDTO(Dashboard dashboard) {
+    List<Widget> widgets = widgetRepository.findByDashboardId(dashboard.getId());
+
+    List<WidgetDTO> widgetDTOs = widgets.stream().map(this::mapToWidgetDTO).toList();
+
+    return new DashboardDTO(
+        dashboard.getId(),
+        dashboard.getDisplayName(),
+        dashboard.getTimeFrom(),
+        dashboard.getTimeTo(),
+        dashboard.getPredefinedTime() != null ? dashboard.getPredefinedTime() : null,
+        dashboard.getCurrent(),
+        widgetDTOs);
+  }
+
+  private WidgetDTO mapToWidgetDTO(Widget widget) {
+    return switch (widget.getType()) {
+      case CHART -> chartWidgetService.mapToChartWidgetDTO(widget);
+      case KPI -> kpiWidgetService.mapToKpiWidgetDTO(widget);
+    };
   }
 }

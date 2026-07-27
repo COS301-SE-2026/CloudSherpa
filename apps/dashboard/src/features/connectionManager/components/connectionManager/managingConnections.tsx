@@ -6,17 +6,43 @@
 - they should be able to view the resources assoc with that connection and delete connections
 */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Trash2, ArrowLeft, SlidersHorizontal, Search, MoreVertical } from "lucide-react";
 import { Card, CardContent } from "@/components/atoms/card";
 import { Button } from "@/components/atoms/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/atoms/tabs";
 import { Separator } from "@/components/atoms/separator";
 import { Badge } from "@/components/atoms/badge";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/atoms/dropdown-menu";
+
+import { Eye, Pencil } from "lucide-react";
+import {
+    CloudAccount,
+    getAwsAccountConnections,
+    getAwsAccountResourceCount,
+    deleteAwsAccount,
+} from "@/lib/fetch/aws-connection-api";
+import { useRouter } from "next/navigation";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/atoms/alert-dialog";
 
 type Providers = "All" | "AWS" | "Azure" | "GCP";
 interface Connections {
-    id: number;
+    id: string;
     name: string;
     provider: Exclude<Providers, "All">;
     detail: string;
@@ -51,49 +77,18 @@ const badges = (provider: Exclude<Providers, "All">) => {
     return providerTabs[provider].active;
 };
 
-const hardCodedConn: Connections[] = [
-    {
-        id: 1,
-        name: "Connection 1",
-        detail: "details about conn",
-        provider: "AWS",
-        resource: 3,
-        status: "active",
-    },
-
-    {
-        id: 2,
-        name: "Connection 2",
-        detail: "details about connection",
-        provider: "Azure",
-        resource: 5,
-        status: "active",
-    },
-
-    {
-        id: 3,
-        name: "Connection 3",
-        detail: "details about connection",
-        provider: "GCP",
-        resource: 0,
-        status: "inactive",
-    },
-
-    {
-        id: 4,
-        name: "Connection 4",
-        detail: "details about connection",
-        provider: "AWS",
-        resource: 2,
-        status: "active",
-    },
-];
-
 export default function ManagingConnections() {
-    const [connections, setConnections] = useState<Connections[]>(hardCodedConn);
-
+    const [connections, setConnections] = useState<Connections[]>([]);
     const [activeFilter, setActiveFilter] = useState<Providers>("All");
+    const router = useRouter();
 
+    const handleViewDetails = (connectionId: string) => {
+        router.push(`/manageConnections/${connectionId}`);
+    };
+
+    const handleEditResources = (connectionId: string) => {
+        router.push(`/manageConnections/${connectionId}/resources`);
+    };
     const filtered =
         activeFilter === "All"
             ? connections
@@ -101,11 +96,43 @@ export default function ManagingConnections() {
                   (filteredConnections) => filteredConnections.provider === activeFilter
               );
 
-    const handleDeletion = (id: number) => {
-        setConnections((previous) =>
-            previous.filter((filteredConnections) => filteredConnections.id != id)
-        );
+    const handleDeletion = async (id: string) => {
+        try {
+            await deleteAwsAccount(id);
+            await loadConnections();
+        } catch (error) {
+            console.error("Failed to delete account", error);
+        }
     };
+
+    async function loadConnections() {
+        try {
+            const accounts: CloudAccount[] = await getAwsAccountConnections();
+
+            const uiConnections: Connections[] = await Promise.all(
+                accounts.map(async (account) => {
+                    const resourceCount = await getAwsAccountResourceCount(account.id);
+
+                    return {
+                        id: account.id,
+                        name: account.displayName,
+                        detail: `Ingestion every ${account.ingestionPeriod}`,
+                        provider: "AWS",
+                        resource: resourceCount,
+                        status: resourceCount > 0 ? "active" : "inactive",
+                    };
+                })
+            );
+
+            setConnections(uiConnections);
+        } catch (error) {
+            console.error("Failed to load AWS connections", error);
+        }
+    }
+
+    useEffect(() => {
+        loadConnections();
+    }, []);
 
     const handleAdd = () => {
         //empty for now
@@ -119,6 +146,7 @@ export default function ManagingConnections() {
                     <Button
                         variant="ghost"
                         size="icon"
+                        onClick={() => router.back()}
                         className="text-muted-foreground hover:text-foreground h-8 w-8"
                     >
                         {" "}
@@ -199,24 +227,71 @@ export default function ManagingConnections() {
                                 </span>
 
                                 <div className="flex items-center gap-1">
-                                    <Button
-                                        onClick={() => handleDeletion(connection.id)}
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-6 w-6 text-muted-foreground hover:text-destructive transition-colors"
-                                    >
-                                        {" "}
-                                        <Trash2 size={13} />
-                                    </Button>
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-6 w-6 text-muted-foreground hover:text-destructive transition-colors"
+                                            >
+                                                <Trash2 size={13} />
+                                            </Button>
+                                        </AlertDialogTrigger>
 
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-6 w-6 text-muted-foreground hover:text-foreground transition-colors"
-                                    >
-                                        {" "}
-                                        <MoreVertical size={13} />
-                                    </Button>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                                <AlertDialogTitle>
+                                                    Delete connection?
+                                                </AlertDialogTitle>
+
+                                                <AlertDialogDescription>
+                                                    This will permanently delete the connection
+                                                    <strong> &quot;{connection.name}&quot;</strong>.
+                                                    This action cannot be undone.
+                                                </AlertDialogDescription>
+                                            </AlertDialogHeader>
+
+                                            <AlertDialogFooter>
+                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+
+                                                <AlertDialogAction
+                                                    onClick={() => handleDeletion(connection.id)}
+                                                    className="bg-destructive hover:bg-destructive/90"
+                                                >
+                                                    Delete
+                                                </AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-6 w-6 text-muted-foreground hover:text-foreground transition-colors"
+                                            >
+                                                <MoreVertical size={13} />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+
+                                        <DropdownMenuContent align="end" className="w-52">
+                                            <DropdownMenuItem
+                                                onClick={() => handleViewDetails(connection.id)}
+                                                className="cursor-pointer"
+                                            >
+                                                <Eye className="mr-2 h-4 w-4" />
+                                                View Details
+                                            </DropdownMenuItem>
+
+                                            <DropdownMenuItem
+                                                onClick={() => handleEditResources(connection.id)}
+                                                className="cursor-pointer"
+                                            >
+                                                <Pencil className="mr-2 h-4 w-4" />
+                                                Edit Resources
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>{" "}
                                 </div>
                             </div>
 

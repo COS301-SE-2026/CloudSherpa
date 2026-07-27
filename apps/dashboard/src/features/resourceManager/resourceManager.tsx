@@ -8,7 +8,8 @@ ideas for this page:
 - should be able to search the resources
 */
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useParams } from "next/navigation";
 import {
     useReactTable,
     getCoreRowModel,
@@ -35,6 +36,11 @@ import {
     TableRow,
 } from "@/components/atoms/table";
 import { Search, ArrowUpDown } from "lucide-react";
+import {
+    getAwsAccountResources,
+    ResourceStatus,
+    updateAwsResourceStatus,
+} from "@/lib/fetch/aws-connection-api";
 
 interface Resource {
     id: string;
@@ -45,9 +51,8 @@ interface Resource {
     status: "active" | "inactive";
 }
 interface ResourceAction {
-    changeStatus: (id: string) => void;
+    changeStatus: (id: string) => Promise<void>;
 }
-
 const hardCodedResources: Resource[] = [
     {
         id: "1",
@@ -149,29 +154,68 @@ const columns = [
 ];
 
 export default function ResourceManager() {
-    const [resource, setResource] = useState<Resource[]>(hardCodedResources);
+    const params = useParams();
+
+    const accountId = params.connectionId as string;
+
+    const [resource, setResource] = useState<Resource[]>([]);
 
     const [filter, setFilter] = useState("");
 
     const [sort, setSort] = useState<SortingState>([]);
 
     const [filterColumn, setFilterColumn] = useState<ColumnFiltersState>([]);
+    async function loadResources() {
+        try {
+            const resources = await getAwsAccountResources(accountId);
 
-    const changeStatus = (id: string) => {
-        setResource((previous) =>
-            previous.map((resources) =>
-                resources.id === id
-                    ? {
-                          ...resources,
-                          status: resources.status === "active" ? "inactive" : "active",
-                      }
-                    : resources
-            )
-        );
+            setResource(
+                resources.map((resource) => ({
+                    id: resource.id,
+                    name: resource.resourceName,
+                    type: resource.resourceType,
+                    region: "none",
+                    tag: Object.entries(resource.tags).map(([key, value]) => `${key}: ${value}`),
+                    status: resource.status === ResourceStatus.ACTIVE ? "active" : "inactive",
+                }))
+            );
+        } catch (err) {
+            console.error("Failed to load resources", err);
+        }
+    }
+    useEffect(() => {
+        loadResources();
+    }, [accountId]);
+
+    const changeStatus = async (id: string) => {
+        const selectedResource = resource.find((r) => r.id === id);
+
+        if (!selectedResource) {
+            return;
+        }
+
+        const newStatus =
+            selectedResource.status === "active" ? ResourceStatus.DISABLED : ResourceStatus.ACTIVE;
+
+        try {
+            await updateAwsResourceStatus(id, newStatus);
+
+            setResource((previous) =>
+                previous.map((resource) =>
+                    resource.id === id
+                        ? {
+                              ...resource,
+                              status: newStatus === ResourceStatus.ACTIVE ? "active" : "inactive",
+                          }
+                        : resource
+                )
+            );
+        } catch (err) {
+            console.error("Failed to update resource status", err);
+        }
     };
-
     //useMemo prevents the actions obj from being recreated on every render
-    const actions = useMemo<ResourceAction>(() => ({ changeStatus }), []);
+    const actions = useMemo<ResourceAction>(() => ({ changeStatus }), [changeStatus]);
 
     const table = useReactTable({
         data: resource,
