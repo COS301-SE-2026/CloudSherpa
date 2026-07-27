@@ -8,7 +8,7 @@ public interface CloudConnector {
 
   List<String> getAllOfferedServices();
 
-  List<ResourceDetail> getAllResources(CloudCredentials credentials);
+  List<ResourceDetail> getAllResources(CloudCredentials credentials, List<String> serviceTypes);
 
   boolean testConnection(CloudCredentials credentials);
 }

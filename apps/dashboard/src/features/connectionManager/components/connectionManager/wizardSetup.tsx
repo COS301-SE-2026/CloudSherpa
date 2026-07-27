@@ -8,6 +8,7 @@ import { ResourceDetail } from "@/lib/fetch/cloud-resource-api";
 interface BillingConfig {
     prefix: string;
     bucketName: string;
+    bucketRegion: string;
     exportName: string;
 }
 
@@ -103,7 +104,10 @@ export default function WizardSetup() {
                 <StepThree
                     displayName={wizardData.displayName}
                     ingestionPeriod={""}
-                    credentials={wizardData.credentials!}
+                    credentials={{
+                        accessKeyId: wizardData.credentials!.accessKey,
+                        secretAccessKey: wizardData.credentials!.secretKey,
+                    }}
                     resources={wizardData.resources}
                     billingConfig={wizardData.billingConfig!}
                     onComplete={handleStepThreeComplete}

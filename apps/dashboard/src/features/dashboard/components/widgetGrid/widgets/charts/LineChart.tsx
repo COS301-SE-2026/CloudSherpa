@@ -1,6 +1,10 @@
 "use client";
 import { MetricType } from "@/features/dashboard/types/metric";
-import type { EChartsOption } from "echarts";
+import type {
+    DefaultLabelFormatterCallbackParams,
+    EChartsOption,
+    TooltipComponentOption,
+} from "echarts";
 import { useMemo } from "react";
 import { useChartData } from "@/features/dashboard/hooks/useChartData";
 import { useChartTheme } from "@/features/dashboard/hooks/useChartTheme";
@@ -12,6 +16,16 @@ type LineChartProps = {
     metricType: MetricType;
 };
 
+const tooltipTimestampOptions: Intl.DateTimeFormatOptions = {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+};
+
 export function LineChart({ resourceId, metricType }: Readonly<LineChartProps>) {
     const { timeSeriesData } = useChartData(resourceId, metricType);
     const { themeName, tokens } = useChartTheme();
@@ -19,6 +33,23 @@ export function LineChart({ resourceId, metricType }: Readonly<LineChartProps>) 
     const toMs = useWindowStore((state) => state.toMs);
     const options: EChartsOption = useMemo(() => {
         return {
+            tooltip: {
+                trigger: "axis",
+                formatter: (params: DefaultLabelFormatterCallbackParams) => {
+                    const point = Array.isArray(params) ? params[0] : params;
+                    console.log(point);
+                    const value = point.value?.value;
+
+                    const formattedPointTimestamp = new Intl.DateTimeFormat(
+                        "en-GB",
+                        tooltipTimestampOptions
+                    )
+                        .format(new Date(point.data?.timestamp))
+                        .toString();
+
+                    return `${point.marker} ${Number(value).toFixed(2)} <p style="color: ${tokens["muted-foreground"]}">${formattedPointTimestamp}</p>`;
+                },
+            } as TooltipComponentOption,
             grid: { left: "1%", right: "4%", bottom: "2%", top: "10%", containLabel: true },
             xAxis: {
                 type: "time" as const,
@@ -53,6 +84,9 @@ export function LineChart({ resourceId, metricType }: Readonly<LineChartProps>) 
                         x: "timestamp",
                         y: "value",
                     },
+                    symbol: "circle",
+                    showSymbol: false,
+                    symbolSize: 6,
                     areaStyle: {
                         opacity: 0.2,
                         color: {
@@ -65,6 +99,12 @@ export function LineChart({ resourceId, metricType }: Readonly<LineChartProps>) 
                                 { offset: 0, color: tokens["chart-1"] || tokens["primary"] },
                                 { offset: 1, color: "transparent" },
                             ],
+                        },
+                    },
+                    emphasis: {
+                        itemStyle: {
+                            color: tokens["chart-1"] || tokens["primary"],
+                            borderWidth: 2,
                         },
                     },
                 },

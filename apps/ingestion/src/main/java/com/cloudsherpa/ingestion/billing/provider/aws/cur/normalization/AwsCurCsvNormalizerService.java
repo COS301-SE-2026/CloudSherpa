@@ -41,7 +41,7 @@ public class AwsCurCsvNormalizerService {
   public void normalize(String objectUri, AwsCurContext context, BillingExport export) {
     try (S3Client s3 =
         S3Client.builder()
-            .region(AwsClientFactory.region(context.getCredentials()))
+            .region(context.getBucketRegion())
             .credentialsProvider(AwsClientFactory.credentialsProvider(context.getCredentials()))
             .build()) {
 
