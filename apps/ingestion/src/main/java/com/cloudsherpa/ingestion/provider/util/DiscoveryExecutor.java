@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class DiscoveryExecutor {
 
-  private static final int MAX_THREADS = 8;
+  private static final int MAX_THREADS = 16;
 
   private final ExecutorService executor = Executors.newFixedThreadPool(MAX_THREADS);
 
