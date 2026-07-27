@@ -1,5 +1,5 @@
 import SubSectionHeading from "@/design-system/shared/components/subsectionHeading";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/atoms/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/atoms/card";
 
 export default function Variations() {
     return (
