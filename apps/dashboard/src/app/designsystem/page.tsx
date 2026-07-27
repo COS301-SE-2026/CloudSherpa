@@ -6,6 +6,7 @@ import Components from "@/design-system/components/components/components";
 import Logo from "@/design-system/logo/components/Logo";
 import Iconography from "@/design-system/icons/components/Iconography";
 import VoiceAndTone from "@/design-system/voice-and-tone/components/voice-and-tone";
+import Accessibility from "@/design-system/accessibility/components/accessibility";
 import { useState } from "react";
 import { ChevronsUpDown, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -42,7 +43,8 @@ const sections = [
     { value: "components", label: "5. Components" },
     { value: "logo", label: "6. Logo" },
     { value: "iconography", label: "7. Iconography" },
-    { value: "changelog", label: "8. Changelog" },
+    { value: "accessibility", label: "8. Accessibility" },
+    { value: "changelog", label: "9. Changelog" },
 ];
 
 export default function DesignSystem() {
@@ -195,7 +197,7 @@ export default function DesignSystem() {
                         <Logo />
                     </section>
 
-                    <section id="Iconography">
+                    <section id="iconography">
                         <Header
                             title="Iconography"
                             description="This category showcases our Logo as well as the icon set used in
@@ -204,7 +206,15 @@ export default function DesignSystem() {
                         <Iconography />
                     </section>
 
-                    <section id="Changelog">
+                    <section id="accessibility">
+                        <Header
+                            title="Accessibility"
+                            description="Accessibility directly impacts the user experience and ensure people with disabilites, like colour blind people, can use the application without issues."
+                        />
+                        <Accessibility />
+                    </section>
+
+                    <section id="changelog">
                         <Header
                             title="Changelog"
                             description="A log of all changes brought about to our colour palette. Due to contrast issues we had to reimplement our colour palette. We went from a very blue UI to 
