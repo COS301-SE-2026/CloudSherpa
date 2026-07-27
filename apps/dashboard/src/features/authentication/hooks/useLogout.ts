@@ -4,19 +4,26 @@ import { useState } from "react";
 import { useAuthContext } from "../providers/AuthContext";
 import { useRouter } from "next/navigation";
 import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
+import { useWindowStore } from "@/features/dashboard/stores/window-store";
 
 export function useLogout() {
     const authContext = useAuthContext();
     const router = useRouter();
-    const resetStore = useDashboardStore((state) => state.actions.reset);
+    const resetDashboardStore = useDashboardStore((state) => state.actions.reset);
+    const resetWindowStore = useWindowStore((state) => state.clear);
 
     const [logoutError, setLogoutError] = useState(false);
+
+    function clearStores() {
+        resetDashboardStore();
+        resetWindowStore();
+    }
 
     async function logout() {
         const logoutStatus = await authContext.logout();
         setLogoutError(!logoutStatus);
         router.push("/login");
-        resetStore();
+        clearStores();
     }
 
     return { logout, logoutError };
