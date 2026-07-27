@@ -11,16 +11,18 @@ type WindowStoreState = ReturnType<typeof useWindowStore.getState>;
 
 function toAggregationInterval(preset: TimeWindowPreset): "daily" | "weekly" | "monthly" {
     switch (preset) {
-        case "7d":
+        case "T_7_DAYS":
             return "weekly";
-        case "30d":
+        case "T_30_DAYS":
         case "custom":
             return "monthly";
-        case "1m":
-        case "2m":
-        case "5m":
-        case "1h":
-        case "24h":
+        case "T_5_MIN":
+        case "T_15_MIN":
+        case "T_30_MIN":
+        case "T_1_HOUR":
+        case "T_6_HOUR":
+        case "T_12_HOUR":
+        case "T_24_HOUR":
         default:
             return "daily";
     }

@@ -65,7 +65,7 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
                 displayName: name,
                 timeFrom: null,
                 timeTo: null,
-                predefinedTime: "last_24h",
+                predefinedTime: "T_24_HOUR",
                 current: true,
                 layoutItemIds: [],
             });

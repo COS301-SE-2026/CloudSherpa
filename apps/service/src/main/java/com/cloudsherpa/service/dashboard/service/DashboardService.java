@@ -72,7 +72,7 @@ public class DashboardService {
             request.displayName(),
             null,
             null,
-            PredefinedTimeEnum.last_24h,
+            PredefinedTimeEnum.T_24_HOUR,
             true);
 
     dashboardRepository.save(newDashboard);

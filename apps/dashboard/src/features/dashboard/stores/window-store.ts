@@ -24,7 +24,7 @@ function getDefaultWindow() {
     return {
         fromMs: toMs - 7 * 24 * 60 * 60 * 1000,
         toMs,
-        selectedPreset: "7d" as TimeWindowPreset,
+        selectedPreset: "T_7_DAYS" as TimeWindowPreset,
     };
 }
 
