@@ -3,7 +3,8 @@ import Colours from "@/design-system/colours/components/colours";
 import Typography from "@/design-system/typography/components/typography";
 import LayoutAndSpacing from "@/design-system/layout-and-spacing/components/layoutAndSpacing";
 import Components from "@/design-system/components/components/components";
-import LogoAndIconography from "@/design-system/logo-and-icons/components/logoAndIconography";
+import Logo from "@/design-system/logo/components/Logo";
+import Iconography from "@/design-system/icons/components/Iconography";
 import VoiceAndTone from "@/design-system/voice-and-tone/components/voice-and-tone";
 import { useState } from "react";
 import { ChevronsUpDown, Check } from "lucide-react";
@@ -33,12 +34,13 @@ function Header({ title, description }: Readonly<HeaderProps>) {
 }
 
 const sections = [
-    { value: "colours", label: "1. Colour Palette" },
-    { value: "typography", label: "2. Typography System" },
-    { value: "layout", label: "3. Layout & Spacing" },
-    { value: "components", label: "4. Components" },
-    { value: "logo-and-iconography", label: "5. Logo & Iconography" },
-    { value: "voice-and-tone", label: "6. Voice & Tone" },
+    { value: "voice-and-tone", label: "1 Voice & Tone" },
+    { value: "colours", label: "2. Colour Palette" },
+    { value: "typography", label: "3. Typography System" },
+    { value: "layout", label: "4. Layout & Spacing" },
+    { value: "components", label: "5. Components" },
+    { value: "logo", label: "6. Logo" },
+    { value: "iconography", label: "7. Iconography" },
 ];
 
 export default function DesignSystem() {
@@ -182,13 +184,23 @@ export default function DesignSystem() {
                         <Components />
                     </section>
 
-                    <section id="logo-and-iconography">
+                    <section id="logo">
                         <Header
-                            title="Logo and Iconography"
+                            title="Logo"
+                            description="A logo is what identifies a brand, thus we tried to make our logo as visually representative of CloudSherpa as possible.
+                        This section outlines our core brand identifier and how to properly use it.
+                        "
+                        />
+                        <Logo />
+                    </section>
+
+                    <section id="Iconography">
+                        <Header
+                            title="Iconography"
                             description="This category showcases our Logo as well as the icon set used in
                                 CloudSherpa."
                         />
-                        <LogoAndIconography />
+                        <Iconography />
                     </section>
                 </div>
             </div>
