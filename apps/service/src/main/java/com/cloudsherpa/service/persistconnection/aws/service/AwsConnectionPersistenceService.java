@@ -100,6 +100,7 @@ public class AwsConnectionPersistenceService {
     }
     resourceRepository.findByAccountId(accountId).forEach(resourceRepository::delete);
     cloudAccountRepository.delete(account);
+    resourceRegistryService.updateRegistryAfterAccountDelete(userId);
 
     return true;
   }

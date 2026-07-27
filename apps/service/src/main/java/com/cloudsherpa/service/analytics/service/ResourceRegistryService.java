@@ -96,4 +96,19 @@ public class ResourceRegistryService {
         .computeIfAbsent(userId, ignored -> new ConcurrentHashMap<>())
         .put(resource.getId(), resource);
   }
+
+  public void updateRegistryAfterAccountDelete(UUID userId) {
+    if (!resourceRegistry.containsKey(userId)) {
+      return;
+    }
+
+    clearAndAuthoritativeRead(userId);
+  }
+
+  private void clearAndAuthoritativeRead(UUID userId) {
+    if (resourceRegistry.containsKey(userId)) {
+      resourceRegistry.get(userId).clear();
+    }
+    populateRegistryForUser(userId);
+  }
 }
