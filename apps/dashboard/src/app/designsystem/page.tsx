@@ -4,6 +4,7 @@ import Typography from "@/design-system/typography/components/typography";
 import LayoutAndSpacing from "@/design-system/layout-and-spacing/components/layoutAndSpacing";
 import Components from "@/design-system/components/components/components";
 import LogoAndIconography from "@/design-system/logo-and-icons/components/logoAndIconography";
+import VoiceAndTone from "@/design-system/voice-and-tone/components/voice-and-tone";
 import { useState } from "react";
 import { ChevronsUpDown, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -24,7 +25,7 @@ interface HeaderProps {
 
 function Header({ title, description }: Readonly<HeaderProps>) {
     return (
-        <div className="border-b pb-4 mb-8">
+        <div className="border-b pb-4 mb-8 gap-2 flex flex-col items-start justify-between">
             <h2 className="text-2xl md:text-3xl font-bold text-foreground">{title}</h2>
             <p className="text-muted-foreground">{description}</p>
         </div>
@@ -37,6 +38,7 @@ const sections = [
     { value: "layout", label: "3. Layout & Spacing" },
     { value: "components", label: "4. Components" },
     { value: "logo-and-iconography", label: "5. Logo & Iconography" },
+    { value: "voice-and-tone", label: "6. Voice & Tone" },
 ];
 
 export default function DesignSystem() {
@@ -114,18 +116,37 @@ export default function DesignSystem() {
                     <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-4">
                         CloudSherpa Design System
                     </h1>
-                    <p className="text-lg md:text-xl text-muted-foreground max-w-3xl leading-relaxed">
+                    <p className="text-lg md:text-xl text-muted-foreground eading-relaxed">
                         The Golden Thread connecting our brand values to our shipped code. This
                         living document serves as the single source of truth for our visual
                         identity, ensuring a cohesive, accessible, and scalable experience across
                         the entire platform.
+                        <br />
+                        <br />
+                        CloudSherpa makes multi-cloud spending visible and actionable for any
+                        organization. Without it, teams face bill shock, stranded resources, and
+                        fragmented visibility. With it, they get real-time alerts, automated
+                        optimization, and clear cost accountability across AWS, Azure, and GCP. Our
+                        purpose: trusted guardrails for the journey to cloud-native. It is built on
+                        five values: safety (preventing bill shock), reliability, trust (no hidden
+                        met- rics), transparency (explainable costs), and calm but honest
+                        communication (alerts without panic).
                     </p>
                 </header>
 
                 <div className="flex flex-col gap-16">
+                    <section id="voice-and-tone">
+                        <Header
+                            title="Voice and tone"
+                            description="This category showcases our Logo as well as the icon set used in
+                                CloudSherpa."
+                        />
+                        <VoiceAndTone />
+                    </section>
+
                     <section id="colours">
                         <Header
-                            title="1.Colour Palette"
+                            title="Colour Palette"
                             description="Primitive and Semantic colour ranges that can be found in
                                 CloudSherpa, representing our brand colours and base ui component
                                 backgrounds and foregrounds that defines the feel of the
@@ -136,7 +157,7 @@ export default function DesignSystem() {
 
                     <section id="typography">
                         <Header
-                            title="2. Typography"
+                            title="Typography"
                             description="Our Typography system is geared toward data representation by using
                                 compact fonts while keeping visibility and clarity in mind"
                         />
@@ -145,7 +166,7 @@ export default function DesignSystem() {
 
                     <section id="layout">
                         <Header
-                            title="3. Layout and Spacing"
+                            title="Layout and Spacing"
                             description="This category defines the structural geometry of CloudSherpa, and
                                 defines the form of the application."
                         />
@@ -154,7 +175,7 @@ export default function DesignSystem() {
 
                     <section id="components">
                         <Header
-                            title="4. Components"
+                            title="Components"
                             description="The components are the culmination of all the primitive building
                                 blocks previously defined in the design system."
                         />
@@ -163,7 +184,7 @@ export default function DesignSystem() {
 
                     <section id="logo-and-iconography">
                         <Header
-                            title="5. Logo and Iconography"
+                            title="Logo and Iconography"
                             description="This category showcases our Logo as well as the icon set used in
                                 CloudSherpa."
                         />
