@@ -160,9 +160,7 @@ function FeaturesDetails({
         <div className = "grid grid-cols-1 md:grid-cols-2 gap-4"> {card.benefit.map((forBenefits) => (
           <div key = {forBenefits.label} className = "p-5 rounded-xl border border-border bg-card/50">
             <div className = "flex items-center gap-2.5 mb-2.5">
-              <div className = "w-2 h-2 rounded-full flex-shrink-0 bg-primary" />
-
-              <div className = "text-sm font-semibold text-foreground"> {forBenefits.label} </div>
+              <div className = "text-sm font-semibold text-primary"> {forBenefits.label} </div>
           </div>
           
           <p className = "text-sm text-muted-foreground leading-relaxed m-0 opacity-70"> {forBenefits.details} </p>
@@ -208,7 +206,7 @@ export function Features(){
                     <div className = "relative flex flex-col items-center justify-center">
                       <div className = "w-10 h-10 rounded-xl flex items-center justify-center mb-4 bg-muted/20"> <Icons size = {18} className = "text-muted-foreground"/> </div>
 
-                      <h3 className = "text-sm font-semibold text-foreground mb-2"> {forFeatures.name} </h3>
+                      <h3 className = "text-sm font-semibold text-primary mb-2"> {forFeatures.name} </h3>
 
                       <p className = "text-sm text-muted-foreground leading-relaxed m-0"> {forFeatures.subDescription} </p>
                     </div>

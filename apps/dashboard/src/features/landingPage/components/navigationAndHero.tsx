@@ -68,7 +68,7 @@ export function HeroAndNavBar({scrolled} : Readonly<PropsForNavBarHero>){
 
           <h1 className = "text-4xl md:text-6xl lg:text-7xl font-semibold leading-[1.04] tracking-tight mb-2 text-foreground text-center"> Cloud Costs </h1>
 
-          <h1 className = "text-4xl md:text-6xl lg:text-7xl font-semibold leading-[1.04] tracking-tight mb-8 bg-gradient-to-r from-secondary to-primary bg-clip-text text-transparent text-center"> Eliminated </h1>
+          <h1 className = "text-4xl md:text-6xl lg:text-7xl font-semibold leading-[1.04] tracking-tight mb-8 text-primary text-center"> Eliminated </h1>
 
           <p className = "text-lg md:text-xl max-w-xl mx-auto mb-10 leading-relaxed text-muted-foreground text-center"> AI powered optimization for multi-cloud environments. One unified picture across all your clouds before the bill shock hits </p>
 

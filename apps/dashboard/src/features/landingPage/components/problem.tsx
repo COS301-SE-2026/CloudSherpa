@@ -15,7 +15,7 @@ export function Problem(){
             <p className = "text-xs font-semibold tracking-widest uppercase mb-4 text-muted-foreground"> The Problem </p>
 
             <h2 className = "text-3xl md:text-4xl font-bold text-foreground mb-6 leading-snug"> Multiple clouds. Multiple bills.{' '}
-              <span className = "bg-gradient-to-r from-secondary to-primary bg-clip-text text-transparent"> Zero visibility. </span>
+              <span className = "text-primary"> Zero visibility. </span>
             </h2>
 
             <p className = "text-base text-muted-foreground leading-relaxed mb-6"> Teams who operate multi-cloud environments struggle with fragmented billing, multiple dashboards and pricing models, Overspending is difficult to detect and combining this information manually is time consuming. </p>
@@ -28,8 +28,8 @@ export function Problem(){
               <Card key = {forProblems} className = "border-border">
                 <CardContent className = "flex items-center gap-3 px-4 py-3">
 
-                  <div className = "w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center bg-destructive/15">
-                    <div className = "w-1.5 h-1.5 rounded-full bg-destructive"/>
+                  <div className = "w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center bg-primary/15">
+                    <div className = "w-1.5 h-1.5 rounded-full bg-primary"/>
                   </div>
 
                   <span className = "text-sm text-foreground/80"> {forProblems} </span>

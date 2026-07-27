@@ -41,7 +41,7 @@ export function HowItWorks(){
             <Card key = {forSteps.number} className = "relative h-full">
               <CardContent className = "p-6 flex flex-col items-center justify-center text-center">
 
-                <div className = "w-12 h-12 rounded-xl flex items-center justify-center text-lg font-bold mb-5 bg-gradient-to-br from-primary to-accent text-primary-foreground"> {forSteps.number} </div>
+                <div className = "w-12 h-12 rounded-xl flex items-center justify-center text-lg font-bold mb-5 bg-primary text-primary-foreground"> {forSteps.number} </div>
 
                 <h3 className = "text-base font-semibold text-foreground mb-2"> {forSteps.name} </h3>
 
