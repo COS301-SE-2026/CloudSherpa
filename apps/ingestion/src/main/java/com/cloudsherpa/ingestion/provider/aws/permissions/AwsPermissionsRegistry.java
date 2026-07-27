@@ -34,7 +34,7 @@ public final class AwsPermissionsRegistry {
 
   private static final Map<String, Set<String>> REGISTRY =
       Map.of(
-          "EC2",
+          "AWS/EC2",
           Set.of(
               "ec2:DescribeInstances",
               "ec2:DescribeInstanceStatus",
@@ -46,7 +46,7 @@ public final class AwsPermissionsRegistry {
               "ec2:DescribeSecurityGroups",
               "ec2:DescribeTags",
               "ec2:DescribeImages"),
-          "ECS",
+          "AWS/ECS",
           Set.of(
               "ecs:ListClusters",
               "ecs:DescribeClusters",
@@ -55,14 +55,14 @@ public final class AwsPermissionsRegistry {
               "ecs:ListTasks",
               "ecs:DescribeTasks",
               "ecs:ListTagsForResource"),
-          "EKS",
+          "CONTAINERINSIGHTS",
           Set.of(
               "eks:ListClusters",
               "eks:DescribeCluster",
               "eks:ListNodegroups",
               "eks:DescribeNodegroup",
               "eks:ListTagsForResource"),
-          "RDS",
+          "AWS/RDS",
           Set.of(
               "rds:DescribeDBInstances",
               "rds:DescribeDBClusters",
@@ -70,7 +70,7 @@ public final class AwsPermissionsRegistry {
               "rds:DescribeDBSubnetGroups",
               "rds:DescribeOptionGroups",
               "rds:ListTagsForResource"),
-          "DYNAMODB",
+          "AWS/DYNAMODB",
           Set.of("dynamodb:ListTables", "dynamodb:DescribeTable", "dynamodb:ListTagsOfResource"),
           "S3",
           Set.of(
@@ -79,25 +79,25 @@ public final class AwsPermissionsRegistry {
               "s3:GetBucketLocation",
               "s3:GetBucketTagging",
               "s3:GetObject"),
-          "LAMBDA",
+          "AWS/LAMBDA",
           Set.of(
               "lambda:ListFunctions",
               "lambda:GetFunction",
               "lambda:GetFunctionConfiguration",
               "lambda:ListTags"),
-          "ELASTICACHE",
+          "AWS/ELASTICACHE",
           Set.of(
               "elasticache:DescribeCacheClusters",
               "elasticache:DescribeReplicationGroups",
               "elasticache:DescribeSnapshots",
               "elasticache:ListTagsForResource"),
-          "OPENSEARCH",
+          "AWS/ES",
           Set.of(
               "opensearch:ListDomainNames",
               "opensearch:DescribeDomain",
               "opensearch:DescribeDomains",
               "opensearch:ListTags"),
-          "REDSHIFT",
+          "AWS/REDSHIFT",
           Set.of(
               "redshift:DescribeClusters",
               "redshift:DescribeClusterSnapshots",

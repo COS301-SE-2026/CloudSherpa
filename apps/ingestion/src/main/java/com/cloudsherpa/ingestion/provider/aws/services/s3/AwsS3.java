@@ -11,6 +11,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.core.ResponseInputStream;
+import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3Uri;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
@@ -31,9 +32,9 @@ public class AwsS3 implements S3Service {
 
   @Override
   public List<S3Object> listObjects(
-      CloudCredentials credentials, String bucketName, String prefix) {
+      CloudCredentials credentials, Region region, String bucketName, String prefix) {
 
-    try (S3Client s3 = buildClient(credentials)) {
+    try (S3Client s3 = buildClient(credentials, region)) {
       logger.info("Listing objects in S3 bucket '{}' with prefix '{}'", bucketName, prefix);
       ListObjectsV2Request.Builder request = ListObjectsV2Request.builder().bucket(bucketName);
 
@@ -54,8 +55,11 @@ public class AwsS3 implements S3Service {
 
   @Override
   public <T> T objectToJson(
-      CloudCredentials credentials, S3ObjectReference object, Class<T> jacksonConfig) {
-    try (S3Client s3 = buildClient(credentials)) {
+      CloudCredentials credentials,
+      Region region,
+      S3ObjectReference object,
+      Class<T> jacksonConfig) {
+    try (S3Client s3 = buildClient(credentials, region)) {
       logger.info(
           "Deserializing object to json: Bucket '{}', Key '{}'",
           object.bucketName(),
@@ -77,9 +81,10 @@ public class AwsS3 implements S3Service {
   }
 
   @Override
-  public void downloadObject(CloudCredentials credentials, String objectUri, Path destination) {
+  public void downloadObject(
+      CloudCredentials credentials, Region region, String objectUri, Path destination) {
 
-    try (S3Client s3 = buildClient(credentials)) {
+    try (S3Client s3 = buildClient(credentials, region)) {
 
       S3ObjectUriReference s3Uri = uriHelper(s3, objectUri);
       GetObjectRequest request =
@@ -102,9 +107,9 @@ public class AwsS3 implements S3Service {
     return new S3ObjectUriReference(bucket, key);
   }
 
-  private S3Client buildClient(CloudCredentials credentials) {
+  private S3Client buildClient(CloudCredentials credentials, Region region) {
     return S3Client.builder()
-        .region(AwsClientFactory.region(credentials))
+        .region(region)
         .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
         .build();
   }

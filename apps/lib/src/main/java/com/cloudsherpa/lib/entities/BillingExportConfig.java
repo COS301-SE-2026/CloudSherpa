@@ -26,6 +26,9 @@ public class BillingExportConfig {
 
   @Column(name = "bucket_name", nullable = false, length = 255)
   private String bucketName;
+  
+  @Column(name = "bucket_region", nullable = false, length = 255)
+  private String bucketRegion;
 
   @Column(name = "export_prefix", length = 255)
   private String exportPrefix;
@@ -42,12 +45,14 @@ public class BillingExportConfig {
       UUID id,
       UUID accountId,
       String bucketName,
+      String bucketRegion,
       String exportPrefix,
       String exportName,
       OffsetDateTime createdAt) {
     this.id = id;
     this.accountId = accountId;
     this.bucketName = bucketName;
+    this.bucketRegion = bucketRegion;
     this.exportPrefix = exportPrefix;
     this.exportName = exportName;
     this.createdAt = createdAt;
@@ -57,6 +62,7 @@ public class BillingExportConfig {
   public UUID getAccountId() { return accountId; }
   public CloudAccount getAccount() { return account; }
   public String getBucketName() { return bucketName; }
+  public String getBucketRegion() { return bucketRegion; }
   public String getExportPrefix() { return exportPrefix; }
   public String getExportName() { return exportName; }
   public OffsetDateTime getCreatedAt() { return createdAt; }

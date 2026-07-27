@@ -1,6 +1,6 @@
 package com.cloudsherpa.ingestion.controller;
 
-import com.cloudsherpa.ingestion.connector.CloudCredentials;
+import com.cloudsherpa.ingestion.controller.dto.ResourceDiscoveryRequest;
 import com.cloudsherpa.ingestion.models.ResourceDetail;
 import com.cloudsherpa.ingestion.service.CloudResourceService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -57,9 +57,9 @@ public class CloudResourceController {
   }
 
   @Operation(
-      summary = "Get all resources for a cloud provider",
+      summary = "Get all resources within provided service categories for a cloud provider",
       description =
-          "Retrieves all discoverable resources for a cloud provider using the supplied credentials")
+          "Retrieves all discoverable resources within a list of services of a cloud provider using the supplied credentials")
   @ApiResponses(
       value = {
         @ApiResponse(
@@ -72,9 +72,10 @@ public class CloudResourceController {
       })
   @PostMapping("/resources/{provider}")
   public List<ResourceDetail> getAllResources(
-      @PathVariable String provider, @RequestBody CloudCredentials credentials) {
+      @PathVariable String provider, @RequestBody ResourceDiscoveryRequest request) {
 
-    return cloudResourceService.getAllResources(provider, credentials);
+    return cloudResourceService.getAllResources(
+        provider, request.credentials(), request.services());
   }
 
   @Operation(

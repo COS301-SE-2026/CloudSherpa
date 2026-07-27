@@ -57,7 +57,8 @@ public class GcpCloudConnector implements CloudConnector, UsageCapable, BillingC
   }
 
   @Override
-  public List<ResourceDetail> getAllResources(CloudCredentials credentials) {
+  public List<ResourceDetail> getAllResources(
+      CloudCredentials credentials, List<String> serviceTypes) {
     return List.of(); // to be implemented
   }
 

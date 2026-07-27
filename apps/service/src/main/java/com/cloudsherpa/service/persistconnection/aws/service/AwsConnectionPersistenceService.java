@@ -150,15 +150,21 @@ public class AwsConnectionPersistenceService {
 
   private CloudAccount createAccount(
       CloudConnection connection, PersistAwsConnectionRequest request) {
-
+    OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
     CloudAccount account =
-        new CloudAccount(
-            UUID.randomUUID(),
-            connection.getId(),
-            AccountTypeEnum.aws_account,
-            request.displayName(),
-            request.ingestionPeriod().toString(),
-            OffsetDateTime.now(ZoneOffset.UTC));
+        new CloudAccount.Builder()
+            .id(UUID.randomUUID())
+            .connectionId(connection.getId())
+            .accountType(AccountTypeEnum.aws_account)
+            .displayName(request.displayName())
+            .ingestionPeriod(request.ingestionPeriod().toString())
+            .createdAt(now)
+            .lastBillingIngestion(now)
+            .lastUsageIngestion(now)
+            .nextUsageIngestion(
+                OffsetDateTime.now(ZoneOffset.UTC).plusSeconds(request.ingestionPeriod()))
+            .nextBillingIngestion(OffsetDateTime.now(ZoneOffset.UTC).plusMinutes(1))
+            .build();
 
     return cloudAccountRepository.save(account);
   }
@@ -189,15 +195,19 @@ public class AwsConnectionPersistenceService {
         resources.stream()
             .map(
                 r ->
-                    new Resource(
-                        UUID.randomUUID(),
-                        account.getId(),
-                        r.resourceType(),
-                        r.resourceName(),
-                        r.active() ? StatusEnum.active : StatusEnum.disabled,
-                        r.tags(),
-                        OffsetDateTime.now(ZoneOffset.UTC),
-                        OffsetDateTime.now(ZoneOffset.UTC)))
+                    new Resource.Builder()
+                        .id(UUID.randomUUID())
+                        .accountId(account.getId())
+                        .resourceType(r.serviceType())
+                        .resourceName(r.resourceName())
+                        .resourceIdentifier(r.resourceId())
+                        .resourceIdentifierType(r.resourceType())
+                        .region(r.region())
+                        .status(r.active() ? StatusEnum.active : StatusEnum.disabled)
+                        .tags(r.tags())
+                        .createdAt(OffsetDateTime.now(ZoneOffset.UTC))
+                        .lastUpdated(OffsetDateTime.now(ZoneOffset.UTC))
+                        .build())
             .toList();
 
     resourceRepository.saveAll(entities);
@@ -213,6 +223,7 @@ public class AwsConnectionPersistenceService {
             UUID.randomUUID(),
             account.getId(),
             billingConfig.bucketName(),
+            billingConfig.bucketRegion(),
             billingConfig.exportPrefix(),
             billingConfig.exportName(),
             OffsetDateTime.now(ZoneOffset.UTC));
