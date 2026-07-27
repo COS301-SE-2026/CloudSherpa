@@ -5,6 +5,7 @@ export type ResourceNameStore = {
     resources: Resource[];
     resourcesById: Record<string, string>;
     fetchResources: () => Promise<void>;
+    reset: () => void;
 };
 
 export type Resource = {
@@ -35,4 +36,5 @@ export const useResourceNameStore = create<ResourceNameStore>((set) => ({
             }));
         }
     },
+    reset: () => set({ resources: [], resourcesById: {} }),
 }));
