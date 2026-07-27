@@ -21,6 +21,7 @@ import com.cloudsherpa.lib.repositories.CloudAccountRepository;
 import com.cloudsherpa.lib.repositories.CloudConnectionRepository;
 import com.cloudsherpa.lib.repositories.CloudCredentialRepository;
 import com.cloudsherpa.lib.repositories.ResourceRepository;
+import com.cloudsherpa.service.analytics.service.ResourceRegistryService;
 import com.cloudsherpa.service.persistconnection.aws.dto.AwsCredentialsDto;
 import com.cloudsherpa.service.persistconnection.aws.dto.BillingConfigDto;
 import com.cloudsherpa.service.persistconnection.aws.dto.PersistAwsConnectionRequest;
@@ -55,6 +56,8 @@ class AwsConnectionPersistenceServiceTest {
   @Mock private ResourceRepository resourceRepository;
 
   @Mock private BillingExportConfigRepository billingExportConfigRepository;
+
+  @Mock private ResourceRegistryService resourceRegistryService;
 
   @InjectMocks private AwsConnectionPersistenceService service;
 
