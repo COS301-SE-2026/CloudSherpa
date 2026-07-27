@@ -136,15 +136,27 @@ CREATE TABLE IF NOT EXISTS public.chart_resource (
 -- ----------------------------------------------------------------
 -- GLOBAL FUNCTIONS
 -- ----------------------------------------------------------------
-CREATE OR REPLACE FUNCTION public.notify_metric_event() 
+CREATE OR REPLACE FUNCTION public.notify_metric_event()
 RETURNS TRIGGER AS $$
+DECLARE
+    source_schema text := TG_TABLE_SCHEMA;
+    tenant_channel text;
 BEGIN
-    -- TG_TABLE_SCHEMA dynamically grabs the name of the schema that fired the trigger.
-    -- Example: If a metric hits tenant_1234, it broadcasts on 'metric_events_tenant_1234'.
-    -- row_to_json(NEW) turns the newly inserted row into a JSON object.
+    SELECT h.hypertable_schema
+    INTO source_schema
+    FROM timescaledb_information.chunks c
+    JOIN timescaledb_information.hypertables h
+      ON h.hypertable_schema = c.hypertable_schema
+     AND h.hypertable_name = c.hypertable_name
+    WHERE c.chunk_schema = TG_TABLE_SCHEMA
+      AND c.chunk_name = TG_TABLE_NAME
+    LIMIT 1;
+
+    tenant_channel := 'metric_events_' || COALESCE(source_schema, TG_TABLE_SCHEMA);
+
     PERFORM pg_notify('metric_events', row_to_json(NEW)::text);
-    PERFORM pg_notify('metric_events_' || TG_TABLE_SCHEMA, row_to_json(NEW)::text);
-    
+    PERFORM pg_notify(tenant_channel, row_to_json(NEW)::text);
+
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -301,6 +313,13 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+\set demo_password ''
+\getenv demo_password DEMO_PASSWORD
+
+-- Custom variable
+-- Must be separated by a .
+SET sherpa.demo_password = :'demo_password';
+
 -- ----------------------------------------------------------------
 -- DEMO SEED DATA
 -- ----------------------------------------------------------------
@@ -327,7 +346,7 @@ BEGIN
     demo_user_id,
     'demo@gmail.com',
     'demo@gmail.com',
-    crypt('Password@2', gen_salt('bf', 12)),
+    crypt(current_setting('sherpa.demo_password'), gen_salt('bf', 12)),
     now()
   )
   ON CONFLICT DO NOTHING;
