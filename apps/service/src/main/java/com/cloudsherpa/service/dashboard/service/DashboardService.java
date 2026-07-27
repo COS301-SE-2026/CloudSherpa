@@ -79,6 +79,14 @@ public class DashboardService {
     return mapToDashboardDTO(newDashboard);
   }
 
+  @Transactional
+  public void updateDashboardTimeWindow(
+      UUID userId, UUID dashboardId, PredefinedTimeEnum newWindow) {
+    Dashboard dashboard = getDashboardAndVerifyOwnership(userId, dashboardId);
+    dashboard.setPredefinedTime(newWindow);
+    dashboardRepository.save(dashboard);
+  }
+
   // delete existing dashboard that is owned by specific user
   @Transactional
   public void deleteDashboard(UUID userId, UUID dashboardId) {
