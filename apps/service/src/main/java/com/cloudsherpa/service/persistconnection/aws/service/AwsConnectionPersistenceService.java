@@ -13,6 +13,7 @@ import com.cloudsherpa.lib.repositories.CloudAccountRepository;
 import com.cloudsherpa.lib.repositories.CloudConnectionRepository;
 import com.cloudsherpa.lib.repositories.CloudCredentialRepository;
 import com.cloudsherpa.lib.repositories.ResourceRepository;
+import com.cloudsherpa.service.analytics.service.ResourceRegistryService;
 import com.cloudsherpa.service.persistconnection.aws.dto.AwsCredentialsDto;
 import com.cloudsherpa.service.persistconnection.aws.dto.BillingConfigDto;
 import com.cloudsherpa.service.persistconnection.aws.dto.PersistAwsConnectionRequest;
@@ -35,6 +36,7 @@ public class AwsConnectionPersistenceService {
   private final CredentialEncryptionService encryptionService;
   private final ResourceRepository resourceRepository;
   private final BillingExportConfigRepository billingExportConfigRepository;
+  private final ResourceRegistryService resourceRegistryService;
 
   public AwsConnectionPersistenceService(
       CloudConnectionRepository cloudConnectionRepository,
@@ -42,13 +44,15 @@ public class AwsConnectionPersistenceService {
       CloudCredentialRepository cloudCredentialRepository,
       CredentialEncryptionService encryptionService,
       ResourceRepository resourceRepository,
-      BillingExportConfigRepository billingExportConfigRepository) {
+      BillingExportConfigRepository billingExportConfigRepository,
+      ResourceRegistryService resourceRegistryService) {
     this.cloudConnectionRepository = cloudConnectionRepository;
     this.cloudAccountRepository = cloudAccountRepository;
     this.cloudCredentialRepository = cloudCredentialRepository;
     this.encryptionService = encryptionService;
     this.resourceRepository = resourceRepository;
     this.billingExportConfigRepository = billingExportConfigRepository;
+    this.resourceRegistryService = resourceRegistryService;
   }
 
   @Transactional
@@ -56,7 +60,7 @@ public class AwsConnectionPersistenceService {
     CloudConnection connection = getOrCreateConnection(request);
     CloudAccount account = createAccount(connection, request);
     createCredential(account, request.credentials());
-    createResources(account, request.resources());
+    createResources(request.userId(), account, request.resources());
     createBillingExportConfig(account, request.billingConfig());
   }
 
@@ -96,6 +100,7 @@ public class AwsConnectionPersistenceService {
     }
     resourceRepository.findByAccountId(accountId).forEach(resourceRepository::delete);
     cloudAccountRepository.delete(account);
+    resourceRegistryService.updateRegistryAfterAccountDelete(userId);
 
     return true;
   }
@@ -178,7 +183,8 @@ public class AwsConnectionPersistenceService {
     }
   }
 
-  private void createResources(CloudAccount account, List<ResourceSelectionDto> resources) {
+  private void createResources(
+      UUID userId, CloudAccount account, List<ResourceSelectionDto> resources) {
     List<Resource> entities =
         resources.stream()
             .map(
@@ -195,6 +201,10 @@ public class AwsConnectionPersistenceService {
             .toList();
 
     resourceRepository.saveAll(entities);
+
+    for (Resource resource : entities) {
+      resourceRegistryService.addResource(userId, resource);
+    }
   }
 
   private void createBillingExportConfig(CloudAccount account, BillingConfigDto billingConfig) {
