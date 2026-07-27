@@ -33,7 +33,7 @@ export default function Variations() {
                     </CardHeader>
                     <CardContent className="flex flex-col justify-center! items-center!">
                         <img
-                            src="/CloudSherpaLogo.svg"
+                            src="/CloudSherpaLogoDark.svg"
                             alt="Primary CloudSherpa Logo"
                             className="h-16 w-auto mb-4"
                         />
@@ -50,22 +50,6 @@ export default function Variations() {
                     <CardContent className="flex flex-col justify-center! items-center!">
                         <img
                             src="/CloudSherpaFavicon.svg"
-                            alt="Primary CloudSherpa Logo"
-                            className="h-16 w-auto mb-4"
-                        />
-                    </CardContent>
-                </Card>
-
-                <Card className="light flex flex-col">
-                    <CardHeader>
-                        <CardTitle>Monotone (Watermarks / Print)</CardTitle>
-                        <span className="text-small">
-                            This logo is used as a watermark for CloudSherpa specific content.
-                        </span>
-                    </CardHeader>
-                    <CardContent className="flex flex-col justify-center! items-center!">
-                        <img
-                            src="/CloudSherpaLogo.svg"
                             alt="Primary CloudSherpa Logo"
                             className="h-16 w-auto mb-4"
                         />
