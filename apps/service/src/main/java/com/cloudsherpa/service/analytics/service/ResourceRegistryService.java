@@ -86,4 +86,14 @@ public class ResourceRegistryService {
       logger.info("Removed resource '{}' from registry for user '{}'", resourceId, userId);
     }
   }
+
+  public void addResource(UUID userId, Resource resource) {
+    if (!resourceRegistry.containsKey(userId)) {
+      populateRegistryForUser(userId);
+    }
+
+    resourceRegistry
+        .computeIfAbsent(userId, ignored -> new ConcurrentHashMap<>())
+        .put(resource.getId(), resource);
+  }
 }
