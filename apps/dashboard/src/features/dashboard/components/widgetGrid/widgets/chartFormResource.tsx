@@ -25,7 +25,6 @@ import {
 } from "@/components/atoms/command";
 
 import { ChartWidgetConfig } from "@/features/dashboard/types/widgets";
-``;
 import { MetricType, MetricStore } from "@/features/dashboard/types/metric";
 import { useMetricStore } from "@/features/dashboard/stores/metric-store";
 import { useConnectionStore } from "@/features/dashboard/stores/connection-store";
