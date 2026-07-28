@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
@@ -45,7 +46,7 @@ public class AwsElastiCacheService implements ElastiCacheService {
 
       client.describeCacheClustersPaginator().cacheClusters().stream()
           .map(CacheCluster::arn)
-          .filter(arn -> arn != null)
+          .filter(Objects::nonNull)
           .forEach(clusterArns::add);
 
       if (!clusterArns.isEmpty()) {
@@ -65,8 +66,47 @@ public class AwsElastiCacheService implements ElastiCacheService {
         Region.regions(), region -> discoverClustersWithTags(region, credentials));
   }
 
+  private void discoverClusterWithTags(
+      ElastiCacheClient client,
+      CacheCluster cluster,
+      Region region,
+      List<ResourceDetail> resources) {
+
+    try {
+      Map<String, String> tags = Collections.emptyMap();
+
+      if (cluster.arn() != null) {
+        tags =
+            client.listTagsForResource(r -> r.resourceName(cluster.arn())).tagList().stream()
+                .collect(Collectors.toMap(Tag::key, Tag::value, (a, b) -> b));
+      }
+
+      String name =
+          ResourceDetail.resolveName(cluster.cacheClusterId(), cluster.cacheClusterId(), tags);
+
+      resources.add(
+          new ResourceDetail(
+              cluster.cacheClusterId(),
+              name,
+              "CacheClusterId",
+              "AWS/ElastiCache",
+              region.id(),
+              tags));
+
+    } catch (Exception e) {
+      logger.info(
+          "Skipping ElastiCache cluster "
+              + cluster.cacheClusterId()
+              + " in region "
+              + region.id()
+              + ": "
+              + e.getMessage());
+    }
+  }
+
   private List<ResourceDetail> discoverClustersWithTags(
       Region region, CloudCredentials credentials) {
+
     List<ResourceDetail> resources = new ArrayList<>();
 
     try (ElastiCacheClient client =
@@ -76,42 +116,14 @@ public class AwsElastiCacheService implements ElastiCacheService {
             .build()) {
 
       for (CacheCluster cluster : client.describeCacheClustersPaginator().cacheClusters()) {
-
-        try {
-          Map<String, String> tags = Collections.emptyMap();
-
-          if (cluster.arn() != null) {
-            tags =
-                client.listTagsForResource(r -> r.resourceName(cluster.arn())).tagList().stream()
-                    .collect(Collectors.toMap(Tag::key, Tag::value, (a, b) -> b));
-          }
-
-          String name =
-              ResourceDetail.resolveName(cluster.cacheClusterId(), cluster.cacheClusterId(), tags);
-
-          resources.add(
-              new ResourceDetail(
-                  cluster.cacheClusterId(),
-                  name,
-                  "CacheClusterId",
-                  "AWS/ElastiCache",
-                  region.id(),
-                  tags));
-
-        } catch (Exception e) {
-          logger.info(
-              "Skipping ElastiCache cluster "
-                  + cluster.cacheClusterId()
-                  + " in region "
-                  + region.id()
-                  + ": "
-                  + e.getMessage());
-        }
+        discoverClusterWithTags(client, cluster, region, resources);
       }
+
     } catch (Exception e) {
       logger.info(
           "Skipping ElastiCache discovery for region " + region.id() + ": " + e.getMessage());
     }
+
     return resources;
   }
 }

@@ -66,8 +66,41 @@ public class AwsOpenSearchService implements OpenSearchService {
         Region.regions(), region -> discoverDomainsWithTags(region, credentials));
   }
 
+  private void discoverDomainWithTags(
+      OpenSearchClient client,
+      DomainInfo domainInfo,
+      Region region,
+      List<ResourceDetail> resources) {
+
+    try {
+      DescribeDomainResponse response =
+          client.describeDomain(r -> r.domainName(domainInfo.domainName()));
+
+      DomainStatus domain = response.domainStatus();
+
+      Map<String, String> tags =
+          client.listTags(ListTagsRequest.builder().arn(domain.arn()).build()).tagList().stream()
+              .collect(Collectors.toMap(Tag::key, Tag::value, (a, b) -> b));
+
+      String name = ResourceDetail.resolveName(domain.domainName(), domain.domainName(), tags);
+
+      resources.add(
+          new ResourceDetail(domain.domainName(), name, "DomainName", "AWS/ES", region.id(), tags));
+
+    } catch (Exception e) {
+      logger.info(
+          "Skipping OpenSearch domain "
+              + domainInfo.domainName()
+              + " in region "
+              + region.id()
+              + ": "
+              + e.getMessage());
+    }
+  }
+
   private List<ResourceDetail> discoverDomainsWithTags(
       Region region, CloudCredentials credentials) {
+
     List<ResourceDetail> resources = new ArrayList<>();
 
     try (OpenSearchClient client =
@@ -80,41 +113,14 @@ public class AwsOpenSearchService implements OpenSearchService {
           client.listDomainNames(ListDomainNamesRequest.builder().build()).domainNames();
 
       for (DomainInfo domainInfo : domains) {
-        try {
-          DescribeDomainResponse response =
-              client.describeDomain(r -> r.domainName(domainInfo.domainName()));
-
-          DomainStatus domain = response.domainStatus();
-
-          Map<String, String> tags =
-              client
-                  .listTags(ListTagsRequest.builder().arn(domain.arn()).build())
-                  .tagList()
-                  .stream()
-                  .collect(Collectors.toMap(Tag::key, Tag::value, (a, b) -> b));
-
-          String name = ResourceDetail.resolveName(domain.domainName(), domain.domainName(), tags);
-
-          resources.add(
-              new ResourceDetail(
-                  domain.domainName(), name, "DomainName", "AWS/ES", region.id(), tags));
-
-        } catch (Exception e) {
-          logger.info(
-              "Skipping OpenSearch domain "
-                  + domainInfo.domainName()
-                  + " in region "
-                  + region.id()
-                  + ": "
-                  + e.getMessage());
-        }
+        discoverDomainWithTags(client, domainInfo, region, resources);
       }
 
     } catch (Exception e) {
-
       logger.info(
           "Skipping OpenSearch discovery for region " + region.id() + ": " + e.getMessage());
     }
+
     return resources;
   }
 }

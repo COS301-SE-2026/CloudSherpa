@@ -56,8 +56,32 @@ public class AwsEksService implements EksService {
         Region.regions(), region -> discoverClustersWithTags(region, credentials));
   }
 
+  private void discoverClusterWithTags(
+      EksClient eks, String clusterName, Region region, List<ResourceDetail> resources) {
+
+    try {
+      Cluster cluster = eks.describeCluster(r -> r.name(clusterName)).cluster();
+
+      String name = ResourceDetail.resolveName(clusterName, cluster.name(), cluster.tags());
+
+      resources.add(
+          new ResourceDetail(
+              clusterName, name, "ClusterName", "ContainerInsights", region.id(), cluster.tags()));
+
+    } catch (Exception e) {
+      logger.info(
+          "Skipping EKS cluster "
+              + clusterName
+              + " in region "
+              + region.id()
+              + ": "
+              + e.getMessage());
+    }
+  }
+
   private List<ResourceDetail> discoverClustersWithTags(
       Region region, CloudCredentials credentials) {
+
     List<ResourceDetail> resources = new ArrayList<>();
 
     try (EksClient eks =
@@ -69,33 +93,13 @@ public class AwsEksService implements EksService {
       List<String> clusterNames = eks.listClustersPaginator().clusters().stream().toList();
 
       for (String clusterName : clusterNames) {
-        try {
-          Cluster cluster = eks.describeCluster(r -> r.name(clusterName)).cluster();
-
-          String name = ResourceDetail.resolveName(clusterName, cluster.name(), cluster.tags());
-
-          resources.add(
-              new ResourceDetail(
-                  clusterName,
-                  name,
-                  "ClusterName",
-                  "ContainerInsights",
-                  region.id(),
-                  cluster.tags()));
-
-        } catch (Exception e) {
-          logger.info(
-              "Skipping EKS cluster "
-                  + clusterName
-                  + " in region "
-                  + region.id()
-                  + ": "
-                  + e.getMessage());
-        }
+        discoverClusterWithTags(eks, clusterName, region, resources);
       }
+
     } catch (Exception e) {
       logger.info("Skipping EKS discovery for region " + region.id() + ": " + e.getMessage());
     }
+
     return resources;
   }
 }

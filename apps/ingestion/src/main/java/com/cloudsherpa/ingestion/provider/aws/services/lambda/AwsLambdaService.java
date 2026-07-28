@@ -63,6 +63,33 @@ public class AwsLambdaService implements LambdaService {
         Region.regions(), region -> discoverFunctionsWithTags(region, credentials));
   }
 
+  private void discoverFunctionWithTags(
+      LambdaClient lambda,
+      FunctionConfiguration function,
+      Region region,
+      List<ResourceDetail> resources) {
+
+    try {
+      Map<String, String> tags = lambda.listTags(r -> r.resource(function.functionArn())).tags();
+
+      String name =
+          ResourceDetail.resolveName(function.functionName(), function.functionName(), tags);
+
+      resources.add(
+          new ResourceDetail(
+              function.functionName(), name, "FunctionName", "AWS/Lambda", region.id(), tags));
+
+    } catch (Exception e) {
+      logger.info(
+          "Skipping Lambda function "
+              + function.functionName()
+              + " in region "
+              + region.id()
+              + ": "
+              + e.getMessage());
+    }
+  }
+
   private List<ResourceDetail> discoverFunctionsWithTags(
       Region region, CloudCredentials credentials) {
 
@@ -75,32 +102,13 @@ public class AwsLambdaService implements LambdaService {
             .build()) {
 
       for (FunctionConfiguration function : lambda.listFunctionsPaginator().functions()) {
-
-        try {
-          Map<String, String> tags =
-              lambda.listTags(r -> r.resource(function.functionArn())).tags();
-
-          String name =
-              ResourceDetail.resolveName(function.functionName(), function.functionName(), tags);
-
-          resources.add(
-              new ResourceDetail(
-                  function.functionName(), name, "FunctionName", "AWS/Lambda", region.id(), tags));
-
-        } catch (Exception e) {
-          logger.info(
-              "Skipping Lambda function "
-                  + function.functionName()
-                  + " in region "
-                  + region.id()
-                  + ": "
-                  + e.getMessage());
-        }
+        discoverFunctionWithTags(lambda, function, region, resources);
       }
 
     } catch (Exception e) {
       logger.info("Skipping Lambda discovery for region " + region.id() + ": " + e.getMessage());
     }
+
     return resources;
   }
 }

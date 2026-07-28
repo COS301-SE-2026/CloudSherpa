@@ -64,8 +64,39 @@ public class AwsRedshiftService implements RedshiftService {
         Region.regions(), region -> discoverClustersWithTags(region, credentials));
   }
 
+  private void discoverClusterWithTags(
+      Cluster cluster, Region region, List<ResourceDetail> resources) {
+
+    try {
+      Map<String, String> tags = getTagsForCluster(cluster);
+
+      String name =
+          ResourceDetail.resolveName(
+              cluster.clusterIdentifier(), cluster.clusterIdentifier(), tags);
+
+      resources.add(
+          new ResourceDetail(
+              cluster.clusterIdentifier(),
+              name,
+              "ClusterIdentifier",
+              "AWS/Redshift",
+              region.id(),
+              tags));
+
+    } catch (Exception e) {
+      logger.info(
+          "Skipping Redshift cluster "
+              + cluster.clusterIdentifier()
+              + " in region "
+              + region.id()
+              + ": "
+              + e.getMessage());
+    }
+  }
+
   private List<ResourceDetail> discoverClustersWithTags(
       Region region, CloudCredentials credentials) {
+
     List<ResourceDetail> resources = new ArrayList<>();
 
     try (RedshiftClient client =
@@ -75,36 +106,13 @@ public class AwsRedshiftService implements RedshiftService {
             .build()) {
 
       for (Cluster cluster : client.describeClustersPaginator().clusters()) {
-        try {
-          Map<String, String> tags = getTagsForCluster(cluster);
-
-          String name =
-              ResourceDetail.resolveName(
-                  cluster.clusterIdentifier(), cluster.clusterIdentifier(), tags);
-
-          resources.add(
-              new ResourceDetail(
-                  cluster.clusterIdentifier(),
-                  name,
-                  "ClusterIdentifier",
-                  "AWS/Redshift",
-                  region.id(),
-                  tags));
-
-        } catch (Exception e) {
-          logger.info(
-              "Skipping Redshift cluster "
-                  + cluster.clusterIdentifier()
-                  + " in region "
-                  + region.id()
-                  + ": "
-                  + e.getMessage());
-        }
+        discoverClusterWithTags(cluster, region, resources);
       }
 
     } catch (Exception e) {
       logger.info("Skipping Redshift discovery for region " + region.id() + ": " + e.getMessage());
     }
+
     return resources;
   }
 }

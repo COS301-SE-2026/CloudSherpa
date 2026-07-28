@@ -65,6 +65,37 @@ public class AwsRdsService implements RdsService {
         Region.regions(), region -> discoverInstancesWithTags(region, credentials));
   }
 
+  private void discoverInstanceWithTags(
+      RdsClient rds, DBInstance db, Region region, List<ResourceDetail> resources) {
+
+    try {
+      Map<String, String> tags =
+          rds.listTagsForResource(r -> r.resourceName(db.dbInstanceArn())).tagList().stream()
+              .collect(Collectors.toMap(Tag::key, Tag::value, (a, b) -> b));
+
+      String name =
+          ResourceDetail.resolveName(db.dbInstanceIdentifier(), db.dbInstanceIdentifier(), tags);
+
+      resources.add(
+          new ResourceDetail(
+              db.dbInstanceIdentifier(),
+              name,
+              "DBInstanceIdentifier",
+              "AWS/RDS",
+              region.id(),
+              tags));
+
+    } catch (Exception e) {
+      logger.info(
+          "Skipping RDS instance "
+              + db.dbInstanceIdentifier()
+              + " in region "
+              + region.id()
+              + ": "
+              + e.getMessage());
+    }
+  }
+
   private List<ResourceDetail> discoverInstancesWithTags(
       Region region, CloudCredentials credentials) {
 
@@ -80,35 +111,7 @@ public class AwsRdsService implements RdsService {
           rds.describeDBInstancesPaginator().dbInstances().stream().toList();
 
       for (DBInstance db : instances) {
-
-        try {
-
-          Map<String, String> tags =
-              rds.listTagsForResource(r -> r.resourceName(db.dbInstanceArn())).tagList().stream()
-                  .collect(Collectors.toMap(Tag::key, Tag::value, (a, b) -> b));
-
-          String name =
-              ResourceDetail.resolveName(
-                  db.dbInstanceIdentifier(), db.dbInstanceIdentifier(), tags);
-
-          resources.add(
-              new ResourceDetail(
-                  db.dbInstanceIdentifier(),
-                  name,
-                  "DBInstanceIdentifier",
-                  "AWS/RDS",
-                  region.id(),
-                  tags));
-
-        } catch (Exception e) {
-          logger.info(
-              "Skipping RDS instance "
-                  + db.dbInstanceIdentifier()
-                  + " in region "
-                  + region.id()
-                  + ": "
-                  + e.getMessage());
-        }
+        discoverInstanceWithTags(rds, db, region, resources);
       }
 
     } catch (Exception e) {
