@@ -105,6 +105,25 @@ export default function ManagingConnections() {
         }
     };
 
+    function formatIngestionPeriod(seconds: number): string {
+        const days = Math.floor(seconds / 86400);
+        seconds %= 86400;
+
+        const hours = Math.floor(seconds / 3600);
+        seconds %= 3600;
+
+        const minutes = Math.floor(seconds / 60);
+        seconds %= 60;
+
+        const parts: string[] = [];
+
+        if (days) parts.push(`${days} day${days === 1 ? "" : "s"}`);
+        if (hours) parts.push(`${hours} hour${hours === 1 ? "" : "s"}`);
+        if (minutes) parts.push(`${minutes} minute${minutes === 1 ? "" : "s"}`);
+        if (seconds) parts.push(`${seconds} second${seconds === 1 ? "" : "s"}`);
+
+        return parts.join(" ");
+    }
     async function loadConnections() {
         try {
             const accounts: CloudAccount[] = await getAwsAccountConnections();
@@ -116,7 +135,7 @@ export default function ManagingConnections() {
                     return {
                         id: account.id,
                         name: account.displayName,
-                        detail: `Ingestion every ${account.ingestionPeriod}`,
+                        detail: `Ingestion every ${formatIngestionPeriod(Number(account.ingestionPeriod))}`,
                         provider: "AWS",
                         resource: resourceCount,
                         status: resourceCount > 0 ? "active" : "inactive",
@@ -135,7 +154,7 @@ export default function ManagingConnections() {
     }, []);
 
     const handleAdd = () => {
-        //empty for now
+        router.push(`/addConnection/aws`); // just aws for now
     };
 
     return (
