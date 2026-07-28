@@ -190,7 +190,7 @@ export default function DocumentsAndTutorials() {
                 <Breadcrumb>
                     <BreadcrumbList>
                         <BreadcrumbItem>
-                            <BreadcrumbLink href="/" className="text-[13px] text-muted-foreground">
+                            <BreadcrumbLink href="/dashboard" className="text-[13px] text-muted-foreground">
                                 {" "}
                                 Dashboard{" "}
                             </BreadcrumbLink>
