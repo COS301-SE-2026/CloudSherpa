@@ -32,9 +32,12 @@ export function KPIWidget({ config, preview = false, isEditMode = false }: Reado
         minute: "2-digit",
     };
 
-    const formattedUpdatedAtDate: string = kpiPreview
-        ? new Date(kpiPreview.updatedAt).toLocaleDateString("en-GB", options)
-        : "unknown";
+    const formattedUpdatedAtDate: string =
+        kpiPreview?.updatedAt &&
+        kpiPreview.updatedAt !== "null" &&
+        !Number.isNaN(new Date(kpiPreview.updatedAt).getTime())
+            ? new Date(kpiPreview.updatedAt).toLocaleDateString("en-GB", options)
+            : "No billing information available";
 
     const router = useRouter();
     const showSaveBeforeConfigure = isEditMode && !preview;
@@ -80,7 +83,11 @@ export function KPIWidget({ config, preview = false, isEditMode = false }: Reado
                             {loadingKpiValue ? (
                                 <Spinner />
                             ) : (
-                                <p>Updated {formattedUpdatedAtDate}</p>
+                                <p>
+                                    {formattedUpdatedAtDate.startsWith("No billing")
+                                        ? formattedUpdatedAtDate
+                                        : `Updated ${formattedUpdatedAtDate}`}
+                                </p>
                             )}
                         </div>
                     </>
