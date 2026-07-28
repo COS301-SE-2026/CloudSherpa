@@ -3,7 +3,10 @@ import Colours from "@/design-system/colours/components/colours";
 import Typography from "@/design-system/typography/components/typography";
 import LayoutAndSpacing from "@/design-system/layout-and-spacing/components/layoutAndSpacing";
 import Components from "@/design-system/components/components/components";
-import LogoAndIconography from "@/design-system/logo-and-icons/components/logoAndIconography";
+import Logo from "@/design-system/logo/components/Logo";
+import Iconography from "@/design-system/icons/components/Iconography";
+import VoiceAndTone from "@/design-system/voice-and-tone/components/voice-and-tone";
+import Accessibility from "@/design-system/accessibility/components/accessibility";
 import { useState } from "react";
 import { ChevronsUpDown, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -16,6 +19,7 @@ import {
     CommandList,
 } from "@/components/atoms/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/atoms/popover";
+import Changelog from "@/design-system/changelog/components/changelog";
 
 interface HeaderProps {
     title: string;
@@ -24,7 +28,7 @@ interface HeaderProps {
 
 function Header({ title, description }: Readonly<HeaderProps>) {
     return (
-        <div className="border-b pb-4 mb-8">
+        <div className="border-b pb-4 mb-8 gap-2 flex flex-col items-start justify-between">
             <h2 className="text-2xl md:text-3xl font-bold text-foreground">{title}</h2>
             <p className="text-muted-foreground">{description}</p>
         </div>
@@ -32,11 +36,15 @@ function Header({ title, description }: Readonly<HeaderProps>) {
 }
 
 const sections = [
-    { value: "colours", label: "1. Colour Palette" },
-    { value: "typography", label: "2. Typography System" },
-    { value: "layout", label: "3. Layout & Spacing" },
-    { value: "components", label: "4. Components" },
-    { value: "logo-and-iconography", label: "5. Logo & Iconography" },
+    { value: "voice-and-tone", label: "1 Voice & Tone" },
+    { value: "colours", label: "2. Colour Palette" },
+    { value: "typography", label: "3. Typography System" },
+    { value: "layout", label: "4. Layout & Spacing" },
+    { value: "components", label: "5. Components" },
+    { value: "logo", label: "6. Logo" },
+    { value: "iconography", label: "7. Iconography" },
+    { value: "accessibility", label: "8. Accessibility" },
+    { value: "changelog", label: "9. Changelog" },
 ];
 
 export default function DesignSystem() {
@@ -114,18 +122,36 @@ export default function DesignSystem() {
                     <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-4">
                         CloudSherpa Design System
                     </h1>
-                    <p className="text-lg md:text-xl text-muted-foreground max-w-3xl leading-relaxed">
+                    <p className="text-lg md:text-xl text-muted-foreground eading-relaxed">
                         The Golden Thread connecting our brand values to our shipped code. This
                         living document serves as the single source of truth for our visual
                         identity, ensuring a cohesive, accessible, and scalable experience across
                         the entire platform.
+                        <br />
+                        <br />
+                        CloudSherpa makes multi-cloud spending visible and actionable for any
+                        organization. Without it, teams face bill shock, stranded resources, and
+                        fragmented visibility. With it, they get real-time alerts, automated
+                        optimization, and clear cost accountability across AWS, Azure, and GCP. Our
+                        purpose: trusted guardrails for the journey to cloud-native. It is built on
+                        five values: safety (preventing bill shock), reliability, trust (no hidden
+                        met- rics), transparency (explainable costs), and calm but honest
+                        communication (alerts without panic).
                     </p>
                 </header>
-
                 <div className="flex flex-col gap-16">
+                    <section id="voice-and-tone">
+                        <Header
+                            title="Voice and tone"
+                            description="This category showcases our Logo as well as the icon set used in
+                                CloudSherpa."
+                        />
+                        <VoiceAndTone />
+                    </section>
+
                     <section id="colours">
                         <Header
-                            title="1.Colour Palette"
+                            title="Colour Palette"
                             description="Primitive and Semantic colour ranges that can be found in
                                 CloudSherpa, representing our brand colours and base ui component
                                 backgrounds and foregrounds that defines the feel of the
@@ -136,7 +162,7 @@ export default function DesignSystem() {
 
                     <section id="typography">
                         <Header
-                            title="2. Typography"
+                            title="Typography"
                             description="Our Typography system is geared toward data representation by using
                                 compact fonts while keeping visibility and clarity in mind"
                         />
@@ -145,7 +171,7 @@ export default function DesignSystem() {
 
                     <section id="layout">
                         <Header
-                            title="3. Layout and Spacing"
+                            title="Layout and Spacing"
                             description="This category defines the structural geometry of CloudSherpa, and
                                 defines the form of the application."
                         />
@@ -154,20 +180,47 @@ export default function DesignSystem() {
 
                     <section id="components">
                         <Header
-                            title="4. Components"
+                            title="Components"
                             description="The components are the culmination of all the primitive building
                                 blocks previously defined in the design system."
                         />
                         <Components />
                     </section>
 
-                    <section id="logo-and-iconography">
+                    <section id="logo">
                         <Header
-                            title="5. Logo and Iconography"
+                            title="Logo"
+                            description="A logo is what identifies a brand, thus we tried to make our logo as visually representative of CloudSherpa as possible.
+                        This section outlines our core brand identifier and how to properly use it.
+                        "
+                        />
+                        <Logo />
+                    </section>
+
+                    <section id="iconography">
+                        <Header
+                            title="Iconography"
                             description="This category showcases our Logo as well as the icon set used in
                                 CloudSherpa."
                         />
-                        <LogoAndIconography />
+                        <Iconography />
+                    </section>
+
+                    <section id="accessibility">
+                        <Header
+                            title="Accessibility"
+                            description="Accessibility directly impacts the user experience and ensure people with disabilites, like colour blind people, can use the application without issues."
+                        />
+                        <Accessibility />
+                    </section>
+
+                    <section id="changelog">
+                        <Header
+                            title="Changelog"
+                            description="A log of all changes brought about to our colour palette. Due to contrast issues we had to reimplement our colour palette. We went from a very blue UI to 
+                            a more muted palatable colour with a blue hue."
+                        />
+                        <Changelog />
                     </section>
                 </div>
             </div>

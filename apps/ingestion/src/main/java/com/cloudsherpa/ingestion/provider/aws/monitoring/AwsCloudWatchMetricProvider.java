@@ -1,6 +1,7 @@
 package com.cloudsherpa.ingestion.provider.aws.monitoring;
 
 import com.cloudsherpa.ingestion.connector.AccountScope;
+import com.cloudsherpa.ingestion.connector.Instance;
 import com.cloudsherpa.ingestion.connector.InstanceScope;
 import com.cloudsherpa.ingestion.connector.Metric;
 import com.cloudsherpa.ingestion.connector.ServiceScope;
@@ -38,23 +39,8 @@ public class AwsCloudWatchMetricProvider implements CloudWatchMetricProvider {
         request
             .getPeriod(); // contract: ensure that the request does not return over 1000 datapoints
     // ((to-from)/period)
-    if (period <= 0) {
-      throw new IllegalArgumentException("Period must be > 0");
-    }
-    if ((Duration.between(request.getFrom(), request.getTo()).getSeconds()) / period > 1440) {
-      throw new IllegalArgumentException("AWS will not return over 1440 datapoints per metric");
-    }
+    validatePeriod(request, period);
     CloudWatchClient client = defaultClient;
-    if (request.getCredentials() != null) {
-      AwsBasicCredentials credentials =
-          AwsBasicCredentials.create(
-              request.getCredentials().getAccessKey(), request.getCredentials().getSecretKey());
-      client =
-          CloudWatchClient.builder()
-              .credentialsProvider(StaticCredentialsProvider.create(credentials))
-              .region(Region.of(request.getCredentials().getAwsRegion()))
-              .build();
-    }
 
     List<UsageRecordModel> result = new ArrayList<>();
     for (ServiceScope serviceScope :
@@ -65,9 +51,15 @@ public class AwsCloudWatchMetricProvider implements CloudWatchMetricProvider {
           serviceScope.getInstances()) { // instances within a service with a name and
         // value
         // list e.g. i-23xxxxxxx
-        for (String instanceValue : instance.getValues()) { // the specific instance
+        for (Instance instanceValue : instance.getInstances()) { // the specific instance
           Dimension dimension =
-              Dimension.builder().name(instance.getIdentifierName()).value(instanceValue).build();
+              Dimension.builder()
+                  .name(instance.getIdentifierName())
+                  .value(instanceValue.getIdentifier())
+                  .build();
+          if (request.getCredentials() != null) {
+            client = createClient(request, instanceValue.getRegion());
+          }
 
           for (Metric metric :
               serviceScope.getMetrics()) { // the metrics requested, e.g. CPUUtilisation,
@@ -89,7 +81,7 @@ public class AwsCloudWatchMetricProvider implements CloudWatchMetricProvider {
                     accountScope,
                     serviceScope,
                     instance,
-                    instanceValue,
+                    instanceValue.getIdentifier(),
                     metric.getName(),
                     period,
                     ingestionID);
@@ -127,12 +119,12 @@ public class AwsCloudWatchMetricProvider implements CloudWatchMetricProvider {
       r.setMetricName(context.metric());
       r.setValue(dp.average());
       r.setUnit(dp.unit().name());
+      r.setRegion(client.serviceClientConfiguration().region().id());
       r.setTimestamp(dp.timestamp());
       r.setIngestionTimestamp(Instant.now());
       r.setRecordId(UUID.randomUUID());
       r.setResourceId(context.instanceValue());
       r.setResourceType(context.instanceScope().getIdentifierName());
-      r.setRegion(Region.AF_SOUTH_1.toString());
       r.setIngestionId(context.ingestionId().toString());
       r.setDimensions(Map.of("Dimensions", req.dimensions().toString()));
       r.setSource("CloudWatch");
@@ -143,5 +135,31 @@ public class AwsCloudWatchMetricProvider implements CloudWatchMetricProvider {
     }
 
     return records;
+  }
+
+  private CloudWatchClient createClient(IngestionRequestEvent request, String region) {
+
+    if (request.getCredentials() == null) {
+      return defaultClient;
+    }
+
+    AwsBasicCredentials credentials =
+        AwsBasicCredentials.create(
+            request.getCredentials().getAccessKey(), request.getCredentials().getSecretKey());
+
+    return CloudWatchClient.builder()
+        .credentialsProvider(StaticCredentialsProvider.create(credentials))
+        .region(Region.of(region))
+        .build();
+  }
+
+  private void validatePeriod(IngestionRequestEvent request, int period) {
+    if (period <= 0) {
+      throw new IllegalArgumentException("Period must be > 0");
+    }
+
+    if (Duration.between(request.getFrom(), request.getTo()).getSeconds() / period > 1440) {
+      throw new IllegalArgumentException("AWS will not return over 1440 datapoints per metric");
+    }
   }
 }

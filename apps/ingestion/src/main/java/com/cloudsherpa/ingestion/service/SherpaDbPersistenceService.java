@@ -45,7 +45,8 @@ public class SherpaDbPersistenceService {
   }
 
   // Use @Transactional when we are modifying a database in more than 1 place
-  // So that if 1 step succeeds and the other one fails, the data doesn't end up half-written
+  // So that if 1 step succeeds and the other one fails, the data doesn't end up
+  // half-written
   @Transactional
   public void recordMetric(NormalizedMetric metric, UsageRecordModel r, UUID userId) {
 
@@ -86,8 +87,10 @@ public class SherpaDbPersistenceService {
 
     // SQL insert statement
     // The actual database insertion. Spring Data JPA translates this into:
-    // "INSERT INTO normalized_metrics (recorded_at, environment_id, ...) VALUES (...)"
-    // Because an INSERT happens here, PostgreSQL immediately executes the `metric_notify_trigger`
+    // "INSERT INTO normalized_metrics (recorded_at, environment_id, ...) VALUES
+    // (...)"
+    // Because an INSERT happens here, PostgreSQL immediately executes the
+    // `metric_notify_trigger`
     // defined in sherpadb-schema.sql, broadcasting the JSON event.
     metricsRepo.save(newMetric);
   }

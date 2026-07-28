@@ -4,7 +4,7 @@ import java.util.List;
 
 public class InstanceScope {
   private String identifierName; // instanceID, ClusterName, DBInstanceIdentifier etc.
-  private List<String> values; // i-21xxxxx, i-35xxxxx etc.
+  private List<Instance> instances;
 
   public String getIdentifierName() {
     return identifierName;
@@ -14,11 +14,11 @@ public class InstanceScope {
     this.identifierName = name;
   }
 
-  public List<String> getValues() {
-    return values;
+  public List<Instance> getInstances() {
+    return instances;
   }
 
-  public void setValues(List<String> values) {
-    this.values = values;
+  public void setInstances(List<Instance> instances) {
+    this.instances = instances;
   }
 }

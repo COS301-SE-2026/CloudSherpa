@@ -1,21 +1,23 @@
 import apiClient from "./api-client";
 
 export interface AwsCredentialsDto {
-    accessKey: string;
-    secretKey: string;
-    awsRegion: string;
+    accessKeyId: string;
+    secretAccessKey: string;
 }
 
 export interface ResourceSelectionDto {
     resourceId: string;
+    serviceType: string;
     resourceType: string;
     resourceName: string;
+    region: string;
     tags: Record<string, string>;
     active: boolean;
 }
 
 export interface BillingConfigDto {
     bucketName: string;
+    bucketRegion: string;
     exportPrefix: string;
     exportName: string;
 }

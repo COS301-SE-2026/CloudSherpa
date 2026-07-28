@@ -12,26 +12,8 @@ import com.cloudsherpa.ingestion.models.UsageRecordModel;
 import com.cloudsherpa.ingestion.provider.aws.monitoring.AwsCloudWatchMetricProvider;
 import com.cloudsherpa.ingestion.provider.aws.monitoring.CloudWatchMetricProvider;
 import com.cloudsherpa.ingestion.provider.aws.monitoring.MockCloudWatchMetricProvider;
-import com.cloudsherpa.ingestion.provider.aws.services.ec2.AwsEc2Service;
-import com.cloudsherpa.ingestion.provider.aws.services.ec2.Ec2Service;
-import com.cloudsherpa.ingestion.provider.aws.services.ecs.AwsEcsService;
-import com.cloudsherpa.ingestion.provider.aws.services.ecs.EcsService;
-import com.cloudsherpa.ingestion.provider.aws.services.eks.AwsEksService;
-import com.cloudsherpa.ingestion.provider.aws.services.eks.EksService;
-import com.cloudsherpa.ingestion.provider.aws.services.elasticache.AwsElastiCacheService;
-import com.cloudsherpa.ingestion.provider.aws.services.elasticache.ElastiCacheService;
-import com.cloudsherpa.ingestion.provider.aws.services.lambda.AwsLambdaService;
-import com.cloudsherpa.ingestion.provider.aws.services.lambda.LambdaService;
-import com.cloudsherpa.ingestion.provider.aws.services.opensearch.AwsOpenSearchService;
-import com.cloudsherpa.ingestion.provider.aws.services.opensearch.OpenSearchService;
-import com.cloudsherpa.ingestion.provider.aws.services.rds.AwsRdsService;
-import com.cloudsherpa.ingestion.provider.aws.services.rds.RdsService;
-import com.cloudsherpa.ingestion.provider.aws.services.redshift.AwsRedshiftService;
-import com.cloudsherpa.ingestion.provider.aws.services.redshift.RedshiftService;
-import java.util.ArrayList;
+import com.cloudsherpa.ingestion.provider.scanner.ResourceDiscoveryService;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
@@ -44,60 +26,12 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
 
   private final CloudWatchMetricProvider metricProvider;
   private final CloudWatchMetricProvider mockMetricProvider;
-  private final Ec2Service ec2Service;
-  private final EcsService ecsService;
-  private final EksService eksService;
-  private final LambdaService lambdaService;
-  private final RdsService rdsService;
-  private final ElastiCacheService elasticacheService;
-  private final OpenSearchService opensearchService;
-  private final RedshiftService redshiftService;
+  private final ResourceDiscoveryService discoveryService;
 
-  public AwsCloudConnector() {
+  public AwsCloudConnector(ResourceDiscoveryService resourceDiscoveryService) {
     metricProvider = new AwsCloudWatchMetricProvider();
     mockMetricProvider = new MockCloudWatchMetricProvider();
-    ec2Service = new AwsEc2Service();
-    ecsService = new AwsEcsService();
-    eksService = new AwsEksService();
-    lambdaService = new AwsLambdaService();
-    rdsService = new AwsRdsService();
-    elasticacheService = new AwsElastiCacheService();
-    opensearchService = new AwsOpenSearchService();
-    redshiftService = new AwsRedshiftService();
-  }
-
-  private static final Logger log = LoggerFactory.getLogger(AwsCloudConnector.class);
-
-  public List<ResourceDetail> getAllEc2Instances(CloudCredentials credentials) {
-    return ec2Service.getAllEc2InstancesWithTags(credentials);
-  }
-
-  public List<ResourceDetail> getAllEcsClusters(CloudCredentials credentials) {
-    return ecsService.getAllEcsClustersWithTags(credentials);
-  }
-
-  public List<ResourceDetail> getAllEksClusters(CloudCredentials credentials) {
-    return eksService.getAllEksClustersWithTags(credentials);
-  }
-
-  public List<ResourceDetail> getAllLambdaFunctions(CloudCredentials credentials) {
-    return lambdaService.getAllLambdaFunctionsWithTags(credentials);
-  }
-
-  public List<ResourceDetail> getAllRdsInstances(CloudCredentials credentials) {
-    return rdsService.getAllRdsInstancesWithTags(credentials);
-  }
-
-  public List<ResourceDetail> getAllElastiCacheClusters(CloudCredentials credentials) {
-    return elasticacheService.getAllElastiCacheClustersWithTags(credentials);
-  }
-
-  public List<ResourceDetail> getAllOpenSearchDomains(CloudCredentials credentials) {
-    return opensearchService.getAllOpenSearchDomainsWithTags(credentials);
-  }
-
-  public List<ResourceDetail> getAllRedshiftClusters(CloudCredentials credentials) {
-    return redshiftService.getAllRedshiftClustersWithTags(credentials);
+    discoveryService = resourceDiscoveryService;
   }
 
   @Override
@@ -114,72 +48,13 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
 
   @Override
   public List<String> getAllOfferedServices() {
-    List<String> services = new ArrayList<>();
-    services.add("EC2");
-    services.add("ECS");
-    services.add("EKS");
-    services.add("Lambda");
-    services.add("RDS");
-    services.add("ElastiCache");
-    services.add("OpenSearch");
-    services.add("RedShift");
-
-    return services;
+    return discoveryService.getServices("AWS");
   }
 
   @Override
-  public List<ResourceDetail> getAllResources(CloudCredentials credentials) {
-    List<ResourceDetail> resources = new ArrayList<>();
-
-    try {
-      resources.addAll(getAllEc2Instances(credentials));
-    } catch (Exception e) {
-      log.info("Failed to discover EC2 resources", e);
-    }
-
-    try {
-      resources.addAll(getAllEcsClusters(credentials));
-    } catch (Exception e) {
-      log.info("Failed to discover ECS resources", e);
-    }
-
-    try {
-      resources.addAll(getAllEksClusters(credentials));
-    } catch (Exception e) {
-      log.info("Failed to discover EKS resources", e);
-    }
-
-    try {
-      resources.addAll(getAllElastiCacheClusters(credentials));
-    } catch (Exception e) {
-      log.info("Failed to discover ElastiCache resources", e);
-    }
-
-    try {
-      resources.addAll(getAllLambdaFunctions(credentials));
-    } catch (Exception e) {
-      log.info("Failed to discover Lambda resources", e);
-    }
-
-    try {
-      resources.addAll(getAllOpenSearchDomains(credentials));
-    } catch (Exception e) {
-      log.info("Failed to discover OpenSearch resources", e);
-    }
-
-    try {
-      resources.addAll(getAllRdsInstances(credentials));
-    } catch (Exception e) {
-      log.info("Failed to discover RDS resources", e);
-    }
-
-    try {
-      resources.addAll(getAllRedshiftClusters(credentials));
-    } catch (Exception e) {
-      log.info("Failed to discover Redshift resources", e);
-    }
-
-    return resources;
+  public List<ResourceDetail> getAllResources(
+      CloudCredentials credentials, List<String> serviceTypes) {
+    return discoveryService.discover("AWS", serviceTypes, credentials);
   }
 
   @Override
@@ -202,10 +77,9 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
       client =
           CloudWatchClient.builder()
               .credentialsProvider(StaticCredentialsProvider.create(awsCredentials))
-              .region(Region.of(credentials.getAwsRegion()))
+              .region(Region.EU_NORTH_1)
               .build();
     }
-
     try {
       client.listMetrics();
       return true;

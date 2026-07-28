@@ -9,10 +9,12 @@ import {
     generateAwsPermissionsPolicy,
     getCloudResources,
 } from "@/lib/fetch/cloud-resource-api";
+import { BillingForm } from "./billingForm";
 
 export interface BillingConfig {
     prefix: string;
     bucketName: string;
+    bucketRegion: string;
     exportName: string;
 }
 
@@ -34,8 +36,10 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
     const [error, setError] = useState("");
     const [prefix, setPrefix] = useState("");
     const [bucketName, setBucketName] = useState("");
+    const [bucketRegion, setBucketRegion] = useState("");
     const [exportName, setExportName] = useState("");
     const [savedBillingConfig, setSavedBillingConfig] = useState<BillingConfig | null>(null);
+    const [optedInToBilling, setOptedInToBilling] = useState(false);
 
     const toggleService = (serviceId: string) => {
         setServicesSelected((prev) =>
@@ -110,7 +114,7 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
     const displayPermissions = getExtendedPermissions();
 
     const handleSaveBillingConfig = () => {
-        if (!prefix || !bucketName || !exportName) {
+        if (!prefix || !bucketName || !bucketRegion || !exportName) {
             setError("Please fill out all billing configuration fields before saving.");
             return;
         }
@@ -118,6 +122,7 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
         setSavedBillingConfig({
             prefix: prefix.trim(),
             bucketName: bucketName.trim(),
+            bucketRegion: bucketRegion,
             exportName: exportName.trim(),
         });
         setError("");
@@ -126,20 +131,26 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
     const handleSubmit = async (forHandlingSubmit: React.FormEvent<HTMLFormElement>) => {
         forHandlingSubmit.preventDefault();
 
-        if (!prefix || !bucketName || !exportName) {
-            setError("Please fill out all billing configuration fields.");
-            return;
+        if (optedInToBilling) {
+            if (!prefix || !bucketName || !bucketRegion || !exportName) {
+                setError("Please fill out all billing configuration fields.");
+                return;
+            }
         }
 
         try {
             setLoading(true);
             setError("");
 
-            const resources = await getCloudResources("aws", {
-                accessKey: credentials?.accessKey,
-                secretKey: credentials?.secretKey,
-                awsRegion: credentials?.awsRegion,
-            });
+            const resources = await getCloudResources(
+                "aws",
+                {
+                    accessKey: credentials?.accessKey,
+                    secretKey: credentials?.secretKey,
+                    awsRegion: credentials?.awsRegion,
+                },
+                servicesSelected
+            );
 
             if (resources.length === 0) {
                 setError("No resources were discovered.");
@@ -147,7 +158,7 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
             }
             setLoading(false);
 
-            onNext(servicesSelected, resources, { prefix, bucketName, exportName });
+            onNext(servicesSelected, resources, { prefix, bucketName, bucketRegion, exportName });
         } catch (err) {
             console.error(err);
 
@@ -188,84 +199,29 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-8">
-                    <section className="rounded-lg border border-primary/30 bg-primary/5 p-4 space-y-4">
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                            <h3 className="text-foreground text-sm font-semibold uppercase tracking-wider">
-                                Billing Export Configuration
-                            </h3>
-                            <span className="rounded-full bg-primary/15 px-2 py-1 text-xs font-medium text-primary">
-                                Account-wide cost scope
-                            </span>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <label
-                                    htmlFor="bucketName"
-                                    className="text-sm font-medium text-foreground"
-                                >
-                                    S3 Bucket Name
-                                </label>
-                                <input
-                                    id="bucketName"
-                                    type="text"
-                                    value={bucketName}
-                                    onChange={(e) => setBucketName(e.target.value)}
-                                    placeholder="e.g., my-billing-reports-bucket"
-                                    className="w-full p-2 rounded-md border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                                />
-                            </div>
+                    <BillingForm
+                        bucketName={bucketName}
+                        setBucketName={setBucketName}
+                        exportName={exportName}
+                        setExportName={setExportName}
+                        prefix={prefix}
+                        setPrefix={setPrefix}
+                        bucketRegion={bucketRegion}
+                        setBucketRegion={setBucketRegion}
+                        handleSaveBillingConfig={handleSaveBillingConfig}
+                        savedBillingConfig={savedBillingConfig ?? undefined}
+                        optedInToBilling={optedInToBilling}
+                        handleOptedInToBillingChange={(checked) => {
+                            setOptedInToBilling(checked);
 
-                            <div className="space-y-2">
-                                <label
-                                    htmlFor="exportName"
-                                    className="text-sm font-medium text-foreground"
-                                >
-                                    Export Name
-                                </label>
-                                <input
-                                    id="exportName"
-                                    type="text"
-                                    value={exportName}
-                                    onChange={(e) => setExportName(e.target.value)}
-                                    placeholder="e.g., daily-cost-export"
-                                    className="w-full p-2 rounded-md border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                                />
-                            </div>
-
-                            <div className="space-y-2 md:col-span-2">
-                                <label
-                                    htmlFor="prefix"
-                                    className="text-sm font-medium text-foreground"
-                                >
-                                    Prefix / Path
-                                </label>
-                                <input
-                                    id="prefix"
-                                    type="text"
-                                    value={prefix}
-                                    onChange={(e) => setPrefix(e.target.value)}
-                                    placeholder="e.g., cur-reports/2023/"
-                                    className="w-full p-2 rounded-md border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="flex items-center gap-3 pt-2">
-                            <Button
-                                type="button"
-                                onClick={handleSaveBillingConfig}
-                                className="bg-primary hover:bg-accent hover:text-accent-foreground text-primary-foreground px-4 py-2 rounded-md transition-all duration-200 font-medium"
-                            >
-                                Save Billing Config
-                            </Button>
-                            {savedBillingConfig && (
-                                <span className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded px-2 py-1">
-                                    Billing config saved. IAM policy now includes billing export
-                                    access.
-                                </span>
-                            )}
-                        </div>
-                    </section>
+                            if (!checked) {
+                                setExportName("");
+                                setPrefix("");
+                                setBucketName("");
+                                setBucketRegion("");
+                            }
+                        }}
+                    />
 
                     <section className="rounded-lg border border-border bg-background p-4">
                         <div className="flex flex-wrap items-center justify-between gap-2 mb-4">

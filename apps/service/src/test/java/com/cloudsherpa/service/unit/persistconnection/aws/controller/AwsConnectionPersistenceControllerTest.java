@@ -49,9 +49,16 @@ class AwsConnectionPersistenceControllerTest {
 
     ResourceSelectionDto resource =
         new ResourceSelectionDto(
-            "i-12345", "EC2", "instance-1", "af-south-1", Map.of("Environment", "Prod"), true);
+            "i-12345",
+            "EC2",
+            "instanceId",
+            "instance-1",
+            "af-south-1",
+            Map.of("Environment", "Prod"),
+            true);
+
     BillingConfigDto billingConfig =
-        new BillingConfigDto("billing-bucket", "exports/", "daily-cost-export");
+        new BillingConfigDto("billing-bucket", "eu-north-1", "exports/", "daily-cost-export");
 
     request =
         new PersistAwsConnectionRequest(

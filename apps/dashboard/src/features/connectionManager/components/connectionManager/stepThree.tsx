@@ -28,6 +28,7 @@ interface PropsForStepThree {
     resources: ResourceDetail[];
     billingConfig: {
         bucketName: string;
+        bucketRegion: string;
         prefix: string;
         exportName: string;
     };
@@ -178,13 +179,16 @@ export default function StepThree({
                 credentials,
                 resources: resources.map((resource): ResourceSelectionDto => ({
                     resourceId: resource.resourceId,
-                    resourceType: resource.serviceCategory,
+                    serviceType: resource.serviceCategory,
+                    resourceType: resource.resourceType,
                     resourceName: resource.name,
+                    region: resource.region,
                     tags: resource.tags,
                     active: selectedResources.includes(resource.resourceId),
                 })),
                 billingConfig: {
                     bucketName: billingConfig.bucketName,
+                    bucketRegion: billingConfig.bucketRegion,
                     exportPrefix: billingConfig.prefix,
                     exportName: billingConfig.exportName,
                 },
@@ -254,7 +258,7 @@ export default function StepThree({
                                 htmlFor="ingestionPeriod"
                                 className="text-foreground text-sm font-medium"
                             >
-                                Ingestion period (seconds)
+                                Ingestion interval (seconds)
                             </Label>
 
                             <TooltipProvider>
@@ -263,18 +267,18 @@ export default function StepThree({
                                         <button
                                             type="button"
                                             className="
-              flex
-              items-center
-              justify-center
-              w-5
-              h-5
-              rounded-full
-              text-xs
-              text-muted-foreground
-              hover:text-foreground
-              border
-              border-border
-            "
+                flex
+                items-center
+                justify-center
+                w-5
+                h-5
+                rounded-full
+                text-xs
+                text-muted-foreground
+                hover:text-foreground
+                border
+                border-border
+                "
                                         >
                                             ?
                                         </button>
@@ -282,11 +286,11 @@ export default function StepThree({
 
                                     <TooltipContent>
                                         <p>
-                                            Recommended ingestion period: {recommendedPeriod}{" "}
+                                            Recommended ingestion interval: {recommendedPeriod}{" "}
                                             seconds based on {selectedResources.length} selected
-                                            resources. Setting the period to a lower value could
+                                            resources. Setting the interval to a lower value could
                                             incur costs due to CloudWatch API free tier limits. The
-                                            ingestion period determines the frequency of dashboard
+                                            ingestion interval determines the frequency of dashboard
                                             timeseries updates.
                                         </p>
                                     </TooltipContent>

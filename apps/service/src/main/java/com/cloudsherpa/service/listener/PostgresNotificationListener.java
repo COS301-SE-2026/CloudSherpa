@@ -164,6 +164,7 @@ public class PostgresNotificationListener implements SmartLifecycle {
         // to tenant metric event channels
         logger.info("Listening for Postgres notifications on {}", channel);
       }
+      stmt.executeBatch();
     }
   }
 

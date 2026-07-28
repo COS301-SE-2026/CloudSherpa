@@ -21,6 +21,7 @@ import com.cloudsherpa.lib.repositories.CloudAccountRepository;
 import com.cloudsherpa.lib.repositories.CloudConnectionRepository;
 import com.cloudsherpa.lib.repositories.CloudCredentialRepository;
 import com.cloudsherpa.lib.repositories.ResourceRepository;
+import com.cloudsherpa.service.analytics.service.ResourceRegistryService;
 import com.cloudsherpa.service.persistconnection.aws.dto.AwsCredentialsDto;
 import com.cloudsherpa.service.persistconnection.aws.dto.BillingConfigDto;
 import com.cloudsherpa.service.persistconnection.aws.dto.PersistAwsConnectionRequest;
@@ -28,6 +29,7 @@ import com.cloudsherpa.service.persistconnection.aws.dto.ResourceSelectionDto;
 import com.cloudsherpa.service.persistconnection.aws.service.AwsConnectionPersistenceService;
 import com.cloudsherpa.service.persistconnection.aws.service.CredentialEncryptionService;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -56,6 +58,8 @@ class AwsConnectionPersistenceServiceTest {
 
   @Mock private BillingExportConfigRepository billingExportConfigRepository;
 
+  @Mock private ResourceRegistryService resourceRegistryService;
+
   @InjectMocks private AwsConnectionPersistenceService service;
 
   @Captor private ArgumentCaptor<CloudConnection> connectionCaptor;
@@ -78,12 +82,19 @@ class AwsConnectionPersistenceServiceTest {
     AwsCredentialsDto credentials = new AwsCredentialsDto("accessKey", "secretKey");
     ResourceSelectionDto activeResource =
         new ResourceSelectionDto(
-            "i-12345", "EC2", "instance-1", "af-south-1", Map.of("Environment", "Prod"), true);
+            "i-12345",
+            "EC2",
+            "instanceId",
+            "instance-1",
+            "af-south-1",
+            Map.of("Environment", "Prod"),
+            true);
 
     ResourceSelectionDto disabledResource =
-        new ResourceSelectionDto("i-23456", "S3", "bucket-1", "af-south-1", Map.of(), false);
+        new ResourceSelectionDto(
+            "i-23456", "S3", "BucketName", "bucket-1", "af-south-1", Map.of(), false);
     BillingConfigDto billingConfig =
-        new BillingConfigDto("billing-bucket", "exports/", "daily-cost-export");
+        new BillingConfigDto("billing-bucket", "eu-north-1", "exports/", "daily-cost-export");
 
     request =
         new PersistAwsConnectionRequest(
@@ -104,13 +115,16 @@ class AwsConnectionPersistenceServiceTest {
             OffsetDateTime.now());
 
     savedAccount =
-        new CloudAccount(
-            UUID.randomUUID(),
-            existingConnection.getId(),
-            AccountTypeEnum.aws_account,
-            "Production",
-            "300",
-            OffsetDateTime.now());
+        new CloudAccount.Builder()
+            .id(UUID.randomUUID())
+            .connectionId(existingConnection.getId())
+            .accountType(AccountTypeEnum.aws_account)
+            .displayName("Production")
+            .ingestionPeriod("300")
+            .createdAt(OffsetDateTime.now(ZoneOffset.UTC))
+            .nextUsageIngestion(OffsetDateTime.now(ZoneOffset.UTC).plusSeconds(300))
+            .nextUsageIngestion(OffsetDateTime.now(ZoneOffset.UTC).plusHours(12))
+            .build();
   }
 
   private void mockExistingConnection() {
@@ -278,7 +292,8 @@ class AwsConnectionPersistenceServiceTest {
   void shouldHandleNullTags() {
 
     ResourceSelectionDto resource =
-        new ResourceSelectionDto("i-12345", "EC2", "instance-1", "af-south-1", null, true);
+        new ResourceSelectionDto(
+            "i-12345", "EC2", "instanceId", "instance-1", "af-south-1", null, true);
 
     PersistAwsConnectionRequest requestWithNullTags =
         new PersistAwsConnectionRequest(

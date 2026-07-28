@@ -92,6 +92,8 @@ function DashboardContent() {
     const fetchResourceNames = useResourceNameStore((state) => state.fetchResources);
     const getMetricList = useMetricStore((state) => state.getMetricList);
 
+    const hydrateWindow = useDashboardStore((state) => state.hydrateWindowOnDashboardLoad);
+
     const { setInitialState, updateLayouts, setActiveDashboard } = useDashboardStore(
         (state: DashboardStore) => state.actions
     );
@@ -148,6 +150,12 @@ function DashboardContent() {
 
                 if (defaultId) {
                     setActiveDashboard(defaultId);
+
+                    const selectedDashboard = fetchedData.find((d) => d.id === defaultId);
+                    if (selectedDashboard?.predefinedTime) {
+                        hydrateWindow(selectedDashboard?.predefinedTime);
+                    }
+
                     if (urlId !== defaultId) {
                         router.replace(`?id=${defaultId}`);
                     }

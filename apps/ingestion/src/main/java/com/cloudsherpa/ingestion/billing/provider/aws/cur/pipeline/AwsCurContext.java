@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import software.amazon.awssdk.regions.Region;
 
 public class AwsCurContext {
 
@@ -21,6 +22,7 @@ public class AwsCurContext {
   @JsonIgnore private final AwsS3 s3;
 
   private String bucketName;
+  private Region bucketRegion;
   private String exportPrefix;
   private String exportName;
   private UUID accountId;
@@ -57,6 +59,14 @@ public class AwsCurContext {
 
   public String getBucketName() {
     return bucketName;
+  }
+
+  public Region getBucketRegion() {
+    return bucketRegion;
+  }
+
+  public void setBucketRegion(Region bucketRegion) {
+    this.bucketRegion = bucketRegion;
   }
 
   public void setBucketName(String bucketName) {

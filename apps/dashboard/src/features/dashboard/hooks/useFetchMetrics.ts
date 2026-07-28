@@ -1,26 +1,28 @@
 import apiClient from "@/lib/fetch/api-client";
 import { useMetricStore } from "@/features/dashboard/stores/metric-store";
-import { useWindowStore } from "@/features/dashboard/stores/window-store";
 import { MetricDTO } from "@/features/dashboard/types/dtos/metrics/MetricDto";
 import { TimeWindowPreset } from "@/features/dashboard/types/timewindow";
 import { useCallback, useEffect, useState } from "react";
 import { useAuthContext } from "@/features/authentication/providers/AuthContext";
+import { useDashboardStore } from "../stores/dashboard-store";
 
 type MetricStoreState = ReturnType<typeof useMetricStore.getState>;
-type WindowStoreState = ReturnType<typeof useWindowStore.getState>;
+type DashboardStoreState = ReturnType<typeof useDashboardStore.getState>;
 
 function toAggregationInterval(preset: TimeWindowPreset): "daily" | "weekly" | "monthly" {
     switch (preset) {
-        case "7d":
+        case "T_7_DAYS":
             return "weekly";
-        case "30d":
+        case "T_30_DAYS":
         case "custom":
             return "monthly";
-        case "1m":
-        case "2m":
-        case "5m":
-        case "1h":
-        case "24h":
+        case "T_5_MIN":
+        case "T_15_MIN":
+        case "T_30_MIN":
+        case "T_1_HOUR":
+        case "T_6_HOUR":
+        case "T_12_HOUR":
+        case "T_24_HOUR":
         default:
             return "daily";
     }
@@ -34,9 +36,9 @@ export function useFetchMetrics() {
     const addMetricFromDto = useMetricStore((state: MetricStoreState) => state.addMetricFromDto);
     const clearMetricStore = useMetricStore((state: MetricStoreState) => state.clearStore);
 
-    const fromMs = useWindowStore((state: WindowStoreState) => state.fromMs);
-    const toMs = useWindowStore((state: WindowStoreState) => state.toMs);
-    const selectedPreset = useWindowStore((state: WindowStoreState) => state.selectedPreset);
+    const fromMs = useDashboardStore((state: DashboardStoreState) => state.fromMs);
+    const toMs = useDashboardStore((state: DashboardStoreState) => state.toMs);
+    const selectedPreset = useDashboardStore((state: DashboardStoreState) => state.selectedPreset);
 
     const fetchMetrics = useCallback(async () => {
         setMetricFetchLoad(true);

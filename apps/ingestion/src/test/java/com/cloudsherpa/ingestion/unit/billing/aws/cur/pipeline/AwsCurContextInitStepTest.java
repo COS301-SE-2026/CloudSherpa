@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import com.cloudsherpa.ingestion.billing.BillingExportConfigService;
 import com.cloudsherpa.ingestion.billing.provider.aws.cur.pipeline.AwsCurContext;
 import com.cloudsherpa.ingestion.billing.provider.aws.cur.pipeline.AwsCurContextInitStep;
+import com.cloudsherpa.ingestion.scheduler.encryption.CredentialEncryptionService;
 import com.cloudsherpa.lib.entities.BillingExportConfig;
 import com.cloudsherpa.lib.entities.BillingExportExecution;
 import com.cloudsherpa.lib.entities.CloudCredential;
@@ -23,6 +24,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import software.amazon.awssdk.regions.Region;
 
 @ExtendWith(MockitoExtension.class)
 class AwsCurContextInitStepTest {
@@ -32,6 +34,8 @@ class AwsCurContextInitStepTest {
   @Mock BillingExportConfigService billingExportConfigService;
 
   @Mock CloudCredentialRepository cloudCredentialRepository;
+
+  @Mock CredentialEncryptionService encryptionService;
 
   @TempDir Path tempDir;
 
@@ -62,17 +66,18 @@ class AwsCurContextInitStepTest {
             configUuid,
             accountId,
             " test-bucket ",
+            "eu-north-1",
             "cur-prefix",
             "cur-export",
             OffsetDateTime.now());
 
     String credentialJson =
         """
-                {
-                  "accessKeyId": "test-access-key",
-                  "secretAccessKey": "test-secret-key"
-                }
-                """;
+        {
+          "accessKeyId": "test-access-key",
+          "secretAccessKey": "test-secret-key"
+        }
+        """;
 
     validCredential =
         new CloudCredential(
@@ -88,7 +93,8 @@ class AwsCurContextInitStepTest {
             tempDir.toString(),
             billingExportExecutionRepository,
             billingExportConfigService,
-            cloudCredentialRepository);
+            cloudCredentialRepository,
+            encryptionService);
   }
 
   @Test
@@ -120,6 +126,7 @@ class AwsCurContextInitStepTest {
 
     // assert
     assertEquals("test-bucket", context.getBucketName());
+    assertEquals(Region.EU_NORTH_1, context.getBucketRegion());
     assertEquals("cur-prefix", context.getExportPrefix());
     assertEquals("cur-export", context.getExportName());
     assertEquals(accountId, context.getAccountId());
@@ -150,7 +157,6 @@ class AwsCurContextInitStepTest {
     // assert
     assertEquals("test-access-key", context.getCredentials().getAccessKey());
     assertEquals("test-secret-key", context.getCredentials().getSecretKey());
-    assertEquals("eu-north-1", context.getCredentials().getAwsRegion());
   }
 
   @Test
@@ -178,9 +184,9 @@ class AwsCurContextInitStepTest {
 
     String credentialInvalidJson =
         """
-                  accessKeyId": "test-access-key",
-                  "secretAccessKey": "test-secret-key"
-                """;
+          accessKeyId": "test-access-key",
+          "secretAccessKey": "test-secret-key"
+        """;
 
     CloudCredential invalidCredential =
         new CloudCredential(
@@ -194,6 +200,9 @@ class AwsCurContextInitStepTest {
     when(cloudCredentialRepository.findByAccountIdAndProvider(accountId, "AWS"))
         .thenReturn(List.of(invalidCredential));
 
+    when(encryptionService.decrypt(invalidCredential.getCredentialValue()))
+        .thenReturn(invalidCredential.getCredentialValue());
+
     // act & assert
     assertThrows(IllegalStateException.class, () -> step.execute(context));
   }
@@ -201,8 +210,12 @@ class AwsCurContextInitStepTest {
   private void mockValidConfigAndCredential() {
     when(billingExportConfigService.getAccountBillingExportConfig(configUuid))
         .thenReturn(validConfig);
+
     when(cloudCredentialRepository.findByAccountIdAndProvider(accountId, "AWS"))
         .thenReturn(List.of(validCredential));
+
+    when(encryptionService.decrypt(validCredential.getCredentialValue()))
+        .thenReturn(validCredential.getCredentialValue());
   }
 
   private void mockProcessedExport(UUID billingExportId) {

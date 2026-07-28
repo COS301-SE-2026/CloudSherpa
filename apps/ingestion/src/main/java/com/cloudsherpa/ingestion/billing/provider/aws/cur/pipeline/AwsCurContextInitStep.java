@@ -1,8 +1,9 @@
 package com.cloudsherpa.ingestion.billing.provider.aws.cur.pipeline;
 
 import com.cloudsherpa.ingestion.billing.BillingExportConfigService;
-import com.cloudsherpa.ingestion.connector.AwsCredentials;
 import com.cloudsherpa.ingestion.connector.CloudCredentials;
+import com.cloudsherpa.ingestion.scheduler.dto.AwsCredentialsDto;
+import com.cloudsherpa.ingestion.scheduler.encryption.CredentialEncryptionService;
 import com.cloudsherpa.lib.entities.BillingExportConfig;
 import com.cloudsherpa.lib.entities.BillingExportExecution;
 import com.cloudsherpa.lib.entities.CloudCredential;
@@ -18,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
+import software.amazon.awssdk.regions.Region;
 
 @Component
 @Order(1)
@@ -28,16 +30,19 @@ public class AwsCurContextInitStep implements AwsCurIngestionPipelineStep {
   private final BillingExportConfigService billingExportConfigService;
   private final String awsCurTmpDir;
   private final CloudCredentialRepository cloudCredentialRepository;
+  private final CredentialEncryptionService encryptionService;
 
   public AwsCurContextInitStep(
       @Value("${sherpa.billing.aws.cur.tmp-dir}") String awsCurTmpDir,
       BillingExportExecutionRepository billingExportExecutionRepository,
       BillingExportConfigService billingExportConfigService,
-      CloudCredentialRepository cloudCredentialRepository) {
+      CloudCredentialRepository cloudCredentialRepository,
+      CredentialEncryptionService encryptionService) {
     this.awsCurTmpDir = awsCurTmpDir;
     this.billingExportExecutionRepository = billingExportExecutionRepository;
     this.billingExportConfigService = billingExportConfigService;
     this.cloudCredentialRepository = cloudCredentialRepository;
+    this.encryptionService = encryptionService;
   }
 
   @Override
@@ -51,6 +56,7 @@ public class AwsCurContextInitStep implements AwsCurIngestionPipelineStep {
             UUID.fromString(context.getConfigId()));
 
     context.setBucketName(billingExportConfig.getBucketName().strip());
+    context.setBucketRegion(Region.of(billingExportConfig.getBucketRegion()));
     context.setExportPrefix(billingExportConfig.getExportPrefix());
     context.setExportName(billingExportConfig.getExportName());
     context.setAccountId(billingExportConfig.getAccountId());
@@ -76,15 +82,15 @@ public class AwsCurContextInitStep implements AwsCurIngestionPipelineStep {
     // Optimistically hope that there is one set of credentials per account
     CloudCredential credential = repoCloudCredentials.get(0);
     ObjectMapper objectMapper = new ObjectMapper();
-
+    String encryptedCredentialValue = credential.getCredentialValue();
+    String decryptedCredentialValue = encryptionService.decrypt(encryptedCredentialValue);
     try {
-      AwsCredentials awsCredentials =
-          objectMapper.readValue(credential.getCredentialValue(), AwsCredentials.class);
+      AwsCredentialsDto decryptedCredentialsDto =
+          objectMapper.readValue(decryptedCredentialValue, AwsCredentialsDto.class);
 
       CloudCredentials cloudCredentials = new CloudCredentials();
-      cloudCredentials.setAccessKey(awsCredentials.getAccessKeyId());
-      cloudCredentials.setSecretKey(awsCredentials.getSecretAccessKey());
-      cloudCredentials.setAwsRegion("eu-north-1");
+      cloudCredentials.setAccessKey(decryptedCredentialsDto.accessKeyId());
+      cloudCredentials.setSecretKey(decryptedCredentialsDto.secretAccessKey());
 
       context.setCredentials(cloudCredentials);
     } catch (JsonProcessingException jsonProcessingException) {

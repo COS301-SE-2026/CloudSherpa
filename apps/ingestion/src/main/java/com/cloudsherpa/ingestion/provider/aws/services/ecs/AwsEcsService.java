@@ -3,51 +3,72 @@ package com.cloudsherpa.ingestion.provider.aws.services.ecs;
 import com.cloudsherpa.ingestion.connector.CloudCredentials;
 import com.cloudsherpa.ingestion.models.ResourceDetail;
 import com.cloudsherpa.ingestion.provider.aws.factory.AwsClientFactory;
+import com.cloudsherpa.ingestion.provider.aws.model.RegionalArn;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.ecs.EcsClient;
 import software.amazon.awssdk.services.ecs.model.ClusterField;
 import software.amazon.awssdk.services.ecs.model.DescribeClustersResponse;
 import software.amazon.awssdk.services.ecs.model.Tag;
 
 public class AwsEcsService implements EcsService {
-  @Override
-  public List<String> getAllEcsClusterArns(CloudCredentials credentials) {
-    try (EcsClient ecs =
-        EcsClient.builder()
-            .region(AwsClientFactory.region(credentials))
-            .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
-            .build()) {
+  Logger logger = Logger.getLogger(getClass().getName());
 
-      return ecs.listClusters().clusterArns();
+  @Override
+  public List<RegionalArn> getAllEcsClusterArns(CloudCredentials credentials) {
+    List<RegionalArn> regionalArns = new ArrayList<>();
+    for (Region region : Region.regions()) {
+      try (EcsClient ecs =
+          EcsClient.builder()
+              .region(region)
+              .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
+              .build()) {
+
+        regionalArns.add(new RegionalArn(ecs.listClusters().clusterArns(), region));
+      } catch (Exception e) {
+        logger.info("Skipping ECS discovery for region " + region.id() + ": " + e.getMessage());
+      }
     }
+    return regionalArns;
   }
 
   @Override
   public List<ResourceDetail> getAllEcsClustersWithTags(CloudCredentials credentials) {
-    try (EcsClient ecs =
-        EcsClient.builder()
-            .region(AwsClientFactory.region(credentials))
-            .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
-            .build()) {
+    List<ResourceDetail> resources = new ArrayList<>();
+    for (Region region : Region.regions()) {
+      try (EcsClient ecs =
+          EcsClient.builder()
+              .region(region)
+              .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
+              .build()) {
 
-      List<String> clusterArns = ecs.listClusters().clusterArns();
+        List<String> clusterArns = ecs.listClusters().clusterArns();
 
-      DescribeClustersResponse response =
-          ecs.describeClusters(r -> r.clusters(clusterArns).include(ClusterField.TAGS));
+        DescribeClustersResponse response =
+            ecs.describeClusters(r -> r.clusters(clusterArns).include(ClusterField.TAGS));
 
-      return response.clusters().stream()
-          .map(
-              cluster -> {
-                Map<String, String> tags =
-                    cluster.tags().stream()
-                        .collect(Collectors.toMap(Tag::key, Tag::value, (a, b) -> b));
-                String name =
-                    ResourceDetail.resolveName(cluster.clusterName(), cluster.clusterName(), tags);
-                return new ResourceDetail(cluster.clusterArn(), name, "ClusterName", "ECS", tags);
-              })
-          .toList();
+        resources.addAll(
+            response.clusters().stream()
+                .map(
+                    cluster -> {
+                      Map<String, String> tags =
+                          cluster.tags().stream()
+                              .collect(Collectors.toMap(Tag::key, Tag::value, (a, b) -> b));
+                      String name =
+                          ResourceDetail.resolveName(
+                              cluster.clusterName(), cluster.clusterName(), tags);
+                      return new ResourceDetail(
+                          name, name, "ClusterName", "AWS/ECS", region.id(), tags);
+                    })
+                .toList());
+      } catch (Exception e) {
+        logger.info("Skipping ECS discovery for region " + region.id() + ": " + e.getMessage());
+      }
     }
+    return resources;
   }
 }
