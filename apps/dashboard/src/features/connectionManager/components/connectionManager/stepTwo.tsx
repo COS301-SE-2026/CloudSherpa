@@ -202,6 +202,12 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
                         optedInToBilling={optedInToBilling}
                         handleOptedInToBillingChange={(checked) => {
                             setOptedInToBilling(checked);
+
+                            if (!checked) {
+                                setExportName("");
+                                setPrefix("");
+                                setBucketName("");
+                            }
                         }}
                     />
 
