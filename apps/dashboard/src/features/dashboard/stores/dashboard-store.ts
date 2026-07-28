@@ -363,6 +363,7 @@ const createWindowSlice: StateCreator<DashboardStore, [], [], WindowSlice> = (se
     },
 });
 
+// Wrapping in persist instructs zustand to persist the fields specified in the partialize object to local storage
 export const useDashboardStore = create<DashboardStore>()(
     persist(
         (...args) => ({

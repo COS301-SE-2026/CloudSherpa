@@ -8,7 +8,6 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/atoms/button";
 import { Calendar } from "@/components/atoms/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/atoms/popover";
-import { useWindowStore } from "@/features/dashboard/stores/window-store";
 import { TimeWindowPreset } from "@/features/dashboard/types/timewindow";
 import {
     Command,
@@ -18,6 +17,7 @@ import {
     CommandList,
     CommandSeparator,
 } from "@/components/atoms/command";
+import { useDashboardStore } from "../../stores/dashboard-store";
 
 type DurationPreset = Exclude<TimeWindowPreset, "custom">;
 
@@ -66,8 +66,8 @@ export function TimePeriodSelector({
 }>) {
     const [open, setOpen] = useState(false);
     const [view, setView] = useState<"presets" | "custom">("presets");
-    const setSelectedPreset = useWindowStore((state) => state.setPreset);
-    const selectedPreset = useWindowStore((state) => state.selectedPreset);
+    const setSelectedPreset = useDashboardStore((state) => state.setPreset);
+    const selectedPreset = useDashboardStore((state) => state.selectedPreset);
 
     const getDisplayLabel = () => {
         if (selectedPreset !== "custom") {

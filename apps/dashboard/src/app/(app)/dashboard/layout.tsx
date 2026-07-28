@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 import Toolbar from "@/features/dashboard/components/toolbar/toolbar";
 import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
-import { useWindowStore } from "@/features/dashboard/stores/window-store";
 import { useMetricStore } from "@/features/dashboard/stores/metric-store";
 import { KpiWidgetConfig, LayoutItem, WidgetConfig } from "@/features/dashboard/types/widgets";
 import { createDashboard, updateDashboardLayout, createWidget } from "@/lib/fetch/api-dashboard";
@@ -38,9 +37,9 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
         clearSnapshot,
     } = useDashboardStore((state) => state.actions);
 
-    const fromMs = useWindowStore((state) => state.fromMs);
-    const toMs = useWindowStore((state) => state.toMs);
-    const setWindow = useWindowStore((state) => state.setWindow);
+    const fromMs = useDashboardStore((state) => state.fromMs);
+    const toMs = useDashboardStore((state) => state.toMs);
+    const setWindow = useDashboardStore((state) => state.setWindow);
 
     const getMetricList = useMetricStore((state) => state.getMetricList);
 
