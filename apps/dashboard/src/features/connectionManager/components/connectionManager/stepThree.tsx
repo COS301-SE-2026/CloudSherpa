@@ -20,6 +20,7 @@ import {
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/atoms/input";
 import { Label } from "@/components/atoms/label";
+import { Slider } from "@/components/atoms/slider";
 
 interface PropsForStepThree {
     displayName: string;
@@ -237,7 +238,7 @@ export default function StepThree({
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-8">
-                    <div className="min-h-[200px]">
+                    <div className="min-h-50">
                         <div className="space-y-8">
                             {Object.entries(groupedResources).map(
                                 ([serviceCategory, categoryResources]) => (
@@ -297,37 +298,14 @@ export default function StepThree({
                                 </Tooltip>
                             </TooltipProvider>
                         </div>
-
-                        <Input
-                            id="ingestionPeriod"
-                            type="number"
-                            min="1"
-                            step="1"
-                            value={period}
-                            onChange={(e) => {
-                                const value = e.target.value;
-
-                                if (/^\d*$/.test(value)) {
-                                    setPeriod(value);
-                                }
-                            }}
-                            className="
-      bg-background
-      border-border
-      rounded-md
-      px-4
-      py-3
-      text-foreground
-      placeholder:text-muted-foreground/40
-      focus:outline-none
-      focus:ring-2
-      focus:ring-ring
-      focus:border-transparent
-      transition-all
-      w-full
-    "
-                            required
-                        />
+                        <div className="flex flex-col gap-2 justify-center items-end ">
+                            {/* the span is meant for a visual indicator of the value of the slider */}
+                            <span>{period} seconds</span>
+                            <Slider
+                                value={[Number(period)]}
+                                onValueChange={(vals) => setPeriod(String(vals[0]))}
+                            />
+                        </div>
 
                         <p className="text-xs text-muted-foreground/70">
                             Recommended: {recommendedPeriod} seconds
