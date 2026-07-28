@@ -36,7 +36,7 @@ interface LinksForHelp {
     description: string;
     icon: ComponentType<{ className?: string; strokeWidth?: number }>;
     href?: string;
-    action?: "shortcut" | "first time user";
+    action?: "shortcut" | "first time user" | "tutorials";
 }
 
 const LINKS: LinksForHelp[] = [
@@ -53,7 +53,7 @@ const LINKS: LinksForHelp[] = [
         label: "Tutorials",
         description: "Step-by-step CloudSherpa walkthroughs",
         icon: PlayCircle,
-        href: "/helpMenu/documentsAndTutorials",
+        action : "tutorials",
     },
 
     {
@@ -168,6 +168,13 @@ export function HelpMenu() {
             setOpen(false);
             startNextStep("dashboard");
             return;
+        }
+
+        if(link.action === "tutorials"){
+            setOpen(false);
+
+            router.push("helpMenu/documentsAndTutorials?tab=tutorials");
+            return
         }
 
         if (link.href) {

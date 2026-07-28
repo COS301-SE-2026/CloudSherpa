@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type ComponentType } from "react";
+import { useMemo, useState, type ComponentType, useEffect } from "react";
 import {
     Search,
     BookOpen,
@@ -25,7 +25,7 @@ import { Button } from "@/components/atoms/button";
 import { Input } from "@/components/atoms/input";
 import { Badge } from "@/components/atoms/badge";
 import * as TabsPrimitive from "@radix-ui/react-tabs"; //using this instead of tabs bc i want to create my own styling of the tabs
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 /*
 - users should be able to view documents and videos about nav around cloudsherpa
@@ -136,6 +136,8 @@ export default function DocumentsAndTutorials() {
 
     const [search, setSearch] = useState("");
 
+    const searchParameters = useSearchParams();
+
     const [activeTab, setActiveTab] = useState<"documents" | "tutorials">("documents");
 
     const [filterTutorials, setFilterTutorials] = useState<FilterForTutorials>("All");
@@ -153,6 +155,14 @@ export default function DocumentsAndTutorials() {
                 documents.category.toLowerCase().includes(searchQuery)
         );
     }, [search]);
+
+    useEffect(() => {
+        const tutorialTab = searchParameters.get("tab");
+
+        if(tutorialTab === "tutorials"){
+            setActiveTab("tutorials");
+        }
+    }, [searchParameters]);
 
     const filteredTutorials = useMemo(() => {
         const categories =
