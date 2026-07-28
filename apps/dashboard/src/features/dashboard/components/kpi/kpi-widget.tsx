@@ -8,6 +8,7 @@ import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
 import { useRouter } from "next/navigation";
 import { WidgetDropdown } from "@/features/dashboard/components/widgetDropdown";
 import { WidgetMenu } from "@/features/dashboard/components/widgetMenu";
+import { Button } from "@/components/atoms/button";
 
 interface WidgetProps {
     config: KpiWidgetConfig;
@@ -17,7 +18,7 @@ interface WidgetProps {
 
 export function KPIWidget({ config, preview = false, isEditMode = false }: Readonly<WidgetProps>) {
     const { kpiPreview, loadingKpiValue } = useFetchKpiValue(config);
-    const { id } = config;
+    const { id, chargeIds } = config;
 
     const openConfig = () => {
         if (!isEditMode) {
@@ -38,6 +39,43 @@ export function KPIWidget({ config, preview = false, isEditMode = false }: Reado
 
     const router = useRouter();
     const showSaveBeforeConfigure = isEditMode && !preview;
+
+    const isNotConfigured = !chargeIds || chargeIds.length === 0;
+
+    const renderKpiContent = () => {
+        if (showSaveBeforeConfigure) {
+            return (
+                <div className="flex flex-1 items-center justify-center">
+                    <p className="text-xs text-muted-foreground italic text-center">
+                        Save dashboard changes before configuring this widget.
+                    </p>
+                </div>
+            );
+        }
+
+        if (isNotConfigured) {
+            return (
+                <div className="flex flex-col gap-2 justify-center items-center h-full w-full">
+                    <span className="text-base">This widget is not configured.</span>
+                    <Button onClick={openConfig}>Configure Widget</Button>
+                </div>
+            );
+        }
+        return (
+            <>
+                {loadingKpiValue ? (
+                    <Spinner />
+                ) : (
+                    <h1 className="text-xl">${kpiPreview?.value.toFixed(5)}</h1>
+                )}
+                <p>Across {config.chargeIds.length} Resources</p>
+                <div className="flex flex-row justify-between text-sm text-muted-foreground">
+                    <p>Last {config.aggregationWindowDays} days</p>
+                    {loadingKpiValue ? <Spinner /> : <p>Updated {formattedUpdatedAtDate}</p>}
+                </div>
+            </>
+        );
+    };
 
     return (
         <WidgetMenu
@@ -61,30 +99,7 @@ export function KPIWidget({ config, preview = false, isEditMode = false }: Reado
                     )}
                 </CardHeader>
 
-                {showSaveBeforeConfigure ? (
-                    <div className="flex flex-1 items-center justify-center">
-                        <p className="text-xs text-muted-foreground italic text-center">
-                            Save dashboard changes before configuring this widget.
-                        </p>
-                    </div>
-                ) : (
-                    <>
-                        {loadingKpiValue ? (
-                            <Spinner />
-                        ) : (
-                            <h1 className="text-xl">${kpiPreview?.value.toFixed(5)}</h1>
-                        )}
-                        <p>Accross {config.chargeIds.length} Resources</p>
-                        <div className="flex flex-row justify-between">
-                            <p>Last {config.aggregationWindowDays} days</p>
-                            {loadingKpiValue ? (
-                                <Spinner />
-                            ) : (
-                                <p>Updated {formattedUpdatedAtDate}</p>
-                            )}
-                        </div>
-                    </>
-                )}
+                {renderKpiContent()}
             </Card>
         </WidgetMenu>
     );

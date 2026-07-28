@@ -51,13 +51,16 @@ export function ChartWidget({ config }: Readonly<WidgetProps>) {
 
         if (!resourceId || !metricType) {
             return (
-                <div className="flex flex-col w-full h-full items-center justify-center gap-2">
+                <div className="flex flex-col  h-full items-center justify-center gap-2">
                     {isEditMode ? (
                         <p className="text-xs text-muted-foreground italic">
                             Save dashboard changes before configuring this widget.
                         </p>
                     ) : (
-                        <Button onClick={openConfig}>Configure Widget</Button>
+                        <div className="flex flex-col items-center justify-center gap-2">
+                            <span className="text-base">This widget is not configured.</span>
+                            <Button onClick={openConfig}>Configure Widget</Button>
+                        </div>
                     )}
                 </div>
             );

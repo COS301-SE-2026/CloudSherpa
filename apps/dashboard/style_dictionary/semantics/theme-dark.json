@@ -22,7 +22,7 @@
             "accent": { "$type": "color", "$value": "{color.neutral.800}" },
             "accent-foreground": { "$type": "color", "$value": "{color.neutral.50}" },
 
-            "destructive": { "$type": "color", "$value": "{color.red.600}" },
+            "destructive": { "$type": "color", "$value": "{color.red.400}" },
             "destructive-foreground": { "$type": "color", "$value": "{color.red.50}" },
 
             "success": { "$type": "color", "$value": "{color.green.600}" },
