@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type ComponentType, useEffect } from "react";
+import { useMemo, useState, type ComponentType, useEffect, useRef } from "react";
 import {
     Search,
     BookOpen,
@@ -142,6 +142,10 @@ export default function DocumentsAndTutorials() {
 
     const [filterTutorials, setFilterTutorials] = useState<FilterForTutorials>("All");
 
+    //added this to hellp correct error
+    //will prevent rerendering
+    const selectedTab = useRef(false);
+
     const searchDocument = useMemo(() => {
         if (!search.trim()) {
             return DOCUMENTS;
@@ -159,8 +163,10 @@ export default function DocumentsAndTutorials() {
     useEffect(() => {
         const tutorialTab = searchParameters.get("tab");
 
-        if(tutorialTab === "tutorials"){
+        if(tutorialTab === "tutorials" && !selectedTab.current){
             setActiveTab("tutorials");
+
+            selectedTab.current = true;
         }
     }, [searchParameters]);
 
