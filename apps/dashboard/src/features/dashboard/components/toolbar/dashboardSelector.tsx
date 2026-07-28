@@ -48,7 +48,6 @@ export function DashboardSelector({
         (d) => d.displayName.trim().toLowerCase() === normalizedQuery.toLowerCase()
     );
     const canCreateFromSearch = normalizedQuery.length > 0 && !hasExactNameMatch;
-
     const handleCreateFromSearch = () => {
         if (!canCreateFromSearch) return;
         onCreate(normalizedQuery);
@@ -84,42 +83,43 @@ export function DashboardSelector({
                     </Button>
                 </PopoverTrigger>
 
-                <PopoverContent
-                    className="p-0 w-72 bg-popover border-border-strong shadow-xl"
-                    align="start"
-                >
-                    {view === "list" ? (
-                        <Command>
-                            <CommandInput
-                                placeholder="Search dashboards..."
-                                className="h-9"
-                                value={searchQuery}
-                                onValueChange={setSearchQuery}
-                            />
-                            <CommandList>
-                                <CommandEmpty>No dashboard found.</CommandEmpty>
-                                <CommandGroup heading="My Dashboards">
-                                    {dashboards.map((d) => (
-                                        <CommandItem
-                                            key={d.id}
-                                            value={d.displayName}
-                                            className="group flex items-center justify-between cursor-pointer"
-                                            onSelect={() => {
-                                                onSelect(d.id);
-                                                setOpen(false);
-                                            }}
-                                        >
-                                            <div className="flex items-center flex-1 overflow-hidden w-full gap-2">
-                                                <Check
-                                                    className={cn(
-                                                        " h-4 w-4 shrink-0",
-                                                        selectedId === d.id
-                                                            ? "opacity-100"
-                                                            : "opacity-0"
-                                                    )}
-                                                />
-                                                <span className="truncate">{d.displayName}</span>
-                                            </div>
+            <PopoverContent
+                className="p-0 w-72 bg-popover border-border-strong shadow-xl"
+                align="start"
+            >
+                {view === "list" ? (
+                    <Command>
+                        <CommandInput
+                            placeholder="Search dashboards..."
+                            className="h-9"
+                            value={searchQuery}
+                            onValueChange={setSearchQuery}
+                        />
+                        <CommandList>
+                            <CommandEmpty>No dashboard found.</CommandEmpty>
+                            <CommandGroup heading="My Dashboards">
+                                {dashboards.map((d) => (
+                                    <CommandItem
+                                        key={d.id}
+                                        value={d.id}
+                                        keywords={[d.displayName]}
+                                        className="group flex items-center justify-between cursor-pointer"
+                                        onSelect={() => {
+                                            onSelect(d.id);
+                                            setOpen(false);
+                                        }}
+                                    >
+                                        <div className="flex items-center flex-1 overflow-hidden w-full gap-2">
+                                            <Check
+                                                className={cn(
+                                                    " h-4 w-4 shrink-0",
+                                                    selectedId === d.id
+                                                        ? "opacity-100"
+                                                        : "opacity-0"
+                                                )}
+                                            />
+                                            <span className="truncate">{d.displayName}</span>
+                                        </div>
 
                                             <Button
                                                 variant="ghost"

@@ -10,10 +10,18 @@ import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
 import { useToolbar } from "@/features/dashboard/components/toolbar/toolbarProvider";
 import { WidgetMenu } from "@/features/dashboard/components/widgetMenu";
 import { WidgetDropdown } from "@/features/dashboard/components/widgetDropdown";
+import { CircleAlert } from "lucide-react";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/atoms/tooltip";
 
 interface BaseChartProps {
     resourceId: string;
     metricType: MetricType;
+    onDataStatusChange?: (hasData: boolean) => void;
 }
 
 const CHART_COMPONENTS: Record<ChartType, React.ComponentType<BaseChartProps>> = {
@@ -29,6 +37,7 @@ export function ChartWidget({ config }: Readonly<WidgetProps>) {
     const { chartType, displayName, resourceId, metricType, id } = config;
     const ChartComponent = CHART_COMPONENTS[chartType];
     const [isConfigOpen, setIsConfigOpen] = useState(false);
+    const [hasNoData, setHasNoData] = useState(false);
 
     const { isEditMode } = useToolbar();
 
@@ -51,19 +60,28 @@ export function ChartWidget({ config }: Readonly<WidgetProps>) {
 
         if (!resourceId || !metricType) {
             return (
-                <div className="flex flex-col w-full h-full items-center justify-center gap-2">
+                <div className="flex flex-col  h-full items-center justify-center gap-2">
                     {isEditMode ? (
                         <p className="text-xs text-muted-foreground italic">
                             Save dashboard changes before configuring this widget.
                         </p>
                     ) : (
-                        <Button onClick={openConfig}>Configure Widget</Button>
+                        <div className="flex flex-col items-center justify-center gap-2">
+                            <span className="text-base">This widget is not configured.</span>
+                            <Button onClick={openConfig}>Configure Widget</Button>
+                        </div>
                     )}
                 </div>
             );
         }
 
-        return <ChartComponent resourceId={resourceId} metricType={metricType} />;
+        return (
+            <ChartComponent
+                resourceId={resourceId}
+                metricType={metricType}
+                onDataStatusChange={(hasData) => setHasNoData(!hasData)}
+            />
+        );
     };
 
     return (
@@ -77,11 +95,31 @@ export function ChartWidget({ config }: Readonly<WidgetProps>) {
                 <Card className="flex flex-col h-full w-full overflow-hidden">
                     <CardHeader className="flex flex-row items-center justify-between ">
                         <CardTitle>{displayName}</CardTitle>
-                        <WidgetDropdown
-                            onConfigure={openConfig}
-                            onDelete={() => removeWidget(id, id)}
-                            isEditMode={isEditMode}
-                        />
+                        <div className="flex items-center gap-2">
+                            {hasNoData && (
+                                <TooltipProvider delayDuration={100}>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <div className="flex items-center">
+                                                <CircleAlert className="h-5 w-5 text-warning animate-pulse cursor-help" />
+                                            </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent
+                                            side="bottom"
+                                            align="end"
+                                            className="w-48 text-center text-xs"
+                                        >
+                                            <p>There is no data to display for this time window.</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            )}
+                            <WidgetDropdown
+                                onConfigure={openConfig}
+                                onDelete={() => removeWidget(id, id)}
+                                isEditMode={isEditMode}
+                            />
+                        </div>
                     </CardHeader>
 
                     <CardContent className="flex-1 w-full relative overflow-hidden">
