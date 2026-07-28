@@ -6,12 +6,15 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.cloudsherpa.lib.entities.NormalizedCosts;
 
-public interface NormalizedCostsRepository extends JpaRepository<NormalizedCosts, UUID> {
+import jakarta.transaction.Transactional;
+
+public interface NormalizedCostsRepository extends JpaRepository<NormalizedCosts, String> {
   @Query(
       """
       SELECT COALESCE(SUM(nc.costAmount), 0)
@@ -41,4 +44,33 @@ public interface NormalizedCostsRepository extends JpaRepository<NormalizedCosts
         """,
     nativeQuery = true)
     List<NormalizedCosts> findDistinctByChargeId();
+
+    @Modifying
+    @Transactional
+    @Query(
+        value = """
+                INSERT INTO :#{#tenantId}.normalized_costs (
+                    cost_id,
+                    execution_id, 
+                    resource_id, 
+                    provider,
+                    billing_account_id, 
+                    service_name, 
+                    charge_type,
+                    cost_amount, 
+                    currency, 
+                    usage_start_time, 
+                    usage_end_time, 
+                    metadata
+                )
+                VALUES (
+                    :#{#entity.costId}, :#{#entity.executionId}, :#{#entity.resourceId}, :#{#entity.provider}, :#{#entity.billingAccountId}, :#{#entity.serviceName}, :#{#entity.chargeType}, :#{#entity.costAmount}, :#{#entity.currency}, :#{#entity.usageStartTime}, :#{#entity.usageEndTime}, :#{#entity.metadata}
+                ) ON CONFLICT (cost_id, usage_start_time) 
+                DO UPDATE SET 
+                    cost_amount = EXCLUDED.cost_amount,
+                    metadata = EXCLUDED.metadata;
+                """,
+                nativeQuery = true
+    ) 
+    int upsert(@Param("entity") NormalizedCosts entity, @Param("tenantId") String tenantId);
 }
