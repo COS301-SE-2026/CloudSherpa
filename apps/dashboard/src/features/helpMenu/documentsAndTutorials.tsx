@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type ComponentType, useEffect, useRef } from "react";
+import { useMemo, useState, type ComponentType, useEffect, useRef, Suspense } from "react";
 import {
     Search,
     BookOpen,
@@ -131,7 +131,7 @@ const TUTORIALS: Tutorials[] = [
     },
 ];
 
-export default function DocumentsAndTutorials() {
+function DocumentsAndTutorialsSuspense() {
     const router = useRouter();
 
     const [search, setSearch] = useState("");
@@ -472,4 +472,14 @@ export default function DocumentsAndTutorials() {
             </div>
         </div>
     );
+}
+
+//the errror suggested that the useSearch should be wrapped in suspense
+//it will help by displaying a fallback when the content is loading (checking if it will work)
+export default function DocumentsAndTutorials(){
+    return(
+        <Suspense fallback = {null}>
+            <DocumentsAndTutorialsSuspense/>
+        </Suspense>
+    )
 }
