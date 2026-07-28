@@ -161,8 +161,7 @@ public class AwsConnectionPersistenceService {
             .createdAt(now)
             .lastBillingIngestion(now)
             .lastUsageIngestion(now)
-            .nextUsageIngestion(
-                OffsetDateTime.now(ZoneOffset.UTC).plusSeconds(request.ingestionPeriod()))
+            .nextUsageIngestion(OffsetDateTime.now(ZoneOffset.UTC).plusMinutes(1))
             .nextBillingIngestion(OffsetDateTime.now(ZoneOffset.UTC).plusMinutes(1))
             .build();
 
