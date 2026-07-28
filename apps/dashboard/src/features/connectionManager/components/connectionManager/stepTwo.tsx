@@ -131,9 +131,11 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
     const handleSubmit = async (forHandlingSubmit: React.FormEvent<HTMLFormElement>) => {
         forHandlingSubmit.preventDefault();
 
-        if (!prefix || !bucketName || !bucketRegion || !exportName) {
-            setError("Please fill out all billing configuration fields.");
-            return;
+        if (optedInToBilling) {
+            if (!prefix || !bucketName || !bucketRegion || !exportName) {
+                setError("Please fill out all billing configuration fields.");
+                return;
+            }
         }
 
         try {
