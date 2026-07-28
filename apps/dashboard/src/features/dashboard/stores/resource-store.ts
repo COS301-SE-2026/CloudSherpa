@@ -2,33 +2,39 @@ import { create } from "zustand";
 import apiClient from "@/lib/fetch/api-client";
 
 export type ResourceNameStore = {
-    resourcesById: Record<string, string>,
-    fetchResources: () => Promise<void>
-}
+    resources: Resource[];
+    resourcesById: Record<string, string>;
+    fetchResources: () => Promise<void>;
+    reset: () => void;
+};
 
-export const useResourceNameStore = create<ResourceNameStore>(
-    (set) => ({
-        resourcesById: {},
-        fetchResources: async () => {
+export type Resource = {
+    resourceId: string;
+    resourceName: string;
+};
+
+export const useResourceNameStore = create<ResourceNameStore>((set) => ({
+    resources: [],
+    resourcesById: {},
+    fetchResources: async () => {
         try {
-            const fetched = await apiClient("/analytics/resource-names");
+            const fetched = await apiClient<Resource[]>("/analytics/resource-names");
+            const resources = Array.isArray(fetched) ? fetched : [];
+            const resourcesById = resources.reduce<Record<string, string>>((acc, resource) => {
+                acc[resource.resourceId] = resource.resourceName;
+                return acc;
+            }, {});
 
-            const fetchedResources =
-                fetched && typeof fetched === "object" && !Array.isArray(fetched)
-                    ? (fetched as Record<string, string>)
-                    : {};
-
-            set((state) => ({
-                resourcesById: {
-                    ...state.resourcesById,
-                    ...fetchedResources
-                }
+            set(() => ({
+                resources,
+                resourcesById,
             }));
         } catch {
             set((state) => ({
-                resourcesById: { ...state.resourcesById }
+                resources: state.resources,
+                resourcesById: { ...state.resourcesById },
             }));
         }
-    }
-    }
-))
+    },
+    reset: () => set({ resources: [], resourcesById: {} }),
+}));

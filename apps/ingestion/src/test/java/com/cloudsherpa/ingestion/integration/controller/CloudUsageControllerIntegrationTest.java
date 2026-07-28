@@ -7,9 +7,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.cloudsherpa.ingestion.billing.provider.aws.cur.AwsCurIngestionService;
 import com.cloudsherpa.ingestion.connector.CloudConnectorFactory;
 import com.cloudsherpa.ingestion.controller.CloudUsageController;
 import com.cloudsherpa.ingestion.models.UsageRecordModel;
+import com.cloudsherpa.ingestion.normalization.normalizers.AwsNormalizer;
 import com.cloudsherpa.ingestion.provider.aws.AwsCloudConnector;
 import com.cloudsherpa.ingestion.service.CloudUsageService;
 import com.cloudsherpa.ingestion.service.SherpaDbPersistenceService;
@@ -35,11 +37,15 @@ class CloudUsageControllerIntegrationTest {
 
   @Autowired private MockMvc mockMvc;
 
+  @MockitoBean private AwsCurIngestionService awsCurIngestionService;
+
   @MockitoBean private CloudConnectorFactory connectorFactory;
 
   @MockitoBean private SherpaDbPersistenceService sherpaDbPersistenceService;
 
   @MockitoBean private AwsCloudConnector awsConnector;
+
+  @MockitoBean private AwsNormalizer normalizer;
 
   @BeforeEach
   void setUp() {

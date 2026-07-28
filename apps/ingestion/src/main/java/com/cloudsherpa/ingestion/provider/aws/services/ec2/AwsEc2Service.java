@@ -3,24 +3,46 @@ package com.cloudsherpa.ingestion.provider.aws.services.ec2;
 import com.cloudsherpa.ingestion.connector.CloudCredentials;
 import com.cloudsherpa.ingestion.models.ResourceDetail;
 import com.cloudsherpa.ingestion.provider.aws.factory.AwsClientFactory;
+import com.cloudsherpa.ingestion.provider.aws.model.RegionalInstance;
+import com.cloudsherpa.ingestion.provider.util.DiscoveryExecutor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import org.springframework.stereotype.Service;
+import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.ec2.Ec2Client;
 import software.amazon.awssdk.services.ec2.model.DescribeInstancesResponse;
 import software.amazon.awssdk.services.ec2.model.Instance;
 import software.amazon.awssdk.services.ec2.model.Reservation;
 import software.amazon.awssdk.services.ec2.model.Tag;
 
+@Service
 public class AwsEc2Service implements Ec2Service {
+
+  private final Logger logger = Logger.getLogger(getClass().getName());
+
+  private final DiscoveryExecutor discoveryExecutor;
+
+  public AwsEc2Service(DiscoveryExecutor discoveryExecutor) {
+    this.discoveryExecutor = discoveryExecutor;
+  }
+
   @Override
-  public List<Instance> getAllEc2Instances(CloudCredentials credentials) {
-    List<Instance> resources = new ArrayList<>();
+  public List<RegionalInstance> getAllEc2Instances(CloudCredentials credentials) {
+
+    return discoveryExecutor.execute(
+        Region.regions(), region -> discoverRegion(region, credentials));
+  }
+
+  private List<RegionalInstance> discoverRegion(Region region, CloudCredentials credentials) {
+
+    List<RegionalInstance> resources = new ArrayList<>();
 
     try (Ec2Client ec2 =
         Ec2Client.builder()
-            .region(AwsClientFactory.region(credentials))
+            .region(region)
             .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
             .build()) {
 
@@ -28,10 +50,12 @@ public class AwsEc2Service implements Ec2Service {
 
       for (Reservation reservation : response.reservations()) {
         for (Instance instance : reservation.instances()) {
-
-          resources.add(instance);
+          resources.add(new RegionalInstance(instance, region));
         }
       }
+
+    } catch (Exception e) {
+      logger.info("Skipping EC2 discovery for region " + region.id() + ": " + e.getMessage());
     }
 
     return resources;
@@ -44,14 +68,24 @@ public class AwsEc2Service implements Ec2Service {
 
   @Override
   public List<ResourceDetail> getAllEc2InstancesWithTags(CloudCredentials credentials) {
-    List<Instance> instances = getAllEc2Instances(credentials);
+
+    List<RegionalInstance> instances = getAllEc2Instances(credentials);
     List<ResourceDetail> resources = new ArrayList<>();
 
-    for (Instance instance : instances) {
-      Map<String, String> tags = getTagsForInstance(instance);
-      String instanceName = ResourceDetail.resolveName(instance.instanceId(), null, tags);
+    for (RegionalInstance instance : instances) {
+      Map<String, String> tags = getTagsForInstance(instance.instance());
+
+      String instanceName =
+          ResourceDetail.resolveName(instance.instance().instanceId(), null, tags);
+
       resources.add(
-          new ResourceDetail(instance.instanceId(), instanceName, "InstanceId", "EC2", tags));
+          new ResourceDetail(
+              instance.instance().instanceId(),
+              instanceName,
+              "InstanceId",
+              "AWS/EC2",
+              instance.region().id(),
+              tags));
     }
 
     return resources;

@@ -2,11 +2,15 @@ package com.cloudsherpa.lib.entities;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.util.UUID;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "preferences", schema = "public")
@@ -20,17 +24,23 @@ public class UserPreferences {
   @JoinColumn(name = "user_id", nullable = false, insertable = false, updatable = false)
   private User user;
 
-  @Column(name = "theme", length = 20)
-  private String theme;
+  @Enumerated(EnumType.STRING)
+  @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+  @Column(name = "theme", columnDefinition = "public.theme_enum")
+  private ThemeEnum theme;
 
   @Column(name = "background", columnDefinition = "text")
   private String background;
 
-  @Column(name = "currency", length = 10)
-  private String currency;
+  @Enumerated(EnumType.STRING)
+  @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+  @Column(name = "currency", columnDefinition = "public.currency_enum")
+  private CurrencyEnum currency;
 
-  @Column(name = "language", length = 10)
-  private String language;
+  @Enumerated(EnumType.STRING)
+  @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+  @Column(name = "language", columnDefinition = "public.language_enum")
+  private LanguageEnum language;
 
   @Column(name = "sidebar_toggle")
   private Boolean sidebarToggle;
@@ -39,10 +49,10 @@ public class UserPreferences {
 
   public UserPreferences(
       UUID userId,
-      String theme,
+      ThemeEnum theme,
       String background,
-      String currency,
-      String language,
+      CurrencyEnum currency,
+      LanguageEnum language,
       Boolean sidebarToggle) {
     this.userId = userId;
     this.theme = theme;
@@ -60,7 +70,7 @@ public class UserPreferences {
     return user;
   }
 
-  public String getTheme() {
+  public ThemeEnum getTheme() {
     return theme;
   }
 
@@ -68,15 +78,19 @@ public class UserPreferences {
     return background;
   }
 
-  public String getCurrency() {
+  public CurrencyEnum getCurrency() {
     return currency;
   }
 
-  public String getLanguage() {
+  public LanguageEnum getLanguage() {
     return language;
   }
 
   public Boolean getSidebarToggle() {
     return sidebarToggle;
+  }
+
+  public void setTheme(ThemeEnum theme) {
+    this.theme = theme;
   }
 }

@@ -3,7 +3,7 @@ set -euo pipefail
 
 INGEST_URL="${INGEST_URL:-http://localhost:8081/api/events/ingest/mockNoise}"
 USER_ID="${USER_ID:-5ebe4340-c5ec-4833-ad93-06abf4609f03}"
-ACCOUNT_ID="${ACCOUNT_ID:-test-account}"
+ACCOUNT_ID="${ACCOUNT_ID:-a0000000-0000-0000-0000-000000000001}"
 INTERVAL_SECONDS="${INTERVAL_SECONDS:-5}"
 PERIOD_SECONDS="${PERIOD_SECONDS:-5}"
 BATCH_COUNT="${BATCH_COUNT:-12}"
@@ -67,9 +67,9 @@ for ((batch = 1; batch <= BATCH_COUNT; batch++)); do
               \"instances\": [
                 {
                   \"identifierName\": \"InstanceId\",
-                  \"values\": [
-                    \"i-0ec321a1c8ed4915c\",
-                    \"i-0123456789abcdef0\"
+                  \"instances\": [
+                    {\"identifier\": \"i-0ec321a1c8ed4915c\"},
+                    {\"identifier\": \"i-0123456789abcdef0\"}
                   ]
                 }
               ],
@@ -86,9 +86,9 @@ for ((batch = 1; batch <= BATCH_COUNT; batch++)); do
               \"instances\": [
                 {
                   \"identifierName\": \"DBInstanceIdentifier\",
-                  \"values\": [
-                    \"prod-orders-db\",
-                    \"analytics-db\"
+                  \"instances\": [
+                    {\"identifier\": \"prod-orders-db\"},
+                    {\"identifier\": \"analytics-db\"}
                   ]
                 }
               ],
@@ -105,9 +105,9 @@ for ((batch = 1; batch <= BATCH_COUNT; batch++)); do
               \"instances\": [
                 {
                   \"identifierName\": \"FunctionName\",
-                  \"values\": [
-                    \"payment-service\",
-                    \"email-processor\"
+                  \"instances\": [
+                    {\"identifier\": \"payment-service\"},
+                    {\"identifier\": \"email-processor\"}
                   ]
                 }
               ],
@@ -123,9 +123,9 @@ for ((batch = 1; batch <= BATCH_COUNT; batch++)); do
               \"instances\": [
                 {
                   \"identifierName\": \"TableName\",
-                  \"values\": [
-                    \"UsersTable\",
-                    \"OrdersTable\"
+                  \"instances\": [
+                    {\"identifier\": \"UsersTable\"},
+                    {\"identifier\": \"OrdersTable\"}
                   ]
                 }
               ],
@@ -141,9 +141,9 @@ for ((batch = 1; batch <= BATCH_COUNT; batch++)); do
               \"instances\": [
                 {
                   \"identifierName\": \"BucketName\",
-                  \"values\": [
-                    \"cloudsherpa-prod-data\",
-                    \"cloudsherpa-logs\"
+                  \"instances\": [
+                    {\"identifier\": \"cloudsherpa-prod-data\"},
+                    {\"identifier\": \"cloudsherpa-logs\"}
                   ]
                 }
               ],

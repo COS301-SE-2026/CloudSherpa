@@ -1,13 +1,12 @@
-"use client"
+"use client";
 
-import apiClient from "@/lib/fetch/api-client"
+import apiClient from "@/lib/fetch/api-client";
 import { RegisterRequestDto } from "@/features/authentication/types/dtos/auth/RegisterRequestDto";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLogin } from "./useLogin";
 
 export function useRegistration() {
-
     const [registrationFailure, setRegistrationFailure] = useState(false);
     const [registrationSuccess, setRegistrationSuccess] = useState(false);
     // In seconds
@@ -20,13 +19,16 @@ export function useRegistration() {
         try {
             await apiClient("/auth/register", {
                 method: "POST",
-                body: JSON.stringify(registerPayload)
-            })
+                body: JSON.stringify(registerPayload),
+            });
 
-            await login({
-                email: registerPayload.email,
-                password: registerPayload.password
-            }, false);
+            await login(
+                {
+                    email: registerPayload.email,
+                    password: registerPayload.password,
+                },
+                false
+            );
 
             if (loginFailure) {
                 throw new Error("Login after registration failed");
@@ -42,18 +44,17 @@ export function useRegistration() {
             setTimeout(async () => {
                 clearInterval(countDownId);
                 router.push("/dashboard");
-            }, redirectCountdown * 1000)
-
+            }, redirectCountdown * 1000);
         } catch (error) {
             if (error instanceof Error) {
                 console.warn(`Registration failed: ${error.message}`);
             }
             if (!(error instanceof Error)) {
-                console.error("Unknown error has occured")
+                console.error("Unknown error has occured");
             }
 
             setRegistrationFailure(true);
-            setRegistrationSuccess(true);
+            setRegistrationSuccess(false);
         }
     }
 

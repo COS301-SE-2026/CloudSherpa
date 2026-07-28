@@ -1,0 +1,46 @@
+import { Line_Height } from "@/design-system/typography/types/typography";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/atoms/card";
+import SubSectionHeading from "@/design-system/shared/components/subsectionHeading";
+
+interface LineHeightProps {
+    LineHeights: Line_Height[];
+}
+
+export default function LineHeight({ LineHeights }: Readonly<LineHeightProps>) {
+    return (
+        <div className="space-y-6">
+            <SubSectionHeading
+                title="Line Height"
+                description="Line Height determines the feel of a paragraph and has an influence on the impact and legibility of our textual content. Headings use more relaxed line height  in conjunction with tight
+                tracking since the text is larger and brighter, by using a more relaxed line height it ensures the text doesn't 'bleed' into each other and maintains their impact. Smaller text like paragraphs, meta data, badges
+                and subscript uses smaller line heights with loose tracking to balance out legibility with space efficiency"
+            />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {LineHeights.map((lh) => (
+                    <Card key={lh.name} className="flex flex-col">
+                        <CardHeader className="pb-3">
+                            <CardTitle>leading-{lh.name}</CardTitle>
+                            <CardDescription className="text-xs">{lh.value}</CardDescription>
+                        </CardHeader>
+
+                        <CardContent className="grow pt-0">
+                            <p
+                                className="text-sm text-muted-foreground"
+                                style={{
+                                    lineHeight: `var(--font-lineHeight-${lh.name}, ${lh.value})`,
+                                }}
+                            >
+                                This paragraph demonstrates the visual impact of the{" "}
+                                <strong>{lh.name}</strong> line height token. Notice how the
+                                vertical space between these sentences adjusts dynamically. Proper
+                                line height is crucial for reading comprehension, accessibility, and
+                                overall UI balance.
+                            </p>
+                        </CardContent>
+                    </Card>
+                ))}
+            </div>
+        </div>
+    );
+}

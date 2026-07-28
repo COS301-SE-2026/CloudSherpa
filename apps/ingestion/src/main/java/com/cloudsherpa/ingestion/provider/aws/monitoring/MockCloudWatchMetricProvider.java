@@ -1,6 +1,7 @@
 package com.cloudsherpa.ingestion.provider.aws.monitoring;
 
 import com.cloudsherpa.ingestion.connector.AccountScope;
+import com.cloudsherpa.ingestion.connector.Instance;
 import com.cloudsherpa.ingestion.connector.InstanceScope;
 import com.cloudsherpa.ingestion.connector.Metric;
 import com.cloudsherpa.ingestion.connector.ServiceScope;
@@ -16,7 +17,6 @@ import java.util.Random;
 import java.util.SplittableRandom;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
-import software.amazon.awssdk.regions.Region;
 
 @Component
 public class MockCloudWatchMetricProvider implements CloudWatchMetricProvider {
@@ -118,8 +118,8 @@ public class MockCloudWatchMetricProvider implements CloudWatchMetricProvider {
 
     List<UsageRecordModel> result = new ArrayList<>();
 
-    for (String instanceId : instance.getValues()) {
-
+    for (Instance instanceDetail : instance.getInstances()) {
+      String instanceId = instanceDetail.getIdentifier();
       result.addAll(processInstance(requestContext, simulationContext, instance, instanceId));
     }
 
@@ -228,7 +228,6 @@ public class MockCloudWatchMetricProvider implements CloudWatchMetricProvider {
     r.setRecordId(UUID.randomUUID());
     r.setResourceId(processingContext.instanceId());
     r.setResourceType(processingContext.instanceScope().getIdentifierName());
-    r.setRegion(Region.AF_SOUTH_1.toString());
     r.setIngestionId(requestContext.ingestionId().toString());
     r.setSource("MockCloudWatch");
 

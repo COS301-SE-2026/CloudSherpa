@@ -1,220 +1,354 @@
-'use client'
-import { Input } from '@/components/atoms/input';
-import React, {useState} from 'react';
-import {Card, CardContent, CardHeader} from '@/components/atoms/card';
+"use client";
 
 /*
-idea for this page:
-- should have 2 sides (active and inactive)
-- should be able to move resources from inactive and active, vice versa (a popup should appear to confirm actions)
-- should be able to seach for resources
+ideas for this page:
+- should display a list of resources assoc with a particular conn
+- should be able to sort the resource name (used a tan stack table)
+- should be able to toggle the resource (active/inactive)
+- should be able to search the resources
 */
 
-interface Resource{
-    id : string;
-    name : string;
+import { useEffect, useMemo, useState } from "react";
+import { useParams } from "next/navigation";
+import {
+    useReactTable,
+    getCoreRowModel,
+    getFilteredRowModel,
+    getSortedRowModel,
+    createColumnHelper,
+    flexRender,
+    type SortingState,
+    type ColumnFiltersState,
+    type HeaderContext,
+    type CellContext,
+} from "@tanstack/react-table";
+import { ToggleGroup, ToggleGroupItem } from "@/components/atoms/toggle-group";
+import { Switch } from "@/components/atoms/switch";
+import { Badge } from "@/components/atoms/badge";
+import { Button } from "@/components/atoms/button";
+import { Input } from "@/components/atoms/input";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/atoms/table";
+import { Search, ArrowUpDown } from "lucide-react";
+import {
+    getAwsAccountResources,
+    ResourceStatus,
+    updateAwsResourceStatus,
+} from "@/lib/fetch/aws-connection-api";
+
+interface Resource {
+    id: string;
+    name: string;
+    type: string;
+    region: string;
+    tag: string[];
+    status: "active" | "inactive";
+}
+interface ResourceAction {
+    changeStatus: (id: string) => Promise<void>;
+}
+const hardCodedResources: Resource[] = [
+    {
+        id: "1",
+        name: "Resource 1",
+        type: "Type 1",
+        region: "region 1",
+        tag: ["Tag1", "Tag2", "Tag3"],
+        status: "active",
+    },
+
+    {
+        id: "2",
+        name: "Resource 2",
+        type: "Type 2",
+        region: "region 2",
+        tag: ["Tag1", "Tag2", "Tag3"],
+        status: "inactive",
+    },
+];
+
+//only 3 tags ae displayed, rest are hidden
+function ListOfTags({ tags }: Readonly<{ tags: string[] }>) {
+    const displayedTags = tags.slice(0, 3);
+
+    return (
+        <div className="flex items-center gap-1 flex-wrap">
+            {displayedTags.map((tag) => (
+                <Badge key={tag} variant="secondary" className="text-[10px] font-normal">
+                    {" "}
+                    {tag}{" "}
+                </Badge>
+            ))}
+        </div>
+    );
 }
 
-type ActionPending = {
-    resource : Resource;
-    direction : 'enable' | 'disable';
-} | null;
+//this allows a sortable col to rendered, can be clicked on to sort the resources (asc to desc and vice versa)
+function ResourceHeaders({ column }: Readonly<HeaderContext<Resource, string>>) {
+    return (
+        <Button
+            variant="ghost"
+            size="sm"
+            className="h-auto p-0 font-medium text-foreground hover:bg-transparent hover:text-foreground/80"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+            {" "}
+            Resource <ArrowUpDown size={12} className="ml-1.5 text-muted-foreground" />
+        </Button>
+    );
+}
 
-export default function ResourceManager(){
-    const [inactive, setInactive] = useState<Resource[]>([ {id: '1', name: 'Resource'},]);
+function ResourceCells({ getValue }: Readonly<CellContext<Resource, string>>) {
+    return <span className="font-medium"> {getValue()} </span>;
+}
 
-    const [active, setActive] = useState<Resource[]>([]);
+function SecondaryCells({ getValue }: Readonly<CellContext<Resource, string>>) {
+    return <span className="text-xs text-muted-foreground"> {getValue()} </span>;
+}
 
-    const [selected, setSelected] = useState<string | null>(null);
+function TagCells({ getValue }: Readonly<CellContext<Resource, string[]>>) {
+    return <ListOfTags tags={getValue()} />;
+}
 
-    const [pending, setPending] = useState<ActionPending>(null);
+function ToggleHeader() {
+    return <span className="block text-center"> Active/Inactive </span>;
+}
 
-    const [inactiveSearch, setInactiveSearch] = useState('');
+function ToggleCells({ row, table }: Readonly<CellContext<Resource, Resource["status"]>>) {
+    const { changeStatus } = table.options.meta as ResourceAction;
 
-    const [activeSearch, setActiveSearch] = useState('');
+    return (
+        <div className="flex justify-center">
+            <Switch
+                checked={row.original.status === "active"}
+                onCheckedChange={() => changeStatus(row.original.id)}
+            />
+        </div>
+    );
+}
 
-    const handleAdd = (resource : Resource) => {
-        setPending({resource, direction : 'enable'});
-    };
+//this will define the col structure for the table
+//by using createColumnHelper we get type-safe col def
+const helperForColumns = createColumnHelper<Resource>();
 
-    const handleRemove = (resource : Resource) => {
-        setPending({resource, direction : 'disable'});
-    };
+const columns = [
+    helperForColumns.accessor("name", { header: ResourceHeaders, cell: ResourceCells }),
 
-    const handleConfirm = () => {
-        if(!pending){
+    helperForColumns.accessor("type", { header: "Type", cell: SecondaryCells }),
+
+    helperForColumns.accessor("region", { header: "Region", cell: SecondaryCells }),
+
+    helperForColumns.accessor("tag", { header: "Tags", cell: TagCells }),
+
+    helperForColumns.accessor("status", {
+        header: ToggleHeader,
+        filterFn: "equals",
+        cell: ToggleCells,
+    }),
+];
+
+export default function ResourceManager() {
+    const params = useParams();
+
+    const accountId = params.connectionId as string;
+
+    const [resource, setResource] = useState<Resource[]>([]);
+
+    const [filter, setFilter] = useState("");
+
+    const [sort, setSort] = useState<SortingState>([]);
+
+    const [filterColumn, setFilterColumn] = useState<ColumnFiltersState>([]);
+    async function loadResources() {
+        try {
+            const resources = await getAwsAccountResources(accountId);
+
+            setResource(
+                resources.map((resource) => ({
+                    id: resource.id,
+                    name: resource.resourceName,
+                    type: resource.resourceType,
+                    region: "none",
+                    tag: Object.entries(resource.tags).map(([key, value]) => `${key}: ${value}`),
+                    status: resource.status === ResourceStatus.ACTIVE ? "active" : "inactive",
+                }))
+            );
+        } catch (err) {
+            console.error("Failed to load resources", err);
+        }
+    }
+    useEffect(() => {
+        loadResources();
+    }, [accountId]);
+
+    const changeStatus = async (id: string) => {
+        const selectedResource = resource.find((r) => r.id === id);
+
+        if (!selectedResource) {
             return;
         }
 
-        if(pending.direction === 'enable'){
-            setInactive((previous) => previous.filter((resource) => resource.id !== pending.resource.id));
-            setActive((previous) => [...previous, pending.resource]);
-        } else{
-            setActive((previous) => previous.filter((resource) => resource.id !== pending.resource.id));
-            setInactive((previous) => [...previous, pending.resource]);
-        }
+        const newStatus =
+            selectedResource.status === "active" ? ResourceStatus.DISABLED : ResourceStatus.ACTIVE;
 
-        if(selected === pending.resource.id){
-            setSelected(null);
-        }
+        try {
+            await updateAwsResourceStatus(id, newStatus);
 
-        setPending(null);
+            setResource((previous) =>
+                previous.map((resource) =>
+                    resource.id === id
+                        ? {
+                              ...resource,
+                              status: newStatus === ResourceStatus.ACTIVE ? "active" : "inactive",
+                          }
+                        : resource
+                )
+            );
+        } catch (err) {
+            console.error("Failed to update resource status", err);
+        }
+    };
+    //useMemo prevents the actions obj from being recreated on every render
+    const actions = useMemo<ResourceAction>(() => ({ changeStatus }), [changeStatus]);
+
+    const table = useReactTable({
+        data: resource,
+        columns,
+        meta: actions,
+        state: { globalFilter: filter, sorting: sort, columnFilters: filterColumn },
+
+        getRowId: (row) => row.id,
+        onGlobalFilterChange: setFilter,
+
+        onSortingChange: setSort,
+        onColumnFiltersChange: setFilterColumn,
+
+        //returns all the rows without any filtering/sorting
+        getCoreRowModel: getCoreRowModel(),
+
+        //enables row filtering
+        getFilteredRowModel: getFilteredRowModel(),
+
+        //enables row sorting
+        getSortedRowModel: getSortedRowModel(),
+    });
+
+    const filterStatus =
+        (table.getColumn("status")?.getFilterValue() as string | undefined) ?? "all";
+
+    const setFilterStatus = (value: string) => {
+        table.getColumn("status")?.setFilterValue(value === "all" ? undefined : value);
     };
 
-    const handleCancel =() => {
-        setPending(null);
-    };
+    return (
+        <div className="min-h-screen bg-background text-foreground p-8">
+            <h1 className="text-3xl font-semibold text-center mb-8"> Resource Manager </h1>
 
-    const inactiveFiltered = inactive.filter((resource) =>
-        resource.name.toLowerCase().includes(inactiveSearch.toLowerCase())
-    );
+            <div className="max-w-4xl mx-auto flex flex-col gap-4">
+                <div className="flex items-center justify-between gap-3">
+                    <div className="relative flex-1">
+                        <Search
+                            size={14}
+                            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                        />
 
-    const activeFiltered = active.filter((resource) =>
-        resource.name.toLowerCase().includes(activeSearch.toLowerCase())
-    );
+                        <Input
+                            value={filter}
+                            onChange={(change) => setFilter(change.target.value)}
+                            placeholder="Search resources..."
+                            className="pl-8 h-9"
+                        />
+                    </div>
 
-    const confirmationText = pending?.direction === 'enable' ? "Are you sure you want resource to be active?" : "Are you sure you want resource to be inactive?";
-
-    return(
-        <div className = "min-h-screen flex flex-col items-center justify-center p-8 bg-background text-foreground">
-
-            <h2 className = "text-lg font-medium tracking-tight mb-8 text-foreground"> Resource Manager </h2>
-
-            <div className = "flex items-center gap-4">
-
-                {/* this is for the inactive side */}
-                <div className = "flex flex-col gap-1">
-                    <span className = "text-xs text-center text-muted"> Inactive </span>
-                    <Card className = "w-96 border-border">
-                        <CardHeader className = "px-3 py-2 border-b border-border">
-                            <div className = "flex items-center justify-between gap-2">
-                                <Input
-                                    placeholder = "Search..."
-                                    value = {inactiveSearch}
-                                    onChange = {(clickSearch) => setInactiveSearch(clickSearch.target.value)}
-                                    className = "h-5 text-xs border-none shadow-none px-1 bg-transparent focus-visible:ring-0 placeholder:text-neutral-500 text-foreground"
-                                />
-
-                                <button
-                                    onClick = {() => setInactiveSearch('')}
-                                    className = "text-xs text-muted hover:text-foreground transition-colors"> X
-                                </button>
-
-                            </div>
-                        </CardHeader>
-
-                        <CardContent className = "p-2 min-h-96">
-                            <ul className = "space-y-1">
-                                {inactiveFiltered.map((resource) =>
-                                    (
-                                        <div
-                                            key = {resource.id}
-                                            className = {`flex items-center justify-between px-3 py-2 rounded text-sm ${ selected === resource.id ? 'bg-sidebar-primary-foreground' : ''}`}>
-
-                                            <button
-                                                onClick = {() => setSelected(resource.id)}
-                                                className = "flex-1 text-left bg-transparent border-none text-inherit text-sm"> {resource.name} 
-                                            </button>
-
-                                            <button
-                                                onClick = {(clickingAdd) => {clickingAdd.stopPropagation(); handleAdd(resource); }}
-                                                className = "text-base leading-none ml-2 text-sidebar-accent hover:text-ring"> + 
-                                            </button>
-
-                                        </div>
-                                    )
-                                )}
-                            </ul>
-                        </CardContent>
-                    </Card>
-                </div>
-                
-                {/* arrows */}
-                <div className = "flex flex-col gap-2 mt-5">
-
-                    <button className = "w-8 h-8 p-0 rounded-md flex items-center justify-center bg-border border border-sidebar-foreground text-foreground transition-colors">
-                        &rarr;
-                    </button>
-
-                    <button className = "w-8 h-8 p-0 rounded-md flex items-center justify-center bg-border border border-sidebar-foreground text-foreground transition-colors">
-                        &larr;
-                    </button>
-
+                    {/*
+                        why is ToggleGroup being used and not tabs?
+                        - toggle group is more appropriate for when changing between states/filtering as the same content is being shown but just a filtered version
+                    */}
+                    <ToggleGroup
+                        type="single"
+                        value={filterStatus}
+                        onValueChange={(value) => value && setFilterStatus(value)}
+                        className="bg-muted rounded-lg p-1 h-9"
+                    >
+                        <ToggleGroupItem
+                            value="all"
+                            className="h-full text-xs px-3 capitalize data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                        >
+                            {" "}
+                            All
+                        </ToggleGroupItem>
+                        <ToggleGroupItem
+                            value="active"
+                            className="h-full text-xs px-3 capitalize data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                        >
+                            {" "}
+                            Active{" "}
+                        </ToggleGroupItem>
+                        <ToggleGroupItem
+                            value="inactive"
+                            className="h-full text-xs px-3 capitalize data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                        >
+                            {" "}
+                            Inactive{" "}
+                        </ToggleGroupItem>
+                    </ToggleGroup>
                 </div>
 
-                {/* this is for the active side */}
-                <div className = "flex flex-col gap-1">
-                    <span className = "text-xs text-center text-muted"> Active </span>
-                    <Card className = "w-96 border-border">
-                        <CardHeader className = "px-3 py-2 border-b border-border">
-                            <div className = "flex items-center justify-between gap-2">
-                                <Input
-                                    placeholder = "Search..."
-                                    value = {activeSearch}
-                                    onChange = {(clickSearch) => setActiveSearch(clickSearch.target.value)}
-                                    className = "h-5 text-xs border-none shadow-none px-1 bg-transparent focus-visible:ring-0 placeholder:text-neutral-500 text-foreground"
-                                />
+                {/* flexRender is used for rendering the header comp */}
+                <div className="rounded-lg border">
+                    <Table className="table-fixed w-full">
+                        <TableHeader>
+                            {table.getHeaderGroups().map((headerGroup) => (
+                                <TableRow key={headerGroup.id} className="hover:bg-transparent">
+                                    {headerGroup.headers.map((header) => (
+                                        <TableHead key={header.id}>
+                                            {" "}
+                                            {flexRender(
+                                                header.column.columnDef.header,
+                                                header.getContext()
+                                            )}
+                                        </TableHead>
+                                    ))}
+                                </TableRow>
+                            ))}
+                        </TableHeader>
 
-                                <button
-                                    onClick = {() => setActiveSearch('')}
-                                    className = "text-xs text-muted hover:text-foreground transition-colors"> X 
-                                </button>
-
-                            </div>
-                        </CardHeader>
-
-                        <CardContent className = "p-2 min-h-96">
-                            <ul className = "space-y-1">
-                                {activeFiltered.map((resource) => 
-                                    (
-                                        <div
-                                            key = {resource.id}
-                                            className = {`flex items-center justify-between px-3 py-2 rounded text-sm ${selected === resource.id ? 'bg-sidebar-primary-foreground' : ''}`}>
-
-                                                <button
-                                                    onClick = {() => setSelected(resource.id)}
-                                                    className = "flex-1 text-left bg-transparent border-none text-inherit text-sm"> {resource.name} 
-                                                </button>
-
-                                                <button
-                                                    onClick = {(clicking) => { clicking.stopPropagation(); handleRemove(resource); }}
-                                                    className = "text-base leading-none ml-2 text-[var(--color-error-400)] hover:text-[var(--color-error-300)]"> - 
-                                                </button>
-
-                                        </div>
-                                    )
-                                )}
-                            </ul>
-                        </CardContent>
-                    </Card>
+                        <TableBody>
+                            {table.getRowModel().rows.length === 0 ? (
+                                <TableRow>
+                                    <TableCell
+                                        colSpan={columns.length}
+                                        className="text-center text-xs text-muted-foreground py-6"
+                                    >
+                                        {" "}
+                                        No resources{" "}
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                table.getRowModel().rows.map((row) => (
+                                    <TableRow key={row.id}>
+                                        {row.getVisibleCells().map((cell) => (
+                                            <TableCell key={cell.id}>
+                                                {" "}
+                                                {flexRender(
+                                                    cell.column.columnDef.cell,
+                                                    cell.getContext()
+                                                )}{" "}
+                                            </TableCell>
+                                        ))}
+                                    </TableRow>
+                                ))
+                            )}
+                        </TableBody>
+                    </Table>
                 </div>
-
             </div>
-
-            {/* this is a popup for the users to confirm/cancel their actions */}
-            {pending && (
-                <div className = "fixed inset-0 flex items-center justify-center z-50 bg-black/60">
-                    <Card className = "w-80 text-center p-8 border-border bg-background">
-                            <h3 className = "text-lg font-bold mb-3 text-foreground"> Are you sure? </h3>
-                            <p className = "text-sm leading-relaxed text-foreground"> {confirmationText} </p>
-
-                            <div className = "flex gap-3 justify-center">
-                                <button 
-                                    onClick = {handleCancel}
-                                    className = "px-6 py-2 text-sm font-medium rounded transition-colors border border-muted-foreground/30 text-foreground hover:bg-muted"> cancel 
-                                </button>
-
-                                <button 
-                                    onClick = {handleConfirm}
-                                    className = "px-6 py-2 text-sm font-medium rounded transition-colors text-primary-foreground bg-primary hover:bg-primary/90"> confirm 
-                                </button>
-
-                            </div>
-
-                    </Card>
-                </div>
-            )}
-
         </div>
     );
 }

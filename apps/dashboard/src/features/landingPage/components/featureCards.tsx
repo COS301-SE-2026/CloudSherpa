@@ -1,339 +1,344 @@
-'use client';
-import { forwardRef, useState } from "react";
-import { BrainCircuit, ChartBar, Wallet, Cloud, BellRing, Zap } from "lucide-react";
+"use client";
 
-interface ForFeatureBlocks{
-  showingFeatureCards: boolean;
-}
+import { useState } from "react";
+import {
+    BrainCircuit,
+    ChartBar,
+    Wallet,
+    Cloud,
+    Zap,
+    ArrowLeft,
+    type LucideIcon,
+} from "lucide-react";
+import { Button } from "@/components/atoms/button";
 
-//these cards explain the features in more detail and it gives he benefits for them
-const forFeatureItems = [
-  { heading: 'AI - powered forecasting',
-    icon: BrainCircuit,
-    subHeading: 'Predict costs before they spike',
-    desc: 'Stop reacting to cloud bills. Our ML models give your team a 30-day window to act — shifting you to proactive financial control.',
-    benefits: [
-      { label: 'Eliminate bill shock', 
-        detail: 'Know your exact bill before it arrives — no more surprises that blow your budget.' },
-      { label: 'Act before costs escalate', 
-        detail: 'Forecasts surface 30 days early so engineers can right-size resources before spend compounds.' },
-      { label: 'Protect profit margins', 
-        detail: 'Finance teams get reliable cloud cost projections they can actually use in their reporting.' },
-      { label: 'Eliminate reactive cost management', 
-        detail: 'Shift your team from reactive cost investigations to proactive optimisation — saving hours every week.' },
-    ],
-  },
+/*
+- has all features of cloudsherpa
+- gives detailed insights of the feature and how cloudshepra helps with it
+- is as required by the demo 2 specs
+*/
 
-  { heading: 'Deep Analytics',
-    icon: ChartBar,
-    subHeading: 'Know where money goes',
-    desc: "Cloud spend is invisible until it isn't. Deep Analytics gives every team the exact view they need to make smarter decisions.",
-    benefits: [
-      { label: 'End blame game billing', 
-        detail: "Tag based cost allocation means every team owns their spend. No more shared bills nobody understands." },
-      { label: 'Find waste instantly', 
-        detail: 'Idle resources are surfaced automatically — reclaim budget without a manual audit.' },
-      { label: 'Empower every stakeholder', 
-        detail: 'Custom dashboards for everyone to sees what\'s relevant to them.' },
-      { label: 'Accelerate financial reconciliation', 
-        detail: 'Clean, organized cost data cuts finance reconciliation time in half.' },
-    ],
-  },
+type Features = {
+    icons: LucideIcon;
+    name: string;
+    description: string;
+    subDescription: string;
+    benefit: { label: string; details: string }[];
+};
 
-  { heading: 'Budget Control',
-    icon: Wallet,
-    subHeading: 'Never overspend again',
-    desc: 'CloudSherpa enforces your limits automatically — scaling back resources before a breach, not after.',
-    benefits: [
-      { label: 'Stop overruns at the source', 
-        detail: 'Auto-pause or scale down resources the moment a threshold is hit — not after the damage is done.' },
-      { label: 'Give teams financial autonomy', 
-        detail: 'Delegate budgets to individual teams and projects without losing company-wide visibility' },
-      { label: 'Protect your runway', 
-        detail: 'Hard budget guardrails mean cloud costs can never quietly drain your reserves.' },
-      { label: 'Ensure spend accountability', 
-        detail: 'Every budget override is tracked and approved, no more untraceable spending decisions.' },
-    ],
-  },
+const FEATURES: Features[] = [
+    {
+        icons: BrainCircuit,
+        name: "AI forecasting",
+        subDescription: "Predict cloud costs before they increase",
+        description:
+            "Enables proactive financial decisions and better cost control. It moves beyond reacting to cloud bills",
+        benefit: [
+            {
+                label: "Prevent unexpected costs",
+                details: "Estimate your cloud costs early on which reduces unexpected expenses",
+            },
 
-  { heading: 'Multi - cloud',
-    icon: Cloud,
-    subHeading: 'AWS, Azure & GCP',
-    desc: 'Managing three cloud bills, three dashboards, and three pricing models is a full-time job. CloudSherpa collapses it into one clear, unified picture.',
-    benefits: [
-      { label: 'One source of truth', 
-        detail: 'Unified cost data across AWS, Azure, and GCP means no more spreadsheet compilation' },
-      { label: 'Cloud price differentiation', 
-        detail: 'Identify workloads that would be cheaper on a different provider — with cost estimates included.' },
-      { label: 'Consistent tagging enforcement', 
-        detail: 'Standardise resource tagging across all clouds so cost allocation works the same way everywhere.' },
-      { label: 'Reduce operational complexity', 
-        detail: 'Replace three separate native cost tools with one platform which reduces cognitive load and subscription costs.' },
-    ],
-  },
+            {
+                label: "Take action early",
+                details:
+                    "Identify costs in advance which gives your team time to optimize their resources before spending grows",
+            },
 
-  { heading: 'Smart Alerts',
-    icon: BellRing,
-    subHeading: 'Instant notification',
-    desc: 'Alert fatigue is real. CloudSherpa only alerts you when something genuinely needs your attention',
-    benefits: [
-      { label: 'Zero alert fatigue', 
-        detail: 'AI filters out noise so only actionable anomalies reach your team — no more ignored notification floods.' },
-      { label: 'Detect anomalies in real-time', 
-        detail: "Unusual spending patterns are flagged within seconds." },
-      { label: 'Catch runaway costs in seconds', 
-        detail: 'Anomaly detection stops a misconfigured resource before it costs thousands.' },
-      { label: 'Notify your way', 
-        detail: "Email or SMS, choose what works for your team." },
-    ],
-  },
+            {
+                label: "Improve financial planning",
+                details:
+                    "Provides your teams with reliable cost projections which increases the accuracy of budgeting and forecasting",
+            },
 
-  { heading: '5min Setup',
-    icon: Zap,
-    subHeading: 'Start saving today',
-    desc: "Most cost tools take weeks to deploy and need a dedicated engineer. CloudSherpa is live in five minutes.",
-    benefits: [
-      { label: 'No engineering resources needed', 
-        detail: 'Anyone can set this up alone and no infrastructure changes.' },
-      { label: 'Immediate historical insight', 
-        detail: 'CloudSherpa imports your cost data on day one and you get insights before the call ends.' },
-      { label: 'Insights on first login', 
-        detail: "Dashboards populate instantly with historical spending — no waiting for data to accumulate." },
-      { label: 'Enterprise-grade security', 
-        detail: 'Encrypted credentials. Your cloud is never exposed.' },
-    ],
-  },
+            {
+                label: "Replace reactive cost management",
+                details:
+                    "Spend more time proactively optimizing your cloud environments rather than investigating unexpected costs",
+            },
+        ],
+    },
+
+    {
+        icons: ChartBar,
+        name: "Deep analytics",
+        subDescription: "Get complete visibility into your cloud spend",
+        description:
+            "Empowers every team to make informed decisions by understanding exactly where their cloud budget is being spent",
+        benefit: [
+            {
+                label: "Improve accountability",
+                details:
+                    "Allocate cloud costs by teams with tag based cost allocation, which ensures clear ownership and transparency",
+            },
+
+            {
+                label: "Identify wasted resources",
+                details:
+                    "Automatically find idle resources which you can eliminate without spending valuable time",
+            },
+
+            {
+                label: "Support every stakeholder",
+                details:
+                    "Dashboards can be optimized according to the users desires. They can monitor what they want to on each dashboard",
+            },
+
+            {
+                label: "Make financial reporting simpler",
+                details:
+                    "Data is accurate and organised, making financial reporting processes easier",
+            },
+        ],
+    },
+
+    {
+        icons: Wallet,
+        name: "Budget control",
+        subDescription: "Stay in control of your cloud spending",
+        description:
+            "CloudSherpa allows you to set budgets in confidence and prevents you from overspending",
+        benefit: [
+            {
+                label: "Prevents exceeding your budget",
+                details:
+                    "Can scale down or pause resources when spending reaches predefined thresholds which avoids unexpected costs",
+            },
+
+            {
+                label: "Gives budget ownership to teams",
+                details:
+                    "Budgets can be assigned to teams while maintaining visibility and control",
+            },
+
+            {
+                label: "Protect your financial goals",
+                details:
+                    "Enforce spending limits that keep cloud costs aligned with your financial objectives",
+            },
+
+            {
+                label: "Improves spending accountability",
+                details:
+                    "Tracks budget changes with clear audit trails, ensures transparency and accountability",
+            },
+        ],
+    },
+
+    {
+        icons: Cloud,
+        name: "Multi-cloud environments",
+        subDescription: "Manages AWS",
+        description:
+            "CloudSherpa collapses multiple dashboards and cloud bills into one uniform picture",
+        benefit: [
+            {
+                label: "Only one source of truth available",
+                details: "View costs of multiple cloud providers on one platform",
+            },
+
+            {
+                label: "Comparison of cloud costs",
+                details:
+                    "Most effective and informed decisions can be made as all data is displayed in the same way",
+            },
+
+            {
+                label: "Better resource management",
+                details: "Improves cost allocation, reporting of results and resource management",
+            },
+
+            {
+                label: "Simplify multiple cloud platforms",
+                details:
+                    "Instead of haveing multiple platforms to be monitored, all can be replaced with CloudSherpa",
+            },
+        ],
+    },
+
+    {
+        icons: Zap,
+        name: "Quick setup",
+        subDescription: "Begin optimizing your cloud costs sooner",
+        description:
+            "Get up and running quickly with a simple onboarding process. Connect your cloud accounts and being monitoring your resources immediately",
+        benefit: [
+            {
+                label: "Simple startup",
+                details:
+                    "CloudSherpa has minimal configuration and process to go through to begin use of it",
+            },
+
+            {
+                label: "Historical costs",
+                details:
+                    "Will be used to determine optimized opportunities on how to improves your costs instantly",
+            },
+
+            {
+                label: "Gain insights from the first day",
+                details:
+                    "Dashboards can be populated with widgets in which the user desires to monitor. They can be added and removed and any time",
+            },
+
+            {
+                label: "Security",
+                details:
+                    "All of your credentials are encrypted and will never be exposed with CloudSherpa",
+            },
+        ],
+    },
 ];
 
-//show the benefits of each feature that CloudSherpa has to offer
-function DetailedFeatures({ 
-  card, 
-  onBack 
-}: Readonly<{ 
-  card: typeof forFeatureItems[0]; 
-  onBack: () => void;
+function FeaturesDetails({
+    card,
+    onBack,
+}: Readonly<{
+    card: Features;
+    onBack: () => void;
 }>) {
-  const Icon = card.icon;
-  return(
-    <div style={{ width: '100%', maxWidth: 1100, animation: 'slideInRight 0.3s ease' }}>
+    const Icons = card.icons;
 
-      {/*this is the styling for the back button*/}
-      <button
-        onClick={onBack}
-        style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: 8,
-          background: '#030712',
-          border: '1px solid transparent',
-          borderRadius: 8,
-          color: '#CBD5E1',
-          fontSize: 13,
-          padding: '8px 14px',
-          cursor: 'pointer',
-          marginBottom: 28,
-          transition: 'all 0.2s',
-          fontFamily: 'inherit',
-          backgroundImage: `linear-gradient(#030712, #030712), linear-gradient(135deg, #2F2FE4 0%, #162E93 100%)`,
-          backgroundOrigin: 'border-box',
-          backgroundClip: 'padding-box, border-box',
-        }}
-
-        onMouseEnter={(forEnter) => {
-          forEnter.currentTarget.style.transform = 'translateY(-1px)';
-        }}
-
-        onMouseLeave={(forEnter) => {
-          forEnter.currentTarget.style.transform = 'translateY(0)';
-        }}
-      >
-         Back to features
-      </button>
-
-      {/*border for the details card*/}
-      <div
-        style={{
-          background: '#030712',
-          border: '1px solid transparent',
-          borderRadius: 18,
-          padding: '40px 44px',
-          backgroundImage: `linear-gradient(#030712, #030712), linear-gradient(135deg, #2F2FE4 0%, #162E93 100%)`,
-          backgroundOrigin: 'border-box',
-          backgroundClip: 'padding-box, border-box',
-        }}
-      >
-
-        {/*this is for the heading of the details page*/}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 18, marginBottom: 24 }}>
-          <div style={{ width: 60, height: 60, borderRadius: 14, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Icon size={32} color="#ffffff" />
-          </div>
-          <div>
-            <h2 style={{ fontSize: 24, fontWeight: 700, color: '#ffffff', marginBottom: 5, letterSpacing: '-0.01em' }}>
-              {card.heading}
-            </h2>
-            <p style={{ fontSize: 14, color: '#CBD5E1', opacity: 0.55 }}>{card.subHeading}</p>
-          </div>
-        </div>
-
-        <div style={{ borderTop: '1px solid rgba(203,213,225,0.08)', marginBottom: 28 }} />
-
-        <p style={{ fontSize: 15, color: '#CBD5E1', opacity: 0.7, lineHeight: 1.75, marginBottom: 36, maxWidth: 640 }}>
-          {card.desc}
-        </p>
-
-        {/*this is for the benefits label*/}
-        <div style={{ fontSize: 11, fontWeight: 600, color: '#CBD5E1', opacity: 0.35, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 24 }}>
-          Key benefits
-        </div>
-
-        {/*this is for the bullet points for the benefits*/}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(2, 1fr)',
-            gap: 20,
-            marginBottom: 0,
-          }}
-        >
-
-          {card.benefits.map((forBenefits) => (
-            <div
-              key={forBenefits.label}
-              style={{
-                background: '#0a0f1e',
-                border: '1px solid rgba(203,213,225,0.07)',
-                borderRadius: 12,
-                padding: '20px 22px',
-              }}
+    return (
+        <div style={{ width: "100%", maxWidth: 1100, animation: "slideInRight 0.3s ease" }}>
+            <Button
+                onClick={onBack}
+                className="mb-7 transition-all hover:scale-[1.02]"
+                variant="default"
+                size="default"
             >
+                {" "}
+                <ArrowLeft className="mr-2 h-4 w-4" /> Back to features{" "}
+            </Button>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+            <div className="p-10 rounded-2xl border border-border bg-card">
+                <div className="flex items-center gap-5 mb-6">
+                    <div className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 bg-muted/20">
+                        {" "}
+                        <Icons size={28} className="text-muted-foreground" />{" "}
+                    </div>
 
-                {/*this is for the gradients for the border*/}
-                <div
-                  style={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: '50%',
-                    background: 'linear-gradient(135deg, #2F2FE4 0%, #162E93 100%)',
-                    flexShrink: 0,
-                  }}
-                />
+                    <div>
+                        <h2 className="text-2xl font-bold text-foreground mb-1"> {card.name} </h2>
 
-                <div style={{ fontSize: 14, fontWeight: 600, color: '#ffffff' }}>{forBenefits.label}</div>
-              </div>
-              <p style={{ fontSize: 13, color: '#CBD5E1', opacity: 0.58, lineHeight: 1.65, margin: 0 }}>{forBenefits.detail}</p>
+                        <p className="text-sm text-muted-foreground opacity-70">
+                            {" "}
+                            {card.subDescription}{" "}
+                        </p>
+                    </div>
+                </div>
+
+                <div className="border-t border-border mb-7" />
+
+                <p className="text-sm text-muted-foreground leading-relaxed mb-8 max-w-2xl">
+                    {" "}
+                    {card.description}{" "}
+                </p>
+
+                <div className="text-xs font-semibold tracking-widest uppercase text-muted-foreground opacity-40 mb-5">
+                    {" "}
+                    Key Benefits{" "}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {" "}
+                    {card.benefit.map((forBenefits) => (
+                        <div
+                            key={forBenefits.label}
+                            className="p-5 rounded-xl border border-border bg-card/50"
+                        >
+                            <div className="flex items-center gap-2.5 mb-2.5">
+                                <div className="text-sm font-semibold text-primary">
+                                    {" "}
+                                    {forBenefits.label}{" "}
+                                </div>
+                            </div>
+
+                            <p className="text-sm text-muted-foreground leading-relaxed m-0 opacity-70">
+                                {" "}
+                                {forBenefits.details}{" "}
+                            </p>
+                        </div>
+                    ))}
+                </div>
             </div>
-          ))}
-
         </div>
-      </div>
-    </div>
-  );
+    );
 }
 
-//this is for the feature cards
-const forFeatureCards = forwardRef<HTMLElement, ForFeatureBlocks>(
-  ({showingFeatureCards}, containerRef) => {
-    const [activeCardIndex,setActiveCardIndex] = useState<number | null>(null);
+export function Features() {
+    const [selectedCardIndex, setSelectedCardIndex] = useState<number | null>(null);
 
-    //this issue was that it could only be a RefObject or a callback func - not both
-    //typescript could not distinguish bet. them
-    const handleCardClick = (forIndex: number) => {
-      setActiveCardIndex(forIndex);
-      setTimeout(() => {
-        const forReference = containerRef as React.RefObject<HTMLElement>;
-
-        if(forReference?.current){
-          forReference.current.scrollIntoView({ behavior:'smooth', block:'start' });
-        }
-
-      }, 10);
+    const handlingCardClicked = (selectedIndex: number) => {
+        setSelectedCardIndex(selectedIndex);
     };
 
-    const handleBack = () => {
-      setActiveCardIndex(null);
-      setTimeout(() => {
-        const forReference = containerRef as React.RefObject<HTMLElement>;
-
-        if(forReference?.current){
-          forReference.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-
-      }, 10);
+    const handlingBackButton = () => {
+        setSelectedCardIndex(null);
     };
 
-    return(
-      <section
-        ref={containerRef}
-        id="features-section"
-        className="min-h-screen flex flex-col items-center justify-center py-15 px-10 bg-[#030712] transition-all duration-500 ease"
-        style={{
-          opacity: showingFeatureCards ? 1 : 0, 
-          transform: showingFeatureCards ? 'translateY(0)' : 'translateY(20px)', 
-          pointerEvents: showingFeatureCards ? 'auto' : 'none',
-        }}
-      >
+    return (
+        <section id="features" className="relative overflow-hidden py-24">
+            <div className="max-w-6xl mx-auto px-6">
+                {selectedCardIndex === null ? (
+                    <>
+                        <div className="text-center mb-14">
+                            <p className="text-xs font-semibold tracking-widest uppercase mb-4 text-muted-foreground">
+                                {" "}
+                                Core Features{" "}
+                            </p>
 
-        {activeCardIndex === null ? (
-          /*this shows a grid display of all the cards*/
-          <div style={{ width: '100%', maxWidth: 1100, animation: 'slideInLeft 0.3s ease' }}>
-            <h2 className="text-4xl font-bold tracking-tight text-center mb-12">
-              <span className="bg-gradient-to-r from-[#2F2FE4] to-[#162E93] bg-clip-text text-transparent">Powerful.</span>{' '}
-              <span className="text-white">Simple.</span>
-            </h2>
+                            <h2 className="text-3xl md:text-5xl font-bold text-foreground">
+                                {" "}
+                                Everything a FinOps team needs{" "}
+                            </h2>
+                        </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {forFeatureItems.map((forFeature, forItem) => (
-                <button
-                  key={forFeature.heading}
-                  onClick={() => handleCardClick(forItem)}
-                  className="w-[350px] h-[278px] rounded-xl p-7 pb-6 flex flex-col items-center justify-center text-center relative cursor-pointer transition-all duration-200 hover:-translate-y-1"
-                  style={{
-                    background: '#030712', border: '1px solid transparent',
-                    backgroundImage: `linear-gradient(#030712, #030712), linear-gradient(135deg, #2F2FE4 0%, #162E93 100%)`,
-                    backgroundOrigin: 'border-box', backgroundClip: 'padding-box, border-box',
-                    animationName: showingFeatureCards ? 'fadeSlideUp' : 'none', animationDuration: '0.4s',
-                    animationTimingFunction: 'ease', animationFillMode: 'both', animationDelay: `${forItem * 70}ms`,
-                  }}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {FEATURES.map((forFeatures, forIndex) => {
+                                const Icons = forFeatures.icons;
 
-                  onMouseEnter={(forEnter) => {
-                    forEnter.currentTarget.style.transform = 'translateY(-3px)';
-                  }}
+                                return (
+                                    <Button
+                                        key={forFeatures.name}
+                                        onClick={() => handlingCardClicked(forIndex)}
+                                        variant="ghost"
+                                        className="group relative p-6 rounded-2xl border border-border bg-card overflow-hidden hover:border-border/60 transition-all duration-300 hover:-translate-y-0.5 w-full flex flex-col items-center justify-center text-center h-auto"
+                                    >
+                                        <div className="relative flex flex-col items-center justify-center">
+                                            <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4 bg-muted/20">
+                                                {" "}
+                                                <Icons
+                                                    size={18}
+                                                    className="text-muted-foreground"
+                                                />{" "}
+                                            </div>
 
-                  onMouseLeave={(forEnter) => {
-                    forEnter.currentTarget.style.transform = 'translateY(0)';
-                  }}
-                >
+                                            <h3 className="text-sm font-semibold text-primary mb-2">
+                                                {" "}
+                                                {forFeatures.name}{" "}
+                                            </h3>
 
-                  {/*this is the icon*/}
-                  <div className="w-15 h-15 rounded-lg mb-6 flex-shrink-0 flex items-center justify-center">
-                    <forFeature.icon className="w-8 h-8 text-white" />
-                  </div>
-
-                  <div>
-                    <h3 className="text-[15px] font-semibold text-white mb-1.5">{forFeature.heading}</h3>
-                    <p className="text-[13px] text-[#CBD5E1] m-0 opacity-60">{forFeature.subHeading}</p>
-                  </div>
-
-                </button>
-              ))}
+                                            <p className="text-sm text-muted-foreground leading-relaxed m-0">
+                                                {" "}
+                                                {forFeatures.subDescription}{" "}
+                                            </p>
+                                        </div>
+                                    </Button>
+                                );
+                            })}
+                        </div>
+                    </>
+                ) : (
+                    <div className="flex justify-center">
+                        {" "}
+                        <FeaturesDetails
+                            card={FEATURES[selectedCardIndex]}
+                            onBack={handlingBackButton}
+                        />{" "}
+                    </div>
+                )}
             </div>
-          </div>
-        ) : (
-
-          /*this will show the expanded view of each feature card*/
-          <DetailedFeatures 
-            card={forFeatureItems[activeCardIndex]} 
-            onBack={handleBack} 
-          />
-
-        )}
-      </section>
+        </section>
     );
-  }
-);
-
-forFeatureCards.displayName = "FeatureCards";
-export default forFeatureCards;
+}

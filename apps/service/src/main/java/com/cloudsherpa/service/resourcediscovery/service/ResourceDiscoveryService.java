@@ -1,8 +1,8 @@
 package com.cloudsherpa.service.resourcediscovery.service;
 
 import com.cloudsherpa.service.resourcediscovery.client.IngestionResourceClient;
-import com.cloudsherpa.service.resourcediscovery.dto.CloudCredentialsDto;
 import com.cloudsherpa.service.resourcediscovery.dto.ResourceDetailDto;
+import com.cloudsherpa.service.resourcediscovery.dto.ResourceDiscoveryDto;
 import java.util.List;
 import org.springframework.stereotype.Service;
 
@@ -19,9 +19,9 @@ public class ResourceDiscoveryService {
     return ingestionClient.getServices(provider);
   }
 
-  public List<ResourceDetailDto> getResources(String provider, CloudCredentialsDto credentials) {
+  public List<ResourceDetailDto> getResources(String provider, ResourceDiscoveryDto request) {
 
-    return ingestionClient.getResources(provider, credentials);
+    return ingestionClient.getResources(provider, request);
   }
 
   public String generateAwsPermissions(List<String> services) {

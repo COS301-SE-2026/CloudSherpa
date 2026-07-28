@@ -1,209 +1,327 @@
-'use client';
+"use client";
 
-import { useDashboardStore, DashboardStore } from '@/features/dashboard/stores/dashboard-store';
-import { useResourceNameStore, ResourceNameStore } from '@/features/dashboard/stores/resource-store';
-import { MetricType, MetricStore } from '@/features/dashboard/types/metric';
-import { useMetricStore } from '@/features/dashboard/stores/metric-store';
-import { useState, useEffect, useRef } from 'react';
-import { WidgetConfig } from '@/features/dashboard/types/widgets';
+import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
+import {
+    ResourceNameStore,
+    useResourceNameStore,
+} from "@/features/dashboard/stores/resource-store";
+import { MetricType, MetricStore } from "@/features/dashboard/types/metric";
+import { useMetricStore } from "@/features/dashboard/stores/metric-store";
+import { useState } from "react";
+import { ChartType, ChartWidgetConfig } from "@/features/dashboard/types/widgets";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-interface WidgetConfigMenuProps{
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogFooter,
+} from "@/components/atoms/dialog";
+import { Input } from "@/components/atoms/input";
+import { Label } from "@/components/atoms/label";
+import { Button } from "@/components/atoms/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/atoms/popover";
+import {
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+    CommandList,
+} from "@/components/atoms/command";
+
+interface WidgetConfigMenuProps {
     isOpen: boolean;
-
     onClose: () => void;
-    onSave: (config: WidgetConfig) => void;
-
-    existingConfig: WidgetConfig;
+    existingConfig: ChartWidgetConfig;
 }
 
-// This is shared (used for dashboard store), perhaps we can move it to types
-// Also need to confirm that interface is more appropriate than type
-export function WidgetConfigMenu({ 
-    isOpen, 
+const CHART_TYPE_OPTIONS: { value: ChartType; label: string }[] = [
+    { value: "line_chart", label: "Line Chart" },
+    { value: "gauge_chart", label: "Gauge Chart" },
+];
 
-    onClose, 
-    onSave, 
+//helper function fr nested logic
+function getMetricDisplayText(value: MetricType | null, resourceId: string | null) {
+    if (value) {
+        return value.toUpperCase();
+    }
+    if (resourceId) {
+        return "Select metric type...";
+    }
+    return "Select resource first";
+}
 
+export function WidgetConfigMenu({
+    isOpen,
+    onClose,
     existingConfig,
-
 }: Readonly<WidgetConfigMenuProps>) {
-    const [configuration, setConfiguration] = useState<WidgetConfig>(existingConfig);
-    const registerWidgetConfigUpdate = useDashboardStore(
-        (state: DashboardStore) => state.actions.updateWidgetConfig
-        );
-        const resourceNamesById = useResourceNameStore(
+    // draft state
+    const [configuration, setConfiguration] = useState<ChartWidgetConfig>(existingConfig);
+    const [isSaving, setIsSaving] = useState(false);
+
+    //dropdown states
+    const [resourceOpen, setResourceOpen] = useState(false);
+    const [metricOpen, setMetricOpen] = useState(false);
+    const [chartOpen, setChartOpen] = useState(false);
+
+    const resourceNamesById = useResourceNameStore(
         (state: ResourceNameStore) => state.resourcesById
-        );
-        const allAvailableMetrics = useMetricStore(
-        (state: MetricStore) => state.getMetricList
-        );
+    );
+    const resources = useResourceNameStore((state: ResourceNameStore) => state.resources);
+
+    const allAvailableMetrics = useMetricStore((state: MetricStore) => state.getMetricList);
 
     const availableMetrics = configuration.resourceId
-    ? allAvailableMetrics()[configuration.resourceId] ?? []
-    : [];
+        ? (allAvailableMetrics()[configuration.resourceId] ?? [])
+        : [];
     const metricsByResource = allAvailableMetrics();
     const metricResourceIds = Object.keys(metricsByResource);
     const availableResources =
-    metricResourceIds.length > 0 ? metricResourceIds : Object.keys(resourceNamesById);
+        metricResourceIds.length > 0
+            ? metricResourceIds
+            : resources.map((resource) => resource.resourceId);
 
-    const isFirstRender = useRef(true);
+    const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+    const [prevConfig, setPrevConfig] = useState(existingConfig);
 
-    useEffect(() => {
-        if(!isFirstRender.current){
+    if (isOpen !== prevIsOpen || existingConfig !== prevConfig) {
+        setPrevIsOpen(isOpen);
+        setPrevConfig(existingConfig);
+
+        if (isOpen) {
             setConfiguration(existingConfig);
+            setResourceOpen(false);
+            setMetricOpen(false);
+            setChartOpen(false);
         }
-
-        isFirstRender.current = false;
-    }, [existingConfig]);
-
-    const handleSave = () => {
-        onSave(configuration);
-        onClose();
-    };
-
-    function setConfigAndRegisterUpdate(newConfig: WidgetConfig) {
-        setConfiguration(newConfig);
-        registerWidgetConfigUpdate(newConfig);
     }
 
-    if(!isOpen){
+    const updateChartWidget = useDashboardStore((state) => state.actions.updateChartWidgetConfig);
+
+    const handleSave = async () => {
+        setIsSaving(true);
+        try {
+            updateChartWidget(configuration);
+            onClose();
+        } catch (error) {
+            console.error("Failed to save configuration", error);
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    if (!isOpen) {
         return null;
     }
 
     return (
-        <>
-            <button
-                className="fixed inset-0 z-40"
-                onClick={onClose}
-            />
-            
-            <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-card rounded-xl border border-border shadow-xl z-50">
-                <div className="flex items-center justify-between border-b border-border px-6 py-4">
-                    <h3 className="text-lg font-semibold text-foreground">Widget Configuration</h3>
-                </div>
+        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+            <DialogContent className="sm:max-w-106.25">
+                <DialogHeader>
+                    <DialogTitle>Widget Configuration</DialogTitle>
+                </DialogHeader>
 
-                <div className="p-6 space-y-4">
-                    {/*this is for the widget title*/}
-                    <div>
-                        <label className="block text-sm font-medium text-foreground mb-2" htmlFor="title">
-                            Title
-                        </label>
-
-                        <input
+                <div className="grid gap-4 py-4">
+                    <div className="grid gap-2">
+                        <Label htmlFor="title">Title</Label>
+                        <Input
                             id="title"
-                            type="text"
-                            value={configuration.title}
-                            onChange={(e) => setConfigAndRegisterUpdate({ ...configuration, title: e.target.value })}
-                            className="w-full bg-background border border-border rounded-lg px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                            value={configuration.displayName || ""}
+                            onChange={(e) =>
+                                setConfiguration({ ...configuration, displayName: e.target.value })
+                            }
                             placeholder="Enter widget title"
+                            disabled={isSaving}
                         />
                     </div>
 
-                    {/*this is for the resource id*/}
-                    <div>
-                        <label className="block text-sm font-medium text-foreground mb-2" htmlFor="resource-id">
-                            Resource ID
-                        </label>
-
-                        <select
-                            id="resource-id"
-                            value={configuration.resourceId || ""}
-                            onChange={(e) => {
-                                const resourceId = e.target.value;
-                                const nextMetricOptions = allAvailableMetrics()[resourceId] ?? [];
-                                const metricType = nextMetricOptions[0] ?? "anon";
-
-                                setConfigAndRegisterUpdate({ ...configuration, resourceId, metricType });
-                            }}
-                            className="w-full bg-background border border-border rounded-lg px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                            >
-                            <option value="" disabled>Select a resource</option>
-                            {availableResources.map((resource) => (
-                                <option key={resource} value={resource}>
-                                    {resourceNamesById[resource] ?? resource}
-                                </option>
-                            ))}
-                            </select>
-                    </div>
-
-                    {/*this is for the metric type*/}
-                    <div>
-                        {configuration.resourceId ? (
-                            <>
-                                <label className="block text-sm font-medium text-foreground mb-2" htmlFor="metric-type">
-                                    Metric Type
-                                </label>
-
-                                <select
-                                    id="metric-type"
-                                    value={configuration.metricType}
-                                    onChange={(e) => setConfigAndRegisterUpdate({ ...configuration, metricType: e.target.value as MetricType })}
-                                    className="w-full bg-background border border-border rounded-lg px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    <div className="grid gap-2">
+                        <Label>Resource ID</Label>
+                        <Popover open={resourceOpen} onOpenChange={setResourceOpen}>
+                            <PopoverTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    aria-expanded={resourceOpen}
+                                    className="justify-between w-full"
+                                    disabled={isSaving}
                                 >
-                                    {availableMetrics.map((type: MetricType) => (
-                                        <option key={type} value={type}>
-                                            {type.toUpperCase()}
-                                        </option>
-                                    ))}
-                                </select>
-                            </>
-                        ) : (
-                            <p className="text-sm text-muted-foreground">
-                                Select resource first
-                            </p>
-                        )}
+                                    <span className="truncate">
+                                        {configuration.resourceId
+                                            ? (resourceNamesById[configuration.resourceId] ??
+                                              configuration.resourceId)
+                                            : "Select a resource..."}
+                                    </span>
+                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="p-0 w-(--radix-popover-trigger-width)">
+                                <Command>
+                                    <CommandInput placeholder="Search resources..." />
+                                    <CommandList>
+                                        <CommandEmpty>No resource found</CommandEmpty>
+                                        <CommandGroup>
+                                            {availableResources.map((resource) => (
+                                                <CommandItem
+                                                    key={resource}
+                                                    value={resource}
+                                                    onSelect={(currentValue) => {
+                                                        const nextMetricOptions =
+                                                            allAvailableMetrics()[currentValue] ??
+                                                            [];
+                                                        const metricType =
+                                                            nextMetricOptions[0] ?? "anon";
+                                                        setConfiguration({
+                                                            ...configuration,
+                                                            resourceId: currentValue,
+                                                            metricType: metricType,
+                                                        });
+                                                        setResourceOpen(false);
+                                                    }}
+                                                >
+                                                    <Check
+                                                        className={cn(
+                                                            "mr-2 h-4 w-4",
+                                                            configuration.resourceId === resource
+                                                                ? "opacity-100"
+                                                                : "opacity-0"
+                                                        )}
+                                                    />
+                                                    {resourceNamesById[resource] ?? resource}
+                                                </CommandItem>
+                                            ))}
+                                        </CommandGroup>
+                                    </CommandList>
+                                </Command>
+                            </PopoverContent>
+                        </Popover>
                     </div>
 
-                    {/*this is to chnange bet. the line chart or the gauge chart*/}
-                    <div>
-                        <label className="block text-sm font-medium text-foreground mb-2" htmlFor="chart-type">
-                            Chart Type
-                        </label>
+                    <div className="grid gap-2">
+                        <Label>Metric Type</Label>
+                        <Popover open={metricOpen} onOpenChange={setMetricOpen}>
+                            <PopoverTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    aria-expanded={metricOpen}
+                                    className="justify-between w-full"
+                                    disabled={!configuration.resourceId || isSaving}
+                                >
+                                    <span className="truncate">
+                                        {getMetricDisplayText(
+                                            configuration.metricType,
+                                            configuration.resourceId
+                                        )}
+                                    </span>
+                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="p-0 w-(--radix-popover-trigger-width)">
+                                <Command>
+                                    <CommandInput placeholder="Search metric types..." />
+                                    <CommandList>
+                                        <CommandEmpty>No metric type found.</CommandEmpty>
+                                        <CommandGroup>
+                                            {availableMetrics.map((type) => (
+                                                <CommandItem
+                                                    key={type}
+                                                    value={type}
+                                                    onSelect={(currentValue) => {
+                                                        setConfiguration({
+                                                            ...configuration,
+                                                            metricType: currentValue as MetricType,
+                                                        });
+                                                        setMetricOpen(false);
+                                                    }}
+                                                >
+                                                    <Check
+                                                        className={cn(
+                                                            "mr-2 h-4 w-4",
+                                                            configuration.metricType === type
+                                                                ? "opacity-100"
+                                                                : "opacity-0"
+                                                        )}
+                                                    />
+                                                    {type.toUpperCase()}
+                                                </CommandItem>
+                                            ))}
+                                        </CommandGroup>
+                                    </CommandList>
+                                </Command>
+                            </PopoverContent>
+                        </Popover>
+                    </div>
 
-                        <div className="flex gap-4" id="chart-type">
-                            <label className="flex items-center gap-2 cursor-pointer">
-                                <input
-                                    type="radio"
-                                    value="line"
-                                    checked={configuration.chartType === 'line'}
-                                    onChange={(e) => setConfiguration({ ...configuration, chartType: e.target.value as 'line' | 'gauge' })}
-                                    className="w-4 h-4 text-primary focus:ring-ring"
-                                />
-                                <span className="text-foreground">Line Chart</span>
-                            </label>
-
-                            <label className="flex items-center gap-2 cursor-pointer ">
-                                <input
-                                    type="radio"
-                                    value="gauge"
-                                    checked={configuration.chartType === 'gauge'}
-                                    onChange={(e) => setConfiguration({ ...configuration, chartType: e.target.value as 'line' | 'gauge' })}
-                                    className="w-4 h-4 text-primary focus:ring-ring"
-                                />
-                                <span className="text-foreground">Gauge Chart</span>
-                            </label>
-
-                        </div>
+                    <div className="grid gap-2">
+                        <Label>Chart Type</Label>
+                        <Popover open={chartOpen} onOpenChange={setChartOpen}>
+                            <PopoverTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    aria-expanded={chartOpen}
+                                    className="justify-between w-full"
+                                    disabled={isSaving}
+                                >
+                                    {configuration.chartType
+                                        ? CHART_TYPE_OPTIONS.find(
+                                              (opt) => opt.value === configuration.chartType
+                                          )?.label
+                                        : "Select chart type..."}
+                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="p-0 w-(--radix-popover-trigger-width)">
+                                <Command>
+                                    <CommandInput placeholder="Search chart types..." />
+                                    <CommandList>
+                                        <CommandEmpty>No chart type found.</CommandEmpty>
+                                        <CommandGroup>
+                                            {CHART_TYPE_OPTIONS.map((opt) => (
+                                                <CommandItem
+                                                    key={opt.value}
+                                                    value={opt.value}
+                                                    onSelect={(currentValue) => {
+                                                        setConfiguration({
+                                                            ...configuration,
+                                                            chartType: currentValue as ChartType,
+                                                        });
+                                                        setChartOpen(false);
+                                                    }}
+                                                >
+                                                    <Check
+                                                        className={cn(
+                                                            "mr-2 h-4 w-4",
+                                                            configuration.chartType === opt.value
+                                                                ? "opacity-100"
+                                                                : "opacity-0"
+                                                        )}
+                                                    />
+                                                    {opt.label}
+                                                </CommandItem>
+                                            ))}
+                                        </CommandGroup>
+                                    </CommandList>
+                                </Command>
+                            </PopoverContent>
+                        </Popover>
                     </div>
                 </div>
 
-                <div className="flex justify-end gap-3 border-t border-border px-6 py-4">
-                    <button
-                        onClick={onClose}
-                        className="px-4 py-2 rounded-lg border border-border text-foreground hover:bg-muted transition-colors"
-                    >
+                <DialogFooter>
+                    <Button variant="outline" onClick={onClose} disabled={isSaving}>
                         Cancel
-                    </button>
-
-                    <button
-                        onClick={handleSave}
-                        className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-                    >
-                        Save Changes
-                    </button>
-
-                </div>
-            </div>
-        </>
+                    </Button>
+                    <Button onClick={handleSave} disabled={isSaving}>
+                        {isSaving ? "Saving..." : "Save Changes"}
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     );
 }

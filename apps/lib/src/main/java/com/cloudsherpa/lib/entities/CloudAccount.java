@@ -42,6 +42,18 @@ public class CloudAccount {
   @Column(name = "created_at")
   private OffsetDateTime createdAt;
 
+  @Column(name = "last_usage_ingestion")
+  private OffsetDateTime lastUsageIngestion;
+
+  @Column(name = "next_usage_ingestion")
+  private OffsetDateTime nextUsageIngestion;
+
+  @Column(name = "last_billing_ingestion")
+  private OffsetDateTime lastBillingIngestion;
+
+  @Column(name = "next_billing_ingestion")
+  private OffsetDateTime nextBillingIngestion;
+    
   protected CloudAccount() {}
 
   public CloudAccount(
@@ -50,15 +62,102 @@ public class CloudAccount {
       AccountTypeEnum accountType,
       String displayName,
       String ingestionPeriod,
-      OffsetDateTime createdAt) {
+      OffsetDateTime createdAt,
+      OffsetDateTime lastUsageIngestion,
+      OffsetDateTime nextUsageIngestion,
+      OffsetDateTime lastBillingIngestion,
+      OffsetDateTime nextBillingIngestion) {
     this.id = id;
     this.connectionId = connectionId;
     this.accountType = accountType;
     this.displayName = displayName;
     this.ingestionPeriod = ingestionPeriod;
     this.createdAt = createdAt;
+    this.lastUsageIngestion = lastUsageIngestion;
+    this.nextUsageIngestion = nextUsageIngestion;
+    this.lastBillingIngestion = lastBillingIngestion;
+    this.nextBillingIngestion = nextBillingIngestion;
+  }
+public static Builder builder() {
+  return new Builder();
+}
+
+public static class Builder {
+  private UUID id;
+  private UUID connectionId;
+  private AccountTypeEnum accountType;
+  private String displayName;
+  private String ingestionPeriod;
+  private OffsetDateTime createdAt;
+  private OffsetDateTime lastUsageIngestion;
+  private OffsetDateTime nextUsageIngestion;
+  private OffsetDateTime lastBillingIngestion;
+  private OffsetDateTime nextBillingIngestion;
+
+  public Builder id(UUID id) {
+    this.id = id;
+    return this;
   }
 
+  public Builder connectionId(UUID connectionId) {
+    this.connectionId = connectionId;
+    return this;
+  }
+
+  public Builder accountType(AccountTypeEnum accountType) {
+    this.accountType = accountType;
+    return this;
+  }
+
+  public Builder displayName(String displayName) {
+    this.displayName = displayName;
+    return this;
+  }
+
+  public Builder ingestionPeriod(String ingestionPeriod) {
+    this.ingestionPeriod = ingestionPeriod;
+    return this;
+  }
+
+  public Builder createdAt(OffsetDateTime createdAt) {
+    this.createdAt = createdAt;
+    return this;
+  }
+
+  public Builder lastUsageIngestion(OffsetDateTime lastUsageIngestion) {
+    this.lastUsageIngestion = lastUsageIngestion;
+    return this;
+  }
+
+  public Builder nextUsageIngestion(OffsetDateTime nextUsageIngestion) {
+    this.nextUsageIngestion = nextUsageIngestion;
+    return this;
+  }
+
+  public Builder lastBillingIngestion(OffsetDateTime lastBillingIngestion) {
+    this.lastBillingIngestion = lastBillingIngestion;
+    return this;
+  }
+
+  public Builder nextBillingIngestion(OffsetDateTime nextBillingIngestion) {
+    this.nextBillingIngestion = nextBillingIngestion;
+    return this;
+  }
+
+  public CloudAccount build() {
+    return new CloudAccount(
+        id,
+        connectionId,
+        accountType,
+        displayName,
+        ingestionPeriod,
+        createdAt,
+        lastUsageIngestion,
+        nextUsageIngestion,
+        lastBillingIngestion,
+        nextBillingIngestion);
+    }
+  }
   public UUID getId() {
     return id;
   }
@@ -79,11 +178,47 @@ public class CloudAccount {
     return displayName;
   }
 
+  public void setDisplayName(String name) {
+    this.displayName = name;
+  }
+
   public String getIngestionPeriod() {
     return ingestionPeriod;
   }
 
   public OffsetDateTime getCreatedAt() {
     return createdAt;
+  }
+
+  public OffsetDateTime getLastUsageIngestion() {
+    return lastUsageIngestion;
+  }
+
+  public void setLastUsageIngestion(OffsetDateTime lastIngestion) {
+    this.lastUsageIngestion = lastIngestion;
+  }
+
+  public OffsetDateTime getNextUsageIngestion() {
+    return nextUsageIngestion;
+  }
+
+  public void setNextUsageIngestion(OffsetDateTime nextIngestion) {
+    this.nextUsageIngestion = nextIngestion;
+  }
+
+  public OffsetDateTime getLastBillingIngestion() {
+    return lastBillingIngestion;
+  }
+  
+  public void setLastBillingIngestion(OffsetDateTime lastIngestion) {
+    this.lastBillingIngestion = lastIngestion;
+  }
+
+  public OffsetDateTime getNextBillingIngestion() {
+    return nextBillingIngestion;
+  }
+
+  public void setNextBillingIngestion(OffsetDateTime nextIngestion) {
+    this.nextBillingIngestion = nextIngestion;
   }
 }

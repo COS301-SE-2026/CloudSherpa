@@ -5,7 +5,6 @@ public class CloudCredentials {
   // AWS
   private String accessKey;
   private String secretKey;
-  private String awsRegion;
 
   // Azure
   private String tenantId;
@@ -30,14 +29,6 @@ public class CloudCredentials {
 
   public void setSecretKey(String secretKey) {
     this.secretKey = secretKey;
-  }
-
-  public String getAwsRegion() {
-    return awsRegion;
-  }
-
-  public void setAwsRegion(String region) {
-    this.awsRegion = region;
   }
 
   public String getTenantId() {
