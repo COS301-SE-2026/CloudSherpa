@@ -14,7 +14,17 @@ CREATE TYPE public.theme_enum AS ENUM ('light', 'dark');
 CREATE TYPE public.currency_enum AS ENUM ('USD', 'EUR', 'ZAR');
 CREATE TYPE public.language_enum AS ENUM ('en', 'es', 'fr');
 CREATE TYPE public.ingestion_period_enum AS ENUM ('1m', '5m', '1h');
-CREATE TYPE public.predefined_time_enum AS ENUM ('last_1h', 'last_24h', 'last_7d');
+CREATE TYPE public.predefined_time_enum AS ENUM (
+  'T_5_MIN',
+  'T_15_MIN',
+  'T_30_MIN',
+  'T_1_HOUR',
+  'T_6_HOUR',
+  'T_12_HOUR',
+  'T_24_HOUR',
+  'T_7_DAYS',
+  'T_30_DAYS'
+);
 CREATE TYPE public.type_enum AS ENUM ('KPI', 'CHART');
 CREATE TYPE public.execution_status_enum AS ENUM ('pending', 'processing', 'completed', 'failed');
 CREATE TYPE PUBLIC.chart_type_enum AS ENUM ('gauge_chart', 'line_chart');
@@ -491,4 +501,3 @@ BEGIN
   )
   ON CONFLICT (account_id) DO NOTHING;
 END $$;
-

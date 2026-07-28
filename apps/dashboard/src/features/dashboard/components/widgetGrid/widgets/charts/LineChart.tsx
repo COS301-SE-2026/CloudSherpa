@@ -9,7 +9,7 @@ import { useMemo } from "react";
 import { useChartData } from "@/features/dashboard/hooks/useChartData";
 import { useChartTheme } from "@/features/dashboard/hooks/useChartTheme";
 import { BaseChart } from "./baseChart";
-import { useWindowStore } from "@/features/dashboard/stores/window-store";
+import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
 
 type LineChartProps = {
     resourceId: string;
@@ -29,15 +29,14 @@ const tooltipTimestampOptions: Intl.DateTimeFormatOptions = {
 export function LineChart({ resourceId, metricType }: Readonly<LineChartProps>) {
     const { timeSeriesData } = useChartData(resourceId, metricType);
     const { themeName, tokens } = useChartTheme();
-    const fromMs = useWindowStore((state) => state.fromMs);
-    const toMs = useWindowStore((state) => state.toMs);
+    const fromMs = useDashboardStore((state) => state.fromMs);
+    const toMs = useDashboardStore((state) => state.toMs);
     const options: EChartsOption = useMemo(() => {
         return {
             tooltip: {
                 trigger: "axis",
                 formatter: (params: DefaultLabelFormatterCallbackParams) => {
                     const point = Array.isArray(params) ? params[0] : params;
-                    console.log(point);
                     const value = point.value?.value;
 
                     const formattedPointTimestamp = new Intl.DateTimeFormat(

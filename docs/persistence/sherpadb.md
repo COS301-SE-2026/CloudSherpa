@@ -33,7 +33,7 @@ To view and manage the database locally during development, you can use the bund
 | **currency_enum** | `USD`, `EUR`, `ZAR` | The money format used to display cost metrics. |
 | **language_enum** | `en`, `es`, `fr` | The language the app is translated into. |
 | **ingestion_period_enum**| `1m`, `5m`, `1h` | How often our system fetches new data from the cloud. |
-| **predefined_time_enum** | `last_1h`, `last_24h`, `last_7d` | Quick-select time filters for viewing dashboards. |
+| **predefined_time_enum** | `T_5_MIN`, `T_15_MIN`, `T_30_MIN`, `T_1_HOUR`, `T_6_HOUR`, `T_12_HOUR`, `T_24_HOUR`, `T_7_DAYS`, `T_30_DAYS` | Quick-select time filters for viewing dashboards. |
 | **type_enum** | `line_chart`, `guage_chart` | The specific type of visual chart used in a widget. |
 | **execution_status_enum**| `pending`, `processing`, `completed`, `failed` | Tracks the state of a billing export file ingestion run. |
 | **charge_type_enum** | `Usage`, `Other` | Distinguishes actual resource usage charges from other billing line items such as taxes, credits, refunds, and support charges. |
