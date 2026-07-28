@@ -355,6 +355,11 @@ const createWindowSlice: StateCreator<DashboardStore, [], [], WindowSlice> = (se
         await setDashboardPresetTimeWindow(preset, get().activeDashboardId);
     },
     hydrateWindowOnDashboardLoad: (preset: TimeWindowPreset) => {
+        // Uses the default for now
+        if (preset == "custom") {
+            return;
+        }
+
         const presetRange = getPresetRange(preset) ?? getPresetRange("T_1_HOUR");
 
         if (!presetRange?.from || !presetRange?.to) {

@@ -152,9 +152,7 @@ function DashboardContent() {
                     setActiveDashboard(defaultId);
 
                     const selectedDashboard = fetchedData.find((d) => d.id === defaultId);
-                    console.log(selectedDashboard);
                     if (selectedDashboard?.predefinedTime) {
-                        console.log("hydrating...");
                         hydrateWindow(selectedDashboard?.predefinedTime);
                     }
 
