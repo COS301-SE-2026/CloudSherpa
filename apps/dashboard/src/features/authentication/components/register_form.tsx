@@ -26,7 +26,7 @@ export default function RegisterForm({ isLoading = false, onToggle }: Readonly<R
     const { register, registrationFailure, registrationSuccess, redirectCountdown } =
         useRegistration();
 
-    const togglePasswordVisibility = () => setIsPasswordVisible(!isPasswordVisible); //note I want to implement a spring loaded button instead of a togglable one for shoulder surfing.
+    const togglePasswordVisibility = () => setIsPasswordVisible(!isPasswordVisible);
     const toggleConfirmPasswordVisibility = () =>
         setIsConfirmPasswordVisible(!isConfirmPasswordVisible);
 

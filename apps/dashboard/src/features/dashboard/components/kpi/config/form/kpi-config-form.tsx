@@ -15,6 +15,7 @@ import { KPIConfigTable } from "@/features/dashboard/components/kpi/config/confi
 // import { CloudProviderEnum } from "@/features/dashboard/types/provider";
 import { useFetchTableResources } from "../hooks/useFetchTableResources";
 import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
+import { useRouter } from "next/navigation";
 
 export type KpiConfigFormProps = {
     readonly kpiId: string;
@@ -39,6 +40,7 @@ export function KpiConfigForm({ kpiId }: KpiConfigFormProps) {
                   chargeIds: [],
               }
     );
+    const router = useRouter();
 
     useEffect(() => {
         console.log("fetch resources triggered");
@@ -74,6 +76,12 @@ export function KpiConfigForm({ kpiId }: KpiConfigFormProps) {
         setIsSaving(true);
         updateWidget(config);
         setIsSaving(false);
+        router.push("/dashboard");
+    }
+
+    function cancelKpiConfig() {
+        setIsSaving(false);
+        router.push("/dashboard");
     }
 
     return (
@@ -87,7 +95,9 @@ export function KpiConfigForm({ kpiId }: KpiConfigFormProps) {
                 >
                     Save KPI
                 </Button>
-                <Button variant={"secondary"}>Cancel</Button>
+                <Button variant={"secondary"} disabled={isSaving} onClick={cancelKpiConfig}>
+                    Cancel
+                </Button>
             </div>
             <div className="grid grid-cols-[2fr_1fr] gap-4 h-full">
                 <Card className="p-6">

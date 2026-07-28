@@ -14,7 +14,17 @@ CREATE TYPE public.theme_enum AS ENUM ('light', 'dark');
 CREATE TYPE public.currency_enum AS ENUM ('USD', 'EUR', 'ZAR');
 CREATE TYPE public.language_enum AS ENUM ('en', 'es', 'fr');
 CREATE TYPE public.ingestion_period_enum AS ENUM ('1m', '5m', '1h');
-CREATE TYPE public.predefined_time_enum AS ENUM ('last_1h', 'last_24h', 'last_7d');
+CREATE TYPE public.predefined_time_enum AS ENUM (
+  'T_5_MIN',
+  'T_15_MIN',
+  'T_30_MIN',
+  'T_1_HOUR',
+  'T_6_HOUR',
+  'T_12_HOUR',
+  'T_24_HOUR',
+  'T_7_DAYS',
+  'T_30_DAYS'
+);
 CREATE TYPE public.type_enum AS ENUM ('KPI', 'CHART');
 CREATE TYPE public.execution_status_enum AS ENUM ('pending', 'processing', 'completed', 'failed');
 CREATE TYPE PUBLIC.chart_type_enum AS ENUM ('gauge_chart', 'line_chart');
@@ -56,8 +66,45 @@ CREATE TABLE IF NOT EXISTS public.cloud_account (
   account_type public.account_type_enum NOT NULL,
   ingestion_period public.ingestion_period_enum,
   display_name varchar(255),
-  created_at timestamptz DEFAULT NOW()
+  created_at timestamptz DEFAULT NOW(),
+  last_usage_ingestion timestamptz DEFAULT NOW(),
+  next_usage_ingestion timestamptz DEFAULT NOW(),
+  last_billing_ingestion timestamptz DEFAULT NOW(),
+  next_billing_ingestion timestamptz DEFAULT NOW()
 );
+CREATE TABLE public.offered_metric (
+    offered_metric_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    provider public.provider_enum NOT NULL,
+
+    -- e.g. AWS/EC2, AWS/RDS, compute.googleapis.com/instance
+    service_type varchar(255) NOT NULL,
+
+    -- e.g. CPUUtilization, NetworkIn, cpu/utilization
+    metric_name varchar(255) NOT NULL,
+
+    -- Resource identifier dimension
+    -- AWS examples:
+    --   InstanceId
+    --   DBInstanceIdentifier
+    -- GCP examples:
+    --   instance_id
+    --   database_id
+    identifier_field varchar(100) NOT NULL,
+
+    -- Optional because AWS metrics already know their unit,
+    -- while GCP does not.
+    expected_unit varchar(50),
+
+    description text,
+
+    CONSTRAINT uq_offered_metric UNIQUE (
+        provider,
+        service_type,
+        metric_name
+    )
+);
+
 
 CREATE TABLE IF NOT EXISTS public.cloud_credential (
   credential_id uuid PRIMARY KEY,
@@ -72,6 +119,7 @@ CREATE TABLE IF NOT EXISTS public.billing_export_config (
   config_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   account_id uuid REFERENCES public.cloud_account(account_id) ON DELETE CASCADE,
   bucket_name varchar(255) NOT NULL,
+  bucket_region varchar(255) NOT NULL,
   export_prefix varchar(255), 
   export_name varchar(255) NOT NULL,
   created_at timestamptz DEFAULT NOW()
@@ -114,6 +162,75 @@ CREATE TABLE IF NOT EXISTS public.widget_kpi (
   aggregation integer NOT NULL
 );
 
+INSERT INTO public.offered_metric (
+    provider,
+    service_type,
+    metric_name,
+    identifier_field,
+    expected_unit,
+    description
+)
+VALUES
+-- AWS EC2
+('AWS', 'AWS/EC2', 'CPUUtilization', 'InstanceId', NULL, 'Average CPU utilization'),
+('AWS', 'AWS/EC2', 'NetworkIn', 'InstanceId', NULL, 'Incoming network traffic'),
+('AWS', 'AWS/EC2', 'NetworkOut', 'InstanceId', NULL, 'Outgoing network traffic'),
+('AWS', 'AWS/EC2', 'DiskReadBytes', 'InstanceId', NULL, 'Bytes read from disks'),
+('AWS', 'AWS/EC2', 'DiskWriteBytes', 'InstanceId', NULL, 'Bytes written to disks'),
+('AWS', 'AWS/EC2', 'StatusCheckFailed', 'InstanceId', NULL, 'Instance status checks'),
+
+-- AWS ECS
+('AWS', 'AWS/ECS', 'CPUUtilization', 'ClusterName', NULL, 'Cluster CPU utilization'),
+('AWS', 'AWS/ECS', 'MemoryUtilization', 'ClusterName', NULL, 'Cluster memory utilization'),
+('AWS', 'AWS/ECS', 'CPUReservation', 'ClusterName', NULL, 'Reserved CPU'),
+('AWS', 'AWS/ECS', 'MemoryReservation', 'ClusterName', NULL, 'Reserved memory'),
+
+-- AWS EKS
+('AWS', 'AWS/EKS', 'cluster_failed_request_count', 'ClusterName', NULL, 'Failed API requests'),
+('AWS', 'AWS/EKS', 'cluster_node_count', 'ClusterName', NULL, 'Number of worker nodes'),
+('AWS', 'AWS/EKS', 'cluster_request_total', 'ClusterName', NULL, 'API request count'),
+
+-- AWS Lambda
+('AWS', 'AWS/Lambda', 'Invocations', 'FunctionName', NULL, 'Function invocations'),
+('AWS', 'AWS/Lambda', 'Errors', 'FunctionName', NULL, 'Function errors'),
+('AWS', 'AWS/Lambda', 'Duration', 'FunctionName', NULL, 'Execution duration'),
+('AWS', 'AWS/Lambda', 'ConcurrentExecutions', 'FunctionName', NULL, 'Concurrent executions'),
+('AWS', 'AWS/Lambda', 'Throttles', 'FunctionName', NULL, 'Function throttles'),
+
+-- AWS RDS
+('AWS', 'AWS/RDS', 'CPUUtilization', 'DBInstanceIdentifier', NULL, 'CPU utilization'),
+('AWS', 'AWS/RDS', 'DatabaseConnections', 'DBInstanceIdentifier', NULL, 'Open database connections'),
+('AWS', 'AWS/RDS', 'FreeStorageSpace', 'DBInstanceIdentifier', NULL, 'Remaining storage'),
+('AWS', 'AWS/RDS', 'ReadLatency', 'DBInstanceIdentifier', NULL, 'Read latency'),
+('AWS', 'AWS/RDS', 'WriteLatency', 'DBInstanceIdentifier', NULL, 'Write latency'),
+('AWS', 'AWS/RDS', 'FreeableMemory', 'DBInstanceIdentifier', NULL, 'Available memory'),
+
+-- AWS ElastiCache
+('AWS', 'AWS/ElastiCache', 'CPUUtilization', 'CacheClusterId', NULL, 'CPU utilization'),
+('AWS', 'AWS/ElastiCache', 'CurrConnections', 'CacheClusterId', NULL, 'Current connections'),
+('AWS', 'AWS/ElastiCache', 'Evictions', 'CacheClusterId', NULL, 'Evicted keys'),
+('AWS', 'AWS/ElastiCache', 'FreeableMemory', 'CacheClusterId', NULL, 'Available memory'),
+('AWS', 'AWS/ElastiCache', 'NetworkBytesIn', 'CacheClusterId', NULL, 'Incoming network bytes'),
+('AWS', 'AWS/ElastiCache', 'NetworkBytesOut', 'CacheClusterId', NULL, 'Outgoing network bytes'),
+
+-- AWS OpenSearch
+('AWS', 'AWS/OpenSearch', 'CPUUtilization', 'DomainName', NULL, 'CPU utilization'),
+('AWS', 'AWS/OpenSearch', 'JVMMemoryPressure', 'DomainName', NULL, 'JVM memory pressure'),
+('AWS', 'AWS/OpenSearch', 'FreeStorageSpace', 'DomainName', NULL, 'Available storage'),
+('AWS', 'AWS/OpenSearch', 'ClusterIndexWritesBlocked', 'DomainName', NULL, 'Index writes blocked'),
+('AWS', 'AWS/OpenSearch', 'SearchLatency', 'DomainName', NULL, 'Search latency'),
+
+-- AWS Redshift
+('AWS', 'AWS/Redshift', 'CPUUtilization', 'ClusterIdentifier', NULL, 'CPU utilization'),
+('AWS', 'AWS/Redshift', 'HealthStatus', 'ClusterIdentifier', NULL, 'Cluster health'),
+('AWS', 'AWS/Redshift', 'DatabaseConnections', 'ClusterIdentifier', NULL, 'Database connections'),
+('AWS', 'AWS/Redshift', 'PercentageDiskSpaceUsed', 'ClusterIdentifier', NULL, 'Disk utilization'),
+('AWS', 'AWS/Redshift', 'ReadIOPS', 'ClusterIdentifier', NULL, 'Read IOPS'),
+('AWS', 'AWS/Redshift', 'WriteIOPS', 'ClusterIdentifier', NULL, 'Write IOPS')
+
+ON CONFLICT DO NOTHING;
+-- This sits in the public schema so it only has to be written once, but it is 
+-- smart enough to broadcast on a specific tenant's channel dynamically.
 CREATE TABLE IF NOT EXISTS public.kpi_charges (
   kpi_charges_id uuid PRIMARY KEY,
   widget_kpi_id uuid NOT NULL REFERENCES public.widget_kpi(kpi_id) ON DELETE CASCADE,
@@ -136,15 +253,27 @@ CREATE TABLE IF NOT EXISTS public.chart_resource (
 -- ----------------------------------------------------------------
 -- GLOBAL FUNCTIONS
 -- ----------------------------------------------------------------
-CREATE OR REPLACE FUNCTION public.notify_metric_event() 
+CREATE OR REPLACE FUNCTION public.notify_metric_event()
 RETURNS TRIGGER AS $$
+DECLARE
+    source_schema text := TG_TABLE_SCHEMA;
+    tenant_channel text;
 BEGIN
-    -- TG_TABLE_SCHEMA dynamically grabs the name of the schema that fired the trigger.
-    -- Example: If a metric hits tenant_1234, it broadcasts on 'metric_events_tenant_1234'.
-    -- row_to_json(NEW) turns the newly inserted row into a JSON object.
+    SELECT h.hypertable_schema
+    INTO source_schema
+    FROM timescaledb_information.chunks c
+    JOIN timescaledb_information.hypertables h
+      ON h.hypertable_schema = c.hypertable_schema
+     AND h.hypertable_name = c.hypertable_name
+    WHERE c.chunk_schema = TG_TABLE_SCHEMA
+      AND c.chunk_name = TG_TABLE_NAME
+    LIMIT 1;
+
+    tenant_channel := 'metric_events_' || COALESCE(source_schema, TG_TABLE_SCHEMA);
+
     PERFORM pg_notify('metric_events', row_to_json(NEW)::text);
-    PERFORM pg_notify('metric_events_' || TG_TABLE_SCHEMA, row_to_json(NEW)::text);
-    
+    PERFORM pg_notify(tenant_channel, row_to_json(NEW)::text);
+
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -171,10 +300,21 @@ BEGIN
             account_id uuid REFERENCES public.cloud_account(account_id) ON DELETE CASCADE, 
             resource_type varchar(255) NOT NULL,
             resource_name varchar(255) NOT NULL,
+            resource_identifier varchar(255) NOT NULL,
+            resource_identifier_type varchar(255) NOT NULL,
+            region varchar(100) NOT NULL,
             status public.status_enum,
             tags jsonb,
             last_updated timestamptz DEFAULT NOW(),
-            created_at timestamptz DEFAULT NOW()
+            created_at timestamptz DEFAULT NOW(),
+
+            CONSTRAINT uq_resource_identity
+        UNIQUE (
+            account_id,
+            resource_type,
+            resource_identifier,
+            region
+        )
         );
     $sql$, schema_name);
 
@@ -301,6 +441,13 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+\set demo_password ''
+\getenv demo_password DEMO_PASSWORD
+
+-- Custom variable
+-- Must be separated by a .
+SET sherpa.demo_password = :'demo_password';
+
 -- ----------------------------------------------------------------
 -- DEMO SEED DATA
 -- ----------------------------------------------------------------
@@ -327,7 +474,7 @@ BEGIN
     demo_user_id,
     'demo@gmail.com',
     'demo@gmail.com',
-    crypt('Password@2', gen_salt('bf', 12)),
+    crypt(current_setting('sherpa.demo_password'), gen_salt('bf', 12)),
     now()
   )
   ON CONFLICT DO NOTHING;

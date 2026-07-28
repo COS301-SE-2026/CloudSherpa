@@ -7,7 +7,7 @@ services:
     image: grard835/cloudsherpa-ingestion:prod
     container_name: ingestion
     ports:
-      - "8081:8080"
+      - "8080"
     env_file:
       - ../apps/ingestion/.env
     depends_on:
@@ -60,8 +60,6 @@ services:
     restart: unless-stopped
     env_file:
       - ../persistence/sherpadb/.env
-    ports:
-      - "5432:5432"
     volumes:
       - sherpa_db_data:/var/lib/postgresql/data
       - ../persistence/sherpadb:/docker-entrypoint-initdb.d:ro
@@ -71,6 +69,19 @@ services:
       timeout: 3s
       retries: 20
 
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    ports:
+      - "5050:80"
+    env_file:
+      - ../persistence/sherpadb/.env
+    depends_on:
+      - sherpa-db
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+
 volumes:
   sherpa_db_data: 
+  pgadmin_data:
   # Ensures that the data is persistent across docker compose down / up 

@@ -10,11 +10,17 @@ export interface CloudCredentials {
     projectId?: string;
 }
 
+export interface ResourceDiscoveryRequest {
+    services: string[];
+    credentials: CloudCredentials;
+}
+
 export interface ResourceDetail {
     resourceId: string;
     name: string;
     resourceType: string;
     serviceCategory: string;
+    region: string;
     tags: Record<string, string>;
 }
 
@@ -39,15 +45,20 @@ export async function getCloudServices(provider: string): Promise<string[]> {
 }
 
 /**
- * Discover all resources accessible using the supplied credentials and permissions previously configured.
+ * Discover all resources accessible using the supplied credentials for selected services.
  */
 export async function getCloudResources(
     provider: string,
-    credentials: CloudCredentials
+    credentials: CloudCredentials,
+    services: string[]
 ): Promise<ResourceDetail[]> {
+    const request: ResourceDiscoveryRequest = {
+        services: services,
+        credentials: credentials,
+    };
     return apiClient<ResourceDetail[]>(`/api/cloud-resources/resources/${provider}`, {
         method: "POST",
-        body: JSON.stringify(credentials),
+        body: JSON.stringify(request),
     });
 }
 

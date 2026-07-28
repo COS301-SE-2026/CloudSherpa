@@ -1,4 +1,4 @@
-import { create } from "zustand";
+import { create, StateCreator } from "zustand";
 import {
     LayoutItem,
     DashboardConfig,
@@ -12,6 +12,23 @@ import {
     deleteDashboard,
     updateKpiWidgetConfig,
 } from "@/lib/fetch/api-dashboard";
+import { TimeWindowPreset } from "../types/timewindow";
+import { setDashboardPresetTimeWindow } from "../utils/setDashboardTimeWindow";
+import { persist } from "zustand/middleware";
+import { getPresetRange } from "../components/toolbar/timePeriodSelector";
+import { DateRange } from "react-day-picker";
+
+const tickIntervalMs = 30000;
+
+function getDefaultWindow() {
+    const toMs = Date.now();
+
+    return {
+        fromMs: toMs - 7 * 24 * 60 * 60 * 1000,
+        toMs,
+        selectedPreset: "T_7_DAYS" as TimeWindowPreset,
+    };
+}
 
 interface DashboardActions {
     createSnapshot: () => void;
@@ -31,22 +48,42 @@ interface DashboardActions {
         layouts: LayoutItem[],
         widgets: WidgetConfig[]
     ) => void;
+    reset: () => void;
 }
 
-export interface DashboardStore {
+export type DashboardSnapshot = {
+    dashboards: Record<string, DashboardConfig>;
+    layouts: Record<string, LayoutItem>;
+    widgets: Record<string, WidgetConfig>;
+};
+
+type DashboardSlice = {
     activeDashboardId: string | null;
     dashboards: Record<string, DashboardConfig>;
     layouts: Record<string, LayoutItem>;
     widgets: Record<string, WidgetConfig>;
-    snapshot: {
-        dashboards: Record<string, DashboardConfig>;
-        layouts: Record<string, LayoutItem>;
-        widgets: Record<string, WidgetConfig>;
-    } | null;
+    snapshot: DashboardSnapshot | null;
     actions: DashboardActions;
-}
+};
 
-export const useDashboardStore = create<DashboardStore>((set, get) => ({
+type WindowSlice = {
+    fromMs: number;
+    toMs: number;
+    selectedPreset: TimeWindowPreset;
+    minutes?: number;
+    hours?: number;
+    days?: number;
+    setWindow: (from: Date, to: Date) => void;
+    setPreset: (preset: TimeWindowPreset) => void;
+    hydrateWindowOnDashboardLoad: (preset: TimeWindowPreset) => void;
+    timeoutId?: ReturnType<typeof setTimeout>;
+    intervalId?: ReturnType<typeof setInterval>;
+    clear: () => void;
+};
+
+export type DashboardStore = DashboardSlice & WindowSlice;
+
+const createDashboardSlice: StateCreator<DashboardStore, [], [], DashboardSlice> = (set, get) => ({
     activeDashboardId: null,
     dashboards: {},
     layouts: {},
@@ -275,5 +312,88 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
 
             return currentWidgets[id];
         },
+
+        reset: () => {
+            set({
+                activeDashboardId: null,
+                dashboards: {},
+                layouts: {},
+                widgets: {},
+                snapshot: null,
+            });
+        },
     },
-}));
+});
+
+const createWindowSlice: StateCreator<DashboardStore, [], [], WindowSlice> = (set, get) => ({
+    ...getDefaultWindow(),
+    setWindow: (from, to) => {
+        set({ fromMs: from.getTime(), toMs: to.getTime() });
+
+        clearTimeout(get().timeoutId ?? undefined);
+        clearInterval(get().intervalId ?? undefined);
+
+        if (get().selectedPreset == "custom") {
+            return;
+        }
+
+        const timeoutId = setTimeout(() => {
+            const intervalId = setInterval(() => {
+                set({
+                    fromMs: get().fromMs + tickIntervalMs,
+                    toMs: get().toMs + tickIntervalMs,
+                });
+            }, tickIntervalMs);
+
+            set({ intervalId: intervalId });
+        }, tickIntervalMs);
+
+        set({ timeoutId: timeoutId });
+    },
+    setPreset: async (preset) => {
+        set({ selectedPreset: preset });
+        await setDashboardPresetTimeWindow(preset, get().activeDashboardId);
+    },
+    hydrateWindowOnDashboardLoad: (preset: TimeWindowPreset) => {
+        // Uses the default for now
+        if (preset == "custom") {
+            return;
+        }
+
+        const presetRange = getPresetRange(preset) ?? getPresetRange("T_1_HOUR");
+
+        if (!presetRange?.from || !presetRange?.to) {
+            return;
+        }
+        set({ selectedPreset: preset });
+        get().setWindow(presetRange.from, presetRange.to);
+    },
+    clear: () => {
+        clearTimeout(get().timeoutId ?? undefined);
+        clearInterval(get().intervalId ?? undefined);
+
+        set({
+            ...getDefaultWindow(),
+            timeoutId: undefined,
+            intervalId: undefined,
+        });
+    },
+});
+
+// Wrapping in persist instructs zustand to persist the fields specified in the partialize object to local storage
+export const useDashboardStore = create<DashboardStore>()(
+    persist(
+        (...args) => ({
+            ...createDashboardSlice(...args),
+            ...createWindowSlice(...args),
+        }),
+        {
+            name: "dashboard-store",
+            partialize: (state) => ({
+                fromMs: state.fromMs,
+                toMs: state.toMs,
+                selectedPreset: state.selectedPreset,
+            }),
+        }
+    )
+);

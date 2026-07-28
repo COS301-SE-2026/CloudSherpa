@@ -11,6 +11,7 @@ import com.cloudsherpa.ingestion.billing.provider.aws.cur.AwsCurIngestionService
 import com.cloudsherpa.ingestion.connector.CloudConnectorFactory;
 import com.cloudsherpa.ingestion.controller.CloudUsageController;
 import com.cloudsherpa.ingestion.models.UsageRecordModel;
+import com.cloudsherpa.ingestion.normalization.normalizers.AwsNormalizer;
 import com.cloudsherpa.ingestion.provider.aws.AwsCloudConnector;
 import com.cloudsherpa.ingestion.service.CloudUsageService;
 import com.cloudsherpa.ingestion.service.SherpaDbPersistenceService;
@@ -43,6 +44,8 @@ class CloudUsageControllerIntegrationTest {
   @MockitoBean private SherpaDbPersistenceService sherpaDbPersistenceService;
 
   @MockitoBean private AwsCloudConnector awsConnector;
+
+  @MockitoBean private AwsNormalizer normalizer;
 
   @BeforeEach
   void setUp() {

@@ -6,23 +6,10 @@ import { MetricType } from "@/features/dashboard/types/metric";
 import { Button } from "@/components/atoms/button";
 import { WidgetConfigMenu } from "@/features/dashboard/components/widgetGrid/widgets/widgetConfigMenu";
 import { ChartType, ChartWidgetConfig } from "@/features/dashboard/types/widgets";
-import { EllipsisVertical, Pencil, Trash } from "lucide-react";
 import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
 import { useToolbar } from "@/features/dashboard/components/toolbar/toolbarProvider";
-import {
-    ContextMenu,
-    ContextMenuContent,
-    ContextMenuItem,
-    ContextMenuSeparator,
-    ContextMenuTrigger,
-} from "@/components/atoms/context-menu";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/atoms/dropdown-menu";
+import { WidgetMenu } from "@/features/dashboard/components/widgetMenu";
+import { WidgetDropdown } from "@/features/dashboard/components/widgetDropdown";
 
 interface BaseChartProps {
     resourceId: string;
@@ -81,55 +68,27 @@ export function ChartWidget({ config }: Readonly<WidgetProps>) {
 
     return (
         <>
-            <ContextMenu>
-                <ContextMenuTrigger>
-                    <Card className="flex flex-col h-full w-full overflow-hidden">
-                        <CardHeader className="flex flex-row items-center justify-between ">
-                            <CardTitle>{displayName}</CardTitle>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                                        <EllipsisVertical className="h-4 w-4" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="w-fit">
-                                    <DropdownMenuItem onClick={openConfig} disabled={isEditMode}>
-                                        <Pencil className="mr-2 h-4 w-4" />
-                                        Configure Widget
-                                    </DropdownMenuItem>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem
-                                        onClick={() => removeWidget(id, id)}
-                                        className="text-destructive focus:text-destructive"
-                                    >
-                                        <Trash className="mr-2 h-4 w-4" />
-                                        Delete Widget
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </CardHeader>
+            <WidgetMenu
+                onConfigure={openConfig}
+                onDelete={() => removeWidget(id, id)}
+                isEditMode={isEditMode}
+                preview={false}
+            >
+                <Card className="flex flex-col h-full w-full overflow-hidden">
+                    <CardHeader className="flex flex-row items-center justify-between ">
+                        <CardTitle>{displayName}</CardTitle>
+                        <WidgetDropdown
+                            onConfigure={openConfig}
+                            onDelete={() => removeWidget(id, id)}
+                            isEditMode={isEditMode}
+                        />
+                    </CardHeader>
 
-                        <CardContent className="flex-1 w-full relative overflow-hidden">
-                            {renderChartContent()}
-                        </CardContent>
-                    </Card>
-                </ContextMenuTrigger>
-                <ContextMenuContent className="w-48">
-                    <ContextMenuItem onClick={openConfig} disabled={isEditMode}>
-                        <Pencil className="mr-2 h-4 w-4" />
-                        Configure Widget
-                    </ContextMenuItem>
-                    <ContextMenuSeparator />
-                    <ContextMenuItem
-                        onClick={() => removeWidget(id, id)}
-                        className="text-destructive focus:text-destructive"
-                    >
-                        <Trash className="mr-2 h-4 w-4" />
-                        Delete Widget
-                    </ContextMenuItem>
-                </ContextMenuContent>
-            </ContextMenu>
-
+                    <CardContent className="flex-1 w-full relative overflow-hidden">
+                        {renderChartContent()}
+                    </CardContent>
+                </Card>
+            </WidgetMenu>
             <WidgetConfigMenu
                 isOpen={isConfigOpen}
                 existingConfig={config}

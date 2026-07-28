@@ -8,8 +8,8 @@ export default function SubSectionHeading({
     description,
 }: Readonly<SubSectionHeadingProps>) {
     return (
-        <div>
-            <h2 className="text-2xl font-bold tracking-tight mb-2">{title}</h2>
+        <div className=" flex flex-col items-start justify-between">
+            <h2 className="text-2xl font-bold tracking-tight">{title}</h2>
             <p className="text-muted-foreground ">{description}</p>
         </div>
     );

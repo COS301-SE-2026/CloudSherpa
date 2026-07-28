@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 
 import com.cloudsherpa.ingestion.connector.*;
 import com.cloudsherpa.ingestion.models.*;
+import com.cloudsherpa.ingestion.normalization.normalizers.AwsNormalizer;
 import com.cloudsherpa.ingestion.service.CloudUsageService;
 import com.cloudsherpa.ingestion.service.SherpaDbPersistenceService;
 import java.time.Instant;
@@ -20,14 +21,15 @@ class CloudUsageServiceTest {
   private CloudConnectorFactory factory;
   private SherpaDbPersistenceService persistenceService;
   private CloudUsageService service;
+  private AwsNormalizer normalizer;
 
   @BeforeEach
   void setUp() {
 
     factory = mock(CloudConnectorFactory.class);
     persistenceService = mock(SherpaDbPersistenceService.class);
-
-    service = new CloudUsageService(factory, persistenceService);
+    normalizer = mock(AwsNormalizer.class);
+    service = new CloudUsageService(factory, persistenceService, normalizer);
   }
 
   @Test
@@ -40,11 +42,10 @@ class CloudUsageServiceTest {
     UsageRecordModel usageRecord = buildUsageRecord();
     String resource = "resource1";
     ResourceDetail resourceDetail =
-        new ResourceDetail("resourceId", "name", "type", "category", null);
-
+        new ResourceDetail("resourceId", "name", "type", "category", "region", null);
     doReturn(List.of(usageRecord)).when(connector).fetchUsage(any(), any());
     doReturn(List.of(resource)).when(connector).getAllOfferedServices();
-    doReturn(List.of(resourceDetail)).when(connector).getAllResources(any());
+    doReturn(List.of(resourceDetail)).when(connector).getAllResources(any(), any());
 
     IngestionRequestEvent request = buildRequest(true, false);
 
@@ -245,7 +246,8 @@ class CloudUsageServiceTest {
     }
 
     @Override
-    public List<ResourceDetail> getAllResources(CloudCredentials credentials) {
+    public List<ResourceDetail> getAllResources(
+        CloudCredentials credentials, List<String> serviceTypes) {
       return List.of();
     }
 
