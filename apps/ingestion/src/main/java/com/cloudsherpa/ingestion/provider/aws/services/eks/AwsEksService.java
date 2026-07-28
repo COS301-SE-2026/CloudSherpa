@@ -17,7 +17,6 @@ import software.amazon.awssdk.services.eks.model.Cluster;
 public class AwsEksService implements EksService {
 
   private final Logger logger = Logger.getLogger(getClass().getName());
-
   private final DiscoveryExecutor discoveryExecutor;
 
   public AwsEksService(DiscoveryExecutor discoveryExecutor) {
@@ -26,13 +25,11 @@ public class AwsEksService implements EksService {
 
   @Override
   public List<RegionalArn> getAllEksClusterArns(CloudCredentials credentials) {
-
     return discoveryExecutor.execute(
         Region.regions(), region -> discoverClusterArns(region, credentials));
   }
 
   private List<RegionalArn> discoverClusterArns(Region region, CloudCredentials credentials) {
-
     List<RegionalArn> resources = new ArrayList<>();
 
     try (EksClient eks =
@@ -50,20 +47,17 @@ public class AwsEksService implements EksService {
     } catch (Exception e) {
       logger.info("Skipping EKS discovery for region " + region.id() + ": " + e.getMessage());
     }
-
     return resources;
   }
 
   @Override
   public List<ResourceDetail> getAllEksClustersWithTags(CloudCredentials credentials) {
-
     return discoveryExecutor.execute(
         Region.regions(), region -> discoverClustersWithTags(region, credentials));
   }
 
   private List<ResourceDetail> discoverClustersWithTags(
       Region region, CloudCredentials credentials) {
-
     List<ResourceDetail> resources = new ArrayList<>();
 
     try (EksClient eks =
@@ -75,9 +69,7 @@ public class AwsEksService implements EksService {
       List<String> clusterNames = eks.listClustersPaginator().clusters().stream().toList();
 
       for (String clusterName : clusterNames) {
-
         try {
-
           Cluster cluster = eks.describeCluster(r -> r.name(clusterName)).cluster();
 
           String name = ResourceDetail.resolveName(clusterName, cluster.name(), cluster.tags());
@@ -101,11 +93,9 @@ public class AwsEksService implements EksService {
                   + e.getMessage());
         }
       }
-
     } catch (Exception e) {
       logger.info("Skipping EKS discovery for region " + region.id() + ": " + e.getMessage());
     }
-
     return resources;
   }
 }

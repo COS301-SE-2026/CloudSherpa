@@ -21,7 +21,6 @@ import software.amazon.awssdk.services.elasticache.model.Tag;
 public class AwsElastiCacheService implements ElastiCacheService {
 
   private final Logger logger = Logger.getLogger(getClass().getName());
-
   private final DiscoveryExecutor discoveryExecutor;
 
   public AwsElastiCacheService(DiscoveryExecutor discoveryExecutor) {
@@ -30,13 +29,11 @@ public class AwsElastiCacheService implements ElastiCacheService {
 
   @Override
   public List<RegionalArn> getAllElastiCacheClusterArns(CloudCredentials credentials) {
-
     return discoveryExecutor.execute(
         Region.regions(), region -> discoverClusterArns(region, credentials));
   }
 
   private List<RegionalArn> discoverClusterArns(Region region, CloudCredentials credentials) {
-
     List<RegionalArn> resources = new ArrayList<>();
     List<String> clusterArns = new ArrayList<>();
 
@@ -59,20 +56,17 @@ public class AwsElastiCacheService implements ElastiCacheService {
       logger.info(
           "Skipping ElastiCache discovery for region " + region.id() + ": " + e.getMessage());
     }
-
     return resources;
   }
 
   @Override
   public List<ResourceDetail> getAllElastiCacheClustersWithTags(CloudCredentials credentials) {
-
     return discoveryExecutor.execute(
         Region.regions(), region -> discoverClustersWithTags(region, credentials));
   }
 
   private List<ResourceDetail> discoverClustersWithTags(
       Region region, CloudCredentials credentials) {
-
     List<ResourceDetail> resources = new ArrayList<>();
 
     try (ElastiCacheClient client =
@@ -84,7 +78,6 @@ public class AwsElastiCacheService implements ElastiCacheService {
       for (CacheCluster cluster : client.describeCacheClustersPaginator().cacheClusters()) {
 
         try {
-
           Map<String, String> tags = Collections.emptyMap();
 
           if (cluster.arn() != null) {
@@ -115,12 +108,10 @@ public class AwsElastiCacheService implements ElastiCacheService {
                   + e.getMessage());
         }
       }
-
     } catch (Exception e) {
       logger.info(
           "Skipping ElastiCache discovery for region " + region.id() + ": " + e.getMessage());
     }
-
     return resources;
   }
 }
