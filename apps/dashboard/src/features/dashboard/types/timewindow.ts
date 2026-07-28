@@ -1,1 +1,11 @@
-export type TimeWindowPreset = "1m" | "2m" | "5m" | "1h" | "24h" | "7d" | "30d" | "custom";
+export type TimeWindowPreset =
+    | "T_5_MIN"
+    | "T_15_MIN"
+    | "T_30_MIN"
+    | "T_1_HOUR"
+    | "T_6_HOUR"
+    | "T_12_HOUR"
+    | "T_24_HOUR"
+    | "T_7_DAYS"
+    | "T_30_DAYS"
+    | "custom";

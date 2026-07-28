@@ -95,6 +95,10 @@ public class Dashboard {
     return predefinedTime;
   }
 
+  public void setPredefinedTime(PredefinedTimeEnum predefinedTime) {
+    this.predefinedTime = predefinedTime;
+  }
+
   public Boolean getCurrent() {
     return current;
   }

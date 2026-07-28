@@ -5,7 +5,7 @@ import Widget from "@/features/dashboard/components/widgetGrid/widgets/widget";
 import { WidgetConfig } from "@/features/dashboard/types/widgets";
 import { useMetricStore } from "@/features/dashboard/stores/metric-store";
 import { MetricSeries } from "@/features/dashboard/types/metric";
-import { useWindowStore } from "@/features/dashboard/stores/window-store";
+import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
 
 const MOCK_CHART_WIDGETS: WidgetConfig[] = [
     {
@@ -84,7 +84,7 @@ export default function DemoPage() {
                 "demo-server-01:memory": mockMemorySeries,
             },
         }));
-        useWindowStore.setState({
+        useDashboardStore.setState({
             fromMs: now - 300_000,
             toMs: now,
         });

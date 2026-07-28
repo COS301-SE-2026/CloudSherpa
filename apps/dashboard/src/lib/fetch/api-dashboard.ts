@@ -1,3 +1,4 @@
+import { TimeWindowPreset } from "@/features/dashboard/types/timewindow";
 import { ChartType } from "@/features/dashboard/types/widgets";
 import apiClient from "@/lib/fetch/api-client";
 
@@ -31,7 +32,7 @@ export interface DashboardDTO {
     displayName: string;
     timeFrom: string | null;
     timeTo: string | null;
-    predefinedTime: string;
+    predefinedTime: TimeWindowPreset;
     current: boolean;
     widgets: WidgetDto[];
 }

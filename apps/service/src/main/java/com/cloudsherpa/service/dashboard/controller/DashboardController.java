@@ -2,6 +2,7 @@ package com.cloudsherpa.service.dashboard.controller;
 
 import com.cloudsherpa.service.dashboard.dto.DashboardCreateDTO;
 import com.cloudsherpa.service.dashboard.dto.DashboardDTO;
+import com.cloudsherpa.service.dashboard.dto.DashboardWindowUpdateDTO;
 import com.cloudsherpa.service.dashboard.dto.WidgetConfigUpdateDTO;
 import com.cloudsherpa.service.dashboard.dto.WidgetDTO;
 import com.cloudsherpa.service.dashboard.dto.WidgetLayoutUpdateDTO;
@@ -93,6 +94,16 @@ public class DashboardController {
       @AuthenticationPrincipal Jwt jwt) {
     UUID userId = UUID.fromString(jwt.getSubject());
     dashboardService.updateWidgetConfig(userId, widgetId, request);
+    return ResponseEntity.ok().build();
+  }
+
+  @PatchMapping("/{dashboardId}/window")
+  public ResponseEntity<Void> updateDashboardWindow(
+      @PathVariable UUID dashboardId,
+      @RequestBody DashboardWindowUpdateDTO request,
+      @AuthenticationPrincipal Jwt jwt) {
+    UUID userId = UUID.fromString(jwt.getSubject());
+    dashboardService.updateDashboardTimeWindow(userId, dashboardId, request);
     return ResponseEntity.ok().build();
   }
 
