@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/atoms/button";
-import { Card, CardContent, CardTitle } from "@/components/atoms/card";
+import { Card, CardContent, CardTitle, CardHeader } from "@/components/atoms/card";
 import { FieldSeparator } from "@/components/atoms/field";
 import { useEffect, useState } from "react";
 import { KpiFormDetails } from "./kpi-form-details";
@@ -123,18 +123,24 @@ export function KpiConfigForm({ kpiId }: KpiConfigFormProps) {
                     />
                 </Card>
 
-                <Card className="p-6">
-                    <CardTitle>Preview</CardTitle>
-                    {getWidgetError ? (
-                        <CardContent>Something went wrong, please refresh the page</CardContent>
-                    ) : (
-                        <KPIWidget config={config} preview />
-                    )}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Preview</CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex flex-col">
+                        {getWidgetError ? (
+                            <span className="text-base flex wrap">
+                                Something went wrong, please refresh the page
+                            </span>
+                        ) : (
+                            <KPIWidget config={config} preview />
+                        )}
 
-                    <KpiConfigSummary
-                        numResources={config.chargeIds.length ?? 0}
-                        aggregationWindowDays={config.aggregationWindowDays}
-                    />
+                        <KpiConfigSummary
+                            numResources={config.chargeIds.length ?? 0}
+                            aggregationWindowDays={config.aggregationWindowDays}
+                        />
+                    </CardContent>
                 </Card>
             </div>
         </main>
