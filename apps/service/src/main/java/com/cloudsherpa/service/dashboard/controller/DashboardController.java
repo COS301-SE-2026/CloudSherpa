@@ -1,8 +1,8 @@
 package com.cloudsherpa.service.dashboard.controller;
 
-import com.cloudsherpa.lib.entities.PredefinedTimeEnum;
 import com.cloudsherpa.service.dashboard.dto.DashboardCreateDTO;
 import com.cloudsherpa.service.dashboard.dto.DashboardDTO;
+import com.cloudsherpa.service.dashboard.dto.DashboardWindowUpdateDTO;
 import com.cloudsherpa.service.dashboard.dto.WidgetConfigUpdateDTO;
 import com.cloudsherpa.service.dashboard.dto.WidgetDTO;
 import com.cloudsherpa.service.dashboard.dto.WidgetLayoutUpdateDTO;
@@ -100,10 +100,10 @@ public class DashboardController {
   @PatchMapping("/{dashboardId}/window")
   public ResponseEntity<Void> updateDashboardWindow(
       @PathVariable UUID dashboardId,
-      @RequestBody PredefinedTimeEnum newTime,
+      @RequestBody DashboardWindowUpdateDTO request,
       @AuthenticationPrincipal Jwt jwt) {
     UUID userId = UUID.fromString(jwt.getSubject());
-    dashboardService.updateDashboardTimeWindow(userId, dashboardId, newTime);
+    dashboardService.updateDashboardTimeWindow(userId, dashboardId, request);
     return ResponseEntity.ok().build();
   }
 

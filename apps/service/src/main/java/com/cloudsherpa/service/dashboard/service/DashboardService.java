@@ -9,6 +9,7 @@ import com.cloudsherpa.service.dashboard.dto.ChartWidgetConfigUpdateDTO;
 import com.cloudsherpa.service.dashboard.dto.ChartWidgetDTO;
 import com.cloudsherpa.service.dashboard.dto.DashboardCreateDTO;
 import com.cloudsherpa.service.dashboard.dto.DashboardDTO;
+import com.cloudsherpa.service.dashboard.dto.DashboardWindowUpdateDTO;
 import com.cloudsherpa.service.dashboard.dto.KpiWidgetConfigUpdateDTO;
 import com.cloudsherpa.service.dashboard.dto.KpiWidgetDTO;
 import com.cloudsherpa.service.dashboard.dto.WidgetConfigUpdateDTO;
@@ -81,9 +82,9 @@ public class DashboardService {
 
   @Transactional
   public void updateDashboardTimeWindow(
-      UUID userId, UUID dashboardId, PredefinedTimeEnum newWindow) {
+      UUID userId, UUID dashboardId, DashboardWindowUpdateDTO newWindowRequest) {
     Dashboard dashboard = getDashboardAndVerifyOwnership(userId, dashboardId);
-    dashboard.setPredefinedTime(newWindow);
+    dashboard.setPredefinedTime(newWindowRequest.newTime());
     dashboardRepository.save(dashboard);
   }
 
