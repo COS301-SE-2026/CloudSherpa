@@ -48,7 +48,6 @@ export function DashboardSelector({
         (d) => d.displayName.trim().toLowerCase() === normalizedQuery.toLowerCase()
     );
     const canCreateFromSearch = normalizedQuery.length > 0 && !hasExactNameMatch;
-
     const handleCreateFromSearch = () => {
         if (!canCreateFromSearch) return;
         onCreate(normalizedQuery);
@@ -101,7 +100,8 @@ export function DashboardSelector({
                                 {dashboards.map((d) => (
                                     <CommandItem
                                         key={d.id}
-                                        value={d.displayName}
+                                        value={d.id}
+                                        keywords={[d.displayName]}
                                         className="group flex items-center justify-between cursor-pointer"
                                         onSelect={() => {
                                             onSelect(d.id);

@@ -4,17 +4,11 @@ import com.cloudsherpa.ingestion.connector.CloudCredentials;
 import com.cloudsherpa.ingestion.models.ResourceDetail;
 import com.cloudsherpa.ingestion.provider.scanner.ResourceScanner;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class AwsEksScanner implements ResourceScanner {
   private final EksService eksService;
-
-  @Autowired
-  public AwsEksScanner() {
-    this.eksService = new AwsEksService();
-  }
 
   public AwsEksScanner(EksService eksService) {
     this.eksService = eksService;

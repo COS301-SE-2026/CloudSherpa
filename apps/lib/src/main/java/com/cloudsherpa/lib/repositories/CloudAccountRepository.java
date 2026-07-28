@@ -1,15 +1,16 @@
 package com.cloudsherpa.lib.repositories;
 
-import com.cloudsherpa.lib.entities.CloudAccount;
-import com.cloudsherpa.lib.entities.CloudConnection;
-import com.cloudsherpa.lib.entities.StatusEnum;
 import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.util.List;
-import java.util.UUID;
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.cloudsherpa.lib.entities.CloudAccount;
+import com.cloudsherpa.lib.entities.CloudConnection;
+import com.cloudsherpa.lib.entities.StatusEnum;
 
 public interface CloudAccountRepository extends JpaRepository<CloudAccount, UUID> {
   // Find all accounts for a specific connection
@@ -47,4 +48,12 @@ public interface CloudAccountRepository extends JpaRepository<CloudAccount, UUID
     List<CloudAccount> findAccountsDueForBillingIngestion(
     @Param("now") OffsetDateTime now,
     @Param("status") StatusEnum status); 
+
+    @Query("""
+      SELECT MAX(a.lastBillingIngestion)
+      FROM CloudAccount a
+      JOIN a.connection c
+      WHERE c.userId = :userId
+      """)
+    OffsetDateTime findLatestBillingIngestionByUserId(@Param("userId") UUID userId);
   }

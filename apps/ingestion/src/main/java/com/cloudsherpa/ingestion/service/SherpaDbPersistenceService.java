@@ -4,6 +4,7 @@ package com.cloudsherpa.ingestion.service;
 
 import com.cloudsherpa.ingestion.models.UsageRecordModel;
 import com.cloudsherpa.ingestion.normalization.model.NormalizedMetric;
+import com.cloudsherpa.lib.entities.CurrencyEnum;
 import com.cloudsherpa.lib.entities.NormalizedCosts;
 import com.cloudsherpa.lib.entities.NormalizedMetrics;
 import com.cloudsherpa.lib.entities.Resource;
@@ -98,7 +99,15 @@ public class SherpaDbPersistenceService {
   @Transactional
   public void recordCost(NormalizedCosts normalizedCosts, UUID userId) {
     setTenantSchema(userId);
-    normalizedCostsRepository.save(normalizedCosts);
+    String currency =
+        normalizedCosts.getCurrency() != null
+            ? normalizedCosts.getCurrency().toString()
+            : CurrencyEnum.USD.toString();
+    normalizedCostsRepository.upsert(
+        normalizedCosts,
+        normalizedCosts.getProvider().toString(),
+        normalizedCosts.getChargeType().toString(),
+        currency);
   }
 
   private String normalizeTenantSchema(UUID userId) {

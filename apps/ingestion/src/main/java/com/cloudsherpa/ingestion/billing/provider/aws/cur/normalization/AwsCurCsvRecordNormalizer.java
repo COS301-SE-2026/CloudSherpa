@@ -18,6 +18,7 @@ public class AwsCurCsvRecordNormalizer implements CostRecordNormalizer<CSVRecord
       throws NormalizationException {
     NormalizedCosts normalized = new NormalizedCosts();
 
+    normalized.setCostId(getCostId(costRecord));
     normalized.setExecutionId(getExecutionId(export));
     normalized.setChargeId(getChargeId(costRecord));
     normalized.setResourceId(getResourceId(costRecord));
@@ -30,6 +31,28 @@ public class AwsCurCsvRecordNormalizer implements CostRecordNormalizer<CSVRecord
     normalized.setUsageEndTime(getUsageEndTime(costRecord));
 
     return normalized;
+  }
+
+  @Override
+  public String getCostId(CSVRecord costRecord) {
+
+    String costIdResourceId = getResourceId(costRecord);
+
+    if (getResourceId(costRecord) == null) {
+      costIdResourceId = "null";
+    }
+
+    return getBillingAccountId(costRecord)
+        + "%%%"
+        + getUsageStartTime(costRecord).toString()
+        + "%%%"
+        + getServiceName(costRecord)
+        + "%%%"
+        + getLineItemType(costRecord)
+        + "%%%"
+        + costIdResourceId
+        + "%%%"
+        + getProductSku(costRecord);
   }
 
   @Override
@@ -102,6 +125,14 @@ public class AwsCurCsvRecordNormalizer implements CostRecordNormalizer<CSVRecord
     } catch (RuntimeException exception) {
       throw new NormalizationException(fieldName, "Unsupported value");
     }
+  }
+
+  private String getLineItemType(CSVRecord costRecord) {
+    return getRequiredValue(costRecord, "line_item_line_item_type");
+  }
+
+  private String getProductSku(CSVRecord costRecord) {
+    return getRequiredValue(costRecord, "product_sku");
   }
 
   private String getRequiredValue(CSVRecord costRecord, String fieldName) {

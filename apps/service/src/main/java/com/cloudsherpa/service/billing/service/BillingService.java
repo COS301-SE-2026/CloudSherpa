@@ -1,6 +1,7 @@
 package com.cloudsherpa.service.billing.service;
 
 import com.cloudsherpa.lib.entities.NormalizedCosts;
+import com.cloudsherpa.lib.repositories.CloudAccountRepository;
 import com.cloudsherpa.lib.repositories.NormalizedCostsRepository;
 import com.cloudsherpa.service.billing.dto.BillingChargeResponse;
 import com.cloudsherpa.service.billing.dto.BillingKpiRequest;
@@ -10,10 +11,10 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.regex.Pattern;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -24,12 +25,16 @@ import org.springframework.web.server.ResponseStatusException;
 public class BillingService {
 
   private final NormalizedCostsRepository normalizedCostsRepository;
+  private final CloudAccountRepository cloudAccountRepository;
   private static final Pattern TENANT_SCHEMA_PATTERN = Pattern.compile("^tenant_[a-f0-9_]{36}$");
 
   @PersistenceContext private EntityManager entityManager;
 
-  public BillingService(NormalizedCostsRepository normalizedCostsRepository) {
+  public BillingService(
+      NormalizedCostsRepository normalizedCostsRepository,
+      CloudAccountRepository cloudAccountRepository) {
     this.normalizedCostsRepository = normalizedCostsRepository;
+    this.cloudAccountRepository = cloudAccountRepository;
   }
 
   @Transactional
@@ -63,12 +68,16 @@ public class BillingService {
           normalizedCostsRepository.sumTotalCostBetweenForResources(fromDate, toDate, chargeIds);
     }
 
+    OffsetDateTime lastBillingIngestion = resolveLastBillingIngestion();
+
+    String updatedAt = lastBillingIngestion != null ? lastBillingIngestion.toString() : "null";
+
     return new BillingKpiResponse(
         totalCost,
         "USD", // this is the default value for AWS costs, maybe should convert it to ZAR??
         chargeIds == null ? 0 : chargeIds.size(),
         resolveTimeLabel(request.aggregation()),
-        OffsetDateTime.now(ZoneOffset.UTC).toString());
+        updatedAt);
   }
 
   @Transactional(readOnly = true)
@@ -89,6 +98,23 @@ public class BillingService {
     }
 
     return response;
+  }
+
+  private OffsetDateTime resolveLastBillingIngestion() {
+    String tenantId = TenantContext.getCurrentTenant();
+
+    if (tenantId == null || tenantId.isBlank()) {
+      return null;
+    }
+
+    UUID userId;
+    try {
+      userId = UUID.fromString(tenantId);
+    } catch (IllegalArgumentException ex) {
+      return null;
+    }
+
+    return cloudAccountRepository.findLatestBillingIngestionByUserId(userId);
   }
 
   private void setTenantSchemaFromContext() {

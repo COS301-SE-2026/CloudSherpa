@@ -51,7 +51,7 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
 
     const handleDashboardChange = useCallback(
         (id: string) => {
-            router.push(`?id=${id}`);
+            router.push(`/dashboard?id=${id}`);
         },
         [router]
     );

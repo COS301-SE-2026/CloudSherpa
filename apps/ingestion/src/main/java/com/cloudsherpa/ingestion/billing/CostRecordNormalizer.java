@@ -12,6 +12,8 @@ public interface CostRecordNormalizer<T, E> {
 
   NormalizedCosts normalize(T costRecord, E export) throws NormalizationException;
 
+  String getCostId(T costRecord);
+
   UUID getExecutionId(E export);
 
   public String getChargeId(T costRecord);
