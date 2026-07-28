@@ -151,13 +151,12 @@ function DashboardContent() {
                 if (defaultId) {
                     setActiveDashboard(defaultId);
 
-                    if (currentDb?.predefinedTime) {
-                        hydrateWindow(currentDb?.predefinedTime);
+                    const selectedDashboard = fetchedData.find((d) => d.id === defaultId);
+                    console.log(selectedDashboard);
+                    if (selectedDashboard?.predefinedTime) {
+                        console.log("hydrating...");
+                        hydrateWindow(selectedDashboard?.predefinedTime);
                     }
-
-                    // const to = new Date();
-                    // const from = new Date(to.getTime() - 7 * 24 * 60 * 60 * 1000);
-                    // setWindow(from, to);
 
                     if (urlId !== defaultId) {
                         router.replace(`?id=${defaultId}`);

@@ -360,7 +360,7 @@ const createWindowSlice: StateCreator<DashboardStore, [], [], WindowSlice> = (se
         if (!presetRange?.from || !presetRange?.to) {
             return;
         }
-
+        set({ selectedPreset: preset });
         get().setWindow(presetRange.from, presetRange.to);
     },
     clear: () => {

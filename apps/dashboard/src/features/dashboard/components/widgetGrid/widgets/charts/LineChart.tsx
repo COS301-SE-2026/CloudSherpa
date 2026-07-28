@@ -37,7 +37,6 @@ export function LineChart({ resourceId, metricType }: Readonly<LineChartProps>) 
                 trigger: "axis",
                 formatter: (params: DefaultLabelFormatterCallbackParams) => {
                     const point = Array.isArray(params) ? params[0] : params;
-                    console.log(point);
                     const value = point.value?.value;
 
                     const formattedPointTimestamp = new Intl.DateTimeFormat(
