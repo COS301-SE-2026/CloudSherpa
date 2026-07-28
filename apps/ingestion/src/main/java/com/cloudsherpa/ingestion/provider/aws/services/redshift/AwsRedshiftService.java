@@ -4,38 +4,53 @@ import com.cloudsherpa.ingestion.connector.CloudCredentials;
 import com.cloudsherpa.ingestion.models.ResourceDetail;
 import com.cloudsherpa.ingestion.provider.aws.factory.AwsClientFactory;
 import com.cloudsherpa.ingestion.provider.aws.model.RegionalCluster;
+import com.cloudsherpa.ingestion.provider.util.DiscoveryExecutor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import org.springframework.stereotype.Service;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.redshift.RedshiftClient;
 import software.amazon.awssdk.services.redshift.model.Cluster;
-import software.amazon.awssdk.services.redshift.model.DescribeClustersResponse;
 import software.amazon.awssdk.services.redshift.model.Tag;
 
+@Service
 public class AwsRedshiftService implements RedshiftService {
-  Logger logger = Logger.getLogger(getClass().getName());
+
+  private final Logger logger = Logger.getLogger(getClass().getName());
+  private final DiscoveryExecutor discoveryExecutor;
+
+  public AwsRedshiftService(DiscoveryExecutor discoveryExecutor) {
+    this.discoveryExecutor = discoveryExecutor;
+  }
 
   @Override
   public List<RegionalCluster> getAllRedshiftClusters(CloudCredentials credentials) {
-    List<RegionalCluster> regionalClusters = new ArrayList<>();
-    for (Region region : Region.regions()) {
-      try (RedshiftClient client =
-          RedshiftClient.builder()
-              .region(region)
-              .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
-              .build()) {
+    return discoveryExecutor.execute(
+        Region.regions(), region -> discoverClusters(region, credentials));
+  }
 
-        DescribeClustersResponse response = client.describeClusters();
-        regionalClusters.add(new RegionalCluster(response.clusters(), region));
-      } catch (Exception e) {
-        logger.info(
-            "Skipping Redshift discovery for region " + region.id() + ": " + e.getMessage());
+  private List<RegionalCluster> discoverClusters(Region region, CloudCredentials credentials) {
+    List<RegionalCluster> resources = new ArrayList<>();
+
+    try (RedshiftClient client =
+        RedshiftClient.builder()
+            .region(region)
+            .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
+            .build()) {
+
+      List<Cluster> clusters = client.describeClustersPaginator().clusters().stream().toList();
+
+      if (!clusters.isEmpty()) {
+        resources.add(new RegionalCluster(clusters, region));
       }
+    } catch (Exception e) {
+
+      logger.info("Skipping Redshift discovery for region " + region.id() + ": " + e.getMessage());
     }
-    return regionalClusters;
+    return resources;
   }
 
   @Override
@@ -45,22 +60,50 @@ public class AwsRedshiftService implements RedshiftService {
 
   @Override
   public List<ResourceDetail> getAllRedshiftClustersWithTags(CloudCredentials credentials) {
+    return discoveryExecutor.execute(
+        Region.regions(), region -> discoverClustersWithTags(region, credentials));
+  }
+
+  private List<ResourceDetail> discoverClustersWithTags(
+      Region region, CloudCredentials credentials) {
     List<ResourceDetail> resources = new ArrayList<>();
-    for (RegionalCluster regionalCluster : getAllRedshiftClusters(credentials)) {
-      for (Cluster cluster : regionalCluster.clusters()) {
-        Map<String, String> tags = getTagsForCluster(cluster);
-        String name =
-            ResourceDetail.resolveName(
-                cluster.clusterIdentifier(), cluster.clusterIdentifier(), tags);
-        resources.add(
-            new ResourceDetail(
-                cluster.clusterIdentifier(),
-                name,
-                "ClusterIdentifier",
-                "AWS/Redshift",
-                regionalCluster.region().id(),
-                tags));
+
+    try (RedshiftClient client =
+        RedshiftClient.builder()
+            .region(region)
+            .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
+            .build()) {
+
+      for (Cluster cluster : client.describeClustersPaginator().clusters()) {
+        try {
+          Map<String, String> tags = getTagsForCluster(cluster);
+
+          String name =
+              ResourceDetail.resolveName(
+                  cluster.clusterIdentifier(), cluster.clusterIdentifier(), tags);
+
+          resources.add(
+              new ResourceDetail(
+                  cluster.clusterIdentifier(),
+                  name,
+                  "ClusterIdentifier",
+                  "AWS/Redshift",
+                  region.id(),
+                  tags));
+
+        } catch (Exception e) {
+          logger.info(
+              "Skipping Redshift cluster "
+                  + cluster.clusterIdentifier()
+                  + " in region "
+                  + region.id()
+                  + ": "
+                  + e.getMessage());
+        }
       }
+
+    } catch (Exception e) {
+      logger.info("Skipping Redshift discovery for region " + region.id() + ": " + e.getMessage());
     }
     return resources;
   }
