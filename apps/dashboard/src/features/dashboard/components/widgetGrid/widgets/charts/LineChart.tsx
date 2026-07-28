@@ -5,7 +5,7 @@ import type {
     EChartsOption,
     TooltipComponentOption,
 } from "echarts";
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import { useChartData } from "@/features/dashboard/hooks/useChartData";
 import { useChartTheme } from "@/features/dashboard/hooks/useChartTheme";
 import { BaseChart } from "./baseChart";
@@ -14,6 +14,7 @@ import { useWindowStore } from "@/features/dashboard/stores/window-store";
 type LineChartProps = {
     resourceId: string;
     metricType: MetricType;
+    onDataStatusChange?: (isEmpty: boolean) => void;
 };
 
 const tooltipTimestampOptions: Intl.DateTimeFormatOptions = {
@@ -26,11 +27,20 @@ const tooltipTimestampOptions: Intl.DateTimeFormatOptions = {
     second: "2-digit",
 };
 
-export function LineChart({ resourceId, metricType }: Readonly<LineChartProps>) {
-    const { timeSeriesData } = useChartData(resourceId, metricType);
+export function LineChart({
+    resourceId,
+    metricType,
+    onDataStatusChange,
+}: Readonly<LineChartProps>) {
+    const { timeSeriesData, hasData } = useChartData(resourceId, metricType);
     const { themeName, tokens } = useChartTheme();
     const fromMs = useWindowStore((state) => state.fromMs);
     const toMs = useWindowStore((state) => state.toMs);
+
+    useEffect(() => {
+        onDataStatusChange?.(hasData);
+    }, [hasData, onDataStatusChange]);
+
     const options: EChartsOption = useMemo(() => {
         return {
             tooltip: {

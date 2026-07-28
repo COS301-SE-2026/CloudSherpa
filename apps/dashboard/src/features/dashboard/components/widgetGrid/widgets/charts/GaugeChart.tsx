@@ -1,6 +1,6 @@
 "use client";
 import type { EChartsOption } from "echarts";
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import { useChartTheme } from "@/features/dashboard/hooks/useChartTheme";
 import { MetricType } from "@/features/dashboard/types/metric";
 import { useChartData } from "@/features/dashboard/hooks/useChartData";
@@ -9,11 +9,22 @@ import { BaseChart } from "@/features/dashboard/components/widgetGrid/widgets/ch
 type GaugeChartProps = {
     resourceId: string;
     metricType: MetricType;
+    onDataStatusChange?: (isEmpty: boolean) => void;
 };
 
-export function GaugeChart({ resourceId, metricType }: Readonly<GaugeChartProps>) {
+export function GaugeChart({
+    resourceId,
+    metricType,
+    onDataStatusChange,
+}: Readonly<GaugeChartProps>) {
+    const { hasData } = useChartData(resourceId, metricType);
     const { themeName, tokens } = useChartTheme();
     const { currentValue } = useChartData(resourceId, metricType);
+
+    useEffect(() => {
+        onDataStatusChange?.(hasData);
+        console.log("this is working");
+    }, [hasData, onDataStatusChange]);
 
     const options: EChartsOption = useMemo(() => {
         const primaryColor = tokens["chart-1"] || tokens["primary"] || "#327dcd";

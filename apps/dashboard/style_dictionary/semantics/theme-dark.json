@@ -28,7 +28,7 @@
             "success": { "$type": "color", "$value": "{color.green.600}" },
             "success-foreground": { "$type": "color", "$value": "{color.green.50}" },
 
-            "warning": { "$type": "color", "$value": "{color.orange.600}" },
+            "warning": { "$type": "color", "$value": "{color.orange.500}" },
             "warning-foreground": { "$type": "color", "$value": "{color.orange.50}" },
 
             "border": { "$type": "color", "$value": "{color.neutral.800}" },

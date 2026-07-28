@@ -16,9 +16,12 @@ export function useChartData(resourceId: string, metricType: MetricType) {
 
         const currentValue = latestPoint ? latestPoint.value : 0;
 
+        const hasData = values.length > 0;
+
         return {
             timeSeriesData,
             currentValue,
+            hasData,
         };
     }, [series]);
 }
