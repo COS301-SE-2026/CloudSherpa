@@ -1,29 +1,30 @@
 package com.cloudsherpa.lib.entities;
 
-import java.math.BigDecimal;
-import java.time.OffsetDateTime;
-import java.util.Map;
-import java.util.UUID;
-
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+import java.util.Map;
+import java.util.UUID;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "normalized_costs")
 public class NormalizedCosts {
 
   @Id
+  @GeneratedValue(strategy = GenerationType.UUID)
   @Column(name = "cost_id", nullable = false, updatable = false)
-  private String costId;
+  private UUID costId;
 
   @Column(name = "execution_id")
   private UUID executionId;
@@ -72,7 +73,7 @@ public class NormalizedCosts {
   @Column(name = "metadata", columnDefinition = "jsonb")
   private Map<String, Object> metadata;
 
-  public String getCostId() {
+  public UUID getCostId() {
     return costId;
   }
 
@@ -129,7 +130,7 @@ public class NormalizedCosts {
     return metadata;
   }
 
-  public void setCostId(String costId) {
+  public void setCostId(UUID costId) {
     this.costId = costId;
   }
 

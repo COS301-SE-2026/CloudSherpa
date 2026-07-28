@@ -373,7 +373,7 @@ BEGIN
     -- --------------------------------------------------------------------------
     EXECUTE format($sql$
         CREATE TABLE IF NOT EXISTS %I.normalized_costs (
-            cost_id text,
+            cost_id uuid DEFAULT gen_random_uuid(),
             
             -- Traces this specific cost row back to the execution that ingested it.
             execution_id uuid REFERENCES public.billing_export_execution(execution_id) ON DELETE CASCADE,
