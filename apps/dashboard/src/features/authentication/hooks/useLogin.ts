@@ -7,7 +7,6 @@ import { useAuthContext } from "../providers/AuthContext";
 export function useLogin() {
     const [loginFailure, setLoginFailure] = useState(false);
 
-
     const [loginSuccess, setLoginSuccess] = useState(false);
 
     const [redirectCountdown, setRedirectCountdown] = useState(0);
@@ -16,7 +15,7 @@ export function useLogin() {
     const router = useRouter();
 
     async function login(loginPayload: LoginRequestDto, redirect?: boolean) {
-        try{
+        try {
             const loginResult = await authContext?.login(loginPayload);
 
             if (loginResult) {
@@ -27,7 +26,7 @@ export function useLogin() {
 
                 if (redirect) {
                     const countDownId = setInterval(() => {
-                        setRedirectCountdown((countdown) => countdown-1);
+                        setRedirectCountdown((countdown) => countdown - 1);
                     }, 1000);
 
                     setTimeout(() => {
@@ -35,7 +34,6 @@ export function useLogin() {
 
                         router.push("/dashboard");
                     }, 3000);
-                    
                 }
             } else {
                 setLoginFailure(true);
@@ -43,12 +41,12 @@ export function useLogin() {
                 setLoginSuccess(false);
                 setRedirectCountdown(0);
             }
-        } catch(error){
-            if(error instanceof Error){
+        } catch (error) {
+            if (error instanceof Error) {
                 console.warn(`Login failed: ${error.message}`);
             }
 
-            if(!(error instanceof Error)){
+            if (!(error instanceof Error)) {
                 console.error("Unknown error has occurred");
             }
 
