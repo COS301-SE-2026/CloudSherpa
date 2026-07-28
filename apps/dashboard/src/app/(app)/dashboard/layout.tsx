@@ -179,16 +179,14 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
         if (!activeDashboardId) return;
 
         const { sharedId } = generateSharedId();
-        const metricsByResource = getMetricList();
-        const resourceId = Object.keys(metricsByResource)[0];
 
         const newConfig: WidgetConfig = {
             widgetType: "CHART",
             id: sharedId,
             displayName: "New Chart",
             chartType: "line_chart",
-            resourceId: resourceId,
-            metricType: resourceId ? (metricsByResource[resourceId]?.[0] ?? "anon") : "anon",
+            resourceId: null,
+            metricType: null,
         };
 
         const newLayout: LayoutItem = {
