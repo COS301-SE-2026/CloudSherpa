@@ -36,6 +36,11 @@ export function LineChart({
     const { themeName, tokens } = useChartTheme();
     const fromMs = useDashboardStore((state) => state.fromMs);
     const toMs = useDashboardStore((state) => state.toMs);
+
+    useEffect(() => {
+        onDataStatusChange?.(hasData);
+    }, [hasData, onDataStatusChange]);
+
     const options: EChartsOption = useMemo(() => {
         return {
             tooltip: {
