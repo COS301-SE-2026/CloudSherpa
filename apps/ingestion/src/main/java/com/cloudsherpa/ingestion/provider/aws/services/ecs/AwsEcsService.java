@@ -4,6 +4,7 @@ import com.cloudsherpa.ingestion.connector.CloudCredentials;
 import com.cloudsherpa.ingestion.models.ResourceDetail;
 import com.cloudsherpa.ingestion.provider.aws.factory.AwsClientFactory;
 import com.cloudsherpa.ingestion.provider.aws.model.RegionalArn;
+import com.cloudsherpa.ingestion.provider.util.BatchUtils;
 import com.cloudsherpa.ingestion.provider.util.DiscoveryExecutor;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,12 +15,11 @@ import org.springframework.stereotype.Service;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.ecs.EcsClient;
 import software.amazon.awssdk.services.ecs.model.ClusterField;
-import software.amazon.awssdk.services.ecs.model.DescribeClustersResponse;
 import software.amazon.awssdk.services.ecs.model.Tag;
 
 @Service
 public class AwsEcsService implements EcsService {
-
+  private static final int ECS_DESCRIBE_CLUSTER_LIMIT = 100;
   private final Logger logger = Logger.getLogger(getClass().getName());
 
   private final DiscoveryExecutor discoveryExecutor;
@@ -69,7 +69,6 @@ public class AwsEcsService implements EcsService {
       Region region, CloudCredentials credentials) {
 
     List<ResourceDetail> resources = new ArrayList<>();
-
     try (EcsClient ecs =
         EcsClient.builder()
             .region(region)
@@ -82,11 +81,15 @@ public class AwsEcsService implements EcsService {
         return resources;
       }
 
-      DescribeClustersResponse response =
-          ecs.describeClusters(request -> request.clusters(clusterArns).include(ClusterField.TAGS));
-
-      resources.addAll(
-          response.clusters().stream()
+      resources =
+          BatchUtils.partition(clusterArns, ECS_DESCRIBE_CLUSTER_LIMIT).stream()
+              .flatMap(
+                  batch ->
+                      ecs
+                          .describeClusters(
+                              request -> request.clusters(batch).include(ClusterField.TAGS))
+                          .clusters()
+                          .stream())
               .map(
                   cluster -> {
                     Map<String, String> tags =
@@ -100,8 +103,9 @@ public class AwsEcsService implements EcsService {
                     return new ResourceDetail(
                         name, name, "ClusterName", "AWS/ECS", region.id(), tags);
                   })
-              .toList());
+              .toList();
 
+      return resources;
     } catch (Exception e) {
       logger.info("Skipping ECS discovery for region " + region.id() + ": " + e.getMessage());
     }
