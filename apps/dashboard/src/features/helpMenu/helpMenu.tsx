@@ -21,7 +21,6 @@ import {
 } from "@/components/atoms/accordion";
 import { Dialog, DialogHeader, DialogContent, DialogTitle } from "@/components/atoms/dialog";
 import { useRouter } from "next/navigation";
-import {useNextStep} from "nextstepjs";
 
 /* 
 - the page needs to provide info about how to nav around clousherpa
@@ -62,14 +61,6 @@ const LINKS: LinksForHelp[] = [
         description: "Navigate CloudSherpa faster",
         icon: Command,
         action: "shortcut",
-    },
-
-    {
-        id: "first time user",
-        label: "First time user",
-        description: "Learn by watching",
-        icon: Laptop,
-        action: "first time user",
     },
 ];
 
@@ -118,9 +109,7 @@ interface KeyboardShortcuts {
 
 const SHORTCUT: KeyboardShortcuts[] = [{ key: ["ENTER"], function: "Submit form" }];
 
-export function HelpMenu() {
-    const {startNextStep} = useNextStep();
-    
+export function HelpMenu() {    
     const router = useRouter();
 
     const [open, setOpen] = useState(false);
@@ -161,12 +150,6 @@ export function HelpMenu() {
         if (link.action === "shortcut") {
             setOpen(false);
             setKeyboardShortcutOpen(true);
-            return;
-        }
-
-        if(link.action === "first time user"){
-            setOpen(false);
-            startNextStep("dashboard");
             return;
         }
 

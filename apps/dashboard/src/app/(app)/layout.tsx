@@ -2,15 +2,8 @@ import { SidebarProvider, SidebarInset } from "@/components/atoms/sidebar";
 import { TooltipProvider } from "@/components/atoms/tooltip";
 import { AppSidebar } from "@/components/molecules/app-sidebar";
 
-//added these for the onboarding
-import {NextStepProvider, NextStep} from "nextstepjs";
-import {dashboardTour} from "@/features/onBoarding/dashboardTour";
-import tourCard from "@/features/onBoarding/tourCard";
-
 export default function AppWrapper({ children }: Readonly<{ children: React.ReactNode }>) {
     return (
-        <NextStepProvider>
-            <NextStep steps = {dashboardTour} cardComponent = {tourCard}>
                 <TooltipProvider>
                     <SidebarProvider>
                         <AppSidebar />
@@ -19,7 +12,5 @@ export default function AppWrapper({ children }: Readonly<{ children: React.Reac
                         </SidebarInset>
                     </SidebarProvider>
                 </TooltipProvider>
-            </NextStep>
-        </NextStepProvider>
     );
 }
