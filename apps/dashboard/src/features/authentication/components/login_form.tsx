@@ -45,11 +45,14 @@ export default function LoginForm({ isLoading = false, onToggle }: Readonly<Logi
 
             {loginSuccess && (
                 <Alert>
-                    <CheckCircle2Icon/>
+                    <CheckCircle2Icon />
 
                     <AlertTitle> You have successfully logged in! </AlertTitle>
 
-                    <AlertDescription> You will be redirected to the dashboard in {redirectCountdown} seconds </AlertDescription>
+                    <AlertDescription>
+                        {" "}
+                        You will be redirected to the dashboard in {redirectCountdown} seconds{" "}
+                    </AlertDescription>
                 </Alert>
             )}
 
