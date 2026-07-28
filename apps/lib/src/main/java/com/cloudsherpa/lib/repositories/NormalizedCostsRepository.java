@@ -49,7 +49,7 @@ public interface NormalizedCostsRepository extends JpaRepository<NormalizedCosts
     @Transactional
     @Query(
         value = """
-                INSERT INTO :#{#tenantId}.normalized_costs (
+                INSERT INTO normalized_costs (
                     cost_id,
                     execution_id, 
                     resource_id, 
