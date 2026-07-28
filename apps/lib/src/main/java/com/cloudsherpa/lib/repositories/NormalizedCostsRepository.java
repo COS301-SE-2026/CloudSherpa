@@ -64,7 +64,7 @@ public interface NormalizedCostsRepository extends JpaRepository<NormalizedCosts
                     metadata
                 )
                 VALUES (
-                    :#{#entity.costId}, :#{#entity.executionId}, :#{#entity.resourceId}, :#{#entity.chargeId} ,:#{#entity.provider}, :#{#entity.billingAccountId}, :#{#entity.serviceName}, :#{#entity.chargeType}, :#{#entity.costAmount}, :#{#entity.currency}, :#{#entity.usageStartTime}, :#{#entity.usageEndTime}, :#{#entity.metadata}
+                    :#{#entity.costId}, :#{#entity.executionId}, :#{#entity.resourceId}, :#{#entity.chargeId} ,CAST(:#{#provider} AS public.provider_enum), :#{#entity.billingAccountId}, :#{#entity.serviceName}, CAST(:#{#chargeType} AS public.charge_type_enum), :#{#entity.costAmount}, CAST(:#{#currency} AS public.currency_enum), :#{#entity.usageStartTime}, :#{#entity.usageEndTime}, :#{#entity.metadata}
                 ) ON CONFLICT (cost_id, usage_start_time) 
                 DO UPDATE SET 
                     cost_amount = EXCLUDED.cost_amount,
@@ -72,5 +72,5 @@ public interface NormalizedCostsRepository extends JpaRepository<NormalizedCosts
                 """,
                 nativeQuery = true
     ) 
-    int upsert(@Param("entity") NormalizedCosts entity);
+    int upsert(@Param("entity") NormalizedCosts entity, @Param("provider") String provider, @Param("chargeType") String chargeType, @Param("currency") String currency);
 }
