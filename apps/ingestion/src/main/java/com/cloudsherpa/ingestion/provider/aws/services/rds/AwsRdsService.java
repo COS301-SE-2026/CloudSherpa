@@ -4,73 +4,118 @@ import com.cloudsherpa.ingestion.connector.CloudCredentials;
 import com.cloudsherpa.ingestion.models.ResourceDetail;
 import com.cloudsherpa.ingestion.provider.aws.factory.AwsClientFactory;
 import com.cloudsherpa.ingestion.provider.aws.model.RegionalDbInstance;
+import com.cloudsherpa.ingestion.provider.util.DiscoveryExecutor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import org.springframework.stereotype.Service;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.rds.RdsClient;
 import software.amazon.awssdk.services.rds.model.DBInstance;
-import software.amazon.awssdk.services.rds.model.DescribeDbInstancesResponse;
 import software.amazon.awssdk.services.rds.model.Tag;
 
+@Service
 public class AwsRdsService implements RdsService {
-  Logger logger = Logger.getLogger(getClass().getName());
+
+  private final Logger logger = Logger.getLogger(getClass().getName());
+
+  private final DiscoveryExecutor discoveryExecutor;
+
+  public AwsRdsService(DiscoveryExecutor discoveryExecutor) {
+    this.discoveryExecutor = discoveryExecutor;
+  }
 
   @Override
   public List<RegionalDbInstance> getAllRdsInstances(CloudCredentials credentials) {
-    List<DBInstance> instances = new ArrayList<>();
-    List<RegionalDbInstance> regionalInstances = new ArrayList<>();
-    for (Region region : Region.regions()) {
-      try (RdsClient rds =
-          RdsClient.builder()
-              .region(region)
-              .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
-              .build()) {
 
-        DescribeDbInstancesResponse response = rds.describeDBInstances();
-        instances = response.dbInstances();
-        regionalInstances.add(new RegionalDbInstance(instances, region));
-      } catch (Exception e) {
-        logger.info("Skipping RDS discovery for region " + region.id() + ": " + e.getMessage());
+    return discoveryExecutor.execute(
+        Region.regions(), region -> discoverInstances(region, credentials));
+  }
+
+  private List<RegionalDbInstance> discoverInstances(Region region, CloudCredentials credentials) {
+
+    List<RegionalDbInstance> resources = new ArrayList<>();
+
+    try (RdsClient rds =
+        RdsClient.builder()
+            .region(region)
+            .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
+            .build()) {
+
+      List<DBInstance> instances =
+          rds.describeDBInstancesPaginator().dbInstances().stream().toList();
+
+      if (!instances.isEmpty()) {
+        resources.add(new RegionalDbInstance(instances, region));
       }
+
+    } catch (Exception e) {
+      logger.info("Skipping RDS discovery for region " + region.id() + ": " + e.getMessage());
     }
-    return regionalInstances;
+
+    return resources;
   }
 
   @Override
   public List<ResourceDetail> getAllRdsInstancesWithTags(CloudCredentials credentials) {
+
+    return discoveryExecutor.execute(
+        Region.regions(), region -> discoverInstancesWithTags(region, credentials));
+  }
+
+  private void discoverInstanceWithTags(
+      RdsClient rds, DBInstance db, Region region, List<ResourceDetail> resources) {
+
+    try {
+      Map<String, String> tags =
+          rds.listTagsForResource(r -> r.resourceName(db.dbInstanceArn())).tagList().stream()
+              .collect(Collectors.toMap(Tag::key, Tag::value, (a, b) -> b));
+
+      String name =
+          ResourceDetail.resolveName(db.dbInstanceIdentifier(), db.dbInstanceIdentifier(), tags);
+
+      resources.add(
+          new ResourceDetail(
+              db.dbInstanceIdentifier(),
+              name,
+              "DBInstanceIdentifier",
+              "AWS/RDS",
+              region.id(),
+              tags));
+
+    } catch (Exception e) {
+      logger.info(
+          "Skipping RDS instance "
+              + db.dbInstanceIdentifier()
+              + " in region "
+              + region.id()
+              + ": "
+              + e.getMessage());
+    }
+  }
+
+  private List<ResourceDetail> discoverInstancesWithTags(
+      Region region, CloudCredentials credentials) {
+
     List<ResourceDetail> resources = new ArrayList<>();
 
-    for (RegionalDbInstance db : getAllRdsInstances(credentials)) {
-      try (RdsClient rds =
-          RdsClient.builder()
-              .region(db.region())
-              .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
-              .build()) {
-        for (DBInstance dbInfo : db.domains()) {
-          Map<String, String> tags =
-              rds
-                  .listTagsForResource(r -> r.resourceName(dbInfo.dbInstanceArn()))
-                  .tagList()
-                  .stream()
-                  .collect(Collectors.toMap(Tag::key, Tag::value, (a, b) -> b));
-          String name =
-              ResourceDetail.resolveName(
-                  dbInfo.dbInstanceIdentifier(), dbInfo.dbInstanceIdentifier(), tags);
-          resources.add(
-              new ResourceDetail(
-                  dbInfo.dbInstanceIdentifier(),
-                  name,
-                  "DBInstanceIdentifier",
-                  "AWS/RDS",
-                  db.region().id(),
-                  tags));
-        }
-      } catch (Exception e) {
-        // Regional logging messages handled by child function
+    try (RdsClient rds =
+        RdsClient.builder()
+            .region(region)
+            .credentialsProvider(AwsClientFactory.credentialsProvider(credentials))
+            .build()) {
+
+      List<DBInstance> instances =
+          rds.describeDBInstancesPaginator().dbInstances().stream().toList();
+
+      for (DBInstance db : instances) {
+        discoverInstanceWithTags(rds, db, region, resources);
       }
+
+    } catch (Exception e) {
+      logger.info("Skipping RDS discovery for region " + region.id() + ": " + e.getMessage());
     }
 
     return resources;
