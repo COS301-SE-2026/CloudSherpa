@@ -1,7 +1,7 @@
 package com.cloudsherpa.service.resourcediscovery.controller;
 
-import com.cloudsherpa.service.resourcediscovery.dto.CloudCredentialsDto;
 import com.cloudsherpa.service.resourcediscovery.dto.ResourceDetailDto;
+import com.cloudsherpa.service.resourcediscovery.dto.ResourceDiscoveryDto;
 import com.cloudsherpa.service.resourcediscovery.service.ResourceDiscoveryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -71,9 +71,9 @@ public class ResourceDiscoveryController {
       })
   @PostMapping("/resources/{provider}")
   public List<ResourceDetailDto> getResources(
-      @PathVariable String provider, @RequestBody CloudCredentialsDto credentials) {
+      @PathVariable String provider, @RequestBody ResourceDiscoveryDto request) {
 
-    return service.getResources(provider, credentials);
+    return service.getResources(provider, request);
   }
 
   @Operation(

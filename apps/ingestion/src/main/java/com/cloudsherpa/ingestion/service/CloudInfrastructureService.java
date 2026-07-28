@@ -46,8 +46,19 @@ public class CloudInfrastructureService {
     CloudAccount account = ensureCloudAccount(connection.getId(), r.getAccountId());
 
     // Step 3: Create/fetch Resource (account -> resource instance)
+    UUID resourceTableIdent =
+        resourceRepo
+            .findByAccountIdAndResourceTypeAndResourceIdentifierAndRegion(
+                UUID.fromString(r.getAccountId()),
+                r.getServiceName(),
+                r.getResourceId(),
+                r.getRegion())
+            .map(Resource::getId)
+            .orElse(null);
+    String resourceId =
+        resourceTableIdent != null ? resourceTableIdent.toString() : "noResourceFound";
 
-    return ensureResource(account.getId(), r.getResourceId(), r.getResourceType());
+    return ensureResource(account.getId(), resourceId, r.getResourceType());
   }
 
   // Ensures CloudConnection exists for user + provider combination.
@@ -72,7 +83,8 @@ public class CloudInfrastructureService {
   private CloudAccount ensureCloudAccount(UUID connectionId, String cloudAccountId) {
 
     // The method converts the cloud provider's string ID into a deterministic UUID
-    // This ensures that the same id we get from AWS response always maps to the same UUID
+    // This ensures that the same id we get from AWS response always maps to the
+    // same UUID
     // in our db to avoid duplicates
     UUID accountUuid = UUID.nameUUIDFromBytes(cloudAccountId.getBytes());
 
@@ -82,13 +94,14 @@ public class CloudInfrastructureService {
     }
 
     CloudAccount newAccount =
-        new CloudAccount(
-            accountUuid,
-            connectionId,
-            AccountTypeEnum.aws_account,
-            cloudAccountId,
-            null,
-            OffsetDateTime.now());
+        new CloudAccount.Builder()
+            .id(accountUuid)
+            .connectionId(connectionId)
+            .accountType(AccountTypeEnum.aws_account)
+            .displayName(cloudAccountId)
+            .ingestionPeriod(null)
+            .createdAt(OffsetDateTime.now())
+            .build();
 
     return accountRepo.save(newAccount);
   }
@@ -104,15 +117,19 @@ public class CloudInfrastructureService {
     }
 
     Resource newResource =
-        new Resource(
-            resourceUuid,
-            accountId,
-            resourceType,
-            cloudResourceId,
-            StatusEnum.active,
-            null,
-            OffsetDateTime.now(),
-            OffsetDateTime.now());
+        new Resource.Builder()
+            .id(resourceUuid)
+            .accountId(accountId)
+            .resourceType(resourceType)
+            .resourceIdentifier(cloudResourceId)
+            .resourceIdentifierType("InstanceId")
+            .status(StatusEnum.active)
+            .region("af-south-1")
+            .resourceName("resource")
+            .lastUpdated(OffsetDateTime.now())
+            .createdAt(OffsetDateTime.now())
+            .build();
+
     return resourceRepo.save(newResource);
   }
 }

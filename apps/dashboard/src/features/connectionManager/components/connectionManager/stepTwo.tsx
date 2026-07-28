@@ -14,6 +14,7 @@ import { BillingForm } from "./billingForm";
 export interface BillingConfig {
     prefix: string;
     bucketName: string;
+    bucketRegion: string;
     exportName: string;
 }
 
@@ -35,6 +36,7 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
     const [error, setError] = useState("");
     const [prefix, setPrefix] = useState("");
     const [bucketName, setBucketName] = useState("");
+    const [bucketRegion, setBucketRegion] = useState("");
     const [exportName, setExportName] = useState("");
     const [savedBillingConfig, setSavedBillingConfig] = useState<BillingConfig | null>(null);
     const [optedInToBilling, setOptedInToBilling] = useState(false);
@@ -112,7 +114,7 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
     const displayPermissions = getExtendedPermissions();
 
     const handleSaveBillingConfig = () => {
-        if (!prefix || !bucketName || !exportName) {
+        if (!prefix || !bucketName || !bucketRegion || !exportName) {
             setError("Please fill out all billing configuration fields before saving.");
             return;
         }
@@ -120,6 +122,7 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
         setSavedBillingConfig({
             prefix: prefix.trim(),
             bucketName: bucketName.trim(),
+            bucketRegion: bucketRegion,
             exportName: exportName.trim(),
         });
         setError("");
@@ -128,7 +131,7 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
     const handleSubmit = async (forHandlingSubmit: React.FormEvent<HTMLFormElement>) => {
         forHandlingSubmit.preventDefault();
 
-        if (!prefix || !bucketName || !exportName) {
+        if (!prefix || !bucketName || !bucketRegion || !exportName) {
             setError("Please fill out all billing configuration fields.");
             return;
         }
@@ -137,19 +140,23 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
             setLoading(true);
             setError("");
 
-            const resources = await getCloudResources("aws", {
-                accessKey: credentials?.accessKey,
-                secretKey: credentials?.secretKey,
-                awsRegion: credentials?.awsRegion,
-            });
+            const resources = await getCloudResources(
+                "aws",
+                {
+                    accessKey: credentials?.accessKey,
+                    secretKey: credentials?.secretKey,
+                    awsRegion: credentials?.awsRegion,
+                },
+                servicesSelected
+            );
 
             if (resources.length === 0) {
                 setError("No resources were discovered.");
                 return;
             }
             setLoading(false);
-            // can place opted in guard here
-            onNext(servicesSelected, resources, { prefix, bucketName, exportName });
+
+            onNext(servicesSelected, resources, { prefix, bucketName, bucketRegion, exportName });
         } catch (err) {
             console.error(err);
 
@@ -197,6 +204,8 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
                         setExportName={setExportName}
                         prefix={prefix}
                         setPrefix={setPrefix}
+                        bucketRegion={bucketRegion}
+                        setBucketRegion={setBucketRegion}
                         handleSaveBillingConfig={handleSaveBillingConfig}
                         savedBillingConfig={savedBillingConfig ?? undefined}
                         optedInToBilling={optedInToBilling}
@@ -207,6 +216,7 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
                                 setExportName("");
                                 setPrefix("");
                                 setBucketName("");
+                                setBucketRegion("");
                             }
                         }}
                     />

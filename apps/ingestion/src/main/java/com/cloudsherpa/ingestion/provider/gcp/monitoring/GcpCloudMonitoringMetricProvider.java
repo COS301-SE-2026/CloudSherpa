@@ -2,6 +2,7 @@ package com.cloudsherpa.ingestion.provider.gcp.monitoring;
 
 import com.cloudsherpa.ingestion.connector.AccountScope;
 import com.cloudsherpa.ingestion.connector.CloudCredentials;
+import com.cloudsherpa.ingestion.connector.Instance;
 import com.cloudsherpa.ingestion.connector.InstanceScope;
 import com.cloudsherpa.ingestion.connector.Metric;
 import com.cloudsherpa.ingestion.connector.ServiceScope;
@@ -69,7 +70,8 @@ public class GcpCloudMonitoringMetricProvider implements CloudMonitoringMetricPr
 
   private List<MetricFilter> processInstanceScope(ServiceScope scope, InstanceScope instance) {
     List<MetricFilter> filters = new ArrayList<>();
-    for (String instanceValue : instance.getValues()) {
+    for (Instance instanceDetail : instance.getInstances()) {
+      String instanceValue = instanceDetail.getIdentifier();
       for (Metric metric : scope.getMetrics()) {
         MetricFilter filter =
             buildFilter(instance.getIdentifierName(), scope.getName(), metric, instanceValue);

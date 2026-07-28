@@ -51,7 +51,10 @@ public class AwsCurDownloadReportStep implements AwsCurIngestionPipelineStep {
       if (Files.exists(reportPath)) {
         logger.warn("Report already exists at '{}'", reportPath);
       } else {
-        context.getS3().downloadObject(context.getCredentials(), dataFileUri, reportPath);
+        context
+            .getS3()
+            .downloadObject(
+                context.getCredentials(), context.getBucketRegion(), dataFileUri, reportPath);
       }
     }
   }

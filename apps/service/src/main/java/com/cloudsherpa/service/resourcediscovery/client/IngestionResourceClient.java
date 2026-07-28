@@ -1,7 +1,7 @@
 package com.cloudsherpa.service.resourcediscovery.client;
 
-import com.cloudsherpa.service.resourcediscovery.dto.CloudCredentialsDto;
 import com.cloudsherpa.service.resourcediscovery.dto.ResourceDetailDto;
+import com.cloudsherpa.service.resourcediscovery.dto.ResourceDiscoveryDto;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -28,12 +28,12 @@ public class IngestionResourceClient {
         .body(new ParameterizedTypeReference<List<String>>() {});
   }
 
-  public List<ResourceDetailDto> getResources(String provider, CloudCredentialsDto credentials) {
+  public List<ResourceDetailDto> getResources(String provider, ResourceDiscoveryDto request) {
 
     return restClient
         .post()
         .uri("/api/cloud-resources/resources/{provider}", provider)
-        .body(credentials)
+        .body(request)
         .retrieve()
         .body(new ParameterizedTypeReference<List<ResourceDetailDto>>() {});
   }

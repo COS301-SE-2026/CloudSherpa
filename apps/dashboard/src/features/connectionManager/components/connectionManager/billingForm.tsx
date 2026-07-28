@@ -10,6 +10,8 @@ import { Label } from "@/components/atoms/label";
 interface BillingFormProps {
     readonly bucketName: string;
     readonly setBucketName: React.Dispatch<React.SetStateAction<string>>;
+    readonly bucketRegion: string;
+    readonly setBucketRegion: React.Dispatch<React.SetStateAction<string>>;
     readonly exportName: string;
     readonly setExportName: React.Dispatch<React.SetStateAction<string>>;
     readonly prefix: string;
@@ -20,9 +22,27 @@ interface BillingFormProps {
     readonly handleOptedInToBillingChange: (checked: boolean) => void;
 }
 
+const regions = [
+    "us-east-1",
+    "us-east-2",
+    "us-west-1",
+    "us-west-2",
+    "af-south-1",
+    "ap-south-1",
+    "ap-southeast-1",
+    "ap-southeast-2",
+    "ap-northeast-1",
+    "eu-west-1",
+    "eu-north-1",
+    "eu-central-1",
+    "sa-east-1",
+];
+
 export function BillingForm({
     bucketName,
     setBucketName,
+    bucketRegion,
+    setBucketRegion,
     exportName,
     setExportName,
     prefix,
@@ -67,6 +87,28 @@ export function BillingForm({
                                 placeholder="e.g., my-billing-reports-bucket"
                                 className="w-full p-2 rounded-md border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                             />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="region" className="text-foreground text-sm font-medium">
+                                Bucket region
+                            </Label>
+
+                            <select
+                                id="region"
+                                value={bucketRegion}
+                                onChange={(e) => setBucketRegion(e.target.value)}
+                                className="w-full bg-background border-border rounded-md px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all cursor-pointer"
+                            >
+                                <option value="" className="bg-card">
+                                    Select a region
+                                </option>
+                                {regions.map((region) => (
+                                    <option key={region} value={region} className="bg-card">
+                                        {region}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
 
                         <div className="space-y-2">

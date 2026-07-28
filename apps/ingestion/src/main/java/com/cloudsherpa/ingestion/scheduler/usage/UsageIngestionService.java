@@ -1,0 +1,160 @@
+package com.cloudsherpa.ingestion.scheduler.usage;
+
+import com.cloudsherpa.ingestion.connector.AccountScope;
+import com.cloudsherpa.ingestion.connector.CloudCredentials;
+import com.cloudsherpa.ingestion.connector.Instance;
+import com.cloudsherpa.ingestion.connector.InstanceScope;
+import com.cloudsherpa.ingestion.connector.Metric;
+import com.cloudsherpa.ingestion.connector.ServiceScope;
+import com.cloudsherpa.ingestion.models.IngestionRequestEvent;
+import com.cloudsherpa.ingestion.scheduler.dto.AwsCredentialsDto;
+import com.cloudsherpa.ingestion.scheduler.encryption.CredentialEncryptionService;
+import com.cloudsherpa.ingestion.service.TenantSchemaService;
+import com.cloudsherpa.lib.entities.CloudAccount;
+import com.cloudsherpa.lib.entities.CloudCredential;
+import com.cloudsherpa.lib.entities.OfferedMetric;
+import com.cloudsherpa.lib.entities.Resource;
+import com.cloudsherpa.lib.entities.StatusEnum;
+import com.cloudsherpa.lib.repositories.CloudAccountRepository;
+import com.cloudsherpa.lib.repositories.CloudCredentialRepository;
+import com.cloudsherpa.lib.repositories.OfferedMetricRepository;
+import com.cloudsherpa.lib.repositories.ResourceRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.transaction.Transactional;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import org.springframework.stereotype.Service;
+
+@Service
+public class UsageIngestionService {
+  private final UsageIngestionClient client;
+  private final CloudAccountRepository cloudAccountRepository;
+  private final CloudCredentialRepository cloudCredentialRepository;
+  private final ResourceRepository resourceRepository;
+  private final OfferedMetricRepository offeredMetricRepository;
+  private final CredentialEncryptionService encryptionService;
+  private final TenantSchemaService tenantSchemaService;
+  private final ObjectMapper mapper;
+
+  public UsageIngestionService(
+      UsageIngestionClient client,
+      CloudAccountRepository cloudAccountRepository,
+      CloudCredentialRepository cloudCredentialRepository,
+      ResourceRepository resourceRepository,
+      OfferedMetricRepository offeredMetricRepository,
+      CredentialEncryptionService encryptionService,
+      TenantSchemaService tenantSchemaService,
+      ObjectMapper mapper) {
+    this.client = client;
+    this.cloudAccountRepository = cloudAccountRepository;
+    this.cloudCredentialRepository = cloudCredentialRepository;
+    this.resourceRepository = resourceRepository;
+    this.offeredMetricRepository = offeredMetricRepository;
+    this.encryptionService = encryptionService;
+    this.tenantSchemaService = tenantSchemaService;
+    this.mapper = mapper;
+  }
+
+  @Transactional
+  public void ingest(UUID accountId) {
+    CloudAccount account =
+        cloudAccountRepository
+            .findById(accountId)
+            .orElseThrow(
+                () -> new IllegalArgumentException("Cloud account not found: " + accountId));
+    CloudCredential credential = cloudCredentialRepository.findByAccountId(accountId).getFirst();
+    String decryptedCredential = encryptionService.decrypt(credential.getCredentialValue());
+    Instant ingestionEndTime = Instant.now().truncatedTo(ChronoUnit.MINUTES);
+    try {
+      IngestionRequestEvent request = new IngestionRequestEvent();
+      request.setFrom(account.getLastUsageIngestion().toInstant());
+      request.setTo(ingestionEndTime);
+      request.setPeriod(60);
+      request.setIncludeUsage(true);
+      request.setUserId(account.getConnection().getUser().getId());
+
+      AccountScope accountScope = new AccountScope();
+      accountScope.setAccountId(accountId.toString());
+      accountScope.setProvider(account.getConnection().getProvider().toString());
+      tenantSchemaService.useTenantSchema(account.getConnection().getUserId());
+      List<Resource> resources = resourceRepository.findByAccountId(accountId);
+
+      List<ServiceScope> serviceScopes = new ArrayList<>();
+      for (String serviceType :
+          resources.stream().map(Resource::getResourceType).distinct().toList()) {
+        ServiceScope serviceScope = new ServiceScope();
+        serviceScope.setName(serviceType);
+        List<Metric> metrics = new ArrayList<>();
+        List<OfferedMetric> offeredMetrics =
+            offeredMetricRepository.findByProviderAndServiceType(
+                account.getConnection().getProvider(), serviceType);
+        offeredMetrics.forEach(
+            offeredMetric -> {
+              Metric metric = new Metric();
+              metric.setName(offeredMetric.getMetricName());
+              metric.setUnit(offeredMetric.getExpectedUnit());
+              metrics.add(metric);
+            });
+        serviceScope.setMetrics(metrics);
+        List<Resource> serviceTypeResources =
+            resources.stream()
+                .filter(resource -> resource.getResourceType().equals(serviceType))
+                .toList();
+
+        List<InstanceScope> instanceScopes = new ArrayList<>();
+        for (String resourceIdentifierType :
+            serviceTypeResources.stream()
+                .map(Resource::getResourceIdentifierType)
+                .distinct()
+                .toList()) {
+          InstanceScope instanceScope = new InstanceScope();
+          instanceScope.setIdentifierName(resourceIdentifierType);
+          List<Instance> instances = new ArrayList<>();
+          for (Resource identifierSpecificResource :
+              resourceRepository.findByAccountIdAndResourceTypeAndResourceIdentifierType(
+                  accountId, serviceType, resourceIdentifierType)) {
+            if (identifierSpecificResource.getStatus() == StatusEnum.disabled) {
+              continue; // don't ingest inactive resources
+            }
+            Instance instance = new Instance();
+            instance.setIdentifier(identifierSpecificResource.getResourceIdentifier());
+            instance.setRegion(identifierSpecificResource.getRegion());
+            instances.add(instance);
+          }
+          instanceScope.setInstances(instances);
+          instanceScopes.add(instanceScope);
+        }
+        serviceScope.setInstances(instanceScopes);
+        serviceScopes.add(serviceScope);
+      }
+      accountScope.setServiceScopes(serviceScopes);
+      List<AccountScope> accountScopes = new ArrayList<>();
+      accountScopes.add(accountScope);
+      request.setScopes(accountScopes);
+      AwsCredentialsDto decryptedCredentialsDto =
+          mapper.readValue(decryptedCredential, AwsCredentialsDto.class);
+      CloudCredentials credentials = new CloudCredentials();
+      credentials.setAccessKey(decryptedCredentialsDto.accessKeyId());
+      credentials.setSecretKey(decryptedCredentialsDto.secretAccessKey());
+      request.setCredentials(credentials);
+      tenantSchemaService.usePublicSchema();
+      client.ingest(request);
+      account.setLastUsageIngestion(ingestionEndTime.atOffset(ZoneOffset.UTC));
+
+      account.setNextUsageIngestion(
+          ingestionEndTime
+              .atOffset(ZoneOffset.UTC)
+              .plusSeconds(Long.parseLong(account.getIngestionPeriod())));
+
+      cloudAccountRepository.save(account);
+
+    } catch (JsonProcessingException e) {
+      e.printStackTrace();
+    }
+  }
+}

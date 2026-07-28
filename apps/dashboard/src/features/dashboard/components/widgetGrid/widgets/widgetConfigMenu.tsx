@@ -2,8 +2,8 @@
 
 import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
 import {
-    useResourceNameStore,
     ResourceNameStore,
+    useResourceNameStore,
 } from "@/features/dashboard/stores/resource-store";
 import { MetricType, MetricStore } from "@/features/dashboard/types/metric";
 import { useMetricStore } from "@/features/dashboard/stores/metric-store";
@@ -71,6 +71,8 @@ export function WidgetConfigMenu({
     const resourceNamesById = useResourceNameStore(
         (state: ResourceNameStore) => state.resourcesById
     );
+    const resources = useResourceNameStore((state: ResourceNameStore) => state.resources);
+
     const allAvailableMetrics = useMetricStore((state: MetricStore) => state.getMetricList);
 
     const availableMetrics = configuration.resourceId
@@ -79,7 +81,9 @@ export function WidgetConfigMenu({
     const metricsByResource = allAvailableMetrics();
     const metricResourceIds = Object.keys(metricsByResource);
     const availableResources =
-        metricResourceIds.length > 0 ? metricResourceIds : Object.keys(resourceNamesById);
+        metricResourceIds.length > 0
+            ? metricResourceIds
+            : resources.map((resource) => resource.resourceId);
 
     const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
     const [prevConfig, setPrevConfig] = useState(existingConfig);
