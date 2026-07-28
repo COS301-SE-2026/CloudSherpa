@@ -19,9 +19,7 @@ import {
 } from "@/components/atoms/command";
 import { useDashboardStore } from "../../stores/dashboard-store";
 
-type DurationPreset = Exclude<TimeWindowPreset, "custom">;
-
-const presets: { id: DurationPreset; label: string }[] = [
+export const presets: { id: TimeWindowPreset; label: string }[] = [
     { id: "T_5_MIN", label: "5 min" },
     { id: "T_15_MIN", label: "15 min" },
     { id: "T_30_MIN", label: "30 min" },
@@ -33,13 +31,16 @@ const presets: { id: DurationPreset; label: string }[] = [
     { id: "T_30_DAYS", label: "30 days" },
 ];
 
-function getPresetRange(presetId: DurationPreset): DateRange {
+export function getPresetRange(presetId: TimeWindowPreset): DateRange | undefined {
+    if (presetId == "custom") {
+        return undefined;
+    }
     const to = new Date();
     const minuteMs = 60 * 1000;
     const hourMs = 60 * minuteMs;
     const dayMs = 24 * hourMs;
 
-    const durationByPreset: Record<DurationPreset, number> = {
+    const durationByPreset: Record<TimeWindowPreset, number> = {
         T_5_MIN: 5 * minuteMs,
         T_15_MIN: 15 * minuteMs,
         T_30_MIN: 30 * minuteMs,
@@ -49,6 +50,7 @@ function getPresetRange(presetId: DurationPreset): DateRange {
         T_24_HOUR: 24 * hourMs,
         T_7_DAYS: 7 * dayMs,
         T_30_DAYS: 30 * dayMs,
+        custom: 0,
     };
 
     return {

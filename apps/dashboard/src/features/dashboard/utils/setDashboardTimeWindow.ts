@@ -12,7 +12,7 @@ export async function setDashboardPresetTimeWindow(
     }
     try {
         apiClient(`/dashboards/${dashboardId}/window`, {
-            method: "POST",
+            method: "PATCH",
             body: JSON.stringify({ newTime: preset }),
         });
     } catch (error) {

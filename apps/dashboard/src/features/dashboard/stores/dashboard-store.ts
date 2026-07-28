@@ -15,6 +15,8 @@ import {
 import { TimeWindowPreset } from "../types/timewindow";
 import { setDashboardPresetTimeWindow } from "../utils/setDashboardTimeWindow";
 import { persist } from "zustand/middleware";
+import { getPresetRange } from "../components/toolbar/timePeriodSelector";
+import { DateRange } from "react-day-picker";
 
 const tickIntervalMs = 30000;
 
@@ -73,6 +75,7 @@ type WindowSlice = {
     days?: number;
     setWindow: (from: Date, to: Date) => void;
     setPreset: (preset: TimeWindowPreset) => void;
+    hydrateWindowOnDashboardLoad: (preset: TimeWindowPreset) => void;
     timeoutId?: ReturnType<typeof setTimeout>;
     intervalId?: ReturnType<typeof setInterval>;
     clear: () => void;
@@ -350,6 +353,15 @@ const createWindowSlice: StateCreator<DashboardStore, [], [], WindowSlice> = (se
     setPreset: async (preset) => {
         set({ selectedPreset: preset });
         await setDashboardPresetTimeWindow(preset, get().activeDashboardId);
+    },
+    hydrateWindowOnDashboardLoad: (preset: TimeWindowPreset) => {
+        const presetRange = getPresetRange(preset) ?? getPresetRange("T_1_HOUR");
+
+        if (!presetRange?.from || !presetRange?.to) {
+            return;
+        }
+
+        get().setWindow(presetRange.from, presetRange.to);
     },
     clear: () => {
         clearTimeout(get().timeoutId ?? undefined);
