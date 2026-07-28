@@ -216,6 +216,23 @@ export default function StepThree({
         });
     };
 
+    const formatSeconds = (totalSeconds: string | number) => {
+        const secs = Number(totalSeconds);
+        if (isNaN(secs) || secs <= 0) return "0 seconds";
+
+        const minutes = Math.floor(secs / 60);
+        const remainingSeconds = secs % 60;
+
+        const minText = minutes > 0 ? `${minutes} minute${minutes === 1 ? "" : "s"}` : "";
+        const secText =
+            remainingSeconds > 0
+                ? `${remainingSeconds} second${remainingSeconds === 1 ? "" : "s"}`
+                : "";
+
+        if (minText && secText) return `${minText} ${secText}`;
+        return minText || secText;
+    };
+
     return (
         <div className="min-h-screen bg-background flex items-center justify-center p-8">
             <div className="w-full max-w-4xl bg-card rounded-lg shadow-none p-8">
@@ -300,16 +317,18 @@ export default function StepThree({
                         </div>
                         <div className="flex flex-col gap-2 justify-center items-end ">
                             {/* the span is meant for a visual indicator of the value of the slider */}
-                            <span>{period} seconds</span>
+                            <span>{formatSeconds(period)}</span>
                             <Slider
                                 value={[Number(period)]}
                                 onValueChange={(vals) => setPeriod(String(vals[0]))}
+                                min={60}
+                                max={400}
                             />
-                        </div>
 
-                        <p className="text-xs text-muted-foreground/70">
-                            Recommended: {recommendedPeriod} seconds
-                        </p>
+                            <p className="text-xs text-muted-foreground/70 ">
+                                Recommended: {formatSeconds(recommendedPeriod)}
+                            </p>
+                        </div>
                     </div>
                     {error && (
                         <div className="rounded-md border border-red-500 bg-red-50 p-3 text-sm text-red-700">
