@@ -6,6 +6,7 @@ export interface Tutorials{
     category : "Getting Started" | "Connections" | "Resources" | "Billing";
     lengthOfVideo : string;
     videoLink : string;
+    thumbNail : string;
 }
 
 //structure is id, name, description, category, duration, youtubeid
@@ -43,7 +44,10 @@ const TUTS = [
 
 export const TUTORIALS : Tutorials[] = TUTS.map(([id, name, description, category, durationOfVideo, youtubeid]) => ({
     id, name , description, category : category as Tutorials['category'], lengthOfVideo : durationOfVideo,
-    videoLink : `https://www.youtube.com/embed/${youtubeid}`
+    videoLink : `https://www.youtube.com/embed/${youtubeid}`,
+
+    //maxresdefault is used by youtibe to serve the highest res version of a thumbnail (1280x720)
+    thumbNail : `https://img.youtube.com/vi/${youtubeid}/maxresdefault.jpg`
 }));
 
 export const TUTFILTERS = ['All', ...new Set(TUTORIALS.map(forTutorials => forTutorials.category))];

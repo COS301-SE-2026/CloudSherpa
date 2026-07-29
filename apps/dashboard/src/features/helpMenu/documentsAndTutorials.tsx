@@ -457,12 +457,19 @@ function DocumentsAndTutorialsSuspense() {
                                     className="cursor-pointer gap-0 overflow-hidden border-border p-0 transition-colors hover:border-primary/50"
                                 >
                                     <div className="relative flex h-[110px] items-center justify-center bg-muted-foreground/10">
-                                        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-background/80">
-                                            {" "}
-                                            <Play
-                                                className="h-4 w-4 fill-foreground text-foreground"
-                                                strokeWidth={0}
-                                            />{" "}
+                                        {/* adding thumbnail for the tut videos */}
+                                        {tuts.thumbNail && (
+                                            <img src = {tuts.thumbNail} alt = {tuts.name} className = "h-full w-full object-cover"/>
+                                        )}
+
+                                        <span className = "absolute inset-0 flex items-center justify-center bg-black/20 transition-opacity hover:bg-black/30">
+                                            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-background/80 transition-transform group-hover:scale-110">
+                                                {" "}
+                                                <Play
+                                                    className="h-4 w-4 fill-foreground text-foreground"
+                                                    strokeWidth={0}
+                                                />{" "}
+                                            </span>
                                         </span>
 
                                         <Badge
