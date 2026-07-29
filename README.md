@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="docs/assets/team-photos/bitflip.svg" alt="CloudSherpa Logo" width="300"/>
+  <img src="docs/assets/team-photos/CloudSherpaLogoDark.svg" alt="CloudSherpa Logo" width="1000"/>
 
 </div>
 
