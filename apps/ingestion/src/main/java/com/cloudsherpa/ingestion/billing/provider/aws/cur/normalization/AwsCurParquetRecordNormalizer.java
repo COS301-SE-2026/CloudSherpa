@@ -28,6 +28,7 @@ public class AwsCurParquetRecordNormalizer
     NormalizedCosts normalized = new NormalizedCosts();
 
     normalized.setExecutionId(getExecutionId(export));
+    normalized.setCostId(getCostId(costRecord));
     normalized.setProvider(getProvider(costRecord));
     normalized.setChargeId(getChargeId(costRecord));
     normalized.setResourceId(getResourceId(costRecord));
@@ -39,6 +40,28 @@ public class AwsCurParquetRecordNormalizer
     normalized.setUsageEndTime(getUsageEndTime(costRecord));
 
     return normalized;
+  }
+
+  @Override
+  public String getCostId(GenericRecord costRecord) {
+
+    String costIdResourceId = getResourceId(costRecord);
+
+    if (getResourceId(costRecord) == null) {
+      costIdResourceId = "null";
+    }
+
+    return getBillingAccountId(costRecord)
+        + "%%%"
+        + getUsageStartTime(costRecord).toString()
+        + "%%%"
+        + getServiceName(costRecord)
+        + "%%%"
+        + getLineItemType(costRecord)
+        + "%%%"
+        + costIdResourceId
+        + "%%%"
+        + getProductSku(costRecord);
   }
 
   @Override
@@ -143,5 +166,25 @@ public class AwsCurParquetRecordNormalizer
     LocalTime time = LocalTime.ofNanoOfDay(nanoTime.getTimeOfDayNanos());
 
     return OffsetDateTime.of(date, time, ZoneOffset.UTC);
+  }
+
+  private String getLineItemType(GenericRecord costRecord) {
+    Object value = costRecord.get("line_item_line_item_type");
+
+    if (value == null) {
+      throw new NormalizationException("line_item_line_item_type", "Null value");
+    }
+
+    return value.toString();
+  }
+
+  private String getProductSku(GenericRecord costRecord) {
+    Object value = costRecord.get("product_sku");
+
+    if (value == null) {
+      throw new NormalizationException("product_sku", "Null value");
+    }
+
+    return value.toString();
   }
 }

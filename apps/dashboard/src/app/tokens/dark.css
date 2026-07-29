@@ -17,11 +17,11 @@
     --muted-foreground: var(--color-neutral-300);
     --accent: var(--color-neutral-800);
     --accent-foreground: var(--color-neutral-50);
-    --destructive: var(--color-red-600);
+    --destructive: var(--color-red-400);
     --destructive-foreground: var(--color-red-50);
     --success: var(--color-green-600);
     --success-foreground: var(--color-green-50);
-    --warning: var(--color-orange-600);
+    --warning: var(--color-orange-500);
     --warning-foreground: var(--color-orange-50);
     --border: var(--color-neutral-800);
     --input: var(--color-neutral-800);

@@ -5,6 +5,7 @@ import { DashboardSelector } from "@/features/dashboard/components/toolbar/dashb
 import { DateRange } from "react-day-picker";
 import { DashboardStub } from "@/features/dashboard/types/widgets";
 import EditButton from "@/features/dashboard/components/toolbar/editButton";
+import { HelpMenu } from "@/features/helpMenu/helpMenu";
 
 interface ToolbarProps {
     dashboards: DashboardStub[];
@@ -63,8 +64,9 @@ export default function Toolbar({
             </div>
 
             {hasActiveDashboard && (
-                <div>
+                <div className="flex flex-row items-center gap-2">
                     <TimePeriodSelector date={dateRange} onDateChange={onDateRangeChange} />
+                <HelpMenu />
                 </div>
             )}
         </header>

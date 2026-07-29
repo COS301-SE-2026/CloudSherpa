@@ -48,7 +48,6 @@ export function DashboardSelector({
         (d) => d.displayName.trim().toLowerCase() === normalizedQuery.toLowerCase()
     );
     const canCreateFromSearch = normalizedQuery.length > 0 && !hasExactNameMatch;
-
     const handleCreateFromSearch = () => {
         if (!canCreateFromSearch) return;
         onCreate(normalizedQuery);
@@ -68,20 +67,21 @@ export function DashboardSelector({
     };
 
     return (
-        <Popover
-            open={open}
-            onOpenChange={(val) => {
-                setOpen(val);
-                if (!val) setView("list");
-                setSearchQuery("");
-            }}
-        >
-            <PopoverTrigger asChild>
-                <Button variant="outline" className="group flex justify-between">
-                    {selectedDashboard?.displayName || "Select Dashboard"}
-                    <ChevronDown className="ml-2 h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
-                </Button>
-            </PopoverTrigger>
+        <div id = "dashboardDropdown">
+            <Popover
+                open={open}
+                onOpenChange={(val) => {
+                    setOpen(val);
+                    if (!val) setView("list");
+                    setSearchQuery("");
+                }}
+            >
+                <PopoverTrigger asChild>
+                    <Button variant="outline" className="group flex justify-between">
+                        {selectedDashboard?.displayName || "Select Dashboard"}
+                        <ChevronDown className="ml-2 h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                    </Button>
+                </PopoverTrigger>
 
             <PopoverContent
                 className="p-0 w-72 bg-popover border-border-strong shadow-xl"
@@ -101,7 +101,8 @@ export function DashboardSelector({
                                 {dashboards.map((d) => (
                                     <CommandItem
                                         key={d.id}
-                                        value={d.displayName}
+                                        value={d.id}
+                                        keywords={[d.displayName]}
                                         className="group flex items-center justify-between cursor-pointer"
                                         onSelect={() => {
                                             onSelect(d.id);
@@ -120,79 +121,80 @@ export function DashboardSelector({
                                             <span className="truncate">{d.displayName}</span>
                                         </div>
 
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className={cn(
-                                                "h-6 w-6 shrink-0 opacity-0 group-hover:opacity-100"
-                                            )}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                onDelete(d.id);
-                                            }}
-                                        >
-                                            <Trash className="h-3.5 w-3.5" />
-                                        </Button>
-                                    </CommandItem>
-                                ))}
-                            </CommandGroup>
-                            {canCreateFromSearch && (
-                                <CommandGroup>
-                                    <CommandItem
-                                        value={"create " + normalizedQuery}
-                                        onSelect={handleCreateFromSearch}
-                                        className="cursor-pointer"
-                                    >
-                                        <Plus className="mr-2 h-4 w-4" />
-                                        Create dashboard &quot;{normalizedQuery}&quot;
-                                    </CommandItem>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className={cn(
+                                                    "h-6 w-6 shrink-0 opacity-0 group-hover:opacity-100"
+                                                )}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    onDelete(d.id);
+                                                }}
+                                            >
+                                                <Trash className="h-3.5 w-3.5" />
+                                            </Button>
+                                        </CommandItem>
+                                    ))}
                                 </CommandGroup>
-                            )}
-                            <CommandSeparator />
-                            <CommandGroup>
-                                {!canCreateFromSearch && (
-                                    <CommandItem
-                                        onSelect={() => setView("create")}
-                                        className="cursor-pointer"
-                                    >
-                                        <Plus className="mr-2 h-4 w-4" />
-                                        Create New Dashboard
-                                    </CommandItem>
+                                {canCreateFromSearch && (
+                                    <CommandGroup>
+                                        <CommandItem
+                                            value={"create " + normalizedQuery}
+                                            onSelect={handleCreateFromSearch}
+                                            className="cursor-pointer"
+                                        >
+                                            <Plus className="mr-2 h-4 w-4" />
+                                            Create dashboard &quot;{normalizedQuery}&quot;
+                                        </CommandItem>
+                                    </CommandGroup>
                                 )}
-                            </CommandGroup>
-                        </CommandList>
-                    </Command>
-                ) : (
-                    // create new dashboard view
-                    <div className="flex flex-col p-3">
-                        <div className="grid grid-cols-[30px_1fr_30px] items-center mb-3">
-                            <Button variant="ghost" size="icon" onClick={() => setView("list")}>
-                                <ChevronLeft className="h-4 w-4" />
+                                <CommandSeparator />
+                                <CommandGroup>
+                                    {!canCreateFromSearch && (
+                                        <CommandItem
+                                            onSelect={() => setView("create")}
+                                            className="cursor-pointer"
+                                        >
+                                            <Plus className="mr-2 h-4 w-4" />
+                                            Create New Dashboard
+                                        </CommandItem>
+                                    )}
+                                </CommandGroup>
+                            </CommandList>
+                        </Command>
+                    ) : (
+                        // create new dashboard view
+                        <div className="flex flex-col p-3">
+                            <div className="grid grid-cols-[30px_1fr_30px] items-center mb-3">
+                                <Button variant="ghost" size="icon" onClick={() => setView("list")}>
+                                    <ChevronLeft className="h-4 w-4" />
+                                </Button>
+
+                                <span className="text-center">New Dashboard</span>
+
+                                <div className="w-7" />
+                            </div>
+
+                            <Input
+                                autoFocus
+                                placeholder="e.g. Production AWS Costs"
+                                value={newDashboardName}
+                                onChange={(e) => setNewDashboardName(e.target.value)}
+                                onKeyDown={(e) => e.key === "Enter" && handleCreate()}
+                            />
+
+                            <Button
+                                className="mt-3 w-full bg-primary text-primary-foreground hover:bg-primary/90"
+                                onClick={handleCreate}
+                                disabled={!newDashboardName.trim()}
+                            >
+                                Create Dashboard
                             </Button>
-
-                            <span className="text-center">New Dashboard</span>
-
-                            <div className="w-7" />
                         </div>
-
-                        <Input
-                            autoFocus
-                            placeholder="e.g. Production AWS Costs"
-                            value={newDashboardName}
-                            onChange={(e) => setNewDashboardName(e.target.value)}
-                            onKeyDown={(e) => e.key === "Enter" && handleCreate()}
-                        />
-
-                        <Button
-                            className="mt-3 w-full bg-primary text-primary-foreground hover:bg-primary/90"
-                            onClick={handleCreate}
-                            disabled={!newDashboardName.trim()}
-                        >
-                            Create Dashboard
-                        </Button>
-                    </div>
-                )}
-            </PopoverContent>
-        </Popover>
+                    )}
+                </PopoverContent>
+            </Popover>
+        </div>
     );
 }

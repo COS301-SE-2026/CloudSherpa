@@ -35,8 +35,8 @@ export function AuthOverlay({ isSignUp, toggle }: Readonly<OverlayProps>) {
                 {/* Go to Login Panel */}
                 <div
                     className={cn(
-                        "absolute top-0 flex flex-col items-center justify-center px-20 text-center h-full w-1/2 transition-transform duration-700 ease-in-out",
-                        isSignUp ? "translate-x-0" : "translate-x-[20%]"
+                        "absolute top-0 flex flex-col items-center justify-center px-20 text-center h-full w-1/2 min-w-0 overflow-hidden transition-opacity duration-700 ease-in-out",
+                        isSignUp ? "opacity-100" : "opacity-0 pointer-events-none"
                     )}
                 >
                     <h1 className="text-5xl font-bold tracking-tight mb-6">Welcome Back</h1>
@@ -56,8 +56,8 @@ export function AuthOverlay({ isSignUp, toggle }: Readonly<OverlayProps>) {
                 {/* Go to Register Panel */}
                 <div
                     className={cn(
-                        "absolute top-0 right-0 flex flex-col items-center justify-center px-20 text-center h-full w-1/2 transition-transform duration-700 ease-in-out",
-                        isSignUp ? "translate-x-[20%]" : "translate-x-0"
+                        "absolute top-0 right-0 flex flex-col items-center justify-center px-20 text-center h-full w-1/2 min-w-0 overflow-hidden transition-opacity duration-700 ease-in-out",
+                        isSignUp ? "opacity-0 pointer-events-none" : "opacity-100"
                     )}
                 >
                     <h1 className="text-5xl font-bold tracking-tight mb-6">CloudSherpa</h1>

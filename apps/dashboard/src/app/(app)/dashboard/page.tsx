@@ -25,7 +25,6 @@ function processFetchedDashboards(fetchedData: DashboardDTO[]) {
     const dashboardsMap: Record<string, DashboardConfig> = {};
     const layoutsArray: LayoutItem[] = [];
     const configsArray: WidgetConfig[] = [];
-
     for (const db of fetchedData) {
         // const layoutItemIds = Array.prototype.concat(chartIds, kpiIds);
 
@@ -128,7 +127,6 @@ function DashboardContent() {
 
             await fetchResourceNames();
             if (metricFetchLoad) {
-                // console.log("here")
                 return;
             }
             if (metricFetchError) {

@@ -23,7 +23,7 @@ export default function EditButton({
     handleCancelEdit,
 }: Readonly<ToolbarProps>) {
     return (
-        <div className="flex items-center gap-2">
+        <div id = "editDashboard" className="flex items-center gap-2">
             <Button
                 variant="outline"
                 size={isEditMode ? "sm" : "icon"}
