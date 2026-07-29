@@ -25,23 +25,22 @@
 </div>
 </div>
 
-## Important Links
-
-🚀 [CloudSherpa Deployed](https://cloudsherpa.gjjcs.org)
-
-🔗 [GitHub Project](https://github.com/orgs/COS301-SE-2026/projects/39)
-
-📚 [Developer Documentation](https://bitflip301.gjjcs.org/docs/)
-
-⚙️ [System Requirements Documentation]()
-
-🎨 [Design System](https://bitflip301.gjjcs.org/design-system/designSystem.html)
-
 ## Project Overview
 
 CloudSherpa is an AI-driven cloud cost optimization platform designed to analyze infrastructure usage and spending patterns across major cloud providers, including Amazon Web Services, Microsoft Azure, and Google Cloud Platform. 
 
 As organizations migrate to cloud-native environments, managing resource efficiency is a significant challenge. CloudSherpa acts as a set of financial guardrails by collecting operational monitoring and billing data, and applying machine learning models to detect anomalies and predict future costs. Through an interactive web-based dashboard, users can visualize resource usage, forecast spending, and receive intelligent optimization recommendations to support data-driven cloud management decisions.
+
+## Documentation
+
+| Demo 2 | Demo 1 | 
+| :---: | :---: |
+| [System Requirements Specification](docs/assets/SRS/BitFlip_SRS.pdf) | Row 1, Col 2 |
+| System Architecture Specification | Row 2, Col 2 |
+| Coding Standards | wkfkwjef |
+| Testing Policy | ehwfjkwefh | 
+| User Manual | kwdhjkqwdb |
+| Brand Style Guide | wekjfkjewf |
 
 ## Running the Project
 
