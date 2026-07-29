@@ -10,7 +10,7 @@ import {
     Boxes,
     Clock,
     ArrowRight,
-    Play,
+    Play, X
 } from "lucide-react";
 import {
     Breadcrumb,
@@ -26,6 +26,8 @@ import { Input } from "@/components/atoms/input";
 import { Badge } from "@/components/atoms/badge";
 import * as TabsPrimitive from "@radix-ui/react-tabs"; //using this instead of tabs bc i want to create my own styling of the tabs
 import { useRouter, useSearchParams } from "next/navigation";
+import {Dialog, DialogContent, DialogHeader, DialogTitle} from "@/components/atoms/dialog";
+import {TUTFILTERS, filterTutorialsByCategory, type Tutorials} from "@/features/helpMenu/tutorials/tutorials";
 
 /*
 - users should be able to view documents and videos about nav around cloudsherpa
@@ -93,43 +95,7 @@ const DOCUMENTS: Documents[] = [
     },
 ];
 
-const TUTFILTERS = ["All", "Getting started", "Connections", "Resources"] as const;
-
 type FilterForTutorials = (typeof TUTFILTERS)[number];
-
-interface Tutorials {
-    id: string;
-    name: string;
-    description: string;
-    category: Exclude<FilterForTutorials, "All">;
-    lengthOfVideo: string;
-}
-
-const TUTORIALS: Tutorials[] = [
-    {
-        id: "tutorial1",
-        name: "Getting started with CloudSherpa",
-        description: "Learn by watching how to navigate about CloudSherpa",
-        category: "Getting started",
-        lengthOfVideo: "1:50",
-    },
-
-    {
-        id: "tutorial2",
-        name: "Managing your AWS connections",
-        description: "Connect your first cloud provider & explore the dashboard",
-        category: "Connections",
-        lengthOfVideo: "1:50",
-    },
-
-    {
-        id: "tutorial3",
-        name: "Configuring your resources",
-        description: "Add and remove resources for a specific connection",
-        category: "Resources",
-        lengthOfVideo: "1:50",
-    },
-];
 
 function DocumentsAndTutorialsSuspense() {
     const router = useRouter();
@@ -145,6 +111,13 @@ function DocumentsAndTutorialsSuspense() {
     //added this to hellp correct error
     //will prevent rerendering
     const selectedTab = useRef(false);
+
+    const [videoSelected, setVideoSelected] = useState<Tutorials | null>(null);
+
+    const [videoDialogOpen, setVideoDialogOpen] = useState(false);
+
+    //htmliframeelement rep an html iframe ele & provides type safety
+    const youtubeIframe = useRef<HTMLIFrameElement>(null);
 
     const searchDocument = useMemo(() => {
         if (!search.trim()) {
@@ -171,10 +144,7 @@ function DocumentsAndTutorialsSuspense() {
     }, [searchParameters]);
 
     const filteredTutorials = useMemo(() => {
-        const categories =
-            filterTutorials === "All"
-                ? TUTORIALS
-                : TUTORIALS.filter((tutorial) => tutorial.category === filterTutorials);
+        const categories = filterTutorialsByCategory(filterTutorials);
 
         if (!search.trim()) {
             return categories;
@@ -189,8 +159,58 @@ function DocumentsAndTutorialsSuspense() {
         );
     }, [search, filterTutorials]);
 
+    const handlingVideoClick = (tutorials : Tutorials) => {
+        if(tutorials.videoLink){
+            setVideoSelected(tutorials);
+            setVideoDialogOpen(true);
+        }
+    };
+
+    const handlingVideoClose = () => {
+        setVideoDialogOpen(false);
+        setVideoSelected(null);
+    }
+
     return (
         <div className="min-h-screen bg-background">
+            {/* this is for the video dialog (youtube iframe) */}
+            <Dialog open = {videoDialogOpen} onOpenChange = {handlingVideoClose}>
+                <DialogContent className = "max-w-3xl p-0 overflow-hidden bg-background">
+
+                    <DialogHeader className = "p-4 pb-0">
+                        <div className = "flex items-center justify-between">
+                            <DialogTitle className = "text-[16px] font-medium text-foreground"> {videoSelected?.name} </DialogTitle>
+
+                            <Button variant = "ghost" size = "icon" className = "h-8 w-8 rounded-full hover:bg-muted" onClick = {handlingVideoClose}> <X className = "h-4 w-4" strokeWidth = {1.75}/> </Button>
+                        </div>
+                    </DialogHeader>
+
+                    {/* youtube iframe */}
+                    <div className = "relative aspect-video w-full bg-black">
+                        {videoSelected?.videoLink && (
+                            <iframe ref = {youtubeIframe} src = {videoSelected.videoLink} title = {videoSelected.name} className = "absolute inset-0 h-full w-full"
+                                    //are the feature policies for the iframe
+                                    allow = "clipboard-write; picture-in-picture"
+                                    allowFullScreen
+                            />
+                        )}
+                    </div>
+
+                    {videoSelected && (
+                        <div className = "p-4 pt-3">
+                            <p className = "text-[13px] text-muted-foreground"> {videoSelected.description} </p>
+
+                            <div className = "mt-2 flex items-center gap-2">
+                                <Badge variant = "secondary" className = "text-[11px]"> {videoSelected.category} </Badge>
+
+                                <span className = "text-[12px] text-muted-foreground"> {videoSelected.lengthOfVideo} </span>
+                            </div>
+                        </div>
+                    )}
+
+                </DialogContent>
+            </Dialog>
+
             {/* this is for the breadcrumb - to be able to go back to the dashboard */}
             <div className="border-b border-border px-8 py-5">
                 <Breadcrumb>
@@ -206,7 +226,7 @@ function DocumentsAndTutorialsSuspense() {
 
                         <BreadcrumbItem>
                             <BreadcrumbLink
-                                href="/documentsAndTutorials"
+                                href="/helpMenu/documentsAndTutorials"
                                 className="text-[13px] text-muted-foreground"
                             >
                                 {" "}
@@ -426,6 +446,14 @@ function DocumentsAndTutorialsSuspense() {
                                     key={tuts.id}
                                     role="button"
                                     tabIndex={0}
+
+                                    onClick = {() => handlingVideoClick(tuts)}
+                                    onKeyDown = {(pressingButton) => {
+                                        if(pressingButton.key === "Enter" || pressingButton.key === " "){
+                                            handlingVideoClick(tuts);
+                                        }
+                                    }}
+
                                     className="cursor-pointer gap-0 overflow-hidden border-border p-0 transition-colors hover:border-primary/50"
                                 >
                                     <div className="relative flex h-[110px] items-center justify-center bg-muted-foreground/10">
