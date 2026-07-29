@@ -52,7 +52,7 @@ const LINKS: LinksForHelp[] = [
         label: "Tutorials",
         description: "Step-by-step CloudSherpa walkthroughs",
         icon: PlayCircle,
-        action : "tutorials",
+        action: "tutorials",
     },
 
     {
@@ -109,7 +109,7 @@ interface KeyboardShortcuts {
 
 const SHORTCUT: KeyboardShortcuts[] = [{ key: ["ENTER"], function: "Submit form" }];
 
-export function HelpMenu() {    
+export function HelpMenu() {
     const router = useRouter();
 
     const [open, setOpen] = useState(false);
@@ -153,11 +153,11 @@ export function HelpMenu() {
             return;
         }
 
-        if(link.action === "tutorials"){
+        if (link.action === "tutorials") {
             setOpen(false);
 
             router.push("helpMenu/documentsAndTutorials?tab=tutorials");
-            return
+            return;
         }
 
         if (link.href) {
