@@ -10,6 +10,7 @@ import {
     getCloudResources,
 } from "@/lib/fetch/cloud-resource-api";
 import { BillingForm } from "./billingForm";
+import { Progress } from "@/components/atoms/progress";
 
 export interface BillingConfig {
     prefix: string;
@@ -40,6 +41,10 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
     const [exportName, setExportName] = useState("");
     const [savedBillingConfig, setSavedBillingConfig] = useState<BillingConfig | null>(null);
     const [optedInToBilling, setOptedInToBilling] = useState(false);
+
+    //f progress bar
+    const [progress, setProgress] = useState(0);
+    const [currentScanningService, setCurrentScanningService] = useState("");
 
     const toggleService = (serviceId: string) => {
         setServicesSelected((prev) =>
@@ -141,24 +146,42 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
         try {
             setLoading(true);
             setError("");
+            setProgress(0);
+            setCurrentScanningService("");
 
-            const resources = await getCloudResources(
-                "aws",
-                {
-                    accessKey: credentials?.accessKey,
-                    secretKey: credentials?.secretKey,
-                    awsRegion: credentials?.awsRegion,
-                },
-                servicesSelected
-            );
+            let discoveredResources: ResourceDetail[] = [];
+            for (let i = 0; i < servicesSelected.length; i++) {
+                const currentService = servicesSelected[i];
 
-            if (resources.length === 0) {
+                // Update UI text
+                setCurrentScanningService(currentService);
+
+                const resources = await getCloudResources(
+                    "aws",
+                    {
+                        accessKey: credentials?.accessKey,
+                        secretKey: credentials?.secretKey,
+                        awsRegion: credentials?.awsRegion,
+                    },
+                    [currentService]
+                );
+
+                discoveredResources = [...discoveredResources, ...resources];
+
+                setProgress(((i + 1) / servicesSelected.length) * 100);
+            }
+
+            if (discoveredResources.length === 0) {
                 setError("No resources were discovered.");
                 return;
             }
-            setLoading(false);
 
-            onNext(servicesSelected, resources, { prefix, bucketName, bucketRegion, exportName });
+            onNext(servicesSelected, discoveredResources, {
+                prefix,
+                bucketName,
+                bucketRegion,
+                exportName,
+            });
         } catch (err) {
             console.error(err);
 
@@ -306,6 +329,20 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
                             </button>
                         </div>
                     </div>
+
+                    {loading && (
+                        <div className="space-y-2 w-full pt-4">
+                            <div className="flex justify-between text-sm text-muted-foreground font-medium">
+                                <span>
+                                    {currentScanningService
+                                        ? `Scanning ${currentScanningService.toUpperCase()}...`
+                                        : "Preparing scan..."}
+                                </span>
+                                <span>{Math.round(progress)}%</span>
+                            </div>
+                            <Progress value={progress} className="w-full h-2" />
+                        </div>
+                    )}
 
                     <div className="flex justify-between pt-4">
                         <Button
