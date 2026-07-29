@@ -1,6 +1,6 @@
 "use client";
 import * as React from "react";
-import { LayoutDashboard, Network, Moon, Sun } from "lucide-react";
+import { LayoutDashboard, Network, Moon, Sun, HelpCircle } from "lucide-react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { useAuthContext } from "@/features/authentication/providers/AuthContext";
@@ -53,7 +53,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
     return (
         <Sidebar collapsible="icon" {...props}>
-            <SidebarHeader className="h-16 flex flex-row items-center justify-between px-4 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
+            <SidebarHeader id = "navBar" className="h-16 flex flex-row items-center justify-between px-4 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
                 {/*open*/}
                 <div className="flex items-center gap-3 group-data-[collapsible=icon]:hidden">
                     <Image src="/CloudSherpaFavicon.svg" alt="CS" width={30} height={30} priority />
@@ -155,6 +155,23 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         </SidebarMenu>
                     </SidebarGroupContent>
                 </SidebarGroup>
+
+                <SidebarGroup>
+                    <SidebarGroupLabel> Support </SidebarGroupLabel>
+
+                    <SidebarGroupContent>
+                        <SidebarMenu>
+                            <SidebarMenuItem>
+                                <SidebarMenuButton asChild tooltip = "Help Center">
+                                    <Link href = "/helpMenu/documentsAndTutorials"> <HelpCircle/>
+                                            <span> Help Center </span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        </SidebarMenu>
+                    </SidebarGroupContent>
+                </SidebarGroup>
+                
             </SidebarContent>
 
             <SidebarFooter>
