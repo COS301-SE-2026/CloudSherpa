@@ -35,12 +35,12 @@ As organizations migrate to cloud-native environments, managing resource efficie
 
 | Demo 2 | Demo 1 | 
 | :---: | :---: |
-| [System Requirements Specification](docs/assets/SRS/BitFlip_SRS.pdf) | Row 1, Col 2 |
-| System Architecture Specification | Row 2, Col 2 |
-| Coding Standards | wkfkwjef |
-| Testing Policy | ehwfjkwefh | 
-| User Manual | kwdhjkqwdb |
-| Brand Style Guide | wekjfkjewf |
+| [System Requirements Specification]() | [System Requirements Specification](docs/documentation/demo1/Demo1_SRS.pdf)|
+| [System Architecture Specification]() | |
+| [Coding Standards]() ||
+| [Testing Policy]() || 
+| [User Manual]() ||
+| [Brand Style Guide]() ||
 
 ## Running the Project
 
