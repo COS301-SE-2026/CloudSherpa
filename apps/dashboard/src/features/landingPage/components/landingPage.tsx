@@ -7,6 +7,7 @@ import { Solution } from "./solution";
 import { HowItWorks } from "./howItWorks";
 import { WhoItsFor } from "./whoItsFor";
 import { Features } from "./featureCards";
+import AuthAnimation from "@/features/authentication/components/authanimation";
 
 /*
 - combines all ages
@@ -24,8 +25,13 @@ export default function LandingPage() {
 
     return (
         <div className="relative min-h-screen bg-background text-foreground">
+
+            <div className = "relative">
+                <AuthAnimation/>
+                <HeroAndNavBar scrolled = {scrolled}/>
+            </div>
+
             <div className="relative z-10">
-                <HeroAndNavBar scrolled={scrolled} />
                 <Problem />
 
                 <Solution />
