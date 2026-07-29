@@ -1,10 +1,13 @@
 <div align="center">
   <img src="docs/assets/team-photos/bitflip.svg" alt="CloudSherpa Logo" width="300"/>
 
-  # CloudSherpa
 </div>
 
 <div style="display: flex; justify-content: center; align-items: center; flex-direction: column;">
+
+
+**An AI-driven cloud cost optimization platform for AWS, Microsoft Azure, and Google Cloud Platform.**
+
 
 <div align="center">
 
@@ -25,12 +28,6 @@
 </div>
 </div>
 
-## Project Overview
-
-CloudSherpa is an AI-driven cloud cost optimization platform designed to analyze infrastructure usage and spending patterns across major cloud providers, including Amazon Web Services, Microsoft Azure, and Google Cloud Platform. 
-
-As organizations migrate to cloud-native environments, managing resource efficiency is a significant challenge. CloudSherpa acts as a set of financial guardrails by collecting operational monitoring and billing data, and applying machine learning models to detect anomalies and predict future costs. Through an interactive web-based dashboard, users can visualize resource usage, forecast spending, and receive intelligent optimization recommendations to support data-driven cloud management decisions.
-
 ## Documentation
 
 | Demo 2 | Demo 1 | 
@@ -41,6 +38,12 @@ As organizations migrate to cloud-native environments, managing resource efficie
 | [Testing Policy]() || 
 | [User Manual]() ||
 | [Brand Style Guide]() ||
+
+## Important Links
+
+[CloudSherpa Project](https://github.com/orgs/COS301-SE-2026/projects/39)
+
+[Design System](https://cloudsherpa.gjjcs.org/designsystem)
 
 ## Running the Project
 
