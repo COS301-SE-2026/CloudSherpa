@@ -22,7 +22,6 @@
 
 ![Website](https://img.shields.io/website?url=https%3A%2F%2Fcloudsherpa.gjjcs.org%2Fhi%2F&label=cloudsherpa%20site)
 [![CloudSherpa service coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fsherpa-coverage.gjjcs.org%2Fbadges%2Fservice)](https://sherpa-coverage.gjjcs.org/badges/service)
-[![CloudSherpa dashboard coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fsherpa-coverage.gjjcs.org%2Fbadges%2Fdashboard)](https://sherpa-coverage.gjjcs.org/badges/dashboard)
 [![CloudSherpa ingestion coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fsherpa-coverage.gjjcs.org%2Fbadges%2Fingestion)](https://sherpa-coverage.gjjcs.org/badges/ingestion)
 
 </div>
@@ -32,11 +31,11 @@
 
 | Demo 2 | Demo 1 | 
 | :---: | :---: |
-| [System Requirements Specification]() | [System Requirements Specification](docs/documentation/demo1/Demo1_SRS.pdf)|
-| [System Architecture Specification]() | |
-| [Coding Standards]() ||
-| [Testing Policy]() || 
-| [User Manual]() ||
+| [System Requirements Specification](docs/documentation/demo2/Demo2_SRS.pdf) | [System Requirements Specification](docs/documentation/demo1/Demo1_SRS.pdf)|
+| [System Architecture Specification](docs/documentation/demo2/Demo2_SAS.pdf) | |
+| [Coding Standards](docs/documentation/demo2/Demo2_CodingStandards.pdf) ||
+| [Testing Policy](docs/documentation/demo2/Demo2_TestingPolicy.pdf) || 
+| [User Manual](docs/documentation/demo2/Demo2_UserManual.pdf) ||
 | [Brand Style Guide]() ||
 
 ## Important Links
