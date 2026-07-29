@@ -18,7 +18,7 @@ import { persist } from "zustand/middleware";
 import { getPresetRange } from "../components/toolbar/timePeriodSelector";
 import { DateRange } from "react-day-picker";
 
-const tickIntervalMs = 30000;
+const tickIntervalMs = 60_000;
 
 function getDefaultWindow() {
     const toMs = Date.now();

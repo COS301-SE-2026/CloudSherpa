@@ -66,7 +66,7 @@ export default function Toolbar({
             {hasActiveDashboard && (
                 <div className="flex flex-row items-center gap-2">
                     <TimePeriodSelector date={dateRange} onDateChange={onDateRangeChange} />
-                <HelpMenu />
+                    <HelpMenu />
                 </div>
             )}
         </header>

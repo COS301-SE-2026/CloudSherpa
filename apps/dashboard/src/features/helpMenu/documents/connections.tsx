@@ -2,13 +2,13 @@
 
 import { Plug } from "lucide-react";
 import HelpCenter from "@/features/helpMenu/documents/documentsPage";
-import {creatingIns} from "@/features/helpMenu/documents/createInstructions";
+import { creatingIns } from "@/features/helpMenu/documents/createInstructions";
 
 /*
 - this page give users all the info on how to add, remove and manage their conn
 */
 
-export default function Connection(){
+export default function Connection() {
     const INS = creatingIns([
         {
             name: "Navigate to Connection Manager",
@@ -41,7 +41,8 @@ export default function Connection(){
 
         {
             name: "Select services and resources",
-            description: "Choose which services and resources you would like CloudSherpa to monitor",
+            description:
+                "Choose which services and resources you would like CloudSherpa to monitor",
             details: [
                 "Select the services you want to keep track of",
                 "Choose the specific resources within each service you want to monitor",
@@ -59,12 +60,12 @@ export default function Connection(){
     ]);
 
     return (
-        <HelpCenter name = "Connecting your AWS cloud provider"
-                    description = "Follow these five steps to connect your AWS account"
-                    breadcrumb = "Connections"
-                    icon = {Plug}
-                    instructions = {INS}
+        <HelpCenter
+            name="Connecting your AWS cloud provider"
+            description="Follow these five steps to connect your AWS account"
+            breadcrumb="Connections"
+            icon={Plug}
+            instructions={INS}
         />
     );
-
 }
