@@ -72,7 +72,7 @@ interface Documents {
     name: string;
     category: string;
     timeToRead: number;
-    href : string;
+    href: string;
 }
 
 const DOCUMENTS: Documents[] = [
@@ -81,7 +81,7 @@ const DOCUMENTS: Documents[] = [
         name: "Connecting your AWS account",
         category: "Connections",
         timeToRead: 3,
-        href : "/helpMenu/documents/connections"
+        href: "/helpMenu/documents/connections",
     },
 
     {
@@ -89,7 +89,7 @@ const DOCUMENTS: Documents[] = [
         name: "How to manage your reasources",
         category: "Resources",
         timeToRead: 3,
-        href : "/helpMenu/documents/resources"
+        href: "/helpMenu/documents/resources",
     },
 ];
 
@@ -163,7 +163,7 @@ function DocumentsAndTutorialsSuspense() {
     useEffect(() => {
         const tutorialTab = searchParameters.get("tab");
 
-        if(tutorialTab === "tutorials" && !selectedTab.current){
+        if (tutorialTab === "tutorials" && !selectedTab.current) {
             setActiveTab("tutorials");
 
             selectedTab.current = true;
@@ -196,7 +196,10 @@ function DocumentsAndTutorialsSuspense() {
                 <Breadcrumb>
                     <BreadcrumbList>
                         <BreadcrumbItem>
-                            <BreadcrumbLink href="/dashboard" className="text-[13px] text-muted-foreground">
+                            <BreadcrumbLink
+                                href="/dashboard"
+                                className="text-[13px] text-muted-foreground"
+                            >
                                 {" "}
                                 Dashboard{" "}
                             </BreadcrumbLink>
@@ -346,12 +349,17 @@ function DocumentsAndTutorialsSuspense() {
                                 <div className="col-span-2 flex flex-col gap-3">
                                     {searchDocument.map((docs) => (
                                         <Card
-                                            key={docs.id} role = "button" tabIndex = {0}
+                                            key={docs.id}
+                                            role="button"
+                                            tabIndex={0}
 
-                                            onClick = {() => router.push(docs.href)}
+                                            onClick={() => router.push(docs.href)}
 
-                                            onKeyDown = {(keyPress) => {
-                                                if(keyPress.key === "Enter" || keyPress.key === " "){
+                                            onKeyDown={(keyPress) => {
+                                                if (
+                                                    keyPress.key === "Enter" ||
+                                                    keyPress.key === " "
+                                                ) {
                                                     router.push(docs.href);
                                                 }
                                             }}
@@ -362,7 +370,7 @@ function DocumentsAndTutorialsSuspense() {
                                                 variant="ghost"
                                                 className="h-auto w-full items-center justify-between rounded-none px-4 py-3 text-left hover:bg-transparent"
 
-                                                onClick = {(clicked) => {
+                                                onClick={(clicked) => {
                                                     clicked.stopPropagation();
                                                     router.push(docs.href);
                                                 }}
@@ -476,10 +484,10 @@ function DocumentsAndTutorialsSuspense() {
 
 //the errror suggested that the useSearch should be wrapped in suspense
 //it will help by displaying a fallback when the content is loading (checking if it will work)
-export default function DocumentsAndTutorials(){
-    return(
-        <Suspense fallback = {null}>
-            <DocumentsAndTutorialsSuspense/>
+export default function DocumentsAndTutorials() {
+    return (
+        <Suspense fallback={null}>
+            <DocumentsAndTutorialsSuspense />
         </Suspense>
-    )
+    );
 }

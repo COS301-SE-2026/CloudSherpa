@@ -53,7 +53,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
     return (
         <Sidebar collapsible="icon" {...props}>
-            <SidebarHeader id = "navBar" className="h-16 flex flex-row items-center justify-between px-4 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
+            <SidebarHeader
+                id="navBar"
+                className="h-16 flex flex-row items-center justify-between px-4 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
+            >
                 {/*open*/}
                 <div className="flex items-center gap-3 group-data-[collapsible=icon]:hidden">
                     <Image src="/CloudSherpaFavicon.svg" alt="CS" width={30} height={30} priority />
@@ -162,16 +165,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     <SidebarGroupContent>
                         <SidebarMenu>
                             <SidebarMenuItem>
-                                <SidebarMenuButton asChild tooltip = "Help Center">
-                                    <Link href = "/helpMenu/documentsAndTutorials"> <HelpCircle/>
-                                            <span> Help Center </span>
+                                <SidebarMenuButton asChild tooltip="Help Center">
+                                    <Link href="/helpMenu/documentsAndTutorials">
+                                        {" "}
+                                        <HelpCircle />
+                                        <span> Help Center </span>
                                     </Link>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
                         </SidebarMenu>
                     </SidebarGroupContent>
                 </SidebarGroup>
-                
             </SidebarContent>
 
             <SidebarFooter>

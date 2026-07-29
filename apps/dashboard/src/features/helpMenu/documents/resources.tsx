@@ -2,13 +2,13 @@
 
 import { Boxes } from "lucide-react";
 import HelpCenter from "@/features/helpMenu/documents/documentsPage";
-import {creatingIns} from "@/features/helpMenu/documents/createInstructions";
+import { creatingIns } from "@/features/helpMenu/documents/createInstructions";
 
 /*
 - users should be able to easily follow the ins on how to get to, manage and delete theri resources
 */
 
-export default function Resource(){
+export default function Resource() {
     const INS = creatingIns([
         {
             name: "Access the Resource Manager",
@@ -39,12 +39,12 @@ export default function Resource(){
     ]);
 
     return (
-        <HelpCenter name = "Managing your cloud resources"
-                    description = "Learn how to manage and configure your cloud resources effectively with CloudSherpa"
-                    breadcrumb = "Resources"
-                    icon = {Boxes}
-                    instructions = {INS}
+        <HelpCenter
+            name="Managing your cloud resources"
+            description="Learn how to manage and configure your cloud resources effectively with CloudSherpa"
+            breadcrumb="Resources"
+            icon={Boxes}
+            instructions={INS}
         />
     );
-
 }

@@ -84,7 +84,7 @@ export function TimePeriodSelector({
     };
 
     return (
-        <div id = "timePeriodSelector">
+        <div id="timePeriodSelector">
             <Popover
                 open={open}
                 onOpenChange={(val) => {
