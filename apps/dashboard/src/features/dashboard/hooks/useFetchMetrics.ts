@@ -66,7 +66,7 @@ export function useFetchMetrics() {
         } finally {
             setMetricFetchLoad(false);
         }
-    }, [addMetricFromDto, clearMetricStore, fromMs, toMs, selectedPreset]);
+    }, [addMetricFromDto, clearMetricStore, selectedPreset]);
 
     useEffect(() => {
         if (!isAuthReady || !isAuthenticated) {

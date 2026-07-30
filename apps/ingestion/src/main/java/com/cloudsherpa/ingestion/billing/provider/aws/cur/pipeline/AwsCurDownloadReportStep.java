@@ -41,7 +41,7 @@ public class AwsCurDownloadReportStep implements AwsCurIngestionPipelineStep {
       try {
         Files.createDirectories(reportPath.getParent());
       } catch (FileAlreadyExistsException fileAlreadyExistsException) {
-        logger.info("Directory already exists, skipping creation");
+        logger.info("File already exists, skipping creation");
       } catch (IOException ioException) {
         throw new UncheckedIOException("Could not create directory", ioException);
       }

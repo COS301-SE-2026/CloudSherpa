@@ -68,6 +68,7 @@ public interface NormalizedCostsRepository extends JpaRepository<NormalizedCosts
                 ) ON CONFLICT (cost_id, usage_start_time) 
                 DO UPDATE SET 
                     cost_amount = EXCLUDED.cost_amount,
+                    execution_id = EXCLUDED.execution_id,
                     metadata = EXCLUDED.metadata;
                 """,
                 nativeQuery = true

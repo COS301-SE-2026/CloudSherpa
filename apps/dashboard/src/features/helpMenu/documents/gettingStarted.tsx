@@ -40,11 +40,12 @@ const INS: Instructions[] = [
 
 export default function GettingStarted() {
     return (
-        <HelpCenter name = "Getting started with CloudSherpa"
-                    description = "Here are some easy steps to help you navigate CloudSherpa"
-                    breadcrumb = "Getting Started"
-                    icon = {Rocket}
-                    instructions = {INS}
+        <HelpCenter
+            name="Getting started with CloudSherpa"
+            description="Here are some easy steps to help you navigate CloudSherpa"
+            breadcrumb="Getting Started"
+            icon={Rocket}
+            instructions={INS}
         />
     );
 }
