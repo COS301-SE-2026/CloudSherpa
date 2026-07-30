@@ -34,6 +34,24 @@ Table cloud_account {
   ingestion_period ingestion_period_enum
   display_name varchar(255)
   created_at timestamptz
+  last_usage_ingestion timestamptz
+  next_usage_ingestion timestamptz
+  last_billing_ingestion timestamptz
+  next_billing_ingestion timestamptz
+}
+
+Table offered_metric {
+  offered_metric_id uuid [pk]
+  provider provider_enum
+  service_type varchar(255)
+  metric_name varchar(255)
+  identifier_field varchar(100)
+  expected_unit varchar(50)
+  description text
+
+  Indexes {
+    (provider, service_type, metric_name) [unique]
+  }
 }
 
 Table cloud_credential {
@@ -49,6 +67,7 @@ Table billing_export_config {
   config_id uuid [pk]
   account_id uuid [ref: > cloud_account.account_id]
   bucket_name varchar(255)
+  bucket_region varchar(255)
   export_prefix varchar(255)
   export_name varchar(255)
   created_at timestamptz
@@ -66,10 +85,12 @@ Table billing_export_execution {
 
 Table dashboard {
   dashboard_id uuid [pk]
+  display_name varchar(255)
   user_id uuid [ref: > users.user_id]
   time_from timestamptz
   time_to timestamptz
   predefined_time predefined_time_enum
+  current boolean
 }
 
 Table widget {
@@ -91,7 +112,7 @@ Table widget_kpi {
 
 Table kpi_charges {
   kpi_charges_id uuid [pk]
-  widget_kpi uuid [ref: > widget_kpi.kpi_id]
+  widget_kpi_id uuid [ref: > widget_kpi.kpi_id]
   charge_id varchar(2128)
 }
 
@@ -117,6 +138,9 @@ Table resource {
   account_id uuid [ref: > cloud_account.account_id]
   resource_type varchar(255)
   resource_name varchar(255)
+  resource_identifier varchar(255)
+  resource_identifier_type varchar(255)
+  region varchar(100)
   status status_enum
   tags jsonb
   last_updated timestamptz
@@ -124,6 +148,7 @@ Table resource {
 
   Indexes {
     tags [name: "ix_resource_tags", type: gin]
+    (account_id, resource_type, resource_identifier, region) [unique]
   }
 }
 
@@ -146,9 +171,10 @@ Table normalized_metrics {
 }
 
 Table normalized_costs {
-  cost_id uuid
+  cost_id text
   execution_id uuid [ref: > billing_export_execution.execution_id]
   resource_id varchar(2048)
+  charge_id varchar(2128)
   provider provider_enum
   billing_account_id varchar(255)
   service_name varchar(255)
