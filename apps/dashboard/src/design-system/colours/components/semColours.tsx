@@ -4,97 +4,17 @@ import { Card } from "@/components/atoms/card";
 import { useState, useRef } from "react";
 import { Check } from "lucide-react";
 
-const semanticPairs = [
-    {
-        name: "Background",
-        leftLabel: "bg-background",
-        leftBg: "bg-background",
-        leftText: "text-foreground",
-        rightLabel: "text-foreground",
-        rightBg: "bg-foreground",
-        rightText: "text-background",
-    },
-    {
-        name: "Card",
-        leftLabel: "bg-card",
-        leftBg: "bg-card",
-        leftText: "text-card-foreground",
-        rightLabel: "text-card-foreground",
-        rightBg: "bg-card-foreground",
-        rightText: "text-card",
-    },
-    {
-        name: "Popover",
-        leftLabel: "bg-popover",
-        leftBg: "bg-popover",
-        leftText: "text-popover-foreground",
-        rightLabel: "text-popover-foreground",
-        rightBg: "bg-popover-foreground",
-        rightText: "text-popover",
-    },
-    {
-        name: "Primary",
-        leftLabel: "bg-primary",
-        leftBg: "bg-primary",
-        leftText: "text-primary-foreground",
-        rightLabel: "text-primary-foreground",
-        rightBg: "bg-primary-foreground",
-        rightText: "text-primary",
-    },
-    {
-        name: "Secondary",
-        leftLabel: "bg-secondary",
-        leftBg: "bg-secondary",
-        leftText: "text-secondary-foreground",
-        rightLabel: "text-secondary-foreground",
-        rightBg: "bg-secondary-foreground",
-        rightText: "text-secondary",
-    },
-    {
-        name: "Muted",
-        leftLabel: "bg-muted",
-        leftBg: "bg-muted",
-        leftText: "text-muted-foreground",
-        rightLabel: "text-muted-foreground",
-        rightBg: "bg-muted-foreground",
-        rightText: "text-muted",
-    },
-    {
-        name: "Accent",
-        leftLabel: "bg-accent",
-        leftBg: "bg-accent",
-        leftText: "text-accent-foreground",
-        rightLabel: "text-accent-foreground",
-        rightBg: "bg-accent-foreground",
-        rightText: "text-accent",
-    },
-    {
-        name: "Destructive",
-        leftLabel: "bg-destructive",
-        leftBg: "bg-destructive",
-        leftText: "text-destructive-foreground",
-        rightLabel: "text-destructive-foreground",
-        rightBg: "bg-destructive-foreground",
-        rightText: "text-destructive",
-    },
-    {
-        name: "Success",
-        leftLabel: "bg-success",
-        leftBg: "bg-success",
-        leftText: "text-success-foreground",
-        rightLabel: "text-success-foreground",
-        rightBg: "bg-success-foreground",
-        rightText: "text-success",
-    },
-    {
-        name: "Warning",
-        leftLabel: "bg-warning",
-        leftBg: "bg-warning",
-        leftText: "text-warning-foreground",
-        rightLabel: "text-warning-foreground",
-        rightBg: "bg-warning-foreground",
-        rightText: "text-warning",
-    },
+const semanticNames = [
+    "background",
+    "card",
+    "popover",
+    "primary",
+    "secondary",
+    "muted",
+    "accent",
+    "destructive",
+    "success",
+    "warning",
 ];
 
 const generateSemanticPair = (baseName: string) => {
@@ -104,12 +24,12 @@ const generateSemanticPair = (baseName: string) => {
 
     return {
         name: title,
+        leftLabel: `bg-${baseName}`,
+        rightLabel: `text-${foregroundName}`,
         leftBg: `bg-${baseName}`,
         leftText: `text-${foregroundName}`,
-        leftLabel: `bg-${baseName}`,
         rightBg: `bg-${foregroundName}`,
         rightText: `text-${baseName}`,
-        rightLabel: `text-${foregroundName}`,
     };
 };
 interface ExpandingHalfProps {
@@ -166,9 +86,10 @@ function ExpandingHalf({ bg, label, text, side }: Readonly<ExpandingHalfProps>) 
 }
 
 export default function SemColours() {
+    const pairs = semanticNames.map(generateSemanticPair);
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
-            {semanticPairs.map((pair) => (
+            {pairs.map((pair) => (
                 <div key={pair.name} className="space-y-3">
                     <h3 className="text-lg font-bold tracking-tight">{pair.name}</h3>
 
