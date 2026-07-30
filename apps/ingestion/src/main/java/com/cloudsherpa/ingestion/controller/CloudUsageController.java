@@ -112,6 +112,20 @@ public class CloudUsageController {
     return cloudUsageService.ingestMock(request);
   }
 
+  @Operation(
+      summary = "Trigger AWS CUR billing ingestion with credentials stored for test user",
+      description =
+          "When database is seeded appropriately, ingest a billing report for testing purposes")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "AWS CUR billing ingestion ran successfully",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = AwsCurContext.class)))
+      })
   @PostMapping("/ingest/aws/billing/cur")
   public AwsCurContext ingestAwsBillingCur() {
     return awsCurIngestionService.execute(
