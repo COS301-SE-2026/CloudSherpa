@@ -25,6 +25,7 @@ export default function EditButton({
     return (
         <div id="editDashboard" className="flex items-center gap-2">
             <Button
+                aria-label="editbtn"
                 variant="outline"
                 size={isEditMode ? "sm" : "icon"}
                 onClick={isEditMode ? handleCancelEdit : handleStartEditing}
