@@ -22,6 +22,7 @@ async function registerAndLoginNewUser(page: Page) {
         page.getByRole("alert").filter({ hasText: "Successful Registration" })
     ).toBeVisible();
 
+    await page.waitForURL("**/dashboard", { timeout: 15000 });
     await expect(page.getByTestId("dashboard")).toBeVisible({ timeout: 15000 });
 
     return { email, password };
@@ -32,7 +33,8 @@ async function createNewDashboard(page: Page) {
     await page.getByRole("button", { name: "Dashboard Selector" }).click();
     await page.getByLabel("createNewDashOption").click();
     await page.getByLabel("createDashInput").fill(uniqueDashboardName);
-    await page.getByRole("button", { name: "Create Dashboard" }).click({ force: true });
+    await page.getByRole("button", { name: "Create Dashboard" }).click();
+    await expect(page.getByLabel("dashboard selector dropdown")).toContainText(uniqueDashboardName);
     return uniqueDashboardName;
 }
 

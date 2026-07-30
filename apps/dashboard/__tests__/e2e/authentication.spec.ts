@@ -7,7 +7,6 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("authentication", () => {
-    const email = `e2e-user-${Date.now()}-${crypto.randomUUID()}@example.com`;
     test("unauthenticated dashboard access redirects to login", async ({ page }) => {
         await page.goto("http://localhost:3000/dashboard");
 
@@ -29,6 +28,8 @@ test.describe("authentication", () => {
     });
 
     test("new user signup, login, logout", async ({ page }) => {
+        const email = `e2e-user-${Date.now()}-${crypto.randomUUID()}@example.com`;
+
         await page.goto("http://localhost:3000/login");
 
         await page.getByRole("button", { name: "Get Started" }).click();
@@ -43,13 +44,13 @@ test.describe("authentication", () => {
 
         const successAlert = page.getByRole("alert").filter({ hasText: "Successful Registration" });
 
-        await successAlert.isVisible();
+        await expect(successAlert).toBeVisible();
 
         // assert that redirected to dashboard
         await expect(page.getByTestId("dashboard")).toBeVisible({ timeout: 12000 });
 
         // Logout
-        await page.getByRole("button", { name: "Logout" }).click();
+        await page.getByLabel("logout button").click();
         await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible();
 
         // Cant navigate to dasbhoard
@@ -61,6 +62,6 @@ test.describe("authentication", () => {
         await page.getByLabel("Password", { exact: true }).fill("SecretPassword123!");
         await page.getByRole("button", { name: "Log In" }).click();
 
-        await expect(page.getByTestId("dashboard")).toBeVisible();
+        await expect(page.getByTestId("dashboard")).toBeVisible({ timeout: 15000 });
     });
 });
