@@ -31,7 +31,11 @@ export function WidgetMenu({
 
             {!preview && (
                 <ContextMenuContent className="w-48">
-                    <ContextMenuItem onClick={onConfigure} disabled={isEditMode}>
+                    <ContextMenuItem
+                        onClick={onConfigure}
+                        disabled={isEditMode}
+                        aria-label="configure widget button"
+                    >
                         <Pencil className="mr-2 h-4 w-4" />
                         Configure Widget
                     </ContextMenuItem>
@@ -39,6 +43,7 @@ export function WidgetMenu({
                     <ContextMenuItem
                         onClick={onDelete}
                         className="text-destructive focus:text-destructive"
+                        aria-label="delete widget button"
                     >
                         <Trash className="mr-2 h-4 w-4" />
                         Delete Widget

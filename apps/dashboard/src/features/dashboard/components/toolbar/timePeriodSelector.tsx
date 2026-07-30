@@ -18,6 +18,7 @@ import {
     CommandSeparator,
 } from "@/components/atoms/command";
 import { useDashboardStore } from "../../stores/dashboard-store";
+import { ppid } from "process";
 
 export const presets: { id: TimeWindowPreset; label: string }[] = [
     { id: "T_5_MIN", label: "5 min" },
@@ -92,8 +93,12 @@ export function TimePeriodSelector({
                     if (!val) setView("presets");
                 }}
             >
-                <PopoverTrigger asChild>
-                    <Button variant="outline" className="group flex justify-between">
+                <PopoverTrigger asChild aria-label="window selector">
+                    <Button
+                        variant="outline"
+                        className="group flex justify-between "
+                        aria-label="window selector button"
+                    >
                         {/* Mobile View */}
                         <Filter className="h-4 w-4 block md:hidden" />
 
@@ -117,6 +122,7 @@ export function TimePeriodSelector({
                                 <CommandGroup heading="Range Presets">
                                     {presets.map((p) => (
                                         <CommandItem
+                                            aria-label={p.label}
                                             key={p.id}
                                             value={p.label}
                                             onSelect={() => {
@@ -141,6 +147,7 @@ export function TimePeriodSelector({
                                 <CommandSeparator />
                                 <CommandGroup>
                                     <CommandItem
+                                        aria-label="custom range"
                                         onSelect={() => setView("custom")}
                                         className="cursor-pointer flex justify-center"
                                     >
