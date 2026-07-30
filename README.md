@@ -1,12 +1,18 @@
+<br>
+<br>
+
 <div align="center">
   <img src="docs/assets/team-photos/CloudSherpaLogoDark.svg" alt="CloudSherpa Logo" width="1000"/>
 
 </div>
 
+<br>
+<br>
+
 <div style="display: flex; justify-content: center; align-items: center; flex-direction: column;">
 
 
-**An AI-driven cloud cost optimization platform for AWS, Microsoft Azure, and Google Cloud Platform.**
+**A multi-cloud cost optimization platform for AWS, Microsoft Azure, and Google Cloud Platform.**
 
 
 <div align="center">
@@ -36,9 +42,12 @@
 | [Coding Standards](docs/documentation/demo2/Demo2_CodingStandards.pdf) ||
 | [Testing Policy](docs/documentation/demo2/Demo2_TestingPolicy.pdf) || 
 | [User Manual](docs/documentation/demo2/Demo2_UserManual.pdf) ||
-| [Brand Style Guide]() ||
+| [Architecture Decision Records](docs/documentation/demo2/Demo2_ADR.pdf) ||
+| [Brand Style Guide](docs/documentation/demo2/Demo2_DesignSystem.pdf) ||
 
 ## Important Links
+
+[Deployed CloudSherpa](https://cloudsherpa.gjjcs.org/)
 
 [CloudSherpa Project](https://github.com/orgs/COS301-SE-2026/projects/39)
 
@@ -67,11 +76,16 @@ For development workflows, individual service commands, ports, and troubleshooti
 
 ## About Team BitFlip
 
+Team BitFlip is a cross-functional group of dedicated software engineering students committed to transparency, accountability, and quality-focused delivery. We utilize an Agile delivery framework to ensure continuous alignment with our stakeholders' vision. 
+
 <div align="center">
   <img src="docs/assets/team-photos/TeamPhoto.png" alt="Team BitFlip" width="650"/>
 </div>
 
-Team BitFlip is a cross-functional group of dedicated software engineering students committed to transparency, accountability, and quality-focused delivery. We utilize an Agile delivery framework to ensure continuous alignment with our stakeholders' vision. 
+<div align="center">
+  <img src="docs/assets/team-photos/bitflip.svg" alt="CloudSherpa Logo" width="200"/>
+
+</div>
 
 ### Meet the Team
 
@@ -125,9 +139,9 @@ In our BitFlip team, while working on CloudSherpa for BBD I acted as Frontend Ap
 
 **Role Allocations:**
 * **Megan Norval** - *Team Lead & Core Backend Architect*
-* **Gerard Jordaan** - *DevOps Architect, Full-Stack Contributor & Tester*
+* **Gerard Jordaan** - *DevOps Architect, Full-Stack Contributor*
 * **Karishma Boodhoo** - *Frontend UI/UX Engineer*
-* **Cherise Heyl** - *API & Systems Integration Engineer, & Tester*
+* **Cherise Heyl** - *API & Systems Integration Engineer*
 * **Flip Venter** - *Frontend Application Developer*
 
 ---

@@ -2,9 +2,6 @@ server {
     # Domain
     server_name cloudsherpa.gjjcs.org;
 
-    auth_basic  "CloudSherpa Demo1";
-    auth_basic_user_file /etc/nginx/.htpasswd;
-
     # Root directory for static files, primarily used for testing and Shield.io uptime 
     root /var/www/html;
     index cloudsherpa-hi.html;
@@ -27,22 +24,9 @@ server {
         # WebSocket support for SSE
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "";
-
-        # support SSE connection
-        proxy_buffering off;
-
-        # Disable caching
-        proxy_cache off;
-
-        # Keep HTTP/1.1 chunked transfer encoding enabled for streams
-        chunked_transfer_encoding on;
-
-        # Long timeout for the SSE connection
-        proxy_read_timeout 86400s;
     }
 
     location /api/ {
-        auth_basic off;
         proxy_pass http://localhost:8083/;
 
         proxy_http_version 1.1;
@@ -56,15 +40,23 @@ server {
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
 
+        # support SSE connection
+        proxy_buffering off;
+
+        # Disable caching
+        proxy_cache off;
+
+        # Keep HTTP/1.1 chunked transfer encoding enabled for streams
+        chunked_transfer_encoding on;
+
+        # Long timeout for the SSE connection
+        proxy_read_timeout 86400s;
+
     }
 
     location /hi/ {
-        auth_basic off;
         try_files /cloudsherpa-hi.html =404;
     }
-
-    # Rate limiting (wip)
-    #   limit_req zone=one burst=10 nodelay;
 
 
     # Security headers

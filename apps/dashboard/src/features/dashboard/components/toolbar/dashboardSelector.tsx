@@ -76,8 +76,12 @@ export function DashboardSelector({
                     setSearchQuery("");
                 }}
             >
-                <PopoverTrigger asChild>
-                    <Button variant="outline" className="group flex justify-between">
+                <PopoverTrigger asChild aria-label="Dashboard Selector">
+                    <Button
+                        variant="outline"
+                        className="group flex justify-between"
+                        aria-label="dashboard selector dropdown"
+                    >
                         {selectedDashboard?.displayName || "Select Dashboard"}
                         <ChevronDown className="ml-2 h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
                     </Button>
@@ -153,6 +157,7 @@ export function DashboardSelector({
                                 <CommandGroup>
                                     {!canCreateFromSearch && (
                                         <CommandItem
+                                            aria-label="createNewDashOption"
                                             onSelect={() => setView("create")}
                                             className="cursor-pointer"
                                         >
@@ -177,6 +182,7 @@ export function DashboardSelector({
                             </div>
 
                             <Input
+                                aria-label="createDashInput"
                                 autoFocus
                                 placeholder="e.g. Production AWS Costs"
                                 value={newDashboardName}

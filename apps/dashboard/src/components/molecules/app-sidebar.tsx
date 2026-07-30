@@ -190,7 +190,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
                     {authContext.isAuthReady && (
                         <SidebarMenuItem>
-                            <SidebarMenuButton onClick={() => logout()} tooltip="Logout">
+                            <SidebarMenuButton
+                                onClick={() => logout()}
+                                tooltip="Logout"
+                                aria-label="logout button"
+                            >
                                 <span>Logout</span>
                             </SidebarMenuButton>
                         </SidebarMenuItem>

@@ -25,12 +25,21 @@ export function WidgetDropdown({
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    aria-label="chart options button"
+                >
                     <EllipsisVertical className="h-4 w-4" />
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-fit">
-                <DropdownMenuItem onClick={onConfigure} disabled={isEditMode}>
+                <DropdownMenuItem
+                    onClick={onConfigure}
+                    disabled={isEditMode}
+                    aria-label="configure widget button"
+                >
                     <Pencil className="mr-2 h-4 w-4" />
                     Configure Widget
                 </DropdownMenuItem>
@@ -38,6 +47,7 @@ export function WidgetDropdown({
                 <DropdownMenuItem
                     onClick={onDelete}
                     className="text-destructive focus:text-destructive"
+                    aria-label="delete widget button"
                 >
                     <Trash className="mr-2 h-4 w-4" />
                     Delete Widget
