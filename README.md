@@ -1,7 +1,13 @@
+<br>
+<br>
+
 <div align="center">
   <img src="docs/assets/team-photos/CloudSherpaLogoDark.svg" alt="CloudSherpa Logo" width="1000"/>
 
 </div>
+
+<br>
+<br>
 
 <div style="display: flex; justify-content: center; align-items: center; flex-direction: column;">
 

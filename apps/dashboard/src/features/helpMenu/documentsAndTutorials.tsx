@@ -10,7 +10,8 @@ import {
     Boxes,
     Clock,
     ArrowRight,
-    Play, X
+    Play,
+    X,
 } from "lucide-react";
 import {
     Breadcrumb,
@@ -26,8 +27,12 @@ import { Input } from "@/components/atoms/input";
 import { Badge } from "@/components/atoms/badge";
 import * as TabsPrimitive from "@radix-ui/react-tabs"; //using this instead of tabs bc i want to create my own styling of the tabs
 import { useRouter, useSearchParams } from "next/navigation";
-import {Dialog, DialogContent, DialogHeader, DialogTitle} from "@/components/atoms/dialog";
-import {TUTFILTERS, filterTutorialsByCategory, type Tutorials} from "@/features/helpMenu/tutorials/tutorials";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/atoms/dialog";
+import {
+    TUTFILTERS,
+    filterTutorialsByCategory,
+    type Tutorials,
+} from "@/features/helpMenu/tutorials/tutorials";
 
 /*
 - users should be able to view documents and videos about nav around cloudsherpa
@@ -159,8 +164,8 @@ function DocumentsAndTutorialsSuspense() {
         );
     }, [search, filterTutorials]);
 
-    const handlingVideoClick = (tutorials : Tutorials) => {
-        if(tutorials.videoLink){
+    const handlingVideoClick = (tutorials: Tutorials) => {
+        if (tutorials.videoLink) {
             setVideoSelected(tutorials);
             setVideoDialogOpen(true);
         }
@@ -169,45 +174,67 @@ function DocumentsAndTutorialsSuspense() {
     const handlingVideoClose = () => {
         setVideoDialogOpen(false);
         setVideoSelected(null);
-    }
+    };
 
     return (
         <div className="min-h-screen bg-background">
             {/* this is for the video dialog (youtube iframe) */}
-            <Dialog open = {videoDialogOpen} onOpenChange = {handlingVideoClose}>
-                <DialogContent className = "max-w-3xl p-0 overflow-hidden bg-background">
+            <Dialog open={videoDialogOpen} onOpenChange={handlingVideoClose}>
+                <DialogContent className="max-w-3xl p-0 overflow-hidden bg-background">
+                    <DialogHeader className="p-4 pb-0">
+                        <div className="flex items-center justify-between">
+                            <DialogTitle className="text-[16px] font-medium text-foreground">
+                                {" "}
+                                {videoSelected?.name}{" "}
+                            </DialogTitle>
 
-                    <DialogHeader className = "p-4 pb-0">
-                        <div className = "flex items-center justify-between">
-                            <DialogTitle className = "text-[16px] font-medium text-foreground"> {videoSelected?.name} </DialogTitle>
-
-                            <Button variant = "ghost" size = "icon" className = "h-8 w-8 rounded-full hover:bg-muted" onClick = {handlingVideoClose}> <X className = "h-4 w-4" strokeWidth = {1.75}/> </Button>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 rounded-full hover:bg-muted"
+                                onClick={handlingVideoClose}
+                            >
+                                {" "}
+                                <X className="h-4 w-4" strokeWidth={1.75} />{" "}
+                            </Button>
                         </div>
                     </DialogHeader>
 
                     {/* youtube iframe */}
-                    <div className = "relative aspect-video w-full bg-black">
+                    <div className="relative aspect-video w-full bg-black">
                         {videoSelected?.videoLink && (
-                            <iframe ref = {youtubeIframe} src = {videoSelected.videoLink} title = {videoSelected.name} className = "absolute inset-0 h-full w-full"
-                                    //are the feature policies for the iframe
-                                    allow = "clipboard-write; picture-in-picture"
-                                    allowFullScreen
+                            <iframe
+                                ref={youtubeIframe}
+                                src={videoSelected.videoLink}
+                                title={videoSelected.name}
+                                className="absolute inset-0 h-full w-full"
+                                //are the feature policies for the iframe
+                                allow="clipboard-write; picture-in-picture"
+                                allowFullScreen
                             />
                         )}
                     </div>
 
                     {videoSelected && (
-                        <div className = "p-4 pt-3">
-                            <p className = "text-[13px] text-muted-foreground"> {videoSelected.description} </p>
+                        <div className="p-4 pt-3">
+                            <p className="text-[13px] text-muted-foreground">
+                                {" "}
+                                {videoSelected.description}{" "}
+                            </p>
 
-                            <div className = "mt-2 flex items-center gap-2">
-                                <Badge variant = "secondary" className = "text-[11px]"> {videoSelected.category} </Badge>
+                            <div className="mt-2 flex items-center gap-2">
+                                <Badge variant="secondary" className="text-[11px]">
+                                    {" "}
+                                    {videoSelected.category}{" "}
+                                </Badge>
 
-                                <span className = "text-[12px] text-muted-foreground"> {videoSelected.lengthOfVideo} </span>
+                                <span className="text-[12px] text-muted-foreground">
+                                    {" "}
+                                    {videoSelected.lengthOfVideo}{" "}
+                                </span>
                             </div>
                         </div>
                     )}
-
                 </DialogContent>
             </Dialog>
 
@@ -455,9 +482,12 @@ function DocumentsAndTutorialsSuspense() {
                                     role="button"
                                     tabIndex={0}
 
-                                    onClick = {() => handlingVideoClick(tuts)}
-                                    onKeyDown = {(pressingButton) => {
-                                        if(pressingButton.key === "Enter" || pressingButton.key === " "){
+                                    onClick={() => handlingVideoClick(tuts)}
+                                    onKeyDown={(pressingButton) => {
+                                        if (
+                                            pressingButton.key === "Enter" ||
+                                            pressingButton.key === " "
+                                        ) {
                                             handlingVideoClick(tuts);
                                         }
                                     }}
@@ -467,10 +497,14 @@ function DocumentsAndTutorialsSuspense() {
                                     <div className="relative flex h-[110px] items-center justify-center bg-muted-foreground/10">
                                         {/* adding thumbnail for the tut videos */}
                                         {tuts.thumbNail && (
-                                            <img src = {tuts.thumbNail} alt = {tuts.name} className = "h-full w-full object-cover"/>
+                                            <img
+                                                src={tuts.thumbNail}
+                                                alt={tuts.name}
+                                                className="h-full w-full object-cover"
+                                            />
                                         )}
 
-                                        <span className = "absolute inset-0 flex items-center justify-center bg-black/20 transition-opacity hover:bg-black/30">
+                                        <span className="absolute inset-0 flex items-center justify-center bg-black/20 transition-opacity hover:bg-black/30">
                                             <span className="flex h-9 w-9 items-center justify-center rounded-full bg-background/80 transition-transform group-hover:scale-110">
                                                 {" "}
                                                 <Play
