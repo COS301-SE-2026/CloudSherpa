@@ -84,101 +84,103 @@ export function TimePeriodSelector({
     };
 
     return (
-        <Popover
-            open={open}
-            onOpenChange={(val) => {
-                setOpen(val);
-                if (!val) setView("presets");
-            }}
-        >
-            <PopoverTrigger asChild>
-                <Button variant="outline" className="group flex justify-between">
-                    {/* Mobile View */}
-                    <Filter className="h-4 w-4 block md:hidden" />
-
-                    {/* Desktop View */}
-                    <div className="flex flex-row gap-2">
-                        <CalendarIcon className="h-4 w-4" />
-                        <span className="">Last {getDisplayLabel()}</span>
-                    </div>
-                    <ChevronDown className="ml-2 h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
-                </Button>
-            </PopoverTrigger>
-
-            <PopoverContent
-                className="p-0 w-auto bg-popover border-border-strong shadow-xl"
-                align="end"
+        <div id="timePeriodSelector">
+            <Popover
+                open={open}
+                onOpenChange={(val) => {
+                    setOpen(val);
+                    if (!val) setView("presets");
+                }}
             >
-                {view === "presets" ? (
-                    <Command className="w-50">
-                        <CommandList className="max-h-none">
-                            <CommandEmpty>No preset found.</CommandEmpty>
-                            <CommandGroup heading="Range Presets">
-                                {presets.map((p) => (
-                                    <CommandItem
-                                        key={p.id}
-                                        value={p.label}
-                                        onSelect={() => {
-                                            setSelectedPreset(p.id);
-                                            onDateChange(getPresetRange(p.id));
-                                            setOpen(false);
-                                        }}
-                                        className="cursor-pointer"
-                                    >
-                                        <Check
-                                            className={cn(
-                                                "mr-2 h-4 w-4",
-                                                selectedPreset === p.id
-                                                    ? "opacity-100"
-                                                    : "opacity-0"
-                                            )}
-                                        />
-                                        {p.label}
-                                    </CommandItem>
-                                ))}
-                            </CommandGroup>
-                            <CommandSeparator />
-                            <CommandGroup>
-                                <CommandItem
-                                    onSelect={() => setView("custom")}
-                                    className="cursor-pointer flex justify-center"
-                                >
-                                    <CalendarIcon className="mr-2 h-4 w-4" />
-                                    Custom Range
-                                </CommandItem>
-                            </CommandGroup>
-                        </CommandList>
-                    </Command>
-                ) : (
-                    <div className="flex flex-col p-3 ">
-                        <div className="relative flex w-full items-center justify-center mb-3 min-h-8">
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => setView("presets")}
-                                className="absolute left-0 h-7 w-7 hover:bg-hover text-foreground-secondary"
-                            >
-                                <ChevronLeft className="h-4 w-4" />
-                            </Button>
+                <PopoverTrigger asChild>
+                    <Button variant="outline" className="group flex justify-between">
+                        {/* Mobile View */}
+                        <Filter className="h-4 w-4 block md:hidden" />
 
-                            <span className="text-sm font-medium text-foreground">
-                                Select custom range
-                            </span>
+                        {/* Desktop View */}
+                        <div className="flex flex-row gap-2">
+                            <CalendarIcon className="h-4 w-4" />
+                            <span className="">Last {getDisplayLabel()}</span>
                         </div>
+                        <ChevronDown className="ml-2 h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                    </Button>
+                </PopoverTrigger>
 
-                        <Calendar
-                            mode="range"
-                            defaultMonth={date?.from}
-                            selected={date}
-                            onSelect={(range) => {
-                                onDateChange(range);
-                                if (range?.from && range?.to) setSelectedPreset("custom");
-                            }}
-                            numberOfMonths={2}
-                        />
-                    </div>
-                )}
-            </PopoverContent>
-        </Popover>
+                <PopoverContent
+                    className="p-0 w-auto bg-popover border-border-strong shadow-xl"
+                    align="end"
+                >
+                    {view === "presets" ? (
+                        <Command className="w-50">
+                            <CommandList className="max-h-none">
+                                <CommandEmpty>No preset found.</CommandEmpty>
+                                <CommandGroup heading="Range Presets">
+                                    {presets.map((p) => (
+                                        <CommandItem
+                                            key={p.id}
+                                            value={p.label}
+                                            onSelect={() => {
+                                                setSelectedPreset(p.id);
+                                                onDateChange(getPresetRange(p.id));
+                                                setOpen(false);
+                                            }}
+                                            className="cursor-pointer"
+                                        >
+                                            <Check
+                                                className={cn(
+                                                    "mr-2 h-4 w-4",
+                                                    selectedPreset === p.id
+                                                        ? "opacity-100"
+                                                        : "opacity-0"
+                                                )}
+                                            />
+                                            {p.label}
+                                        </CommandItem>
+                                    ))}
+                                </CommandGroup>
+                                <CommandSeparator />
+                                <CommandGroup>
+                                    <CommandItem
+                                        onSelect={() => setView("custom")}
+                                        className="cursor-pointer flex justify-center"
+                                    >
+                                        <CalendarIcon className="mr-2 h-4 w-4" />
+                                        Custom Range
+                                    </CommandItem>
+                                </CommandGroup>
+                            </CommandList>
+                        </Command>
+                    ) : (
+                        <div className="flex flex-col p-3 ">
+                            <div className="relative flex w-full items-center justify-center mb-3 min-h-8">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => setView("presets")}
+                                    className="absolute left-0 h-7 w-7 hover:bg-hover text-foreground-secondary"
+                                >
+                                    <ChevronLeft className="h-4 w-4" />
+                                </Button>
+
+                                <span className="text-sm font-medium text-foreground">
+                                    Select custom range
+                                </span>
+                            </div>
+
+                            <Calendar
+                                mode="range"
+                                defaultMonth={date?.from}
+                                selected={date}
+                                onSelect={(range) => {
+                                    onDateChange(range);
+                                    if (range?.from && range?.to) setSelectedPreset("custom");
+                                }}
+                                numberOfMonths={2}
+                            />
+                        </div>
+                    )}
+                </PopoverContent>
+            </Popover>
+        </div>
     );
 }

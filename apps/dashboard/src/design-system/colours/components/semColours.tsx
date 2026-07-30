@@ -24,21 +24,22 @@ const generateSemanticPair = (baseName: string) => {
 
     return {
         name: title,
+        leftLabel: `bg-${baseName}`,
+        rightLabel: `text-${foregroundName}`,
         leftBg: `bg-${baseName}`,
         leftText: `text-${foregroundName}`,
-        leftLabel: `bg-${baseName}`,
         rightBg: `bg-${foregroundName}`,
         rightText: `text-${baseName}`,
-        rightLabel: `text-${foregroundName}`,
     };
 };
 interface ExpandingHalfProps {
     label: string;
     text: string;
     bg: string;
+    side: string;
 }
 
-function ExpandingHalf({ bg, label, text }: Readonly<ExpandingHalfProps>) {
+function ExpandingHalf({ bg, label, text, side }: Readonly<ExpandingHalfProps>) {
     const [copiedClass, setCopiedClass] = useState<string | null>(null);
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -69,7 +70,7 @@ function ExpandingHalf({ bg, label, text }: Readonly<ExpandingHalfProps>) {
             title={`Copy ${label}`}
         >
             <div className="absolute top-3 w-full flex justify-center transition-opacity duration-300 group-hover/swatch:opacity-0 group-focus-visible/swatch:opacity-0">
-                <span className="font-bold text-xs opacity-70">BG</span>
+                <span className="font-bold text-xs opacity-70">{side}</span>
             </div>
             <div className="absolute bottom-4 left-4 min-w-35 flex flex-col opacity-0 group-hover/swatch:opacity-100 group-focus-visible/swatch:opacity-100 transition-all duration-500 translate-y-4 group-hover/swatch:translate-y-0 group-focus-visible/swatch:translate-y-0">
                 <div className="font-bold font-mono text-xs">{label}</div>
@@ -97,12 +98,14 @@ export default function SemColours() {
                             label={pair.leftLabel}
                             bg={pair.leftBg}
                             text={pair.leftText}
+                            side="BG"
                         />
 
                         <ExpandingHalf
                             label={pair.rightLabel}
                             bg={pair.rightBg}
                             text={pair.rightText}
+                            side="FG"
                         />
                     </Card>
                 </div>

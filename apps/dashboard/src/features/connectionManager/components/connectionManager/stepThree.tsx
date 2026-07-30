@@ -20,6 +20,7 @@ import {
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/atoms/input";
 import { Label } from "@/components/atoms/label";
+import { Slider } from "@/components/atoms/slider";
 
 interface PropsForStepThree {
     displayName: string;
@@ -215,6 +216,23 @@ export default function StepThree({
         });
     };
 
+    const formatSeconds = (totalSeconds: string | number) => {
+        const secs = Number(totalSeconds);
+        if (isNaN(secs) || secs <= 0) return "0 seconds";
+
+        const minutes = Math.floor(secs / 60);
+        const remainingSeconds = secs % 60;
+
+        const minText = minutes > 0 ? `${minutes} minute${minutes === 1 ? "" : "s"}` : "";
+        const secText =
+            remainingSeconds > 0
+                ? `${remainingSeconds} second${remainingSeconds === 1 ? "" : "s"}`
+                : "";
+
+        if (minText && secText) return `${minText} ${secText}`;
+        return minText || secText;
+    };
+
     return (
         <div className="min-h-screen bg-background flex items-center justify-center p-8">
             <div className="w-full max-w-4xl bg-card rounded-lg shadow-none p-8">
@@ -237,7 +255,7 @@ export default function StepThree({
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-8">
-                    <div className="min-h-[200px]">
+                    <div className="min-h-50">
                         <div className="space-y-8">
                             {Object.entries(groupedResources).map(
                                 ([serviceCategory, categoryResources]) => (
@@ -297,41 +315,20 @@ export default function StepThree({
                                 </Tooltip>
                             </TooltipProvider>
                         </div>
+                        <div className="flex flex-col gap-2 justify-center items-end ">
+                            {/* the span is meant for a visual indicator of the value of the slider */}
+                            <span>{formatSeconds(period)}</span>
+                            <Slider
+                                value={[Number(period)]}
+                                onValueChange={(vals) => setPeriod(String(vals[0]))}
+                                min={60}
+                                max={400}
+                            />
 
-                        <Input
-                            id="ingestionPeriod"
-                            type="number"
-                            min="1"
-                            step="1"
-                            value={period}
-                            onChange={(e) => {
-                                const value = e.target.value;
-
-                                if (/^\d*$/.test(value)) {
-                                    setPeriod(value);
-                                }
-                            }}
-                            className="
-      bg-background
-      border-border
-      rounded-md
-      px-4
-      py-3
-      text-foreground
-      placeholder:text-muted-foreground/40
-      focus:outline-none
-      focus:ring-2
-      focus:ring-ring
-      focus:border-transparent
-      transition-all
-      w-full
-    "
-                            required
-                        />
-
-                        <p className="text-xs text-muted-foreground/70">
-                            Recommended: {recommendedPeriod} seconds
-                        </p>
+                            <p className="text-xs text-muted-foreground/70 ">
+                                Recommended: {formatSeconds(recommendedPeriod)}
+                            </p>
+                        </div>
                     </div>
                     {error && (
                         <div className="rounded-md border border-red-500 bg-red-50 p-3 text-sm text-red-700">

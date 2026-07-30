@@ -1,10 +1,13 @@
 <div align="center">
-  <img src="docs/assets/team-photos/bitflip.svg" alt="CloudSherpa Logo" width="300"/>
+  <img src="docs/assets/team-photos/CloudSherpaLogoDark.svg" alt="CloudSherpa Logo" width="1000"/>
 
-  # CloudSherpa
 </div>
 
 <div style="display: flex; justify-content: center; align-items: center; flex-direction: column;">
+
+
+**An AI-driven cloud cost optimization platform for AWS, Microsoft Azure, and Google Cloud Platform.**
+
 
 <div align="center">
 
@@ -19,29 +22,27 @@
 
 ![Website](https://img.shields.io/website?url=https%3A%2F%2Fcloudsherpa.gjjcs.org%2Fhi%2F&label=cloudsherpa%20site)
 [![CloudSherpa service coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fsherpa-coverage.gjjcs.org%2Fbadges%2Fservice)](https://sherpa-coverage.gjjcs.org/badges/service)
-[![CloudSherpa dashboard coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fsherpa-coverage.gjjcs.org%2Fbadges%2Fdashboard)](https://sherpa-coverage.gjjcs.org/badges/dashboard)
 [![CloudSherpa ingestion coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fsherpa-coverage.gjjcs.org%2Fbadges%2Fingestion)](https://sherpa-coverage.gjjcs.org/badges/ingestion)
 
 </div>
 </div>
 
+## Documentation
+
+| Demo 2 | Demo 1 | 
+| :---: | :---: |
+| [System Requirements Specification](docs/documentation/demo2/Demo2_SRS.pdf) | [System Requirements Specification](docs/documentation/demo1/Demo1_SRS.pdf)|
+| [System Architecture Specification](docs/documentation/demo2/Demo2_SAS.pdf) | |
+| [Coding Standards](docs/documentation/demo2/Demo2_CodingStandards.pdf) ||
+| [Testing Policy](docs/documentation/demo2/Demo2_TestingPolicy.pdf) || 
+| [User Manual](docs/documentation/demo2/Demo2_UserManual.pdf) ||
+| [Brand Style Guide]() ||
+
 ## Important Links
 
-🚀 [CloudSherpa Deployed](https://cloudsherpa.gjjcs.org)
+[CloudSherpa Project](https://github.com/orgs/COS301-SE-2026/projects/39)
 
-🔗 [GitHub Project](https://github.com/orgs/COS301-SE-2026/projects/39)
-
-📚 [Developer Documentation](https://bitflip301.gjjcs.org/docs/)
-
-⚙️ [System Requirements Documentation]()
-
-🎨 [Design System](https://bitflip301.gjjcs.org/design-system/designSystem.html)
-
-## Project Overview
-
-CloudSherpa is an AI-driven cloud cost optimization platform designed to analyze infrastructure usage and spending patterns across major cloud providers, including Amazon Web Services, Microsoft Azure, and Google Cloud Platform. 
-
-As organizations migrate to cloud-native environments, managing resource efficiency is a significant challenge. CloudSherpa acts as a set of financial guardrails by collecting operational monitoring and billing data, and applying machine learning models to detect anomalies and predict future costs. Through an interactive web-based dashboard, users can visualize resource usage, forecast spending, and receive intelligent optimization recommendations to support data-driven cloud management decisions.
+[Design System](https://cloudsherpa.gjjcs.org/designsystem)
 
 ## Running the Project
 

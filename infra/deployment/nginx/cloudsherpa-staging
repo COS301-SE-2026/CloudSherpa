@@ -2,7 +2,7 @@ server {
     # Domain
     server_name cloudsherpa-staging.gjjcs.org;
 
-    auth_basic  "CloudSherpa Demo1";
+    auth_basic  "CloudSherpa Staging";
     auth_basic_user_file /etc/nginx/.htpasswd;
 
     # Root directory for static files, primarily used for testing and Shield.io uptime 
