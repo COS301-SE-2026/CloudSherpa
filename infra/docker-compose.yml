@@ -16,9 +16,8 @@ services:
     healthcheck:
       test: ["CMD", "curl", "-f", "localhost:8080/actuator/health"]
       interval: 5s
-      timeout: 5s
+      timeout: 3s
       retries: 10
-      start_period: 90s
     
   service:
     build:
