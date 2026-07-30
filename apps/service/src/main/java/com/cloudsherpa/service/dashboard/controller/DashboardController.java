@@ -8,6 +8,10 @@ import com.cloudsherpa.service.dashboard.dto.WidgetDTO;
 import com.cloudsherpa.service.dashboard.dto.WidgetLayoutUpdateDTO;
 import com.cloudsherpa.service.dashboard.service.DashboardService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.UUID;
@@ -37,6 +41,10 @@ public class DashboardController {
 
   @GetMapping
   @Operation(summary = "Get all user dashboards with their widgets")
+  @ApiResponse(
+      responseCode = "200",
+      content =
+          @Content(array = @ArraySchema(schema = @Schema(implementation = DashboardDTO.class))))
   public ResponseEntity<List<DashboardDTO>> getUserDashboards(@AuthenticationPrincipal Jwt jwt) {
     UUID userId = UUID.fromString(jwt.getSubject());
 
@@ -45,6 +53,9 @@ public class DashboardController {
 
   @PostMapping
   @Operation(summary = "Create a new blank dashboard")
+  @ApiResponse(
+      responseCode = "201",
+      content = @Content(schema = @Schema(implementation = DashboardDTO.class)))
   public ResponseEntity<DashboardDTO> createDashboard(
       @RequestBody DashboardCreateDTO request, @AuthenticationPrincipal Jwt jwt) {
     UUID userId = UUID.fromString(jwt.getSubject());
@@ -55,6 +66,7 @@ public class DashboardController {
 
   @DeleteMapping("/{dashboardId}")
   @Operation(summary = "Delete a dashboard")
+  @ApiResponse(responseCode = "204", content = @Content)
   public ResponseEntity<Void> deleteDashboard(
       @PathVariable UUID dashboardId, @AuthenticationPrincipal Jwt jwt) {
     UUID userId = UUID.fromString(jwt.getSubject());
@@ -65,6 +77,7 @@ public class DashboardController {
 
   @PutMapping("/{dashboardId}/layout")
   @Operation(summary = "Batch update the sizes and positions of all widgets on a dashboard")
+  @ApiResponse(responseCode = "200", content = @Content)
   public ResponseEntity<Void> updateDashboardLayout(
       @PathVariable UUID dashboardId,
       @RequestBody List<WidgetLayoutUpdateDTO> layouts,
@@ -77,6 +90,9 @@ public class DashboardController {
 
   @PostMapping("/{dashboardId}/widgets")
   @Operation(summary = "Add a new widget to a dashboard")
+  @ApiResponse(
+      responseCode = "201",
+      content = @Content(schema = @Schema(implementation = WidgetDTO.class)))
   public ResponseEntity<WidgetDTO> createChartWidget(
       @PathVariable UUID dashboardId,
       @RequestBody WidgetDTO request,
@@ -88,6 +104,7 @@ public class DashboardController {
 
   @PatchMapping("/widgets/{widgetId}/config")
   @Operation(summary = "Update a widget's visual or data configuration")
+  @ApiResponse(responseCode = "200", content = @Content)
   public ResponseEntity<Void> updateWidgetConfig(
       @PathVariable UUID widgetId,
       @RequestBody WidgetConfigUpdateDTO request,
@@ -98,6 +115,7 @@ public class DashboardController {
   }
 
   @PatchMapping("/{dashboardId}/window")
+  @ApiResponse(responseCode = "200", content = @Content)
   public ResponseEntity<Void> updateDashboardWindow(
       @PathVariable UUID dashboardId,
       @RequestBody DashboardWindowUpdateDTO request,
@@ -109,6 +127,7 @@ public class DashboardController {
 
   @DeleteMapping("/widgets/{widgetId}")
   @Operation(summary = "Delete a widget from a dashboard")
+  @ApiResponse(responseCode = "204", content = @Content)
   public ResponseEntity<Void> deleteWidget(
       @PathVariable UUID widgetId, @AuthenticationPrincipal Jwt jwt) {
     UUID userId = UUID.fromString(jwt.getSubject());

@@ -317,7 +317,11 @@ export function WidgetConfigMenu({
                     <Button variant="outline" onClick={onClose} disabled={isSaving}>
                         Cancel
                     </Button>
-                    <Button onClick={handleSave} disabled={isSaving}>
+                    <Button
+                        onClick={handleSave}
+                        disabled={isSaving}
+                        aria-label="save changes button"
+                    >
                         {isSaving ? "Saving..." : "Save Changes"}
                     </Button>
                 </DialogFooter>
