@@ -1,11 +1,38 @@
 import { test, expect, Page } from "@playwright/test";
+import crypto from "crypto";
+
+async function registerAndLoginNewUser(page: Page) {
+    const uniqueId = crypto.randomUUID();
+    const email = `e2e-dash-${uniqueId}@example.com`;
+    const password = "SafePassword123!"; // Keep standard to pass validation rules
+
+    await page.goto("http://localhost:3000/login");
+    await page.getByRole("button", { name: "Get Started" }).click();
+
+    //fill reg form
+    await page.locator('input[name="email"]').fill(email);
+    await page.locator('input[name="password"]').fill(password);
+    await page.locator('input[name="confirmPassword"]').fill(password);
+
+    //register
+    await page.getByRole("button", { name: "Sign up" }).click();
+
+    //auto logs in
+    await expect(
+        page.getByRole("alert").filter({ hasText: "Successful Registration" })
+    ).toBeVisible();
+
+    await expect(page.getByTestId("dashboard")).toBeVisible({ timeout: 15000 });
+
+    return { email, password };
+}
 
 async function createNewDashboard(page: Page) {
     const uniqueDashboardName = `testDash-${Date.now()}`;
     await page.getByRole("button", { name: "Dashboard Selector" }).click();
     await page.getByLabel("createNewDashOption").click();
     await page.getByLabel("createDashInput").fill(uniqueDashboardName);
-    await page.getByRole("button", { name: "Create Dashboard" }).click();
+    await page.getByRole("button", { name: "Create Dashboard" }).click({ force: true });
     return uniqueDashboardName;
 }
 
@@ -13,31 +40,20 @@ async function createNewChartWidget(page: Page) {
     await page.getByLabel("editbtn").click();
     await page.getByRole("button", { name: "Add Chart" }).click();
     await page.getByRole("button", { name: "Save" }).click();
+    await expect(page.getByText("New Chart").first()).toBeVisible();
 }
 
 async function configureChartWidgetName(page: Page) {
-    await page.getByRole("textbox").fill("stuff");
+    const uniqueWidgetName = `testDash-${Date.now()}`;
+    await page.getByRole("textbox").fill(uniqueWidgetName);
     await page.getByLabel("save changes button").click();
-    await expect(page.getByText("stuff")).toBeVisible();
+    await expect(page.getByText(uniqueWidgetName)).toBeVisible();
+    return uniqueWidgetName;
 }
 
 test.describe("dashboard", () => {
-    //login with demo before tests
-    test.beforeEach(async ({ page, request }) => {
-        const loginResponse = await request.post("http://localhost:8083/auth/login", {
-            data: {
-                email: "demo@gmail.com",
-                password: "Demo-Password@2",
-            },
-        });
-
-        expect(loginResponse.ok()).toBeTruthy();
-
-        const storageState = await request.storageState();
-        await page.context().addCookies(storageState.cookies);
-
-        await page.goto("http://localhost:3000/dashboard");
-        await expect(page.getByTestId("dashboard")).toBeVisible();
+    test.beforeEach(async ({ page }) => {
+        await registerAndLoginNewUser(page);
     });
 
     test("Create Dashboard", async ({ page }) => {
@@ -46,9 +62,10 @@ test.describe("dashboard", () => {
     });
 
     test("Select preset time Window", async ({ page }) => {
-        await page.getByLabel("window-selector").click();
+        await createNewDashboard(page);
+        await page.getByLabel("window selector button").click();
         await page.getByLabel("1 hour").click();
-        await expect(page.getByLabel("window-selector")).toContainText("1 hour");
+        await expect(page.getByLabel("window selector")).toContainText("1 hour");
     });
 
     //still need one for custom time window
@@ -59,9 +76,9 @@ test.describe("dashboard", () => {
         //create chart widget
         await page.getByLabel("editbtn").click();
         await page.getByRole("button", { name: "Add Chart" }).click();
-        await expect(page.getByText("New Chart")).toBeVisible;
+        await expect(page.getByText("New Chart")).toBeVisible();
         await page.getByLabel("editbtn").click();
-        await expect(page.getByText("New Chart")).not.toBeVisible;
+        await expect(page.getByText("New Chart")).not.toBeVisible();
     });
 
     test("Create Dash & widget", async ({ page }) => {
@@ -69,7 +86,7 @@ test.describe("dashboard", () => {
         await createNewDashboard(page);
         //create chart widget
         await createNewChartWidget(page);
-        await expect(page.getByText("New Chart")).toBeVisible;
+        await expect(page.getByText("New Chart")).toBeVisible();
     });
 
     test("Configure name Chart Widget", async ({ page }) => {

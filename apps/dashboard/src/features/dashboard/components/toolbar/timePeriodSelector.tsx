@@ -85,7 +85,7 @@ export function TimePeriodSelector({
     };
 
     return (
-        <div id="timePeriodSelector ">
+        <div id="timePeriodSelector">
             <Popover
                 open={open}
                 onOpenChange={(val) => {
@@ -93,11 +93,11 @@ export function TimePeriodSelector({
                     if (!val) setView("presets");
                 }}
             >
-                <PopoverTrigger asChild>
+                <PopoverTrigger asChild aria-label="window selector">
                     <Button
                         variant="outline"
                         className="group flex justify-between "
-                        aria-label="window-selector"
+                        aria-label="window selector button"
                     >
                         {/* Mobile View */}
                         <Filter className="h-4 w-4 block md:hidden" />
