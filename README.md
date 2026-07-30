@@ -38,7 +38,7 @@
 | Demo 2 | Demo 1 | 
 | :---: | :---: |
 | [System Requirements Specification](docs/documentation/demo2/Demo2_SRS.pdf) | [System Requirements Specification](docs/documentation/demo1/Demo1_SRS.pdf)|
-| [System Architecture Specification]() | |
+| [System Architecture Specification](docs/documentation/demo2/Demo2_SAS.pdf) | |
 | [Coding Standards](docs/documentation/demo2/Demo2_CodingStandards.pdf) ||
 | [Testing Policy](docs/documentation/demo2/Demo2_TestingPolicy.pdf) || 
 | [User Manual](docs/documentation/demo2/Demo2_UserManual.pdf) ||
@@ -76,11 +76,16 @@ For development workflows, individual service commands, ports, and troubleshooti
 
 ## About Team BitFlip
 
+Team BitFlip is a cross-functional group of dedicated software engineering students committed to transparency, accountability, and quality-focused delivery. We utilize an Agile delivery framework to ensure continuous alignment with our stakeholders' vision. 
+
 <div align="center">
   <img src="docs/assets/team-photos/TeamPhoto.png" alt="Team BitFlip" width="650"/>
 </div>
 
-Team BitFlip is a cross-functional group of dedicated software engineering students committed to transparency, accountability, and quality-focused delivery. We utilize an Agile delivery framework to ensure continuous alignment with our stakeholders' vision. 
+<div align="center">
+  <img src="docs/assets/team-photos/bitflip.svg" alt="CloudSherpa Logo" width="200"/>
+
+</div>
 
 ### Meet the Team
 
