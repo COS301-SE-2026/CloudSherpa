@@ -16,7 +16,6 @@ import { TimeWindowPreset } from "../types/timewindow";
 import { setDashboardPresetTimeWindow } from "../utils/setDashboardTimeWindow";
 import { persist } from "zustand/middleware";
 import { getPresetRange } from "../components/toolbar/timePeriodSelector";
-import { DateRange } from "react-day-picker";
 
 const tickIntervalMs = 60_000;
 
