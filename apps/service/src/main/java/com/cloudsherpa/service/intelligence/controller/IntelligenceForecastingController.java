@@ -38,6 +38,10 @@ public class IntelligenceForecastingController {
         @ApiResponse(
             responseCode = "400",
             description = "The forecast request is malformed or contains invalid values",
+            content = @Content),
+        @ApiResponse(
+            responseCode = "422",
+            description = "Insufficient historical data available to make forecasting prediction",
             content = @Content)
       })
   @PostMapping("/resource")
