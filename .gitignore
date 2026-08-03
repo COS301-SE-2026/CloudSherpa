@@ -76,3 +76,5 @@ __pycache__
 
 # style dictionairy tokens
 apps/dashboard/app/tokens.css
+
+__pycache__
