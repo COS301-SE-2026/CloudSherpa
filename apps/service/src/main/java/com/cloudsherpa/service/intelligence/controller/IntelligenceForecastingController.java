@@ -42,7 +42,10 @@ public class IntelligenceForecastingController {
         @ApiResponse(
             responseCode = "422",
             description = "Insufficient historical data available to make forecasting prediction",
-            content = @Content)
+            content = @Content),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Resource does not exist or MetricType is not applicable to Resource")
       })
   @PostMapping("/resource")
   public ResponseEntity<ResourceUsageForecastResponseDto> resourceUsageForecast(
