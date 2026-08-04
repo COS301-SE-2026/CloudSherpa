@@ -155,8 +155,9 @@ public class UsageIngestionService {
 
       cloudAccountRepository.save(account);
 
-    } catch (JsonProcessingException e) {
-      e.printStackTrace();
+    } catch (JsonProcessingException jsonProcessingException) {
+      throw new IllegalStateException(
+          "Stored credentials for account " + account.getId().toString() + " are invalid");
     }
   }
 }

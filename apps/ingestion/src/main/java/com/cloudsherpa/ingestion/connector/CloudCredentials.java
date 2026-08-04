@@ -15,20 +15,20 @@ public class CloudCredentials {
   private String projectId;
   private String serviceAccountJson;
 
-  public String getAccessKey() {
+  public String getAccessKeyId() {
     return accessKeyId;
   }
 
-  public void setAccessKey(String accessKey) {
-    this.accessKeyId = accessKey;
+  public void setAccessKeyId(String accessKeyId) {
+    this.accessKeyId = accessKeyId;
   }
 
-  public String getSecretKey() {
+  public String getSecretAccessKey() {
     return secretAccessKey;
   }
 
-  public void setSecretKey(String secretKey) {
-    this.secretAccessKey = secretKey;
+  public void setSecretAccessKey(String secretAccessKey) {
+    this.secretAccessKey = secretAccessKey;
   }
 
   public String getTenantId() {
