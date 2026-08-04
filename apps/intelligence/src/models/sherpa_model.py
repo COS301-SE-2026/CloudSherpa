@@ -1,8 +1,15 @@
+from schemas.forecast_response import ForecastResponse
+from schemas.forecast_request import ForecastRequest
 from abc import ABC, abstractmethod
-from schemas.forecast_request import ForecastSeries
 
 class SherpaModel(ABC):
+
+    __model_id: str
+
     @abstractmethod
-    def predict_series(self, series: ForecastSeries, prediction_length: int) -> list[float]:
+    def forecast(self, context: ForecastRequest) -> ForecastResponse:
         """All models must define how to predict a series"""
         pass
+
+    def get_model_id(self) -> str:
+        return self.__model_id

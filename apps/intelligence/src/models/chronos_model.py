@@ -1,3 +1,6 @@
+from schemas.forecast_response import ChronosForecastResponse
+from schemas.forecast_request import ForecastRequest
+from schemas.forecast_response import ForecastResponse
 from models.sherpa_model import SherpaModel
 from schemas.forecast_request import ForecastSeries
 import torch
@@ -30,7 +33,7 @@ class ChronosModel(SherpaModel, ABC):
         self.pipeline: Chronos2Pipeline = BaseChronosPipeline.from_pretrained("amazon/chronos-2", device_map=device)
         logger.info("Loaded Chronos-2 model")
 
-    def predict_series(self, series: ForecastSeries, prediction_length: int) -> list[float]:
+    def forecast(self, context: ForecastRequest) -> ForecastResponse:
         """
         ChronosModel is an abstract class defining the model loading behaviour for specialized children that implements
         the prediction methods
@@ -40,21 +43,29 @@ class ChronosModel(SherpaModel, ABC):
 class ChronosUnivariate(ChronosModel):
     def __init__(self):
         super().__init__()
+        self.__model_id = "chronos_univariate" # NOSONAR member returned by parent class get_model_id method
 
-    def preprocess(self, series: ForecastSeries) -> pd.DataFrame:
+    def preprocess(self, context: ForecastRequest) -> pd.DataFrame:
         context_df = pd.DataFrame({
-            "item_id": series.resource_id,
-            "target": series.values,
-            "timestamp": series.timestamps
+            "item_id": "forecast_item",
+            "target": context.values,
+            "timestamp": context.timestamps
         })
 
         context_df["timestamp"] = pd.to_datetime(context_df["timestamp"])
 
         return context_df
     
-    def predict_series(self, series: ForecastSeries, prediction_length: int) -> list[float]:
-        context_df: pd.DataFrame = self.preprocess(series)
-        pred_df = self.pipeline.predict_df(context_df, prediction_length=prediction_length, quantile_levels=[0.1, 0.5, 0.9])
+    def forecast(self, context: ForecastRequest) -> ForecastResponse:
+        context_df: pd.DataFrame = self.preprocess(context)
+        pred_df = self.pipeline.predict_df(context_df, prediction_length=context.forecast_horizon, quantile_levels=[0.1, 0.5, 0.9])
 
-        return pred_df["predictions"].tolist()
+        response: ForecastResponse = ChronosForecastResponse(
+            forecast=pred_df["predictions"].tolist(),
+            timestamps=pred_df["timestamp"].tolist(),
+            q1=pred_df["0.1"].tolist(),
+            q3=pred_df["0.9"].tolist()
+        )
+
+        return response
 
