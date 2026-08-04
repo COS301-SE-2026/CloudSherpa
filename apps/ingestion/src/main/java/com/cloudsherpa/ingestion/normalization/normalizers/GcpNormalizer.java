@@ -2,6 +2,7 @@ package com.cloudsherpa.ingestion.normalization.normalizers;
 
 import com.cloudsherpa.ingestion.models.UsageRecordModel;
 import com.cloudsherpa.ingestion.normalization.model.NormalizedMetric;
+import com.cloudsherpa.lib.entities.Resource;
 import com.cloudsherpa.lib.repositories.ResourceRepository;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
@@ -19,9 +20,26 @@ public class GcpNormalizer implements Normalizer {
       return null;
     }
 
+    // Took from awsNormalizer
+    // My understanding: looks if there is already a resource in the database for this usage record
+    UUID resourceTableIdent =
+        resourceRepository
+            .findByAccountIdAndResourceTypeAndResourceIdentifierAndRegion(
+                UUID.fromString(r.getAccountId()),
+                r.getServiceName(),
+                r.getResourceId(),
+                r.getRegion())
+            .map(Resource::getId)
+            .orElse(null);
     String metricId = UUID.randomUUID().toString();
-    String resourceId = null; // will update
+    String resourceId = resourceTableIdent != null ? resourceTableIdent.toString() : null;
+
+    // Source: gcpDataset.csv, accountId is null so I use projectId as specified in UsageRecordModel
     String accountId = r.getAccountId();
+    if (accountId == null || accountId.trim().isEmpty()) {
+      accountId = r.getProjectId();
+    }
+
     String metricType = "usage";
     String metricName = "unknown";
 
@@ -42,7 +60,7 @@ public class GcpNormalizer implements Normalizer {
     }
 
     double metricValue = r.getValue();
-    String unit = r.getUnit();
+    String unit = normalizeGcpUnit(r.getUnit());
     String currency = null;
 
     long periodStart = 0;
@@ -71,5 +89,26 @@ public class GcpNormalizer implements Normalizer {
         .periodStart(periodStart)
         .periodEnd(periodEnd)
         .build();
+  }
+
+  private String normalizeGcpUnit(String gcpUnit) {
+    if (gcpUnit == null) {
+      return "unknown";
+    }
+
+    switch (gcpUnit.trim()) {
+      case "By":
+        return "bytes";
+      case "s":
+        return "seconds";
+      case "Percent":
+        return "percent";
+      case "Count":
+        return "count";
+      case "1":
+        return "count";
+      default:
+        return gcpUnit.toLowerCase();
+    }
   }
 }
