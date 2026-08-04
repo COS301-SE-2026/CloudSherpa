@@ -7,7 +7,6 @@ import com.cloudsherpa.ingestion.connector.InstanceScope;
 import com.cloudsherpa.ingestion.connector.Metric;
 import com.cloudsherpa.ingestion.connector.ServiceScope;
 import com.cloudsherpa.ingestion.models.IngestionRequestEvent;
-import com.cloudsherpa.ingestion.scheduler.dto.AwsCredentialsDto;
 import com.cloudsherpa.ingestion.scheduler.encryption.CredentialEncryptionService;
 import com.cloudsherpa.ingestion.service.TenantSchemaService;
 import com.cloudsherpa.lib.entities.CloudAccount;
@@ -85,6 +84,8 @@ public class UsageIngestionService {
       List<Resource> resources = resourceRepository.findByAccountId(accountId);
 
       List<ServiceScope> serviceScopes = new ArrayList<>();
+      // we create a service scope for each distinct service type within the account
+      // resources (EC2, ECS)
       for (String serviceType :
           resources.stream().map(Resource::getResourceType).distinct().toList()) {
         ServiceScope serviceScope = new ServiceScope();
@@ -93,20 +94,24 @@ public class UsageIngestionService {
         List<OfferedMetric> offeredMetrics =
             offeredMetricRepository.findByProviderAndServiceType(
                 account.getConnection().getProvider(), serviceType);
-        offeredMetrics.forEach(
-            offeredMetric -> {
-              Metric metric = new Metric();
-              metric.setName(offeredMetric.getMetricName());
-              metric.setUnit(offeredMetric.getExpectedUnit());
-              metrics.add(metric);
-            });
+        offeredMetrics
+            .forEach( // add all metrics relevant to that service scope e.g. CPUUtilization,
+                // NetworkIn
+                offeredMetric -> {
+                  Metric metric = new Metric();
+                  metric.setName(offeredMetric.getMetricName());
+                  metric.setUnit(offeredMetric.getExpectedUnit()); // optional, applicable to GCP
+                  metrics.add(metric);
+                });
         serviceScope.setMetrics(metrics);
         List<Resource> serviceTypeResources =
             resources.stream()
                 .filter(resource -> resource.getResourceType().equals(serviceType))
                 .toList();
 
-        List<InstanceScope> instanceScopes = new ArrayList<>();
+        List<InstanceScope> instanceScopes =
+            new ArrayList<>(); // we find distinct instance scopes within service
+        // scopes (InstanceId, ClusterName)
         for (String resourceIdentifierType :
             serviceTypeResources.stream()
                 .map(Resource::getResourceIdentifierType)
@@ -121,7 +126,8 @@ public class UsageIngestionService {
             if (identifierSpecificResource.getStatus() == StatusEnum.disabled) {
               continue; // don't ingest inactive resources
             }
-            Instance instance = new Instance();
+            Instance instance =
+                new Instance(); // add the specific instances of this type to instanceScope
             instance.setIdentifier(identifierSpecificResource.getResourceIdentifier());
             instance.setRegion(identifierSpecificResource.getRegion());
             instances.add(instance);
@@ -136,11 +142,7 @@ public class UsageIngestionService {
       List<AccountScope> accountScopes = new ArrayList<>();
       accountScopes.add(accountScope);
       request.setScopes(accountScopes);
-      AwsCredentialsDto decryptedCredentialsDto =
-          mapper.readValue(decryptedCredential, AwsCredentialsDto.class);
-      CloudCredentials credentials = new CloudCredentials();
-      credentials.setAccessKey(decryptedCredentialsDto.accessKeyId());
-      credentials.setSecretKey(decryptedCredentialsDto.secretAccessKey());
+      CloudCredentials credentials = mapper.readValue(decryptedCredential, CloudCredentials.class);
       request.setCredentials(credentials);
       tenantSchemaService.usePublicSchema();
       client.ingest(request);
