@@ -7,13 +7,15 @@ import { Button } from "@/components/atoms/button";
 import { ChartWidgetConfig } from "@/features/dashboard/types/widgets";
 import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
 import { ChartWidget } from "./chartWidget";
+import { useRouter } from "next/navigation";
 
 interface ChartConfigFormProps {
-    readonly ChartId: string;
+    ChartId: string;
 }
 
-export default function ChartConfigForm({ ChartId }: ChartConfigFormProps) {
-    const [isConfigOpen, setIsConfigOpen] = useState(false);
+export default function ChartConfigForm({ ChartId }: Readonly<ChartConfigFormProps>) {
+    const [isSaving, setIsSaving] = useState(false);
+    const updateWidget = useDashboardStore((state) => state.actions.updateChartWidgetConfig);
     const getWidget = useDashboardStore((state) => state.actions.getWidget);
     const widgetConfig = getWidget(ChartId);
     const resolvedWidgetConfig: ChartWidgetConfig =
@@ -28,36 +30,49 @@ export default function ChartConfigForm({ ChartId }: ChartConfigFormProps) {
                   metricType: null,
               };
     const [config, setConfig] = useState<ChartWidgetConfig>(resolvedWidgetConfig);
+    const router = useRouter();
 
-    const temp = () => {
-        console.log("temp");
+    const handleSave = () => {
+        setIsSaving(true);
+        updateWidget(config);
+        setIsSaving(false);
+        router.push("/dashboard");
     };
+
+    const cancelChartConfig = () => {
+        setIsSaving(false);
+        router.push("/dashboard");
+    };
+
     return (
         <main className="flex flex-col gap-6 p-6 lg:p-8 w-full h-full">
             <div className="flex flex-row gap-6">
                 <h1 className="text-2xl">Chart Configuration</h1>
-                <Button variant={"default"}>Save KPI</Button>
-                <Button variant={"secondary"}>Cancel</Button>
+                <Button variant={"default"} onClick={() => handleSave()} disabled={isSaving}>
+                    Save Chart
+                </Button>
+                <Button
+                    variant={"secondary"}
+                    onClick={() => cancelChartConfig()}
+                    disabled={isSaving}
+                >
+                    Cancel
+                </Button>
             </div>
             <div className="flex flex-row gap-6 h-full">
                 <Card className="w-2/3">
                     <CardContent className="flex flex-col gap-6">
-                        <ChartFormDetails
-                            configuration={{} as ChartWidgetConfig}
-                            setConfiguration={() => setIsConfigOpen(false)}
-                        />
-                        <ChartFormResource
-                            isOpen={true}
-                            onClose={() => setIsConfigOpen(false)}
-                            existingConfig={config}
-                        />
+                        <ChartFormDetails configuration={config} setConfiguration={setConfig} />
+                        <ChartFormResource configuration={config} setConfiguration={setConfig} />
                     </CardContent>
                 </Card>
                 <Card className="w-1/3">
                     <CardHeader>
                         <CardTitle>Widget Preview</CardTitle>
                     </CardHeader>
-                    <CardContent></CardContent>
+                    <CardContent>
+                        <ChartWidget config={config} preview={true} />
+                    </CardContent>
                 </Card>
             </div>
         </main>

@@ -10,8 +10,6 @@ import { useState } from "react";
 import { ChartType, ChartWidgetConfig } from "@/features/dashboard/types/widgets";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-import { Input } from "@/components/atoms/input";
 import { Label } from "@/components/atoms/label";
 import { Button } from "@/components/atoms/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/atoms/popover";
@@ -23,20 +21,8 @@ import {
     CommandItem,
     CommandList,
 } from "@/components/atoms/command";
-import {
-    FieldSet,
-    FieldLegend,
-    FieldDescription,
-    FieldGroup,
-    Field,
-    FieldLabel,
-} from "@/components/atoms/field";
+import { FieldSet, FieldLegend, FieldDescription, FieldGroup } from "@/components/atoms/field";
 import { FormCountCircle } from "@/components/atoms/form-count-circle";
-
-const CHART_TYPE_OPTIONS: { value: ChartType; label: string }[] = [
-    { value: "line_chart", label: "Line Chart" },
-    { value: "gauge_chart", label: "Gauge Chart" },
-];
 
 function getMetricDisplayText(value: MetricType | null, resourceId: string | null) {
     if (value) {
@@ -49,21 +35,16 @@ function getMetricDisplayText(value: MetricType | null, resourceId: string | nul
 }
 
 interface ChartFormResourceProps {
-    isOpen: boolean;
-    onClose: () => void;
-    existingConfig: ChartWidgetConfig;
+    configuration: ChartWidgetConfig;
+    setConfiguration: (config: ChartWidgetConfig) => void;
 }
 
 export default function ChartFormResource({
-    isOpen,
-    onClose,
-    existingConfig,
+    configuration,
+    setConfiguration,
 }: Readonly<ChartFormResourceProps>) {
-    const [configuration, setConfiguration] = useState<ChartWidgetConfig>(existingConfig);
-
     const [resourceOpen, setResourceOpen] = useState(false);
     const [metricOpen, setMetricOpen] = useState(false);
-    const [chartOpen, setChartOpen] = useState(false);
 
     const resourceNamesById = useResourceNameStore(
         (state: ResourceNameStore) => state.resourcesById
@@ -81,21 +62,6 @@ export default function ChartFormResource({
         metricResourceIds.length > 0
             ? metricResourceIds
             : resources.map((resource) => resource.resourceId);
-
-    const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
-    const [prevConfig, setPrevConfig] = useState(existingConfig);
-
-    if (isOpen !== prevIsOpen || existingConfig !== prevConfig) {
-        setPrevIsOpen(isOpen);
-        setPrevConfig(existingConfig);
-
-        if (isOpen) {
-            setConfiguration(existingConfig);
-            setResourceOpen(false);
-            setMetricOpen(false);
-            setChartOpen(false);
-        }
-    }
 
     return (
         <FieldSet>

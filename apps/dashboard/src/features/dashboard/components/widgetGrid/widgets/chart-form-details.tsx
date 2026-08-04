@@ -39,7 +39,7 @@ const CHART_TYPE_OPTIONS: { value: ChartType; label: string }[] = [
 export default function ChartFormDetails({
     configuration,
     setConfiguration,
-}: ChartFormDetailsProps) {
+}: Readonly<ChartFormDetailsProps>) {
     const [chartOpen, setChartOpen] = useState(false);
 
     return (
@@ -60,7 +60,7 @@ export default function ChartFormDetails({
                         onChange={(e) =>
                             setConfiguration({ ...configuration, displayName: e.target.value })
                         }
-                        placeholder="Enter widget title"
+                        placeholder="Widget title"
                     />
                 </div>
                 <div className="flex flex-col gap-2">

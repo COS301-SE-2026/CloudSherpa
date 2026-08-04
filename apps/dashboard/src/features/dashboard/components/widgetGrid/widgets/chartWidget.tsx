@@ -4,7 +4,6 @@ import { LineChart } from "@/features/dashboard/components/widgetGrid/widgets/ch
 import { GaugeChart } from "@/features/dashboard/components/widgetGrid/widgets/charts/GaugeChart";
 import { MetricType } from "@/features/dashboard/types/metric";
 import { Button } from "@/components/atoms/button";
-import { WidgetConfigMenu } from "@/features/dashboard/components/widgetGrid/widgets/widgetConfigMenu";
 import { ChartType, ChartWidgetConfig } from "@/features/dashboard/types/widgets";
 import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
 import { useToolbar } from "@/features/dashboard/components/toolbar/toolbarProvider";
@@ -33,20 +32,21 @@ const CHART_COMPONENTS: Record<ChartType, React.ComponentType<BaseChartProps>> =
 interface WidgetProps {
     config: ChartWidgetConfig;
     preview?: boolean;
+    isEditMode?: boolean;
 }
 
-export function ChartWidget({ config, preview }: Readonly<WidgetProps>) {
+export function ChartWidget({
+    config,
+    preview = false,
+    isEditMode = false,
+}: Readonly<WidgetProps>) {
     const { chartType, displayName, resourceId, metricType, id } = config;
     const ChartComponent = CHART_COMPONENTS[chartType];
-    const [isConfigOpen, setIsConfigOpen] = useState(false);
     const [hasNoData, setHasNoData] = useState(false);
     const router = useRouter();
 
-    const { isEditMode } = useToolbar();
-
     const openConfig = () => {
         if (!isEditMode) {
-            setIsConfigOpen(true);
             router.push(`/edit/metrics/${config.id}`);
         }
     };
@@ -133,11 +133,6 @@ export function ChartWidget({ config, preview }: Readonly<WidgetProps>) {
                     </CardContent>
                 </Card>
             </WidgetMenu>
-            {/* <WidgetConfigMenu
-                isOpen={isConfigOpen}
-                existingConfig={config}
-                onClose={() => setIsConfigOpen(false)}
-            /> */}
         </>
     );
 }
