@@ -33,3 +33,23 @@ docker build -t intelligence-service -f Dockerfile .
 ```sh
 docker run -p 5000:5000 --name intelligence-service-container intelligence-service
 ```
+
+# Design
+## Informal flowchart
+```mermaid
+flowchart TB
+A[Dashboard] <--> |REST|B["Application (service)"]
+C[(sherpa-db)] e2@==>B
+e2@{ animate: true }
+
+B <--> |"REST (Authorization Header API key)"|E
+
+subgraph Intelligence ["Intelligence Service (Deployed seperately from AWS deployment, self hosted for GPU)"]
+
+    E[Model Serving]
+    F[Model Interface]
+    E -->|Inference call| F
+    F --> |Inference return|E
+    F --> |Dispatch|G[Chronos-2]
+end
+```
