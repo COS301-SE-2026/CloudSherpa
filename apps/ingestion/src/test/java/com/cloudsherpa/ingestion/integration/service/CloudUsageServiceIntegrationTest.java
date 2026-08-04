@@ -8,7 +8,10 @@ import com.cloudsherpa.ingestion.connector.CloudConnectorFactory;
 import com.cloudsherpa.ingestion.models.IngestionRequestEvent;
 import com.cloudsherpa.ingestion.models.IngestionResult;
 import com.cloudsherpa.ingestion.models.UsageRecordModel;
+import com.cloudsherpa.ingestion.normalization.model.NormalizedMetric;
 import com.cloudsherpa.ingestion.normalization.normalizers.AwsNormalizer;
+import com.cloudsherpa.ingestion.normalization.normalizers.Normalizer;
+import com.cloudsherpa.ingestion.normalization.normalizers.NormalizerFactory;
 import com.cloudsherpa.ingestion.provider.aws.AwsCloudConnector;
 import com.cloudsherpa.ingestion.provider.scanner.ResourceDiscoveryService;
 import com.cloudsherpa.ingestion.service.CloudUsageService;
@@ -24,20 +27,25 @@ class CloudUsageServiceIntegrationTest {
   private AwsCloudConnector connector;
   private CloudUsageService service;
   private ResourceDiscoveryService discoveryService;
-  private AwsNormalizer normalizer;
+  private NormalizerFactory normalizerFactory;
+  private Normalizer normalizer;
 
   @BeforeEach
   void setUp() {
 
     factory = mock(CloudConnectorFactory.class);
     persistenceService = mock(SherpaDbPersistenceService.class);
+    normalizerFactory = mock(NormalizerFactory.class);
     normalizer = mock(AwsNormalizer.class);
 
     connector = spy(new AwsCloudConnector(discoveryService));
 
     when(factory.getConnector("AWS")).thenReturn(connector);
+    when(normalizerFactory.getNormalizer("AWS")).thenReturn(normalizer);
+    when(normalizer.normalize(any(UsageRecordModel.class)))
+        .thenReturn(mock(NormalizedMetric.class));
 
-    service = new CloudUsageService(factory, persistenceService, normalizer);
+    service = new CloudUsageService(factory, persistenceService, normalizerFactory);
   }
 
   @Test
@@ -59,5 +67,8 @@ class CloudUsageServiceIntegrationTest {
     assertEquals(1, result.getUsage().size());
 
     verify(connector).fetchMockUsage(any(), any());
+    verify(normalizerFactory).getNormalizer("AWS");
+    verify(normalizer).normalize(any(UsageRecordModel.class));
+    verify(persistenceService).recordMetric(any(), any(), any());
   }
 }

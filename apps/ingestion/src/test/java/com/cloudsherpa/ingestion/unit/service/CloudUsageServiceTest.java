@@ -140,7 +140,7 @@ class CloudUsageServiceTest {
     service.ingest(buildRequest(false, false));
 
     verify(connector, never()).fetchUsage(any(), any());
-    verify(normalizerFactory, never()).getNormalizer(any());
+    verify(normalizerFactory).getNormalizer("AWS");
     verify(normalizer, never()).normalize(any());
   }
 
@@ -160,8 +160,8 @@ class CloudUsageServiceTest {
 
     assertTrue(result.getUsage().isEmpty());
 
-    verify(normalizerFactory).getNormalizer("AWS");
-    verify(normalizer).normalize(any(UsageRecordModel.class));
+    verify(normalizerFactory, never()).getNormalizer(any());
+    verify(normalizer, never()).normalize(any());
   }
 
   @Test
@@ -223,8 +223,8 @@ class CloudUsageServiceTest {
     IngestionResult result = service.ingest(request);
 
     assertEquals(2, result.getUsage().size());
-    verify(normalizerFactory, never()).getNormalizer(any());
-    verify(normalizer, never()).normalize(any());
+    verify(normalizerFactory, times(2)).getNormalizer("AWS");
+    verify(normalizer, times(2)).normalize(any(UsageRecordModel.class));
   }
 
   private UsageRecordModel buildUsageRecord() {
