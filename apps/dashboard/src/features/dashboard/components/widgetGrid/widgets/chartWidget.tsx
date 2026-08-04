@@ -11,6 +11,7 @@ import { useToolbar } from "@/features/dashboard/components/toolbar/toolbarProvi
 import { WidgetMenu } from "@/features/dashboard/components/widgetMenu";
 import { WidgetDropdown } from "@/features/dashboard/components/widgetDropdown";
 import { CircleAlert } from "lucide-react";
+import { useRouter } from "next/navigation";
 import {
     Tooltip,
     TooltipContent,
@@ -31,19 +32,22 @@ const CHART_COMPONENTS: Record<ChartType, React.ComponentType<BaseChartProps>> =
 
 interface WidgetProps {
     config: ChartWidgetConfig;
+    preview?: boolean;
 }
 
-export function ChartWidget({ config }: Readonly<WidgetProps>) {
+export function ChartWidget({ config, preview }: Readonly<WidgetProps>) {
     const { chartType, displayName, resourceId, metricType, id } = config;
     const ChartComponent = CHART_COMPONENTS[chartType];
     const [isConfigOpen, setIsConfigOpen] = useState(false);
     const [hasNoData, setHasNoData] = useState(false);
+    const router = useRouter();
 
     const { isEditMode } = useToolbar();
 
     const openConfig = () => {
         if (!isEditMode) {
             setIsConfigOpen(true);
+            router.push(`/edit/metrics/${config.id}`);
         }
     };
 
@@ -114,11 +118,13 @@ export function ChartWidget({ config }: Readonly<WidgetProps>) {
                                     </Tooltip>
                                 </TooltipProvider>
                             )}
-                            <WidgetDropdown
-                                onConfigure={openConfig}
-                                onDelete={() => removeWidget(id, id)}
-                                isEditMode={isEditMode}
-                            />
+                            {preview && (
+                                <WidgetDropdown
+                                    onConfigure={openConfig}
+                                    onDelete={() => removeWidget(id, id)}
+                                    isEditMode={isEditMode}
+                                />
+                            )}
                         </div>
                     </CardHeader>
 
@@ -127,11 +133,11 @@ export function ChartWidget({ config }: Readonly<WidgetProps>) {
                     </CardContent>
                 </Card>
             </WidgetMenu>
-            <WidgetConfigMenu
+            {/* <WidgetConfigMenu
                 isOpen={isConfigOpen}
                 existingConfig={config}
                 onClose={() => setIsConfigOpen(false)}
-            />
+            /> */}
         </>
     );
 }
