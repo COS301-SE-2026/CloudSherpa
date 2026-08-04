@@ -17,10 +17,13 @@ public class NormalizerFactory {
     }
 
     // will create awsNormalizer, gcpNormalizer, azureNormalizer
-    Normalizer normalizer = normalizers.get(provider + "Normalizer");
+    // Spring names the normalizers as the file name with lowercase
+    // This means that if this string is awsNormalizer, then spring does a lookup
+    // in the Map with string "awsNormalizer" and gets the AwsNormalizer object as the normalizer
+    Normalizer normalizer = normalizers.get(provider.toLowerCase() + "Normalizer");
 
     if (normalizer == null) {
-      throw new IllegalArgumentException("No normlaizer found for provider: " + provider);
+      throw new IllegalArgumentException("No normalizer found for provider: " + provider);
     }
 
     return normalizer;
