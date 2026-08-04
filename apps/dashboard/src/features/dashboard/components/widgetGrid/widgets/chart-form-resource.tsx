@@ -1,5 +1,4 @@
 "use client";
-import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
 import {
     ResourceNameStore,
     useResourceNameStore,
@@ -66,7 +65,7 @@ export default function ChartFormResource({
     return (
         <FieldSet>
             <div className="flex flex-row items-center gap-3">
-                <FormCountCircle count={2} />
+                <FormCountCircle count={3} />
                 <FieldLegend className="mb-0">Resource</FieldLegend>
             </div>
             <FieldDescription>Choose the resource for the chart.</FieldDescription>

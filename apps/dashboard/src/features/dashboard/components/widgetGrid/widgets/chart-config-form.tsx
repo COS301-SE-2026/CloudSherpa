@@ -8,6 +8,7 @@ import { ChartWidgetConfig } from "@/features/dashboard/types/widgets";
 import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
 import { ChartWidget } from "./chartWidget";
 import { useRouter } from "next/navigation";
+import ChartFormConnection from "./chart-form-connection";
 
 interface ChartConfigFormProps {
     ChartId: string;
@@ -63,6 +64,7 @@ export default function ChartConfigForm({ ChartId }: Readonly<ChartConfigFormPro
                 <Card className="w-2/3">
                     <CardContent className="flex flex-col gap-6">
                         <ChartFormDetails configuration={config} setConfiguration={setConfig} />
+                        <ChartFormConnection configuration={config} setConfiguration={setConfig} />
                         <ChartFormResource configuration={config} setConfiguration={setConfig} />
                     </CardContent>
                 </Card>

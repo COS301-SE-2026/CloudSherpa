@@ -17,6 +17,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/atoms/tooltip";
+import { WidgetConfigMenu } from "./widgetConfigMenu";
 
 interface BaseChartProps {
     resourceId: string;
@@ -133,6 +134,7 @@ export function ChartWidget({
                     </CardContent>
                 </Card>
             </WidgetMenu>
+            {/* <WidgetConfigMenu isOpen={true} existingConfig={config}/> */}
         </>
     );
 }

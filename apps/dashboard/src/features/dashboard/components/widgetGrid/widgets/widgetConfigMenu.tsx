@@ -34,7 +34,6 @@ import {
 
 interface WidgetConfigMenuProps {
     isOpen: boolean;
-    onClose: () => void;
     existingConfig: ChartWidgetConfig;
 }
 
@@ -54,11 +53,7 @@ function getMetricDisplayText(value: MetricType | null, resourceId: string | nul
     return "Select resource first";
 }
 
-export function WidgetConfigMenu({
-    isOpen,
-    onClose,
-    existingConfig,
-}: Readonly<WidgetConfigMenuProps>) {
+export function WidgetConfigMenu({ isOpen, existingConfig }: Readonly<WidgetConfigMenuProps>) {
     // draft state
     const [configuration, setConfiguration] = useState<ChartWidgetConfig>(existingConfig);
     const [isSaving, setIsSaving] = useState(false);
@@ -106,7 +101,6 @@ export function WidgetConfigMenu({
         setIsSaving(true);
         try {
             updateChartWidget(configuration);
-            onClose();
         } catch (error) {
             console.error("Failed to save configuration", error);
         } finally {
@@ -119,7 +113,7 @@ export function WidgetConfigMenu({
     }
 
     return (
-        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+        <Dialog open={isOpen} onOpenChange={(open) => !open}>
             <DialogContent className="sm:max-w-106.25">
                 <DialogHeader>
                     <DialogTitle>Widget Configuration</DialogTitle>
@@ -314,7 +308,7 @@ export function WidgetConfigMenu({
                 </div>
 
                 <DialogFooter>
-                    <Button variant="outline" onClick={onClose} disabled={isSaving}>
+                    <Button variant="outline" disabled={isSaving}>
                         Cancel
                     </Button>
                     <Button
