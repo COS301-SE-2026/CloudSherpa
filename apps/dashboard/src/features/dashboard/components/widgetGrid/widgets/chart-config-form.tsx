@@ -69,7 +69,6 @@ export default function ChartConfigForm({ ChartId }: Readonly<ChartConfigFormPro
                     <CardContent className="flex flex-col gap-6">
                         <ChartFormDetails configuration={config} setConfiguration={setConfig} />
                         <ChartFormConnection
-                            key={selectedConnectionId || "empty-connection"}
                             configuration={config}
                             setConfiguration={setConfig}
                             selectedProvider={selectedProvider}
