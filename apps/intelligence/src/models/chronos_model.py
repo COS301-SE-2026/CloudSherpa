@@ -2,7 +2,6 @@ from schemas.forecast_response import ChronosForecastResponse
 from schemas.forecast_request import ForecastRequest
 from schemas.forecast_response import ForecastResponse
 from models.sherpa_model import SherpaModel
-from schemas.forecast_request import ForecastSeries
 import torch
 import os
 import pandas as pd
@@ -43,7 +42,7 @@ class ChronosModel(SherpaModel, ABC):
 class ChronosUnivariate(ChronosModel):
     def __init__(self):
         super().__init__()
-        self.__model_id = "chronos_univariate" # NOSONAR member returned by parent class get_model_id method
+        self._model_id = "chronos_univariate" # NOSONAR member returned by parent class get_model_id method
 
     def preprocess(self, context: ForecastRequest) -> pd.DataFrame:
         context_df = pd.DataFrame({
@@ -56,13 +55,15 @@ class ChronosUnivariate(ChronosModel):
 
         return context_df
     
-    def forecast(self, context: ForecastRequest) -> ForecastResponse:
+    def forecast(self, context: ForecastRequest) -> ChronosForecastResponse:
         context_df: pd.DataFrame = self.preprocess(context)
         pred_df = self.pipeline.predict_df(context_df, prediction_length=context.forecast_horizon, quantile_levels=[0.1, 0.5, 0.9])
 
+        timestamps: list[str] = pred_df["timestamp"].dt.strftime("%Y-%m-%dT%H:%M:%S.%f").tolist()
+
         response: ForecastResponse = ChronosForecastResponse(
             forecast=pred_df["predictions"].tolist(),
-            timestamps=pred_df["timestamp"].tolist(),
+            timestamps=timestamps,
             q1=pred_df["0.1"].tolist(),
             q3=pred_df["0.9"].tolist()
         )

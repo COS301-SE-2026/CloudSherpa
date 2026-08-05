@@ -1,7 +1,8 @@
 from models.chronos_model import ChronosUnivariate
 from models.sherpa_model import SherpaModel
 class ModelLoader:
-    __available_models: dict[str, SherpaModel]
+    def __init__(self):
+        self.__available_models: dict[str, SherpaModel] = {}
 
     def load_models(self) -> None:
         chronos_univariate: ChronosUnivariate = ChronosUnivariate()

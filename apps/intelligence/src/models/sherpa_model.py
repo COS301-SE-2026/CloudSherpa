@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 
 class SherpaModel(ABC):
 
-    __model_id: str
+    _model_id: str
 
     @abstractmethod
     def forecast(self, context: ForecastRequest) -> ForecastResponse:
@@ -12,4 +12,4 @@ class SherpaModel(ABC):
         pass
 
     def get_model_id(self) -> str:
-        return self.__model_id
+        return self._model_id
