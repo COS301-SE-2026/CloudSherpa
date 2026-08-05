@@ -1,5 +1,7 @@
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/atoms/card";
 import { Info } from "lucide-react";
+import { Separator } from "@/components/atoms/separator";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/atoms/tooltip";
 
 interface SummaryCardProps {
     title: string;
@@ -19,22 +21,28 @@ export default function SummaryCard({
     return (
         <Card>
             <CardHeader>
-                <CardTitle>
+                <CardTitle className="flex flex-row justify-between">
                     {title}
-                    <Info className="h-4 w-4" />
+                    <Tooltip>
+                        <TooltipTrigger>
+                            <Info className="h-4 w-4" />
+                        </TooltipTrigger>
+                        <TooltipContent>some stuff</TooltipContent>
+                    </Tooltip>
                 </CardTitle>
             </CardHeader>
-            <CardContent>
-                <span>
+            <CardContent className="flex flex-row gap-2 justify-start">
+                <span className="text-3xl">
                     {pastUsage}
                     {unit}
                 </span>
-                <span>
+                <Separator orientation="vertical" />
+                <span className="text-3xl">
                     {predictedUsage}
                     {unit}
                 </span>
             </CardContent>
-            <CardFooter>{description}</CardFooter>
+            <CardFooter className="text-muted-foreground">{description}</CardFooter>
         </Card>
     );
 }

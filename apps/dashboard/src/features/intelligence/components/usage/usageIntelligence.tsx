@@ -2,8 +2,8 @@ import SummaryCard from "@/features/intelligence/components/usage/summaryCard";
 
 export default function UsageIntelligence() {
     return (
-        <div className="h-full w-full">
-            <section className="grid grid-cols-1 lg:grid-cols-3">
+        <div className="h-full w-full p-6">
+            <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <SummaryCard
                     title="Max Usage"
                     unit="%"
