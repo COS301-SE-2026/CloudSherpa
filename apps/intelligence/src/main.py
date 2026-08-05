@@ -1,10 +1,12 @@
-from schemas.forecast_response import ChronosForecastResponse
-from schemas.forecast_response import ForecastResponse
-from models.model_loader import ModelLoader
-from fastapi import FastAPI
-from contextlib import asynccontextmanager
 import gc
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI
+
+from models.model_loader import ModelLoader
 from schemas.forecast_request import ForecastRequest
+from schemas.forecast_response import ChronosForecastResponse
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -13,14 +15,16 @@ async def lifespan(app: FastAPI):
     app.state.models = models
 
     try:
-        yield 
+        yield
     finally:
         app.state.models = None
         del models
 
         gc.collect()
 
-app = FastAPI(lifespan=lifespan)    
+
+app = FastAPI(lifespan=lifespan)
+
 
 @app.post("/forecast-chronos")
 async def root(request: ForecastRequest) -> ChronosForecastResponse:

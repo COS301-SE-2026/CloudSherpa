@@ -79,3 +79,8 @@ apps/dashboard/app/tokens.css
 
 .idea
 __pycache__
+.pytest_cache
+.coverage
+coverage.xml
+.scannerwork
+.ruff_cache
