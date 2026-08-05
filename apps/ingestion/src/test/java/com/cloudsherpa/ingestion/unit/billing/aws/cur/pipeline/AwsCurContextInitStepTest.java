@@ -155,8 +155,8 @@ class AwsCurContextInitStepTest {
     step.execute(context);
 
     // assert
-    assertEquals("test-access-key", context.getCredentials().getAccessKey());
-    assertEquals("test-secret-key", context.getCredentials().getSecretKey());
+    assertEquals("test-access-key", context.getCredentials().getAccessKeyId());
+    assertEquals("test-secret-key", context.getCredentials().getSecretAccessKey());
   }
 
   @Test

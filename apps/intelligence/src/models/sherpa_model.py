@@ -4,6 +4,7 @@ from schemas.forecast_request import ForecastRequest
 from schemas.forecast_response import ForecastResponse
 
 
+
 class SherpaModel(ABC):
     _model_id: str
 

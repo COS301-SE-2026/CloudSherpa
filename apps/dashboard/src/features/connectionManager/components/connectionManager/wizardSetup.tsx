@@ -14,8 +14,8 @@ interface BillingConfig {
 
 interface WizardData {
     credentials: {
-        accessKey: string;
-        secretKey: string;
+        accessKeyId: string;
+        secretAccessKey: string;
         awsRegion: string;
     } | null;
     displayName: string;
@@ -49,8 +49,8 @@ export default function WizardSetup() {
             ...wizardData,
             displayName: data.displayName,
             credentials: {
-                accessKey: data.accessKey,
-                secretKey: data.secretKey,
+                accessKeyId: data.accessKey,
+                secretAccessKey: data.secretKey,
                 awsRegion: data.awsRegion,
             },
         });
@@ -105,8 +105,8 @@ export default function WizardSetup() {
                     displayName={wizardData.displayName}
                     ingestionPeriod={""}
                     credentials={{
-                        accessKeyId: wizardData.credentials!.accessKey,
-                        secretAccessKey: wizardData.credentials!.secretKey,
+                        accessKeyId: wizardData.credentials!.accessKeyId,
+                        secretAccessKey: wizardData.credentials!.secretAccessKey,
                     }}
                     resources={wizardData.resources}
                     billingConfig={wizardData.billingConfig!}

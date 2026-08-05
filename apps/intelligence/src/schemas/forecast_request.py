@@ -4,6 +4,7 @@ from typing import Self
 from pydantic import BaseModel, field_validator, model_validator
 
 
+
 class ForecastRequest(BaseModel):
     forecast_horizon: int
     timestamps: list[str]
