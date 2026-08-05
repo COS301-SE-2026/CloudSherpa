@@ -228,6 +228,42 @@ VALUES
 ('AWS', 'AWS/Redshift', 'ReadIOPS', 'ClusterIdentifier', NULL, 'Read IOPS'),
 ('AWS', 'AWS/Redshift', 'WriteIOPS', 'ClusterIdentifier', NULL, 'Write IOPS')
 
+-- GCP Compute Engine (VM Instances)
+('GCP', 'gce_instance', 'compute.googleapis.com/instance/cpu/utilization', 'instance_id', '10^2.%', 'CPU utilization'),
+('GCP', 'gce_instance', 'compute.googleapis.com/instance/cpu/reserved_cores', 'instance_id', 'Count', 'Reserved CPU cores'),
+('GCP', 'gce_instance', 'compute.googleapis.com/instance/network/received_bytes_count', 'instance_id', 'By', 'Network bytes received'),
+('GCP', 'gce_instance', 'compute.googleapis.com/instance/network/sent_bytes_count', 'instance_id', 'By', 'Network bytes sent'),
+('GCP', 'gce_instance', 'compute.googleapis.com/instance/disk/read_bytes_count', 'instance_id', 'By', 'Disk bytes read'),
+('GCP', 'gce_instance', 'compute.googleapis.com/instance/disk/write_bytes_count', 'instance_id', 'By', 'Disk bytes written'),
+('GCP', 'gce_instance', 'compute.googleapis.com/instance/disk/read_ops_count', 'instance_id', 'Count', 'Disk read operations'),
+('GCP', 'gce_instance', 'compute.googleapis.com/instance/disk/write_ops_count', 'instance_id', 'Count', 'Disk write operations');
+
+-- GKE (Clusters)
+('GCP', 'gke_cluster', 'kubernetes.io/node/cpu/core_usage_time', 'cluster_name', 's', 'CPU usage time'),
+('GCP', 'gke_cluster', 'kubernetes.io/node/memory/used_bytes', 'cluster_name', 'By', 'Memory used'),
+('GCP', 'gke_cluster', 'kubernetes.io/node/network/received_bytes_count', 'cluster_name', 'By', 'Network bytes received'),
+('GCP', 'gke_cluster', 'kubernetes.io/node/network/sent_bytes_count', 'cluster_name', 'By', 'Network bytes sent'),
+('GCP', 'gke_cluster', 'kubernetes.io/pod/restart_count', 'cluster_name', 'Count', 'Pod restart count');
+
+-- Cloud Functions
+('GCP', 'cloud_function', 'cloudfunctions.googleapis.com/function/execution_count', 'function_name', 'Count', 'Function executions'),
+('GCP', 'cloud_function', 'cloudfunctions.googleapis.com/function/execution_times', 'function_name', 'ms', 'Execution time'),
+('GCP', 'cloud_function', 'cloudfunctions.googleapis.com/function/user_memory_bytes', 'function_name', 'By', 'Memory usage'),
+('GCP', 'cloud_function', 'cloudfunctions.googleapis.com/function/active_instances', 'function_name', 'Count', 'Active instances');
+
+-- Cloud Run
+('GCP', 'cloud_run_service', 'run.googleapis.com/request_count', 'service_name', 'Count', 'HTTP requests'),
+('GCP', 'cloud_run_service', 'run.googleapis.com/request_latencies', 'service_name', 'ms', 'Request latency'),
+('GCP', 'cloud_run_service', 'run.googleapis.com/container/cpu/utilizations', 'service_name', '10^2.%', 'CPU utilization'),
+('GCP', 'cloud_run_service', 'run.googleapis.com/container/memory/utilizations', 'service_name', '10^2.%', 'Memory utilization'),
+('GCP', 'cloud_run_service', 'run.googleapis.com/container/instance_count', 'service_name', 'Count', 'Running instances');
+
+-- Cloud Storage
+('GCP', 'gcs_bucket', 'storage.googleapis.com/storage/total_bytes', 'bucket_name', 'By', 'Stored bytes'),
+('GCP', 'gcs_bucket', 'storage.googleapis.com/api/request_count', 'bucket_name', 'Count', 'API requests'),
+('GCP', 'gcs_bucket', 'storage.googleapis.com/network/received_bytes_count', 'bucket_name', 'By', 'Bytes uploaded'),
+('GCP', 'gcs_bucket', 'storage.googleapis.com/network/sent_bytes_count', 'bucket_name', 'By', 'Bytes downloaded');
+
 ON CONFLICT DO NOTHING;
 -- This sits in the public schema so it only has to be written once, but it is 
 -- smart enough to broadcast on a specific tenant's channel dynamically.
