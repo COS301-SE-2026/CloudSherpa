@@ -9,7 +9,7 @@ import {
     generateAwsPermissionsPolicy,
     getCloudResources,
 } from "@/lib/fetch/cloud-resource-api";
-import { BillingForm } from "./billingForm";
+import { BillingForm } from "../billingForm";
 import { Progress } from "@/components/atoms/progress";
 
 export interface BillingConfig {
