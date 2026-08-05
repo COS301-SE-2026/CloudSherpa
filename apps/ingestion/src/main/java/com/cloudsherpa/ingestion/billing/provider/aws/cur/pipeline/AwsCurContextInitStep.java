@@ -2,7 +2,6 @@ package com.cloudsherpa.ingestion.billing.provider.aws.cur.pipeline;
 
 import com.cloudsherpa.ingestion.billing.BillingExportConfigService;
 import com.cloudsherpa.ingestion.connector.CloudCredentials;
-import com.cloudsherpa.ingestion.scheduler.dto.AwsCredentialsDto;
 import com.cloudsherpa.ingestion.scheduler.encryption.CredentialEncryptionService;
 import com.cloudsherpa.lib.entities.BillingExportConfig;
 import com.cloudsherpa.lib.entities.BillingExportExecution;
@@ -85,13 +84,8 @@ public class AwsCurContextInitStep implements AwsCurIngestionPipelineStep {
     String encryptedCredentialValue = credential.getCredentialValue();
     String decryptedCredentialValue = encryptionService.decrypt(encryptedCredentialValue);
     try {
-      AwsCredentialsDto decryptedCredentialsDto =
-          objectMapper.readValue(decryptedCredentialValue, AwsCredentialsDto.class);
-
-      CloudCredentials cloudCredentials = new CloudCredentials();
-      cloudCredentials.setAccessKey(decryptedCredentialsDto.accessKeyId());
-      cloudCredentials.setSecretKey(decryptedCredentialsDto.secretAccessKey());
-
+      CloudCredentials cloudCredentials =
+          objectMapper.readValue(decryptedCredentialValue, CloudCredentials.class);
       context.setCredentials(cloudCredentials);
     } catch (JsonProcessingException jsonProcessingException) {
       throw new IllegalStateException(
