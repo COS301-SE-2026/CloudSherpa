@@ -1,0 +1,50 @@
+name: Intelligence CI
+
+on:
+    pull_request:
+        types:
+          - opened
+          - synchronize
+          - reopened
+        branches:
+            - main
+            - dev
+        paths:
+            - ".github/workflows/intelligence-ci.yml"
+            - apps/intelligence/**
+
+jobs:
+    intelligence-validation:
+        runs-on: ubuntu-latest
+
+        defaults:
+            run:
+                working-directory: apps/intelligence
+
+        steps:
+        - name: Checkout Repo
+          uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # Version 5.1.0
+        
+        
+        - name: Set up Python
+          uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # Version 7.0.0
+          with:
+            python-version: '3.10' 
+            cache: 'pip'
+        
+        - name: Install Dependencies
+          run: python -m pip install -r requirements-ci.txt # NOSONAR: dependencies are top-level locked in the requirements-ci.txt file
+        
+        - name: Lint
+          run: ruff check src/
+
+        - name: Test
+          run: pytest src/
+        
+        - name: Sonar Scan
+          uses: SonarSource/sonarqube-scan-action@713881670b6b3676cda39549040e2d88c70d582e # v8.2.0
+          with:
+            projectBaseDir: apps/intelligence
+          env:
+            SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+            SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}

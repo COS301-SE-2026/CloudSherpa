@@ -1,10 +1,12 @@
-from fastapi import FastAPI
-from contextlib import asynccontextmanager
 import gc
-import torch
-from schemas.forecast_request import ForecastRequest
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI
+
 from models.chronos_model import ChronosUnivariate
 from models.sherpa_model import SherpaModel
+from schemas.forecast_request import ForecastRequest
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -12,16 +14,20 @@ async def lifespan(app: FastAPI):
     app.state.model = model
 
     try:
-        yield 
+        yield
     finally:
         app.state.model = None
         del model
 
         gc.collect()
 
-app = FastAPI(lifespan=lifespan)    
+
+app = FastAPI(lifespan=lifespan)
+
 
 @app.post("/forecast")
 async def root(request: ForecastRequest):
     model = app.state.model
-    return model.predict_series(series=request.series[0], prediction_length=request.prediction_length)
+    return model.predict_series(
+        series=request.series[0], prediction_length=request.prediction_length
+    )
