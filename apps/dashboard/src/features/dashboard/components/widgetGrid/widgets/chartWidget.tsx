@@ -6,7 +6,6 @@ import { MetricType } from "@/features/dashboard/types/metric";
 import { Button } from "@/components/atoms/button";
 import { ChartType, ChartWidgetConfig } from "@/features/dashboard/types/widgets";
 import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
-import { useToolbar } from "@/features/dashboard/components/toolbar/toolbarProvider";
 import { WidgetMenu } from "@/features/dashboard/components/widgetMenu";
 import { WidgetDropdown } from "@/features/dashboard/components/widgetDropdown";
 import { CircleAlert } from "lucide-react";
@@ -17,7 +16,6 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/atoms/tooltip";
-import { WidgetConfigMenu } from "./widgetConfigMenu";
 
 interface BaseChartProps {
     resourceId: string;
@@ -134,7 +132,6 @@ export function ChartWidget({
                     </CardContent>
                 </Card>
             </WidgetMenu>
-            {/* <WidgetConfigMenu isOpen={true} existingConfig={config}/> */}
         </>
     );
 }

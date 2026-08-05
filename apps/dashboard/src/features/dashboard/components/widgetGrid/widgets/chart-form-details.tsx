@@ -12,14 +12,7 @@ import {
     CommandItem,
     CommandList,
 } from "@/components/atoms/command";
-import {
-    FieldSet,
-    FieldLegend,
-    FieldDescription,
-    FieldGroup,
-    Field,
-    FieldLabel,
-} from "@/components/atoms/field";
+import { FieldSet, FieldLegend, FieldDescription, FieldGroup } from "@/components/atoms/field";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ChartWidgetConfig } from "@/features/dashboard/types/widgets";

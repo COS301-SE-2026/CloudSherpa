@@ -1,12 +1,8 @@
 "use client";
-import {
-    ResourceNameStore,
-    useResourceNameStore,
-} from "@/features/dashboard/stores/resource-store";
 import { MetricType, MetricStore } from "@/features/dashboard/types/metric";
 import { useMetricStore } from "@/features/dashboard/stores/metric-store";
-import { useState } from "react";
-import { ChartType, ChartWidgetConfig } from "@/features/dashboard/types/widgets";
+import { useState, useEffect } from "react";
+import { ChartWidgetConfig } from "@/features/dashboard/types/widgets";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/atoms/label";
@@ -22,6 +18,11 @@ import {
 } from "@/components/atoms/command";
 import { FieldSet, FieldLegend, FieldDescription, FieldGroup } from "@/components/atoms/field";
 import { FormCountCircle } from "@/components/atoms/form-count-circle";
+import {
+    getAwsAccountResources,
+    CloudResource,
+    ResourceStatus,
+} from "@/lib/fetch/aws-connection-api";
 
 function getMetricDisplayText(value: MetricType | null, resourceId: string | null) {
     if (value) {
@@ -36,31 +37,35 @@ function getMetricDisplayText(value: MetricType | null, resourceId: string | nul
 interface ChartFormResourceProps {
     configuration: ChartWidgetConfig;
     setConfiguration: (config: ChartWidgetConfig) => void;
+    selectedConnectionId: string | null;
 }
 
 export default function ChartFormResource({
     configuration,
     setConfiguration,
+    selectedConnectionId,
 }: Readonly<ChartFormResourceProps>) {
     const [resourceOpen, setResourceOpen] = useState(false);
     const [metricOpen, setMetricOpen] = useState(false);
 
-    const resourceNamesById = useResourceNameStore(
-        (state: ResourceNameStore) => state.resourcesById
-    );
-    const resources = useResourceNameStore((state: ResourceNameStore) => state.resources);
+    const [activeResources, setActiveResources] = useState<CloudResource[]>([]);
+
+    useEffect(() => {
+        if (selectedConnectionId) {
+            getAwsAccountResources(selectedConnectionId)
+                .then((resources) => {
+                    const activeOnly = resources.filter((r) => r.status === ResourceStatus.ACTIVE);
+                    setActiveResources(activeOnly);
+                })
+                .catch(console.error);
+        }
+    }, [selectedConnectionId]);
 
     const allAvailableMetrics = useMetricStore((state: MetricStore) => state.getMetricList);
 
     const availableMetrics = configuration.resourceId
         ? (allAvailableMetrics()[configuration.resourceId] ?? [])
         : [];
-    const metricsByResource = allAvailableMetrics();
-    const metricResourceIds = Object.keys(metricsByResource);
-    const availableResources =
-        metricResourceIds.length > 0
-            ? metricResourceIds
-            : resources.map((resource) => resource.resourceId);
 
     return (
         <FieldSet>
@@ -82,8 +87,9 @@ export default function ChartFormResource({
                             >
                                 <span className="truncate">
                                     {configuration.resourceId
-                                        ? (resourceNamesById[configuration.resourceId] ??
-                                          configuration.resourceId)
+                                        ? (activeResources.find(
+                                              (r) => r.id === configuration.resourceId
+                                          )?.resourceName ?? configuration.resourceId)
                                         : "Select a resource..."}
                                 </span>
                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -95,10 +101,10 @@ export default function ChartFormResource({
                                 <CommandList>
                                     <CommandEmpty>No resource found</CommandEmpty>
                                     <CommandGroup>
-                                        {availableResources.map((resource) => (
+                                        {activeResources.map((resource) => (
                                             <CommandItem
-                                                key={resource}
-                                                value={resource}
+                                                key={resource.id}
+                                                value={resource.id}
                                                 onSelect={(currentValue) => {
                                                     const nextMetricOptions =
                                                         allAvailableMetrics()[currentValue] ?? [];
@@ -115,12 +121,12 @@ export default function ChartFormResource({
                                                 <Check
                                                     className={cn(
                                                         "mr-2 h-4 w-4",
-                                                        configuration.resourceId === resource
+                                                        configuration.resourceId === resource.id
                                                             ? "opacity-100"
                                                             : "opacity-0"
                                                     )}
                                                 />
-                                                {resourceNamesById[resource] ?? resource}
+                                                {resource.resourceName}
                                             </CommandItem>
                                         ))}
                                     </CommandGroup>

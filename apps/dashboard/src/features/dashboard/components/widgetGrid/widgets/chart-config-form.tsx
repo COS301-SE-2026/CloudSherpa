@@ -33,6 +33,10 @@ export default function ChartConfigForm({ ChartId }: Readonly<ChartConfigFormPro
     const [config, setConfig] = useState<ChartWidgetConfig>(resolvedWidgetConfig);
     const router = useRouter();
 
+    //shared state for filtering
+    const [selectedProvider, setSelectedProvider] = useState<string | null>("AWS");
+    const [selectedConnectionId, setSelectedConnectionId] = useState<string | null>(null);
+
     const handleSave = () => {
         setIsSaving(true);
         updateWidget(config);
@@ -64,8 +68,21 @@ export default function ChartConfigForm({ ChartId }: Readonly<ChartConfigFormPro
                 <Card className="w-2/3">
                     <CardContent className="flex flex-col gap-6">
                         <ChartFormDetails configuration={config} setConfiguration={setConfig} />
-                        <ChartFormConnection configuration={config} setConfiguration={setConfig} />
-                        <ChartFormResource configuration={config} setConfiguration={setConfig} />
+                        <ChartFormConnection
+                            key={selectedConnectionId || "empty-connection"}
+                            configuration={config}
+                            setConfiguration={setConfig}
+                            selectedProvider={selectedProvider}
+                            setSelectedProvider={setSelectedProvider}
+                            selectedConnectionId={selectedConnectionId}
+                            setSelectedConnectionId={setSelectedConnectionId}
+                        />
+                        <ChartFormResource
+                            key={selectedConnectionId || "empty-connection"}
+                            configuration={config}
+                            setConfiguration={setConfig}
+                            selectedConnectionId={selectedConnectionId}
+                        />
                     </CardContent>
                 </Card>
                 <Card className="w-1/3">
