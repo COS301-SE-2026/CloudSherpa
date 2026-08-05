@@ -4,13 +4,17 @@ import {useState} from "react";
 
 interface PropsForBaseWizard{
     eachStep : {
-        forComponents : React.ComponentType<any>;
-        props?: any;
+        forComponents : React.ComponentType<{
+            onNext : (data : Record<string, unknown>) => void;
+            onBack?: () => void;
+            data?: Record<string,unknown>;
+        }>;
+        props?: Record<string,unknown>;
     }[];
 
-    onComplete : (forData : any) => void;
-    initialData?: any;
-    getDataForStep?: (forStep : number, forData : any) => any;
+    onComplete : (forData : Record<string, unknown>) => void;
+    initialData?: Record<string, unknown>;
+    getDataForStep?: (forStep : number, forData : Record<string, unknown>) => Record<string, unknown>;
 }
 
 export function BaseWizard({

@@ -237,7 +237,7 @@ export default function StepThreeAws({
     return (
         <StepThree heading = "Select Instances"
                    description = "Select the instances you want CloudSherpa to monitor"
-                   onSubmit = {handleSubmit} onBack = {onBack} saving = {saving} error = {error}
+                   onSubmit = {handleSubmit} onBack = {onBack} forSaving = {saving} forErrors = {error}
         >
 
             <div className="min-h-50">

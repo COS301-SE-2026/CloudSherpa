@@ -15,7 +15,7 @@ interface DetailsForGcp{
 }
 
 interface StepTwoPropsForGcp{
-    credentials : DetailsForGcp | null;
+    credentials?: DetailsForGcp | null;
     onNext : (forData : {
         servicesSelected : string[];
         resources : DetailsForResource[]}) => void;
@@ -39,7 +39,7 @@ const HARDCODEDPERMISSIONS : Record<string, string[]> = {
 export default function StepTwoGcp({
     onNext, onBack
 } : Readonly<StepTwoPropsForGcp>){
-    const [servicesAvailable, setServicesAvailable] = useState<{id : string; name : string}[]>([]);
+    const [servicesAvailable] = useState<{id : string; name : string}[]>(HARDCODEDSERVICES);
 
     const [selectedServices, setSelectedServices] = useState<string[]>([]);
 
@@ -49,22 +49,22 @@ export default function StepTwoGcp({
 
     const [errors, setErrors] = useState("");
 
-    useEffect(() => {
-        setServicesAvailable(HARDCODEDSERVICES);
-    }, []);
+    // useEffect(() => {
+    //     setServicesAvailable(HARDCODEDSERVICES);
+    // }, []);
 
-    useEffect(() => {
+    const listOfPermissions = React.useMemo(() => {
         if(selectedServices.length === 0){
-            setPermissions([]);
-
-            return;
+            return [];
         }
 
-        const permissionsSelected = selectedServices.flatMap((idForService) => HARDCODEDPERMISSIONS[idForService] || []);
-
-        setPermissions(permissionsSelected);
+        return selectedServices.flatMap((idForService) => HARDCODEDPERMISSIONS[idForService] || []);
 
     }, [selectedServices]);
+
+    React.useEffect(() => {
+        setPermissions(listOfPermissions);
+    }, [listOfPermissions]);
 
     const checkingService = (idForService : string) => {
         setSelectedServices((previous) => previous.includes(idForService) ? previous.filter((id) => id !== idForService) : [...previous, idForService]);
@@ -86,7 +86,7 @@ export default function StepTwoGcp({
 
             onNext({servicesSelected : selectedServices, resources : resourcesDiscovered});
 
-        } catch(error){
+        } catch{
             setErrors("Failed to discover any resources");
         } finally{
             setForLoading(false);

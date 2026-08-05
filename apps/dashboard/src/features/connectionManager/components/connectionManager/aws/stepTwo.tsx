@@ -159,8 +159,8 @@ export default function StepTwoAws({ credentials, onNext, onBack }: Readonly<Pro
                 const resources = await getCloudResources(
                     "aws",
                     {
-                        accessKey: credentials?.accessKey,
-                        secretKey: credentials?.secretKey,
+                        accessKeyId: credentials?.accessKeyId,
+                        secretAccessKey: credentials?.secretAccessKey,
                         awsRegion: credentials?.awsRegion,
                     },
                     [currentService]
