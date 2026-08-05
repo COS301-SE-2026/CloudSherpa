@@ -6,5 +6,5 @@ addopts = "--cov=. --cov-report=xml"
 
 [tool.coverage.run]
 omit = [
-    "test/*",
+    "tests/*",
 ]
