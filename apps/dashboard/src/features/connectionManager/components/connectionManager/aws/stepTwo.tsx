@@ -1,6 +1,5 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Button } from "@/components/atoms/button";
 import {
     CloudCredentials,
     ResourceDetail,
@@ -11,6 +10,7 @@ import {
 } from "@/lib/fetch/cloud-resource-api";
 import { BillingForm } from "../billingForm";
 import { Progress } from "@/components/atoms/progress";
+import {StepTwo} from "@/features/connectionManager/components/connectionManager/wizardSetup/stepTwo";
 
 export interface BillingConfig {
     prefix: string;
@@ -29,7 +29,7 @@ interface PropsForStepTwo {
     onBack: () => void;
 }
 
-export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsForStepTwo>) {
+export default function StepTwoAws({ credentials, onNext, onBack }: Readonly<PropsForStepTwo>) {
     const [availableServices, setAvailableServices] = useState<{ id: string; name: string }[]>([]);
     const [servicesSelected, setServicesSelected] = useState<string[]>([]);
     const [permissions, setPermissions] = useState<AwsPolicy | null>(null);
@@ -200,170 +200,132 @@ export default function StepTwo({ credentials, onNext, onBack }: Readonly<PropsF
     };
 
     return (
-        <div className="min-h-screen bg-background flex items-center justify-center p-8">
-            <div className="w-full max-w-3xl bg-card rounded-lg shadow-none p-8">
-                <div className="pb-6">
-                    <div className="flex items-center gap-2 mb-4">
-                        <div className="w-2 h-2 rounded-full bg-primary" />
+        <StepTwo heading = "Configure Billing & Services"
+                 description = "Configure billing export and select services for resource discovery."
+                 onSubmit = {handleSubmit} onBack = {onBack} forLoading = {loading} forErrors = {error}
+        >
+            <BillingForm
+                bucketName={bucketName}
+                setBucketName={setBucketName}
+                exportName={exportName}
+                setExportName={setExportName}
+                prefix={prefix}
+                setPrefix={setPrefix}
+                bucketRegion={bucketRegion}
+                setBucketRegion={setBucketRegion}
+                handleSaveBillingConfig={handleSaveBillingConfig}
+                savedBillingConfig={savedBillingConfig ?? undefined}
+                optedInToBilling={optedInToBilling}
+                handleOptedInToBillingChange={(checked) => {
+                    setOptedInToBilling(checked);
 
-                        <span className="text-sm font-medium text-muted-foreground/70">
-                            STEP 2 OF 3
-                        </span>
+                    if (!checked) {
+                        setExportName("");
+                        setPrefix("");
+                        setBucketName("");
+                        setBucketRegion("");
+                    }
+                }}
+            />
+
+            <section className="rounded-lg border border-border bg-background p-4">
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+                    <h3 className="text-foreground text-sm font-semibold uppercase tracking-wider opacity-80">
+                        Services for Usage Monitoring & Resource Discovery
+                    </h3>
+
+                    <div className="flex items-center gap-3">
+                        <button
+                            type="button"
+                            onClick={forHandlingAllSelected}
+                            className="text-primary hover:text-accent text-sm transition-colors"
+                        >
+                            {servicesSelected.length === availableServices.length
+                                ? "Deselect All"
+                                : "Select All"}
+                        </button>
                     </div>
-
-                    <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-                        Configure Billing & Services
-                    </h2>
-                    {error && (
-                        <div className="mt-3 rounded-sm bg-destructive/5 p-3 text-destructive text-sm">
-                            {error}
-                        </div>
-                    )}
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-8">
-                    <BillingForm
-                        bucketName={bucketName}
-                        setBucketName={setBucketName}
-                        exportName={exportName}
-                        setExportName={setExportName}
-                        prefix={prefix}
-                        setPrefix={setPrefix}
-                        bucketRegion={bucketRegion}
-                        setBucketRegion={setBucketRegion}
-                        handleSaveBillingConfig={handleSaveBillingConfig}
-                        savedBillingConfig={savedBillingConfig ?? undefined}
-                        optedInToBilling={optedInToBilling}
-                        handleOptedInToBillingChange={(checked) => {
-                            setOptedInToBilling(checked);
+                <div className="mb-4 rounded-md border border-amber-300/60 bg-amber-50 p-3 text-sm text-amber-900">
+                    Billing ingestion is account-wide and not limited by selected services.
+                    Select services to discover resources and monitor usage metrics
+                    alongside billing trends.
+                </div>
 
-                            if (!checked) {
-                                setExportName("");
-                                setPrefix("");
-                                setBucketName("");
-                                setBucketRegion("");
-                            }
-                        }}
-                    />
-
-                    <section className="rounded-lg border border-border bg-background p-4">
-                        <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-                            <h3 className="text-foreground text-sm font-semibold uppercase tracking-wider opacity-80">
-                                Services for Usage Monitoring & Resource Discovery
-                            </h3>
-
-                            <div className="flex items-center gap-3">
-                                <button
-                                    type="button"
-                                    onClick={forHandlingAllSelected}
-                                    className="text-primary hover:text-accent text-sm transition-colors"
-                                >
-                                    {servicesSelected.length === availableServices.length
-                                        ? "Deselect All"
-                                        : "Select All"}
-                                </button>
-                            </div>
-                        </div>
-
-                        <div className="mb-4 rounded-md border border-amber-300/60 bg-amber-50 p-3 text-sm text-amber-900">
-                            Billing ingestion is account-wide and not limited by selected services.
-                            Select services to discover resources and monitor usage metrics
-                            alongside billing trends.
-                        </div>
-
-                        <div className="space-y-3">
-                            {availableServices.map((service) => (
-                                <button
-                                    type="button"
-                                    key={service.id}
-                                    onClick={() => toggleService(service.id)}
-                                    className="flex items-start gap-3 p-4 bg-background rounded-lg border border-border hover:border-primary/40 transition-all cursor-pointer w-full"
-                                >
-                                    <input
-                                        type="checkbox"
-                                        checked={servicesSelected.includes(service.id)}
-                                        onChange={() => toggleService(service.id)}
-                                        className="mt-0.5 w-4 h-4 rounded border-border bg-background text-primary focus:ring-ring focus:ring-2"
-                                    />
-
-                                    <div className="flex-1">
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-foreground font-medium">
-                                                {service.name}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </button>
-                            ))}
-                        </div>
-                    </section>
-
-                    <div className="pt-4">
-                        <h3 className="text-foreground text-sm font-semibold uppercase tracking-wider opacity-60 mb-3">
-                            IAM Permissions for Discovery + Billing Export Access
-                        </h3>
-
-                        <div className="bg-background rounded-lg p-4 border border-border">
-                            <p className="text-foreground text-sm mb-3">
-                                Add this IAM policy to your user. It includes selected-service
-                                discovery permissions and billing export S3 read access.
-                            </p>
-                            <pre className="bg-card p-4 rounded-lg overflow-x-auto text-xs font-mono text-foreground whitespace-pre-wrap">
-                                {displayPermissions
-                                    ? JSON.stringify(displayPermissions, null, 2)
-                                    : "{}"}
-                            </pre>
-
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    navigator.clipboard.writeText(
-                                        displayPermissions
-                                            ? JSON.stringify(displayPermissions, null, 2)
-                                            : "{}"
-                                    );
-                                }}
-                                className="mt-3 text-primary hover:text-accent text-sm transition-colors"
-                            >
-                                Copy to clipboard
-                            </button>
-                        </div>
-                    </div>
-
-                    {loading && (
-                        <div className="space-y-2 w-full pt-4">
-                            <div className="flex justify-between text-sm text-muted-foreground font-medium">
-                                <span>
-                                    {currentScanningService
-                                        ? `Scanning ${currentScanningService.toUpperCase()}...`
-                                        : "Preparing scan..."}
-                                </span>
-                                <span>{Math.round(progress)}%</span>
-                            </div>
-                            <Progress value={progress} className="w-full h-2" />
-                        </div>
-                    )}
-
-                    <div className="flex justify-between pt-4">
-                        <Button
+                <div className="space-y-3">
+                    {availableServices.map((service) => (
+                        <button
                             type="button"
-                            disabled={loading}
-                            onClick={onBack}
-                            className="bg-primary hover:bg-accent hover:text-accent-foreground text-primary-foreground px-6 py-2 rounded-md transition-all duration-200 font-medium"
+                            key={service.id}
+                            onClick={() => toggleService(service.id)}
+                            className="flex items-start gap-3 p-4 bg-background rounded-lg border border-border hover:border-primary/40 transition-all cursor-pointer w-full"
                         >
-                            Back
-                        </Button>
+                            <input
+                                type="checkbox"
+                                checked={servicesSelected.includes(service.id)}
+                                onChange={() => toggleService(service.id)}
+                                className="mt-0.5 w-4 h-4 rounded border-border bg-background text-primary focus:ring-ring focus:ring-2"
+                            />
 
-                        <Button
-                            type="submit"
-                            disabled={loading}
-                            className="bg-primary hover:bg-accent hover:text-accent-foreground text-primary-foreground px-6 py-2 rounded-md transition-all duration-200 font-medium"
-                        >
-                            Next
-                        </Button>
-                    </div>
-                </form>
+                            <div className="flex-1">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-foreground font-medium">
+                                        {service.name}
+                                    </span>
+                                </div>
+                            </div>
+                        </button>
+                    ))}
+                </div>
+            </section>
+
+            <div className="pt-4">
+                <h3 className="text-foreground text-sm font-semibold uppercase tracking-wider opacity-60 mb-3">
+                    IAM Permissions for Discovery + Billing Export Access
+                </h3>
+
+                <div className="bg-background rounded-lg p-4 border border-border">
+                    <p className="text-foreground text-sm mb-3">
+                        Add this IAM policy to your user. It includes selected-service
+                        discovery permissions and billing export S3 read access.
+                    </p>
+                    <pre className="bg-card p-4 rounded-lg overflow-x-auto text-xs font-mono text-foreground whitespace-pre-wrap">
+                        {displayPermissions
+                            ? JSON.stringify(displayPermissions, null, 2)
+                            : "{}"}
+                    </pre>
+
+                    <button
+                        type="button"
+                        onClick={() => {
+                            navigator.clipboard.writeText(
+                                displayPermissions
+                                    ? JSON.stringify(displayPermissions, null, 2)
+                                    : "{}"
+                            );
+                        }}
+                        className="mt-3 text-primary hover:text-accent text-sm transition-colors"
+                    >
+                        Copy to clipboard
+                    </button>
+                </div>
             </div>
-        </div>
+
+            {loading && (
+                <div className="space-y-2 w-full pt-4">
+                    <div className="flex justify-between text-sm text-muted-foreground font-medium">
+                        <span>
+                            {currentScanningService
+                                ? `Scanning ${currentScanningService.toUpperCase()}...`
+                                : "Preparing scan..."}
+                        </span>
+                        <span>{Math.round(progress)}%</span>
+                    </div>
+                    <Progress value={progress} className="w-full h-2" />
+                </div>
+            )}
+
+        </StepTwo>
     );
 }

@@ -1,8 +1,8 @@
 "use client";
 import { useState } from "react";
-import StepOne from "./stepOne";
-import StepTwo from "./stepTwo";
-import StepThree from "./stepThree";
+import StepOneAws from "./stepOne";
+import StepTwoAws from "./stepTwo";
+import StepThreeAws from "./stepThree";
 import { ResourceDetail } from "@/lib/fetch/cloud-resource-api";
 
 interface BillingConfig {
@@ -90,10 +90,10 @@ export default function WizardSetup() {
 
     return (
         <>
-            {step === 1 && <StepOne onNext={handleStepOneNext} />}
+            {step === 1 && <StepOneAws onNext={handleStepOneNext} />}
 
             {step === 2 && (
-                <StepTwo
+                <StepTwoAws
                     credentials={wizardData.credentials}
                     onNext={handleStepTwoNext}
                     onBack={handleBack}
@@ -101,7 +101,7 @@ export default function WizardSetup() {
             )}
 
             {step === 3 && (
-                <StepThree
+                <StepThreeAws
                     displayName={wizardData.displayName}
                     ingestionPeriod={""}
                     credentials={{

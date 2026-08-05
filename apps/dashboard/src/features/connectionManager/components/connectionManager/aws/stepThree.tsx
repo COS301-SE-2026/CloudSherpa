@@ -21,6 +21,7 @@ import { useRouter } from "next/navigation";
 import { Input } from "@/components/atoms/input";
 import { Label } from "@/components/atoms/label";
 import { Slider } from "@/components/atoms/slider";
+import {StepThree} from "@/features/connectionManager/components/connectionManager/wizardSetup/stepThree";
 
 interface PropsForStepThree {
     displayName: string;
@@ -145,7 +146,7 @@ function ResourceCategory({
     );
 }
 
-export default function StepThree({
+export default function StepThreeAws({
     displayName,
     ingestionPeriod,
     credentials,
@@ -234,127 +235,86 @@ export default function StepThree({
     };
 
     return (
-        <div className="min-h-screen bg-background flex items-center justify-center p-8">
-            <div className="w-full max-w-4xl bg-card rounded-lg shadow-none p-8">
-                <div className="pb-6">
-                    <div className="flex items-center gap-2 mb-4">
-                        <div className="w-2 h-2 rounded-full bg-primary" />
+        <StepThree heading = "Select Instances"
+                   description = "Select the instances you want CloudSherpa to monitor"
+                   onSubmit = {handleSubmit} onBack = {onBack} saving = {saving} error = {error}
+        >
 
-                        <span className="text-sm font-medium text-muted-foreground/70">
-                            STEP 3 OF 3
-                        </span>
-                    </div>
+            <div className="min-h-50">
+                <div className="space-y-8">
+                    {Object.entries(groupedResources).map(
+                        ([serviceCategory, categoryResources]) => (
+                            <ResourceCategory
+                                key={serviceCategory}
+                                serviceCategory={serviceCategory}
+                                resources={categoryResources}
+                                selectedResources={selectedResources}
+                                onToggle={handleResourceToggle}
+                            />
+                        )
+                    )}
+                </div>
+            </div>
+            <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                    <Label
+                        htmlFor="ingestionPeriod"
+                        className="text-foreground text-sm font-medium"
+                    >
+                        Ingestion interval (seconds)
+                    </Label>
 
-                    <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-                        Select Instances
-                    </h2>
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <button
+                                    type="button"
+                                    className="
+                                        flex
+                                        items-center
+                                        justify-center
+                                        w-5
+                                        h-5
+                                        rounded-full
+                                        text-xs
+                                        text-muted-foreground
+                                        hover:text-foreground
+                                        border
+                                        border-border
+                                        "
+                                >
+                                    ?
+                                </button>
+                            </TooltipTrigger>
 
-                    <p className="mt-2 text-muted-foreground/70">
-                        Select the instances you want CloudSherpa to monitor.
+                            <TooltipContent>
+                                <p>
+                                    Recommended ingestion interval: {recommendedPeriod}{" "}
+                                    seconds based on {selectedResources.length} selected
+                                    resources. Setting the interval to a lower value could
+                                    incur costs due to CloudWatch API free tier limits. The
+                                    ingestion interval determines the frequency of dashboard
+                                    timeseries updates.
+                                </p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                </div>
+                <div className="flex flex-col gap-2 justify-center items-end ">
+                    {/* the span is meant for a visual indicator of the value of the slider */}
+                    <span>{formatSeconds(period)}</span>
+                    <Slider
+                        value={[Number(period)]}
+                        onValueChange={(vals) => setPeriod(String(vals[0]))}
+                        min={60}
+                        max={400}
+                    />
+
+                    <p className="text-xs text-muted-foreground/70 ">
+                        Recommended: {formatSeconds(recommendedPeriod)}
                     </p>
                 </div>
-
-                <form onSubmit={handleSubmit} className="space-y-8">
-                    <div className="min-h-50">
-                        <div className="space-y-8">
-                            {Object.entries(groupedResources).map(
-                                ([serviceCategory, categoryResources]) => (
-                                    <ResourceCategory
-                                        key={serviceCategory}
-                                        serviceCategory={serviceCategory}
-                                        resources={categoryResources}
-                                        selectedResources={selectedResources}
-                                        onToggle={handleResourceToggle}
-                                    />
-                                )
-                            )}
-                        </div>
-                    </div>
-                    <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                            <Label
-                                htmlFor="ingestionPeriod"
-                                className="text-foreground text-sm font-medium"
-                            >
-                                Ingestion interval (seconds)
-                            </Label>
-
-                            <TooltipProvider>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <button
-                                            type="button"
-                                            className="
-                flex
-                items-center
-                justify-center
-                w-5
-                h-5
-                rounded-full
-                text-xs
-                text-muted-foreground
-                hover:text-foreground
-                border
-                border-border
-                "
-                                        >
-                                            ?
-                                        </button>
-                                    </TooltipTrigger>
-
-                                    <TooltipContent>
-                                        <p>
-                                            Recommended ingestion interval: {recommendedPeriod}{" "}
-                                            seconds based on {selectedResources.length} selected
-                                            resources. Setting the interval to a lower value could
-                                            incur costs due to CloudWatch API free tier limits. The
-                                            ingestion interval determines the frequency of dashboard
-                                            timeseries updates.
-                                        </p>
-                                    </TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
-                        </div>
-                        <div className="flex flex-col gap-2 justify-center items-end ">
-                            {/* the span is meant for a visual indicator of the value of the slider */}
-                            <span>{formatSeconds(period)}</span>
-                            <Slider
-                                value={[Number(period)]}
-                                onValueChange={(vals) => setPeriod(String(vals[0]))}
-                                min={60}
-                                max={400}
-                            />
-
-                            <p className="text-xs text-muted-foreground/70 ">
-                                Recommended: {formatSeconds(recommendedPeriod)}
-                            </p>
-                        </div>
-                    </div>
-                    {error && (
-                        <div className="rounded-md border border-red-500 bg-red-50 p-3 text-sm text-red-700">
-                            {error}
-                        </div>
-                    )}
-                    <div className="flex justify-between pt-6">
-                        <Button
-                            type="button"
-                            disabled={saving}
-                            onClick={onBack}
-                            className="bg-primary hover:bg-accent hover:text-accent-foreground text-primary-foreground px-6 py-2 rounded-md transition-all duration-200 font-medium"
-                        >
-                            Back
-                        </Button>
-
-                        <Button
-                            type="submit"
-                            disabled={saving}
-                            className="bg-primary hover:bg-accent hover:text-accent-foreground text-primary-foreground px-8 py-2 rounded-md transition-all duration-200 font-medium"
-                        >
-                            {saving ? "Saving..." : "Finish"}
-                        </Button>
-                    </div>
-                </form>
             </div>
-        </div>
+        </StepThree>
     );
 }
