@@ -1,5 +1,3 @@
-from models.fake_model import FakeModel
-
 from models.chronos_model import ChronosUnivariate
 from models.sherpa_model import SherpaModel
 
@@ -15,9 +13,6 @@ class ModelLoader:
             self.__available_models[chronos_univariate.get_model_id()] = (
                 chronos_univariate
             )
-        else:
-            fake_model: SherpaModel = FakeModel
-            self.__available_models[fake_model.get_model_id()] = fake_model
 
     def get_model(self, model_id: str) -> SherpaModel:
         return self.__available_models[model_id]
