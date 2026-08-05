@@ -73,7 +73,8 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
 
     if (credentials != null) {
       AwsBasicCredentials awsCredentials =
-          AwsBasicCredentials.create(credentials.getAccessKey(), credentials.getSecretKey());
+          AwsBasicCredentials.create(
+              credentials.getAccessKeyId(), credentials.getSecretAccessKey());
       client =
           CloudWatchClient.builder()
               .credentialsProvider(StaticCredentialsProvider.create(awsCredentials))
