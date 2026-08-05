@@ -26,7 +26,7 @@ export function BaseWizard({
 
     const [forLoading, setForLoading] = useState(false);
 
-    const handlingNext = async (forData : any) => {
+    const handlingNext = async (forData : Record<string, unknown>) => {
         if(forLoading){
             return;
         }

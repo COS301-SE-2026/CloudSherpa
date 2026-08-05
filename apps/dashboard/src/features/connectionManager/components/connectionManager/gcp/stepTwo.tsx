@@ -20,7 +20,7 @@ interface StepTwoPropsForGcp{
         servicesSelected : string[];
         resources : DetailsForResource[]}) => void;
     
-    onBack : () => void;
+    onBack?: () => void;
 }
 
 const HARDCODEDSERVICES = [
@@ -43,17 +43,11 @@ export default function StepTwoGcp({
 
     const [selectedServices, setSelectedServices] = useState<string[]>([]);
 
-    const [permissions, setPermissions] = useState<string[]>([]);
-
     const [forLoading, setForLoading] = useState(false);
 
     const [errors, setErrors] = useState("");
 
-    // useEffect(() => {
-    //     setServicesAvailable(HARDCODEDSERVICES);
-    // }, []);
-
-    const listOfPermissions = React.useMemo(() => {
+    const permissions = React.useMemo(() => {
         if(selectedServices.length === 0){
             return [];
         }
@@ -61,10 +55,6 @@ export default function StepTwoGcp({
         return selectedServices.flatMap((idForService) => HARDCODEDPERMISSIONS[idForService] || []);
 
     }, [selectedServices]);
-
-    React.useEffect(() => {
-        setPermissions(listOfPermissions);
-    }, [listOfPermissions]);
 
     const checkingService = (idForService : string) => {
         setSelectedServices((previous) => previous.includes(idForService) ? previous.filter((id) => id !== idForService) : [...previous, idForService]);
@@ -105,7 +95,7 @@ export default function StepTwoGcp({
     return(
         <StepTwo heading = "Select service"
                  description = "Choose which GCP service you want to monitor."
-                 onSubmit = {handlingSubmit} onBack = {onBack} forLoading = {forLoading} forErrors = {errors}
+                 onSubmit = {handlingSubmit} onBack = {onBack || (() => {})} forLoading = {forLoading} forErrors = {errors}
         >
             <section>
 

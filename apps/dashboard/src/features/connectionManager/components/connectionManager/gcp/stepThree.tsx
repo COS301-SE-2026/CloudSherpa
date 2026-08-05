@@ -11,10 +11,9 @@ interface DetailsForResource{
 }
 
 interface StepThreePropsForGcp{
-    name : string;
     resources?: DetailsForResource[];
-    onComplete : () => void;
-    onBack : () => void;
+    onNext : (data : Record<string, unknown>) => void;
+    onBack?: () => void;
 }
 
 function GcpResources({
@@ -38,7 +37,7 @@ function GcpResources({
 }
 
 export default function StepThreeGcp({
-    resources = [], onComplete, onBack,
+    resources = [], onNext, onBack,
 } : Readonly<StepThreePropsForGcp>){
     const [resourcesSelected, setResourcesSelected] = useState<string[]>([]);
 
@@ -80,7 +79,7 @@ export default function StepThreeGcp({
         setErrors(null);
 
         try{
-            onComplete();
+            onNext({});
         } catch(forError){
             setErrors("Unable to complete GCP connection setup");
         } finally{
@@ -91,7 +90,7 @@ export default function StepThreeGcp({
     return(
         <StepThree heading = "Select instances"
                    description = "Select the instance you want CloudSherpa to monitor"
-                   onSubmit = {handlingSubmit} onBack = {onBack} forSaving = {forSaving} forErrors = {errors}
+                   onSubmit = {handlingSubmit} onBack = {onBack || (() => {})} forSaving = {forSaving} forErrors = {errors}
         >
             <div className = "flex flex-wrap items-center justify-between gap-2 mb-4">
                 <h3 className = "text-foreground text-sm font-semibold uppercase tracking-wider opacity-80"> Available resources </h3>
