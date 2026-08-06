@@ -3,21 +3,22 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from models.chronos_model import ChronosUnivariate
-from models.sherpa_model import SherpaModel
+from models.model_loader import ModelLoader
 from schemas.forecast_request import ForecastRequest
+from schemas.forecast_response import ChronosForecastResponse
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    model: SherpaModel = ChronosUnivariate()
-    app.state.model = model
+    models: ModelLoader = ModelLoader()
+    models.load_models()
+    app.state.models = models
 
     try:
         yield
     finally:
-        app.state.model = None
-        del model
+        app.state.models = None
+        del models
 
         gc.collect()
 
@@ -25,9 +26,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 
-@app.post("/forecast")
-async def root(request: ForecastRequest):
-    model = app.state.model
-    return model.predict_series(
-        series=request.series[0], prediction_length=request.prediction_length
-    )
+@app.post("/forecast-chronos")
+async def root(request: ForecastRequest) -> ChronosForecastResponse:
+    model = app.state.models.get_model("chronos_univariate")
+    return model.forecast(request)

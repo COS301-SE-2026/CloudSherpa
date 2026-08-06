@@ -53,3 +53,67 @@ subgraph Intelligence ["Intelligence Service (Deployed seperately from AWS deplo
     F --> |Dispatch|G[Chronos-2]
 end
 ```
+
+## UML Class Diagram of Model Serving Hierarchy
+```mermaid
+classDiagram
+    direction TD
+
+     note for ForecastRequest "forecast_horizon is number of time series steps in future to predict_series.
+        frequency is in minutes"
+
+    
+    
+    class ForecastResponse {
+        forecast: list[float]
+        timestamps: list[str]
+    }
+
+    class ChronosForecastResponse {
+        q1: list[float]
+        q3: list[float]
+    }
+
+    class ForecastRequest {
+        forecast_horizon: int
+        timestamps: list[str]
+        values: list[float]
+        %% frequency shall be in minutes
+        frequency: int
+        model: str
+    }
+
+    class SherpaModel {
+        <<abstract>>
+        # model_id: str
+        + forecast(context: ForecastRequest) ForecastResponse*
+        + get_model_id() str
+    }
+
+    class ChronosModel {
+        <<abstract>>
+        - pipeline: Chronos2Pipeline
+        + forecast(context: ForecastRequest)*
+    }
+
+    class OtherModel {
+        + forecast(context: ForecastRequest) ForecastResponse
+    }
+
+    class ChronosUnivariate {
+        - preprocess(series) pd.DataFrame
+        + forecast(context: ForecastRequest)
+    }
+
+    class ModelLoader {
+        - available_models: dict~str, SherpaModel~
+        + get_model(model_id: str) SherpaModel
+        + load_models() None
+    }
+    SherpaModel --* ModelLoader
+    SherpaModel --> ForecastRequest
+    SherpaModel <|-- OtherModel
+    SherpaModel <|-- ChronosModel
+    ChronosModel <|-- ChronosUnivariate
+    ForecastResponse <|-- ChronosForecastResponse
+```

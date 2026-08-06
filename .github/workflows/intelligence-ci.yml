@@ -29,7 +29,7 @@ jobs:
         - name: Set up Python
           uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # Version 7.0.0
           with:
-            python-version: '3.10' 
+            python-version: '3.11' 
             cache: 'pip'
         
         - name: Install Dependencies
@@ -39,7 +39,7 @@ jobs:
           run: ruff check src/
 
         - name: Test
-          run: pytest src/
+          run: PYTHONPATH=src python -m pytest src/
         
         - name: Sonar Scan
           uses: SonarSource/sonarqube-scan-action@713881670b6b3676cda39549040e2d88c70d582e # v8.2.0
