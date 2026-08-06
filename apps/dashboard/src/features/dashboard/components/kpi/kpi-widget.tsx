@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { WidgetDropdown } from "@/features/dashboard/components/widgetDropdown";
 import { WidgetMenu } from "@/features/dashboard/components/widgetMenu";
 import { Button } from "@/components/atoms/button";
+import { TrendLabel } from "./trendLabel";
 
 interface WidgetProps {
     config: KpiWidgetConfig;
@@ -69,7 +70,13 @@ export function KPIWidget({ config, preview = false, isEditMode = false }: Reado
                 {loadingKpiValue ? (
                     <Spinner />
                 ) : (
-                    <h1 className="text-xl">${kpiPreview?.value.toFixed(5)}</h1>
+                    <>
+                        <h1 className="text-xl">${kpiPreview?.value.toFixed(5)}</h1>
+                        <TrendLabel
+                            current={kpiPreview?.value ?? 0}
+                            previous={kpiPreview?.previousValue ?? null}
+                        />
+                    </>
                 )}
                 <p>Across {config.chargeIds.length} Resources</p>
                 <div className="flex flex-row justify-between text-sm text-muted-foreground">
