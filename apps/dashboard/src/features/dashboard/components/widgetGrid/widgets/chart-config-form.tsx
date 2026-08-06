@@ -1,7 +1,7 @@
 "use client";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/atoms/card";
 import ChartFormResource from "./chart-form-resource";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ChartFormDetails from "./chart-form-details";
 import { Button } from "@/components/atoms/button";
 import { ChartWidgetConfig } from "@/features/dashboard/types/widgets";
@@ -23,7 +23,7 @@ export default function ChartConfigForm({ ChartId }: Readonly<ChartConfigFormPro
         widgetConfig?.widgetType === "CHART"
             ? widgetConfig
             : {
-                  id: "123",
+                  id: ChartId,
                   displayName: "Default",
                   widgetType: "CHART",
                   chartType: "line_chart",
@@ -37,10 +37,16 @@ export default function ChartConfigForm({ ChartId }: Readonly<ChartConfigFormPro
     const [selectedProvider, setSelectedProvider] = useState<string | null>("AWS");
     const [selectedConnectionId, setSelectedConnectionId] = useState<string | null>(null);
 
-    const handleSave = () => {
+    const handleSave = async () => {
+        console.log(config);
         setIsSaving(true);
-        updateWidget(config);
-        setIsSaving(false);
+        try {
+            await updateWidget(config);
+        } catch (error) {
+            console.error("Failed to save configuration", error);
+        } finally {
+            setIsSaving(false);
+        }
         router.push("/dashboard");
     };
 
