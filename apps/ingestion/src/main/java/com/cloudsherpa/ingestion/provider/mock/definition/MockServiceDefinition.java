@@ -37,11 +37,7 @@ public final class MockServiceDefinition {
     this.burstChance = burstChance;
   }
 
-  /**
-   * Provider-specific service name.
-   *
-   * <p>Examples: AWS/EC2 AWS/RDS compute.googleapis.com/instance
-   */
+  /** Provider-specific service name. Examples: AWS/EC2 AWS/RDS compute.googleapis.com/instance */
   public String serviceName() {
     return serviceName;
   }

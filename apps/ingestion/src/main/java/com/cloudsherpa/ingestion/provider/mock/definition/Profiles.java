@@ -1,11 +1,8 @@
-package com.cloudsherpa.ingestion.provider.mock.builder;
-
-import com.cloudsherpa.ingestion.provider.mock.definition.SimulationProfile;
+package com.cloudsherpa.ingestion.provider.mock.definition;
 
 /**
- * Common simulation profiles shared between cloud providers.
- *
- * <p>These are intentionally provider-agnostic. AWS, GCP and Azure can all reuse them.
+ * Common simulation profiles shared between cloud providers. These are provider-agnostic. AWS, GCP
+ * and Azure can all reuse them.
  */
 public final class Profiles {
 
