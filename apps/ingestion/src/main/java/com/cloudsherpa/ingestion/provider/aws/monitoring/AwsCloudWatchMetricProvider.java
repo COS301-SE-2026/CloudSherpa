@@ -145,7 +145,8 @@ public class AwsCloudWatchMetricProvider implements CloudWatchMetricProvider {
 
     AwsBasicCredentials credentials =
         AwsBasicCredentials.create(
-            request.getCredentials().getAccessKey(), request.getCredentials().getSecretKey());
+            request.getCredentials().getAccessKeyId(),
+            request.getCredentials().getSecretAccessKey());
 
     return CloudWatchClient.builder()
         .credentialsProvider(StaticCredentialsProvider.create(credentials))

@@ -7,4 +7,5 @@ public record BillingKpiResponse(
     String currency,
     int selectedChargeCount,
     String timeLabel,
-    String updatedAt) {}
+    String updatedAt,
+    BigDecimal previousValue) {}

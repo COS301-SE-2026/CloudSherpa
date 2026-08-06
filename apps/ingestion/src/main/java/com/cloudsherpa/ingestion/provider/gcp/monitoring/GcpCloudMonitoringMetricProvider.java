@@ -140,7 +140,6 @@ public class GcpCloudMonitoringMetricProvider implements CloudMonitoringMetricPr
     try {
       client = buildClient(request.getCredentials());
     } catch (IOException e) {
-      e.printStackTrace();
       throw new IllegalArgumentException(
           "Invalid account credentials provided for GCP usage metric ingestion");
     }
