@@ -6,7 +6,7 @@ type TrendProps = {
     previous?: number | null;
 };
 
-export function TrendLabel(props: TrendProps) {
+export function TrendLabel(props: Readonly<TrendProps>) {
     const current = props.current;
     const previous = props.previous;
 
