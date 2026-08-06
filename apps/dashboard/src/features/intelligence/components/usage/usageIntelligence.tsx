@@ -1,8 +1,12 @@
+"use client";
 import SummaryCard from "@/features/intelligence/components/usage/summaryCard";
+import { useUsageIntelligenceStore } from "@/features/intelligence/stores/useUsageIntelligenceStore";
+import UsageToolbar from "@/features/intelligence/components/usage/usageToolbar";
 
 export default function UsageIntelligence() {
     return (
         <div className="h-full w-full p-6">
+            <UsageToolbar />
             <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <SummaryCard
                     title="Max Usage"
