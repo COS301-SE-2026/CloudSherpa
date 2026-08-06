@@ -1,4 +1,6 @@
 import { create } from "zustand";
+import { MetricType } from "@/features/dashboard/types/metric";
+
 import {
     getAwsAccountConnections,
     getAwsAccountResources,
@@ -10,7 +12,7 @@ interface UsageIntelligenceStore {
     provider: string | null;
     accountId: string | null;
     resourceId: string | null;
-    metricType: string | null;
+    metricType: MetricType | null;
     accountDisplayName: string | null;
     resourceDisplayName: string | null;
 
@@ -24,7 +26,7 @@ interface UsageIntelligenceStore {
     setProvider: (provider: string) => void;
     setAccount: (accountId: string, displayName: string) => void;
     setResource: (resourceId: string, displayName: string) => void;
-    setMetricType: (metricType: string) => void;
+    setMetricType: (metricType: MetricType) => void;
     setTimeWindows: (past: number, forecast: number) => void;
     fetchAccounts: (provider: string) => Promise<void>;
     fetchResources: (accountId: string) => Promise<void>;

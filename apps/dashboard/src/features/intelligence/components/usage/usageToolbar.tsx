@@ -1,8 +1,8 @@
 "use client";
 import Dropdown from "@/components/molecules/dropdown";
 import { useUsageIntelligenceStore } from "@/features/intelligence/stores/useUsageIntelligenceStore";
-import { getAwsAccountConnections, CloudAccount } from "@/lib/fetch/aws-connection-api";
-import { useState, useEffect } from "react";
+import { MetricType } from "@/features/dashboard/types/metric";
+import { useMetricStore } from "@/features/dashboard/stores/metric-store";
 
 //mock
 const PROVIDERS = ["AWS", "GCP", "Azure"];
@@ -29,6 +29,8 @@ export default function UsageToolbar() {
         setAccount,
         resourceId,
         setResource,
+        metricType,
+        setMetricType,
         accounts,
         resources,
         isFetching,
@@ -36,6 +38,10 @@ export default function UsageToolbar() {
         forecastTimeWindowDays,
         setTimeWindows,
     } = useUsageIntelligenceStore();
+
+    const getMetricList = useMetricStore((state) => state.getMetricList);
+    const metricsByResource = getMetricList();
+    const availableMetrics = resourceId ? (metricsByResource[resourceId] ?? []) : [];
 
     return (
         <header className=" h-16 flex flex-row items-center justify-between ">
@@ -46,7 +52,7 @@ export default function UsageToolbar() {
                     onSelect={(val) => setProvider(val)}
                     placeholder="Select Provider..."
                     disableSearch={true}
-                    widthVariant="small"
+                    widthVariant="medium"
                 />
                 <Dropdown
                     options={accounts.map((acc) => ({
@@ -83,6 +89,17 @@ export default function UsageToolbar() {
                     }
                     disabled={!accountId || isFetching}
                     widthVariant="large"
+                />
+                <Dropdown
+                    options={availableMetrics.map((metric) => ({
+                        value: metric,
+                        label: metric.toUpperCase(),
+                    }))}
+                    value={metricType}
+                    onSelect={(val) => setMetricType(val as MetricType)}
+                    placeholder={"Select Metric..."}
+                    disabled={!resourceId || isFetching}
+                    widthVariant="medium"
                 />
             </div>
             <div className="flex flex-row gap-2">
