@@ -16,6 +16,7 @@ export type KpiPreviewResponseDto = {
     selectedChargeCount: number;
     timeLabel: string;
     updatedAt: string;
+    previousValue: number | null;
 };
 
 export type KpiCharge = {
