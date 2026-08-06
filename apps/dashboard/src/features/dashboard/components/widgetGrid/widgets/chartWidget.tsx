@@ -95,7 +95,9 @@ export function ChartWidget({
                 isEditMode={isEditMode}
                 preview={false}
             >
-                <Card className="flex flex-col h-full w-full overflow-hidden">
+                <Card
+                    className={`flex flex-col w-full overflow-hidden ${preview ? "h-90" : "h-full"}`}
+                >
                     <CardHeader className="flex flex-row items-center justify-between ">
                         <CardTitle>{displayName}</CardTitle>
                         <div className="flex items-center gap-2">
