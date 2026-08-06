@@ -1,6 +1,6 @@
 "use client";
 
-import React, {useState, useEffect} from "react";
+import React, {useState} from "react";
 import {StepTwo} from "@/features/connectionManager/components/connectionManager/wizardSetup/stepTwo";
 import {Button} from "@/components/atoms/button";
 

@@ -33,7 +33,7 @@ export function BaseWizard({
 
         setForLoading(true);
 
-        const processingData = getDataForStep ? await getDataForStep(step, forData) : forData;
+        const processingData = getDataForStep ? getDataForStep(step, forData) : forData;
         const newData = {...dataForWizard, ...processingData};
 
         setDataForWizard(newData);

@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import { Button } from "@/components/atoms/button";
 import { Checkbox } from "@/components/atoms/checkbox";
 import { Badge } from "@/components/atoms/badge";
 import {
@@ -18,7 +17,6 @@ import {
     createAwsConnection,
 } from "@/lib/fetch/aws-connection-api";
 import { useRouter } from "next/navigation";
-import { Input } from "@/components/atoms/input";
 import { Label } from "@/components/atoms/label";
 import { Slider } from "@/components/atoms/slider";
 import {StepThree} from "@/features/connectionManager/components/connectionManager/wizardSetup/stepThree";
@@ -219,16 +217,21 @@ export default function StepThreeAws({
 
     const formatSeconds = (totalSeconds: string | number) => {
         const secs = Number(totalSeconds);
-        if (isNaN(secs) || secs <= 0) return "0 seconds";
+        if (Number.isNaN(secs) || secs <= 0) return "0 seconds";
 
         const minutes = Math.floor(secs / 60);
         const remainingSeconds = secs % 60;
+        let minText = "";
+        if(minutes>0){
+            const labelEnding = minutes === 1 ? "" : "s";
+            minText = `${minutes} minute${labelEnding}`;
+        }
 
-        const minText = minutes > 0 ? `${minutes} minute${minutes === 1 ? "" : "s"}` : "";
-        const secText =
-            remainingSeconds > 0
-                ? `${remainingSeconds} second${remainingSeconds === 1 ? "" : "s"}`
-                : "";
+        let secText = "";
+        if(remainingSeconds>0){
+            const labelEnding = remainingSeconds === 1 ? "" : "s";
+            secText = `${remainingSeconds} second${labelEnding}`;
+        }
 
         if (minText && secText) return `${minText} ${secText}`;
         return minText || secText;
