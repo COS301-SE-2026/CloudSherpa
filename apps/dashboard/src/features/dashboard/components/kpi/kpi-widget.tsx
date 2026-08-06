@@ -70,13 +70,13 @@ export function KPIWidget({ config, preview = false, isEditMode = false }: Reado
                 {loadingKpiValue ? (
                     <Spinner />
                 ) : (
-                    <>
+                    <div className="flex items-baseline gap-3">
                         <h1 className="text-xl">${kpiPreview?.value.toFixed(5)}</h1>
                         <TrendLabel
                             current={kpiPreview?.value ?? 0}
                             previous={kpiPreview?.previousValue ?? null}
                         />
-                    </>
+                    </div>
                 )}
                 <p>Across {config.chargeIds.length} Resources</p>
                 <div className="flex flex-row justify-between text-sm text-muted-foreground">

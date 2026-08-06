@@ -28,7 +28,7 @@ export function TrendLabel(props: TrendProps) {
 
     const formattedPercentage = `${Math.abs(percentageChange).toFixed(2)}%`;
     const sign = isGoingUp ? "+" : "";
-    const formattedDifference = `${sign}${difference.toFixed(2)}`;
+    const formattedDifference = `${sign}${difference.toFixed(6)}`;
 
     let textColor = "text-gray-500";
     let icon = null;
