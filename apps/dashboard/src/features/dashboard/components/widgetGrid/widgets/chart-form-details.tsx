@@ -2,8 +2,7 @@
 import { Input } from "@/components/atoms/input";
 import { Label } from "@/components/atoms/label";
 import { FieldSet, FieldLegend, FieldDescription, FieldGroup } from "@/components/atoms/field";
-import { ChartWidgetConfig } from "@/features/dashboard/types/widgets";
-import { ChartType } from "@/features/dashboard/types/widgets";
+import { ChartWidgetConfig, ChartType } from "@/features/dashboard/types/widgets";
 import { FormCountCircle } from "@/components/atoms/form-count-circle";
 import Dropdown from "@/components/molecules/dropdown";
 

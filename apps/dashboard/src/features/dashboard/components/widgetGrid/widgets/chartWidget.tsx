@@ -88,52 +88,48 @@ export function ChartWidget({
     };
 
     return (
-        <>
-            <WidgetMenu
-                onConfigure={openConfig}
-                onDelete={() => removeWidget(id, id)}
-                isEditMode={isEditMode}
-                preview={false}
-            >
-                <Card
-                    className={`flex flex-col w-full overflow-hidden ${preview ? "h-90" : "h-full"}`}
-                >
-                    <CardHeader className="flex flex-row items-center justify-between ">
-                        <CardTitle>{displayName}</CardTitle>
-                        <div className="flex items-center gap-2">
-                            {hasNoData && (
-                                <TooltipProvider delayDuration={100}>
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <div className="flex items-center">
-                                                <CircleAlert className="h-5 w-5 text-warning animate-pulse cursor-help" />
-                                            </div>
-                                        </TooltipTrigger>
-                                        <TooltipContent
-                                            side="bottom"
-                                            align="end"
-                                            className="w-48 text-center text-xs"
-                                        >
-                                            <p>There is no data to display for this time window.</p>
-                                        </TooltipContent>
-                                    </Tooltip>
-                                </TooltipProvider>
-                            )}
-                            {preview && (
-                                <WidgetDropdown
-                                    onConfigure={openConfig}
-                                    onDelete={() => removeWidget(id, id)}
-                                    isEditMode={isEditMode}
-                                />
-                            )}
-                        </div>
-                    </CardHeader>
+        <WidgetMenu
+            onConfigure={openConfig}
+            onDelete={() => removeWidget(id, id)}
+            isEditMode={isEditMode}
+            preview={false}
+        >
+            <Card className={`flex flex-col w-full overflow-hidden ${preview ? "h-90" : "h-full"}`}>
+                <CardHeader className="flex flex-row items-center justify-between ">
+                    <CardTitle>{displayName}</CardTitle>
+                    <div className="flex items-center gap-2">
+                        {hasNoData && (
+                            <TooltipProvider delayDuration={100}>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <div className="flex items-center">
+                                            <CircleAlert className="h-5 w-5 text-warning animate-pulse cursor-help" />
+                                        </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent
+                                        side="bottom"
+                                        align="end"
+                                        className="w-48 text-center text-xs"
+                                    >
+                                        <p>There is no data to display for this time window.</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        )}
+                        {preview && (
+                            <WidgetDropdown
+                                onConfigure={openConfig}
+                                onDelete={() => removeWidget(id, id)}
+                                isEditMode={isEditMode}
+                            />
+                        )}
+                    </div>
+                </CardHeader>
 
-                    <CardContent className="flex-1 w-full relative overflow-hidden">
-                        {renderChartContent()}
-                    </CardContent>
-                </Card>
-            </WidgetMenu>
-        </>
+                <CardContent className="flex-1 w-full relative overflow-hidden">
+                    {renderChartContent()}
+                </CardContent>
+            </Card>
+        </WidgetMenu>
     );
 }
