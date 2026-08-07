@@ -30,22 +30,6 @@ export default function UsageIntelligence() {
         <div className="h-full w-full p-6">
             <UsageToolbar />
             <div className="flex flex-col gap-4">
-                <section className="w-full">
-                    {resourceId && metricType ? (
-                        <UsagePredictionChart
-                            resourceId={resourceId}
-                            metricType={metricType}
-                            forecastDto={mockForecastDto}
-                            metricTypeLabel={metricType.toUpperCase()}
-                        />
-                    ) : (
-                        <div className="flex h-[400px] w-full items-center justify-center rounded-lg border-2 border-dashed border-border bg-card">
-                            <p className="text-muted-foreground">
-                                Select a resource and metric to view forecast.
-                            </p>
-                        </div>
-                    )}
-                </section>
                 <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                     <SummaryCard
                         title="Max Usage"
@@ -68,6 +52,22 @@ export default function UsageIntelligence() {
                         predictedUsage={60}
                         description="max usage over time period days"
                     />
+                </section>
+                <section className="w-full h-full">
+                    {resourceId && metricType ? (
+                        <UsagePredictionChart
+                            resourceId={resourceId}
+                            metricType={metricType}
+                            forecastDto={mockForecastDto}
+                            metricTypeLabel={metricType.toUpperCase()}
+                        />
+                    ) : (
+                        <div className="flex h-[400px] w-full items-center justify-center rounded-lg border-2 border-dashed border-border bg-card">
+                            <p className="text-muted-foreground">
+                                Select a resource and metric to view forecast.
+                            </p>
+                        </div>
+                    )}
                 </section>
             </div>
         </div>

@@ -155,7 +155,7 @@ export default function UsagePredictionChart({
             <ReactECharts
                 option={option}
                 theme={themeName}
-                style={{ height: "400px", width: "100%" }}
+                style={{ height: "600px", width: "100%" }}
                 notMerge={true}
             />
         </div>
