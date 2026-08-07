@@ -4,11 +4,13 @@ import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import com.cloudsherpa.lib.dtos.TimestampedNumericDataPoint;
 import com.cloudsherpa.lib.entities.NormalizedCosts;
 
 import jakarta.transaction.Transactional;
@@ -74,4 +76,15 @@ public interface NormalizedCostsRepository extends JpaRepository<NormalizedCosts
                 nativeQuery = true
     ) 
     int upsert(@Param("entity") NormalizedCosts entity, @Param("provider") String provider, @Param("chargeType") String chargeType, @Param("currency") String currency);
+
+    @Query(
+        value = """
+                SELECT 
+                    nc.cost_amount AS value,
+                    nc.usage_start_time AS timestamp
+                FROM normalized_costs nc WHERE nc.charge_id = :chargeId ORDER BY nc.usage_start_time ASC
+                """,
+                nativeQuery = true
+    )
+    List<TimestampedNumericDataPoint> getTimestampedBillingValues(@Param("chargeId") String chargeId, Pageable pageable);
 }

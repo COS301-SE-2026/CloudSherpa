@@ -4,6 +4,7 @@ import com.cloudsherpa.service.intelligence.dto.BillingForecastRequestDto;
 import com.cloudsherpa.service.intelligence.dto.BillingForecastResponseDto;
 import com.cloudsherpa.service.intelligence.dto.ResourceUsageForecastRequestDto;
 import com.cloudsherpa.service.intelligence.dto.ResourceUsageForecastResponseDto;
+import com.cloudsherpa.service.intelligence.service.ForecastingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -25,6 +26,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/intelligence/forecasting")
 @Tag(name = "Intelligence", description = "CloudSherpa Forecasting Intelligence Operations")
 public class IntelligenceForecastingController {
+
+  private final ForecastingService forecastingService;
+
+  public IntelligenceForecastingController(ForecastingService forecastingService) {
+    this.forecastingService = forecastingService;
+  }
 
   @Operation(
       summary = "Forecast resource usage",
@@ -64,7 +71,7 @@ public class IntelligenceForecastingController {
                       schema = @Schema(implementation = ResourceUsageForecastRequestDto.class)))
           @RequestBody
           ResourceUsageForecastRequestDto request) {
-
+    forecastingService.forecastUsage(request);
     // mock response to show structure
     List<Instant> mockTimestamps =
         List.of(
@@ -117,6 +124,9 @@ public class IntelligenceForecastingController {
   public ResponseEntity<BillingForecastResponseDto> billingForecast(
       //  @io.swagger.v3.oas.annotations.parameters.RequestBody
       @RequestBody BillingForecastRequestDto request) {
+
+    forecastingService.forecastBilling(request);
+
     BillingForecastResponseDto mockResponse =
         new BillingForecastResponseDto(
             BigDecimal.valueOf(42.50),
