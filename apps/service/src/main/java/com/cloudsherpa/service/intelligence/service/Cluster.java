@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Cluster {
-  public List<Long> clusterValues;
+  private List<Long> clusterValues;
 
   public Cluster() {
     clusterValues = new ArrayList<>();
