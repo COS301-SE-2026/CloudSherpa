@@ -11,6 +11,7 @@ import com.cloudsherpa.service.intelligence.dto.ResourceUsageForecastRequestDto;
 import com.cloudsherpa.service.intelligence.dto.ResourceUsageForecastResponseDto;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
@@ -55,8 +56,6 @@ public class ForecastingService {
             resourceUsageForecastRequestDto.metricType(),
             PageRequest.of(0, CONTEXT_LENGTH));
 
-    debugDataPointLog(timestampedNumericDataPoints);
-
     List<TimestampedNumericDataPoint> sanitizedNumericDataPoints =
         sampler.sample(timestampedNumericDataPoints, true);
 
@@ -64,7 +63,8 @@ public class ForecastingService {
     List<BigDecimal> values = new ArrayList<>();
 
     for (TimestampedNumericDataPoint timestampedNumericDataPoint : sanitizedNumericDataPoints) {
-      timestamps.addLast(timestampedNumericDataPoint.timestamp());
+      timestamps.addLast(timestampedNumericDataPoint.timestamp().truncatedTo(ChronoUnit.SECONDS));
+      logger.info("{}", timestampedNumericDataPoint.timestamp());
       values.addLast(timestampedNumericDataPoint.value());
     }
 
@@ -81,7 +81,14 @@ public class ForecastingService {
             .retrieve()
             .body(IntelligenceForecastResponseDto.class);
 
-    return null;
+    for (BigDecimal vale : intelligenceForecastResponseDto.forecast()) {
+      logger.info("{}", vale);
+    }
+    return new ResourceUsageForecastResponseDto(
+        intelligenceForecastResponseDto.timestamps(),
+        intelligenceForecastResponseDto.forecast(),
+        intelligenceForecastResponseDto.q1(),
+        intelligenceForecastResponseDto.q3());
   }
 
   public BillingForecastResponseDto forecastBilling(

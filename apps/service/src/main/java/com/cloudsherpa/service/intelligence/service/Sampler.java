@@ -4,6 +4,7 @@ import com.cloudsherpa.lib.dtos.TimestampedNumericDataPoint;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -26,7 +27,15 @@ public class Sampler {
       List<TimestampedNumericDataPoint> original, boolean padWithZeros) {
     logger.info("Starting sample with {} original points", original.size());
     this.padWithZeros = padWithZeros;
-    List<TimestampedNumericDataPoint> processing = new ArrayList<>(original);
+
+    List<TimestampedNumericDataPoint> processing = new ArrayList<>();
+
+    for (TimestampedNumericDataPoint timestampedNumericDataPoint : original) {
+      processing.add(
+          new TimestampedNumericDataPoint(
+              timestampedNumericDataPoint.value(),
+              timestampedNumericDataPoint.timestamp().truncatedTo(ChronoUnit.SECONDS)));
+    }
 
     // Sorting results in negative periodicity, but necessary for the correct cutoff point
     processing.sort(Comparator.comparing(TimestampedNumericDataPoint::timestamp).reversed());
