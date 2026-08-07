@@ -1,7 +1,7 @@
 "use client";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/atoms/card";
 import ChartFormResource from "./chart-form-resource";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import ChartFormDetails from "./chart-form-details";
 import { Button } from "@/components/atoms/button";
 import { ChartWidgetConfig } from "@/features/dashboard/types/widgets";

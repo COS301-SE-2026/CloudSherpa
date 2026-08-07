@@ -1,23 +1,11 @@
 "use client";
 import { useState, useEffect } from "react";
 import { ChartWidgetConfig } from "@/features/dashboard/types/widgets";
-import { Check, ChevronsUpDown } from "lucide-react";
 import { Label } from "@/components/atoms/label";
-import { Button } from "@/components/atoms/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/atoms/popover";
-import {
-    Command,
-    CommandEmpty,
-    CommandGroup,
-    CommandInput,
-    CommandItem,
-    CommandList,
-} from "@/components/atoms/command";
 import { FieldSet, FieldLegend, FieldDescription, FieldGroup } from "@/components/atoms/field";
 import { FormCountCircle } from "@/components/atoms/form-count-circle";
 import { getAwsAccountConnections, CloudAccount } from "@/lib/fetch/aws-connection-api";
 import Dropdown from "@/components/molecules/dropdown";
-import { cn } from "@/lib/utils";
 
 const PROVIDERS = ["AWS", "AZURE", "GCP"];
 
@@ -38,9 +26,6 @@ export default function ChartFormConnection({
     selectedConnectionId,
     setSelectedConnectionId,
 }: Readonly<ChartFormConnectionProps>) {
-    const [providerOpen, setProviderOpen] = useState(false);
-    const [connectionOpen, setConnectionOpen] = useState(false);
-
     //fetch connections
     const [connections, setConnections] = useState<CloudAccount[]>([]);
 
@@ -81,8 +66,6 @@ export default function ChartFormConnection({
                                 resourceId: null,
                                 metricType: null,
                             });
-
-                            setProviderOpen(false);
                         }}
                         disableSearch={true}
                         widthVariant="full"
@@ -104,7 +87,6 @@ export default function ChartFormConnection({
                                 resourceId: null,
                                 metricType: null,
                             });
-                            setConnectionOpen(false);
                         }}
                         widthVariant="full"
                         placeholder="select connection..."

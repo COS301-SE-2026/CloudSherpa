@@ -3,19 +3,7 @@ import { MetricType, MetricStore } from "@/features/dashboard/types/metric";
 import { useMetricStore } from "@/features/dashboard/stores/metric-store";
 import { useState, useEffect } from "react";
 import { ChartWidgetConfig } from "@/features/dashboard/types/widgets";
-import { Check, ChevronsUpDown } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { Label } from "@/components/atoms/label";
-import { Button } from "@/components/atoms/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/atoms/popover";
-import {
-    Command,
-    CommandEmpty,
-    CommandGroup,
-    CommandInput,
-    CommandItem,
-    CommandList,
-} from "@/components/atoms/command";
 import { FieldSet, FieldLegend, FieldDescription, FieldGroup } from "@/components/atoms/field";
 import { FormCountCircle } from "@/components/atoms/form-count-circle";
 import {
@@ -24,16 +12,6 @@ import {
     ResourceStatus,
 } from "@/lib/fetch/aws-connection-api";
 import Dropdown from "@/components/molecules/dropdown";
-
-function getMetricDisplayText(value: MetricType | null, resourceId: string | null) {
-    if (value) {
-        return value.toUpperCase();
-    }
-    if (resourceId) {
-        return "Select metric type...";
-    }
-    return "Select resource first";
-}
 
 interface ChartFormResourceProps {
     configuration: ChartWidgetConfig;
