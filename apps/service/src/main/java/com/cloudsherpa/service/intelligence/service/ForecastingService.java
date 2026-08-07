@@ -5,19 +5,27 @@ import com.cloudsherpa.lib.repositories.NormalizedCostsRepository;
 import com.cloudsherpa.lib.repositories.NormalizedMetricsRepository;
 import com.cloudsherpa.service.intelligence.dto.BillingForecastRequestDto;
 import com.cloudsherpa.service.intelligence.dto.BillingForecastResponseDto;
+import com.cloudsherpa.service.intelligence.dto.IntelligenceForecastRequestDto;
+import com.cloudsherpa.service.intelligence.dto.IntelligenceForecastResponseDto;
 import com.cloudsherpa.service.intelligence.dto.ResourceUsageForecastRequestDto;
 import com.cloudsherpa.service.intelligence.dto.ResourceUsageForecastResponseDto;
+import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
 
 @Service
 public class ForecastingService {
   private final NormalizedMetricsRepository normalizedMetricsRepository;
   private final NormalizedCostsRepository normalizedCostsRepository;
+  private final Sampler sampler;
+  private final RestClient restClient;
 
   private final Logger logger = LoggerFactory.getLogger(ForecastingService.class);
 
@@ -29,9 +37,13 @@ public class ForecastingService {
 
   public ForecastingService(
       NormalizedMetricsRepository normalizedMetricsRepository,
-      NormalizedCostsRepository normalizedCostsRepository) {
+      NormalizedCostsRepository normalizedCostsRepository,
+      Sampler sampler,
+      RestClient restClient) {
     this.normalizedMetricsRepository = normalizedMetricsRepository;
     this.normalizedCostsRepository = normalizedCostsRepository;
+    this.sampler = sampler;
+    this.restClient = restClient;
   }
 
   public ResourceUsageForecastResponseDto forecastUsage(
@@ -44,6 +56,30 @@ public class ForecastingService {
             PageRequest.of(0, CONTEXT_LENGTH));
 
     debugDataPointLog(timestampedNumericDataPoints);
+
+    List<TimestampedNumericDataPoint> sanitizedNumericDataPoints =
+        sampler.sample(timestampedNumericDataPoints, true);
+
+    List<Instant> timestamps = new ArrayList<>();
+    List<BigDecimal> values = new ArrayList<>();
+
+    for (TimestampedNumericDataPoint timestampedNumericDataPoint : sanitizedNumericDataPoints) {
+      timestamps.addLast(timestampedNumericDataPoint.timestamp());
+      values.addLast(timestampedNumericDataPoint.value());
+    }
+
+    IntelligenceForecastRequestDto intelligenceForecastRequestDto =
+        new IntelligenceForecastRequestDto(
+            FORECAST_LENGTH, timestamps, values, "chronos_univariate");
+
+    IntelligenceForecastResponseDto intelligenceForecastResponseDto =
+        restClient
+            .post()
+            .uri("/forecast-chronos")
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(intelligenceForecastRequestDto)
+            .retrieve()
+            .body(IntelligenceForecastResponseDto.class);
 
     return null;
   }
