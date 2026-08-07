@@ -23,6 +23,7 @@ import {
     CloudResource,
     ResourceStatus,
 } from "@/lib/fetch/aws-connection-api";
+import Dropdown from "@/components/molecules/dropdown";
 
 function getMetricDisplayText(value: MetricType | null, resourceId: string | null) {
     if (value) {
@@ -45,9 +46,6 @@ export default function ChartFormResource({
     setConfiguration,
     selectedConnectionId,
 }: Readonly<ChartFormResourceProps>) {
-    const [resourceOpen, setResourceOpen] = useState(false);
-    const [metricOpen, setMetricOpen] = useState(false);
-
     const [activeResources, setActiveResources] = useState<CloudResource[]>([]);
 
     useEffect(() => {
@@ -77,119 +75,43 @@ export default function ChartFormResource({
             <FieldGroup>
                 <div className="grid gap-2">
                     <Label>Resource ID</Label>
-                    <Popover open={resourceOpen} onOpenChange={setResourceOpen}>
-                        <PopoverTrigger asChild>
-                            <Button
-                                variant="outline"
-                                role="combobox"
-                                aria-expanded={resourceOpen}
-                                className="justify-between w-full"
-                            >
-                                <span className="truncate">
-                                    {configuration.resourceId
-                                        ? (activeResources.find(
-                                              (r) => r.id === configuration.resourceId
-                                          )?.resourceName ?? configuration.resourceId)
-                                        : "Select a resource..."}
-                                </span>
-                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="p-0 w-(--radix-popover-trigger-width)">
-                            <Command>
-                                <CommandInput placeholder="Search resources..." />
-                                <CommandList>
-                                    <CommandEmpty>No resource found</CommandEmpty>
-                                    <CommandGroup>
-                                        {activeResources.map((resource) => (
-                                            <CommandItem
-                                                key={resource.id}
-                                                value={resource.id}
-                                                onSelect={(currentValue) => {
-                                                    const nextMetricOptions =
-                                                        allAvailableMetrics()[currentValue] ?? [];
-                                                    const metricType =
-                                                        nextMetricOptions[0] ?? "anon";
-                                                    setConfiguration({
-                                                        ...configuration,
-                                                        resourceId: currentValue,
-                                                        metricType: metricType,
-                                                    });
-                                                    setResourceOpen(false);
-                                                }}
-                                            >
-                                                <Check
-                                                    className={cn(
-                                                        "mr-2 h-4 w-4",
-                                                        configuration.resourceId === resource.id
-                                                            ? "opacity-100"
-                                                            : "opacity-0"
-                                                    )}
-                                                />
-                                                {resource.resourceName}
-                                            </CommandItem>
-                                        ))}
-                                    </CommandGroup>
-                                </CommandList>
-                            </Command>
-                        </PopoverContent>
-                    </Popover>
+                    <Dropdown
+                        value={configuration.resourceId}
+                        options={activeResources.map((resource) => ({
+                            value: resource.id,
+                            label: resource.resourceName,
+                        }))}
+                        onSelect={(currentValue) => {
+                            const nextMetricOptions = allAvailableMetrics()[currentValue] ?? [];
+                            const metricType = nextMetricOptions[0] ?? "anon";
+                            setConfiguration({
+                                ...configuration,
+                                resourceId: currentValue,
+                                metricType: metricType,
+                            });
+                        }}
+                        widthVariant="full"
+                        placeholder="select resource..."
+                    />
                 </div>
-
                 <div className="grid gap-2">
                     <Label>Metric Type</Label>
-                    <Popover open={metricOpen} onOpenChange={setMetricOpen}>
-                        <PopoverTrigger asChild>
-                            <Button
-                                variant="outline"
-                                role="combobox"
-                                aria-expanded={metricOpen}
-                                className="justify-between w-full"
-                                disabled={!configuration.resourceId}
-                            >
-                                <span className="truncate">
-                                    {getMetricDisplayText(
-                                        configuration.metricType,
-                                        configuration.resourceId
-                                    )}
-                                </span>
-                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="p-0 w-(--radix-popover-trigger-width)">
-                            <Command>
-                                <CommandInput placeholder="Search metric types..." />
-                                <CommandList>
-                                    <CommandEmpty>No metric type found.</CommandEmpty>
-                                    <CommandGroup>
-                                        {availableMetrics.map((type) => (
-                                            <CommandItem
-                                                key={type}
-                                                value={type}
-                                                onSelect={(currentValue) => {
-                                                    setConfiguration({
-                                                        ...configuration,
-                                                        metricType: currentValue as MetricType,
-                                                    });
-                                                    setMetricOpen(false);
-                                                }}
-                                            >
-                                                <Check
-                                                    className={cn(
-                                                        "mr-2 h-4 w-4",
-                                                        configuration.metricType === type
-                                                            ? "opacity-100"
-                                                            : "opacity-0"
-                                                    )}
-                                                />
-                                                {type.toUpperCase()}
-                                            </CommandItem>
-                                        ))}
-                                    </CommandGroup>
-                                </CommandList>
-                            </Command>
-                        </PopoverContent>
-                    </Popover>
+                    <Dropdown
+                        value={configuration.metricType}
+                        options={availableMetrics.map((type) => ({
+                            value: type,
+                            label: type.toUpperCase(),
+                        }))}
+                        onSelect={(currentValue) => {
+                            setConfiguration({
+                                ...configuration,
+                                metricType: currentValue as MetricType,
+                            });
+                        }}
+                        disabled={!configuration.resourceId}
+                        widthVariant="full"
+                        placeholder="select metric..."
+                    />
                 </div>
             </FieldGroup>
         </FieldSet>
