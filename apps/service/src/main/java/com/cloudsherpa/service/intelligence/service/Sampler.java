@@ -101,6 +101,7 @@ public class Sampler {
   private List<TimestampedNumericDataPoint> santizeSeries(
       List<TimestampedNumericDataPoint> original, long periodicity) {
     List<TimestampedNumericDataPoint> sanitizedSeries = new ArrayList<>();
+    boolean brokeEarly = false;
     for (int i = 0; i < original.size() - 1; i++) {
 
       // Safe to add current since difference between current and previous checked in previous
@@ -118,6 +119,7 @@ public class Sampler {
           || (durationBetweenCurrentAndNext != periodicity && !padWithZeros)) {
         // periodicity at which data published changed, unrecoverable at this stage, going to work
         // with what was obtained up until this point
+        brokeEarly = true;
         break;
       }
 
@@ -129,6 +131,12 @@ public class Sampler {
         sanitizedSeries.addLast(addPoint);
         current = addPoint.timestamp();
       }
+    }
+
+    if (!brokeEarly) {
+      sanitizedSeries.add(
+          new TimestampedNumericDataPoint(
+              original.getLast().value(), original.getLast().timestamp()));
     }
 
     sanitizedSeries.sort(Comparator.comparing(TimestampedNumericDataPoint::timestamp));
