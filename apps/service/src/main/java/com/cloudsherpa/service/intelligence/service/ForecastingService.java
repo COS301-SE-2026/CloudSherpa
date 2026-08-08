@@ -52,6 +52,7 @@ public class ForecastingService {
 
     List<TimestampedNumericDataPoint> timestampedNumericDataPoints =
         getUsageSeries(resourceUsageForecastRequestDto);
+
     IntelligenceForecastResponseDto intelligenceForecastResponseDto =
         executeForecastPipeline(timestampedNumericDataPoints);
 

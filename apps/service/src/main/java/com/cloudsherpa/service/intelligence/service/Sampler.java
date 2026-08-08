@@ -44,6 +44,24 @@ public class Sampler {
     List<Cluster> clusteredDifferences = clusterDifferences(differences);
     Long periodicity = choosePeriodicity(clusteredDifferences);
 
+    if (padWithZeros) {
+
+      Instant now = Instant.now();
+
+      Duration durationBetweenTimeOfRequestAndLastIngestedDataPoint =
+          Duration.between(processing.getFirst().timestamp(), now);
+      // cause pad with zero side effect if last ingested data point >= than 1 hour
+      if (durationBetweenTimeOfRequestAndLastIngestedDataPoint.toHours() >= 1) {
+        long secondsToAdd =
+            durationBetweenTimeOfRequestAndLastIngestedDataPoint.toSeconds() / periodicity;
+        Instant newInstant =
+            processing.getFirst().timestamp().plusSeconds(secondsToAdd * periodicity);
+        TimestampedNumericDataPoint newDataPoint =
+            new TimestampedNumericDataPoint(BigDecimal.valueOf(0), newInstant);
+        processing.addFirst(newDataPoint);
+      }
+    }
+
     logger.info(
         "Sample selected periodicity {} seconds from {} differences and {} clusters",
         periodicity,
