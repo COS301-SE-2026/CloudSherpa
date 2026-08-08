@@ -34,7 +34,7 @@ public class ForecastingService {
   // models/methods
   // these values can be changed from constants to members and then determined dynamically
   private static final int CONTEXT_LENGTH = 8092;
-  private static final int FORECAST_LENGTH = 1024; // NOSONAR: wip
+  private static final int FORECAST_LENGTH = 1024;
 
   public ForecastingService(
       NormalizedMetricsRepository normalizedMetricsRepository,
@@ -51,39 +51,10 @@ public class ForecastingService {
       ResourceUsageForecastRequestDto resourceUsageForecastRequestDto) {
 
     List<TimestampedNumericDataPoint> timestampedNumericDataPoints =
-        normalizedMetricsRepository.getTimestampedMetricValues(
-            resourceUsageForecastRequestDto.resourceId(),
-            resourceUsageForecastRequestDto.metricType(),
-            PageRequest.of(0, CONTEXT_LENGTH));
-
-    List<TimestampedNumericDataPoint> sanitizedNumericDataPoints =
-        sampler.sample(timestampedNumericDataPoints, true);
-
-    List<Instant> timestamps = new ArrayList<>();
-    List<BigDecimal> values = new ArrayList<>();
-
-    for (TimestampedNumericDataPoint timestampedNumericDataPoint : sanitizedNumericDataPoints) {
-      timestamps.addLast(timestampedNumericDataPoint.timestamp().truncatedTo(ChronoUnit.SECONDS));
-      logger.info("{}", timestampedNumericDataPoint.timestamp());
-      values.addLast(timestampedNumericDataPoint.value());
-    }
-
-    IntelligenceForecastRequestDto intelligenceForecastRequestDto =
-        new IntelligenceForecastRequestDto(
-            FORECAST_LENGTH, timestamps, values, "chronos_univariate");
-
+        getUsageSeries(resourceUsageForecastRequestDto);
     IntelligenceForecastResponseDto intelligenceForecastResponseDto =
-        restClient
-            .post()
-            .uri("/forecast-chronos")
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(intelligenceForecastRequestDto)
-            .retrieve()
-            .body(IntelligenceForecastResponseDto.class);
+        executeForecastPipeline(timestampedNumericDataPoints);
 
-    for (BigDecimal vale : intelligenceForecastResponseDto.forecast()) {
-      logger.info("{}", vale);
-    }
     return new ResourceUsageForecastResponseDto(
         intelligenceForecastResponseDto.timestamps(),
         intelligenceForecastResponseDto.forecast(),
@@ -102,6 +73,9 @@ public class ForecastingService {
 
     debugDataPointLog(timestampedNumericDataPoints);
 
+    IntelligenceForecastResponseDto intelligenceForecastResponseDto =
+        executeForecastPipeline(timestampedNumericDataPoints);
+
     return null;
   }
 
@@ -116,5 +90,47 @@ public class ForecastingService {
           timestampedNumericDataPoint.value(),
           timestampedNumericDataPoint.timestamp());
     }
+  }
+
+  private List<TimestampedNumericDataPoint> getUsageSeries(
+      ResourceUsageForecastRequestDto resourceUsageForecastRequestDto) {
+    return normalizedMetricsRepository.getTimestampedMetricValues(
+        resourceUsageForecastRequestDto.resourceId(),
+        resourceUsageForecastRequestDto.metricType(),
+        PageRequest.of(0, CONTEXT_LENGTH));
+  }
+
+  private IntelligenceForecastRequestDto constructForecastRequest(
+      List<TimestampedNumericDataPoint> sanatizedDataPoints) {
+    List<Instant> timestamps = new ArrayList<>();
+    List<BigDecimal> values = new ArrayList<>();
+
+    for (TimestampedNumericDataPoint timestampedNumericDataPoint : sanatizedDataPoints) {
+      timestamps.addLast(timestampedNumericDataPoint.timestamp().truncatedTo(ChronoUnit.SECONDS));
+      values.addLast(timestampedNumericDataPoint.value());
+    }
+
+    return new IntelligenceForecastRequestDto(
+        FORECAST_LENGTH, timestamps, values, "chronos_univariate");
+  }
+
+  private IntelligenceForecastResponseDto makeForecastRequest(
+      IntelligenceForecastRequestDto intelligenceForecastRequestDto) {
+    return restClient
+        .post()
+        .uri("/forecast-chronos")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(intelligenceForecastRequestDto)
+        .retrieve()
+        .body(IntelligenceForecastResponseDto.class);
+  }
+
+  private IntelligenceForecastResponseDto executeForecastPipeline(
+      List<TimestampedNumericDataPoint> timestampedNumericDataPoints) {
+    List<TimestampedNumericDataPoint> sanitizedNumericDataPoints =
+        sampler.sample(timestampedNumericDataPoints, true);
+    IntelligenceForecastRequestDto intelligenceForecastRequestDto =
+        constructForecastRequest(sanitizedNumericDataPoints);
+    return makeForecastRequest(intelligenceForecastRequestDto);
   }
 }
