@@ -4,42 +4,39 @@ import { useMemo } from "react";
 import ReactECharts from "echarts-for-react";
 import type { CallbackDataParams } from "echarts/types/dist/shared";
 import { formatChartData } from "@/features/intelligence/hooks/formatChartData";
-import { usageForecastData } from "@/features/intelligence/types/metrics";
 import { useChartTheme } from "@/features/dashboard/hooks/useChartTheme";
 import { useChartData } from "@/features/dashboard/hooks/useChartData";
-import { MetricType } from "@/features/dashboard/types/metric";
 import { useUsageIntelligenceConfigStore } from "@/features/intelligence/stores/useUsageIntelligenceConfigStore";
-
-interface UsagePredictionChartProps {
-    resourceId: string;
-    metricType: MetricType;
-    forecastedMetrics: usageForecastData | null;
-    metricTypeLabel: string;
-}
+import { useUsageIntelligenceStore } from "@/features/intelligence/stores/useUsageIntelligenceStore";
 
 const now = Date.now();
 
-export default function UsagePredictionChart({
-    resourceId,
-    metricType,
-    forecastedMetrics,
-    metricTypeLabel,
-}: Readonly<UsagePredictionChartProps>) {
-    const { timeSeriesData } = useChartData(resourceId, metricType);
+export default function UsagePredictionChart() {
+    //styles
     const { themeName, tokens } = useChartTheme();
 
+    //config
+    const resourceId = useUsageIntelligenceConfigStore((state) => state.resourceId);
+    const metricType = useUsageIntelligenceConfigStore((state) => state.metricType);
     const pastTimeWindowDays = useUsageIntelligenceConfigStore((state) => state.pastTimeWindowDays);
+
+    //data
+    const forecastedMetrics = useUsageIntelligenceStore((state) => {
+        if (!resourceId || !metricType) return null;
+        return state.forecasts[resourceId]?.[metricType] ?? null;
+    });
+
+    const { timeSeriesData } = useChartData(resourceId || "", metricType || "anon");
 
     const { historicalData, q1Data, q3Data, predictedData } = useMemo(
         () => formatChartData(timeSeriesData, forecastedMetrics),
         [timeSeriesData, forecastedMetrics]
     );
 
+    // 3. X-AXIS MATH HOOK
     const { currentTime, minXAxisTime, maxXAxisTime } = useMemo(() => {
         const oneDayMs = 24 * 60 * 60 * 1000;
-
         const minTime = now - pastTimeWindowDays * oneDayMs;
-
         let maxTime = now;
 
         if (forecastedMetrics && forecastedMetrics.horizonTimestamps.length > 0) {
@@ -56,6 +53,10 @@ export default function UsagePredictionChart({
             maxXAxisTime: maxTime,
         };
     }, [pastTimeWindowDays, forecastedMetrics]);
+
+    if (!resourceId || !metricType) return null;
+
+    const metricTypeLabel = metricType.toUpperCase();
 
     const option = {
         tooltip: {
@@ -88,9 +89,22 @@ export default function UsagePredictionChart({
             },
         },
         legend: {
-            data: ["Historical Usage", "Predicted Usage"],
+            icon: "circle",
             bottom: 0,
-            textStyle: { color: tokens["muted-foreground"] },
+            textStyle: {
+                fontSize: 12,
+                color: tokens["muted-foreground"],
+            },
+            data: [
+                {
+                    name: "Historical Usage",
+                    itemStyle: { color: tokens["chart-1"] },
+                },
+                {
+                    name: "Predicted Usage",
+                    itemStyle: { color: tokens["chart-2"] },
+                },
+            ],
         },
         grid: { left: "3%", right: "4%", bottom: "10%", containLabel: true },
         xAxis: {
@@ -101,7 +115,6 @@ export default function UsagePredictionChart({
         },
         yAxis: {
             type: "value",
-            name: metricTypeLabel,
             nameTextStyle: { color: tokens["muted-foreground"] },
         },
         series: [
@@ -111,7 +124,6 @@ export default function UsagePredictionChart({
                 showSymbol: false,
                 data: historicalData,
                 lineStyle: {
-                    width: 2.5,
                     color: tokens["chart-1"],
                 },
             },
@@ -144,7 +156,6 @@ export default function UsagePredictionChart({
                 showSymbol: false,
                 lineStyle: {
                     width: 2.5,
-                    type: "dashed",
                     color: tokens["chart-2"],
                 },
                 markLine: {

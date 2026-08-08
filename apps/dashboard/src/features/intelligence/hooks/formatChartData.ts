@@ -1,9 +1,9 @@
 import { Metric } from "@/features/dashboard/types/metric";
-import { ResourceUsageForecastResponseDto } from "../types/metrics";
+import { usageForecastData } from "../types/metrics";
 
 export function formatChartData(
     historicalMetrics: Metric[],
-    forecastDto: ResourceUsageForecastResponseDto | null
+    forecastDto: usageForecastData | null
 ) {
     const historicalData: [number, number][] = historicalMetrics.map((m) => [
         new Date(m.timestamp).getTime(),

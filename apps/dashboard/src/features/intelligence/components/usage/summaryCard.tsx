@@ -1,7 +1,34 @@
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/atoms/card";
-import { Info } from "lucide-react";
+import { Info, LucideIcon } from "lucide-react";
 import { Separator } from "@/components/atoms/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/atoms/tooltip";
+import { MetricType } from "@/features/dashboard/types/metric";
+
+export const METRIC_UNITS: Record<MetricType, string> = {
+    cpu: "%",
+    memory: "%",
+    "storage-used": "GB",
+    "storage-available": "GB",
+    "object-count": "objs",
+    duration: "ms",
+    throttles: "events",
+    disk: "GB",
+    network: "MB",
+    "read-capacity": "IOPS",
+    "write-capacity": "IOPS",
+    "first-byte-latency": "ms",
+    latency: "ms",
+    errors: "err",
+    requests: "req",
+    connections: "conn",
+    invocations: "inv",
+    anon: "",
+};
+
+export function getMetricUnit(metricType: MetricType | null): string {
+    if (!metricType) return "%";
+    return METRIC_UNITS[metricType] ?? "";
+}
 
 interface SummaryCardProps {
     title: string;
@@ -9,6 +36,8 @@ interface SummaryCardProps {
     pastUsage: number;
     predictedUsage: number;
     description: string;
+    tooltip: string;
+    Icon?: LucideIcon;
 }
 
 export default function SummaryCard({
@@ -17,7 +46,10 @@ export default function SummaryCard({
     pastUsage,
     predictedUsage,
     description,
+    tooltip,
+    Icon,
 }: Readonly<SummaryCardProps>) {
+    const formattedUnit = unit && unit !== "%" ? ` ${unit}` : unit;
     return (
         <Card>
             <CardHeader>
@@ -25,22 +57,25 @@ export default function SummaryCard({
                     {title}
                     <Tooltip>
                         <TooltipTrigger>
-                            <Info className="h-4 w-4" />
+                            <Info className="h-5 w-5 text-muted-foreground" />
                         </TooltipTrigger>
-                        <TooltipContent>some stuff</TooltipContent>
+                        <TooltipContent>{tooltip}</TooltipContent>
                     </Tooltip>
                 </CardTitle>
             </CardHeader>
-            <CardContent className="flex flex-row gap-2 justify-start">
-                <span className="text-3xl">
-                    {pastUsage}
-                    {unit}
-                </span>
-                <Separator orientation="vertical" />
-                <span className="text-3xl">
-                    {predictedUsage}
-                    {unit}
-                </span>
+            <CardContent className="flex flex-row gap-5     justify-start items-center">
+                {Icon && <Icon className="h-8 w-8 text-primary" />}
+                <div className="flex flex-row gap-4 justify-start items-center">
+                    <span className="text-4xl">
+                        {pastUsage}
+                        {unit}
+                    </span>
+                    <Separator orientation="vertical" />
+                    <span className="text-4xl">
+                        {predictedUsage}
+                        {unit}
+                    </span>
+                </div>
             </CardContent>
             <CardFooter className="text-muted-foreground">{description}</CardFooter>
         </Card>
