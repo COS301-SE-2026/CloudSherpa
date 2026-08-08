@@ -6,7 +6,6 @@ import com.cloudsherpa.service.intelligence.dto.ResourceUsageForecastRequestDto;
 import com.cloudsherpa.service.intelligence.dto.ResourceUsageForecastResponseDto;
 import com.cloudsherpa.service.intelligence.service.BillingForecastingService;
 import com.cloudsherpa.service.intelligence.service.UsageForecastingService;
-import com.cloudsherpa.service.mock.MockController;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -30,7 +29,6 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Intelligence", description = "CloudSherpa Forecasting Intelligence Operations")
 public class IntelligenceForecastingController {
 
-  private final MockController mockController;
   private final UsageForecastingService usageForecastingService;
   private final BillingForecastingService billingForecastingService;
   private final boolean useMockForecasting;
@@ -38,12 +36,10 @@ public class IntelligenceForecastingController {
   public IntelligenceForecastingController(
       UsageForecastingService usageForecastingService,
       BillingForecastingService billingForecastingService,
-      @Value("${intelligence.forecasting.mock:false}") boolean useMockForecasting,
-      MockController mockController) {
+      @Value("${intelligence.forecasting.mock:false}") boolean useMockForecasting) {
     this.usageForecastingService = usageForecastingService;
     this.billingForecastingService = billingForecastingService;
     this.useMockForecasting = useMockForecasting;
-    this.mockController = mockController;
   }
 
   @Operation(
