@@ -80,9 +80,11 @@ public interface NormalizedCostsRepository extends JpaRepository<NormalizedCosts
     @Query(
         value = """
                 SELECT 
-                    nc.cost_amount AS value,
-                    nc.usage_start_time AS timestamp
-                FROM normalized_costs nc WHERE nc.charge_id = :chargeId ORDER BY nc.usage_start_time ASC
+                    SUM(nc.cost_amount) AS value,
+                    DATE_TRUNC('day', nc.usage_start_time) AS timestamp
+                FROM normalized_costs nc WHERE nc.charge_id = :chargeId 
+                GROUP BY nc.charge_id, DATE_TRUNC('day', nc.usage_start_time)
+                ORDER BY timestamp ASC
                 """,
                 nativeQuery = true
     )

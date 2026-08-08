@@ -6,10 +6,6 @@ import com.cloudsherpa.service.intelligence.dto.IntelligenceForecastRequestDto;
 import com.cloudsherpa.service.intelligence.dto.IntelligenceForecastResponseDto;
 import com.cloudsherpa.service.intelligence.dto.ResourceUsageForecastRequestDto;
 import com.cloudsherpa.service.intelligence.dto.ResourceUsageForecastResponseDto;
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.List;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -58,25 +54,12 @@ public class UsageForecastingService extends ForecastingService {
         PageRequest.of(0, CONTEXT_LENGTH));
   }
 
-  private IntelligenceForecastRequestDto constructUsageForecastRequest(
-      List<TimestampedNumericDataPoint> sanatizedDataPoints) {
-    List<Instant> timestamps = new ArrayList<>();
-    List<BigDecimal> values = new ArrayList<>();
-
-    for (TimestampedNumericDataPoint timestampedNumericDataPoint : sanatizedDataPoints) {
-      timestamps.addLast(timestampedNumericDataPoint.timestamp().truncatedTo(ChronoUnit.SECONDS));
-      values.addLast(timestampedNumericDataPoint.value());
-    }
-
-    return new IntelligenceForecastRequestDto(
-        FORECAST_LENGTH, timestamps, values, "chronos_univariate");
-  }
-
   private IntelligenceForecastResponseDto executeUsageForecastPipeline(
       List<TimestampedNumericDataPoint> timestampedNumericDataPoints) {
     SanatizedSeries sanitizedNumericDataPoints = sampler.sample(timestampedNumericDataPoints, true);
     IntelligenceForecastRequestDto intelligenceForecastRequestDto =
-        constructUsageForecastRequest(sanitizedNumericDataPoints.timestampedNumericDataPoints());
+        constructForecastRequest(
+            sanitizedNumericDataPoints.timestampedNumericDataPoints(), FORECAST_LENGTH);
     return makeForecastRequest(intelligenceForecastRequestDto);
   }
 }

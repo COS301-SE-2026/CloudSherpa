@@ -3,6 +3,10 @@ package com.cloudsherpa.service.intelligence.service;
 import com.cloudsherpa.lib.dtos.TimestampedNumericDataPoint;
 import com.cloudsherpa.service.intelligence.dto.IntelligenceForecastRequestDto;
 import com.cloudsherpa.service.intelligence.dto.IntelligenceForecastResponseDto;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +41,20 @@ public abstract class ForecastingService {
           timestampedNumericDataPoint.value(),
           timestampedNumericDataPoint.timestamp());
     }
+  }
+
+  protected IntelligenceForecastRequestDto constructForecastRequest(
+      List<TimestampedNumericDataPoint> sanatizedDataPoints, Integer forecastLength) {
+    List<Instant> timestamps = new ArrayList<>();
+    List<BigDecimal> values = new ArrayList<>();
+
+    for (TimestampedNumericDataPoint timestampedNumericDataPoint : sanatizedDataPoints) {
+      timestamps.addLast(timestampedNumericDataPoint.timestamp().truncatedTo(ChronoUnit.SECONDS));
+      values.addLast(timestampedNumericDataPoint.value());
+    }
+
+    return new IntelligenceForecastRequestDto(
+        forecastLength, timestamps, values, "chronos_univariate");
   }
 
   protected IntelligenceForecastResponseDto makeForecastRequest(

@@ -6,6 +6,7 @@ import com.cloudsherpa.service.intelligence.dto.ResourceUsageForecastRequestDto;
 import com.cloudsherpa.service.intelligence.dto.ResourceUsageForecastResponseDto;
 import com.cloudsherpa.service.intelligence.service.BillingForecastingService;
 import com.cloudsherpa.service.intelligence.service.UsageForecastingService;
+import com.cloudsherpa.service.mock.MockController;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Intelligence", description = "CloudSherpa Forecasting Intelligence Operations")
 public class IntelligenceForecastingController {
 
+  private final MockController mockController;
   private final UsageForecastingService usageForecastingService;
   private final BillingForecastingService billingForecastingService;
   private final boolean useMockForecasting;
@@ -36,10 +38,12 @@ public class IntelligenceForecastingController {
   public IntelligenceForecastingController(
       UsageForecastingService usageForecastingService,
       BillingForecastingService billingForecastingService,
-      @Value("${intelligence.forecasting.mock:false}") boolean useMockForecasting) {
+      @Value("${intelligence.forecasting.mock:false}") boolean useMockForecasting,
+      MockController mockController) {
     this.usageForecastingService = usageForecastingService;
     this.billingForecastingService = billingForecastingService;
     this.useMockForecasting = useMockForecasting;
+    this.mockController = mockController;
   }
 
   @Operation(
@@ -119,20 +123,22 @@ public class IntelligenceForecastingController {
       })
   @PostMapping("/charges")
   public ResponseEntity<BillingForecastResponseDto> billingForecast(
-      //  @io.swagger.v3.oas.annotations.parameters.RequestBody
+      // @io.swagger.v3.oas.annotations.parameters.RequestBody
       @RequestBody BillingForecastRequestDto request) {
 
-    billingForecastingService.forecastBilling(request);
+    if (useMockForecasting) {
+      BillingForecastResponseDto mockResponse =
+          new BillingForecastResponseDto(
+              BigDecimal.valueOf(42.50),
+              List.of(
+                  LocalDateTime.parse("2026-08-03T08:00:00"),
+                  LocalDateTime.parse("2026-08-03T09:00:00")),
+              Map.of("mock-charge-id", BigDecimal.valueOf(42.5)));
 
-    BillingForecastResponseDto mockResponse =
-        new BillingForecastResponseDto(
-            BigDecimal.valueOf(42.50),
-            List.of(
-                LocalDateTime.parse("2026-08-03T08:00:00"),
-                LocalDateTime.parse("2026-08-03T09:00:00")),
-            Map.of("mock-charge-id", BigDecimal.valueOf(42.5)));
-
-    return ResponseEntity.status(HttpStatus.OK).body(mockResponse);
+      return ResponseEntity.status(HttpStatus.OK).body(mockResponse);
+    } else {
+      return ResponseEntity.ok().body(billingForecastingService.forecastBilling(request));
+    }
   }
 
   private ResourceUsageForecastResponseDto mockResourceUsageForecast() {
