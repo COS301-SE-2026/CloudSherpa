@@ -4,13 +4,12 @@ import { LineChart } from "@/features/dashboard/components/widgetGrid/widgets/ch
 import { GaugeChart } from "@/features/dashboard/components/widgetGrid/widgets/charts/GaugeChart";
 import { MetricType } from "@/features/dashboard/types/metric";
 import { Button } from "@/components/atoms/button";
-import { WidgetConfigMenu } from "@/features/dashboard/components/widgetGrid/widgets/widgetConfigMenu";
 import { ChartType, ChartWidgetConfig } from "@/features/dashboard/types/widgets";
 import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
-import { useToolbar } from "@/features/dashboard/components/toolbar/toolbarProvider";
 import { WidgetMenu } from "@/features/dashboard/components/widgetMenu";
 import { WidgetDropdown } from "@/features/dashboard/components/widgetDropdown";
 import { CircleAlert } from "lucide-react";
+import { useRouter } from "next/navigation";
 import {
     Tooltip,
     TooltipContent,
@@ -31,19 +30,23 @@ const CHART_COMPONENTS: Record<ChartType, React.ComponentType<BaseChartProps>> =
 
 interface WidgetProps {
     config: ChartWidgetConfig;
+    preview?: boolean;
+    isEditMode?: boolean;
 }
 
-export function ChartWidget({ config }: Readonly<WidgetProps>) {
+export function ChartWidget({
+    config,
+    preview = false,
+    isEditMode = false,
+}: Readonly<WidgetProps>) {
     const { chartType, displayName, resourceId, metricType, id } = config;
     const ChartComponent = CHART_COMPONENTS[chartType];
-    const [isConfigOpen, setIsConfigOpen] = useState(false);
     const [hasNoData, setHasNoData] = useState(false);
-
-    const { isEditMode } = useToolbar();
+    const router = useRouter();
 
     const openConfig = () => {
         if (!isEditMode) {
-            setIsConfigOpen(true);
+            router.push(`/edit/metrics/${config.id}`);
         }
     };
 
@@ -85,53 +88,48 @@ export function ChartWidget({ config }: Readonly<WidgetProps>) {
     };
 
     return (
-        <>
-            <WidgetMenu
-                onConfigure={openConfig}
-                onDelete={() => removeWidget(id, id)}
-                isEditMode={isEditMode}
-                preview={false}
-            >
-                <Card className="flex flex-col h-full w-full overflow-hidden">
-                    <CardHeader className="flex flex-row items-center justify-between ">
-                        <CardTitle>{displayName}</CardTitle>
-                        <div className="flex items-center gap-2">
-                            {hasNoData && (
-                                <TooltipProvider delayDuration={100}>
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <div className="flex items-center">
-                                                <CircleAlert className="h-5 w-5 text-warning animate-pulse cursor-help" />
-                                            </div>
-                                        </TooltipTrigger>
-                                        <TooltipContent
-                                            side="bottom"
-                                            align="end"
-                                            className="w-48 text-center text-xs"
-                                        >
-                                            <p>There is no data to display for this time window.</p>
-                                        </TooltipContent>
-                                    </Tooltip>
-                                </TooltipProvider>
-                            )}
+        <WidgetMenu
+            onConfigure={openConfig}
+            onDelete={() => removeWidget(id, id)}
+            isEditMode={isEditMode}
+            preview={false}
+        >
+            <Card className={`flex flex-col w-full overflow-hidden ${preview ? "h-90" : "h-full"}`}>
+                <CardHeader className="flex flex-row items-center justify-between ">
+                    <CardTitle>{displayName}</CardTitle>
+                    <div className="flex items-center gap-2">
+                        {hasNoData && (
+                            <TooltipProvider delayDuration={100}>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <div className="flex items-center">
+                                            <CircleAlert className="h-5 w-5 text-warning animate-pulse cursor-help" />
+                                        </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent
+                                        side="bottom"
+                                        align="end"
+                                        className="w-48 text-center text-xs"
+                                    >
+                                        <p>There is no data to display for this time window.</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        )}
+                        {preview && (
                             <WidgetDropdown
                                 onConfigure={openConfig}
                                 onDelete={() => removeWidget(id, id)}
                                 isEditMode={isEditMode}
                             />
-                        </div>
-                    </CardHeader>
+                        )}
+                    </div>
+                </CardHeader>
 
-                    <CardContent className="flex-1 w-full relative overflow-hidden">
-                        {renderChartContent()}
-                    </CardContent>
-                </Card>
-            </WidgetMenu>
-            <WidgetConfigMenu
-                isOpen={isConfigOpen}
-                existingConfig={config}
-                onClose={() => setIsConfigOpen(false)}
-            />
-        </>
+                <CardContent className="flex-1 w-full relative overflow-hidden">
+                    {renderChartContent()}
+                </CardContent>
+            </Card>
+        </WidgetMenu>
     );
 }
