@@ -121,7 +121,7 @@ public class IntelligenceForecastingController {
             description = "None of the charges found",
             content = @Content)
       })
-  @PostMapping("/charges")
+  @PostMapping("/thirty-day-charges")
   public ResponseEntity<BillingForecastResponseDto> billingForecast(
       // @io.swagger.v3.oas.annotations.parameters.RequestBody
       @RequestBody BillingForecastRequestDto request) {
@@ -129,11 +129,7 @@ public class IntelligenceForecastingController {
     if (useMockForecasting) {
       BillingForecastResponseDto mockResponse =
           new BillingForecastResponseDto(
-              BigDecimal.valueOf(42.50),
-              List.of(
-                  LocalDateTime.parse("2026-08-03T08:00:00"),
-                  LocalDateTime.parse("2026-08-03T09:00:00")),
-              Map.of("mock-charge-id", BigDecimal.valueOf(42.5)));
+              BigDecimal.valueOf(42.50), Map.of("mock-charge-id", BigDecimal.valueOf(42.5)));
 
       return ResponseEntity.status(HttpStatus.OK).body(mockResponse);
     } else {

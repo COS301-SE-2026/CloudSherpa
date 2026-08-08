@@ -39,12 +39,10 @@ public class BillingForecastingService extends ForecastingService {
 
       SanatizedSeries sanatizedSeries = sampler.sample(chargeSeries, false);
 
-      debugDataPointLog(sanatizedSeries.timestampedNumericDataPoints());
-
       int forecastHorizon = Math.abs(Math.toIntExact(2_592_000L / sanatizedSeries.periodicity()));
 
       IntelligenceForecastRequestDto intelligenceForecastRequestDto =
-          constructForecastRequest(chargeSeries, forecastHorizon);
+          constructForecastRequest(sanatizedSeries.timestampedNumericDataPoints(), forecastHorizon);
       IntelligenceForecastResponseDto intelligenceForecastResponseDto =
           makeForecastRequest(intelligenceForecastRequestDto);
 
@@ -62,6 +60,6 @@ public class BillingForecastingService extends ForecastingService {
 
     logger.info("Total forecasted cost {}", totalCostForecast);
 
-    return null;
+    return new BillingForecastResponseDto(totalCostForecast, individualChargeForecasts);
   }
 }
