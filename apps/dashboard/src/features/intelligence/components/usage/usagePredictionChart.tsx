@@ -29,9 +29,6 @@ export default function UsagePredictionChart({
     const { themeName, tokens } = useChartTheme();
 
     const pastTimeWindowDays = useUsageIntelligenceStore((state) => state.pastTimeWindowDays);
-    const forecastTimeWindowDays = useUsageIntelligenceStore(
-        (state) => state.forecastTimeWindowDays
-    );
 
     const { historicalData, q1Data, q3Data, predictedData } = useMemo(
         () => formatChartData(timeSeriesData, forecastDto),
@@ -40,7 +37,7 @@ export default function UsagePredictionChart({
 
     const oneDayMs = 24 * 60 * 60 * 1000;
     const minXAxisTime = currentTime - pastTimeWindowDays * oneDayMs;
-    const maxXAxisTime = currentTime + forecastTimeWindowDays * oneDayMs;
+    const maxXAxisTime = currentTime + oneDayMs;
 
     const option = {
         tooltip: {

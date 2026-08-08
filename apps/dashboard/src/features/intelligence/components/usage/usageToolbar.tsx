@@ -35,7 +35,6 @@ export default function UsageToolbar() {
         resources,
         isFetching,
         pastTimeWindowDays,
-        forecastTimeWindowDays,
         setTimeWindows,
     } = useUsageIntelligenceStore();
 
@@ -107,19 +106,9 @@ export default function UsageToolbar() {
                     options={PAST_PRESETS}
                     value={pastTimeWindowDays.toString()}
                     onSelect={(val) => {
-                        setTimeWindows(Number(val), forecastTimeWindowDays);
+                        setTimeWindows(Number(val), pastTimeWindowDays);
                     }}
                     placeholder="Select Past Window"
-                    disableSearch={true}
-                    widthVariant="medium"
-                />
-                <Dropdown
-                    options={FORECAST_PRESETS}
-                    value={forecastTimeWindowDays.toString()}
-                    onSelect={(val) => {
-                        setTimeWindows(pastTimeWindowDays, Number(val));
-                    }}
-                    placeholder="Select Forecast Window"
                     disableSearch={true}
                     widthVariant="medium"
                 />

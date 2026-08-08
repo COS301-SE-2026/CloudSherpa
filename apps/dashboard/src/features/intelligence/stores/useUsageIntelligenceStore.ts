@@ -17,7 +17,6 @@ interface UsageIntelligenceStore {
     resourceDisplayName: string | null;
 
     pastTimeWindowDays: number;
-    forecastTimeWindowDays: number;
 
     accounts: CloudAccount[];
     resources: CloudResource[];
@@ -41,7 +40,6 @@ export const useUsageIntelligenceStore = create<UsageIntelligenceStore>((set, ge
     accountDisplayName: null,
     resourceDisplayName: null,
     pastTimeWindowDays: 30,
-    forecastTimeWindowDays: 30,
     accounts: [],
     resources: [],
     isFetching: false,
@@ -83,7 +81,6 @@ export const useUsageIntelligenceStore = create<UsageIntelligenceStore>((set, ge
     setTimeWindows: (past, forecast) =>
         set({
             pastTimeWindowDays: past,
-            forecastTimeWindowDays: forecast,
         }),
 
     fetchAccounts: async (provider) => {
