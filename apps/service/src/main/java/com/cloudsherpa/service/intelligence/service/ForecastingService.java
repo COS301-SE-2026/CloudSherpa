@@ -17,9 +17,11 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class ForecastingService {
@@ -56,6 +58,11 @@ public class ForecastingService {
     IntelligenceForecastResponseDto intelligenceForecastResponseDto =
         executeForecastPipeline(timestampedNumericDataPoints);
 
+    if (intelligenceForecastResponseDto == null) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_GATEWAY, "Forecasting service returned empty response");
+    }
+
     return new ResourceUsageForecastResponseDto(
         intelligenceForecastResponseDto.timestamps(),
         intelligenceForecastResponseDto.forecast(),
@@ -73,9 +80,6 @@ public class ForecastingService {
     }
 
     debugDataPointLog(timestampedNumericDataPoints);
-
-    IntelligenceForecastResponseDto intelligenceForecastResponseDto =
-        executeForecastPipeline(timestampedNumericDataPoints);
 
     return null;
   }
