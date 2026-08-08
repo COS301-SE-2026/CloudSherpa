@@ -8,4 +8,4 @@ import java.util.Map;
 public record BillingForecastResponseDto(
     BigDecimal cumalativeBillingForecastValue,
     List<LocalDateTime> timestamps,
-    Map<String, List<BigDecimal>> billingForecastSeries) {}
+    Map<String, BigDecimal> billingForecastSeries) {}

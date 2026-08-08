@@ -4,7 +4,8 @@ import com.cloudsherpa.service.intelligence.dto.BillingForecastRequestDto;
 import com.cloudsherpa.service.intelligence.dto.BillingForecastResponseDto;
 import com.cloudsherpa.service.intelligence.dto.ResourceUsageForecastRequestDto;
 import com.cloudsherpa.service.intelligence.dto.ResourceUsageForecastResponseDto;
-import com.cloudsherpa.service.intelligence.service.ForecastingService;
+import com.cloudsherpa.service.intelligence.service.BillingForecastingService;
+import com.cloudsherpa.service.intelligence.service.UsageForecastingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -28,13 +29,16 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Intelligence", description = "CloudSherpa Forecasting Intelligence Operations")
 public class IntelligenceForecastingController {
 
-  private final ForecastingService forecastingService;
+  private final UsageForecastingService usageForecastingService;
+  private final BillingForecastingService billingForecastingService;
   private final boolean useMockForecasting;
 
   public IntelligenceForecastingController(
-      ForecastingService forecastingService,
+      UsageForecastingService usageForecastingService,
+      BillingForecastingService billingForecastingService,
       @Value("${intelligence.forecasting.mock:false}") boolean useMockForecasting) {
-    this.forecastingService = forecastingService;
+    this.usageForecastingService = usageForecastingService;
+    this.billingForecastingService = billingForecastingService;
     this.useMockForecasting = useMockForecasting;
   }
 
@@ -80,7 +84,7 @@ public class IntelligenceForecastingController {
       return ResponseEntity.ok(mockResourceUsageForecast());
     }
 
-    return ResponseEntity.ok().body(forecastingService.forecastUsage(request));
+    return ResponseEntity.ok().body(usageForecastingService.forecastUsage(request));
   }
 
   @Operation(
@@ -118,7 +122,7 @@ public class IntelligenceForecastingController {
       //  @io.swagger.v3.oas.annotations.parameters.RequestBody
       @RequestBody BillingForecastRequestDto request) {
 
-    forecastingService.forecastBilling(request);
+    billingForecastingService.forecastBilling(request);
 
     BillingForecastResponseDto mockResponse =
         new BillingForecastResponseDto(
@@ -126,8 +130,7 @@ public class IntelligenceForecastingController {
             List.of(
                 LocalDateTime.parse("2026-08-03T08:00:00"),
                 LocalDateTime.parse("2026-08-03T09:00:00")),
-            Map.of(
-                "mock-charge-id", List.of(BigDecimal.valueOf(20.00), BigDecimal.valueOf(22.50))));
+            Map.of("mock-charge-id", BigDecimal.valueOf(42.5)));
 
     return ResponseEntity.status(HttpStatus.OK).body(mockResponse);
   }

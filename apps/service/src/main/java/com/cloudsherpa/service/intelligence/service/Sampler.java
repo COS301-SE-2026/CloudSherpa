@@ -23,8 +23,7 @@ public class Sampler {
   private Set<Long> candidates = new HashSet<>();
   private boolean padWithZeros;
 
-  public List<TimestampedNumericDataPoint> sample(
-      List<TimestampedNumericDataPoint> original, boolean padWithZeros) {
+  public SanatizedSeries sample(List<TimestampedNumericDataPoint> original, boolean padWithZeros) {
     logger.info("Starting sample with {} original points", original.size());
     this.padWithZeros = padWithZeros;
 
@@ -70,7 +69,7 @@ public class Sampler {
 
     List<TimestampedNumericDataPoint> sanatizedSeries = santizeSeries(processing, periodicity);
     logger.info("Finished sample with {} processed points", processing.size());
-    return sanatizedSeries;
+    return new SanatizedSeries(sanatizedSeries, periodicity);
   }
 
   private List<Long> getDifferences(List<TimestampedNumericDataPoint> original) {
