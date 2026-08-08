@@ -38,7 +38,6 @@ export default function ChartConfigForm({ ChartId }: Readonly<ChartConfigFormPro
     const [selectedConnectionId, setSelectedConnectionId] = useState<string | null>(null);
 
     const handleSave = async () => {
-        console.log(config);
         setIsSaving(true);
         try {
             await updateWidget(config);

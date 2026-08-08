@@ -24,7 +24,7 @@ export default function ChartFormDetails({
         <FieldSet>
             <div className="flex flex-row items-center gap-3">
                 <FormCountCircle count={1} />
-                <FieldLegend className="mb-0">KPI Details</FieldLegend>
+                <FieldLegend className="mb-0">Chart Details</FieldLegend>
             </div>
             <FieldDescription>
                 Choose the title that will appear on the dashboard card.

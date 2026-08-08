@@ -52,7 +52,7 @@ export default function ChartFormResource({
             <FieldDescription>Choose the resource for the chart.</FieldDescription>
             <FieldGroup>
                 <div className="grid gap-2">
-                    <Label>Resource ID</Label>
+                    <Label>Resource Name</Label>
                     <Dropdown
                         value={configuration.resourceId}
                         options={activeResources.map((resource) => ({
