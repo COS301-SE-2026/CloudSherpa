@@ -1,6 +1,5 @@
 package com.cloudsherpa.lib.repositories;
 
-import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -51,7 +50,7 @@ public interface NormalizedMetricsRepository extends JpaRepository<NormalizedMet
           SELECT
             nm.metric_value AS value,
             nm.period_start AS timestamp
-            FROM normalized_metrics nm WHERE nm.resource_id = :resourceId AND metric_name = :metricName ORDER BY nm.period_start ASC;
+            FROM normalized_metrics nm WHERE nm.resource_id = :resourceId AND metric_name = :metricName ORDER BY nm.period_start DESC;
           """,
         nativeQuery = true
     )

@@ -4,6 +4,7 @@ import com.cloudsherpa.lib.dtos.TimestampedNumericDataPoint;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -26,7 +27,15 @@ public class Sampler {
       List<TimestampedNumericDataPoint> original, boolean padWithZeros) {
     logger.info("Starting sample with {} original points", original.size());
     this.padWithZeros = padWithZeros;
-    List<TimestampedNumericDataPoint> processing = new ArrayList<>(original);
+
+    List<TimestampedNumericDataPoint> processing = new ArrayList<>();
+
+    for (TimestampedNumericDataPoint timestampedNumericDataPoint : original) {
+      processing.add(
+          new TimestampedNumericDataPoint(
+              timestampedNumericDataPoint.value(),
+              timestampedNumericDataPoint.timestamp().truncatedTo(ChronoUnit.SECONDS)));
+    }
 
     // Sorting results in negative periodicity, but necessary for the correct cutoff point
     processing.sort(Comparator.comparing(TimestampedNumericDataPoint::timestamp).reversed());
@@ -34,6 +43,24 @@ public class Sampler {
     List<Long> differences = getDifferences(processing);
     List<Cluster> clusteredDifferences = clusterDifferences(differences);
     Long periodicity = choosePeriodicity(clusteredDifferences);
+
+    if (padWithZeros) {
+
+      Instant now = Instant.now();
+
+      Duration durationBetweenTimeOfRequestAndLastIngestedDataPoint =
+          Duration.between(processing.getFirst().timestamp(), now);
+      // cause pad with zero side effect if last ingested data point >= than 1 hour
+      if (durationBetweenTimeOfRequestAndLastIngestedDataPoint.toHours() >= 1) {
+        long secondsToAdd =
+            durationBetweenTimeOfRequestAndLastIngestedDataPoint.toSeconds() / periodicity;
+        Instant newInstant =
+            processing.getFirst().timestamp().plusSeconds(secondsToAdd * periodicity);
+        TimestampedNumericDataPoint newDataPoint =
+            new TimestampedNumericDataPoint(BigDecimal.valueOf(0), newInstant);
+        processing.addFirst(newDataPoint);
+      }
+    }
 
     logger.info(
         "Sample selected periodicity {} seconds from {} differences and {} clusters",

@@ -12,9 +12,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.math.BigDecimal;
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,9 +29,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class IntelligenceForecastingController {
 
   private final ForecastingService forecastingService;
+  private final boolean useMockForecasting;
 
-  public IntelligenceForecastingController(ForecastingService forecastingService) {
+  public IntelligenceForecastingController(
+      ForecastingService forecastingService,
+      @Value("${intelligence.forecasting.mock:false}") boolean useMockForecasting) {
     this.forecastingService = forecastingService;
+    this.useMockForecasting = useMockForecasting;
   }
 
   @Operation(
@@ -71,23 +76,11 @@ public class IntelligenceForecastingController {
                       schema = @Schema(implementation = ResourceUsageForecastRequestDto.class)))
           @RequestBody
           ResourceUsageForecastRequestDto request) {
-    forecastingService.forecastUsage(request);
-    // mock response to show structure
-    List<Instant> mockTimestamps =
-        List.of(
-            Instant.parse("2026-08-03T08:00:00Z"),
-            Instant.parse("2026-08-03T09:00:00Z"),
-            Instant.parse("2026-08-03T10:00:00Z"));
+    if (useMockForecasting) {
+      return ResponseEntity.ok(mockResourceUsageForecast());
+    }
 
-    List<Double> predictedValues = List.of(0.42, 0.47, 0.51);
-
-    List<Double> q1 = List.of(0.36, 0.40, 0.44);
-
-    List<Double> q2 = List.of(0.49, 0.54, 0.59);
-
-    ResourceUsageForecastResponseDto mockResponse =
-        new ResourceUsageForecastResponseDto(mockTimestamps, predictedValues, q1, q2);
-    return ResponseEntity.status(HttpStatus.OK).body(mockResponse);
+    return ResponseEntity.ok().body(forecastingService.forecastUsage(request));
   }
 
   @Operation(
@@ -130,10 +123,31 @@ public class IntelligenceForecastingController {
     BillingForecastResponseDto mockResponse =
         new BillingForecastResponseDto(
             BigDecimal.valueOf(42.50),
-            List.of(Instant.parse("2026-08-03T08:00:00Z"), Instant.parse("2026-08-03T09:00:00Z")),
+            List.of(
+                LocalDateTime.parse("2026-08-03T08:00:00"),
+                LocalDateTime.parse("2026-08-03T09:00:00")),
             Map.of(
                 "mock-charge-id", List.of(BigDecimal.valueOf(20.00), BigDecimal.valueOf(22.50))));
 
     return ResponseEntity.status(HttpStatus.OK).body(mockResponse);
+  }
+
+  private ResourceUsageForecastResponseDto mockResourceUsageForecast() {
+    List<LocalDateTime> mockTimestamps =
+        List.of(
+            LocalDateTime.parse("2026-08-03T08:00:00"),
+            LocalDateTime.parse("2026-08-03T09:00:00"),
+            LocalDateTime.parse("2026-08-03T10:00:00"));
+
+    List<BigDecimal> predictedValues =
+        List.of(BigDecimal.valueOf(0.42), BigDecimal.valueOf(0.47), BigDecimal.valueOf(0.51));
+
+    List<BigDecimal> q1 =
+        List.of(BigDecimal.valueOf(0.36), BigDecimal.valueOf(0.40), BigDecimal.valueOf(0.44));
+
+    List<BigDecimal> q3 =
+        List.of(BigDecimal.valueOf(0.49), BigDecimal.valueOf(0.54), BigDecimal.valueOf(0.59));
+
+    return new ResourceUsageForecastResponseDto(mockTimestamps, predictedValues, q1, q3);
   }
 }
