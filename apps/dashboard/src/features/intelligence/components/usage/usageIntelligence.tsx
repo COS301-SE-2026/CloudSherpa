@@ -2,14 +2,15 @@
 import SummaryCard from "@/features/intelligence/components/usage/summaryCard";
 import UsageToolbar from "@/features/intelligence/components/usage/usageToolbar";
 import UsagePredictionChart from "@/features/intelligence/components/usage/usagePredictionChart";
+import { useUsageIntelligenceConfigStore } from "@/features/intelligence/stores/useUsageIntelligenceConfigStore";
 import { useUsageIntelligenceStore } from "@/features/intelligence/stores/useUsageIntelligenceStore";
 
 //mock
-import { ResourceUsageForecastResponseDto } from "@/features/intelligence/types/metrics";
+import { usageForecastData } from "@/features/intelligence/types/metrics";
 const now = Date.now();
 const oneHour = 60 * 60 * 1000;
 
-const mockForecastDto: ResourceUsageForecastResponseDto = {
+const mockForecast: usageForecastData = {
     horizonTimestamps: [
         new Date(now + 1 * oneHour).toISOString(),
         new Date(now + 2 * oneHour).toISOString(),
@@ -23,8 +24,13 @@ const mockForecastDto: ResourceUsageForecastResponseDto = {
 };
 
 export default function UsageIntelligence() {
-    const resourceId = useUsageIntelligenceStore((state) => state.resourceId);
-    const metricType = useUsageIntelligenceStore((state) => state.metricType);
+    const resourceId = useUsageIntelligenceConfigStore((state) => state.resourceId);
+    const metricType = useUsageIntelligenceConfigStore((state) => state.metricType);
+
+    const forecastedMetrics = useUsageIntelligenceStore((state) => {
+        if (!resourceId || !metricType) return null;
+        return state.forecasts[resourceId]?.[metricType] ?? null;
+    });
 
     return (
         <div className="h-full w-full p-6">
@@ -58,7 +64,7 @@ export default function UsageIntelligence() {
                         <UsagePredictionChart
                             resourceId={resourceId}
                             metricType={metricType}
-                            forecastDto={mockForecastDto}
+                            forecastedMetrics={forecastedMetrics}
                             metricTypeLabel={metricType.toUpperCase()}
                         />
                     ) : (

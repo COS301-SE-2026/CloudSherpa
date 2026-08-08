@@ -4,40 +4,58 @@ import { useMemo } from "react";
 import ReactECharts from "echarts-for-react";
 import type { CallbackDataParams } from "echarts/types/dist/shared";
 import { formatChartData } from "@/features/intelligence/hooks/formatChartData";
-import { ResourceUsageForecastResponseDto } from "@/features/intelligence/types/metrics";
+import { usageForecastData } from "@/features/intelligence/types/metrics";
 import { useChartTheme } from "@/features/dashboard/hooks/useChartTheme";
 import { useChartData } from "@/features/dashboard/hooks/useChartData";
 import { MetricType } from "@/features/dashboard/types/metric";
-import { useUsageIntelligenceStore } from "@/features/intelligence/stores/useUsageIntelligenceStore";
+import { useUsageIntelligenceConfigStore } from "@/features/intelligence/stores/useUsageIntelligenceConfigStore";
 
 interface UsagePredictionChartProps {
     resourceId: string;
     metricType: MetricType;
-    forecastDto: ResourceUsageForecastResponseDto | null;
+    forecastedMetrics: usageForecastData | null;
     metricTypeLabel: string;
 }
 
-const currentTime = Date.now();
+const now = Date.now();
 
 export default function UsagePredictionChart({
     resourceId,
     metricType,
-    forecastDto,
+    forecastedMetrics,
     metricTypeLabel,
 }: Readonly<UsagePredictionChartProps>) {
     const { timeSeriesData } = useChartData(resourceId, metricType);
     const { themeName, tokens } = useChartTheme();
 
-    const pastTimeWindowDays = useUsageIntelligenceStore((state) => state.pastTimeWindowDays);
+    const pastTimeWindowDays = useUsageIntelligenceConfigStore((state) => state.pastTimeWindowDays);
 
     const { historicalData, q1Data, q3Data, predictedData } = useMemo(
-        () => formatChartData(timeSeriesData, forecastDto),
-        [timeSeriesData, forecastDto]
+        () => formatChartData(timeSeriesData, forecastedMetrics),
+        [timeSeriesData, forecastedMetrics]
     );
 
-    const oneDayMs = 24 * 60 * 60 * 1000;
-    const minXAxisTime = currentTime - pastTimeWindowDays * oneDayMs;
-    const maxXAxisTime = currentTime + oneDayMs;
+    const { currentTime, minXAxisTime, maxXAxisTime } = useMemo(() => {
+        const oneDayMs = 24 * 60 * 60 * 1000;
+
+        const minTime = now - pastTimeWindowDays * oneDayMs;
+
+        let maxTime = now;
+
+        if (forecastedMetrics && forecastedMetrics.horizonTimestamps.length > 0) {
+            const lastForecastIndex = forecastedMetrics.horizonTimestamps.length - 1;
+            const lastForecastIso = forecastedMetrics.horizonTimestamps[lastForecastIndex];
+            maxTime = new Date(lastForecastIso).getTime();
+        } else {
+            maxTime = now + oneDayMs;
+        }
+
+        return {
+            currentTime: now,
+            minXAxisTime: minTime,
+            maxXAxisTime: maxTime,
+        };
+    }, [pastTimeWindowDays, forecastedMetrics]);
 
     const option = {
         tooltip: {

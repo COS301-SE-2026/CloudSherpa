@@ -1,6 +1,6 @@
 "use client";
 import Dropdown from "@/components/molecules/dropdown";
-import { useUsageIntelligenceStore } from "@/features/intelligence/stores/useUsageIntelligenceStore";
+import { useUsageIntelligenceConfigStore } from "@/features/intelligence/stores/useUsageIntelligenceConfigStore";
 import { MetricType } from "@/features/dashboard/types/metric";
 import { useMetricStore } from "@/features/dashboard/stores/metric-store";
 
@@ -36,7 +36,7 @@ export default function UsageToolbar() {
         isFetching,
         pastTimeWindowDays,
         setTimeWindows,
-    } = useUsageIntelligenceStore();
+    } = useUsageIntelligenceConfigStore();
 
     const getMetricList = useMetricStore((state) => state.getMetricList);
     const metricsByResource = getMetricList();
