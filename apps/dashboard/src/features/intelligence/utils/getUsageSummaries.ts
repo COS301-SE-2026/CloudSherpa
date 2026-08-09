@@ -7,8 +7,7 @@ export function getArraySummary(values?: number[]) {
     let max = -Infinity;
     let sum = 0;
 
-    for (let i = 0; i < values.length; i++) {
-        const val = values[i];
+    for (const val of values) {
         if (val < min) min = val;
         if (val > max) max = val;
         sum += val;

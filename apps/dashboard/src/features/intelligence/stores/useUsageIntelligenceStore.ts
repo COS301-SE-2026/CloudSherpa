@@ -1,11 +1,11 @@
 import { create } from "zustand";
-import { usageForecastData } from "@/features/intelligence/types/metrics";
+import { UageForecastData } from "@/features/intelligence/types/metrics";
 
 interface UsageIntelligenceStore {
     //forecast format will look like {resourceid {CPU,  data}, {DISK,  data}}
-    forecasts: Record<string, Record<string, usageForecastData>>;
+    forecasts: Record<string, Record<string, UageForecastData>>;
 
-    setUsageForecast: (resourceId: string, metricType: string, data: usageForecastData) => void;
+    setUsageForecast: (resourceId: string, metricType: string, data: UageForecastData) => void;
     clearForecasts: () => void;
 }
 
@@ -17,7 +17,7 @@ export const useUsageIntelligenceStore = create<UsageIntelligenceStore>((set) =>
             forecasts: {
                 ...state.forecasts,
                 [resourceId]: {
-                    ...(state.forecasts[resourceId] || {}),
+                    ...state.forecasts[resourceId],
                     [metricType]: data,
                 },
             },

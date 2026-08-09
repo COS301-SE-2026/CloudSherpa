@@ -40,7 +40,7 @@ export default function UsagePredictionChart() {
     const { currentTime, minXAxisTime, maxXAxisTime } = useMemo(() => {
         const oneDayMs = 24 * 60 * 60 * 1000;
         const minTime = now - pastTimeWindowDays * oneDayMs;
-        let maxTime = now;
+        let maxTime: number;
 
         if (forecastedMetrics && forecastedMetrics.horizonTimestamps.length > 0) {
             const lastForecastIndex = forecastedMetrics.horizonTimestamps.length - 1;

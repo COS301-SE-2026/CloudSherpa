@@ -5,14 +5,14 @@ import UsagePredictionChart from "@/features/intelligence/components/usage/usage
 import { useUsageIntelligenceConfigStore } from "@/features/intelligence/stores/useUsageIntelligenceConfigStore";
 import { useUsageIntelligenceStore } from "@/features/intelligence/stores/useUsageIntelligenceStore";
 import { useEffect, useMemo } from "react";
-import { usageForecastData } from "@/features/intelligence/types/metrics";
+import { UageForecastData } from "@/features/intelligence/types/metrics";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { useFetchMetrics } from "@/features/dashboard/hooks/useFetchMetrics";
 import { Card, CardContent } from "@/components/atoms/card";
 import { useChartData } from "@/features/dashboard/hooks/useChartData";
 import { getArraySummary } from "@/features/intelligence/utils/getUsageSummaries";
 
-function generateMockForecast(days: number): usageForecastData {
+function generateMockForecast(days: number): UageForecastData {
     const hours = days * 24;
     const now = Date.now();
     const oneHour = 60 * 60 * 1000;
@@ -27,7 +27,7 @@ function generateMockForecast(days: number): usageForecastData {
 
         const cycle = Math.sin((i / 24) * Math.PI * 2) * 15;
 
-        const noise = (Math.random() - 0.5) * 5;
+        const noise = (Math.random() - 0.5) * 5; // NOSONAR
 
         const predicted = Math.max(0, Math.min(100, 50 + cycle + noise));
         predictedValues.push(predicted);
@@ -58,7 +58,7 @@ export default function UsageIntelligence() {
     const { timeSeriesData } = useChartData(resourceId || "", metricType || "anon");
 
     const pastSummary = useMemo(() => {
-        if (!timeSeriesData || timeSeriesData.length === 0) {
+        if (!timeSeriesData?.length) {
             return { min: 0, max: 0, avg: 0 };
         }
         const values = timeSeriesData.map((d) => d.value);
@@ -66,7 +66,7 @@ export default function UsageIntelligence() {
     }, [timeSeriesData]);
 
     const forecastSummary = useMemo(() => {
-        if (!forecastedMetrics || !forecastedMetrics.predictedValues) {
+        if (!forecastedMetrics?.predictedValues) {
             return { min: 0, max: 0, avg: 0 };
         }
         return getArraySummary(forecastedMetrics.predictedValues);
