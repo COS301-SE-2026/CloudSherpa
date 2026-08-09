@@ -175,12 +175,11 @@ class BillingServiceTest {
 
   @Test
   void previewKpiRejectsInvalidDates() {
+    BillingKpiRequest request =
+        new BillingKpiRequest(null, "invalid-date", "2026-04-02T00:00:00Z", "daily");
+
     ResponseStatusException exception =
-        assertThrows(
-            ResponseStatusException.class,
-            () ->
-                billingService.previewKpi(
-                    new BillingKpiRequest(null, "invalid-date", "2026-04-02T00:00:00Z", "daily")));
+        assertThrows(ResponseStatusException.class, () -> billingService.previewKpi(request));
 
     assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
     verifyNoInteractions(normalizedCostsRepository);
@@ -188,13 +187,11 @@ class BillingServiceTest {
 
   @Test
   void previewKpiRejectsReversedDateRange() {
+    BillingKpiRequest request =
+        new BillingKpiRequest(null, "2026-04-03T00:00:00Z", "2026-04-02T00:00:00Z", "daily");
+
     ResponseStatusException exception =
-        assertThrows(
-            ResponseStatusException.class,
-            () ->
-                billingService.previewKpi(
-                    new BillingKpiRequest(
-                        null, "2026-04-03T00:00:00Z", "2026-04-02T00:00:00Z", "daily")));
+        assertThrows(ResponseStatusException.class, () -> billingService.previewKpi(request));
 
     assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
     verifyNoInteractions(normalizedCostsRepository);
@@ -204,13 +201,11 @@ class BillingServiceTest {
   void previewKpiRejectsMissingTenant() {
     TenantContext.clear();
 
+    BillingKpiRequest request =
+        new BillingKpiRequest(null, "2026-04-01T00:00:00Z", "2026-04-02T00:00:00Z", "daily");
+
     ResponseStatusException exception =
-        assertThrows(
-            ResponseStatusException.class,
-            () ->
-                billingService.previewKpi(
-                    new BillingKpiRequest(
-                        null, "2026-04-01T00:00:00Z", "2026-04-02T00:00:00Z", "daily")));
+        assertThrows(ResponseStatusException.class, () -> billingService.previewKpi(request));
 
     assertEquals(HttpStatus.UNAUTHORIZED, exception.getStatusCode());
   }
@@ -219,13 +214,11 @@ class BillingServiceTest {
   void previewKpiRejectsInvalidTenant() {
     TenantContext.setCurrentTenant("invalid-tenant");
 
+    BillingKpiRequest request =
+        new BillingKpiRequest(null, "2026-04-01T00:00:00Z", "2026-04-02T00:00:00Z", "daily");
+
     ResponseStatusException exception =
-        assertThrows(
-            ResponseStatusException.class,
-            () ->
-                billingService.previewKpi(
-                    new BillingKpiRequest(
-                        null, "2026-04-01T00:00:00Z", "2026-04-02T00:00:00Z", "daily")));
+        assertThrows(ResponseStatusException.class, () -> billingService.previewKpi(request));
 
     assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
   }
