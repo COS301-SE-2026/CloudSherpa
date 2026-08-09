@@ -1,6 +1,10 @@
 package com.cloudsherpa.service.unit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -20,6 +24,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -110,5 +116,46 @@ class BillingServiceTest {
     verify(normalizedCostsRepository).sumTotalCostBetweenForResources(from, to, chargeIds);
     verify(normalizedCostsRepository)
         .sumTotalCostBetweenForResources(from.minusDays(7), from, chargeIds);
+  }
+
+  @Test
+  void emptyChargeIdsAreTreatedAsAllCharges() {
+    OffsetDateTime from = OffsetDateTime.parse("2026-04-01T00:00:00Z");
+    OffsetDateTime to = OffsetDateTime.parse("2026-04-02T00:00:00Z");
+
+    when(normalizedCostsRepository.sumTotalCostBetween(any(), any())).thenReturn(BigDecimal.TEN);
+
+    BillingKpiResponse response =
+        billingService.previewKpi(
+            new BillingKpiRequest(List.of(), from.toString(), to.toString(), null));
+
+    assertEquals(0, response.selectedChargeCount());
+    assertEquals("Custom range", response.timeLabel());
+
+    verify(normalizedCostsRepository, times(2)).sumTotalCostBetween(any(), any());
+
+    verify(normalizedCostsRepository, never())
+        .sumTotalCostBetweenForResources(any(), any(), anyList());
+  }
+
+  @ParameterizedTest
+  @CsvSource({
+    "daily,Last 24 hours",
+    "weekly,Last 7 days",
+    "monthly,Last 30 days",
+    "unknown,Custom range",
+    "'',Custom range"
+  })
+  void previewKpiResolvesAggregationLabel(String aggregation, String expectedLabel) {
+    OffsetDateTime from = OffsetDateTime.parse("2026-04-01T00:00:00Z");
+    OffsetDateTime to = OffsetDateTime.parse("2026-04-02T00:00:00Z");
+
+    when(normalizedCostsRepository.sumTotalCostBetween(any(), any())).thenReturn(BigDecimal.ZERO);
+
+    BillingKpiResponse response =
+        billingService.previewKpi(
+            new BillingKpiRequest(null, from.toString(), to.toString(), aggregation));
+
+    assertEquals(expectedLabel, response.timeLabel());
   }
 }
