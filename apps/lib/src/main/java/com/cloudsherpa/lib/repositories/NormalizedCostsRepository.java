@@ -89,4 +89,14 @@ public interface NormalizedCostsRepository extends JpaRepository<NormalizedCosts
                 nativeQuery = true
     )
     List<TimestampedNumericDataPoint> getTimestampedBillingValues(@Param("chargeId") String chargeId, Pageable pageable);
+
+    @Query(
+    value = """
+        SELECT DISTINCT ON (nc.charge_id) nc.charge_id
+        FROM normalized_costs nc
+        WHERE nc.charge_type = 'Usage'
+        ORDER BY nc.charge_id
+        """,
+    nativeQuery = true)
+    List<String> findDistinctChargeIdsNonCredit();
 }
