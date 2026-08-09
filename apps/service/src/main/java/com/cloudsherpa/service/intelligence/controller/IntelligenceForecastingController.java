@@ -1,6 +1,6 @@
 package com.cloudsherpa.service.intelligence.controller;
 
-import com.cloudsherpa.service.intelligence.dto.BillingForecastRequestDto;
+import com.cloudsherpa.service.intelligence.dto.BillingForecastIndividualChargesRequestDto;
 import com.cloudsherpa.service.intelligence.dto.BillingForecastResponseDto;
 import com.cloudsherpa.service.intelligence.dto.ResourceUsageForecastRequestDto;
 import com.cloudsherpa.service.intelligence.dto.ResourceUsageForecastResponseDto;
@@ -120,7 +120,7 @@ public class IntelligenceForecastingController {
   @PostMapping("/thirty-day-charges")
   public ResponseEntity<BillingForecastResponseDto> billingForecast(
       // @io.swagger.v3.oas.annotations.parameters.RequestBody
-      @RequestBody BillingForecastRequestDto request) {
+      @RequestBody BillingForecastIndividualChargesRequestDto request) {
 
     if (useMockForecasting) {
       BillingForecastResponseDto mockResponse =
@@ -129,7 +129,8 @@ public class IntelligenceForecastingController {
 
       return ResponseEntity.status(HttpStatus.OK).body(mockResponse);
     } else {
-      return ResponseEntity.ok().body(billingForecastingService.forecastBilling(request));
+      return ResponseEntity.ok()
+          .body(billingForecastingService.forecastBillingByIndividualCharges(request));
     }
   }
 

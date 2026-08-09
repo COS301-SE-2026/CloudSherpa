@@ -2,7 +2,7 @@ package com.cloudsherpa.service.intelligence.service;
 
 import com.cloudsherpa.lib.dtos.TimestampedNumericDataPoint;
 import com.cloudsherpa.lib.repositories.NormalizedCostsRepository;
-import com.cloudsherpa.service.intelligence.dto.BillingForecastRequestDto;
+import com.cloudsherpa.service.intelligence.dto.BillingForecastIndividualChargesRequestDto;
 import com.cloudsherpa.service.intelligence.dto.BillingForecastResponseDto;
 import com.cloudsherpa.service.intelligence.dto.IntelligenceForecastRequestDto;
 import com.cloudsherpa.service.intelligence.dto.IntelligenceForecastResponseDto;
@@ -28,11 +28,20 @@ public class BillingForecastingService extends ForecastingService {
     this.normalizedCostsRepository = normalizedCostsRepository;
   }
 
-  public BillingForecastResponseDto forecastBilling(
-      BillingForecastRequestDto billingForecastRequestDto) {
+  public BillingForecastResponseDto forecastBillingByIndividualCharges(
+      BillingForecastIndividualChargesRequestDto billingForecastIndividualChargesRequestDto) {
+    return executeBillingForecast(billingForecastIndividualChargesRequestDto.chargeIds());
+  }
+
+  public BillingForecastResponseDto forecastBillingByAllNonCreditCharges() {
+    List<String> chargeIds = normalizedCostsRepository.findDistinctChargeIdsNonCredit();
+    return executeBillingForecast(chargeIds);
+  }
+
+  private BillingForecastResponseDto executeBillingForecast(List<String> chargeIds) {
     BigDecimal totalCostForecast = BigDecimal.valueOf(0);
     Map<String, BigDecimal> individualChargeForecasts = new HashMap<>();
-    for (String chargeId : billingForecastRequestDto.chargeIds()) {
+    for (String chargeId : chargeIds) {
       List<TimestampedNumericDataPoint> chargeSeries =
           normalizedCostsRepository.getTimestampedBillingValues(
               chargeId, PageRequest.of(0, CONTEXT_LENGTH));
