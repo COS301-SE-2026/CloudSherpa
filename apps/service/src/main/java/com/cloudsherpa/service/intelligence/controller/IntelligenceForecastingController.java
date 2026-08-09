@@ -1,10 +1,11 @@
 package com.cloudsherpa.service.intelligence.controller;
 
-import com.cloudsherpa.service.intelligence.dto.BillingForecastRequestDto;
+import com.cloudsherpa.service.intelligence.dto.BillingForecastIndividualChargesRequestDto;
 import com.cloudsherpa.service.intelligence.dto.BillingForecastResponseDto;
 import com.cloudsherpa.service.intelligence.dto.ResourceUsageForecastRequestDto;
 import com.cloudsherpa.service.intelligence.dto.ResourceUsageForecastResponseDto;
-import com.cloudsherpa.service.intelligence.service.ForecastingService;
+import com.cloudsherpa.service.intelligence.service.BillingForecastingService;
+import com.cloudsherpa.service.intelligence.service.UsageForecastingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -28,13 +29,16 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Intelligence", description = "CloudSherpa Forecasting Intelligence Operations")
 public class IntelligenceForecastingController {
 
-  private final ForecastingService forecastingService;
+  private final UsageForecastingService usageForecastingService;
+  private final BillingForecastingService billingForecastingService;
   private final boolean useMockForecasting;
 
   public IntelligenceForecastingController(
-      ForecastingService forecastingService,
+      UsageForecastingService usageForecastingService,
+      BillingForecastingService billingForecastingService,
       @Value("${intelligence.forecasting.mock:false}") boolean useMockForecasting) {
-    this.forecastingService = forecastingService;
+    this.usageForecastingService = usageForecastingService;
+    this.billingForecastingService = billingForecastingService;
     this.useMockForecasting = useMockForecasting;
   }
 
@@ -80,22 +84,19 @@ public class IntelligenceForecastingController {
       return ResponseEntity.ok(mockResourceUsageForecast());
     }
 
-    return ResponseEntity.ok().body(forecastingService.forecastUsage(request));
+    return ResponseEntity.ok().body(usageForecastingService.forecastUsage(request));
   }
 
   @Operation(
-      summary = "Forecast Billing",
+      summary = "Forecast Billing with Charges",
       description =
-          "Generates cumalative cost predection value and time series forecast according to forecast horizon for list of charges"
+          "Generates cumalative cost predection value for list of charges"
               + " of which the List can contain a single or multiple charges")
   @ApiResponses(
       value = {
         @ApiResponse(
             responseCode = "200",
-            description =
-                "Billing forecast generated succesfully. The billingForecastSeries maps charge IDs to value forecasts where each value index"
-                    + " corresponds to a timestamp array index, i.e. billingForecastSeries[\"myCharge\"][0] gives the forecasted value for mycharge at timestamp "
-                    + "timestamps[0]",
+            description = "Billing forecast generated succesfully.",
             content =
                 @Content(
                     mediaType = "application/json",
@@ -106,30 +107,60 @@ public class IntelligenceForecastingController {
             content = @Content),
         @ApiResponse(
             responseCode = "422",
-            description = "Insufficient historical data available to make forecasting prediction",
+            description =
+                "Insufficient historical data available to make any forecasting prediction",
             content = @Content),
         @ApiResponse(
             responseCode = "404",
             description = "None of the charges found",
             content = @Content)
       })
-  @PostMapping("/charges")
-  public ResponseEntity<BillingForecastResponseDto> billingForecast(
-      //  @io.swagger.v3.oas.annotations.parameters.RequestBody
-      @RequestBody BillingForecastRequestDto request) {
+  @PostMapping("/billing-charges")
+  public ResponseEntity<BillingForecastResponseDto> billingForecastWithCharges(
+      // @io.swagger.v3.oas.annotations.parameters.RequestBody
+      @RequestBody BillingForecastIndividualChargesRequestDto request) {
 
-    forecastingService.forecastBilling(request);
+    if (useMockForecasting) {
+      BillingForecastResponseDto mockResponse =
+          new BillingForecastResponseDto(
+              BigDecimal.valueOf(42.50),
+              Map.of("mock-charge-id", BigDecimal.valueOf(42.5)),
+              List.of());
 
-    BillingForecastResponseDto mockResponse =
-        new BillingForecastResponseDto(
-            BigDecimal.valueOf(42.50),
-            List.of(
-                LocalDateTime.parse("2026-08-03T08:00:00"),
-                LocalDateTime.parse("2026-08-03T09:00:00")),
-            Map.of(
-                "mock-charge-id", List.of(BigDecimal.valueOf(20.00), BigDecimal.valueOf(22.50))));
+      return ResponseEntity.status(HttpStatus.OK).body(mockResponse);
+    } else {
+      return ResponseEntity.ok()
+          .body(billingForecastingService.forecastBillingByIndividualCharges(request));
+    }
+  }
 
-    return ResponseEntity.status(HttpStatus.OK).body(mockResponse);
+  @Operation(
+      summary = "Forecast Billing for all non-credit charges",
+      description = "Generates cumalative cost predection value for all non-credit charges")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Billing forecast generated succesfully.",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = BillingForecastResponseDto.class))),
+        @ApiResponse(
+            responseCode = "422",
+            description =
+                "Insufficient historical data available to make any forecasting prediction",
+            content = @Content),
+        @ApiResponse(
+            responseCode = "404",
+            description = "No nom-credit charges found",
+            content = @Content)
+      })
+  @PostMapping("/billing")
+  public ResponseEntity<BillingForecastResponseDto> billingForecast() {
+
+    return ResponseEntity.ok()
+        .body(billingForecastingService.forecastBillingByAllNonCreditCharges());
   }
 
   private ResourceUsageForecastResponseDto mockResourceUsageForecast() {

@@ -1,11 +1,10 @@
 package com.cloudsherpa.service.intelligence.dto;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
 public record BillingForecastResponseDto(
     BigDecimal cumalativeBillingForecastValue,
-    List<LocalDateTime> timestamps,
-    Map<String, List<BigDecimal>> billingForecastSeries) {}
+    Map<String, BigDecimal> billingForecastSeries,
+    List<String> failedForecastCharges) {}

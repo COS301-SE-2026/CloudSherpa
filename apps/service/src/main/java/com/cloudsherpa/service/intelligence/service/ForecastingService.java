@@ -1,14 +1,8 @@
 package com.cloudsherpa.service.intelligence.service;
 
 import com.cloudsherpa.lib.dtos.TimestampedNumericDataPoint;
-import com.cloudsherpa.lib.repositories.NormalizedCostsRepository;
-import com.cloudsherpa.lib.repositories.NormalizedMetricsRepository;
-import com.cloudsherpa.service.intelligence.dto.BillingForecastRequestDto;
-import com.cloudsherpa.service.intelligence.dto.BillingForecastResponseDto;
 import com.cloudsherpa.service.intelligence.dto.IntelligenceForecastRequestDto;
 import com.cloudsherpa.service.intelligence.dto.IntelligenceForecastResponseDto;
-import com.cloudsherpa.service.intelligence.dto.ResourceUsageForecastRequestDto;
-import com.cloudsherpa.service.intelligence.dto.ResourceUsageForecastResponseDto;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -16,75 +10,27 @@ import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
-import org.springframework.web.server.ResponseStatusException;
 
-@Service
-public class ForecastingService {
-  private final NormalizedMetricsRepository normalizedMetricsRepository;
-  private final NormalizedCostsRepository normalizedCostsRepository;
-  private final Sampler sampler;
+public abstract class ForecastingService {
   private final RestClient restClient;
+  protected final Sampler sampler;
 
   private final Logger logger = LoggerFactory.getLogger(ForecastingService.class);
 
   // These values are tailored for the Chronos-2 foundation model, if we start to support other
   // models/methods
   // these values can be changed from constants to members and then determined dynamically
-  private static final int CONTEXT_LENGTH = 8092;
-  private static final int FORECAST_LENGTH = 1024;
+  protected static final int CONTEXT_LENGTH = 8092;
+  protected static final int FORECAST_LENGTH = 1024;
 
-  public ForecastingService(
-      NormalizedMetricsRepository normalizedMetricsRepository,
-      NormalizedCostsRepository normalizedCostsRepository,
-      Sampler sampler,
-      RestClient restClient) {
-    this.normalizedMetricsRepository = normalizedMetricsRepository;
-    this.normalizedCostsRepository = normalizedCostsRepository;
-    this.sampler = sampler;
+  protected ForecastingService(RestClient restClient, Sampler sampler) {
     this.restClient = restClient;
+    this.sampler = sampler;
   }
 
-  public ResourceUsageForecastResponseDto forecastUsage(
-      ResourceUsageForecastRequestDto resourceUsageForecastRequestDto) {
-
-    List<TimestampedNumericDataPoint> timestampedNumericDataPoints =
-        getUsageSeries(resourceUsageForecastRequestDto);
-
-    IntelligenceForecastResponseDto intelligenceForecastResponseDto =
-        executeForecastPipeline(timestampedNumericDataPoints);
-
-    if (intelligenceForecastResponseDto == null) {
-      throw new ResponseStatusException(
-          HttpStatus.BAD_GATEWAY, "Forecasting service returned empty response");
-    }
-
-    return new ResourceUsageForecastResponseDto(
-        intelligenceForecastResponseDto.timestamps(),
-        intelligenceForecastResponseDto.forecast(),
-        intelligenceForecastResponseDto.q1(),
-        intelligenceForecastResponseDto.q3());
-  }
-
-  public BillingForecastResponseDto forecastBilling(
-      BillingForecastRequestDto billingForecastRequestDto) {
-    List<TimestampedNumericDataPoint> timestampedNumericDataPoints = new ArrayList<>();
-    for (String chargeId : billingForecastRequestDto.chargeIds()) {
-      timestampedNumericDataPoints.addAll(
-          normalizedCostsRepository.getTimestampedBillingValues(
-              chargeId, PageRequest.of(0, CONTEXT_LENGTH)));
-    }
-
-    debugDataPointLog(timestampedNumericDataPoints);
-
-    return null;
-  }
-
-  private void debugDataPointLog(List<TimestampedNumericDataPoint> timestampedNumericDataPoints) {
+  protected void debugDataPointLog(List<TimestampedNumericDataPoint> timestampedNumericDataPoints) {
     if (timestampedNumericDataPoints.isEmpty()) {
       logger.info("No data");
     }
@@ -97,16 +43,8 @@ public class ForecastingService {
     }
   }
 
-  private List<TimestampedNumericDataPoint> getUsageSeries(
-      ResourceUsageForecastRequestDto resourceUsageForecastRequestDto) {
-    return normalizedMetricsRepository.getTimestampedMetricValues(
-        resourceUsageForecastRequestDto.resourceId(),
-        resourceUsageForecastRequestDto.metricType(),
-        PageRequest.of(0, CONTEXT_LENGTH));
-  }
-
-  private IntelligenceForecastRequestDto constructForecastRequest(
-      List<TimestampedNumericDataPoint> sanatizedDataPoints) {
+  protected IntelligenceForecastRequestDto constructForecastRequest(
+      List<TimestampedNumericDataPoint> sanatizedDataPoints, Integer forecastLength) {
     List<Instant> timestamps = new ArrayList<>();
     List<BigDecimal> values = new ArrayList<>();
 
@@ -116,10 +54,10 @@ public class ForecastingService {
     }
 
     return new IntelligenceForecastRequestDto(
-        FORECAST_LENGTH, timestamps, values, "chronos_univariate");
+        forecastLength, timestamps, values, "chronos_univariate");
   }
 
-  private IntelligenceForecastResponseDto makeForecastRequest(
+  protected IntelligenceForecastResponseDto makeForecastRequest(
       IntelligenceForecastRequestDto intelligenceForecastRequestDto) {
     return restClient
         .post()
@@ -128,14 +66,5 @@ public class ForecastingService {
         .body(intelligenceForecastRequestDto)
         .retrieve()
         .body(IntelligenceForecastResponseDto.class);
-  }
-
-  private IntelligenceForecastResponseDto executeForecastPipeline(
-      List<TimestampedNumericDataPoint> timestampedNumericDataPoints) {
-    List<TimestampedNumericDataPoint> sanitizedNumericDataPoints =
-        sampler.sample(timestampedNumericDataPoints, true);
-    IntelligenceForecastRequestDto intelligenceForecastRequestDto =
-        constructForecastRequest(sanitizedNumericDataPoints);
-    return makeForecastRequest(intelligenceForecastRequestDto);
   }
 }

@@ -38,6 +38,7 @@ public class IntelligenceMockController {
             new TimestampedNumericDataPoint(
                 BigDecimal.valueOf(15.95), Instant.parse("2026-08-03T12:00:00Z")));
 
-    return ResponseEntity.status(HttpStatus.OK).body(sampler.sample(mockSeries, true));
+    return ResponseEntity.status(HttpStatus.OK)
+        .body(sampler.sample(mockSeries, true).timestampedNumericDataPoints());
   }
 }
