@@ -1,15 +1,24 @@
 package com.cloudsherpa.service.unit;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.cloudsherpa.lib.repositories.CloudAccountRepository;
 import com.cloudsherpa.lib.repositories.NormalizedCostsRepository;
+import com.cloudsherpa.service.billing.dto.BillingKpiRequest;
+import com.cloudsherpa.service.billing.dto.BillingKpiResponse;
 import com.cloudsherpa.service.billing.service.BillingService;
 import com.cloudsherpa.service.config.TenantContext;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -41,5 +50,65 @@ class BillingServiceTest {
   @AfterEach
   void tearDown() {
     TenantContext.clear();
+  }
+
+  @Test
+  void previewKpiReturnsTotalsForAllCharges() {
+
+    OffsetDateTime from = OffsetDateTime.parse("2026-04-01T00:00:00Z");
+    OffsetDateTime to = OffsetDateTime.parse("2026-04-08T00:00:00Z");
+    BigDecimal current = new BigDecimal("125.50");
+    BigDecimal previous = new BigDecimal("100.25");
+    OffsetDateTime ingestionTime = OffsetDateTime.parse("2026-04-08T01:00:00Z");
+
+    // When the service asks for the total cost between these dates, return 125.50.
+    when(normalizedCostsRepository.sumTotalCostBetween(from, to)).thenReturn(current);
+    when(normalizedCostsRepository.sumTotalCostBetween(from.minusDays(7), from))
+        .thenReturn(previous);
+    when(cloudAccountRepository.findLatestBillingIngestionByUserId(UUID.fromString(TENANT_ID)))
+        .thenReturn(ingestionTime);
+
+    BillingKpiResponse response =
+        billingService.previewKpi(
+            new BillingKpiRequest(null, from.toString(), to.toString(), "weekly"));
+
+    assertEquals(current, response.value());
+    assertEquals("USD", response.currency());
+    assertEquals(0, response.selectedChargeCount());
+    assertEquals("Last 7 days", response.timeLabel());
+    assertEquals(ingestionTime.toString(), response.updatedAt());
+    assertEquals(previous, response.previousValue());
+
+    verify(query).executeUpdate();
+  }
+
+  @Test
+  void previewKpiUsesSelectedChargesForCurrentAndPreviousPeriods() {
+
+    OffsetDateTime from = OffsetDateTime.parse("2026-04-01T00:00:00Z");
+    OffsetDateTime to = OffsetDateTime.parse("2026-04-08T00:00:00Z");
+    List<String> chargeIds = List.of("charge-a", "charge-b");
+
+    when(normalizedCostsRepository.sumTotalCostBetweenForResources(from, to, chargeIds))
+        .thenReturn(new BigDecimal("75.00"));
+    when(normalizedCostsRepository.sumTotalCostBetweenForResources(
+            from.minusDays(7), from, chargeIds))
+        .thenReturn(new BigDecimal("50.00"));
+    when(cloudAccountRepository.findLatestBillingIngestionByUserId(UUID.fromString(TENANT_ID)))
+        .thenReturn(null);
+
+    BillingKpiResponse response =
+        billingService.previewKpi(
+            new BillingKpiRequest(chargeIds, from.toString(), to.toString(), "monthly"));
+
+    assertEquals(new BigDecimal("75.00"), response.value());
+    assertEquals(2, response.selectedChargeCount());
+    assertEquals("Last 30 days", response.timeLabel());
+    assertEquals("null", response.updatedAt());
+    assertEquals(new BigDecimal("50.00"), response.previousValue());
+
+    verify(normalizedCostsRepository).sumTotalCostBetweenForResources(from, to, chargeIds);
+    verify(normalizedCostsRepository)
+        .sumTotalCostBetweenForResources(from.minusDays(7), from, chargeIds);
   }
 }
