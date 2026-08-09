@@ -10,7 +10,7 @@ import {Search, ArrowUpDown, ChevronLeft, ChevronRight} from "lucide-react";
 import {Input} from "@/components/atoms/input";
 import {Badge} from "@/components/atoms/badge";
 import {Switch} from "@/components/atoms/switch";
-import {useReactTable, getCoreRowModel, getFilteredRowModel, getSortedRowModel, createColumnHelper, flexRender, type SortingState, type ColumnFiltersState, type HeaderContext, type CellContext, getPaginationRowModel} from "@tanstack/react-table";
+import {useReactTable, getCoreRowModel, getFilteredRowModel, getSortedRowModel, createColumnHelper, flexRender, type SortingState, type ColumnFiltersState, type HeaderContext, type CellContext, getPaginationRowModel, type Table as TableType} from "@tanstack/react-table";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/atoms/table";
 
 /*
@@ -49,10 +49,16 @@ interface ActionForResource{
     toggleAll : () => void;
 }
 
-const hardCodedResources : DetailsForResource[] = [
-    {id : "resource1", name : "Resource one", type : "Service one", region : "us-central", tag : ["tag1", "tag2"]},
-    {id : "resource2", name : "Resource two", type : "Service two", region : "us-east", tag : ["tag1", "tag2"]},
-    {id : "resource3", name : "Resource three", type : "Service three", region : "europe-west", tag : ["tag1", "tag2"]},
+const hardCodedResources: DetailsForResource[] = [
+    { id: "resource1", name: "Resource one", type: "Service one", region: "region 1", tag: ["tag1", "tag2"] },
+    { id: "resource2", name: "Resource two", type: "Service two", region: "region 2", tag: ["tag1", "tag2"] },
+    { id: "resource3", name: "Resource three", type: "Service three", region: "region 3", tag: ["tag1", "tag2"] },
+    { id: "resource4", name: "Resource four", type: "Service four", region: "region 4", tag: ["tag1", "tag2"] },
+    { id: "resource5", name: "Resource five", type: "Service five", region: "region 5", tag: ["tag1", "tag2"] },
+    { id: "resource6", name: "Resource six", type: "Service six", region: "region 6", tag: ["tag1", "tag2"] },
+    { id: "resource7", name: "Resource seven", type: "Service seven", region: "region 7", tag: ["tag1", "tag2"] },
+    { id: "resource8", name: "Resource eight", type: "Service eight", region: "region 8", tag: ["tag1", "tag2"] },
+    { id: "resource9", name: "Resource nine", type: "Service nine", region: "region 9", tag: ["tag1", "tag2"] },
 ];
 
 function ListOfTags({tags} : Readonly<{tags : string[]}>){
@@ -100,14 +106,14 @@ function ToggleCells({row, table} : Readonly<CellContext<Resources,Resources["st
     )
 }
 
-function SelectionHeader({table} : Readonly<{table : any}>){
+function SelectionHeader({table} : Readonly<{table : TableType<Resources>}>){
     const {toggleAll} = table.options.meta as ActionForResource;
 
     const rows = table.getRowModel().rows;
 
-    const allSelected = rows.length>0 && rows.every((row : any) => row.original.selected);
+    const allSelected = rows.length>0 && rows.every((row) => row.original.selected);
 
-    const someSelected = rows.some((row : any) => row.original.selected);
+    const someSelected = rows.some((row) => row.original.selected);
 
     return(
         <div className = "flex justify-center">
