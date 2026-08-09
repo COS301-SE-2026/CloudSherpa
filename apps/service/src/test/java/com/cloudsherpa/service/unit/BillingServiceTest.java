@@ -173,6 +173,7 @@ class BillingServiceTest {
     assertEquals(expectedLabel, response.timeLabel());
   }
 
+  @Test
   void previewKpiRejectsInvalidDates() {
     ResponseStatusException exception =
         assertThrows(
@@ -265,5 +266,21 @@ class BillingServiceTest {
 
     assertEquals(HttpStatus.UNAUTHORIZED, exception.getStatusCode());
     verifyNoInteractions(normalizedCostsRepository);
+  }
+
+  @Test
+  void previewKpiReturnsZeroWhenThereAreNoCosts() {
+    OffsetDateTime from = OffsetDateTime.parse("2026-04-01T00:00:00Z");
+    OffsetDateTime to = OffsetDateTime.parse("2026-04-02T00:00:00Z");
+
+    when(normalizedCostsRepository.sumTotalCostBetween(any(), any())).thenReturn(BigDecimal.ZERO);
+
+    BillingKpiResponse response =
+        billingService.previewKpi(
+            new BillingKpiRequest(null, from.toString(), to.toString(), "daily"));
+
+    assertEquals(BigDecimal.ZERO, response.value());
+    assertEquals(BigDecimal.ZERO, response.previousValue());
+    assertEquals(0, response.selectedChargeCount());
   }
 }
