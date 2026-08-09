@@ -7,6 +7,7 @@ import com.cloudsherpa.service.intelligence.dto.BillingForecastResponseDto;
 import com.cloudsherpa.service.intelligence.dto.IntelligenceForecastRequestDto;
 import com.cloudsherpa.service.intelligence.dto.IntelligenceForecastResponseDto;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +42,7 @@ public class BillingForecastingService extends ForecastingService {
   private BillingForecastResponseDto executeBillingForecast(List<String> chargeIds) {
     BigDecimal totalCostForecast = BigDecimal.valueOf(0);
     Map<String, BigDecimal> individualChargeForecasts = new HashMap<>();
+    List<String> failedForecastCharges = new ArrayList<>();
     for (String chargeId : chargeIds) {
       logger.info(chargeId);
       List<TimestampedNumericDataPoint> chargeSeries =
@@ -50,6 +52,8 @@ public class BillingForecastingService extends ForecastingService {
       SanatizedSeries sanatizedSeries = sampler.sample(chargeSeries, false);
 
       if (sanatizedSeries.timestampedNumericDataPoints().size() < 3) {
+        logger.info("Could not forecast for charge {} due to insufficient data", chargeId);
+        failedForecastCharges.add(chargeId);
         continue;
       }
 
@@ -74,6 +78,7 @@ public class BillingForecastingService extends ForecastingService {
 
     logger.info("Total forecasted cost {}", totalCostForecast);
 
-    return new BillingForecastResponseDto(totalCostForecast, individualChargeForecasts);
+    return new BillingForecastResponseDto(
+        totalCostForecast, individualChargeForecasts, failedForecastCharges);
   }
 }

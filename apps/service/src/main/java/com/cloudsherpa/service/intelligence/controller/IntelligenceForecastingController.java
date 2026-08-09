@@ -125,7 +125,9 @@ public class IntelligenceForecastingController {
     if (useMockForecasting) {
       BillingForecastResponseDto mockResponse =
           new BillingForecastResponseDto(
-              BigDecimal.valueOf(42.50), Map.of("mock-charge-id", BigDecimal.valueOf(42.5)));
+              BigDecimal.valueOf(42.50),
+              Map.of("mock-charge-id", BigDecimal.valueOf(42.5)),
+              List.of());
 
       return ResponseEntity.status(HttpStatus.OK).body(mockResponse);
     } else {
