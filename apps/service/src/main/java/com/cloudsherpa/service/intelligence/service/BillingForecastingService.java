@@ -70,6 +70,9 @@ public class BillingForecastingService extends ForecastingService {
         aggregatedCharge = aggregatedCharge.add(forecastedChargePoint);
       }
 
+      // Cap at 0
+      aggregatedCharge = aggregatedCharge.max(BigDecimal.valueOf(0));
+
       logger.info("Forecasted charge for {} is {}", chargeId, aggregatedCharge);
 
       totalCostForecast = totalCostForecast.add(aggregatedCharge);
