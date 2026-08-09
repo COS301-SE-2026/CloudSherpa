@@ -4,14 +4,18 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import com.cloudsherpa.lib.entities.NormalizedCosts;
+import com.cloudsherpa.lib.entities.ProviderEnum;
 import com.cloudsherpa.lib.repositories.CloudAccountRepository;
 import com.cloudsherpa.lib.repositories.NormalizedCostsRepository;
+import com.cloudsherpa.service.billing.dto.BillingChargeResponse;
 import com.cloudsherpa.service.billing.dto.BillingKpiRequest;
 import com.cloudsherpa.service.billing.dto.BillingKpiResponse;
 import com.cloudsherpa.service.billing.service.BillingService;
@@ -217,5 +221,43 @@ class BillingServiceTest {
                         null, "2026-04-01T00:00:00Z", "2026-04-02T00:00:00Z", "daily")));
 
     assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
+  }
+
+  @Test
+  void getChargesMapsRepositoryResults() {
+    NormalizedCosts charge = mock(NormalizedCosts.class);
+
+    when(charge.getResourceId()).thenReturn("resource-1");
+    when(charge.getChargeId()).thenReturn("charge-1");
+    when(charge.getServiceName()).thenReturn("EC2");
+    when(charge.getProvider()).thenReturn(ProviderEnum.AWS);
+
+    when(normalizedCostsRepository.findDistinctByChargeId()).thenReturn(List.of(charge));
+
+    List<BillingChargeResponse> response = billingService.getCharges();
+
+    assertEquals(
+        List.of(new BillingChargeResponse("resource-1", "charge-1", "EC2", ProviderEnum.AWS)),
+        response);
+
+    verify(normalizedCostsRepository).findDistinctByChargeId();
+  }
+
+  @Test
+  void getChargesReturnsEmptyListWhenRepositoryIsEmpty() {
+    when(normalizedCostsRepository.findDistinctByChargeId()).thenReturn(List.of());
+
+    assertEquals(List.of(), billingService.getCharges());
+  }
+
+  @Test
+  void getChargesRejectsMissingTenant() {
+    TenantContext.clear();
+
+    ResponseStatusException exception =
+        assertThrows(ResponseStatusException.class, () -> billingService.getCharges());
+
+    assertEquals(HttpStatus.UNAUTHORIZED, exception.getStatusCode());
+    verifyNoInteractions(normalizedCostsRepository);
   }
 }
