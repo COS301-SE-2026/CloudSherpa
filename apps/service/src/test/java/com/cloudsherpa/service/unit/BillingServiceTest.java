@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -36,6 +37,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.server.ResponseStatusException;
 
 @ExtendWith(MockitoExtension.class)
@@ -56,8 +58,12 @@ class BillingServiceTest {
     // log in as the fake user
     TenantContext.setCurrentTenant(TENANT_ID);
 
-    when(entityManager.createNativeQuery(
-            "SET search_path TO tenant_123e4567_e89b_12d3_a456_426614174000, public"))
+    ReflectionTestUtils.setField(billingService, "entityManager", entityManager);
+
+    lenient()
+        .when(
+            entityManager.createNativeQuery(
+                "SET search_path TO tenant_123e4567_e89b_12d3_a456_426614174000, public"))
         .thenReturn(query);
   }
 
