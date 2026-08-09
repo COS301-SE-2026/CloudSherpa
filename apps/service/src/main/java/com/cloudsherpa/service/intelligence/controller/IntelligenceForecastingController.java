@@ -88,18 +88,15 @@ public class IntelligenceForecastingController {
   }
 
   @Operation(
-      summary = "Forecast Billing",
+      summary = "Forecast Billing with Charges",
       description =
-          "Generates cumalative cost predection value and time series forecast according to forecast horizon for list of charges"
+          "Generates cumalative cost predection value for list of charges"
               + " of which the List can contain a single or multiple charges")
   @ApiResponses(
       value = {
         @ApiResponse(
             responseCode = "200",
-            description =
-                "Billing forecast generated succesfully. The billingForecastSeries maps charge IDs to value forecasts where each value index"
-                    + " corresponds to a timestamp array index, i.e. billingForecastSeries[\"myCharge\"][0] gives the forecasted value for mycharge at timestamp "
-                    + "timestamps[0]",
+            description = "Billing forecast generated succesfully.",
             content =
                 @Content(
                     mediaType = "application/json",
@@ -110,7 +107,8 @@ public class IntelligenceForecastingController {
             content = @Content),
         @ApiResponse(
             responseCode = "422",
-            description = "Insufficient historical data available to make forecasting prediction",
+            description =
+                "Insufficient historical data available to make any forecasting prediction",
             content = @Content),
         @ApiResponse(
             responseCode = "404",
@@ -136,6 +134,28 @@ public class IntelligenceForecastingController {
     }
   }
 
+  @Operation(
+      summary = "Forecast Billing for all non-credit charges",
+      description = "Generates cumalative cost predection value for all non-credit charges")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Billing forecast generated succesfully.",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = BillingForecastResponseDto.class))),
+        @ApiResponse(
+            responseCode = "422",
+            description =
+                "Insufficient historical data available to make any forecasting prediction",
+            content = @Content),
+        @ApiResponse(
+            responseCode = "404",
+            description = "No nom-credit charges found",
+            content = @Content)
+      })
   @PostMapping("/billing")
   public ResponseEntity<BillingForecastResponseDto> billingForecast() {
 
