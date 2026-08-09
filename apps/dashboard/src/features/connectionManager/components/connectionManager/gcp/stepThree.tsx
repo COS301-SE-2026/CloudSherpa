@@ -6,11 +6,11 @@ import {Button} from "@/components/atoms/button";
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/atoms/tooltip";
 import {Slider} from "@/components/atoms/slider";
 import {Label} from "@/components/atoms/label";
-import {Search, ArrowUpDown} from "lucide-react";
+import {Search, ArrowUpDown, ChevronLeft, ChevronRight} from "lucide-react";
 import {Input} from "@/components/atoms/input";
 import {Badge} from "@/components/atoms/badge";
 import {Switch} from "@/components/atoms/switch";
-import {useReactTable, getCoreRowModel, getFilteredRowModel, getSortedRowModel, createColumnHelper, flexRender, type SortingState, type ColumnFiltersState, type HeaderContext, type CellContext} from "@tanstack/react-table";
+import {useReactTable, getCoreRowModel, getFilteredRowModel, getSortedRowModel, createColumnHelper, flexRender, type SortingState, type ColumnFiltersState, type HeaderContext, type CellContext, getPaginationRowModel} from "@tanstack/react-table";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/atoms/table";
 
 /*
@@ -100,14 +100,14 @@ function ToggleCells({row, table} : Readonly<CellContext<Resources,Resources["st
     )
 }
 
-function SelectionHeader({table} : Readonly<HeaderContext<Resources, boolean>>){
+function SelectionHeader({table} : Readonly<{table : any}>){
     const {toggleAll} = table.options.meta as ActionForResource;
 
     const rows = table.getRowModel().rows;
 
-    const allSelected = rows.length>0 && rows.every((row) => row.original.selected);
+    const allSelected = rows.length>0 && rows.every((row : any) => row.original.selected);
 
-    const someSelected = rows.some((row) => row.original.selected);
+    const someSelected = rows.some((row : any) => row.original.selected);
 
     return(
         <div className = "flex justify-center">
@@ -159,6 +159,8 @@ const columns = [
 export default function StepThreeGcp({
     resources = [], onNext, onBack, ingestionPeriod = "60",
 } : Readonly<StepThreePropsForGcp>){
+    const [forPagination, setForPagination] = useState({pageIndex : 0, pageSize : 8,});
+
     const [forSaving, setForSaving] = useState(false);
 
     const [errors, setErrors] = useState<string | null>(null);
@@ -232,9 +234,9 @@ export default function StepThreeGcp({
     }), [changeStatus, toggleResource, handlingSelectedAll]);
 
     const table = useReactTable({
-        data : tableResources, columns, meta : actions, state : {globalFilter : filter, sorting : sort, columnFilters : filterColumn},
+        data : tableResources, columns, meta : actions, state : {globalFilter : filter, sorting : sort, columnFilters : filterColumn, pagination : forPagination},
         getRowId : (row) => row.id, onGlobalFilterChange : setFilter, onSortingChange : setSort, onColumnFiltersChange : setFilterColumn, getCoreRowModel : getCoreRowModel(),
-        getFilteredRowModel : getFilteredRowModel(), getSortedRowModel : getSortedRowModel(),
+        getFilteredRowModel : getFilteredRowModel(), getSortedRowModel : getSortedRowModel(), onPaginationChange : setForPagination, getPaginationRowModel : getPaginationRowModel(),
     })
 
     useEffect(() => {
@@ -300,7 +302,7 @@ export default function StepThreeGcp({
                                             header.column.columnDef.header, header.getContext()
                                         )}
                                     </TableHead>
-                                    
+
                                 ))}
                             </TableRow>
                         ))}
@@ -325,8 +327,18 @@ export default function StepThreeGcp({
                             ))
                         )}
                     </TableBody>
-
                 </Table>
+
+                {tableResources.length>8 && (
+                    <div className = "flex items-center justify-center gap-2 py-4 border-t border-border">
+                        <Button type = "button" variant = "outline" size = "sm" onClick = {() => table.previousPage()} disabled = {!table.getCanPreviousPage()} className = "h-8 w-8 p-0"> <ChevronLeft size = {16}/> </Button>
+
+                        <span className = "text-sm font-medium px-3"> Page {table.getState().pagination.pageIndex+1} of {table.getPageCount() || 1} </span>
+
+                        <Button type = "button" variant = "outline" size = "sm" onClick = {() => table.nextPage()} disabled = {!table.getCanNextPage()} className = "h-8 w-8 p-0"> <ChevronRight size = {16}/> </Button>
+                    </div>
+                )}
+
             </div>
             </div>
 
