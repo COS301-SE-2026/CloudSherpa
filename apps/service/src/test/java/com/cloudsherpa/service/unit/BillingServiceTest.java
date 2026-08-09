@@ -1,11 +1,13 @@
 package com.cloudsherpa.service.unit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.cloudsherpa.lib.repositories.CloudAccountRepository;
@@ -29,6 +31,8 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 @ExtendWith(MockitoExtension.class)
 class BillingServiceTest {
@@ -157,5 +161,61 @@ class BillingServiceTest {
             new BillingKpiRequest(null, from.toString(), to.toString(), aggregation));
 
     assertEquals(expectedLabel, response.timeLabel());
+  }
+
+  void previewKpiRejectsInvalidDates() {
+    ResponseStatusException exception =
+        assertThrows(
+            ResponseStatusException.class,
+            () ->
+                billingService.previewKpi(
+                    new BillingKpiRequest(null, "invalid-date", "2026-04-02T00:00:00Z", "daily")));
+
+    assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
+    verifyNoInteractions(normalizedCostsRepository);
+  }
+
+  @Test
+  void previewKpiRejectsReversedDateRange() {
+    ResponseStatusException exception =
+        assertThrows(
+            ResponseStatusException.class,
+            () ->
+                billingService.previewKpi(
+                    new BillingKpiRequest(
+                        null, "2026-04-03T00:00:00Z", "2026-04-02T00:00:00Z", "daily")));
+
+    assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
+    verifyNoInteractions(normalizedCostsRepository);
+  }
+
+  @Test
+  void previewKpiRejectsMissingTenant() {
+    TenantContext.clear();
+
+    ResponseStatusException exception =
+        assertThrows(
+            ResponseStatusException.class,
+            () ->
+                billingService.previewKpi(
+                    new BillingKpiRequest(
+                        null, "2026-04-01T00:00:00Z", "2026-04-02T00:00:00Z", "daily")));
+
+    assertEquals(HttpStatus.UNAUTHORIZED, exception.getStatusCode());
+  }
+
+  @Test
+  void previewKpiRejectsInvalidTenant() {
+    TenantContext.setCurrentTenant("invalid-tenant");
+
+    ResponseStatusException exception =
+        assertThrows(
+            ResponseStatusException.class,
+            () ->
+                billingService.previewKpi(
+                    new BillingKpiRequest(
+                        null, "2026-04-01T00:00:00Z", "2026-04-02T00:00:00Z", "daily")));
+
+    assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
   }
 }
