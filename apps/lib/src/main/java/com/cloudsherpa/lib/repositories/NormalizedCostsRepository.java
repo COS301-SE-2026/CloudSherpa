@@ -1,6 +1,7 @@
 package com.cloudsherpa.lib.repositories;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.List;
 
@@ -12,6 +13,7 @@ import org.springframework.data.repository.query.Param;
 
 import com.cloudsherpa.lib.dtos.TimestampedNumericDataPoint;
 import com.cloudsherpa.lib.entities.NormalizedCosts;
+import com.cloudsherpa.lib.entities.ProviderEnum;
 
 import jakarta.transaction.Transactional;
 
@@ -99,4 +101,29 @@ public interface NormalizedCostsRepository extends JpaRepository<NormalizedCosts
         """,
     nativeQuery = true)
     List<String> findDistinctChargeIdsNonCredit();
+
+    @Query(
+        value = """
+                SELECT DISTINCT
+               nc.provider,
+               DATE_TRUNC('day', nc.usage_start_time) AS timestamp
+                FROM normalized_costs nc 
+                WHERE nc.provider = :provider
+                ORDER BY timestamp DESC LIMIT 1;
+                """,
+                nativeQuery = true    
+    )
+    Instant findLatestProviderBillingReportDate(@Param("provider") String provider);
+
+    @Query(
+        value = """
+                SELECT 
+                nc.provider
+                FROM normalized_costs nc 
+                WHERE nc.charge_id = :chargeId
+                LIMIT 1;
+                """,
+        nativeQuery = true
+    )
+    ProviderEnum getChargeProvider(@Param("chargeId") String chargeId);
 }
