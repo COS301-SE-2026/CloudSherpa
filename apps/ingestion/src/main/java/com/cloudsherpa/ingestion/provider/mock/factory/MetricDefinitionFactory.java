@@ -67,6 +67,11 @@ public class MetricDefinitionFactory {
     return new MetricDefinition(metricName, "Percent", Profiles.CPU, percentageSimulator);
   }
 
+  public MetricDefinition cpu(String metricName, String metricUnit) {
+
+    return new MetricDefinition(metricName, metricUnit, Profiles.CPU, percentageSimulator);
+  }
+
   public MetricDefinition memory(String metricName) {
 
     return new MetricDefinition(metricName, "Percent", Profiles.MEMORY, percentageSimulator);
@@ -75,6 +80,11 @@ public class MetricDefinitionFactory {
   public MetricDefinition gpu(String metricName) {
 
     return new MetricDefinition(metricName, "Percent", Profiles.GPU, percentageSimulator);
+  }
+
+  public MetricDefinition gpu(String metricName, String metricUnit) {
+
+    return new MetricDefinition(metricName, metricUnit, Profiles.GPU, percentageSimulator);
   }
 
   public MetricDefinition throughput(String metricName, String unit) {
