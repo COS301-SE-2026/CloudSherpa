@@ -42,11 +42,16 @@ public class BillingForecastingService extends ForecastingService {
     BigDecimal totalCostForecast = BigDecimal.valueOf(0);
     Map<String, BigDecimal> individualChargeForecasts = new HashMap<>();
     for (String chargeId : chargeIds) {
+      logger.info(chargeId);
       List<TimestampedNumericDataPoint> chargeSeries =
           normalizedCostsRepository.getTimestampedBillingValues(
               chargeId, PageRequest.of(0, CONTEXT_LENGTH));
 
       SanatizedSeries sanatizedSeries = sampler.sample(chargeSeries, false);
+
+      if (sanatizedSeries.timestampedNumericDataPoints().size() < 3) {
+        continue;
+      }
 
       int forecastHorizon = Math.abs(Math.toIntExact(2_592_000L / sanatizedSeries.periodicity()));
 

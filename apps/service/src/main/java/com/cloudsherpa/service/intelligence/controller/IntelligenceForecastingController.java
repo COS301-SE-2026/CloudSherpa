@@ -117,8 +117,8 @@ public class IntelligenceForecastingController {
             description = "None of the charges found",
             content = @Content)
       })
-  @PostMapping("/thirty-day-charges")
-  public ResponseEntity<BillingForecastResponseDto> billingForecast(
+  @PostMapping("/billing-charges")
+  public ResponseEntity<BillingForecastResponseDto> billingForecastWithCharges(
       // @io.swagger.v3.oas.annotations.parameters.RequestBody
       @RequestBody BillingForecastIndividualChargesRequestDto request) {
 
@@ -132,6 +132,13 @@ public class IntelligenceForecastingController {
       return ResponseEntity.ok()
           .body(billingForecastingService.forecastBillingByIndividualCharges(request));
     }
+  }
+
+  @PostMapping("/billing")
+  public ResponseEntity<BillingForecastResponseDto> billingForecast() {
+
+    return ResponseEntity.ok()
+        .body(billingForecastingService.forecastBillingByAllNonCreditCharges());
   }
 
   private ResourceUsageForecastResponseDto mockResourceUsageForecast() {

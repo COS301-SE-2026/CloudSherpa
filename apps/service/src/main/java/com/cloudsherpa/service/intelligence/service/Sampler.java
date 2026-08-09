@@ -27,6 +27,10 @@ public class Sampler {
     logger.info("Starting sample with {} original points", original.size());
     this.padWithZeros = padWithZeros;
 
+    if (original.size() < 2) {
+      return new SanatizedSeries(List.of(), 0);
+    }
+
     List<TimestampedNumericDataPoint> processing = new ArrayList<>();
 
     for (TimestampedNumericDataPoint timestampedNumericDataPoint : original) {
