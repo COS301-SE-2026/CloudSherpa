@@ -4,10 +4,13 @@ import UsageToolbar from "@/features/intelligence/components/usage/usageToolbar"
 import UsagePredictionChart from "@/features/intelligence/components/usage/usagePredictionChart";
 import { useUsageIntelligenceConfigStore } from "@/features/intelligence/stores/useUsageIntelligenceConfigStore";
 import { useUsageIntelligenceStore } from "@/features/intelligence/stores/useUsageIntelligenceStore";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { usageForecastData } from "@/features/intelligence/types/metrics";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { useFetchMetrics } from "@/features/dashboard/hooks/useFetchMetrics";
+import { Card, CardContent } from "@/components/atoms/card";
+import { useChartData } from "@/features/dashboard/hooks/useChartData";
+import { getArraySummary } from "@/features/intelligence/utils/getUsageSummaries";
 
 function generateMockForecast(days: number): usageForecastData {
     const hours = days * 24;
@@ -45,15 +48,29 @@ export default function UsageIntelligence() {
 
     const currentUnit = getMetricUnit(metricType);
 
-    //summarycard values
-    const pastMaxUsage = 90;
-    const forecastedMaxUsage = 190;
-    const pastMinUsage = 50;
-    const forecastedMinUsage = 60;
-    const pastAverageUsage = 70;
-    const forecastedAverageUsage = 85;
-
     const setUsageForecast = useUsageIntelligenceStore((state) => state.setUsageForecast);
+
+    //data
+    const forecastedMetrics = useUsageIntelligenceStore((state) => {
+        if (!resourceId || !metricType) return null;
+        return state.forecasts[resourceId]?.[metricType] ?? null;
+    });
+    const { timeSeriesData } = useChartData(resourceId || "", metricType || "anon");
+
+    const pastSummary = useMemo(() => {
+        if (!timeSeriesData || timeSeriesData.length === 0) {
+            return { min: 0, max: 0, avg: 0 };
+        }
+        const values = timeSeriesData.map((d) => d.value);
+        return getArraySummary(values);
+    }, [timeSeriesData]);
+
+    const forecastSummary = useMemo(() => {
+        if (!forecastedMetrics || !forecastedMetrics.predictedValues) {
+            return { min: 0, max: 0, avg: 0 };
+        }
+        return getArraySummary(forecastedMetrics.predictedValues);
+    }, [forecastedMetrics]);
 
     useEffect(() => {
         if (resourceId && metricType) {
@@ -69,16 +86,16 @@ export default function UsageIntelligence() {
     }, [resourceId, metricType, setUsageForecast]);
 
     return (
-        <div className="h-full w-full p-6">
+        <div className="flex flex-col h-full w-full p-6 gap-4">
             <UsageToolbar />
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 h-full">
                 <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                     <SummaryCard
                         title="Max Usage"
                         unit={currentUnit}
                         Icon={TrendingUp}
-                        pastUsage={pastMaxUsage}
-                        predictedUsage={forecastedMaxUsage}
+                        pastUsage={pastSummary.max}
+                        predictedUsage={forecastSummary.max}
                         description="maximum recorded usage"
                         tooltip="This represents the maximum recorded usage for both the past and forecasted usage"
                     />
@@ -86,8 +103,8 @@ export default function UsageIntelligence() {
                         title="Min Usage"
                         unit={currentUnit}
                         Icon={TrendingDown}
-                        pastUsage={pastMinUsage}
-                        predictedUsage={forecastedMinUsage}
+                        pastUsage={pastSummary.min}
+                        predictedUsage={forecastSummary.min}
                         description="minimum recorded usage"
                         tooltip="This represents the minimum recorded usage for both the past and forecasted usage"
                     />
@@ -95,21 +112,23 @@ export default function UsageIntelligence() {
                         title="Average Usage"
                         unit={currentUnit}
                         Icon={Minus}
-                        pastUsage={pastAverageUsage}
-                        predictedUsage={forecastedAverageUsage}
+                        pastUsage={pastSummary.avg}
+                        predictedUsage={forecastSummary.avg}
                         description="average recorded usage"
                         tooltip="This represents the average recorded usage for both the past and forecasted usage"
                     />
                 </section>
-                <section className="w-full h-full">
+                <section className="w-full flex-1 min-h-0 flex flex-col">
                     {resourceId && metricType ? (
                         <UsagePredictionChart />
                     ) : (
-                        <div className="flex h-[400px] w-full items-center justify-center rounded-lg border-2 border-dashed border-border bg-card">
-                            <p className="text-muted-foreground">
-                                Select a resource and metric to view forecast.
-                            </p>
-                        </div>
+                        <Card className="h-full w-full flex flex-col items-center justify-center border-2 border-dashed">
+                            <CardContent className="flex items-center justify-center p-0">
+                                <p className="text-muted-foreground">
+                                    Select a resource and metric to view forecast.
+                                </p>
+                            </CardContent>
+                        </Card>
                     )}
                 </section>
             </div>

@@ -78,7 +78,7 @@ export const useUsageIntelligenceConfigStore = create<UsageIntelligenceConfigSto
             metricType,
         }),
 
-    setTimeWindows: (past, forecast) =>
+    setTimeWindows: (past) =>
         set({
             pastTimeWindowDays: past,
         }),

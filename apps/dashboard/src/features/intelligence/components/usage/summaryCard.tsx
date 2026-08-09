@@ -49,7 +49,6 @@ export default function SummaryCard({
     tooltip,
     Icon,
 }: Readonly<SummaryCardProps>) {
-    const formattedUnit = unit && unit !== "%" ? ` ${unit}` : unit;
     return (
         <Card>
             <CardHeader>
@@ -67,12 +66,12 @@ export default function SummaryCard({
                 {Icon && <Icon className="h-8 w-8 text-primary" />}
                 <div className="flex flex-row gap-4 justify-start items-center">
                     <span className="text-4xl">
-                        {pastUsage}
+                        {pastUsage.toLocaleString()}
                         {unit}
                     </span>
                     <Separator orientation="vertical" />
                     <span className="text-4xl">
-                        {predictedUsage}
+                        {predictedUsage.toLocaleString()}
                         {unit}
                     </span>
                 </div>

@@ -14,13 +14,6 @@ const PAST_PRESETS = [
     { value: "90", label: "Last 90 Days" },
 ];
 
-const FORECAST_PRESETS = [
-    { value: "1", label: "Next 24 Hours" },
-    { value: "7", label: "Next 7 Days" },
-    { value: "14", label: "Next 14 Days" },
-    { value: "30", label: "Next 30 Days" },
-];
-
 export default function UsageToolbar() {
     const {
         provider,
