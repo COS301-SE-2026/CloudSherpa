@@ -6,14 +6,18 @@ import com.cloudsherpa.ingestion.connector.*;
 import com.cloudsherpa.ingestion.models.IngestionRequestEvent;
 import com.cloudsherpa.ingestion.models.UsageRecordModel;
 import com.cloudsherpa.ingestion.provider.aws.AwsCloudConnector;
+import com.cloudsherpa.ingestion.provider.aws.monitoring.MockCloudWatchMetricProvider;
 import com.cloudsherpa.ingestion.provider.scanner.ResourceDiscoveryService;
 import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 
 class AwsCloudConnectorTest {
-  private ResourceDiscoveryService discoveryService;
-  private final AwsCloudConnector connector = new AwsCloudConnector(discoveryService);
+  @Mock private ResourceDiscoveryService discoveryService;
+  @Mock private MockCloudWatchMetricProvider mockMetricProvider;
+  private final AwsCloudConnector connector =
+      new AwsCloudConnector(discoveryService, mockMetricProvider);
 
   @Test
   void getProviderNameShouldReturnAws() {

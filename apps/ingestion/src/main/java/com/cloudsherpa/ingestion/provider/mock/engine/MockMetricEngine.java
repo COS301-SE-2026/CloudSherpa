@@ -20,9 +20,7 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.SplittableRandom;
 import java.util.UUID;
-import org.springframework.stereotype.Component;
 
-@Component
 public class MockMetricEngine {
 
   private static final int MAX_DATA_POINTS = 1440;
