@@ -38,7 +38,7 @@ export default function BillingToolbar(){
                                 setAccount(accountSelected.id, accountSelected.displayName);
                             }
                           }}
-                          placeholder = {isFetching && provider ? "Loading accounts" : "Select Account"} disabled = {!provider || isFetching} widthVariant = "large"/>
+                          placeholder = {isFetching && provider ? "Loading accounts" : "Select Account"} disabled = {!provider || isFetching} widthVariant = "medium"/>
 
                 <Dropdown options = {resources.map((forResources) => ({value : forResources.id, label : forResources.resourceName}))} value = {resourceId}
                           onSelect = {(selectedVal) => {
@@ -50,7 +50,7 @@ export default function BillingToolbar(){
                           }}
                           
                           placeholder = {isFetching && accountId ? "Loading resources" : "Select Resource"}
-                          disabled = {!accountId || isFetching} widthVariant = "large"/>
+                          disabled = {!accountId || isFetching} widthVariant = "medium"/>
             </div>
 
             <div className = "flex flex-row gap-2">

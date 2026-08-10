@@ -20,7 +20,7 @@ export default function BillingIntelligence(){
         if(selected){
             fetchBillingData();
         }
-    }, [accountId, resourceId, pastTimeWindowDays, forecastTimeWindowDays, selected]);
+    }, [accountId, resourceId, pastTimeWindowDays, forecastTimeWindowDays, selected, fetchBillingData]);
 
     if(!selected){
         return(
