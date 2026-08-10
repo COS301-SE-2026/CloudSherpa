@@ -72,7 +72,7 @@ CREATE TABLE IF NOT EXISTS public.cloud_account (
   last_billing_ingestion timestamptz DEFAULT NOW(),
   next_billing_ingestion timestamptz DEFAULT NOW()
 );
-CREATE TABLE public.offered_metric (
+CREATE TABLE IF NOT EXISTS public.offered_metric (
     offered_metric_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
 
     provider public.provider_enum NOT NULL,
@@ -228,43 +228,118 @@ VALUES
 ('AWS', 'AWS/Redshift', 'ReadIOPS', 'ClusterIdentifier', NULL, 'Read IOPS'),
 ('AWS', 'AWS/Redshift', 'WriteIOPS', 'ClusterIdentifier', NULL, 'Write IOPS')
 
--- GCP Compute Engine (VM Instances)
-('GCP', 'gce_instance', 'compute.googleapis.com/instance/cpu/utilization', 'instance_id', '10^2.%', 'CPU utilization'),
-('GCP', 'gce_instance', 'compute.googleapis.com/instance/cpu/reserved_cores', 'instance_id', 'Count', 'Reserved CPU cores'),
-('GCP', 'gce_instance', 'compute.googleapis.com/instance/network/received_bytes_count', 'instance_id', 'By', 'Network bytes received'),
-('GCP', 'gce_instance', 'compute.googleapis.com/instance/network/sent_bytes_count', 'instance_id', 'By', 'Network bytes sent'),
-('GCP', 'gce_instance', 'compute.googleapis.com/instance/disk/read_bytes_count', 'instance_id', 'By', 'Disk bytes read'),
-('GCP', 'gce_instance', 'compute.googleapis.com/instance/disk/write_bytes_count', 'instance_id', 'By', 'Disk bytes written'),
-('GCP', 'gce_instance', 'compute.googleapis.com/instance/disk/read_ops_count', 'instance_id', 'Count', 'Disk read operations'),
-('GCP', 'gce_instance', 'compute.googleapis.com/instance/disk/write_ops_count', 'instance_id', 'Count', 'Disk write operations');
+ON CONFLICT DO NOTHING;
+
+DO $$
+DECLARE
+    -- GCP service types
+    c_gcp_gce_service CONSTANT varchar(255) := 'gce_instance';
+    c_gcp_gke_service CONSTANT varchar(255) := 'gke_cluster';
+    c_gcp_cloud_function_service CONSTANT varchar(255) := 'cloud_function';
+    c_gcp_cloud_run_service CONSTANT varchar(255) := 'cloud_run_service';
+    c_gcp_gcs_service CONSTANT varchar(255) := 'gcs_bucket';
+
+    -- GCP identifier fields
+    c_gcp_instance_id CONSTANT varchar(100) := 'instance_id';
+    c_gcp_cluster_name CONSTANT varchar(100) := 'cluster_name';
+    c_gcp_function_name CONSTANT varchar(100) := 'function_name';
+    c_gcp_service_name CONSTANT varchar(100) := 'service_name';
+    c_gcp_bucket_name CONSTANT varchar(100) := 'bucket_name';
+
+    -- GCP units
+    c_gcp_percent_unit CONSTANT varchar(50) := '10^2.%';
+    c_gcp_count_unit CONSTANT varchar(50) := 'Count';
+    c_gcp_bytes_unit CONSTANT varchar(50) := 'By';
+    c_gcp_seconds_unit CONSTANT varchar(50) := 's';
+    c_gcp_milliseconds_unit CONSTANT varchar(50) := 'ms';
+BEGIN
+
+    INSERT INTO public.offered_metric (
+        provider,
+        service_type,
+        metric_name,
+        identifier_field,
+        expected_unit,
+        description
+    )
+    VALUES
+    -- GCP Compute Engine (VM Instances)
+('GCP', c_gcp_gce_service, 'compute.googleapis.com/instance/cpu/utilization',
+ c_gcp_instance_id, c_gcp_percent_unit, 'CPU utilization'),
+('GCP', c_gcp_gce_service, 'compute.googleapis.com/instance/cpu/reserved_cores',
+ c_gcp_instance_id, c_gcp_count_unit, 'Reserved CPU cores'),
+('GCP', c_gcp_gce_service, 'compute.googleapis.com/instance/network/received_bytes_count',
+ c_gcp_instance_id, c_gcp_bytes_unit, 'Network bytes received'),
+('GCP', c_gcp_gce_service, 'compute.googleapis.com/instance/network/sent_bytes_count',
+ c_gcp_instance_id, c_gcp_bytes_unit, 'Network bytes sent'),
+('GCP', c_gcp_gce_service, 'compute.googleapis.com/instance/disk/read_bytes_count',
+ c_gcp_instance_id, c_gcp_bytes_unit, 'Disk bytes read'),
+('GCP', c_gcp_gce_service, 'compute.googleapis.com/instance/disk/write_bytes_count',
+ c_gcp_instance_id, c_gcp_bytes_unit, 'Disk bytes written'),
+('GCP', c_gcp_gce_service, 'compute.googleapis.com/instance/disk/read_ops_count',
+ c_gcp_instance_id, c_gcp_count_unit, 'Disk read operations'),
+('GCP', c_gcp_gce_service, 'compute.googleapis.com/instance/disk/write_ops_count',
+ c_gcp_instance_id, c_gcp_count_unit, 'Disk write operations'),
 
 -- GKE (Clusters)
-('GCP', 'gke_cluster', 'kubernetes.io/node/cpu/core_usage_time', 'cluster_name', 's', 'CPU usage time'),
-('GCP', 'gke_cluster', 'kubernetes.io/node/memory/used_bytes', 'cluster_name', 'By', 'Memory used'),
-('GCP', 'gke_cluster', 'kubernetes.io/node/network/received_bytes_count', 'cluster_name', 'By', 'Network bytes received'),
-('GCP', 'gke_cluster', 'kubernetes.io/node/network/sent_bytes_count', 'cluster_name', 'By', 'Network bytes sent'),
-('GCP', 'gke_cluster', 'kubernetes.io/pod/restart_count', 'cluster_name', 'Count', 'Pod restart count');
+('GCP', c_gcp_gke_service, 'kubernetes.io/node/cpu/core_usage_time',
+ c_gcp_cluster_name, c_gcp_seconds_unit, 'CPU usage time'),
+('GCP', c_gcp_gke_service, 'kubernetes.io/node/memory/used_bytes',
+ c_gcp_cluster_name, c_gcp_bytes_unit, 'Memory used'),
+('GCP', c_gcp_gke_service, 'kubernetes.io/node/network/received_bytes_count',
+ c_gcp_cluster_name, c_gcp_bytes_unit, 'Network bytes received'),
+('GCP', c_gcp_gke_service, 'kubernetes.io/node/network/sent_bytes_count',
+ c_gcp_cluster_name, c_gcp_bytes_unit, 'Network bytes sent'),
+('GCP', c_gcp_gke_service, 'kubernetes.io/pod/restart_count',
+ c_gcp_cluster_name, c_gcp_count_unit, 'Pod restart count'),
 
 -- Cloud Functions
-('GCP', 'cloud_function', 'cloudfunctions.googleapis.com/function/execution_count', 'function_name', 'Count', 'Function executions'),
-('GCP', 'cloud_function', 'cloudfunctions.googleapis.com/function/execution_times', 'function_name', 'ms', 'Execution time'),
-('GCP', 'cloud_function', 'cloudfunctions.googleapis.com/function/user_memory_bytes', 'function_name', 'By', 'Memory usage'),
-('GCP', 'cloud_function', 'cloudfunctions.googleapis.com/function/active_instances', 'function_name', 'Count', 'Active instances');
+('GCP', c_gcp_cloud_function_service,
+ 'cloudfunctions.googleapis.com/function/execution_count',
+ c_gcp_function_name, c_gcp_count_unit, 'Function executions'),
+('GCP', c_gcp_cloud_function_service,
+ 'cloudfunctions.googleapis.com/function/execution_times',
+ c_gcp_function_name, c_gcp_milliseconds_unit, 'Execution time'),
+('GCP', c_gcp_cloud_function_service,
+ 'cloudfunctions.googleapis.com/function/user_memory_bytes',
+ c_gcp_function_name, c_gcp_bytes_unit, 'Memory usage'),
+('GCP', c_gcp_cloud_function_service,
+ 'cloudfunctions.googleapis.com/function/active_instances',
+ c_gcp_function_name, c_gcp_count_unit, 'Active instances'),
 
 -- Cloud Run
-('GCP', 'cloud_run_service', 'run.googleapis.com/request_count', 'service_name', 'Count', 'HTTP requests'),
-('GCP', 'cloud_run_service', 'run.googleapis.com/request_latencies', 'service_name', 'ms', 'Request latency'),
-('GCP', 'cloud_run_service', 'run.googleapis.com/container/cpu/utilizations', 'service_name', '10^2.%', 'CPU utilization'),
-('GCP', 'cloud_run_service', 'run.googleapis.com/container/memory/utilizations', 'service_name', '10^2.%', 'Memory utilization'),
-('GCP', 'cloud_run_service', 'run.googleapis.com/container/instance_count', 'service_name', 'Count', 'Running instances');
+('GCP', c_gcp_cloud_run_service,
+ 'run.googleapis.com/request_count',
+ c_gcp_service_name, c_gcp_count_unit, 'HTTP requests'),
+('GCP', c_gcp_cloud_run_service,
+ 'run.googleapis.com/request_latencies',
+ c_gcp_service_name, c_gcp_milliseconds_unit, 'Request latency'),
+('GCP', c_gcp_cloud_run_service,
+ 'run.googleapis.com/container/cpu/utilizations',
+ c_gcp_service_name, c_gcp_percent_unit, 'CPU utilization'),
+('GCP', c_gcp_cloud_run_service,
+ 'run.googleapis.com/container/memory/utilizations',
+ c_gcp_service_name, c_gcp_percent_unit, 'Memory utilization'),
+('GCP', c_gcp_cloud_run_service,
+ 'run.googleapis.com/container/instance_count',
+ c_gcp_service_name, c_gcp_count_unit, 'Running instances'),
 
 -- Cloud Storage
-('GCP', 'gcs_bucket', 'storage.googleapis.com/storage/total_bytes', 'bucket_name', 'By', 'Stored bytes'),
-('GCP', 'gcs_bucket', 'storage.googleapis.com/api/request_count', 'bucket_name', 'Count', 'API requests'),
-('GCP', 'gcs_bucket', 'storage.googleapis.com/network/received_bytes_count', 'bucket_name', 'By', 'Bytes uploaded'),
-('GCP', 'gcs_bucket', 'storage.googleapis.com/network/sent_bytes_count', 'bucket_name', 'By', 'Bytes downloaded');
+('GCP', c_gcp_gcs_service,
+ 'storage.googleapis.com/storage/total_bytes',
+ c_gcp_bucket_name, c_gcp_bytes_unit, 'Stored bytes'),
+('GCP', c_gcp_gcs_service,
+ 'storage.googleapis.com/api/request_count',
+ c_gcp_bucket_name, c_gcp_count_unit, 'API requests'),
+('GCP', c_gcp_gcs_service,
+ 'storage.googleapis.com/network/received_bytes_count',
+ c_gcp_bucket_name, c_gcp_bytes_unit, 'Bytes uploaded'),
+('GCP', c_gcp_gcs_service,
+ 'storage.googleapis.com/network/sent_bytes_count',
+ c_gcp_bucket_name, c_gcp_bytes_unit, 'Bytes downloaded')
+    ON CONFLICT DO NOTHING;
+END $$;
 
-ON CONFLICT DO NOTHING;
 -- This sits in the public schema so it only has to be written once, but it is 
 -- smart enough to broadcast on a specific tenant's channel dynamically.
 CREATE TABLE IF NOT EXISTS public.kpi_charges (
