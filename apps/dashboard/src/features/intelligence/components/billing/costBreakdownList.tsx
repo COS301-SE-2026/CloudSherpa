@@ -22,6 +22,9 @@ interface CostBreakdownListProps{
 export default function CostBreakdownList({
     name, description, eachEntry = [], search, onSearchChange,
 } : Readonly<CostBreakdownListProps>){
+
+    const forFilteredEntries = eachEntry.filter((forEntry) => forEntry.label.toLowerCase(). includes(search.toLowerCase()));
+
     return(
         <Card>
             <CardHeader>
@@ -52,10 +55,10 @@ export default function CostBreakdownList({
                 </div>
 
                 <div className = "flex flex-col gap-4 max-h-72 overflow-y-auto pr-1">
-                    {eachEntry.length === 0 ? (
+                    {forFilteredEntries.length === 0 ? (
                         <div className = "text-center text-muted-foreground text-sm py-8"> No breakdown items available </div>
                     ) : (
-                        eachEntry.map((entry) => (
+                        forFilteredEntries.map((entry) => (
                             <div key = {entry.id} className = "flex flex-col gap-1.5">
                                 <span className = "text-sm"> {entry.label} </span>
 
