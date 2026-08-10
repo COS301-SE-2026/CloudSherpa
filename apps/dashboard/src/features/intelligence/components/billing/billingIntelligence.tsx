@@ -22,26 +22,23 @@ export default function BillingIntelligence(){
         }
     }, [accountId, resourceId, pastTimeWindowDays, forecastTimeWindowDays, selected]);
 
-    //might add later on
-    // const selected = provider && accountId && resourceId;
+    if(!selected){
+        return(
+            <div className = "h-full w-full p-6 flex flex-col gap-4">
+                <BillingToolbar/>
 
-    // if(!selected){
-    //     return(
-    //         <div className = "h-full w-full p-6 flex flex-col gap-4">
-    //             <BillingToolbar/>
+                <div className = "flex-1 flex items-center justify-center">
+                    <div className = "text-center max-w-md">
+                        <div className = "mx-auto w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4"> <TrendingUp className = "h-8 w-8 text-muted-foreground"/> </div>
 
-    //             <div className = "flex-1 flex items-center justify-center">
-    //                 <div className = "text-center max-w-md">
-    //                     <div className = "mx-auto w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4"> <TrendingUp className = "h-8 w-8 text-muted-foreground"/> </div>
+                        <h3 className = "text-lg font-semibold mb-2"> No selection made </h3>
 
-    //                     <h3 className = "text-lg font-semibold mb-2"> No selection made </h3>
-
-    //                     <p className = "text-sm text-muted-foreground"> Select a provider, account and resource to view billing data </p>
-    //                 </div>
-    //             </div>
-    //         </div>
-    //     );
-    // }
+                        <p className = "text-sm text-muted-foreground"> Select a provider, account and resource to view billing data </p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     if(isLoading){
         return(
