@@ -54,7 +54,7 @@ export default function CostBreakdownList({
                     <Button variant = "outline" size = "icon"> <ListFilter className = "h-4 w-4" strokeWidth = {1.75}/> </Button>
                 </div>
 
-                <div className = "flex flex-col gap-4 max-h-72 overflow-y-auto pr-1">
+                <div className = "flex flex-col gap-4 max-h-72 overflow-y-auto pr-1" style = {{scrollbarWidth : "none"}}>
                     {forFilteredEntries.length === 0 ? (
                         <div className = "text-center text-muted-foreground text-sm py-8"> No breakdown items available </div>
                     ) : (

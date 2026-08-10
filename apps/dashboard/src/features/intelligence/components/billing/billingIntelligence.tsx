@@ -69,17 +69,17 @@ export default function BillingIntelligence(){
             <section className = "grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <BillingSummaryCard name = {`cumulative billing for last ${pastTimeWindowDays} days`} value = {forSummary? `${forSummary.cumulativeBilling.toFixed(2)}` : "-"} description = {forSummary ? `Based on ${pastTimeWindowDays} day window` : "No data available"} valueClassName = "text-primary"/>
 
-                <BillingSummaryCard name = {`projected horizon cost (${forecastTimeWindowDays} days)`} value = {forSummary ? `${forSummary.projectedHorizonCost.toFixed(2)}` : "-"} description = {forSummary ? `${forecastTimeWindowDays} day forecast` : "No data available"} valueClassName = "text-accent"/>
+                <BillingSummaryCard name = {`projected horizon cost (${forecastTimeWindowDays} days)`} value = {forSummary ? `${forSummary.projectedHorizonCost.toFixed(2)}` : "-"} description = {forSummary ? `${forecastTimeWindowDays} day forecast` : "No data available"} valueClassName = "text-(--chart-4)"/>
             </section>
 
             <section className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <BillingStatisticsCard name = "forecast vs past variance" value = {forSummary ? `${forSummary.forecastVariance.toFixed(2)}%` : "-"} description = {forSummary ? "Difference in past and projected spend" : "No data available"} icon = {TrendingUp} valueClassName = "text-primary"/>
 
-                <BillingStatisticsCard name = "daily burn rate" value = {forSummary ? `${forSummary.dailyBurnRate.toFixed(2)}` : "-"} description = {forSummary ? "Projected daily spend" : "No data available"} />
+                <BillingStatisticsCard name = "daily burn rate" value = {forSummary ? `${forSummary.dailyBurnRate.toFixed(2)}` : "-"} description = {forSummary ? "Projected daily spend" : "No data available"} valueClassName = "text-primary" />
 
-                <BillingStatisticsCard name = "Primary cost driver" value = {forSummary?.primaryCostDriverLabel || "-"} description = {forSummary ? `Charge: ${forSummary.primaryCostDriverId}` : "No data available"} valueClassName = "text-accent"/>
+                <BillingStatisticsCard name = "Primary cost driver" value = {forSummary?.primaryCostDriverLabel || "-"} description = {forSummary ? `Charge: ${forSummary.primaryCostDriverId}` : "No data available"} valueClassName = "text-(--chart-4)"/>
 
-                <BillingStatisticsCard name = "Highest Cost Acceleration" value = {forSummary?.highestCostAccelerationLabel || "-"} description = {forSummary ? `Charge: ${forSummary.highestCostAccelerationId}` : "No data available"} valueClassName = "text-accent"/>
+                <BillingStatisticsCard name = "Highest Cost Acceleration" value = {forSummary?.highestCostAccelerationLabel || "-"} description = {forSummary ? `Charge: ${forSummary.highestCostAccelerationId}` : "No data available"} valueClassName = "text-(--chart-4)"/>
             </section>
 
             <section className = "grid grid-cols-1 lg:grid-cols-2 gap-4">
