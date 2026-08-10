@@ -54,7 +54,11 @@ class ChronosUnivariate(ChronosModel):
             }
         )
 
-        context_df["timestamp"] = pd.to_datetime(context_df["timestamp"])
+        context_df["timestamp"] = (
+            pd.to_datetime(context_df["timestamp"], utc=True)
+            .dt.tz_convert("UTC")
+            .dt.tz_localize(None)
+        )
 
         return context_df
 

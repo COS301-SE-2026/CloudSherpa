@@ -112,6 +112,10 @@ public class BillingForecastingService extends ForecastingService {
         normalizedCostsRepository.getTimestampedBillingValues(
             chargeId, PageRequest.of(0, CONTEXT_LENGTH));
 
+    if (chargeSeries.isEmpty()) {
+      return null;
+    }
+
     ProviderEnum chargeProvider = chargeProviderRegistry.getChargeProvider(chargeId);
     Instant mostRecentBillingIngestionDate =
         normalizedCostsRepository.findLatestProviderBillingReportDate(chargeProvider);
@@ -153,7 +157,7 @@ public class BillingForecastingService extends ForecastingService {
         Math.toIntExact(
             (86_400 * forecastSteps
                     + (timeBetweenLatestIngestion.toSeconds()
-                        + timeBetweenLatestIngestionAndRequest.toSeconds()))
+                        + Math.max(timeBetweenLatestIngestionAndRequest.toSeconds(), 0)))
                 / periodicity));
   }
 }

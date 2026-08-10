@@ -8,10 +8,7 @@ class ModelLoader:
 
     def load_models(self) -> None:
         chronos_univariate: ChronosUnivariate = ChronosUnivariate()
-        self.__available_models[chronos_univariate.get_model_id()] = (
-            chronos_univariate
-        )
+        self.__available_models[chronos_univariate.get_model_id()] = chronos_univariate
 
     def get_model(self, model_id: str) -> SherpaModel:
         return self.__available_models[model_id]
-
