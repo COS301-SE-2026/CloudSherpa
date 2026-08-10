@@ -7,6 +7,7 @@ import com.cloudsherpa.service.intelligence.dto.IntelligenceForecastResponseDto;
 import com.cloudsherpa.service.intelligence.dto.ResourceUsageForecastRequestDto;
 import com.cloudsherpa.service.intelligence.dto.ResourceUsageForecastResponseDto;
 import com.cloudsherpa.service.intelligence.dto.SanatizedSeries;
+import com.cloudsherpa.service.intelligence.exceptions.InsufficientContextAvailable;
 import java.util.List;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -58,6 +59,13 @@ public class UsageForecastingService extends ForecastingService {
   private IntelligenceForecastResponseDto executeUsageForecastPipeline(
       List<TimestampedNumericDataPoint> timestampedNumericDataPoints) {
     SanatizedSeries sanitizedNumericDataPoints = sampler.sample(timestampedNumericDataPoints, true);
+
+    if (sanitizedNumericDataPoints == null
+        || sanitizedNumericDataPoints.timestampedNumericDataPoints().size() < 3) {
+      throw new InsufficientContextAvailable(
+          "Insufficient historical context available to make usage forecast");
+    }
+
     IntelligenceForecastRequestDto intelligenceForecastRequestDto =
         constructForecastRequest(
             sanitizedNumericDataPoints.timestampedNumericDataPoints(), FORECAST_LENGTH);
