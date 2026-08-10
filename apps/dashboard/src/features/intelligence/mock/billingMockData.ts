@@ -44,62 +44,6 @@ export const MOCK_RESOURCES: Record<string, CloudResource[]> = {
             lastUpdated: "2026-08-01T00:00:00.000Z",
             createdAt: "2026-01-16T00:00:00.000Z",
         },
-        {
-            id: "resource-2",
-            accountId: "account-one",
-            resourceType: "typeTwo",
-            resourceName: "Name two",
-            status: ResourceStatus.ACTIVE,
-            tags: { env: "production" },
-            lastUpdated: "2026-08-02T00:00:00.000Z",
-            createdAt: "2026-01-17T00:00:00.000Z",
-        },
-        {
-            id: "resource-3",
-            accountId: "account-one",
-            resourceType: "typeThree",
-            resourceName: "Name three",
-            status: ResourceStatus.ACTIVE,
-            tags: { env: "production" },
-            lastUpdated: "2026-08-03T00:00:00.000Z",
-            createdAt: "2026-01-18T00:00:00.000Z",
-        },
-    ],
-
-    "account-2": [
-        {
-            id: "resource-4",
-            accountId: "account-two",
-            resourceType: "typeOne",
-            resourceName: "Name one",
-            status: ResourceStatus.ACTIVE,
-            tags: { env: "staging" },
-            lastUpdated: "2026-08-01T00:00:00.000Z",
-            createdAt: "2026-02-21T00:00:00.000Z",
-        },
-        {
-            id: "resource-5",
-            accountId: "account-two",
-            resourceType: "typeTwo",
-            resourceName: "Name two",
-            status: ResourceStatus.ACTIVE,
-            tags: { env: "staging" },
-            lastUpdated: "2026-07-28T00:00:00.000Z",
-            createdAt: "2026-02-22T00:00:00.000Z",
-        },
-    ],
-
-    "account-3": [
-        {
-            id: "resource-1",
-            accountId: "account-three",
-            resourceType: "typeOne",
-            resourceName: "Name one",
-            status: ResourceStatus.ACTIVE,
-            tags: { env: "sandbox" },
-            lastUpdated: "2026-08-01T00:00:00.000Z",
-            createdAt: "2026-01-16T00:00:00.000Z",
-        },
     ],
 };
 
