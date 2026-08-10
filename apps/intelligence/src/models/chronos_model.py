@@ -7,7 +7,8 @@ import torch
 from chronos import BaseChronosPipeline, Chronos2Pipeline
 
 from models.sherpa_model import SherpaModel
-from schemas.forecast_request import ForecastSeries
+from schemas.forecast_request import ForecastRequest
+from schemas.forecast_response import ChronosForecastResponse, ForecastResponse
 
 # maybe filter out huggingface urls
 logging.basicConfig(
@@ -32,9 +33,7 @@ class ChronosModel(SherpaModel, ABC):
         )
         logger.info("Loaded Chronos-2 model")
 
-    def predict_series(
-        self, series: ForecastSeries, prediction_length: int
-    ) -> list[float]:
+    def forecast(self, context: ForecastRequest) -> ForecastResponse:
         """
         ChronosModel is an abstract class defining the model loading behaviour for specialized children that implements
         the prediction methods
@@ -44,28 +43,42 @@ class ChronosModel(SherpaModel, ABC):
 class ChronosUnivariate(ChronosModel):
     def __init__(self):
         super().__init__()
+        self._model_id = "chronos_univariate"  # NOSONAR member returned by parent class get_model_id method
 
-    def preprocess(self, series: ForecastSeries) -> pd.DataFrame:
+    def preprocess(self, context: ForecastRequest) -> pd.DataFrame:
         context_df = pd.DataFrame(
             {
-                "item_id": series.resource_id,
-                "target": series.values,
-                "timestamp": series.timestamps,
+                "item_id": "forecast_item",
+                "target": context.values,
+                "timestamp": context.timestamps,
             }
         )
 
-        context_df["timestamp"] = pd.to_datetime(context_df["timestamp"])
+        context_df["timestamp"] = (
+            pd.to_datetime(context_df["timestamp"], utc=True)
+            .dt.tz_convert("UTC")
+            .dt.tz_localize(None)
+        )
 
         return context_df
 
-    def predict_series(
-        self, series: ForecastSeries, prediction_length: int
-    ) -> list[float]:
-        context_df: pd.DataFrame = self.preprocess(series)
+    def forecast(self, context: ForecastRequest) -> ChronosForecastResponse:
+        context_df: pd.DataFrame = self.preprocess(context)
         pred_df = self.pipeline.predict_df(
             context_df,
-            prediction_length=prediction_length,
+            prediction_length=context.forecast_horizon,
             quantile_levels=[0.1, 0.5, 0.9],
         )
 
-        return pred_df["predictions"].tolist()
+        timestamps: list[str] = (
+            pred_df["timestamp"].dt.strftime("%Y-%m-%dT%H:%M:%S.%f").tolist()
+        )
+
+        response: ForecastResponse = ChronosForecastResponse(
+            forecast=pred_df["predictions"].tolist(),
+            timestamps=timestamps,
+            q1=pred_df["0.1"].tolist(),
+            q3=pred_df["0.9"].tolist(),
+        )
+
+        return response

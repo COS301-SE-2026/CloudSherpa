@@ -11,8 +11,6 @@ import { KpiWidgetConfig } from "@/features/dashboard/types/widgets";
 import { KpiConfigSummary } from "../kpi-config-summary";
 import { kpiConfigColumns } from "@/features/dashboard/components/kpi/config/columns";
 import { KPIConfigTable } from "@/features/dashboard/components/kpi/config/config-table";
-// import { mockKpiConfigRows } from "@/features/dashboard/components/kpi/config/mock-kpi-config-rows";
-// import { CloudProviderEnum } from "@/features/dashboard/types/provider";
 import { useFetchTableResources } from "../hooks/useFetchTableResources";
 import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
 import { useRouter } from "next/navigation";

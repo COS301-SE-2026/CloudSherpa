@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/atoms/button";
 import React, { useState } from "react";
-import { BillingConfig } from "./stepTwo";
+import { BillingConfig } from "./aws/stepTwo";
 import { Checkbox } from "@/components/atoms/checkbox";
 import { Field } from "@/components/atoms/field";
 import { Label } from "@/components/atoms/label";

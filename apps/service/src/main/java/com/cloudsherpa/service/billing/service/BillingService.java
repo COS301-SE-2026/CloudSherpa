@@ -10,6 +10,7 @@ import com.cloudsherpa.service.config.TenantContext;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -72,12 +73,28 @@ public class BillingService {
 
     String updatedAt = lastBillingIngestion != null ? lastBillingIngestion.toString() : "null";
 
+    // Get previous total cost for KPI Trend
+    Duration period = Duration.between(fromDate, toDate);
+    OffsetDateTime previousToDate = fromDate;
+    OffsetDateTime previousFromDate = fromDate.minus(period);
+
+    BigDecimal previousTotalCost;
+    if (chargeIds == null || chargeIds.isEmpty()) {
+      previousTotalCost =
+          normalizedCostsRepository.sumTotalCostBetween(previousFromDate, previousToDate);
+    } else {
+      previousTotalCost =
+          normalizedCostsRepository.sumTotalCostBetweenForResources(
+              previousFromDate, previousToDate, chargeIds);
+    }
+
     return new BillingKpiResponse(
         totalCost,
         "USD", // this is the default value for AWS costs, maybe should convert it to ZAR??
         chargeIds == null ? 0 : chargeIds.size(),
         resolveTimeLabel(request.aggregation()),
-        updatedAt);
+        updatedAt,
+        previousTotalCost);
   }
 
   @Transactional(readOnly = true)

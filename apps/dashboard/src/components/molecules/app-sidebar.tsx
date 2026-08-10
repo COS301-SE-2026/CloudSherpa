@@ -165,9 +165,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         <SidebarMenu>
                             <SidebarMenuItem>
                                 <SidebarMenuButton asChild tooltip="AWS">
-                                    <Link href="/intelligence/billing">
+                                    <Link href="/intelligence/usage">
                                         <Network />
-                                        <span>Billing Forecasts</span>
+                                        <span>Usage Forecasts</span>
                                     </Link>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
