@@ -37,6 +37,8 @@ public class MetricDefinitionFactory {
 
   private final StorageSimulator storageSimulator;
 
+  private static final String PERCENT = "Percent";
+
   public MetricDefinitionFactory(
       PercentageSimulator percentageSimulator,
       ThroughputSimulator throughputSimulator,
@@ -64,7 +66,7 @@ public class MetricDefinitionFactory {
 
   public MetricDefinition cpu(String metricName) {
 
-    return new MetricDefinition(metricName, "Percent", Profiles.CPU, percentageSimulator);
+    return new MetricDefinition(metricName, PERCENT, Profiles.CPU, percentageSimulator);
   }
 
   public MetricDefinition cpu(String metricName, String metricUnit) {
@@ -74,12 +76,12 @@ public class MetricDefinitionFactory {
 
   public MetricDefinition memory(String metricName) {
 
-    return new MetricDefinition(metricName, "Percent", Profiles.MEMORY, percentageSimulator);
+    return new MetricDefinition(metricName, PERCENT, Profiles.MEMORY, percentageSimulator);
   }
 
   public MetricDefinition gpu(String metricName) {
 
-    return new MetricDefinition(metricName, "Percent", Profiles.GPU, percentageSimulator);
+    return new MetricDefinition(metricName, PERCENT, Profiles.GPU, percentageSimulator);
   }
 
   public MetricDefinition gpu(String metricName, String metricUnit) {

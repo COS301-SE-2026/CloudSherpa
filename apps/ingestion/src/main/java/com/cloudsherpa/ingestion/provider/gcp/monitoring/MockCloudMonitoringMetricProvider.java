@@ -22,6 +22,6 @@ public class MockCloudMonitoringMetricProvider implements CloudWatchMetricProvid
   public List<UsageRecordModel> collectMetrics(
       AccountScope accountScope, IngestionRequestEvent request) {
 
-    return metricEngine.collectMetrics(accountScope, request);
+    return metricEngine.collectMetrics(request);
   }
 }

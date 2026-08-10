@@ -46,13 +46,12 @@ public class MockMetricEngine {
   }
 
   /**
-   * Generates mock usage records using the supplied provider registry.
+   * Generates mock usage usageRecords using the supplied provider registry.
    *
    * <p>The engine contains only provider-agnostic simulation logic. Provider-specific service
    * definitions, metric definitions, units, profiles and simulators are supplied by the registry.
    */
-  public List<UsageRecordModel> collectMetrics(
-      AccountScope accountScope, IngestionRequestEvent request) {
+  public List<UsageRecordModel> collectMetrics(IngestionRequestEvent request) {
     validateRequest(request);
 
     UUID ingestionId = UUID.randomUUID();
@@ -263,25 +262,25 @@ public class MockMetricEngine {
       double value,
       Instant timestamp) {
 
-    UsageRecordModel record = new UsageRecordModel();
+    UsageRecordModel usageRecord = new UsageRecordModel();
 
-    record.setProvider(requestContext.accountScope().getProvider());
-    record.setAccountId(requestContext.accountScope().getAccountId());
-    record.setServiceName(simulationContext.serviceScope().getName());
-    record.setMetricName(metricDefinition.name());
-    record.setValue(value);
-    record.setUnit(metricDefinition.unit());
-    record.setTimestamp(timestamp);
-    record.setPeriodStart(timestamp.minusSeconds(requestContext.request().getPeriod()));
-    record.setPeriodEnd(timestamp);
-    record.setIngestionTimestamp(Instant.now());
-    record.setRecordId(UUID.randomUUID());
-    record.setResourceId(instanceId);
-    record.setResourceType(instanceScope.getIdentifierName());
-    record.setIngestionId(requestContext.ingestionId().toString());
-    record.setSource("MockMetricProvider");
+    usageRecord.setProvider(requestContext.accountScope().getProvider());
+    usageRecord.setAccountId(requestContext.accountScope().getAccountId());
+    usageRecord.setServiceName(simulationContext.serviceScope().getName());
+    usageRecord.setMetricName(metricDefinition.name());
+    usageRecord.setValue(value);
+    usageRecord.setUnit(metricDefinition.unit());
+    usageRecord.setTimestamp(timestamp);
+    usageRecord.setPeriodStart(timestamp.minusSeconds(requestContext.request().getPeriod()));
+    usageRecord.setPeriodEnd(timestamp);
+    usageRecord.setIngestionTimestamp(Instant.now());
+    usageRecord.setRecordId(UUID.randomUUID());
+    usageRecord.setResourceId(instanceId);
+    usageRecord.setResourceType(instanceScope.getIdentifierName());
+    usageRecord.setIngestionId(requestContext.ingestionId().toString());
+    usageRecord.setSource("MockMetricProvider");
 
-    return record;
+    return usageRecord;
   }
 
   private void validateRequest(IngestionRequestEvent request) {
