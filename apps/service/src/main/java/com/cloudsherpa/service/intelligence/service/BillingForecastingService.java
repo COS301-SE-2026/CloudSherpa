@@ -1,12 +1,18 @@
 package com.cloudsherpa.service.intelligence.service;
 
 import com.cloudsherpa.lib.dtos.TimestampedNumericDataPoint;
+import com.cloudsherpa.lib.entities.ProviderEnum;
 import com.cloudsherpa.lib.repositories.NormalizedCostsRepository;
 import com.cloudsherpa.service.intelligence.dto.BillingForecastIndividualChargesRequestDto;
 import com.cloudsherpa.service.intelligence.dto.BillingForecastResponseDto;
 import com.cloudsherpa.service.intelligence.dto.IntelligenceForecastRequestDto;
 import com.cloudsherpa.service.intelligence.dto.IntelligenceForecastResponseDto;
+import com.cloudsherpa.service.intelligence.dto.SanatizedSeries;
+import com.cloudsherpa.service.intelligence.dto.SanitizedChargeSeries;
+import com.cloudsherpa.service.intelligence.registry.ChargeProviderRegistry;
 import java.math.BigDecimal;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,13 +26,21 @@ import org.springframework.web.client.RestClient;
 @Service
 public class BillingForecastingService extends ForecastingService {
   private final NormalizedCostsRepository normalizedCostsRepository;
-
+  private final ChargeProviderRegistry chargeProviderRegistry;
   private final Logger logger = LoggerFactory.getLogger(BillingForecastingService.class);
 
+  // Threshold to account for billing latency in reports, i.e. most recent report does not contain
+  // all up to date charges
+  private static final int OLD_CHARGE_CUTOFF_DAYS = 2;
+
   public BillingForecastingService(
-      NormalizedCostsRepository normalizedCostsRepository, RestClient restClient, Sampler sampler) {
+      NormalizedCostsRepository normalizedCostsRepository,
+      RestClient restClient,
+      Sampler sampler,
+      ChargeProviderRegistry chargeProviderRegistry) {
     super(restClient, sampler);
     this.normalizedCostsRepository = normalizedCostsRepository;
+    this.chargeProviderRegistry = chargeProviderRegistry;
   }
 
   public BillingForecastResponseDto forecastBillingByIndividualCharges(
@@ -45,22 +59,18 @@ public class BillingForecastingService extends ForecastingService {
     List<String> failedForecastCharges = new ArrayList<>();
     for (String chargeId : chargeIds) {
       logger.info(chargeId);
-      List<TimestampedNumericDataPoint> chargeSeries =
-          normalizedCostsRepository.getTimestampedBillingValues(
-              chargeId, PageRequest.of(0, CONTEXT_LENGTH));
+      SanitizedChargeSeries sanatizedSeries = sanitizedChargeSeries(chargeId);
 
-      SanatizedSeries sanatizedSeries = sampler.sample(chargeSeries, false);
-
-      if (sanatizedSeries.timestampedNumericDataPoints().size() < 3) {
-        logger.info("Could not forecast for charge {} due to insufficient data", chargeId);
+      if (sanatizedSeries == null || sanatizedSeries.timestampedNumericDataPoints().size() < 3) {
+        logger.info(
+            "Could not forecast for charge {} due to insufficient or outdated data", chargeId);
         failedForecastCharges.add(chargeId);
         continue;
       }
 
-      int forecastHorizon = Math.abs(Math.toIntExact(2_592_000L / sanatizedSeries.periodicity()));
-
       IntelligenceForecastRequestDto intelligenceForecastRequestDto =
-          constructForecastRequest(sanatizedSeries.timestampedNumericDataPoints(), forecastHorizon);
+          constructForecastRequest(
+              sanatizedSeries.timestampedNumericDataPoints(), sanatizedSeries.forecastSteps());
       IntelligenceForecastResponseDto intelligenceForecastResponseDto =
           makeForecastRequest(intelligenceForecastRequestDto);
 
@@ -83,5 +93,37 @@ public class BillingForecastingService extends ForecastingService {
 
     return new BillingForecastResponseDto(
         totalCostForecast, individualChargeForecasts, failedForecastCharges);
+  }
+
+  private SanitizedChargeSeries sanitizedChargeSeries(String chargeId) {
+    List<TimestampedNumericDataPoint> chargeSeries =
+        normalizedCostsRepository.getTimestampedBillingValues(
+            chargeId, PageRequest.of(0, CONTEXT_LENGTH));
+
+    ProviderEnum chargeProvider = chargeProviderRegistry.getChargeProvider(chargeId);
+    Instant mostRecentBillingIngestionDate =
+        normalizedCostsRepository.findLatestProviderBillingReportDate(chargeProvider);
+
+    Duration timeBetweenLatestIngestion =
+        Duration.between(chargeSeries.getLast().timestamp(), mostRecentBillingIngestionDate);
+
+    if (timeBetweenLatestIngestion.toDays() < OLD_CHARGE_CUTOFF_DAYS) {
+      SanatizedSeries sanatizedSeries = sampler.sample(chargeSeries, false);
+
+      int forecastHorizon =
+          Math.abs(
+              Math.toIntExact(
+                  2_592_000L
+                      + timeBetweenLatestIngestion.toSeconds() / sanatizedSeries.periodicity()));
+      return new SanitizedChargeSeries(
+          sanatizedSeries.timestampedNumericDataPoints(),
+          sanatizedSeries.periodicity(),
+          forecastHorizon);
+    } else {
+      logger.info(
+          "Charge {} was last ingested before the defined threshold and is thus not forecasted",
+          chargeId);
+      return null;
+    }
   }
 }

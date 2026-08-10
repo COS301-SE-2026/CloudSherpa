@@ -1,6 +1,7 @@
 package com.cloudsherpa.service.intelligence.service;
 
 import com.cloudsherpa.lib.dtos.TimestampedNumericDataPoint;
+import com.cloudsherpa.service.intelligence.dto.SanatizedSeries;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;

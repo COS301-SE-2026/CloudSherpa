@@ -6,6 +6,7 @@ import com.cloudsherpa.service.intelligence.dto.IntelligenceForecastRequestDto;
 import com.cloudsherpa.service.intelligence.dto.IntelligenceForecastResponseDto;
 import com.cloudsherpa.service.intelligence.dto.ResourceUsageForecastRequestDto;
 import com.cloudsherpa.service.intelligence.dto.ResourceUsageForecastResponseDto;
+import com.cloudsherpa.service.intelligence.dto.SanatizedSeries;
 import java.util.List;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
