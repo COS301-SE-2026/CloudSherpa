@@ -4,6 +4,7 @@ import com.cloudsherpa.lib.dtos.TimestampedNumericDataPoint;
 import com.cloudsherpa.lib.entities.ProviderEnum;
 import com.cloudsherpa.lib.repositories.NormalizedCostsRepository;
 import com.cloudsherpa.service.intelligence.dto.BillingForecastIndividualChargesRequestDto;
+import com.cloudsherpa.service.intelligence.dto.BillingForecastRequest;
 import com.cloudsherpa.service.intelligence.dto.BillingForecastResponseDto;
 import com.cloudsherpa.service.intelligence.dto.IntelligenceForecastRequestDto;
 import com.cloudsherpa.service.intelligence.dto.IntelligenceForecastResponseDto;
@@ -44,22 +45,25 @@ public class BillingForecastingService extends ForecastingService {
   }
 
   public BillingForecastResponseDto forecastBillingByIndividualCharges(
-      BillingForecastIndividualChargesRequestDto billingForecastIndividualChargesRequestDto) {
-    return executeBillingForecast(billingForecastIndividualChargesRequestDto.chargeIds());
+      BillingForecastIndividualChargesRequestDto request, Instant timeOfRequest) {
+    return executeBillingForecast(request.chargeIds(), timeOfRequest, request.forecastSteps());
   }
 
-  public BillingForecastResponseDto forecastBillingByAllNonCreditCharges() {
+  public BillingForecastResponseDto forecastBillingByAllNonCreditCharges(
+      BillingForecastRequest request, Instant timeOfRequest) {
     List<String> chargeIds = normalizedCostsRepository.findDistinctChargeIdsNonCredit();
-    return executeBillingForecast(chargeIds);
+    return executeBillingForecast(chargeIds, timeOfRequest, request.forecastSteps());
   }
 
-  private BillingForecastResponseDto executeBillingForecast(List<String> chargeIds) {
+  private BillingForecastResponseDto executeBillingForecast(
+      List<String> chargeIds, Instant timeOfRequest, int forecastSteps) {
     BigDecimal totalCostForecast = BigDecimal.valueOf(0);
     Map<String, BigDecimal> individualChargeForecasts = new HashMap<>();
     List<String> failedForecastCharges = new ArrayList<>();
     for (String chargeId : chargeIds) {
       logger.info(chargeId);
-      SanitizedChargeSeries sanatizedSeries = sanitizedChargeSeries(chargeId);
+      SanitizedChargeSeries sanatizedSeries =
+          sanitizedChargeSeries(chargeId, timeOfRequest, forecastSteps);
 
       if (sanatizedSeries == null || sanatizedSeries.timestampedNumericDataPoints().size() < 3) {
         logger.info(
@@ -95,7 +99,8 @@ public class BillingForecastingService extends ForecastingService {
         totalCostForecast, individualChargeForecasts, failedForecastCharges);
   }
 
-  private SanitizedChargeSeries sanitizedChargeSeries(String chargeId) {
+  private SanitizedChargeSeries sanitizedChargeSeries(
+      String chargeId, Instant timeOfRequest, int forecastSteps) {
     List<TimestampedNumericDataPoint> chargeSeries =
         normalizedCostsRepository.getTimestampedBillingValues(
             chargeId, PageRequest.of(0, CONTEXT_LENGTH));
@@ -110,20 +115,38 @@ public class BillingForecastingService extends ForecastingService {
     if (timeBetweenLatestIngestion.toDays() < OLD_CHARGE_CUTOFF_DAYS) {
       SanatizedSeries sanatizedSeries = sampler.sample(chargeSeries, false);
 
-      int forecastHorizon =
-          Math.abs(
-              Math.toIntExact(
-                  2_592_000L
-                      + timeBetweenLatestIngestion.toSeconds() / sanatizedSeries.periodicity()));
+      Duration timeBetweenLatestIngestionAndRequest =
+          Duration.between(mostRecentBillingIngestionDate, timeOfRequest);
+
+      int calculatedForecastSteps =
+          calculateForecastSteps(
+              timeBetweenLatestIngestion,
+              timeBetweenLatestIngestionAndRequest,
+              forecastSteps,
+              sanatizedSeries.periodicity());
+
       return new SanitizedChargeSeries(
           sanatizedSeries.timestampedNumericDataPoints(),
           sanatizedSeries.periodicity(),
-          forecastHorizon);
+          calculatedForecastSteps);
     } else {
       logger.info(
           "Charge {} was last ingested before the defined threshold and is thus not forecasted",
           chargeId);
       return null;
     }
+  }
+
+  private int calculateForecastSteps(
+      Duration timeBetweenLatestIngestion,
+      Duration timeBetweenLatestIngestionAndRequest,
+      int forecastSteps,
+      long periodicity) {
+    return Math.abs(
+        Math.toIntExact(
+            (86_400 * forecastSteps
+                    + (timeBetweenLatestIngestion.toSeconds()
+                        + timeBetweenLatestIngestionAndRequest.toSeconds()))
+                / periodicity));
   }
 }

@@ -1,6 +1,7 @@
 package com.cloudsherpa.service.intelligence.controller;
 
 import com.cloudsherpa.service.intelligence.dto.BillingForecastIndividualChargesRequestDto;
+import com.cloudsherpa.service.intelligence.dto.BillingForecastRequest;
 import com.cloudsherpa.service.intelligence.dto.BillingForecastResponseDto;
 import com.cloudsherpa.service.intelligence.dto.ResourceUsageForecastRequestDto;
 import com.cloudsherpa.service.intelligence.dto.ResourceUsageForecastResponseDto;
@@ -13,6 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -130,7 +132,8 @@ public class IntelligenceForecastingController {
       return ResponseEntity.status(HttpStatus.OK).body(mockResponse);
     } else {
       return ResponseEntity.ok()
-          .body(billingForecastingService.forecastBillingByIndividualCharges(request));
+          .body(
+              billingForecastingService.forecastBillingByIndividualCharges(request, Instant.now()));
     }
   }
 
@@ -157,10 +160,12 @@ public class IntelligenceForecastingController {
             content = @Content)
       })
   @PostMapping("/billing")
-  public ResponseEntity<BillingForecastResponseDto> billingForecast() {
+  public ResponseEntity<BillingForecastResponseDto> billingForecast(
+      @RequestBody BillingForecastRequest request) {
 
     return ResponseEntity.ok()
-        .body(billingForecastingService.forecastBillingByAllNonCreditCharges());
+        .body(
+            billingForecastingService.forecastBillingByAllNonCreditCharges(request, Instant.now()));
   }
 
   private ResourceUsageForecastResponseDto mockResourceUsageForecast() {
