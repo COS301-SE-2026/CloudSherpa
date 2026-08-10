@@ -21,17 +21,17 @@ export default function BillingForecastChart({
     name, data,
 } : Readonly<BillingForecastChartProps>){
 
+    //use hex values for the colour, as echarts doesnt supp the semantic colours, not sure if there is another way
     const option : EChartsOption = useMemo(() => ({
-        tooltip : {trigger : "item"},
-        color : ["var(--chart-1)",
-                "var(--chart-2)",
-                "var(--chart-3)",
-                "var(--chart-4)",
-                "var(--chart-5)",],
+        tooltip : {trigger : "item", backgroundColor : "var(--background)", borderColor : "var(--border)", borderWidth : 1, textStyle : {color : "var(--foreground)",}, formatter : (params : any) => {
+            return `<strong>${params.name}</strong><br/>Percentage: ${params.percent}%`;
+        },},
+        color : ["#3b82f6", "#8b5cf6", "#10b981", "#f59e0b", "#f43f5e",],
         series : [{
             type : "pie", radius : ["55%", "80%"], avoidLabelOverlap : true,
             itemStyle : {borderColor : "var(--card)", borderWidth : 2,},
-            label : {show : true, color : "var(--muted-foreground)", fontSize : 11, fontWeight : 400, textShadowBlur : 0, textShadowColor : "transparent"},
+            label : {show : true, color : "#e3e9ef", fontSize : 11, fontWeight : 400, textShadowBlur : 0, textShadowColor : "transparent", 
+                formatter : (params : any) => {return `${params.name}\n${params.percent}%`;},},
             labelLine : {show : true, lineStyle : {color : "var(--border)"},},
             data : data.map((forData) => ({name : forData.label, value : forData.percent})),
         },],
