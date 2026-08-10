@@ -14,6 +14,8 @@ import com.cloudsherpa.service.intelligence.registry.ChargeProviderRegistry;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -78,10 +80,15 @@ public class BillingForecastingService extends ForecastingService {
       IntelligenceForecastResponseDto intelligenceForecastResponseDto =
           makeForecastRequest(intelligenceForecastRequestDto);
 
-      BigDecimal aggregatedCharge = BigDecimal.valueOf(0);
+      BigDecimal aggregatedCharge = BigDecimal.ZERO;
 
-      for (BigDecimal forecastedChargePoint : intelligenceForecastResponseDto.forecast()) {
-        aggregatedCharge = aggregatedCharge.add(forecastedChargePoint);
+      for (int i = 0; i < intelligenceForecastResponseDto.forecast().size(); i++) {
+        LocalDateTime forecastTimestamp = intelligenceForecastResponseDto.timestamps().get(i);
+
+        if (!forecastTimestamp.isBefore(LocalDateTime.ofInstant(timeOfRequest, ZoneOffset.UTC))) {
+          aggregatedCharge =
+              aggregatedCharge.add(intelligenceForecastResponseDto.forecast().get(i));
+        }
       }
 
       // Cap at 0
