@@ -7,6 +7,8 @@ import com.cloudsherpa.service.intelligence.dto.BillingForecastIndividualCharges
 import com.cloudsherpa.service.intelligence.dto.BillingForecastResponseDto;
 import com.cloudsherpa.service.intelligence.dto.IntelligenceForecastRequestDto;
 import com.cloudsherpa.service.intelligence.dto.IntelligenceForecastResponseDto;
+import com.cloudsherpa.service.intelligence.dto.SanatizedSeries;
+import com.cloudsherpa.service.intelligence.dto.SanitizedChargeSeries;
 import com.cloudsherpa.service.intelligence.registry.ChargeProviderRegistry;
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -57,7 +59,7 @@ public class BillingForecastingService extends ForecastingService {
     List<String> failedForecastCharges = new ArrayList<>();
     for (String chargeId : chargeIds) {
       logger.info(chargeId);
-      SanatizedSeries sanatizedSeries = sanitizedChargeSeries(chargeId);
+      SanitizedChargeSeries sanatizedSeries = sanitizedChargeSeries(chargeId);
 
       if (sanatizedSeries == null || sanatizedSeries.timestampedNumericDataPoints().size() < 3) {
         logger.info(
@@ -66,10 +68,9 @@ public class BillingForecastingService extends ForecastingService {
         continue;
       }
 
-      int forecastHorizon = Math.abs(Math.toIntExact(2_592_000L / sanatizedSeries.periodicity()));
-
       IntelligenceForecastRequestDto intelligenceForecastRequestDto =
-          constructForecastRequest(sanatizedSeries.timestampedNumericDataPoints(), forecastHorizon);
+          constructForecastRequest(
+              sanatizedSeries.timestampedNumericDataPoints(), sanatizedSeries.forecastSteps());
       IntelligenceForecastResponseDto intelligenceForecastResponseDto =
           makeForecastRequest(intelligenceForecastRequestDto);
 
@@ -94,7 +95,7 @@ public class BillingForecastingService extends ForecastingService {
         totalCostForecast, individualChargeForecasts, failedForecastCharges);
   }
 
-  private SanatizedSeries sanitizedChargeSeries(String chargeId) {
+  private SanitizedChargeSeries sanitizedChargeSeries(String chargeId) {
     List<TimestampedNumericDataPoint> chargeSeries =
         normalizedCostsRepository.getTimestampedBillingValues(
             chargeId, PageRequest.of(0, CONTEXT_LENGTH));
@@ -103,17 +104,26 @@ public class BillingForecastingService extends ForecastingService {
     Instant mostRecentBillingIngestionDate =
         normalizedCostsRepository.findLatestProviderBillingReportDate(chargeProvider);
 
-    logger.info("Most recent billing date {}", mostRecentBillingIngestionDate);
-    logger.info("Most recent series item {}", chargeSeries.getLast().timestamp());
-    if (Duration.between(chargeSeries.getLast().timestamp(), mostRecentBillingIngestionDate)
-            .toDays()
-        < OLD_CHARGE_CUTOFF_DAYS) {
-      logger.info("{} is safe", chargeId);
+    Duration timeBetweenLatestIngestion =
+        Duration.between(chargeSeries.getLast().timestamp(), mostRecentBillingIngestionDate);
+
+    if (timeBetweenLatestIngestion.toDays() < OLD_CHARGE_CUTOFF_DAYS) {
+      SanatizedSeries sanatizedSeries = sampler.sample(chargeSeries, false);
+
+      int forecastHorizon =
+          Math.abs(
+              Math.toIntExact(
+                  2_592_000L
+                      + timeBetweenLatestIngestion.toSeconds() / sanatizedSeries.periodicity()));
+      return new SanitizedChargeSeries(
+          sanatizedSeries.timestampedNumericDataPoints(),
+          sanatizedSeries.periodicity(),
+          forecastHorizon);
     } else {
-      logger.info("charge {} is not safe", chargeId);
+      logger.info(
+          "Charge {} was last ingested before the defined threshold and is thus not forecasted",
+          chargeId);
       return null;
     }
-
-    return sampler.sample(chargeSeries, false);
   }
 }

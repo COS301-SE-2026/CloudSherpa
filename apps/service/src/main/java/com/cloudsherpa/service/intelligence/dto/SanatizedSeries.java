@@ -1,4 +1,4 @@
-package com.cloudsherpa.service.intelligence.service;
+package com.cloudsherpa.service.intelligence.dto;
 
 import com.cloudsherpa.lib.dtos.TimestampedNumericDataPoint;
 import java.util.List;
