@@ -17,10 +17,7 @@ interface BillingForecastChartProps {
     data: BillingForecastSlices[];
 }
 
-export default function BillingForecastChart({
-    name,
-    data,
-}: Readonly<BillingForecastChartProps>) {
+export default function BillingForecastChart({ name, data }: Readonly<BillingForecastChartProps>) {
     const option: EChartsOption = useMemo(
         () => ({
             tooltip: {
