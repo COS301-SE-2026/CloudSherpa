@@ -1,5 +1,8 @@
 import {create} from "zustand";
 import {getAwsAccountConnections, getAwsAccountResources, CloudAccount, CloudResource} from "@/lib/fetch/aws-connection-api";
+import {MOCK_ACCOUNTS, MOCK_RESOURCES, getMockBillingData, mockApiResponse, BillingSummaryDto, CostBreakdownItem} from "@/features/intelligence/mock/billingMockData";
+
+const USE_MOCK = true;
 
 interface BillingIntelligenceStore{
     provider : string | null;
@@ -15,6 +18,13 @@ interface BillingIntelligenceStore{
     isFetching : boolean;
     breakdownSearch : string;
 
+    billingData : {forSummary : BillingSummaryDto;
+                   forBreakdown : CostBreakdownItem[];
+    } | null;
+
+    isLoading : boolean;
+    error : string | null;
+
     setProvider : (provider : string) => void;
     setAccount : (accountId : string, displayName : string) => void;
     setBreakdownSearch : (search : string) => void;
@@ -22,6 +32,7 @@ interface BillingIntelligenceStore{
     setResource : (resourceId : string, displayName : string) => void;
     fetchResources : (accountId : string) => Promise<void>;
     fetchAccounts : (accountId : string) => Promise<void>;
+    fetchBillingData : () => Promise<void>;
 
     reset : () => void;
 }
@@ -41,9 +52,13 @@ export const billingIntelligenceStore = create<BillingIntelligenceStore>((set, g
     isFetching : false,
     breakdownSearch : "",
 
+    isLoading : false,
+    error : null,
+    billingData : null,
+
     setProvider : (provider) => {
         set({
-            provider, accountId : null, resourceId : null, accounts : [], resources : [],
+            provider, accountId : null, resourceId : null, accounts : [], resources : [], billingData : null,
         });
 
         get().fetchAccounts(provider);
@@ -51,7 +66,7 @@ export const billingIntelligenceStore = create<BillingIntelligenceStore>((set, g
 
     setAccount : (accountId, accountDisplayName) => {
         set({
-            accountId, accountDisplayName, resourceId : null,
+            accountId, accountDisplayName, resourceId : null, billingData : null,
         });
 
         get().fetchResources(accountId);
@@ -59,13 +74,19 @@ export const billingIntelligenceStore = create<BillingIntelligenceStore>((set, g
 
     setResource : (resourceId, resourceDisplayName) =>
         set({
-            resourceId, resourceDisplayName,
+            resourceId, resourceDisplayName, billingData : null,
         }),
 
-    setTimeWindows : (past, forecast) =>
+    setTimeWindows : (past, forecast) => {
         set({
-            pastTimeWindowDays : past, forecastTimeWindowDays : forecast,
-        }),
+            pastTimeWindowDays : past, forecastTimeWindowDays : forecast, billingData : null,
+        });
+
+        const {accountId} = get();
+        if(accountId){
+            get().fetchBillingData();
+        }
+    },
 
     setBreakdownSearch : (breakdownSearch) => set({breakdownSearch}),
 
@@ -77,7 +98,7 @@ export const billingIntelligenceStore = create<BillingIntelligenceStore>((set, g
         set({isFetching : true});
 
         try{
-            const accounts = await getAwsAccountConnections();
+            const accounts = USE_MOCK ? await mockApiResponse(MOCK_ACCOUNTS,400) : await getAwsAccountConnections();
 
             set({accounts, isFetching : false});
         } catch{
@@ -89,11 +110,33 @@ export const billingIntelligenceStore = create<BillingIntelligenceStore>((set, g
         set({isFetching : true});
 
         try{
-            const resources = await getAwsAccountResources(accountId);
+            const resources = USE_MOCK ? await mockApiResponse(MOCK_RESOURCES[accountId] ?? [], 300) : await getAwsAccountResources(accountId);
 
             set({resources, isFetching : false});
         } catch{
             set({isFetching : false});
+        }
+    },
+
+    fetchBillingData : async () => {
+        const {accountId, resourceId, pastTimeWindowDays, forecastTimeWindowDays} = get();
+
+        if(!accountId){
+            return;
+        }
+
+        set({isLoading : true, error : null});
+
+        try{
+            const data = USE_MOCK ? await mockApiResponse(getMockBillingData(accountId, resourceId, pastTimeWindowDays, forecastTimeWindowDays),600) : (() => {
+                throw new Error("API not implemented");
+            })();
+
+            set({billingData : data, isLoading : false});
+        } catch{
+            set({
+                isLoading : false,
+            });
         }
     },
 
@@ -102,6 +145,7 @@ export const billingIntelligenceStore = create<BillingIntelligenceStore>((set, g
             provider : null,
             accountId : null,
             resourceId : null,
+            billingData : null,
         }),
 
 }));
