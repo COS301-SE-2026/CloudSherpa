@@ -11,8 +11,7 @@ import { useUsageIntelligenceConfigStore } from "@/features/intelligence/stores/
 import { useUsageIntelligenceStore } from "@/features/intelligence/stores/useUsageIntelligenceStore";
 import { Card, CardContent, CardHeader } from "@/components/atoms/card";
 import { Button } from "@/components/atoms/button";
-import { timeMs } from "@/lib/timeUtils";
-import { durationByPreset } from "@/lib/timeUtils";
+import { timeMs, durationByPreset } from "@/lib/timeUtils";
 
 const now = Date.now();
 
