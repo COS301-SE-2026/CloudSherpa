@@ -4,7 +4,7 @@ import { useState } from "react";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon, ChevronLeft, ChevronDown, Filter, Check } from "lucide-react";
 import { DateRange } from "react-day-picker";
-import { cn } from "@/lib/utils";
+import { cn, timeMs } from "@/lib/utils";
 import { Button } from "@/components/atoms/button";
 import { Calendar } from "@/components/atoms/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/atoms/popover";
@@ -18,7 +18,6 @@ import {
     CommandSeparator,
 } from "@/components/atoms/command";
 import { useDashboardStore } from "../../stores/dashboard-store";
-import { ppid } from "process";
 
 export const presets: { id: TimeWindowPreset; label: string }[] = [
     { id: "T_5_MIN", label: "5 min" },
@@ -37,25 +36,22 @@ export function getPresetRange(presetId: TimeWindowPreset): DateRange | undefine
         return undefined;
     }
     const to = new Date();
-    const minuteMs = 60 * 1000;
-    const hourMs = 60 * minuteMs;
-    const dayMs = 24 * hourMs;
 
     const durationByPreset: Record<TimeWindowPreset, number> = {
-        T_5_MIN: 5 * minuteMs,
-        T_15_MIN: 15 * minuteMs,
-        T_30_MIN: 30 * minuteMs,
-        T_1_HOUR: hourMs,
-        T_6_HOUR: 6 * hourMs,
-        T_12_HOUR: 12 * hourMs,
-        T_24_HOUR: 24 * hourMs,
-        T_7_DAYS: 7 * dayMs,
-        T_30_DAYS: 30 * dayMs,
+        T_5_MIN: 5 * timeMs.minuteMs,
+        T_15_MIN: 15 * timeMs.minuteMs,
+        T_30_MIN: 30 * timeMs.minuteMs,
+        T_1_HOUR: timeMs.hourMs,
+        T_6_HOUR: 6 * timeMs.hourMs,
+        T_12_HOUR: 12 * timeMs.hourMs,
+        T_24_HOUR: timeMs.dayMs,
+        T_7_DAYS: 7 * timeMs.dayMs,
+        T_30_DAYS: 30 * timeMs.dayMs,
         custom: 0,
     };
 
     return {
-        from: new Date(to.getTime() - (durationByPreset[presetId] ?? 7 * dayMs)),
+        from: new Date(to.getTime() - (durationByPreset[presetId] ?? 7 * timeMs.dayMs)),
         to,
     };
 }

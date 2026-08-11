@@ -11,6 +11,7 @@ import { useUsageIntelligenceConfigStore } from "@/features/intelligence/stores/
 import { useUsageIntelligenceStore } from "@/features/intelligence/stores/useUsageIntelligenceStore";
 import { Card, CardContent, CardHeader } from "@/components/atoms/card";
 import { Button } from "@/components/atoms/button";
+import { timeMs } from "@/lib/utils";
 
 const now = Date.now();
 
@@ -38,8 +39,7 @@ export default function UsagePredictionChart() {
 
     // 3. X-AXIS MATH HOOK
     const { currentTime, minXAxisTime, maxXAxisTime } = useMemo(() => {
-        const oneDayMs = 24 * 60 * 60 * 1000;
-        const minTime = now - pastTimeWindowDays * oneDayMs;
+        const minTime = now - pastTimeWindowDays * timeMs.dayMs;
         let maxTime: number;
 
         if (forecastedMetrics && forecastedMetrics.horizonTimestamps.length > 0) {
@@ -47,7 +47,7 @@ export default function UsagePredictionChart() {
             const lastForecastIso = forecastedMetrics.horizonTimestamps[lastForecastIndex];
             maxTime = new Date(lastForecastIso).getTime();
         } else {
-            maxTime = now + oneDayMs;
+            maxTime = now + timeMs.dayMs;
         }
 
         return {
