@@ -1,4 +1,4 @@
-package com.cloudsherpa.service.persistconnection.aws.service;
+package com.cloudsherpa.service.persistconnection.service;
 
 import com.cloudsherpa.lib.entities.CloudAccount;
 import com.cloudsherpa.lib.entities.CloudConnection;
@@ -7,18 +7,18 @@ import com.cloudsherpa.lib.entities.Resource;
 import com.cloudsherpa.lib.repositories.CloudAccountRepository;
 import com.cloudsherpa.lib.repositories.CloudConnectionRepository;
 import com.cloudsherpa.lib.repositories.ResourceRepository;
-import com.cloudsherpa.service.persistconnection.aws.dto.CloudAccountDetailsResponse;
+import com.cloudsherpa.service.persistconnection.dto.CloudAccountDetailsResponse;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 @Service
-public class AwsConnectionQueryService {
+public class ConnectionQueryService {
   private final CloudConnectionRepository cloudConnectionRepository;
   private final CloudAccountRepository cloudAccountRepository;
   private final ResourceRepository resourceRepository;
 
-  public AwsConnectionQueryService(
+  public ConnectionQueryService(
       CloudConnectionRepository cloudConnectionRepository,
       CloudAccountRepository cloudAccountRepository,
       ResourceRepository resourceRepository) {

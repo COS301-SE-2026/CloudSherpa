@@ -1,5 +1,6 @@
-package com.cloudsherpa.service.persistconnection.aws.dto;
+package com.cloudsherpa.service.persistconnection.provider.aws.dto;
 
+import com.cloudsherpa.service.persistconnection.dto.ResourceSelectionDto;
 import java.util.List;
 import java.util.UUID;
 

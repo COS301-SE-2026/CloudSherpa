@@ -5,12 +5,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-import com.cloudsherpa.service.persistconnection.aws.controller.AwsConnectionPersistenceController;
-import com.cloudsherpa.service.persistconnection.aws.dto.AwsCredentialsDto;
-import com.cloudsherpa.service.persistconnection.aws.dto.BillingConfigDto;
-import com.cloudsherpa.service.persistconnection.aws.dto.PersistAwsConnectionRequest;
-import com.cloudsherpa.service.persistconnection.aws.dto.ResourceSelectionDto;
-import com.cloudsherpa.service.persistconnection.aws.service.AwsConnectionPersistenceService;
+import com.cloudsherpa.service.persistconnection.dto.ResourceSelectionDto;
+import com.cloudsherpa.service.persistconnection.provider.aws.controller.AwsConnectionPersistenceController;
+import com.cloudsherpa.service.persistconnection.provider.aws.dto.AwsCredentialsDto;
+import com.cloudsherpa.service.persistconnection.provider.aws.dto.BillingConfigDto;
+import com.cloudsherpa.service.persistconnection.provider.aws.dto.PersistAwsConnectionRequest;
+import com.cloudsherpa.service.persistconnection.provider.aws.service.AwsConnectionPersistenceService;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;

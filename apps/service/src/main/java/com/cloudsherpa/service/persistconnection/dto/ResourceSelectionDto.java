@@ -1,4 +1,4 @@
-package com.cloudsherpa.service.persistconnection.aws.dto;
+package com.cloudsherpa.service.persistconnection.dto;
 
 import java.util.Map;
 

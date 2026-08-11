@@ -1,4 +1,4 @@
-package com.cloudsherpa.service.persistconnection.aws.service;
+package com.cloudsherpa.service.persistconnection.service;
 
 import jakarta.annotation.PostConstruct;
 import java.nio.charset.StandardCharsets;
