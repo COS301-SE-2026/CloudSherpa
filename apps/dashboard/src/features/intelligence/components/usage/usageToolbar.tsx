@@ -11,7 +11,7 @@ import {
     DialogTitle,
 } from "@/components/atoms/dialog";
 import { Button } from "@/components/atoms/button";
-import { Settings2, PanelLeft } from "lucide-react";
+import { Settings2 } from "lucide-react";
 import { SidebarTrigger } from "@/components/atoms/sidebar";
 
 //mock
