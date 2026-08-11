@@ -36,8 +36,6 @@ export default function UsagePredictionChart() {
         [timeSeriesData, forecastedMetrics]
     );
 
-    // console.log(historicalData);
-
     // 3. X-AXIS MATH HOOK
     const { currentTime, minXAxisTime, maxXAxisTime } = useMemo(() => {
         const oneDayMs = 24 * 60 * 60 * 1000;
