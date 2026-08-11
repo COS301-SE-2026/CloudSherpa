@@ -11,7 +11,8 @@ import { useUsageIntelligenceConfigStore } from "@/features/intelligence/stores/
 import { useUsageIntelligenceStore } from "@/features/intelligence/stores/useUsageIntelligenceStore";
 import { Card, CardContent, CardHeader } from "@/components/atoms/card";
 import { Button } from "@/components/atoms/button";
-import { timeMs } from "@/lib/utils";
+import { timeMs } from "@/lib/timeUtils";
+import { durationByPreset } from "@/lib/timeUtils";
 
 const now = Date.now();
 
@@ -22,7 +23,9 @@ export default function UsagePredictionChart() {
     //config
     const resourceId = useUsageIntelligenceConfigStore((state) => state.resourceId);
     const metricType = useUsageIntelligenceConfigStore((state) => state.metricType);
-    const pastTimeWindowDays = useUsageIntelligenceConfigStore((state) => state.pastTimeWindowDays);
+    const pastTimeWindowPreset = useUsageIntelligenceConfigStore(
+        (state) => state.pastTimeWindowPreset
+    );
 
     //data
     const forecastedMetrics = useUsageIntelligenceStore((state) => {
@@ -39,7 +42,7 @@ export default function UsagePredictionChart() {
 
     // 3. X-AXIS MATH HOOK
     const { currentTime, minXAxisTime, maxXAxisTime } = useMemo(() => {
-        const minTime = now - pastTimeWindowDays * timeMs.dayMs;
+        const minTime = now - durationByPreset[pastTimeWindowPreset];
         let maxTime: number;
 
         if (forecastedMetrics && forecastedMetrics.horizonTimestamps.length > 0) {
@@ -55,7 +58,7 @@ export default function UsagePredictionChart() {
             minXAxisTime: minTime,
             maxXAxisTime: maxTime,
         };
-    }, [pastTimeWindowDays, forecastedMetrics]);
+    }, [pastTimeWindowPreset, forecastedMetrics]);
 
     const echartsRef = useRef<ReactECharts>(null);
 

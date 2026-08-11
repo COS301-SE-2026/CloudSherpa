@@ -8,6 +8,7 @@ import {
     CloudResource,
 } from "@/lib/fetch/aws-connection-api";
 import { persist } from "zustand/middleware";
+import { TimeWindowPreset } from "@/features/dashboard/types/timewindow";
 
 interface UsageIntelligenceConfigStore {
     provider: string | null;
@@ -17,7 +18,7 @@ interface UsageIntelligenceConfigStore {
     accountDisplayName: string | null;
     resourceDisplayName: string | null;
 
-    pastTimeWindowDays: number;
+    pastTimeWindowPreset: TimeWindowPreset;
 
     accounts: CloudAccount[];
     resources: CloudResource[];
@@ -27,7 +28,7 @@ interface UsageIntelligenceConfigStore {
     setAccount: (accountId: string, displayName: string) => void;
     setResource: (resourceId: string, displayName: string) => void;
     setMetricType: (metricType: MetricType) => void;
-    setTimeWindows: (past: number, forecast: number) => void;
+    setTimeWindows: (past: TimeWindowPreset) => void;
     fetchAccounts: (provider: string) => Promise<void>;
     fetchResources: (accountId: string) => Promise<void>;
     reset: () => void;
@@ -42,7 +43,7 @@ export const useUsageIntelligenceConfigStore = create<UsageIntelligenceConfigSto
             metricType: null,
             accountDisplayName: null,
             resourceDisplayName: null,
-            pastTimeWindowDays: 30,
+            pastTimeWindowPreset: "T_6_HOUR",
             accounts: [],
             resources: [],
             isFetching: false,
@@ -83,7 +84,7 @@ export const useUsageIntelligenceConfigStore = create<UsageIntelligenceConfigSto
 
             setTimeWindows: (past) =>
                 set({
-                    pastTimeWindowDays: past,
+                    pastTimeWindowPreset: past,
                 }),
 
             fetchAccounts: async (provider) => {
@@ -117,7 +118,7 @@ export const useUsageIntelligenceConfigStore = create<UsageIntelligenceConfigSto
                     metricType: null,
                     accountDisplayName: null,
                     resourceDisplayName: null,
-                    pastTimeWindowDays: 30,
+                    pastTimeWindowPreset: "T_6_HOUR",
                     accounts: [],
                     resources: [],
                     isFetching: false,

@@ -13,7 +13,7 @@ import { useChartData } from "@/features/dashboard/hooks/useChartData";
 import { getArraySummary } from "@/features/intelligence/utils/getUsageSummaries";
 import { useMakeUsageForecast } from "../../hooks/useMakeUsageForecast";
 import { Alert, AlertDescription, AlertTitle } from "@/components/atoms/alert";
-import { timeMs } from "@/lib/utils";
+import { timeMs } from "@/lib/timeUtils";
 
 function generateMockForecast(days: number): UsageForecastData {
     const hours = days * 24;

@@ -1,6 +1,6 @@
 import { Metric } from "@/features/dashboard/types/metric";
 import { UsageForecastData } from "../types/metrics";
-import { timeMs } from "@/lib/utils";
+import { timeMs } from "@/lib/timeUtils";
 
 function toBrowserTimezoneTimestamp(isoString: string): number {
     const timestamp = new Date(isoString).getTime();

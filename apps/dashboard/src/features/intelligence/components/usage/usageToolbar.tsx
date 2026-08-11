@@ -13,18 +13,18 @@ import {
 import { Button } from "@/components/atoms/button";
 import { Settings2 } from "lucide-react";
 import { SidebarTrigger } from "@/components/atoms/sidebar";
+import { presets } from "@/lib/timeUtils";
+import { TimeWindowPreset } from "@/features/dashboard/types/timewindow";
 
 //mock
 const PROVIDERS = ["AWS", "GCP", "Azure"];
 
 type DropdownWidth = "small" | "medium" | "large" | "full";
 
-const PAST_PRESETS = [
-    { value: "1", label: "Last 24 Hours" },
-    { value: "7", label: "Last 7 Days" },
-    { value: "30", label: "Last 30 Days" },
-    { value: "90", label: "Last 90 Days" },
-];
+const PAST_PRESETS = presets.map((preset) => ({
+    value: preset.id,
+    label: preset.label,
+}));
 
 export default function UsageToolbar() {
     const {
@@ -39,7 +39,7 @@ export default function UsageToolbar() {
         accounts,
         resources,
         isFetching,
-        pastTimeWindowDays,
+        pastTimeWindowPreset,
         setTimeWindows,
     } = useUsageIntelligenceConfigStore();
 
@@ -113,9 +113,9 @@ export default function UsageToolbar() {
     const renderTimeWindowDropdown = (width: DropdownWidth) => (
         <Dropdown
             options={PAST_PRESETS}
-            value={pastTimeWindowDays.toString()}
+            value={pastTimeWindowPreset}
             onSelect={(val) => {
-                setTimeWindows(Number(val), pastTimeWindowDays);
+                setTimeWindows(val as TimeWindowPreset);
             }}
             placeholder="Select Past Window"
             disableSearch={true}

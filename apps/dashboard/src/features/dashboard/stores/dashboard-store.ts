@@ -16,7 +16,7 @@ import { TimeWindowPreset } from "../types/timewindow";
 import { setDashboardPresetTimeWindow } from "../utils/setDashboardTimeWindow";
 import { persist } from "zustand/middleware";
 import { getPresetRange } from "../components/toolbar/timePeriodSelector";
-import { timeMs } from "@/lib/utils";
+import { timeMs } from "@/lib/timeUtils";
 
 const tickIntervalMs = 60_000;
 
