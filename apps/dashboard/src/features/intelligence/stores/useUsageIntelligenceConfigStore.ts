@@ -7,6 +7,7 @@ import {
     CloudAccount,
     CloudResource,
 } from "@/lib/fetch/aws-connection-api";
+import { persist } from "zustand/middleware";
 
 interface UsageIntelligenceConfigStore {
     provider: string | null;
@@ -32,85 +33,90 @@ interface UsageIntelligenceConfigStore {
     reset: () => void;
 }
 
-export const useUsageIntelligenceConfigStore = create<UsageIntelligenceConfigStore>((set, get) => ({
-    provider: null,
-    accountId: null,
-    resourceId: null,
-    metricType: null,
-    accountDisplayName: null,
-    resourceDisplayName: null,
-    pastTimeWindowDays: 30,
-    accounts: [],
-    resources: [],
-    isFetching: false,
-
-    setProvider: (provider) => {
-        set({
-            provider,
-            accountId: null,
-            resourceId: null,
-            metricType: null,
-            accounts: [],
-            resources: [],
-        });
-        get().fetchAccounts(provider);
-    },
-
-    setAccount: (accountId, accountDisplayName) => {
-        set({
-            accountId,
-            accountDisplayName,
-            resourceId: null,
-            metricType: null,
-        });
-        get().fetchResources(accountId);
-    },
-
-    setResource: (resourceId, resourceDisplayName) =>
-        set({
-            resourceId,
-            resourceDisplayName,
-            metricType: null,
-        }),
-
-    setMetricType: (metricType) =>
-        set({
-            metricType,
-        }),
-
-    setTimeWindows: (past) =>
-        set({
-            pastTimeWindowDays: past,
-        }),
-
-    fetchAccounts: async (provider) => {
-        if (provider !== "AWS") return;
-        set({ isFetching: true });
-        try {
-            const accounts = await getAwsAccountConnections();
-            set({ accounts, isFetching: false });
-        } catch (error) {
-            console.error("Failed to fetch accounts:", error);
-            set({ isFetching: false });
-        }
-    },
-
-    fetchResources: async (accountId) => {
-        set({ isFetching: true });
-        try {
-            const resources = await getAwsAccountResources(accountId);
-            set({ resources, isFetching: false });
-        } catch (error) {
-            console.error("Failed to fetch resources:", error);
-            set({ isFetching: false });
-        }
-    },
-
-    reset: () =>
-        set({
+export const useUsageIntelligenceConfigStore = create<UsageIntelligenceConfigStore>()(
+    persist(
+        (set, get) => ({
             provider: null,
             accountId: null,
             resourceId: null,
             metricType: null,
+            accountDisplayName: null,
+            resourceDisplayName: null,
+            pastTimeWindowDays: 30,
+            accounts: [],
+            resources: [],
+            isFetching: false,
+
+            setProvider: (provider) => {
+                set({
+                    provider,
+                    accountId: null,
+                    resourceId: null,
+                    metricType: null,
+                    accounts: [],
+                    resources: [],
+                });
+                get().fetchAccounts(provider);
+            },
+
+            setAccount: (accountId, accountDisplayName) => {
+                set({
+                    accountId,
+                    accountDisplayName,
+                    resourceId: null,
+                    metricType: null,
+                });
+                get().fetchResources(accountId);
+            },
+
+            setResource: (resourceId, resourceDisplayName) =>
+                set({
+                    resourceId,
+                    resourceDisplayName,
+                    metricType: null,
+                }),
+
+            setMetricType: (metricType) =>
+                set({
+                    metricType,
+                }),
+
+            setTimeWindows: (past) =>
+                set({
+                    pastTimeWindowDays: past,
+                }),
+
+            fetchAccounts: async (provider) => {
+                if (provider !== "AWS") return;
+                set({ isFetching: true });
+                try {
+                    const accounts = await getAwsAccountConnections();
+                    set({ accounts, isFetching: false });
+                } catch (error) {
+                    console.error("Failed to fetch accounts:", error);
+                    set({ isFetching: false });
+                }
+            },
+
+            fetchResources: async (accountId) => {
+                set({ isFetching: true });
+                try {
+                    const resources = await getAwsAccountResources(accountId);
+                    set({ resources, isFetching: false });
+                } catch (error) {
+                    console.error("Failed to fetch resources:", error);
+                    set({ isFetching: false });
+                }
+            },
+
+            reset: () =>
+                set({
+                    provider: null,
+                    accountId: null,
+                    resourceId: null,
+                    metricType: null,
+                }),
         }),
-}));
+        { name: "billing_intelligence_config" }
+    )
+);
