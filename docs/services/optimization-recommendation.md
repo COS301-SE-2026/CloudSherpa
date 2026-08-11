@@ -105,3 +105,106 @@ For every combination of Tenant + Resource + Canonical Metric + Window, the aggr
 
 - **spike_count**: How many times usage breached a defined maximum threshold.
 - **peak_duration_seconds**: The total continuous time the resource spent maxed out.
+
+## Rule Configuration Format
+
+To keep the system accessible and highly performant, optimization rules are defined using standard SQL queries.
+
+Because the Optimization Worker has already calculated and stored the necessary metrics in the `optimization_metric_statistics` table, a rule is simply a query that joins the target resources with their underlying statistics to find matches.
+
+**Example Rule Definition (Downsize Underutilized Compute)**:
+
+```SQL
+-- Rule: COMPUTE-DOWNSIZE
+-- Action: DOWNSIZE
+
+SELECT 
+    r.resource_id,
+    r.provider,
+    r.resource_type,
+    'DOWNSIZE' AS action_type
+FROM 
+    resources r
+JOIN 
+    optimization_metric_statistics stat_30d 
+    ON r.resource_id = stat_30d.resource_id 
+    AND stat_30d.window_type = '30d'
+JOIN 
+    optimization_metric_statistics stat_7d 
+    ON r.resource_id = stat_7d.resource_id 
+    AND stat_7d.window_type = '7d'
+WHERE 
+    -- Target specific resource types across any cloud
+    r.resource_type IN ('compute_instance', 'virtual_machine')
+    
+    -- The server rarely exceeded 20% CPU under normal heavy load over the last month
+    AND stat_30d.metric_name = 'cpu_percent'
+    AND stat_30d.p95_value < 20
+    
+    -- The server never spiked above 60% CPU in the last week
+    AND stat_7d.metric_name = 'cpu_percent'
+    AND stat_7d.maximum_value < 60
+    
+    -- We have almost all the data points, so we trust these numbers
+    AND stat_30d.completeness_ratio >= 0.95;
+```
+
+## Rule Validation
+
+Before a rule is activated in the engine, it is executed via an internal EXPLAIN statement. If PostgreSQL compiles the query successfully without syntax errors or missing column references, the rule is considered structurally valid and safe for the worker to run.
+
+## Recommendation Candidate Model
+
+When the Rule Engine executes these SQL queries, it does not immediately write a final recommendation to the database. Instead, the resulting rows are mapped into an in-memory Recommendation Candidate.
+
+This separation is necessary because multiple rules might flag the exact same resource. The candidate model acts as a temporary holding state containing all the context needed to make a final decision.
+
+### A Candidate contains:
+
+- **Target Resource ID**: The UUID of the resource.
+- **Rule ID**: Which specific SQL rule triggered this draft.
+- **Action Type**: The proposed action (e.g., TERMINATE, DOWNSIZE, etc).
+- **Target Configuration**: The proposed new state (e.g., shifting from t3.2xlarge to t3.xlarge).
+- **Estimated Savings**: The calculated monthly savings derived from the pricing catalog.
+- **Evidence**: The raw JSON payload of the specific metrics that triggered the rule, ensuring the final decision is fully explainable to the user.
+
+## Conflict-Resolution Hierarchy
+
+It is common for a single poorly-optimized server to trigger multiple rules simultaneously. For example, a server that has been completely abandoned might trigger both a DOWNSIZE rule (because its CPU is low) and a TERMINATE rule (because its network traffic is zero).
+
+To prevent spamming the user with conflicting advice, the Conflict Resolver acts as a traffic cop. It groups all candidate drafts by resource_id and processes them through a strict, defined hierarchy.
+
+## Resolution Logic & Weights
+
+The engine ranks actions by weight, favoring the most financially impactful or logically absolute action:
+
+- **TERMINATE (Weight 100)**: Overrides all other actions. If a resource is completely idle, there is no point in downsizing or modernizing it.
+- **MODERNIZE (Weight 75)**: Overrides downsize. Shifting to a newer generation family (e.g., AWS m5 to m6i) usually provides better price-to-performance than just shrinking an older instance type.
+- **DOWNSIZE (Weight 50)**: Standard right-sizing.
+- **SUSPEND (Weight 25)**: Recommending a power-schedule (shutting down at night) for environments that cannot be permanently terminated or downsized.
+
+## The Resolution Flow
+
+```mermaid
+flowchart TD
+    CANDIDATES[In-Memory Candidates\nMultiple drafts for a single resource]
+    
+    DEDUPE[1. Deduplication\nDrop identical drafts from the same rule]
+    
+    SAFETY[2. Safety & Policy Checks\nDrop drafts if the resource has a 'Protected' tag]
+    
+    HIERARCHY[3. Apply Hierarchy\nEvaluate Weights: TERMINATE > MODERNIZE > DOWNSIZE]
+    
+    SAVINGS[4. Tie-Breaker\nIf weights are equal, pick the draft with the highest savings]
+    
+    FINAL[5. Final Decision\nSelect the single winning Candidate]
+    
+    PERSIST[(6. Persist to SherpaDB\nSave as an ACTIVE recommendation)]
+
+    CANDIDATES --> DEDUPE
+    DEDUPE --> SAFETY
+    SAFETY --> HIERARCHY
+    HIERARCHY --> SAVINGS
+    SAVINGS --> FINAL
+    FINAL --> PERSIST
+```
