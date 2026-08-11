@@ -115,6 +115,12 @@ export const useUsageIntelligenceConfigStore = create<UsageIntelligenceConfigSto
                     accountId: null,
                     resourceId: null,
                     metricType: null,
+                    accountDisplayName: null,
+                    resourceDisplayName: null,
+                    pastTimeWindowDays: 30,
+                    accounts: [],
+                    resources: [],
+                    isFetching: false,
                 }),
         }),
         { name: "billing_intelligence_config" }
