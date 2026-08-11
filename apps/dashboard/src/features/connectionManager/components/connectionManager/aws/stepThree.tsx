@@ -19,7 +19,7 @@ import {
 import { useRouter } from "next/navigation";
 import { Label } from "@/components/atoms/label";
 import { Slider } from "@/components/atoms/slider";
-import {StepThree} from "@/features/connectionManager/components/connectionManager/wizardSetup/stepThree";
+import { StepThree } from "@/features/connectionManager/components/connectionManager/wizardSetup/stepThree";
 
 interface PropsForStepThree {
     displayName: string;
@@ -222,13 +222,13 @@ export default function StepThreeAws({
         const minutes = Math.floor(secs / 60);
         const remainingSeconds = secs % 60;
         let minText = "";
-        if(minutes>0){
+        if (minutes > 0) {
             const labelEnding = minutes === 1 ? "" : "s";
             minText = `${minutes} minute${labelEnding}`;
         }
 
         let secText = "";
-        if(remainingSeconds>0){
+        if (remainingSeconds > 0) {
             const labelEnding = remainingSeconds === 1 ? "" : "s";
             secText = `${remainingSeconds} second${labelEnding}`;
         }
@@ -238,11 +238,14 @@ export default function StepThreeAws({
     };
 
     return (
-        <StepThree heading = "Select Instances"
-                   description = "Select the instances you want CloudSherpa to monitor"
-                   onSubmit = {handleSubmit} onBack = {onBack} forSaving = {saving} forErrors = {error}
+        <StepThree
+            heading="Select Instances"
+            description="Select the instances you want CloudSherpa to monitor"
+            onSubmit={handleSubmit}
+            onBack={onBack}
+            forSaving={saving}
+            forErrors={error}
         >
-
             <div className="min-h-50">
                 <div className="space-y-8">
                     {Object.entries(groupedResources).map(
@@ -292,12 +295,11 @@ export default function StepThreeAws({
 
                             <TooltipContent>
                                 <p>
-                                    Recommended ingestion interval: {recommendedPeriod}{" "}
-                                    seconds based on {selectedResources.length} selected
-                                    resources. Setting the interval to a lower value could
-                                    incur costs due to CloudWatch API free tier limits. The
-                                    ingestion interval determines the frequency of dashboard
-                                    timeseries updates.
+                                    Recommended ingestion interval: {recommendedPeriod} seconds
+                                    based on {selectedResources.length} selected resources. Setting
+                                    the interval to a lower value could incur costs due to
+                                    CloudWatch API free tier limits. The ingestion interval
+                                    determines the frequency of dashboard timeseries updates.
                                 </p>
                             </TooltipContent>
                         </Tooltip>
