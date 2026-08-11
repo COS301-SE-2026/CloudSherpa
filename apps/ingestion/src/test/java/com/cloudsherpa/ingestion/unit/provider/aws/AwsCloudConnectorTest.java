@@ -6,14 +6,33 @@ import com.cloudsherpa.ingestion.connector.*;
 import com.cloudsherpa.ingestion.models.IngestionRequestEvent;
 import com.cloudsherpa.ingestion.models.UsageRecordModel;
 import com.cloudsherpa.ingestion.provider.aws.AwsCloudConnector;
+import com.cloudsherpa.ingestion.provider.aws.monitoring.MockCloudWatchMetricProvider;
 import com.cloudsherpa.ingestion.provider.scanner.ResourceDiscoveryService;
 import java.time.Instant;
 import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+@ExtendWith(SpringExtension.class)
+@ContextConfiguration(classes = AwsCloudConnectorTest.TestConfig.class)
 class AwsCloudConnectorTest {
+
   private ResourceDiscoveryService discoveryService;
-  private final AwsCloudConnector connector = new AwsCloudConnector(discoveryService);
+
+  @Autowired private MockCloudWatchMetricProvider mockMetricProvider;
+
+  private AwsCloudConnector connector;
+
+  @BeforeEach
+  void setUp() {
+    connector = new AwsCloudConnector(discoveryService, mockMetricProvider);
+  }
 
   @Test
   void getProviderNameShouldReturnAws() {
@@ -88,7 +107,7 @@ class AwsCloudConnectorTest {
     Metric metric = new Metric();
     metric.setName("CPUUtilization");
     ServiceScope service = new ServiceScope();
-    service.setName("EC2");
+    service.setName("AWS/EC2");
     service.setMetrics(List.of(metric));
     service.setInstances(List.of(instanceScope));
 
@@ -101,4 +120,12 @@ class AwsCloudConnectorTest {
 
     return request;
   }
+
+  @Configuration
+  @ComponentScan(
+      basePackages = {
+        "com.cloudsherpa.ingestion.provider.aws.monitoring",
+        "com.cloudsherpa.ingestion.provider.mock"
+      })
+  static class TestConfig {}
 }

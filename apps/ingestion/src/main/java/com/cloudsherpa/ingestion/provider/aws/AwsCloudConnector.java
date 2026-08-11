@@ -28,9 +28,11 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
   private final CloudWatchMetricProvider mockMetricProvider;
   private final ResourceDiscoveryService discoveryService;
 
-  public AwsCloudConnector(ResourceDiscoveryService resourceDiscoveryService) {
+  public AwsCloudConnector(
+      ResourceDiscoveryService resourceDiscoveryService,
+      MockCloudWatchMetricProvider mockMetricProvider) {
     metricProvider = new AwsCloudWatchMetricProvider();
-    mockMetricProvider = new MockCloudWatchMetricProvider();
+    this.mockMetricProvider = mockMetricProvider;
     discoveryService = resourceDiscoveryService;
   }
 
