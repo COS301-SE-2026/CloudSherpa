@@ -1,10 +1,10 @@
-package com.cloudsherpa.service.persistconnection.aws.controller;
+package com.cloudsherpa.service.persistconnection.provider.aws.controller;
 
 import com.cloudsherpa.lib.entities.CloudAccount;
 import com.cloudsherpa.lib.entities.Resource;
-import com.cloudsherpa.service.persistconnection.aws.dto.CloudAccountDetailsResponse;
-import com.cloudsherpa.service.persistconnection.aws.dto.ResourceCountResponse;
-import com.cloudsherpa.service.persistconnection.aws.service.AwsConnectionQueryService;
+import com.cloudsherpa.service.persistconnection.dto.CloudAccountDetailsResponse;
+import com.cloudsherpa.service.persistconnection.dto.ResourceCountResponse;
+import com.cloudsherpa.service.persistconnection.provider.aws.service.AwsConnectionQueryService;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;

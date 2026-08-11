@@ -6,7 +6,7 @@ import com.cloudsherpa.lib.entities.StatusEnum;
 import com.cloudsherpa.lib.repositories.CloudAccountRepository;
 import com.cloudsherpa.lib.repositories.ResourceRepository;
 import com.cloudsherpa.service.analytics.service.ResourceRegistryService;
-import com.cloudsherpa.service.persistconnection.aws.dto.ResourceSelectionDto;
+import com.cloudsherpa.service.persistconnection.dto.ResourceSelectionDto;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -97,24 +97,22 @@ public abstract class ConnectionPersistenceService {
 
   protected void createResources(
       UUID userId, CloudAccount account, List<ResourceSelectionDto> resources) {
-    List<Resource> entities =
-        resources.stream()
-            .map(
-                r ->
-                    new Resource.Builder()
-                        .id(UUID.randomUUID())
-                        .accountId(account.getId())
-                        .resourceType(r.serviceType())
-                        .resourceName(r.resourceName())
-                        .resourceIdentifier(r.resourceId())
-                        .resourceIdentifierType(r.resourceType())
-                        .region(r.region())
-                        .status(r.active() ? StatusEnum.active : StatusEnum.disabled)
-                        .tags(r.tags())
-                        .createdAt(OffsetDateTime.now(ZoneOffset.UTC))
-                        .lastUpdated(OffsetDateTime.now(ZoneOffset.UTC))
-                        .build())
-            .toList();
+    List<Resource> entities = resources.stream()
+        .map(
+            r -> new Resource.Builder()
+                .id(UUID.randomUUID())
+                .accountId(account.getId())
+                .resourceType(r.serviceType())
+                .resourceName(r.resourceName())
+                .resourceIdentifier(r.resourceId())
+                .resourceIdentifierType(r.resourceType())
+                .region(r.region())
+                .status(r.active() ? StatusEnum.active : StatusEnum.disabled)
+                .tags(r.tags())
+                .createdAt(OffsetDateTime.now(ZoneOffset.UTC))
+                .lastUpdated(OffsetDateTime.now(ZoneOffset.UTC))
+                .build())
+        .toList();
 
     resourceRepository.saveAll(entities);
 

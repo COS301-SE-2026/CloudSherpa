@@ -5,12 +5,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-import com.cloudsherpa.service.persistconnection.aws.controller.AwsConnectionPersistenceController;
-import com.cloudsherpa.service.persistconnection.aws.dto.AwsCredentialsDto;
-import com.cloudsherpa.service.persistconnection.aws.dto.BillingConfigDto;
-import com.cloudsherpa.service.persistconnection.aws.dto.PersistAwsConnectionRequest;
-import com.cloudsherpa.service.persistconnection.aws.dto.ResourceSelectionDto;
-import com.cloudsherpa.service.persistconnection.aws.service.AwsConnectionPersistenceService;
+import com.cloudsherpa.service.persistconnection.provider.aws.controller.AwsConnectionPersistenceController;
+import com.cloudsherpa.service.persistconnection.provider.aws.dto.AwsCredentialsDto;
+import com.cloudsherpa.service.persistconnection.provider.aws.dto.BillingConfigDto;
+import com.cloudsherpa.service.persistconnection.provider.aws.dto.PersistAwsConnectionRequest;
+import com.cloudsherpa.service.persistconnection.dto.ResourceSelectionDto;
+import com.cloudsherpa.service.persistconnection.provider.aws.service.AwsConnectionPersistenceService;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -29,13 +29,17 @@ import org.springframework.security.oauth2.jwt.Jwt;
 @ExtendWith(MockitoExtension.class)
 class AwsConnectionPersistenceControllerTest {
 
-  @Mock private AwsConnectionPersistenceService persistenceService;
+  @Mock
+  private AwsConnectionPersistenceService persistenceService;
 
-  @Mock private Jwt jwt;
+  @Mock
+  private Jwt jwt;
 
-  @InjectMocks private AwsConnectionPersistenceController controller;
+  @InjectMocks
+  private AwsConnectionPersistenceController controller;
 
-  @Captor private ArgumentCaptor<PersistAwsConnectionRequest> requestCaptor;
+  @Captor
+  private ArgumentCaptor<PersistAwsConnectionRequest> requestCaptor;
 
   private PersistAwsConnectionRequest request;
   private UUID userId;
@@ -47,22 +51,20 @@ class AwsConnectionPersistenceControllerTest {
 
     AwsCredentialsDto credentials = new AwsCredentialsDto("accessKey", "secretKey");
 
-    ResourceSelectionDto resource =
-        new ResourceSelectionDto(
-            "i-12345",
-            "EC2",
-            "instanceId",
-            "instance-1",
-            "af-south-1",
-            Map.of("Environment", "Prod"),
-            true);
+    ResourceSelectionDto resource = new ResourceSelectionDto(
+        "i-12345",
+        "EC2",
+        "instanceId",
+        "instance-1",
+        "af-south-1",
+        Map.of("Environment", "Prod"),
+        true);
 
-    BillingConfigDto billingConfig =
-        new BillingConfigDto("billing-bucket", "eu-north-1", "exports/", "daily-cost-export");
+    BillingConfigDto billingConfig = new BillingConfigDto("billing-bucket", "eu-north-1", "exports/",
+        "daily-cost-export");
 
-    request =
-        new PersistAwsConnectionRequest(
-            null, null, "Production", 300, credentials, List.of(resource), billingConfig);
+    request = new PersistAwsConnectionRequest(
+        null, null, "Production", 300, credentials, List.of(resource), billingConfig);
   }
 
   @Test
@@ -122,8 +124,7 @@ class AwsConnectionPersistenceControllerTest {
         .when(persistenceService)
         .persistConnection(any());
 
-    RuntimeException exception =
-        assertThrows(RuntimeException.class, () -> controller.persistConnection(jwt, request));
+    RuntimeException exception = assertThrows(RuntimeException.class, () -> controller.persistConnection(jwt, request));
 
     assertEquals("Persistence failed", exception.getMessage());
   }

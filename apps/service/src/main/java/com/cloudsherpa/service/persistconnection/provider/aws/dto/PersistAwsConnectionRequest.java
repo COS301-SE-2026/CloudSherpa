@@ -1,7 +1,9 @@
-package com.cloudsherpa.service.persistconnection.aws.dto;
+package com.cloudsherpa.service.persistconnection.provider.aws.dto;
 
 import java.util.List;
 import java.util.UUID;
+
+import com.cloudsherpa.service.persistconnection.dto.ResourceSelectionDto;
 
 public record PersistAwsConnectionRequest(
     UUID userId,

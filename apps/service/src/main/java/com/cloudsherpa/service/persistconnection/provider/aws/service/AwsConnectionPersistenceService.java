@@ -1,4 +1,4 @@
-package com.cloudsherpa.service.persistconnection.aws.service;
+package com.cloudsherpa.service.persistconnection.provider.aws.service;
 
 import com.cloudsherpa.lib.entities.AccountTypeEnum;
 import com.cloudsherpa.lib.entities.BillingExportConfig;
@@ -13,10 +13,11 @@ import com.cloudsherpa.lib.repositories.CloudConnectionRepository;
 import com.cloudsherpa.lib.repositories.CloudCredentialRepository;
 import com.cloudsherpa.lib.repositories.ResourceRepository;
 import com.cloudsherpa.service.analytics.service.ResourceRegistryService;
-import com.cloudsherpa.service.persistconnection.aws.dto.AwsCredentialsDto;
-import com.cloudsherpa.service.persistconnection.aws.dto.BillingConfigDto;
-import com.cloudsherpa.service.persistconnection.aws.dto.PersistAwsConnectionRequest;
+import com.cloudsherpa.service.persistconnection.provider.aws.dto.AwsCredentialsDto;
+import com.cloudsherpa.service.persistconnection.provider.aws.dto.BillingConfigDto;
+import com.cloudsherpa.service.persistconnection.provider.aws.dto.PersistAwsConnectionRequest;
 import com.cloudsherpa.service.persistconnection.service.ConnectionPersistenceService;
+import com.cloudsherpa.service.persistconnection.service.CredentialEncryptionService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.OffsetDateTime;
@@ -61,18 +62,17 @@ public class AwsConnectionPersistenceService extends ConnectionPersistenceServic
 
   private CloudConnection getOrCreateConnection(PersistAwsConnectionRequest request) {
 
-    List<CloudConnection> optionalConnection =
-        cloudConnectionRepository.findByUserIdAndProvider(request.userId(), ProviderEnum.AWS);
+    List<CloudConnection> optionalConnection = cloudConnectionRepository.findByUserIdAndProvider(request.userId(),
+        ProviderEnum.AWS);
 
     if (optionalConnection.isEmpty()) {
       UUID connectionId = UUID.randomUUID();
-      CloudConnection connection =
-          new CloudConnection(
-              connectionId,
-              request.userId(),
-              ProviderEnum.AWS,
-              StatusEnum.active,
-              OffsetDateTime.now(ZoneOffset.UTC));
+      CloudConnection connection = new CloudConnection(
+          connectionId,
+          request.userId(),
+          ProviderEnum.AWS,
+          StatusEnum.active,
+          OffsetDateTime.now(ZoneOffset.UTC));
       return cloudConnectionRepository.save(connection);
     }
     return optionalConnection.getFirst();
@@ -81,19 +81,18 @@ public class AwsConnectionPersistenceService extends ConnectionPersistenceServic
   private CloudAccount createAccount(
       CloudConnection connection, PersistAwsConnectionRequest request) {
     OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
-    CloudAccount account =
-        new CloudAccount.Builder()
-            .id(UUID.randomUUID())
-            .connectionId(connection.getId())
-            .accountType(AccountTypeEnum.aws_account)
-            .displayName(request.displayName())
-            .ingestionPeriod(request.ingestionPeriod().toString())
-            .createdAt(now)
-            .lastBillingIngestion(now)
-            .lastUsageIngestion(now)
-            .nextUsageIngestion(OffsetDateTime.now(ZoneOffset.UTC).plusMinutes(1))
-            .nextBillingIngestion(OffsetDateTime.now(ZoneOffset.UTC).plusMinutes(1))
-            .build();
+    CloudAccount account = new CloudAccount.Builder()
+        .id(UUID.randomUUID())
+        .connectionId(connection.getId())
+        .accountType(AccountTypeEnum.aws_account)
+        .displayName(request.displayName())
+        .ingestionPeriod(request.ingestionPeriod().toString())
+        .createdAt(now)
+        .lastBillingIngestion(now)
+        .lastUsageIngestion(now)
+        .nextUsageIngestion(OffsetDateTime.now(ZoneOffset.UTC).plusMinutes(1))
+        .nextBillingIngestion(OffsetDateTime.now(ZoneOffset.UTC).plusMinutes(1))
+        .build();
 
     return cloudAccountRepository.save(account);
   }
@@ -104,14 +103,13 @@ public class AwsConnectionPersistenceService extends ConnectionPersistenceServic
       String json = objectMapper.writeValueAsString(credentials);
       String encrypted = encryptionService.encrypt(json);
 
-      CloudCredential credential =
-          new CloudCredential(
-              UUID.randomUUID(),
-              account.getId(),
-              "AWS",
-              "IAM_USER",
-              encrypted,
-              OffsetDateTime.now(ZoneOffset.UTC));
+      CloudCredential credential = new CloudCredential(
+          UUID.randomUUID(),
+          account.getId(),
+          "AWS",
+          "IAM_USER",
+          encrypted,
+          OffsetDateTime.now(ZoneOffset.UTC));
       cloudCredentialRepository.save(credential);
     } catch (JsonProcessingException e) {
       throw new IllegalArgumentException("Unable to serialize AWS credentials.", e);
@@ -119,15 +117,14 @@ public class AwsConnectionPersistenceService extends ConnectionPersistenceServic
   }
 
   private void createBillingExportConfig(CloudAccount account, BillingConfigDto billingConfig) {
-    BillingExportConfig config =
-        new BillingExportConfig(
-            UUID.randomUUID(),
-            account.getId(),
-            billingConfig.bucketName(),
-            billingConfig.bucketRegion(),
-            billingConfig.exportPrefix(),
-            billingConfig.exportName(),
-            OffsetDateTime.now(ZoneOffset.UTC));
+    BillingExportConfig config = new BillingExportConfig(
+        UUID.randomUUID(),
+        account.getId(),
+        billingConfig.bucketName(),
+        billingConfig.bucketRegion(),
+        billingConfig.exportPrefix(),
+        billingConfig.exportName(),
+        OffsetDateTime.now(ZoneOffset.UTC));
 
     billingExportConfigRepository.save(config);
   }

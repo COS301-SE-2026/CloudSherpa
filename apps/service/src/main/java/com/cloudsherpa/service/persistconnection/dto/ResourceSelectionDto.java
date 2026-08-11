@@ -1,4 +1,4 @@
-package com.cloudsherpa.service.persistconnection.aws.dto;
+package com.cloudsherpa.service.persistconnection.dto;
 
 import java.util.Map;
 
@@ -9,4 +9,5 @@ public record ResourceSelectionDto(
     String resourceName,
     String region,
     Map<String, Object> tags,
-    boolean active) {}
+    boolean active) {
+}
