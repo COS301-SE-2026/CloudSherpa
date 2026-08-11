@@ -1,10 +1,10 @@
-package com.cloudsherpa.service.persistconnection.provider.aws.controller;
+package com.cloudsherpa.service.persistconnection.controller;
 
 import com.cloudsherpa.lib.entities.CloudAccount;
 import com.cloudsherpa.lib.entities.Resource;
 import com.cloudsherpa.service.persistconnection.dto.CloudAccountDetailsResponse;
 import com.cloudsherpa.service.persistconnection.dto.ResourceCountResponse;
-import com.cloudsherpa.service.persistconnection.provider.aws.service.AwsConnectionQueryService;
+import com.cloudsherpa.service.persistconnection.service.ConnectionQueryService;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
@@ -15,13 +15,13 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/aws")
+@RequestMapping({"/aws", "/gcp", "/azure"})
 @Validated
-public class AwsConnectionQueryController {
+public class ConnectionQueryController {
 
-  private final AwsConnectionQueryService queryService;
+  private final ConnectionQueryService queryService;
 
-  public AwsConnectionQueryController(AwsConnectionQueryService queryService) {
+  public ConnectionQueryController(ConnectionQueryService queryService) {
 
     this.queryService = queryService;
   }

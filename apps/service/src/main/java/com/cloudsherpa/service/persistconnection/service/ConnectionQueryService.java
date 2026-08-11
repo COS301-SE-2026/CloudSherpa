@@ -1,4 +1,4 @@
-package com.cloudsherpa.service.persistconnection.provider.aws.service;
+package com.cloudsherpa.service.persistconnection.service;
 
 import com.cloudsherpa.lib.entities.CloudAccount;
 import com.cloudsherpa.lib.entities.CloudConnection;
@@ -13,12 +13,12 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 @Service
-public class AwsConnectionQueryService {
+public class ConnectionQueryService {
   private final CloudConnectionRepository cloudConnectionRepository;
   private final CloudAccountRepository cloudAccountRepository;
   private final ResourceRepository resourceRepository;
 
-  public AwsConnectionQueryService(
+  public ConnectionQueryService(
       CloudConnectionRepository cloudConnectionRepository,
       CloudAccountRepository cloudAccountRepository,
       ResourceRepository resourceRepository) {
@@ -37,7 +37,8 @@ public class AwsConnectionQueryService {
 
   private CloudConnection getConnection(UUID userId) {
 
-    List<CloudConnection> connections = cloudConnectionRepository.findByUserIdAndProvider(userId, ProviderEnum.AWS);
+    List<CloudConnection> connections =
+        cloudConnectionRepository.findByUserIdAndProvider(userId, ProviderEnum.AWS);
 
     if (connections.size() > 1) {
       throw new IllegalStateException(
@@ -51,10 +52,11 @@ public class AwsConnectionQueryService {
   }
 
   public CloudAccountDetailsResponse getAccountDetails(UUID accountId) {
-    CloudAccount account = cloudAccountRepository
-        .findById(accountId)
-        .orElseThrow(
-            () -> new IllegalArgumentException("No cloud account found with id " + accountId));
+    CloudAccount account =
+        cloudAccountRepository
+            .findById(accountId)
+            .orElseThrow(
+                () -> new IllegalArgumentException("No cloud account found with id " + accountId));
 
     return new CloudAccountDetailsResponse(
         account.getId(),

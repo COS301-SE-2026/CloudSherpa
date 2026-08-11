@@ -19,10 +19,7 @@ public class CredentialEncryptionService {
   private static final String ALGORITHM = "AES";
   private static final String TRANSFORMATION = "AES/GCM/NoPadding";
 
-  /**
-   * Recommended IV (Initialization Vector) length for GCM used : 12 * 8 = 96
-   * bits.
-   */
+  /** Recommended IV (Initialization Vector) length for GCM used : 12 * 8 = 96 bits. */
   private static final int IV_LENGTH = 12;
 
   /** Authentication tag length in bits. */

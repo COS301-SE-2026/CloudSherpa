@@ -22,10 +22,10 @@ import com.cloudsherpa.lib.repositories.CloudConnectionRepository;
 import com.cloudsherpa.lib.repositories.CloudCredentialRepository;
 import com.cloudsherpa.lib.repositories.ResourceRepository;
 import com.cloudsherpa.service.analytics.service.ResourceRegistryService;
+import com.cloudsherpa.service.persistconnection.dto.ResourceSelectionDto;
 import com.cloudsherpa.service.persistconnection.provider.aws.dto.AwsCredentialsDto;
 import com.cloudsherpa.service.persistconnection.provider.aws.dto.BillingConfigDto;
 import com.cloudsherpa.service.persistconnection.provider.aws.dto.PersistAwsConnectionRequest;
-import com.cloudsherpa.service.persistconnection.dto.ResourceSelectionDto;
 import com.cloudsherpa.service.persistconnection.provider.aws.service.AwsConnectionPersistenceService;
 import com.cloudsherpa.service.persistconnection.service.CredentialEncryptionService;
 import java.time.OffsetDateTime;
@@ -46,44 +46,31 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class AwsConnectionPersistenceServiceTest {
 
-  @Mock
-  private CloudConnectionRepository cloudConnectionRepository;
+  @Mock private CloudConnectionRepository cloudConnectionRepository;
 
-  @Mock
-  private CloudAccountRepository cloudAccountRepository;
+  @Mock private CloudAccountRepository cloudAccountRepository;
 
-  @Mock
-  private CloudCredentialRepository cloudCredentialRepository;
+  @Mock private CloudCredentialRepository cloudCredentialRepository;
 
-  @Mock
-  private CredentialEncryptionService encryptionService;
+  @Mock private CredentialEncryptionService encryptionService;
 
-  @Mock
-  private ResourceRepository resourceRepository;
+  @Mock private ResourceRepository resourceRepository;
 
-  @Mock
-  private BillingExportConfigRepository billingExportConfigRepository;
+  @Mock private BillingExportConfigRepository billingExportConfigRepository;
 
-  @Mock
-  private ResourceRegistryService resourceRegistryService;
+  @Mock private ResourceRegistryService resourceRegistryService;
 
-  @InjectMocks
-  private AwsConnectionPersistenceService service;
+  @InjectMocks private AwsConnectionPersistenceService service;
 
-  @Captor
-  private ArgumentCaptor<CloudConnection> connectionCaptor;
+  @Captor private ArgumentCaptor<CloudConnection> connectionCaptor;
 
-  @Captor
-  private ArgumentCaptor<CloudAccount> accountCaptor;
+  @Captor private ArgumentCaptor<CloudAccount> accountCaptor;
 
-  @Captor
-  private ArgumentCaptor<CloudCredential> credentialCaptor;
+  @Captor private ArgumentCaptor<CloudCredential> credentialCaptor;
 
-  @Captor
-  private ArgumentCaptor<List<Resource>> resourceCaptor;
+  @Captor private ArgumentCaptor<List<Resource>> resourceCaptor;
 
-  @Captor
-  private ArgumentCaptor<String> encryptionJsonCaptor;
+  @Captor private ArgumentCaptor<String> encryptionJsonCaptor;
 
   private PersistAwsConnectionRequest request;
   private CloudConnection existingConnection;
@@ -93,46 +80,51 @@ class AwsConnectionPersistenceServiceTest {
   void setUp() {
 
     AwsCredentialsDto credentials = new AwsCredentialsDto("accessKey", "secretKey");
-    ResourceSelectionDto activeResource = new ResourceSelectionDto(
-        "i-12345",
-        "EC2",
-        "instanceId",
-        "instance-1",
-        "af-south-1",
-        Map.of("Environment", "Prod"),
-        true);
+    ResourceSelectionDto activeResource =
+        new ResourceSelectionDto(
+            "i-12345",
+            "EC2",
+            "instanceId",
+            "instance-1",
+            "af-south-1",
+            Map.of("Environment", "Prod"),
+            true);
 
-    ResourceSelectionDto disabledResource = new ResourceSelectionDto(
-        "i-23456", "S3", "BucketName", "bucket-1", "af-south-1", Map.of(), false);
-    BillingConfigDto billingConfig = new BillingConfigDto("billing-bucket", "eu-north-1", "exports/",
-        "daily-cost-export");
+    ResourceSelectionDto disabledResource =
+        new ResourceSelectionDto(
+            "i-23456", "S3", "BucketName", "bucket-1", "af-south-1", Map.of(), false);
+    BillingConfigDto billingConfig =
+        new BillingConfigDto("billing-bucket", "eu-north-1", "exports/", "daily-cost-export");
 
-    request = new PersistAwsConnectionRequest(
-        UUID.randomUUID(),
-        null,
-        "Production",
-        300,
-        credentials,
-        List.of(activeResource, disabledResource),
-        billingConfig);
+    request =
+        new PersistAwsConnectionRequest(
+            UUID.randomUUID(),
+            null,
+            "Production",
+            300,
+            credentials,
+            List.of(activeResource, disabledResource),
+            billingConfig);
 
-    existingConnection = new CloudConnection(
-        UUID.randomUUID(),
-        request.userId(),
-        ProviderEnum.AWS,
-        StatusEnum.active,
-        OffsetDateTime.now());
+    existingConnection =
+        new CloudConnection(
+            UUID.randomUUID(),
+            request.userId(),
+            ProviderEnum.AWS,
+            StatusEnum.active,
+            OffsetDateTime.now());
 
-    savedAccount = new CloudAccount.Builder()
-        .id(UUID.randomUUID())
-        .connectionId(existingConnection.getId())
-        .accountType(AccountTypeEnum.aws_account)
-        .displayName("Production")
-        .ingestionPeriod("300")
-        .createdAt(OffsetDateTime.now(ZoneOffset.UTC))
-        .nextUsageIngestion(OffsetDateTime.now(ZoneOffset.UTC).plusSeconds(300))
-        .nextUsageIngestion(OffsetDateTime.now(ZoneOffset.UTC).plusHours(12))
-        .build();
+    savedAccount =
+        new CloudAccount.Builder()
+            .id(UUID.randomUUID())
+            .connectionId(existingConnection.getId())
+            .accountType(AccountTypeEnum.aws_account)
+            .displayName("Production")
+            .ingestionPeriod("300")
+            .createdAt(OffsetDateTime.now(ZoneOffset.UTC))
+            .nextUsageIngestion(OffsetDateTime.now(ZoneOffset.UTC).plusSeconds(300))
+            .nextUsageIngestion(OffsetDateTime.now(ZoneOffset.UTC).plusHours(12))
+            .build();
   }
 
   private void mockExistingConnection() {
@@ -273,14 +265,15 @@ class AwsConnectionPersistenceServiceTest {
   @Test
   void shouldHandleEmptyResourceList() {
 
-    PersistAwsConnectionRequest emptyRequest = new PersistAwsConnectionRequest(
-        request.userId(),
-        request.accountId(),
-        request.displayName(),
-        request.ingestionPeriod(),
-        request.credentials(),
-        List.of(),
-        request.billingConfig());
+    PersistAwsConnectionRequest emptyRequest =
+        new PersistAwsConnectionRequest(
+            request.userId(),
+            request.accountId(),
+            request.displayName(),
+            request.ingestionPeriod(),
+            request.credentials(),
+            List.of(),
+            request.billingConfig());
 
     when(cloudConnectionRepository.findByUserIdAndProvider(request.userId(), ProviderEnum.AWS))
         .thenReturn(List.of(existingConnection));
@@ -298,17 +291,19 @@ class AwsConnectionPersistenceServiceTest {
   @Test
   void shouldHandleNullTags() {
 
-    ResourceSelectionDto resource = new ResourceSelectionDto(
-        "i-12345", "EC2", "instanceId", "instance-1", "af-south-1", null, true);
+    ResourceSelectionDto resource =
+        new ResourceSelectionDto(
+            "i-12345", "EC2", "instanceId", "instance-1", "af-south-1", null, true);
 
-    PersistAwsConnectionRequest requestWithNullTags = new PersistAwsConnectionRequest(
-        request.userId(),
-        request.accountId(),
-        request.displayName(),
-        request.ingestionPeriod(),
-        request.credentials(),
-        List.of(resource),
-        request.billingConfig());
+    PersistAwsConnectionRequest requestWithNullTags =
+        new PersistAwsConnectionRequest(
+            request.userId(),
+            request.accountId(),
+            request.displayName(),
+            request.ingestionPeriod(),
+            request.credentials(),
+            List.of(resource),
+            request.billingConfig());
 
     when(cloudConnectionRepository.findByUserIdAndProvider(request.userId(), ProviderEnum.AWS))
         .thenReturn(List.of(existingConnection));
@@ -332,12 +327,13 @@ class AwsConnectionPersistenceServiceTest {
   @Test
   void shouldUseFirstConnectionWhenMultipleExist() {
 
-    CloudConnection secondConnection = new CloudConnection(
-        UUID.randomUUID(),
-        request.userId(),
-        ProviderEnum.AWS,
-        StatusEnum.active,
-        OffsetDateTime.now());
+    CloudConnection secondConnection =
+        new CloudConnection(
+            UUID.randomUUID(),
+            request.userId(),
+            ProviderEnum.AWS,
+            StatusEnum.active,
+            OffsetDateTime.now());
 
     when(cloudConnectionRepository.findByUserIdAndProvider(request.userId(), ProviderEnum.AWS))
         .thenReturn(List.of(existingConnection, secondConnection));
@@ -363,7 +359,8 @@ class AwsConnectionPersistenceServiceTest {
 
     when(cloudAccountRepository.save(any())).thenThrow(new RuntimeException("Database failure"));
 
-    RuntimeException exception = assertThrows(RuntimeException.class, () -> service.persistConnection(request));
+    RuntimeException exception =
+        assertThrows(RuntimeException.class, () -> service.persistConnection(request));
 
     assertEquals("Database failure", exception.getMessage());
 
@@ -382,7 +379,8 @@ class AwsConnectionPersistenceServiceTest {
     when(resourceRepository.saveAll(any()))
         .thenThrow(new RuntimeException("Unable to save resources"));
 
-    RuntimeException exception = assertThrows(RuntimeException.class, () -> service.persistConnection(request));
+    RuntimeException exception =
+        assertThrows(RuntimeException.class, () -> service.persistConnection(request));
 
     assertEquals("Unable to save resources", exception.getMessage());
   }
@@ -395,7 +393,8 @@ class AwsConnectionPersistenceServiceTest {
 
     when(encryptionService.encrypt(any())).thenThrow(new RuntimeException("Encryption failed"));
 
-    RuntimeException exception = assertThrows(RuntimeException.class, () -> service.persistConnection(request));
+    RuntimeException exception =
+        assertThrows(RuntimeException.class, () -> service.persistConnection(request));
 
     assertEquals("Encryption failed", exception.getMessage());
 
@@ -413,7 +412,8 @@ class AwsConnectionPersistenceServiceTest {
 
     service.persistConnection(request);
 
-    InOrder inOrder = inOrder(cloudAccountRepository, cloudCredentialRepository, resourceRepository);
+    InOrder inOrder =
+        inOrder(cloudAccountRepository, cloudCredentialRepository, resourceRepository);
 
     inOrder.verify(cloudAccountRepository).save(any(CloudAccount.class));
     inOrder.verify(cloudCredentialRepository).save(any(CloudCredential.class));
@@ -431,11 +431,12 @@ class AwsConnectionPersistenceServiceTest {
 
     service.persistConnection(request);
 
-    InOrder inOrder = inOrder(
-        cloudConnectionRepository,
-        cloudAccountRepository,
-        cloudCredentialRepository,
-        resourceRepository);
+    InOrder inOrder =
+        inOrder(
+            cloudConnectionRepository,
+            cloudAccountRepository,
+            cloudCredentialRepository,
+            resourceRepository);
 
     inOrder
         .verify(cloudConnectionRepository)
@@ -461,11 +462,12 @@ class AwsConnectionPersistenceServiceTest {
 
     service.persistConnection(request);
 
-    InOrder inOrder = inOrder(
-        cloudConnectionRepository,
-        cloudAccountRepository,
-        cloudCredentialRepository,
-        resourceRepository);
+    InOrder inOrder =
+        inOrder(
+            cloudConnectionRepository,
+            cloudAccountRepository,
+            cloudCredentialRepository,
+            resourceRepository);
 
     inOrder
         .verify(cloudConnectionRepository)

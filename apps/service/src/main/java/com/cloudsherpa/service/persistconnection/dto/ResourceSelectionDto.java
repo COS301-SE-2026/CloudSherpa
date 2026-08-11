@@ -9,5 +9,4 @@ public record ResourceSelectionDto(
     String resourceName,
     String region,
     Map<String, Object> tags,
-    boolean active) {
-}
+    boolean active) {}

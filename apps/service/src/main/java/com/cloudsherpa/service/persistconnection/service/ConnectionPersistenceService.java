@@ -97,22 +97,24 @@ public abstract class ConnectionPersistenceService {
 
   protected void createResources(
       UUID userId, CloudAccount account, List<ResourceSelectionDto> resources) {
-    List<Resource> entities = resources.stream()
-        .map(
-            r -> new Resource.Builder()
-                .id(UUID.randomUUID())
-                .accountId(account.getId())
-                .resourceType(r.serviceType())
-                .resourceName(r.resourceName())
-                .resourceIdentifier(r.resourceId())
-                .resourceIdentifierType(r.resourceType())
-                .region(r.region())
-                .status(r.active() ? StatusEnum.active : StatusEnum.disabled)
-                .tags(r.tags())
-                .createdAt(OffsetDateTime.now(ZoneOffset.UTC))
-                .lastUpdated(OffsetDateTime.now(ZoneOffset.UTC))
-                .build())
-        .toList();
+    List<Resource> entities =
+        resources.stream()
+            .map(
+                r ->
+                    new Resource.Builder()
+                        .id(UUID.randomUUID())
+                        .accountId(account.getId())
+                        .resourceType(r.serviceType())
+                        .resourceName(r.resourceName())
+                        .resourceIdentifier(r.resourceId())
+                        .resourceIdentifierType(r.resourceType())
+                        .region(r.region())
+                        .status(r.active() ? StatusEnum.active : StatusEnum.disabled)
+                        .tags(r.tags())
+                        .createdAt(OffsetDateTime.now(ZoneOffset.UTC))
+                        .lastUpdated(OffsetDateTime.now(ZoneOffset.UTC))
+                        .build())
+            .toList();
 
     resourceRepository.saveAll(entities);
 
