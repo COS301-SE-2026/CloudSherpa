@@ -5,14 +5,17 @@ import UsagePredictionChart from "@/features/intelligence/components/usage/usage
 import { useUsageIntelligenceConfigStore } from "@/features/intelligence/stores/useUsageIntelligenceConfigStore";
 import { useUsageIntelligenceStore } from "@/features/intelligence/stores/useUsageIntelligenceStore";
 import { useEffect, useMemo } from "react";
-import { UageForecastData } from "@/features/intelligence/types/metrics";
-import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { UsageForecastData } from "@/features/intelligence/types/metrics";
+import { TrendingUp, TrendingDown, Minus, AlertCircleIcon } from "lucide-react";
 import { useFetchMetrics } from "@/features/dashboard/hooks/useFetchMetrics";
 import { Card, CardContent } from "@/components/atoms/card";
 import { useChartData } from "@/features/dashboard/hooks/useChartData";
 import { getArraySummary } from "@/features/intelligence/utils/getUsageSummaries";
+import { useMakeUsageForecast } from "../../hooks/useMakeUsageForecast";
+import { AWS_METRIC_TYPE_BY_NAME_INVERSE } from "@/features/dashboard/stores/metric-store";
+import { Alert, AlertDescription, AlertTitle } from "@/components/atoms/alert";
 
-function generateMockForecast(days: number): UageForecastData {
+function generateMockForecast(days: number): UsageForecastData {
     const hours = days * 24;
     const now = Date.now();
     const oneHour = 60 * 60 * 1000;
@@ -50,6 +53,8 @@ export default function UsageIntelligence() {
 
     const setUsageForecast = useUsageIntelligenceStore((state) => state.setUsageForecast);
 
+    const { requestUsageForecast, isUsageForecastResponseLoading, usageForecastRequestError } = useMakeUsageForecast();
+
     //data
     const forecastedMetrics = useUsageIntelligenceStore((state) => {
         if (!resourceId || !metricType) return null;
@@ -73,22 +78,47 @@ export default function UsageIntelligence() {
     }, [forecastedMetrics]);
 
     useEffect(() => {
-        if (resourceId && metricType) {
-            const currentForecasts = useUsageIntelligenceStore.getState().forecasts;
-            const isCached = !!currentForecasts[resourceId]?.[metricType];
 
-            if (!isCached) {
-                const mockData = generateMockForecast(3);
+        if (!resourceId || !metricType) return;
 
-                setUsageForecast(resourceId, metricType, mockData);
+        // Within this scope, typescript knows these are non null
+        const selectedResourceId = resourceId;
+        const selectedMetricType = AWS_METRIC_TYPE_BY_NAME_INVERSE[metricType];
+
+        console.log(`Resource ID: ${resourceId}`)
+        console.log(`Metric: ${AWS_METRIC_TYPE_BY_NAME_INVERSE[metricType]}`)
+
+        const currentForecasts = useUsageIntelligenceStore.getState().forecasts;
+        const isCached = !!currentForecasts[resourceId]?.[metricType];
+
+        if (isCached) return;
+
+        async function loadForecast() {
+            const forecastData = await requestUsageForecast(selectedResourceId, selectedMetricType);
+            const mockData = generateMockForecast(3);
+
+            if (forecastData) {
+                setUsageForecast(selectedResourceId, selectedMetricType, forecastData);
             }
         }
-    }, [resourceId, metricType, setUsageForecast]);
+
+        void loadForecast();
+
+    }, [resourceId, metricType ,setUsageForecast]);
 
     return (
         <div className="flex flex-col h-full w-full p-6 gap-4">
             <UsageToolbar />
             <div className="flex flex-col gap-4 h-full">
+                {usageForecastRequestError && (
+                    <section>
+                        <Alert variant={"destructive"}>
+                            <AlertCircleIcon/>
+                            <AlertTitle>Failed to fetch forecast</AlertTitle> 
+                            <AlertDescription>{usageForecastRequestError}</AlertDescription>
+                        </Alert>
+                    </section>
+                )}
                 <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                     <SummaryCard
                         title="Max Usage"

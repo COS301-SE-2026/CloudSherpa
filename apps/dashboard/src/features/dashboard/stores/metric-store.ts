@@ -33,7 +33,7 @@ type AwsMetricName =
     | "NetworkOut"
     | "NumberOfObjects";
 
-const AWS_METRIC_TYPE_BY_NAME: Record<AwsMetricName, MetricType> = {
+export const AWS_METRIC_TYPE_BY_NAME: Record<AwsMetricName, MetricType> = {
     BucketSizeBytes: "storage-used",
     Duration: "duration",
     WriteThrottleEvents: "throttles",
@@ -56,6 +56,21 @@ const AWS_METRIC_TYPE_BY_NAME: Record<AwsMetricName, MetricType> = {
     NetworkOut: "network",
     NumberOfObjects: "object-count",
 };
+
+// Inverse helper for reverse metric lookup
+type Invert<T extends Record<PropertyKey, PropertyKey>> = {
+        [K in keyof T as T[K]]: K; 
+}
+
+const invertRecord = <T extends Record<PropertyKey, PropertyKey>>(obj: T): Invert<T> => {
+  return Object.fromEntries(
+    Object.entries(obj).map(([key, value]) => [value, key])
+  ) as Invert<T>;
+};
+
+
+export const AWS_METRIC_TYPE_BY_NAME_INVERSE = invertRecord(AWS_METRIC_TYPE_BY_NAME);
+
 
 function toMetricType(metricName: string): MetricType {
     return AWS_METRIC_TYPE_BY_NAME[metricName as AwsMetricName] ?? "anon";
