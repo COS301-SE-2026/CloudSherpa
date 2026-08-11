@@ -13,7 +13,8 @@ export const useUsageIntelligenceStore = create<UsageIntelligenceStore>((set) =>
     forecasts: {},
 
     setUsageForecast: (resourceId, metricType, data) => {
-        set((state) => ({
+        set((state) => {
+            return {
             forecasts: {
                 ...state.forecasts,
                 [resourceId]: {
@@ -21,7 +22,7 @@ export const useUsageIntelligenceStore = create<UsageIntelligenceStore>((set) =>
                     [metricType]: data,
                 },
             },
-        }));
+        }});
     },
 
     clearForecasts: () => set({ forecasts: {} }),

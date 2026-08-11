@@ -4,7 +4,7 @@ import UsageToolbar from "@/features/intelligence/components/usage/usageToolbar"
 import UsagePredictionChart from "@/features/intelligence/components/usage/usagePredictionChart";
 import { useUsageIntelligenceConfigStore } from "@/features/intelligence/stores/useUsageIntelligenceConfigStore";
 import { useUsageIntelligenceStore } from "@/features/intelligence/stores/useUsageIntelligenceStore";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { UsageForecastData } from "@/features/intelligence/types/metrics";
 import { TrendingUp, TrendingDown, Minus, AlertCircleIcon } from "lucide-react";
 import { useFetchMetrics } from "@/features/dashboard/hooks/useFetchMetrics";
@@ -12,7 +12,6 @@ import { Card, CardContent } from "@/components/atoms/card";
 import { useChartData } from "@/features/dashboard/hooks/useChartData";
 import { getArraySummary } from "@/features/intelligence/utils/getUsageSummaries";
 import { useMakeUsageForecast } from "../../hooks/useMakeUsageForecast";
-import { AWS_METRIC_TYPE_BY_NAME_INVERSE } from "@/features/dashboard/stores/metric-store";
 import { Alert, AlertDescription, AlertTitle } from "@/components/atoms/alert";
 
 function generateMockForecast(days: number): UsageForecastData {
@@ -53,7 +52,9 @@ export default function UsageIntelligence() {
 
     const setUsageForecast = useUsageIntelligenceStore((state) => state.setUsageForecast);
 
-    const { requestUsageForecast, isUsageForecastResponseLoading, usageForecastRequestError } = useMakeUsageForecast();
+    const [refreshForecast, setRefreshForecast] = useState(false);
+
+    const { requestUsageForecast, isUsageForecastResponseLoading, usageForecastRequestError } = useMakeUsageForecast(); // NOSONAR: wip
 
     //data
     const forecastedMetrics = useUsageIntelligenceStore((state) => {
@@ -83,19 +84,19 @@ export default function UsageIntelligence() {
 
         // Within this scope, typescript knows these are non null
         const selectedResourceId = resourceId;
-        const selectedMetricType = AWS_METRIC_TYPE_BY_NAME_INVERSE[metricType];
+        const selectedMetricType = metricType;
 
         console.log(`Resource ID: ${resourceId}`)
-        console.log(`Metric: ${AWS_METRIC_TYPE_BY_NAME_INVERSE[metricType]}`)
+        console.log(`Metric: ${metricType}`)
 
         const currentForecasts = useUsageIntelligenceStore.getState().forecasts;
-        const isCached = !!currentForecasts[resourceId]?.[metricType];
+        const isCached = !!currentForecasts[selectedResourceId]?.[selectedMetricType];
 
         if (isCached) return;
 
         async function loadForecast() {
             const forecastData = await requestUsageForecast(selectedResourceId, selectedMetricType);
-            const mockData = generateMockForecast(3);
+            // const mockData = generateMockForecast(3);
 
             if (forecastData) {
                 setUsageForecast(selectedResourceId, selectedMetricType, forecastData);
@@ -103,8 +104,9 @@ export default function UsageIntelligence() {
         }
 
         void loadForecast();
+        setRefreshForecast(false);
 
-    }, [resourceId, metricType ,setUsageForecast]);
+    }, [resourceId, metricType, requestUsageForecast, setUsageForecast, refreshForecast]);
 
     return (
         <div className="flex flex-col h-full w-full p-6 gap-4">

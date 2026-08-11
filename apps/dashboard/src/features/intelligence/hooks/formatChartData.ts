@@ -1,6 +1,12 @@
 import { Metric } from "@/features/dashboard/types/metric";
 import { UsageForecastData } from "../types/metrics";
 
+function toBrowserTimezoneTimestamp(isoString: string): number {
+    const timestamp = new Date(isoString).getTime();
+    const timezoneOffsetMs = new Date(timestamp).getTimezoneOffset() * 60 * 1000;
+    return timestamp - timezoneOffsetMs;
+}
+
 export function formatChartData(historicalMetrics: Metric[], forecastDto: UsageForecastData | null) {
     const historicalData: [number, number][] = historicalMetrics.map((m) => [
         new Date(m.timestamp).getTime(),
@@ -10,11 +16,9 @@ export function formatChartData(historicalMetrics: Metric[], forecastDto: UsageF
     const q1Data: [number, number][] = [];
     const q3Data: [number, number][] = [];
     const predictedData: [number, number][] = [];
-
     if (forecastDto) {
         forecastDto.horizonTimestamps.forEach((isoString, index) => {
-            const timestamp = new Date(isoString).getTime();
-
+            const timestamp = toBrowserTimezoneTimestamp(isoString);
             const q1 = forecastDto.q1Values[index];
             const q3 = forecastDto.q3Values[index];
             const pred = forecastDto.predictedValues[index];
