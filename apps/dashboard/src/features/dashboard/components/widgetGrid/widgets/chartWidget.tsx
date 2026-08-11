@@ -69,9 +69,11 @@ export function ChartWidget({
                             Save dashboard changes before configuring this widget.
                         </p>
                     ) : (
-                        <div className="flex flex-col items-center justify-center gap-2">
+                        <div className="flex flex-col items-center justify-center gap-2 ">
                             <span className="text-base">This widget is not configured.</span>
-                            <Button onClick={openConfig}>Configure Widget</Button>
+                            <Button onClick={openConfig} aria-label="configure new widget button">
+                                Configure Widget
+                            </Button>
                         </div>
                     )}
                 </div>
@@ -94,7 +96,10 @@ export function ChartWidget({
             isEditMode={isEditMode}
             preview={false}
         >
-            <Card className={`flex flex-col w-full overflow-hidden ${preview ? "h-90" : "h-full"}`}>
+            <Card
+                className={`flex flex-col w-full overflow-hidden ${preview ? "h-90" : "h-full"}`}
+                aria-label="chart widget"
+            >
                 <CardHeader className="flex flex-row items-center justify-between ">
                     <CardTitle>{displayName}</CardTitle>
                     <div className="flex items-center gap-2">

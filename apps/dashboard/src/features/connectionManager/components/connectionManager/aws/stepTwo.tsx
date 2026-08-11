@@ -10,7 +10,7 @@ import {
 } from "@/lib/fetch/cloud-resource-api";
 import { BillingForm } from "../billingForm";
 import { Progress } from "@/components/atoms/progress";
-import {StepTwo} from "@/features/connectionManager/components/connectionManager/wizardSetup/stepTwo";
+import { StepTwo } from "@/features/connectionManager/components/connectionManager/wizardSetup/stepTwo";
 
 export interface BillingConfig {
     prefix: string;
@@ -200,9 +200,13 @@ export default function StepTwoAws({ credentials, onNext, onBack }: Readonly<Pro
     };
 
     return (
-        <StepTwo heading = "Configure Billing & Services"
-                 description = "Configure billing export and select services for resource discovery."
-                 onSubmit = {handleSubmit} onBack = {onBack} forLoading = {loading} forErrors = {error}
+        <StepTwo
+            heading="Configure Billing & Services"
+            description="Configure billing export and select services for resource discovery."
+            onSubmit={handleSubmit}
+            onBack={onBack}
+            forLoading={loading}
+            forErrors={error}
         >
             <BillingForm
                 bucketName={bucketName}
@@ -248,9 +252,9 @@ export default function StepTwoAws({ credentials, onNext, onBack }: Readonly<Pro
                 </div>
 
                 <div className="mb-4 rounded-md border border-amber-300/60 bg-amber-50 p-3 text-sm text-amber-900">
-                    Billing ingestion is account-wide and not limited by selected services.
-                    Select services to discover resources and monitor usage metrics
-                    alongside billing trends.
+                    Billing ingestion is account-wide and not limited by selected services. Select
+                    services to discover resources and monitor usage metrics alongside billing
+                    trends.
                 </div>
 
                 <div className="space-y-3">
@@ -287,13 +291,11 @@ export default function StepTwoAws({ credentials, onNext, onBack }: Readonly<Pro
 
                 <div className="bg-background rounded-lg p-4 border border-border">
                     <p className="text-foreground text-sm mb-3">
-                        Add this IAM policy to your user. It includes selected-service
-                        discovery permissions and billing export S3 read access.
+                        Add this IAM policy to your user. It includes selected-service discovery
+                        permissions and billing export S3 read access.
                     </p>
                     <pre className="bg-card p-4 rounded-lg overflow-x-auto text-xs font-mono text-foreground whitespace-pre-wrap">
-                        {displayPermissions
-                            ? JSON.stringify(displayPermissions, null, 2)
-                            : "{}"}
+                        {displayPermissions ? JSON.stringify(displayPermissions, null, 2) : "{}"}
                     </pre>
 
                     <button
@@ -325,7 +327,6 @@ export default function StepTwoAws({ credentials, onNext, onBack }: Readonly<Pro
                     <Progress value={progress} className="w-full h-2" />
                 </div>
             )}
-
         </StepTwo>
     );
 }
