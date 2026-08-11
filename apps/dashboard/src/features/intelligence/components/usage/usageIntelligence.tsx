@@ -4,7 +4,7 @@ import UsageToolbar from "@/features/intelligence/components/usage/usageToolbar"
 import UsagePredictionChart from "@/features/intelligence/components/usage/usagePredictionChart";
 import { useUsageIntelligenceConfigStore } from "@/features/intelligence/stores/useUsageIntelligenceConfigStore";
 import { useUsageIntelligenceStore } from "@/features/intelligence/stores/useUsageIntelligenceStore";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { UsageForecastData } from "@/features/intelligence/types/metrics";
 import { TrendingUp, TrendingDown, Minus, AlertCircleIcon } from "lucide-react";
 import { useFetchMetrics } from "@/features/dashboard/hooks/useFetchMetrics";
@@ -52,9 +52,11 @@ export default function UsageIntelligence() {
 
     const setUsageForecast = useUsageIntelligenceStore((state) => state.setUsageForecast);
 
-    const [refreshForecast, setRefreshForecast] = useState(false);
-
-    const { requestUsageForecast, isUsageForecastResponseLoading, usageForecastRequestError } = useMakeUsageForecast(); // NOSONAR: wip
+    const {
+        requestUsageForecast,
+        isUsageForecastResponseLoading, // NOSONAR: wip
+        usageForecastRequestError,
+    } = useMakeUsageForecast();
 
     //data
     const forecastedMetrics = useUsageIntelligenceStore((state) => {
@@ -79,15 +81,14 @@ export default function UsageIntelligence() {
     }, [forecastedMetrics]);
 
     useEffect(() => {
-
         if (!resourceId || !metricType) return;
 
         // Within this scope, typescript knows these are non null
         const selectedResourceId = resourceId;
         const selectedMetricType = metricType;
 
-        console.log(`Resource ID: ${resourceId}`)
-        console.log(`Metric: ${metricType}`)
+        console.log(`Resource ID: ${resourceId}`);
+        console.log(`Metric: ${metricType}`);
 
         const currentForecasts = useUsageIntelligenceStore.getState().forecasts;
         const isCached = !!currentForecasts[selectedResourceId]?.[selectedMetricType];
@@ -104,9 +105,7 @@ export default function UsageIntelligence() {
         }
 
         void loadForecast();
-        setRefreshForecast(false);
-
-    }, [resourceId, metricType, requestUsageForecast, setUsageForecast, refreshForecast]);
+    }, [resourceId, metricType, requestUsageForecast, setUsageForecast]);
 
     return (
         <div className="flex flex-col h-full w-full p-6 gap-4">
@@ -115,8 +114,8 @@ export default function UsageIntelligence() {
                 {usageForecastRequestError && (
                     <section>
                         <Alert variant={"destructive"}>
-                            <AlertCircleIcon/>
-                            <AlertTitle>Failed to fetch forecast</AlertTitle> 
+                            <AlertCircleIcon />
+                            <AlertTitle>Failed to fetch forecast</AlertTitle>
                             <AlertDescription>{usageForecastRequestError}</AlertDescription>
                         </Alert>
                     </section>

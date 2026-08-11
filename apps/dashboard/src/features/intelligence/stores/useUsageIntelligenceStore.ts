@@ -15,14 +15,15 @@ export const useUsageIntelligenceStore = create<UsageIntelligenceStore>((set) =>
     setUsageForecast: (resourceId, metricType, data) => {
         set((state) => {
             return {
-            forecasts: {
-                ...state.forecasts,
-                [resourceId]: {
-                    ...state.forecasts[resourceId],
-                    [metricType]: data,
+                forecasts: {
+                    ...state.forecasts,
+                    [resourceId]: {
+                        ...state.forecasts[resourceId],
+                        [metricType]: data,
+                    },
                 },
-            },
-        }});
+            };
+        });
     },
 
     clearForecasts: () => set({ forecasts: {} }),

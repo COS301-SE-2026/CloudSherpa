@@ -7,7 +7,10 @@ function toBrowserTimezoneTimestamp(isoString: string): number {
     return timestamp - timezoneOffsetMs;
 }
 
-export function formatChartData(historicalMetrics: Metric[], forecastDto: UsageForecastData | null) {
+export function formatChartData(
+    historicalMetrics: Metric[],
+    forecastDto: UsageForecastData | null
+) {
     const historicalData: [number, number][] = historicalMetrics.map((m) => [
         new Date(m.timestamp).getTime(),
         m.value,
