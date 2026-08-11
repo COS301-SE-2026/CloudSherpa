@@ -21,7 +21,7 @@ public abstract class ConnectionPersistenceService {
   private final ResourceRepository resourceRepository;
   private final ResourceRegistryService resourceRegistryService;
 
-  public ConnectionPersistenceService(
+  protected ConnectionPersistenceService(
       CloudAccountRepository cloudAccountRepository,
       ResourceRepository resourceRepository,
       ResourceRegistryService resourceRegistryService) {
