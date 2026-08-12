@@ -44,13 +44,13 @@ flowchart TD
 
 ### Asynchronous Optimization Worker
 
-This is a scheduled background process responsible for all heavy lifting:
+This is a scheduled background process responsible for all heavy lifting. Driven by a standard **Spring scheduler**, the worker runs **once each day**. 
 
-- **Reading**: Pulls unprocessed normalized metrics from SherpaDB based on a durable processing watermark.
+- **Scheduling & Reading**: It reads the `processing_watermark` table to see where it left off, pulls the last 24 hours of unprocessed normalized metrics from SherpaDB to update the baselines, evaluates the rules, updates the recommendations, and goes back to sleep.
 - **Calculating**: Computes heavy statistical summaries (percentiles, standard deviations) and saves them to SherpaDB.
-- **Evaluating**: Reads pricing and resource catalogs, then runs the generated statistics against optimization rules.
+- **Evaluating**: Runs the generated statistics against optimization rules.
 - **Resolving**: Filters out duplicate or mutually exclusive actions (e.g., choosing "Terminate" over "Downsize") and checks safety policies.
-- **Persisting**: Writes the final, resolved recommendation (including the mathematical evidence and estimated savings) to the database.
+- **Persisting**: Writes the final, resolved recommendation (including the mathematical evidence, and optionally the estimated savings and target configurations) to the database.
 
 ### Service Application
 
@@ -86,8 +86,9 @@ To prevent false positives (like recommending a server be downsized just because
 
 ### Statistical Windows
 
-Statistics are calculated over two distinct rolling windows to capture both immediate spikes and long-term trends:
+Statistics are generally calculated over distinct rolling windows to capture both immediate spikes and long-term trends:
 
+- **4-Day Window (4d)**: For the initial deployment and system demos, the engine uses a 4-day window. This bypasses the typical 14-day new-resource lockout and 30-day baseline requirements. Pre-calculated mock data will be seeded to ensure end-to-end functionality during demos.
 - **7-Day Window (7d)**: Used to detect short-term maximums, recent usage spikes, and immediate behavioral changes.
 - **30-Day Window (30d)**: Used to establish reliable, long-term operational baselines and accurate monthly cost projections.
 
@@ -126,27 +127,19 @@ SELECT
 FROM 
     resources r
 JOIN 
-    optimization_metric_statistics stat_30d 
-    ON r.resource_id = stat_30d.resource_id 
-    AND stat_30d.window_type = '30d'
-JOIN 
-    optimization_metric_statistics stat_7d 
-    ON r.resource_id = stat_7d.resource_id 
-    AND stat_7d.window_type = '7d'
+    optimization_metric_statistics stat_4d 
+    ON r.resource_id = stat_4d.resource_id 
+    AND stat_4d.window_type = '4d'
 WHERE 
     -- Target specific resource types across any cloud
     r.resource_type IN ('compute_instance', 'virtual_machine')
     
-    -- The server rarely exceeded 20% CPU under normal heavy load over the last month
-    AND stat_30d.metric_name = 'cpu_percent'
-    AND stat_30d.p95_value < 20
+    -- The server rarely exceeded 20% CPU over the last 4 days
+    AND stat_4d.metric_name = 'cpu_percent'
+    AND stat_4d.p95_value < 20
     
-    -- The server never spiked above 60% CPU in the last week
-    AND stat_7d.metric_name = 'cpu_percent'
-    AND stat_7d.maximum_value < 60
-    
-    -- We have almost all the data points, so we trust these numbers
-    AND stat_30d.completeness_ratio >= 0.95;
+    -- We have enough data points from the last 4 days to trust these numbers
+    AND stat_4d.completeness_ratio >= 0.90;
 ```
 
 ## Rule Validation
@@ -163,9 +156,7 @@ This separation is necessary because multiple rules might flag the exact same re
 
 - **Target Resource ID**: The UUID of the resource.
 - **Rule ID**: Which specific SQL rule triggered this draft.
-- **Action Type**: The proposed action (e.g., TERMINATE, DOWNSIZE, etc).
-- **Target Configuration**: The proposed new state (e.g., shifting from t3.2xlarge to t3.xlarge).
-- **Estimated Savings**: The calculated monthly savings derived from the pricing catalog.
+- **Action Type**: The proposed action (e.g., TERMINATE, DOWNSIZE, etc). The engine primarily focuses on recommending this action.
 - **Evidence**: The raw JSON payload of the specific metrics that triggered the rule, ensuring the final decision is fully explainable to the user.
 
 ## Conflict-Resolution Hierarchy
@@ -214,7 +205,7 @@ flowchart TD
 To ensure the engine does not recommend destructive actions on critical infrastructure, the Conflict Resolver enforces a strict safety policy before any candidate becomes an ACTIVE recommendation.
 
 - **Tag-Based Protection**: The engine checks the resource's normalized tags for protection flags (e.g., sherpa:do-not-optimize=true). Any draft targeting a protected resource is instantly discarded.
-- **Recent Activity Lockout**: The engine verifies the resource's creation date. Resources provisioned within the last 14 days are ignored to avoid prematurely downsizing instances that are still scaling up or running initial baseline tests.
+- **Recent Activity Lockout**: The engine verifies the resource's creation date. Resources provisioned recently (e.g., under 14 days in production) are ignored to avoid prematurely downsizing instances that are still scaling up.
 - **Data Completeness Gate**: As established in the statistical metrics, if a resource's completeness_ratio is below 0.95, it is considered unsafe to optimize, and the draft is rejected.
 
 ## Recommendation Lifecycle and Statuses
@@ -283,12 +274,6 @@ erDiagram
     RESOURCES ||--o{ OPTIMIZATION_RECOMMENDATION : "receives"
     OPTIMIZATION_RECOMMENDATION }|--|| RULES : "generated by"
 ```
-## Resource Catalog and Pricing Catalog
-
-The engine will use a tier-based "next plan" approach rather than granularly calculating exact vCPU, RAM, or storage requirements.
-
-- **Resource Catalog**: Instead of tracking exact hardware specs, this catalog simply maps provider SKUs to a defined family hierarchy. It explicitly defines the "next size down" for any given resource (e.g., it maps an AWS t3.2xlarge directly to a t3.xlarge).
-- **Pricing Catalog**: Maintains up-to-date, regional monthly pricing for these SKUs across AWS, Azure, and GCP. This allows the engine to instantly calculate the financial difference between the current tier and the tier below it.
 
 ## Cost and Savings Calculation Approach
 
@@ -321,13 +306,9 @@ Endpoints:
   "current_configuration": {
     "sku": "t3.2xlarge"
   },
-  "target_configuration": {
-    "sku": "t3.xlarge"
-  },
-  "estimated_monthly_savings": 120.50,
   "currency": "USD",
   "evidence": {
-    "cpu_percent_p95_30d": 18.4,
+    "cpu_percent_p95_4d": 18.4,
     "completeness_ratio": 0.99
   }
 }
@@ -338,5 +319,5 @@ Endpoints:
 The UI must support the following capabilities to effectively utilize the API:
 
 - **Filtering**: By Provider (AWS/Azure/GCP), Action Type (Terminate/Downsize), and Status.
-- **Sorting**: Must default to sorting by `estimated_monthly_savings` (Descending) so users see the highest impact items first.
-- **Evidence Panel**: When a user clicks a recommendation, an expandable drawer must render the JSON evidence block into human-readable text (e.g., "We recommend this because your P95 CPU was 18.4% over the last 30 days").
+- **Sorting**: Defaults to sorting by Action Priority (e.g., Terminate over Downsize).
+- **Evidence Panel**: When a user clicks a recommendation, an expandable drawer must render the JSON evidence block into human-readable text (e.g., "We recommend this because your P95 CPU was 18.4% over the last 4 days").
