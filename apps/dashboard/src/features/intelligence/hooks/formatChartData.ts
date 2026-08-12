@@ -1,9 +1,10 @@
 import { Metric } from "@/features/dashboard/types/metric";
 import { UsageForecastData } from "../types/metrics";
+import { timeMs } from "@/lib/timeUtils";
 
 function toBrowserTimezoneTimestamp(isoString: string): number {
     const timestamp = new Date(isoString).getTime();
-    const timezoneOffsetMs = new Date(timestamp).getTimezoneOffset() * 60 * 1000;
+    const timezoneOffsetMs = new Date(timestamp).getTimezoneOffset() * timeMs.minuteMs;
     return timestamp - timezoneOffsetMs;
 }
 

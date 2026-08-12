@@ -16,6 +16,7 @@ import { TimeWindowPreset } from "../types/timewindow";
 import { setDashboardPresetTimeWindow } from "../utils/setDashboardTimeWindow";
 import { persist } from "zustand/middleware";
 import { getPresetRange } from "../components/toolbar/timePeriodSelector";
+import { timeMs } from "@/lib/timeUtils";
 
 const tickIntervalMs = 60_000;
 
@@ -23,7 +24,7 @@ function getDefaultWindow() {
     const toMs = Date.now();
 
     return {
-        fromMs: toMs - 7 * 24 * 60 * 60 * 1000,
+        fromMs: toMs - 7 * timeMs.dayMs,
         toMs,
         selectedPreset: "T_7_DAYS" as TimeWindowPreset,
     };

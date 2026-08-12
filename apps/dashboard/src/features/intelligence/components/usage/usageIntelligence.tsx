@@ -13,11 +13,11 @@ import { useChartData } from "@/features/dashboard/hooks/useChartData";
 import { getArraySummary } from "@/features/intelligence/utils/getUsageSummaries";
 import { useMakeUsageForecast } from "../../hooks/useMakeUsageForecast";
 import { Alert, AlertDescription, AlertTitle } from "@/components/atoms/alert";
+import { timeMs } from "@/lib/timeUtils";
 
 function generateMockForecast(days: number): UsageForecastData {
     const hours = days * 24;
     const now = Date.now();
-    const oneHour = 60 * 60 * 1000;
 
     const horizonTimestamps: string[] = [];
     const predictedValues: number[] = [];
@@ -25,7 +25,7 @@ function generateMockForecast(days: number): UsageForecastData {
     const q3Values: number[] = [];
 
     for (let i = 1; i <= hours; i++) {
-        horizonTimestamps.push(new Date(now + i * oneHour).toISOString());
+        horizonTimestamps.push(new Date(now + i * timeMs.hourMs).toISOString());
 
         const cycle = Math.sin((i / 24) * Math.PI * 2) * 15;
 

@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { Calendar as CalendarIcon, ChevronLeft, ChevronDown, Filter, Check } from "lucide-react";
 import { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
+import { timeMs, durationByPreset, presets } from "@/lib/timeUtils";
 import { Button } from "@/components/atoms/button";
 import { Calendar } from "@/components/atoms/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/atoms/popover";
@@ -18,44 +19,15 @@ import {
     CommandSeparator,
 } from "@/components/atoms/command";
 import { useDashboardStore } from "../../stores/dashboard-store";
-import { ppid } from "process";
-
-export const presets: { id: TimeWindowPreset; label: string }[] = [
-    { id: "T_5_MIN", label: "5 min" },
-    { id: "T_15_MIN", label: "15 min" },
-    { id: "T_30_MIN", label: "30 min" },
-    { id: "T_1_HOUR", label: "1 hour" },
-    { id: "T_6_HOUR", label: "6 hours" },
-    { id: "T_12_HOUR", label: "12 hours" },
-    { id: "T_24_HOUR", label: "24 hours" },
-    { id: "T_7_DAYS", label: "7 days" },
-    { id: "T_30_DAYS", label: "30 days" },
-];
 
 export function getPresetRange(presetId: TimeWindowPreset): DateRange | undefined {
     if (presetId == "custom") {
         return undefined;
     }
     const to = new Date();
-    const minuteMs = 60 * 1000;
-    const hourMs = 60 * minuteMs;
-    const dayMs = 24 * hourMs;
-
-    const durationByPreset: Record<TimeWindowPreset, number> = {
-        T_5_MIN: 5 * minuteMs,
-        T_15_MIN: 15 * minuteMs,
-        T_30_MIN: 30 * minuteMs,
-        T_1_HOUR: hourMs,
-        T_6_HOUR: 6 * hourMs,
-        T_12_HOUR: 12 * hourMs,
-        T_24_HOUR: 24 * hourMs,
-        T_7_DAYS: 7 * dayMs,
-        T_30_DAYS: 30 * dayMs,
-        custom: 0,
-    };
 
     return {
-        from: new Date(to.getTime() - (durationByPreset[presetId] ?? 7 * dayMs)),
+        from: new Date(to.getTime() - (durationByPreset[presetId] ?? 7 * timeMs.dayMs)),
         to,
     };
 }
