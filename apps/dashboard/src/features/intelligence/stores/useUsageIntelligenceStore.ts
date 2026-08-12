@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { UsageForecastData } from "@/features/intelligence/types/metrics";
+import { UsageForecastData } from "@/features/intelligence/types/dtos";
 
 interface UsageIntelligenceStore {
     //forecast format will look like {resourceid {CPU,  data}, {DISK,  data}}
