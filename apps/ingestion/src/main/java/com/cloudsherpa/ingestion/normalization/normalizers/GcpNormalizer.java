@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class GcpNormalizer implements Normalizer {
   private final ResourceRepository resourceRepository;
+  public static final String UNKNOWN = "unknown";
 
   public GcpNormalizer(ResourceRepository resourceRepository) {
     this.resourceRepository = resourceRepository;
@@ -26,7 +27,7 @@ public class GcpNormalizer implements Normalizer {
     String resourceId = resolveResourceId(accountUuid, r);
 
     String metricName =
-        prettifyGcpMetricName(r.getMetricName() != null ? r.getMetricName() : "unknown");
+        prettifyGcpMetricName(r.getMetricName() != null ? r.getMetricName() : UNKNOWN);
     String metricType = determineMetricType(metricName);
 
     double metricValue = r.getValue();
@@ -108,7 +109,7 @@ public class GcpNormalizer implements Normalizer {
 
   private String normalizeGcpUnit(String gcpUnit) {
     if (gcpUnit == null) {
-      return "unknown";
+      return UNKNOWN;
     }
 
     String t = gcpUnit.trim();
@@ -128,7 +129,7 @@ public class GcpNormalizer implements Normalizer {
 
   private String prettifyGcpMetricName(String fullMetricName) {
     if (fullMetricName == null || fullMetricName.isEmpty()) {
-      return "unknown";
+      return UNKNOWN;
     }
 
     String[] parts = fullMetricName.split("/");
