@@ -20,25 +20,33 @@ public class GcpNormalizer implements Normalizer {
       return null;
     }
 
-    // Took from awsNormalizer
-    // My understanding: looks if there is already a resource in the database for this usage record
-    UUID resourceTableIdent =
-        resourceRepository
-            .findByAccountIdAndResourceTypeAndResourceIdentifierAndRegion(
-                UUID.fromString(r.getAccountId()),
-                r.getServiceName(),
-                r.getResourceId(),
-                r.getRegion())
-            .map(Resource::getId)
-            .orElse(null);
+    // Prefer accountId, fallback to projectId
+    String accountKey = r.getAccountId();
+    if (accountKey == null || accountKey.trim().isEmpty()) {
+      accountKey = r.getProjectId();
+    }
+
+    UUID accountUuid = null;
+    if (accountKey != null && !accountKey.trim().isEmpty()) {
+      try {
+        accountUuid = UUID.fromString(accountKey);
+      } catch (IllegalArgumentException e) {
+        accountUuid = null;
+      }
+    }
+
+    UUID resourceTableIdent = null;
+    if (accountUuid != null) {
+      resourceTableIdent =
+          resourceRepository
+              .findByAccountIdAndResourceTypeAndResourceIdentifierAndRegion(
+                  accountUuid, r.getServiceName(), r.getResourceId(), r.getRegion())
+              .map(Resource::getId)
+              .orElse(null);
+    }
+
     String metricId = UUID.randomUUID().toString();
     String resourceId = resourceTableIdent != null ? resourceTableIdent.toString() : null;
-
-    // Source: gcpDataset.csv, accountId is null so I use projectId as specified in UsageRecordModel
-    String accountId = r.getAccountId();
-    if (accountId == null || accountId.trim().isEmpty()) {
-      accountId = r.getProjectId();
-    }
 
     String metricType = "usage";
     String metricName = "unknown";
@@ -80,7 +88,7 @@ public class GcpNormalizer implements Normalizer {
     return new NormalizedMetric.Builder()
         .metricId(metricId)
         .resourceId(resourceId)
-        .accountId(accountId)
+        .accountId(accountKey)
         .metricType(metricType)
         .metricName(metricName)
         .metricValue(metricValue)
@@ -96,19 +104,21 @@ public class GcpNormalizer implements Normalizer {
       return "unknown";
     }
 
-    switch (gcpUnit.trim()) {
+    String t = gcpUnit.trim();
+    switch (t) {
       case "By":
         return "bytes";
       case "s":
         return "seconds";
       case "Percent":
+      case "percent":
+      case "10^2.%":
         return "percent";
       case "Count":
-        return "count";
       case "1":
         return "count";
       default:
-        return gcpUnit.toLowerCase();
+        return t.toLowerCase();
     }
   }
 }

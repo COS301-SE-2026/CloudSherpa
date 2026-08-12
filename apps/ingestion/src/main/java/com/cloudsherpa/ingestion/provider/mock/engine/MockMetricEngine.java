@@ -278,6 +278,7 @@ public class MockMetricEngine {
     usageRecord.setResourceId(instanceId);
     usageRecord.setResourceType(instanceScope.getIdentifierName());
     usageRecord.setIngestionId(requestContext.ingestionId().toString());
+    usageRecord.setProjectId(requestContext.accountScope().getProjectId());
     usageRecord.setSource("MockMetricProvider");
 
     return usageRecord;
