@@ -1,5 +1,6 @@
 package com.cloudsherpa.lib.repositories;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -55,4 +56,17 @@ public interface NormalizedMetricsRepository extends JpaRepository<NormalizedMet
         nativeQuery = true
     )
   List<TimestampedNumericDataPoint> getTimestampedMetricValues(@Param("resourceId") UUID metricId, @Param("metricName") String metricName, Pageable pageable);
+
+  @Query(
+    value = 
+      """
+          SELECT
+            nm.metric_value AS value,
+            nm.period_start AS timestamp
+            FROM normalized_metrics nm WHERE nm.resource_id = :resourceId AND nm.metric_name = :metricName AND nm.period_start > :from
+            ORDER BY nm.period_start ASC;
+          """,
+        nativeQuery = true
+  )
+  List<TimestampedNumericDataPoint> getTimestampedMetricValuesAfterDate(@Param("resourceId") UUID resourceId, @Param("metricName") String metricName, @Param("from") Instant from);
 }

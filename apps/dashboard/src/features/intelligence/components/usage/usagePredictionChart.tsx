@@ -122,6 +122,7 @@ export default function UsagePredictionChart() {
             axisPointer: {
                 type: "cross",
                 animation: false,
+                snap: true,
                 label: {
                     backgroundColor: tokens["chart-1"],
                 },
@@ -200,7 +201,13 @@ export default function UsagePredictionChart() {
             {
                 name: "Historical Usage",
                 type: "line",
+                symbol: "circle",
+                symbolSize: 6,
                 showSymbol: false,
+                emphasis: {
+                    focus: "series",
+                    scale: true,
+                },
                 data: historicalData,
                 lineStyle: {
                     color: tokens["chart-1"],
@@ -231,6 +238,15 @@ export default function UsagePredictionChart() {
                 type: "line",
                 data: predictedData,
                 showSymbol: false,
+                symbol: "circle",
+                symbolSize: 6,
+                emphasis: {
+                    focus: "series",
+                    scale: true,
+                    itemStyle: {
+                        color: tokens["chart-2"],
+                    },
+                },
                 lineStyle: {
                     width: 2.5,
                     color: tokens["chart-2"],
