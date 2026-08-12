@@ -13,10 +13,12 @@ import { Button } from "@/components/atoms/button";
 import { timeMs, durationByPreset } from "@/lib/timeUtils";
 import { HistoricalUsageSeriesDto } from "../../types/dtos";
 import { UsageError } from "../../types/errors";
+import { Spinner } from "@/components/atoms/spinner";
 
 interface UsagePredictionChartProps {
     readonly historicalUsageSeries: HistoricalUsageSeriesDto | null;
     readonly usageError: UsageError | null;
+    readonly loading: boolean;
 }
 
 const now = Date.now();
@@ -24,6 +26,7 @@ const now = Date.now();
 export default function UsagePredictionChart({
     historicalUsageSeries,
     usageError,
+    loading,
 }: UsagePredictionChartProps) {
     //styles
     const { themeName, tokens } = useChartTheme();
@@ -282,6 +285,20 @@ export default function UsagePredictionChart({
         ],
     };
 
+    const cardContent = loading ? (
+        <div className="flex h-full w-full flex-col justify-center items-center gap-6">
+            <Spinner />
+        </div>
+    ) : (
+        <ReactECharts
+            ref={echartsRef}
+            option={option}
+            theme={themeName}
+            style={{ height: "100%", width: "100%" }}
+            notMerge={true}
+        />
+    );
+
     return (
         <Card className="h-full w-full gap-0 overflow-hidden">
             <CardHeader className="flex flex-row justify-end items-center gap-1 ">
@@ -312,13 +329,7 @@ export default function UsagePredictionChart({
                         <strong>No data available</strong>
                     </div>
                 ) : (
-                    <ReactECharts
-                        ref={echartsRef}
-                        option={option}
-                        theme={themeName}
-                        style={{ height: "100%", width: "100%" }}
-                        notMerge={true}
-                    />
+                    cardContent
                 )}
             </CardContent>
         </Card>
