@@ -69,7 +69,7 @@ export default function SummaryCard({
                 {Icon && <Icon className="h-8 w-8 text-primary" />}
                 <div className="flex flex-row gap-4 justify-start items-center">
                     <span className="text-4xl">
-                        {usageError?.item == "usage" ? (
+                        {usageError?.item == "usage" || usageError?.item == "both" ? (
                             "—"
                         ) : (
                             <>
@@ -80,7 +80,7 @@ export default function SummaryCard({
                     </span>
                     <Separator orientation="vertical" />
                     <span className="text-4xl">
-                        {usageError?.item == "forecast" ? (
+                        {usageError?.item == "forecast" || usageError?.item == "both" ? (
                             "—"
                         ) : (
                             <>

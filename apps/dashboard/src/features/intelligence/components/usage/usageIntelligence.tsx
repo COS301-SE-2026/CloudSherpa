@@ -101,6 +101,7 @@ export default function UsageIntelligence() {
         void loadForecast();
     }, [resourceId, metricType, requestUsageForecast, setUsageForecast]);
 
+    // Error state
     let usageError: UsageError | null = null;
 
     if (historicalUsageError && usageForecastRequestError) {
@@ -117,6 +118,8 @@ export default function UsageIntelligence() {
             errorMessage: "Error while making forecast, historical usage still shown.",
         };
     }
+
+    usageError = { item: "both", errorMessage: "bleh" };
 
     return (
         <div className="flex flex-col h-full w-full p-6 gap-4">
@@ -157,7 +160,10 @@ export default function UsageIntelligence() {
                 </section>
                 <section className="w-full flex-1 min-h-0 flex flex-col">
                     {resourceId && metricType ? (
-                        <UsagePredictionChart historicalUsageSeries={historicalUsageSeries} />
+                        <UsagePredictionChart
+                            historicalUsageSeries={historicalUsageSeries}
+                            usageError={usageError}
+                        />
                     ) : (
                         <Card className="h-full w-full flex flex-col items-center justify-center border-2 border-dashed">
                             <CardContent className="flex items-center justify-center p-0">
