@@ -1,6 +1,9 @@
+import ConnectionGroup from "@/features/optimization/components/connectionGroups";
+
 const mockRecommendations = [
     {
         recommendation_id: "a1b2c3d4",
+        connection: "minecraft",
         resource_id: "hypixel-prod-01",
         provider: "AWS",
         action_type: "DOWNSIZE",
@@ -20,6 +23,7 @@ const mockRecommendations = [
     },
     {
         recommendation_id: "b2c3d4e5",
+        connection: "minecraft",
         resource_id: "abandoned-dev-db",
         provider: "AWS",
         action_type: "TERMINATE",
@@ -44,6 +48,15 @@ export default function Recommendations() {
             <header>
                 <h1 className="text-3xl font-semibold">Optimization Recommendations</h1>
             </header>
+
+            {mockRecommendations.map((recommendation) => (
+                <ConnectionGroup
+                    provider={recommendation.provider}
+                    connection={recommendation.connection}
+                    estSumSavings={123}
+                    recommendationsCount={2}
+                />
+            ))}
         </div>
     );
 }
