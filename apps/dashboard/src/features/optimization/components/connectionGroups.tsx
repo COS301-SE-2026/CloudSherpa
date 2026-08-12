@@ -1,5 +1,6 @@
 import { Card, CardHeader, CardTitle } from "@/components/atoms/card";
 import { Badge } from "@/components/atoms/badge";
+import RecDrawer from "@/features/optimization/components/recDrawer";
 
 interface ConnectionGroupProps {
     connection: string;
@@ -32,8 +33,7 @@ export default function ConnectionGroups({
                         <span className="text-lg font-bold text-green-600">
                             {formattedSavings}/mo
                         </span>
-                    </div>{" "}
-                    {/* drawer component that still needs to be made */}
+                    </div>
                 </div>
             </CardHeader>
         </Card>
