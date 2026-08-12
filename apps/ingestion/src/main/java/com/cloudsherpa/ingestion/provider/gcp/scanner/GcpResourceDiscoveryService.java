@@ -29,7 +29,7 @@ public class GcpResourceDiscoveryService {
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
-  public List<ResourceDetail> discover(CloudCredentials credentials) {
+  public List<ResourceDetail> discover(CloudCredentials credentials, List<String> services) {
 
     List<Asset> assets = assetInventoryService.listAssets(credentials);
 
@@ -38,13 +38,27 @@ public class GcpResourceDiscoveryService {
             asset -> {
               GcpResourceScanner scanner = findScanner(asset.getAssetType());
 
-              if (scanner == null) {
+              if (scanner == null) { // unsupported resource type
+                return null;
+              }
+
+              if (!services.contains(
+                  scanner.getServiceName())) { // service not selected for discovery
                 return null;
               }
 
               return scanner.scan(asset, credentials);
             })
         .filter(Objects::nonNull)
+        .toList();
+  }
+
+  public List<String> getServices() {
+
+    return scanners.values().stream()
+        .map(GcpResourceScanner::getServiceName)
+        .distinct()
+        .sorted()
         .toList();
   }
 
