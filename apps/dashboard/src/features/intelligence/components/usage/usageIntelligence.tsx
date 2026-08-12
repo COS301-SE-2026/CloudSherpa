@@ -119,8 +119,6 @@ export default function UsageIntelligence() {
         };
     }
 
-    usageError = { item: "both", errorMessage: "bleh" };
-
     return (
         <div className="flex flex-col h-full w-full p-6 gap-4">
             <UsageToolbar />
