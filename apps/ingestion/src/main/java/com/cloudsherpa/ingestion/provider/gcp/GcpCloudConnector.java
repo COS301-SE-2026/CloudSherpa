@@ -31,6 +31,7 @@ public class GcpCloudConnector implements CloudConnector, UsageCapable, BillingC
       MockCloudMonitoringMetricProvider mockMetricProvider) {
     metricProvider = new GcpCloudMonitoringMetricProvider();
     this.mockMetricProvider = mockMetricProvider;
+
     this.discoveryService = discoveryService;
   }
 
