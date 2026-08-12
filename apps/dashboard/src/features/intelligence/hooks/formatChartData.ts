@@ -1,6 +1,7 @@
-import { Metric } from "@/features/dashboard/types/metric";
-import { UsageForecastData } from "../types/metrics";
+import { HistoricalUsageSeriesDto, UsageForecastData } from "../types/dtos";
 import { timeMs } from "@/lib/timeUtils";
+
+type TimeValuePoint = [number, number];
 
 function toBrowserTimezoneTimestamp(isoString: string): number {
     const timestamp = new Date(isoString).getTime();
@@ -9,29 +10,46 @@ function toBrowserTimezoneTimestamp(isoString: string): number {
 }
 
 export function formatChartData(
-    historicalMetrics: Metric[],
-    forecastDto: UsageForecastData | null
+    historicalUsageSeries: HistoricalUsageSeriesDto | null,
+    usageForecast: UsageForecastData | null
 ) {
-    const historicalData: [number, number][] = historicalMetrics.map((m) => [
-        new Date(m.timestamp).getTime(),
-        m.value,
-    ]);
+    const historicalUsagePoints: TimeValuePoint[] = [];
 
-    const q1Data: [number, number][] = [];
-    const q3Data: [number, number][] = [];
-    const predictedData: [number, number][] = [];
-    if (forecastDto) {
-        forecastDto.horizonTimestamps.forEach((isoString, index) => {
+    if (historicalUsageSeries) {
+        const pointCount = Math.min(
+            historicalUsageSeries.values.length,
+            historicalUsageSeries.timestamps.length
+        );
+        for (let i = 0; i < pointCount; i++) {
+            const value = historicalUsageSeries.values[i];
+            const isoString = historicalUsageSeries.timestamps[i];
+
             const timestamp = toBrowserTimezoneTimestamp(isoString);
-            const q1 = forecastDto.q1Values[index];
-            const q3 = forecastDto.q3Values[index];
-            const pred = forecastDto.predictedValues[index];
 
-            q1Data.push([timestamp, q1]);
-            q3Data.push([timestamp, q3 - q1]);
-            predictedData.push([timestamp, pred]);
+            historicalUsagePoints.push([timestamp, value]);
+        }
+    }
+
+    const lowerConfidenceBoundPoints: TimeValuePoint[] = [];
+    const confidenceBandRangePoints: TimeValuePoint[] = [];
+    const predictedUsagePoints: TimeValuePoint[] = [];
+    if (usageForecast) {
+        usageForecast.horizonTimestamps.forEach((isoString, index) => {
+            const timestamp = toBrowserTimezoneTimestamp(isoString);
+            const lowerBound = usageForecast.q1Values[index];
+            const upperBound = usageForecast.q3Values[index];
+            const predictedValue = usageForecast.predictedValues[index];
+
+            lowerConfidenceBoundPoints.push([timestamp, lowerBound]);
+            confidenceBandRangePoints.push([timestamp, upperBound - lowerBound]);
+            predictedUsagePoints.push([timestamp, predictedValue]);
         });
     }
 
-    return { historicalData, q1Data, q3Data, predictedData };
+    return {
+        historicalUsagePoints,
+        lowerConfidenceBoundPoints,
+        confidenceBandRangePoints,
+        predictedUsagePoints,
+    };
 }

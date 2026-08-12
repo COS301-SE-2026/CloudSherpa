@@ -4,3 +4,8 @@ export interface UsageForecastData {
     q1Values: number[];
     q3Values: number[];
 }
+
+export interface HistoricalUsageSeriesDto {
+    values: number[];
+    timestamps: string[];
+}

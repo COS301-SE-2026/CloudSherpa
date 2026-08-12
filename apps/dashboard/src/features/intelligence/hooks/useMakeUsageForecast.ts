@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 
-import { UsageForecastData } from "@/features/intelligence/types/metrics";
+import { UsageForecastData } from "@/features/intelligence/types/dtos";
 import apiClient from "@/lib/fetch/api-client";
 import { AWS_METRIC_TYPE_BY_NAME_INVERSE } from "@/features/dashboard/stores/metric-store";
 import { MetricType } from "@/features/dashboard/types/metric";
