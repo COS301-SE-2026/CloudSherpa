@@ -2,6 +2,8 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+RUN groupadd -r appgroup && useradd -r -m -d /home/appuser -g appgroup appuser && chown -R appuser:appgroup /app 
+
 # Prevent Python from writing .pyc files and buffer logs
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
@@ -19,8 +21,10 @@ RUN pip install --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
 # Copy app source
-COPY . .
+COPY src .
 
-EXPOSE 8000
+EXPOSE 5000
 
-CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
+USER appuser
+
+CMD ["fastapi", "run", "--port", "5000"]

@@ -11,15 +11,22 @@ import com.cloudsherpa.ingestion.models.ResourceDetail;
 import com.cloudsherpa.ingestion.models.UsageRecordModel;
 import com.cloudsherpa.ingestion.provider.gcp.monitoring.CloudMonitoringMetricProvider;
 import com.cloudsherpa.ingestion.provider.gcp.monitoring.GcpCloudMonitoringMetricProvider;
+import com.cloudsherpa.ingestion.provider.scanner.ResourceDiscoveryService;
 import java.util.List;
 import org.springframework.stereotype.Component;
 
 @Component("gcp")
 public class GcpCloudConnector implements CloudConnector, UsageCapable, BillingCapable {
   private final CloudMonitoringMetricProvider metricProvider;
+  private final CloudMonitoringMetricProvider mockMetricProvider;
+  private final ResourceDiscoveryService discoveryService;
 
-  public GcpCloudConnector() {
+  public GcpCloudConnector(
+      ResourceDiscoveryService resourceDiscoveryService,
+      GcpCloudMonitoringMetricProvider mockMetricProvider) {
     metricProvider = new GcpCloudMonitoringMetricProvider();
+    this.mockMetricProvider = mockMetricProvider;
+    discoveryService = resourceDiscoveryService;
   }
 
   @Override
@@ -43,7 +50,7 @@ public class GcpCloudConnector implements CloudConnector, UsageCapable, BillingC
   @Override
   public List<UsageRecordModel> fetchMockUsage(
       AccountScope accountScope, IngestionRequestEvent request) {
-    return List.of(); // to be implemented
+    return mockMetricProvider.collectMetrics(accountScope, request);
   }
 
   @Override
@@ -53,7 +60,7 @@ public class GcpCloudConnector implements CloudConnector, UsageCapable, BillingC
 
   @Override
   public List<String> getAllOfferedServices() {
-    return List.of(); // to be implemented
+    return discoveryService.getServices("GCP");
   }
 
   @Override

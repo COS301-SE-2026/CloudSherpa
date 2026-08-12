@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { EllipsisVertical, Pencil, Trash } from "lucide-react";
 import { Button } from "@/components/atoms/button";
 import {
