@@ -583,6 +583,7 @@ DECLARE
   demo_gcp_account_id uuid := 'a0000000-0000-0000-0000-000000000002';
   demo_gcp_provider public.provider_enum := 'GCP';
   demo_gcp_account_type public.account_type_enum := 'gcp_project';
+  demo_gcp_instance := 'gce_instance';
 BEGIN
   INSERT INTO public.users (user_id, email, username, password_hash, created_at)
   VALUES (
@@ -639,9 +640,9 @@ BEGIN
   resource_id, account_id, resource_type, resource_name, 
   resource_identifier, resource_identifier_type, region, status, created_at, last_updated
   ) VALUES
-  ('d0000000-0000-0000-0000-000000000001', demo_gcp_account_id, 'gce_instance', 'mock-gce-instance-1', 
+  ('d0000000-0000-0000-0000-000000000001', demo_gcp_account_id, demo_gcp_instance, 'mock-gce-instance-1', 
   'instance-1', 'instance_id', 'us-central1', demo_status, now(), now()),
-  ('d0000000-0000-0000-0000-000000000002', demo_gcp_account_id, 'gce_instance', 'mock-gce-instance-2', 
+  ('d0000000-0000-0000-0000-000000000002', demo_gcp_account_id, demo_gcp_instance, 'mock-gce-instance-2', 
   'instance-2', 'instance_id', 'us-central1', demo_status, now(), now()),
   ('d0000000-0000-0000-0000-000000000003', demo_gcp_account_id, 'cloud_run_revision', 'mock-cloud-run-1', 
   'email-processor-0001', 'revision_id', 'us-central1', demo_status, now(), now())

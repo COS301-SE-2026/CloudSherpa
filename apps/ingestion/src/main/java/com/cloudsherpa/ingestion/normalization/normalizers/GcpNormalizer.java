@@ -138,7 +138,7 @@ public class GcpNormalizer implements Normalizer {
   }
 
   private String convertSnakeToCamel(String snake) {
-    if (snake == null || snake.isEmpty()) return snake;
+    if (snake == null || snake.isEmpty()) return "";
 
     StringBuilder camel = new StringBuilder();
     boolean capitalizeNext = true;
