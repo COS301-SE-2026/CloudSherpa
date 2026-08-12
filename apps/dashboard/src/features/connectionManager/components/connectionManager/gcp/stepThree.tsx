@@ -82,62 +82,6 @@ const hardCodedResources: DetailsForResource[] = [
         region: "region 1",
         tag: ["tag1", "tag2"],
     },
-    {
-        id: "resource2",
-        name: "Resource two",
-        type: "Service two",
-        region: "region 2",
-        tag: ["tag1", "tag2"],
-    },
-    {
-        id: "resource3",
-        name: "Resource three",
-        type: "Service three",
-        region: "region 3",
-        tag: ["tag1", "tag2"],
-    },
-    {
-        id: "resource4",
-        name: "Resource four",
-        type: "Service four",
-        region: "region 4",
-        tag: ["tag1", "tag2"],
-    },
-    {
-        id: "resource5",
-        name: "Resource five",
-        type: "Service five",
-        region: "region 5",
-        tag: ["tag1", "tag2"],
-    },
-    {
-        id: "resource6",
-        name: "Resource six",
-        type: "Service six",
-        region: "region 6",
-        tag: ["tag1", "tag2"],
-    },
-    {
-        id: "resource7",
-        name: "Resource seven",
-        type: "Service seven",
-        region: "region 7",
-        tag: ["tag1", "tag2"],
-    },
-    {
-        id: "resource8",
-        name: "Resource eight",
-        type: "Service eight",
-        region: "region 8",
-        tag: ["tag1", "tag2"],
-    },
-    {
-        id: "resource9",
-        name: "Resource nine",
-        type: "Service nine",
-        region: "region 9",
-        tag: ["tag1", "tag2"],
-    },
 ];
 
 function ListOfTags({ tags }: Readonly<{ tags: string[] }>) {
