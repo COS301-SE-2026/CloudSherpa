@@ -88,11 +88,6 @@ export default function UsageIntelligence() {
         const selectedResourceId = resourceId;
         const selectedMetricType = metricType;
 
-        const currentForecasts = useUsageIntelligenceStore.getState().forecasts;
-        // const isCached = !!currentForecasts[selectedResourceId]?.[selectedMetricType];
-
-        // if (isCached) return;
-
         async function loadForecast() {
             const forecastData = await requestUsageForecast(selectedResourceId, selectedMetricType);
             // const mockData = generateMockForecast(3);
