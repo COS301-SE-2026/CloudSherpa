@@ -1,3 +1,6 @@
-fastapi[standard]>=0.136.0,<0.140.0
-numpy>=2.1.0
-chronos-forecasting[extras]>=2.2
+fastapi[standard]==0.141.1
+numpy==2.1.0
+chronos-forecasting[extras]==2.2
+pytest==9.1.1
+pytest-cov==7.1.0
+ruff==0.16.1

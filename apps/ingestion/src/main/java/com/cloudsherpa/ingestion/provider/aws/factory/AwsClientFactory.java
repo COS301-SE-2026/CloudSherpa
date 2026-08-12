@@ -12,7 +12,7 @@ public final class AwsClientFactory {
   public static StaticCredentialsProvider credentialsProvider(CloudCredentials credentials) {
 
     AwsBasicCredentials awsCredentials =
-        AwsBasicCredentials.create(credentials.getAccessKey(), credentials.getSecretKey());
+        AwsBasicCredentials.create(credentials.getAccessKeyId(), credentials.getSecretAccessKey());
 
     return StaticCredentialsProvider.create(awsCredentials);
   }

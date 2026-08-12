@@ -1,6 +1,8 @@
 package com.cloudsherpa.service.analytics.controller;
 
 import com.cloudsherpa.lib.projections.AggregatedMetric;
+import com.cloudsherpa.service.analytics.dto.ResourceMetricHistoricalRequestDto;
+import com.cloudsherpa.service.analytics.dto.ResourceMetricHistoricalResponseDto;
 import com.cloudsherpa.service.analytics.dto.ResourceNameDto;
 import com.cloudsherpa.service.analytics.service.NormalizedMetricService;
 import com.cloudsherpa.service.analytics.service.ResourceRegistryService;
@@ -19,6 +21,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -82,5 +86,37 @@ public class AnalyticsController {
     UUID userId = UUID.fromString(jwt.getSubject());
 
     return resourceRegistryService.getResourceNamesByUserId(userId);
+  }
+
+  @Operation(summary = "Get historical metric data for a resource")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Return metric values and timestamps for the resource",
+            content =
+                @Content(
+                    schema = @Schema(implementation = ResourceMetricHistoricalResponseDto.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(
+            responseCode = "404",
+            description = "No resource metrics found",
+            content = @Content)
+      })
+  @PostMapping("/historical-resource-metric")
+  public ResponseEntity<ResourceMetricHistoricalResponseDto> postMethodName(
+      @io.swagger.v3.oas.annotations.parameters.RequestBody(
+              description = "Resource metric query parameters",
+              required = true,
+              content =
+                  @Content(
+                      schema = @Schema(implementation = ResourceMetricHistoricalRequestDto.class)))
+          @RequestBody
+          ResourceMetricHistoricalRequestDto request) {
+
+    return ResponseEntity.ok()
+        .body(
+            normalizedMetricService.fetchHistoricalDataForResourceMetric(
+                request.resourceId(), request.metricType(), request.fromDate()));
   }
 }

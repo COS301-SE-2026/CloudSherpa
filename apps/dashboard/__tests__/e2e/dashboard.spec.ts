@@ -4,7 +4,7 @@ import crypto from "crypto";
 async function registerAndLoginNewUser(page: Page) {
     const uniqueId = crypto.randomUUID();
     const email = `e2e-dash-${uniqueId}@example.com`;
-    const password = "SafePassword123!"; // Keep standard to pass validation rules
+    const password = "SafePassword123!";
 
     await page.goto("http://localhost:3000/login");
     await page.getByRole("button", { name: "Get Started" }).click();
@@ -45,10 +45,19 @@ async function createNewChartWidget(page: Page) {
     await expect(page.getByText("New Chart").first()).toBeVisible();
 }
 
+async function createPreConfiguredChartWidget(page: Page) {
+    await page.getByLabel("editbtn").click();
+    await page.getByRole("button", { name: "Add Chart" }).click();
+    await page.getByRole("button", { name: "Save" }).click();
+    await expect(page.getByText("New Chart").first()).toBeVisible();
+    await page.getByLabel("configure new widget button").click();
+    await configureChartWidgetName(page);
+}
+
 async function configureChartWidgetName(page: Page) {
-    const uniqueWidgetName = `testDash-${Date.now()}`;
+    const uniqueWidgetName = `testChart-${Date.now()}`;
     await page.getByRole("textbox").fill(uniqueWidgetName);
-    await page.getByLabel("save changes button").click();
+    await page.getByRole("button", { name: "Save Chart" }).click();
     await expect(page.getByText(uniqueWidgetName)).toBeVisible();
     return uniqueWidgetName;
 }
@@ -97,8 +106,7 @@ test.describe("dashboard", () => {
         //create new chart widget
         await createNewChartWidget(page);
         //configure new chart widget
-        await page.getByRole("button", { name: "chart options button" }).click();
-        await page.getByLabel("configure widget button").click();
+        await page.getByLabel("configure new widget button").click();
         await configureChartWidgetName(page);
     });
 
@@ -107,9 +115,8 @@ test.describe("dashboard", () => {
         await createNewDashboard(page);
         //create new chart widget
         await createNewChartWidget(page);
-        //configure new chart widget
-        await page.getByText("New Chart").click({ button: "right" });
-        await page.getByRole("menuitem", { name: "configure widget button" }).click();
+        await page.getByLabel("chart widget").first().click({ button: "right" });
+        await page.getByRole("menuitem", { name: "Configure Widget" }).click();
         await configureChartWidgetName(page);
     });
 });

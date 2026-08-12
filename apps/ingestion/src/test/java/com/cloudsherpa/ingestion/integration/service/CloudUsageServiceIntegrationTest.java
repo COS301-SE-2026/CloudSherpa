@@ -13,6 +13,7 @@ import com.cloudsherpa.ingestion.normalization.normalizers.AwsNormalizer;
 import com.cloudsherpa.ingestion.normalization.normalizers.Normalizer;
 import com.cloudsherpa.ingestion.normalization.normalizers.NormalizerFactory;
 import com.cloudsherpa.ingestion.provider.aws.AwsCloudConnector;
+import com.cloudsherpa.ingestion.provider.aws.monitoring.MockCloudWatchMetricProvider;
 import com.cloudsherpa.ingestion.provider.scanner.ResourceDiscoveryService;
 import com.cloudsherpa.ingestion.service.CloudUsageService;
 import com.cloudsherpa.ingestion.service.SherpaDbPersistenceService;
@@ -29,6 +30,7 @@ class CloudUsageServiceIntegrationTest {
   private ResourceDiscoveryService discoveryService;
   private NormalizerFactory normalizerFactory;
   private Normalizer normalizer;
+  private MockCloudWatchMetricProvider mockMetricProvider;
 
   @BeforeEach
   void setUp() {
@@ -38,7 +40,7 @@ class CloudUsageServiceIntegrationTest {
     normalizerFactory = mock(NormalizerFactory.class);
     normalizer = mock(AwsNormalizer.class);
 
-    connector = spy(new AwsCloudConnector(discoveryService));
+    connector = spy(new AwsCloudConnector(discoveryService, mockMetricProvider));
 
     when(factory.getConnector("AWS")).thenReturn(connector);
     when(normalizerFactory.getNormalizer("AWS")).thenReturn(normalizer);

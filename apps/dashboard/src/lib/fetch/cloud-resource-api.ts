@@ -1,8 +1,8 @@
 import apiClient from "./api-client";
 
 export interface CloudCredentials {
-    accessKey?: string;
-    secretKey?: string;
+    accessKeyId?: string;
+    secretAccessKey?: string;
     awsRegion?: string;
     tenantId?: string;
     clientId?: string;

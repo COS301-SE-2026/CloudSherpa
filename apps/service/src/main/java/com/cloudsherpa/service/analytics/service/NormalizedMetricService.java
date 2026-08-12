@@ -1,15 +1,22 @@
 package com.cloudsherpa.service.analytics.service;
 
+import com.cloudsherpa.lib.dtos.TimestampedNumericDataPoint;
 import com.cloudsherpa.lib.projections.AggregatedMetric;
 import com.cloudsherpa.lib.projections.ResourceNames;
 import com.cloudsherpa.lib.repositories.NormalizedMetricsRepository;
 import com.cloudsherpa.lib.repositories.ResourceRepository;
+import com.cloudsherpa.service.analytics.dto.ResourceMetricHistoricalResponseDto;
+import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -75,5 +82,28 @@ public class NormalizedMetricService {
     }
 
     return resourceIdNameMap;
+  }
+
+  public ResourceMetricHistoricalResponseDto fetchHistoricalDataForResourceMetric(
+      UUID resourceId, String metricType, OffsetDateTime from) {
+    ZoneOffset offset = from.getOffset();
+    Instant fromInstant = from.toInstant();
+    List<TimestampedNumericDataPoint> fetchedResourceMetrics =
+        normalizedMetricsRepository.getTimestampedMetricValuesAfterDate(
+            resourceId, metricType, fromInstant);
+
+    if (fetchedResourceMetrics.isEmpty()) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No resource metrics found");
+    }
+
+    List<BigDecimal> values = new ArrayList<>();
+    List<OffsetDateTime> timestamps = new ArrayList<>();
+
+    for (TimestampedNumericDataPoint timestampedNumericDataPoint : fetchedResourceMetrics) {
+      values.addLast(timestampedNumericDataPoint.value());
+      timestamps.addLast(timestampedNumericDataPoint.timestamp().atOffset(offset));
+    }
+
+    return new ResourceMetricHistoricalResponseDto(values, timestamps);
   }
 }

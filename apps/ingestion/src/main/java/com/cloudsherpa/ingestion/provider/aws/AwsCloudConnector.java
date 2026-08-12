@@ -28,9 +28,11 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
   private final CloudWatchMetricProvider mockMetricProvider;
   private final ResourceDiscoveryService discoveryService;
 
-  public AwsCloudConnector(ResourceDiscoveryService resourceDiscoveryService) {
+  public AwsCloudConnector(
+      ResourceDiscoveryService resourceDiscoveryService,
+      MockCloudWatchMetricProvider mockMetricProvider) {
     metricProvider = new AwsCloudWatchMetricProvider();
-    mockMetricProvider = new MockCloudWatchMetricProvider();
+    this.mockMetricProvider = mockMetricProvider;
     discoveryService = resourceDiscoveryService;
   }
 
@@ -73,7 +75,8 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
 
     if (credentials != null) {
       AwsBasicCredentials awsCredentials =
-          AwsBasicCredentials.create(credentials.getAccessKey(), credentials.getSecretKey());
+          AwsBasicCredentials.create(
+              credentials.getAccessKeyId(), credentials.getSecretAccessKey());
       client =
           CloudWatchClient.builder()
               .credentialsProvider(StaticCredentialsProvider.create(awsCredentials))
