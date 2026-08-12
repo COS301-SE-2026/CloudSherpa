@@ -6,14 +6,15 @@ import { useUsageIntelligenceConfigStore } from "@/features/intelligence/stores/
 import { useUsageIntelligenceStore } from "@/features/intelligence/stores/useUsageIntelligenceStore";
 import { useEffect, useMemo } from "react";
 import { UsageForecastData } from "@/features/intelligence/types/dtos";
-import { TrendingUp, TrendingDown, Minus, AlertCircleIcon } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { useFetchMetrics } from "@/features/dashboard/hooks/useFetchMetrics";
 import { Card, CardContent } from "@/components/atoms/card";
 import { getArraySummary } from "@/features/intelligence/utils/getUsageSummaries";
 import { useMakeUsageForecast } from "../../hooks/useMakeUsageForecast";
-import { Alert, AlertDescription, AlertTitle } from "@/components/atoms/alert";
 import { timeMs } from "@/lib/timeUtils";
 import { useUsageHistoricalData } from "../../hooks/useUsageHistoricalData";
+import { UsageErrorAlert } from "./usageError";
+import { UsageError } from "../../types/errors";
 
 function generateMockForecast(days: number): UsageForecastData {
     const hours = days * 24;
@@ -64,7 +65,7 @@ export default function UsageIntelligence() {
         return state.forecasts[resourceId]?.[metricType] ?? null;
     });
 
-    const { historicalUsageSeries } = useUsageHistoricalData();
+    const { historicalUsageSeries, historicalUsageError } = useUsageHistoricalData();
 
     const pastSummary = useMemo(() => {
         if (!historicalUsageSeries?.values?.length) {
@@ -100,19 +101,29 @@ export default function UsageIntelligence() {
         void loadForecast();
     }, [resourceId, metricType, requestUsageForecast, setUsageForecast]);
 
+    // Error state
+    let usageError: UsageError | null = null;
+
+    if (historicalUsageError && usageForecastRequestError) {
+        usageError = {
+            item: "both",
+            errorMessage: "Failed to fetch historical metrics or make a usage forecast.",
+        };
+    }
+    if (historicalUsageError) {
+        usageError = { item: "usage", errorMessage: "Error fetching historical metrics." };
+    } else if (usageForecastRequestError) {
+        usageError = {
+            item: "forecast",
+            errorMessage: "Error while making forecast, historical usage still shown.",
+        };
+    }
+
     return (
         <div className="flex flex-col h-full w-full p-6 gap-4">
             <UsageToolbar />
             <div className="flex flex-col gap-4 h-full">
-                {usageForecastRequestError && (
-                    <section>
-                        <Alert variant={"destructive"}>
-                            <AlertCircleIcon />
-                            <AlertTitle>Failed to fetch forecast</AlertTitle>
-                            <AlertDescription>{usageForecastRequestError}</AlertDescription>
-                        </Alert>
-                    </section>
-                )}
+                {usageError && <UsageErrorAlert usageError={usageError} />}
                 <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                     <SummaryCard
                         title="Max Usage"
@@ -122,6 +133,7 @@ export default function UsageIntelligence() {
                         predictedUsage={forecastSummary.max}
                         description="maximum recorded usage"
                         tooltip="This represents the maximum recorded usage for both the past and forecasted usage"
+                        usageError={usageError}
                     />
                     <SummaryCard
                         title="Min Usage"
@@ -131,6 +143,7 @@ export default function UsageIntelligence() {
                         predictedUsage={forecastSummary.min}
                         description="minimum recorded usage"
                         tooltip="This represents the minimum recorded usage for both the past and forecasted usage"
+                        usageError={usageError}
                     />
                     <SummaryCard
                         title="Average Usage"
@@ -140,11 +153,15 @@ export default function UsageIntelligence() {
                         predictedUsage={forecastSummary.avg}
                         description="average recorded usage"
                         tooltip="This represents the average recorded usage for both the past and forecasted usage"
+                        usageError={usageError}
                     />
                 </section>
                 <section className="w-full flex-1 min-h-0 flex flex-col">
                     {resourceId && metricType ? (
-                        <UsagePredictionChart historicalUsageSeries={historicalUsageSeries} />
+                        <UsagePredictionChart
+                            historicalUsageSeries={historicalUsageSeries}
+                            usageError={usageError}
+                        />
                     ) : (
                         <Card className="h-full w-full flex flex-col items-center justify-center border-2 border-dashed">
                             <CardContent className="flex items-center justify-center p-0">

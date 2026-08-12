@@ -32,9 +32,7 @@ export function useMakeUsageForecast() {
                 return response;
             } catch (e) {
                 if (e instanceof Error) {
-                    setUsageForecastRequestError(
-                        "Some HTTP error occured, Gerard will change apiClient to throw custom errors with HTTP status code soon"
-                    );
+                    setUsageForecastRequestError(e.message);
                 } else {
                     setUsageForecastRequestError("Unknown error occured");
                 }

@@ -3,6 +3,7 @@ import { Info, LucideIcon } from "lucide-react";
 import { Separator } from "@/components/atoms/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/atoms/tooltip";
 import { MetricType } from "@/features/dashboard/types/metric";
+import { UsageError } from "../../types/errors";
 
 export const METRIC_UNITS: Record<MetricType, string> = {
     cpu: "%",
@@ -38,6 +39,7 @@ interface SummaryCardProps {
     description: string;
     tooltip: string;
     Icon?: LucideIcon;
+    usageError: UsageError | null;
 }
 
 export default function SummaryCard({
@@ -48,6 +50,7 @@ export default function SummaryCard({
     description,
     tooltip,
     Icon,
+    usageError,
 }: Readonly<SummaryCardProps>) {
     return (
         <Card>
@@ -66,13 +69,25 @@ export default function SummaryCard({
                 {Icon && <Icon className="h-8 w-8 text-primary" />}
                 <div className="flex flex-row gap-4 justify-start items-center">
                     <span className="text-4xl">
-                        {pastUsage.toLocaleString()}
-                        {unit}
+                        {usageError?.item == "usage" || usageError?.item == "both" ? (
+                            "—"
+                        ) : (
+                            <>
+                                {pastUsage.toLocaleString()}
+                                {unit}
+                            </>
+                        )}
                     </span>
                     <Separator orientation="vertical" />
                     <span className="text-4xl">
-                        {predictedUsage.toLocaleString()}
-                        {unit}
+                        {usageError?.item == "forecast" || usageError?.item == "both" ? (
+                            "—"
+                        ) : (
+                            <>
+                                {predictedUsage.toLocaleString()}
+                                {unit}
+                            </>
+                        )}
                     </span>
                 </div>
             </CardContent>

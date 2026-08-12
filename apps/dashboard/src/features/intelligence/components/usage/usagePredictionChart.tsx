@@ -2,7 +2,7 @@
 
 import { useMemo, useRef } from "react";
 import ReactECharts from "echarts-for-react";
-import { RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
+import { AlertCircleIcon, RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
 import type { CallbackDataParams } from "echarts/types/dist/shared";
 import { formatChartData } from "@/features/intelligence/hooks/formatChartData";
 import { useChartTheme } from "@/features/dashboard/hooks/useChartTheme";
@@ -12,14 +12,19 @@ import { Card, CardContent, CardHeader } from "@/components/atoms/card";
 import { Button } from "@/components/atoms/button";
 import { timeMs, durationByPreset } from "@/lib/timeUtils";
 import { HistoricalUsageSeriesDto } from "../../types/dtos";
+import { UsageError } from "../../types/errors";
+
+interface UsagePredictionChartProps {
+    readonly historicalUsageSeries: HistoricalUsageSeriesDto | null;
+    readonly usageError: UsageError | null;
+}
 
 const now = Date.now();
 
 export default function UsagePredictionChart({
     historicalUsageSeries,
-}: {
-    readonly historicalUsageSeries: HistoricalUsageSeriesDto | null;
-}) {
+    usageError,
+}: UsagePredictionChartProps) {
     //styles
     const { themeName, tokens } = useChartTheme();
 
@@ -301,13 +306,20 @@ export default function UsagePredictionChart({
                 </Button>
             </CardHeader>
             <CardContent className="h-full p-0">
-                <ReactECharts
-                    ref={echartsRef}
-                    option={option}
-                    theme={themeName}
-                    style={{ height: "100%", width: "100%" }}
-                    notMerge={true}
-                />
+                {usageError?.item == "both" ? (
+                    <div className="flex h-full w-full flex-col justify-center items-center gap-6">
+                        <AlertCircleIcon className="text-destructive" />
+                        <strong>No data available</strong>
+                    </div>
+                ) : (
+                    <ReactECharts
+                        ref={echartsRef}
+                        option={option}
+                        theme={themeName}
+                        style={{ height: "100%", width: "100%" }}
+                        notMerge={true}
+                    />
+                )}
             </CardContent>
         </Card>
     );
