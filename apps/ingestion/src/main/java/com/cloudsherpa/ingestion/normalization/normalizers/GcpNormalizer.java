@@ -4,6 +4,7 @@ import com.cloudsherpa.ingestion.models.UsageRecordModel;
 import com.cloudsherpa.ingestion.normalization.model.NormalizedMetric;
 import com.cloudsherpa.lib.entities.Resource;
 import com.cloudsherpa.lib.repositories.ResourceRepository;
+import java.time.Instant;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 
@@ -20,73 +21,22 @@ public class GcpNormalizer implements Normalizer {
       return null;
     }
 
-    // Prefer accountId, fallback to projectId
-    String accountKey = r.getAccountId();
-    if (accountKey == null || accountKey.trim().isEmpty()) {
-      accountKey = r.getProjectId();
-    }
+    String accountKey = resolveAccountKey(r);
+    UUID accountUuid = parseUuid(accountKey);
+    String resourceId = resolveResourceId(accountUuid, r);
 
-    UUID accountUuid = null;
-    if (accountKey != null && !accountKey.trim().isEmpty()) {
-      try {
-        accountUuid = UUID.fromString(accountKey);
-      } catch (IllegalArgumentException e) {
-        accountUuid = null;
-      }
-    }
-
-    UUID resourceTableIdent = null;
-    if (accountUuid != null) {
-      resourceTableIdent =
-          resourceRepository
-              .findByAccountIdAndResourceTypeAndResourceIdentifierAndRegion(
-                  accountUuid, r.getServiceName(), r.getResourceId(), r.getRegion())
-              .map(Resource::getId)
-              .orElse(null);
-    }
-
-    String metricId = UUID.randomUUID().toString();
-    String resourceId = resourceTableIdent != null ? resourceTableIdent.toString() : null;
-
-    String metricType = "usage";
-    String metricName = "unknown";
-
-    if (r.getMetricName() != null) {
-      metricName = r.getMetricName();
-    }
-
-    String mnLower = metricName.toLowerCase();
-
-    if (mnLower.contains("cost") || mnLower.contains("charge") || mnLower.contains("billing")) {
-      metricType = "cost";
-    } else if (mnLower.contains("latency")
-        || mnLower.contains("duration")
-        || mnLower.contains("error")
-        || mnLower.contains("throttle")
-        || mnLower.contains("utilization")) {
-      metricType = "performance";
-    }
+    String metricName = r.getMetricName() != null ? r.getMetricName() : "unknown";
+    String metricType = determineMetricType(metricName);
 
     double metricValue = r.getValue();
     String unit = normalizeGcpUnit(r.getUnit());
     String currency = null;
 
-    long periodStart = 0;
-    if (r.getPeriodStart() != null) {
-      periodStart = r.getPeriodStart().toEpochMilli();
-    } else if (r.getTimestamp() != null) {
-      periodStart = r.getTimestamp().toEpochMilli();
-    }
-
-    long periodEnd = 0;
-    if (r.getPeriodEnd() != null) {
-      periodEnd = r.getPeriodEnd().toEpochMilli();
-    } else if (r.getTimestamp() != null) {
-      periodEnd = r.getTimestamp().toEpochMilli();
-    }
+    long periodStart = resolveEpochMilli(r.getPeriodStart(), r.getTimestamp());
+    long periodEnd = resolveEpochMilli(r.getPeriodEnd(), r.getTimestamp());
 
     return new NormalizedMetric.Builder()
-        .metricId(metricId)
+        .metricId(UUID.randomUUID().toString())
         .resourceId(resourceId)
         .accountId(accountKey)
         .metricType(metricType)
@@ -97,6 +47,62 @@ public class GcpNormalizer implements Normalizer {
         .periodStart(periodStart)
         .periodEnd(periodEnd)
         .build();
+  }
+
+  private String resolveAccountKey(UsageRecordModel r) {
+    String accountKey = r.getAccountId();
+    if (accountKey == null || accountKey.trim().isEmpty()) {
+      accountKey = r.getProjectId();
+    }
+    return accountKey;
+  }
+
+  private UUID parseUuid(String accountKey) {
+    if (accountKey == null || accountKey.trim().isEmpty()) {
+      return null;
+    }
+    try {
+      return UUID.fromString(accountKey);
+    } catch (IllegalArgumentException e) {
+      return null;
+    }
+  }
+
+  private String resolveResourceId(UUID accountUuid, UsageRecordModel r) {
+    if (accountUuid == null) {
+      return null;
+    }
+    return resourceRepository
+        .findByAccountIdAndResourceTypeAndResourceIdentifierAndRegion(
+            accountUuid, r.getServiceName(), r.getResourceId(), r.getRegion())
+        .map(Resource::getId)
+        .map(UUID::toString)
+        .orElse(null);
+  }
+
+  private long resolveEpochMilli(Instant primary, Instant fallback) {
+    if (primary != null) {
+      return primary.toEpochMilli();
+    }
+    if (fallback != null) {
+      return fallback.toEpochMilli();
+    }
+    return 0;
+  }
+
+  private String determineMetricType(String metricName) {
+    String mnLower = metricName.toLowerCase();
+    if (mnLower.contains("cost") || mnLower.contains("charge") || mnLower.contains("billing")) {
+      return "cost";
+    }
+    if (mnLower.contains("latency")
+        || mnLower.contains("duration")
+        || mnLower.contains("error")
+        || mnLower.contains("throttle")
+        || mnLower.contains("utilization")) {
+      return "performance";
+    }
+    return "usage";
   }
 
   private String normalizeGcpUnit(String gcpUnit) {
@@ -110,12 +116,9 @@ public class GcpNormalizer implements Normalizer {
         return "bytes";
       case "s":
         return "seconds";
-      case "Percent":
-      case "percent":
-      case "10^2.%":
+      case "Percent", "percent", "10^2.%":
         return "percent";
-      case "Count":
-      case "1":
+      case "Count", "1":
         return "count";
       default:
         return t.toLowerCase();
