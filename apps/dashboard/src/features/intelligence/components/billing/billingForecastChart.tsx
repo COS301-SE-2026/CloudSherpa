@@ -6,7 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/atoms/car
 import { useMemo } from "react";
 import ReactECharts from "echarts-for-react";
 import type { EChartsOption } from "echarts";
-import {useChartTheme} from "@/features/dashboard/hooks/useChartTheme";
+import { useChartTheme } from "@/features/dashboard/hooks/useChartTheme";
 
 export interface BillingForecastSlices {
     label: string;
@@ -21,8 +21,12 @@ interface BillingForecastChartProps {
 
 const LABEL_FOR_OTHER = "Other";
 
-export default function BillingForecastChart({ name, data, threshold = 10, }: Readonly<BillingForecastChartProps>) {
-    const {themeName, tokens} = useChartTheme();
+export default function BillingForecastChart({
+    name,
+    data,
+    threshold = 10,
+}: Readonly<BillingForecastChartProps>) {
+    const { themeName, tokens } = useChartTheme();
 
     const CHART_COLOUR_SCALE = [
         tokens["primary-950"],
@@ -38,16 +42,16 @@ export default function BillingForecastChart({ name, data, threshold = 10, }: Re
     ];
 
     const groupingData = useMemo(() => {
-        const aboveTenPercent = data.filter((slice) => slice.percent>= threshold);
+        const aboveTenPercent = data.filter((slice) => slice.percent >= threshold);
 
-        const belowTenPercent = data.filter((slice) => slice.percent<threshold);
+        const belowTenPercent = data.filter((slice) => slice.percent < threshold);
 
-        const totalForOther = belowTenPercent.reduce((total, slice) => total+slice.percent,0);
+        const totalForOther = belowTenPercent.reduce((total, slice) => total + slice.percent, 0);
 
         const result = [...aboveTenPercent];
 
-        if(totalForOther>0){
-            result.push({label : LABEL_FOR_OTHER, percent : Math.round(totalForOther*100)/100})
+        if (totalForOther > 0) {
+            result.push({ label: LABEL_FOR_OTHER, percent: Math.round(totalForOther * 100) / 100 });
         }
 
         return result;
@@ -64,15 +68,17 @@ export default function BillingForecastChart({ name, data, threshold = 10, }: Re
                     color: tokens["foreground"],
                 },
                 formatter: (params: unknown) => {
-                    const forParameter = params as { name: string; dataIndex : number };
+                    const forParameter = params as { name: string; dataIndex: number };
 
-                    const percentage = groupingData[forParameter.dataIndex]?.percent ?? 0; 
+                    const percentage = groupingData[forParameter.dataIndex]?.percent ?? 0;
 
                     return `<strong>${forParameter.name || ""}</strong><br/>Percentage: ${percentage}%`;
                 },
             },
 
-            color: groupingData.map((_, index) => CHART_COLOUR_SCALE[index%CHART_COLOUR_SCALE.length]),
+            color: groupingData.map(
+                (_, index) => CHART_COLOUR_SCALE[index % CHART_COLOUR_SCALE.length]
+            ),
 
             series: [
                 {
@@ -91,7 +97,7 @@ export default function BillingForecastChart({ name, data, threshold = 10, }: Re
                         textShadowBlur: 0,
                         textShadowColor: "transparent",
                         formatter: (params: unknown) => {
-                            const forParameter = params as { name: string; dataIndex : number };
+                            const forParameter = params as { name: string; dataIndex: number };
 
                             const percentage = groupingData[forParameter.dataIndex]?.percent ?? 0;
 
@@ -143,7 +149,12 @@ export default function BillingForecastChart({ name, data, threshold = 10, }: Re
                         No chart data available
                     </div>
                 ) : (
-                    <ReactECharts option={option} style={{ height: 320 }} notMerge theme = {themeName} />
+                    <ReactECharts
+                        option={option}
+                        style={{ height: 320 }}
+                        notMerge
+                        theme={themeName}
+                    />
                 )}
             </CardContent>
         </Card>
