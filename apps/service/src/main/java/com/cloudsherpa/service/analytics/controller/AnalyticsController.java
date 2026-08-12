@@ -97,8 +97,11 @@ public class AnalyticsController {
             content =
                 @Content(
                     schema = @Schema(implementation = ResourceMetricHistoricalResponseDto.class))),
-        @ApiResponse(responseCode = "400", description = "Invalid request"),
-        @ApiResponse(responseCode = "404", description = "No resource metrics found")
+        @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+        @ApiResponse(
+            responseCode = "404",
+            description = "No resource metrics found",
+            content = @Content)
       })
   @PostMapping("/historical-resource-metric")
   public ResponseEntity<ResourceMetricHistoricalResponseDto> postMethodName(
