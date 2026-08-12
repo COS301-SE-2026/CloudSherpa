@@ -33,7 +33,7 @@ public class CloudInfrastructureService {
   @Transactional
   public Resource ensureInfrastructure(UsageRecordModel r, UUID userId) {
     CloudConnection connection = ensureCloudConnection(userId, r.getProvider());
-    CloudAccount account = ensureCloudAccount(connection.getId(), r.getAccountId());
+    CloudAccount account = ensureCloudAccount(connection.getId(), r.resolveKey());
 
     return ensureResource(account.getId(), r.getServiceName(), r.getResourceId(), r.getRegion());
   }

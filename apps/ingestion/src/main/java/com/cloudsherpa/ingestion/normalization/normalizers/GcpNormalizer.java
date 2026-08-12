@@ -25,7 +25,8 @@ public class GcpNormalizer implements Normalizer {
     UUID accountUuid = parseUuid(accountKey);
     String resourceId = resolveResourceId(accountUuid, r);
 
-    String metricName = r.getMetricName() != null ? r.getMetricName() : "unknown";
+    String metricName =
+        prettifyGcpMetricName(r.getMetricName() != null ? r.getMetricName() : "unknown");
     String metricType = determineMetricType(metricName);
 
     double metricValue = r.getValue();
@@ -123,5 +124,38 @@ public class GcpNormalizer implements Normalizer {
       default:
         return t.toLowerCase();
     }
+  }
+
+  private String prettifyGcpMetricName(String fullMetricName) {
+    if (fullMetricName == null || fullMetricName.isEmpty()) {
+      return "unknown";
+    }
+
+    String[] parts = fullMetricName.split("/");
+    String lastPart = parts[parts.length - 1];
+
+    return convertSnakeToCamel(lastPart);
+  }
+
+  private String convertSnakeToCamel(String snake) {
+    if (snake == null || snake.isEmpty()) return snake;
+
+    StringBuilder camel = new StringBuilder();
+    boolean capitalizeNext = true;
+
+    for (char c : snake.toCharArray()) {
+      if (c == '_') {
+        capitalizeNext = true;
+      } else {
+        if (capitalizeNext) {
+          camel.append(Character.toUpperCase(c));
+          capitalizeNext = false;
+        } else {
+          camel.append(c);
+        }
+      }
+    }
+
+    return camel.toString();
   }
 }
