@@ -1,7 +1,7 @@
 "use client";
 
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/atoms/tooltip";
-import { Info, Slice } from "lucide-react";
+import { Info} from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/atoms/card";
 import { useMemo } from "react";
 import ReactECharts from "echarts-for-react";
