@@ -11,6 +11,7 @@ import com.cloudsherpa.ingestion.models.ResourceDetail;
 import com.cloudsherpa.ingestion.models.UsageRecordModel;
 import com.cloudsherpa.ingestion.provider.gcp.monitoring.CloudMonitoringMetricProvider;
 import com.cloudsherpa.ingestion.provider.gcp.monitoring.GcpCloudMonitoringMetricProvider;
+import com.cloudsherpa.ingestion.provider.gcp.monitoring.MockCloudMonitoringMetricProvider;
 import com.cloudsherpa.ingestion.provider.scanner.ResourceDiscoveryService;
 import java.util.List;
 import org.springframework.stereotype.Component;
@@ -23,7 +24,7 @@ public class GcpCloudConnector implements CloudConnector, UsageCapable, BillingC
 
   public GcpCloudConnector(
       ResourceDiscoveryService resourceDiscoveryService,
-      GcpCloudMonitoringMetricProvider mockMetricProvider) {
+      MockCloudMonitoringMetricProvider mockMetricProvider) {
     metricProvider = new GcpCloudMonitoringMetricProvider();
     this.mockMetricProvider = mockMetricProvider;
     discoveryService = resourceDiscoveryService;
