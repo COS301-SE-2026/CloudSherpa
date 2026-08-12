@@ -9,21 +9,23 @@ export type RecommendedAction = "TERMINATE" | "MODERNIZE" | "DOWNSIZE" | "SUSPEN
 export type RecommendationStatus =
     "ACTIVE" | "ACKNOWLEDGED" | "DISMISSED" | "APPLIED" | "SUSPENDED" | "EXPIRED";
 
-//don't yet know how to handle curr and target config for now, gonna make it dynamic:
-export type ResourceConfiguration = Record<string, string | number | boolean | null>;
-export type RecommendationEvidence = Record<string, number | string | null>;
-
 export type Recommendation = {
-    recommendation: string;
+    recommendation_id: string;
     resource_id: string;
     provider: CloudProviderEnum;
     action_type: RecommendedAction;
     status: RecommendationStatus;
 
-    current_configuration: ResourceConfiguration;
-    target_configuration: ResourceConfiguration | null;
+    current_configuration: string;
+    target_configuration: string | null;
 
     estimated_monthly_savings: number;
     currency: string;
-    evidence: RecommendationEvidence;
+    evidence: number;
+    completenessRatio: number;
+};
+
+export type RecommendationGroup = {
+    accountId: string | null;
+    recommendations: Recommendation[];
 };

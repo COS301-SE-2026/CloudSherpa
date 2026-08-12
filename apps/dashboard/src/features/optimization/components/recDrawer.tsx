@@ -1,40 +1,75 @@
+"use client";
 import {
     Drawer,
     DrawerTrigger,
     DrawerContent,
     DrawerTitle,
     DrawerHeader,
-    DrawerDescription,
 } from "@/components/atoms/drawer";
 import { Button } from "@/components/atoms/button";
+import { Recommendation } from "@/features/optimization/types/recommendations";
 import {
     Accordion,
-    AccordionItem,
     AccordionTrigger,
     AccordionContent,
+    AccordionItem,
 } from "@/components/atoms/accordion";
+import { Card } from "@/components/atoms/card";
+import { useState } from "react";
+import { X } from "lucide-react";
 
 interface RecDrawer {
-    title: string;
-    recommendations: string[];
+    connection: string;
+    recommendations: Recommendation[];
 }
 
-export default function RecDrawer({ title, recommendations }: Readonly<RecDrawer>) {
+export default function RecDrawer({ connection, recommendations }: Readonly<RecDrawer>) {
+    const [isOpen, setIsOpen] = useState(false);
     return (
-        <Drawer direction="right">
+        <Drawer direction="right" dismissible={false} open={isOpen} onOpenChange={setIsOpen}>
             <DrawerTrigger asChild>
                 <Button variant="secondary">View</Button>
             </DrawerTrigger>
-            <DrawerContent>
-                <DrawerHeader>
-                    <DrawerTitle>{title}</DrawerTitle>
-                    <DrawerDescription>
-                        some long and boring text to act as a short description for this component
-                    </DrawerDescription>
-                    {recommendations.map((recommendation) => (
-                        <div key={recommendation}>{recommendation}</div>
-                    ))}
+
+            {/* drawer width could be volatile so will keep an eye on it */}
+            <DrawerContent className="w-[90vw]! sm:w-[40vw]! sm:max-w-[1000px]!">
+                <DrawerHeader className="flex flex-col">
+                    <div className="flex flex-row lex-row justify-between items-center">
+                        <DrawerTitle className="text-xl">{connection}</DrawerTitle>
+                        <Button className="w-fit" variant="ghost" onClick={() => setIsOpen(false)}>
+                            <X />
+                        </Button>
+                    </div>
                 </DrawerHeader>
+                <div className="p-4 overflow-y-auto">
+                    <Accordion type="single" collapsible className="w-full flex flex-col gap-4">
+                        {recommendations.map((rec) => (
+                            <Card key={rec.recommendation_id} className="overflow-hidden shadow-sm">
+                                <AccordionItem
+                                    value={rec.recommendation_id}
+                                    className="border-none"
+                                >
+                                    <AccordionTrigger className="hover:no-underline px-6 py-4">
+                                        <div className="flex flex-row text-left gap-1">
+                                            <span className="font-semibold text-base">
+                                                {rec.resource_id}
+                                            </span>
+                                            <span className="text-sm text-muted-foreground font-normal">
+                                                {rec.action_type}
+                                            </span>
+                                        </div>
+                                    </AccordionTrigger>
+
+                                    <AccordionContent className="px-6 pb-4">
+                                        <div className="p-4 bg-muted/50 rounded-md">
+                                            Details for this recommendation will go here later!
+                                        </div>
+                                    </AccordionContent>
+                                </AccordionItem>
+                            </Card>
+                        ))}
+                    </Accordion>
+                </div>
             </DrawerContent>
         </Drawer>
     );
