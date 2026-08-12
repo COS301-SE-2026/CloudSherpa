@@ -24,7 +24,7 @@ export function formatChartData(
             const value = historicalUsageSeries.values[i];
             const isoString = historicalUsageSeries.timestamps[i];
 
-            const timestamp = toBrowserTimezoneTimestamp(isoString);
+            const timestamp = new Date(isoString).getTime();
 
             historicalUsagePoints.push([timestamp, value]);
         }

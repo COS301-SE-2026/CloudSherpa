@@ -29,9 +29,6 @@ export function useUsageHistoricalData() {
                 const awsMetricName = AWS_METRIC_TYPE_BY_NAME_INVERSE[metricType];
                 const historicalWindowStartMs = Date.now() - timeMs.dayMs * 30;
 
-                console.log(awsMetricName);
-                console.log(resourceId);
-
                 const response: HistoricalUsageSeriesDto = await apiClient(
                     "/analytics/historical-resource-metric",
                     {
@@ -39,12 +36,11 @@ export function useUsageHistoricalData() {
                         body: JSON.stringify({
                             resourceId: resourceId,
                             metricType: awsMetricName,
-                            fromDate: historicalWindowStartMs,
+                            fromDate: new Date(historicalWindowStartMs),
                         }),
                     }
                 );
 
-                console.log(response);
                 setHistoricalUsageSeries(response);
             } catch (e) {
                 // NOSONAR TODO: Better error handling

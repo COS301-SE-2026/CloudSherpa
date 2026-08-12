@@ -29,8 +29,6 @@ export function useMakeUsageForecast() {
                     }
                 );
 
-                console.log(response);
-
                 return response;
             } catch (e) {
                 if (e instanceof Error) {
