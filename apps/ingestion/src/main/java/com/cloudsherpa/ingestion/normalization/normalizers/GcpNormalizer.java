@@ -133,9 +133,19 @@ public class GcpNormalizer implements Normalizer {
     }
 
     String[] parts = fullMetricName.split("/");
-    String lastPart = parts[parts.length - 1];
+    int start = Math.max(0, parts.length - 2);
 
-    return convertSnakeToCamel(lastPart);
+    StringBuilder result = new StringBuilder();
+
+    for (int index = start; index < parts.length; index++) {
+
+      if (result.isEmpty()) {
+        result.append(' ');
+      }
+      result.append(convertSnakeToCamel(parts[index]));
+    }
+
+    return result.toString();
   }
 
   private String convertSnakeToCamel(String snake) {
