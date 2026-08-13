@@ -12,6 +12,7 @@ export type RecommendationStatus =
 export type Recommendation = {
     recommendation_id: string;
     resource_id: string;
+    resource_displayName?: string | null;
     provider: CloudProviderEnum;
     action_type: RecommendedAction;
     status: RecommendationStatus;
@@ -27,5 +28,6 @@ export type Recommendation = {
 
 export type RecommendationGroup = {
     accountId: string | null;
+    displayName?: string | null;
     recommendations: Recommendation[];
 };

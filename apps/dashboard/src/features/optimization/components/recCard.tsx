@@ -25,7 +25,7 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
     return (
         <Card onClick={() => setOpen(!open)}>
             <CardHeader>
-                <CardTitle>{recommendation.resource_id}</CardTitle>
+                <CardTitle>{recommendation.resource_displayName}</CardTitle>
             </CardHeader>
             {open && (
                 <CardContent className="space-y-4">
@@ -41,10 +41,7 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
                         {/* savings */}
                         <Card>
                             <CardHeader>
-                                <CardTitle>
-                                    {recommendation.estimated_monthly_savings}{" "}
-                                    {recommendation.currency}/pm
-                                </CardTitle>
+                                <CardTitle>{recommendation.estimated_monthly_savings} </CardTitle>
                             </CardHeader>
                         </Card>
                     </div>

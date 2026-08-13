@@ -1,43 +1,37 @@
-import RecommendationGroup from "@/features/optimization/components/recommendationGroup";
-import { Recommendation } from "@/features/optimization/types/recommendations";
-
-const mockRecommendations: Recommendation[] = [
-    {
-        recommendation_id: "a1b2c3d4",
-        resource_id: "hypixel-prod-01",
-        provider: "AWS",
-        action_type: "DOWNSIZE",
-        status: "ACTIVE",
-        current_configuration: "t3.xlarge",
-        target_configuration: "t3.medium",
-        estimated_monthly_savings: 120.5,
-        currency: "USD",
-        evidence: 18,
-        completenessRatio: 0.99,
-    },
-    {
-        recommendation_id: "b2c3d4e5",
-        resource_id: "abandoned-dev-db",
-        provider: "AWS",
-        action_type: "TERMINATE",
-        status: "ACTIVE",
-        current_configuration: "m5.large",
-        target_configuration: null,
-        estimated_monthly_savings: 75.0,
-        currency: "USD",
-        evidence: 12,
-        completenessRatio: 0.99,
-    },
-];
+"use client";
+import { useEffect } from "react";
+import RecommendationGroupCard from "@/features/optimization/components/recGroupCard";
+import { useRecStore } from "@/features/optimization/stores/useRecStore";
 
 export default function Recommendations() {
+    const fetchRecGroups = useRecStore((state) => state.fetchRecGroups);
+    const recommendationGroups = useRecStore((state) => state.recommendationGroups);
+    const isLoading = useRecStore((state) => state.isLoading);
+
+    useEffect(() => {
+        fetchRecGroups();
+    }, [fetchRecGroups]);
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-full w-full p-6 text-muted-foreground">
+                Loading optimization recommendations...
+            </div>
+        );
+    }
+
     return (
         <div className="flex flex-col h-full w-full p-6 gap-4">
             <header>
                 <h1 className="text-3xl font-semibold">Optimization Recommendations</h1>
             </header>
-
-            <RecommendationGroup connection="mock" recommendations={mockRecommendations} />
+            {recommendationGroups.length > 0 ? (
+                recommendationGroups.map((group) => (
+                    <RecommendationGroupCard key={group.accountId ?? "unassigned"} group={group} />
+                ))
+            ) : (
+                <div className="text-muted-foreground">No recommendations found.</div>
+            )}{" "}
         </div>
     );
 }

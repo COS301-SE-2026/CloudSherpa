@@ -1,26 +1,21 @@
 import { Card, CardHeader, CardTitle } from "@/components/atoms/card";
 import { Badge } from "@/components/atoms/badge";
 import RecDrawer from "@/features/optimization/components/recDrawer";
-import { Recommendation } from "@/features/optimization/types/recommendations";
+import { RecommendationGroup } from "@/features/optimization/types/recommendations";
 
-interface ConnectionGroupProps {
-    connection: string;
-    recommendations: Recommendation[];
+interface RecommendationGroupCardProps {
+    group: RecommendationGroup;
 }
 
-export default function RecommendationGroup({
-    connection,
-    recommendations,
-}: Readonly<ConnectionGroupProps>) {
-    //these operations are temporarily part of component.
-    const estSumSavings = recommendations.reduce(
+export default function RecommendationGroupCard({ group }: Readonly<RecommendationGroupCardProps>) {
+    const estSumSavings = group.recommendations.reduce(
         (sum, rec) => sum + rec.estimated_monthly_savings,
         0
     );
 
-    const recommendationsCount = recommendations.length;
+    const recommendationsCount = group.recommendations.length;
 
-    const provider = recommendations.length > 0 ? recommendations[0].provider : "Unknown";
+    const provider = recommendationsCount > 0 ? group.recommendations[0].provider : "Unknown";
 
     const formattedSavings = new Intl.NumberFormat("en-US", {
         style: "currency",
@@ -31,7 +26,7 @@ export default function RecommendationGroup({
         <Card>
             <CardHeader className="flex flex-row justify-between">
                 <div className="h-full flex flex-row gap-4 items-center justify-center">
-                    <CardTitle>{connection}</CardTitle>
+                    <CardTitle>{group.displayName}</CardTitle>
                     <Badge>{provider}</Badge>
                     <Badge variant={"secondary"}>{recommendationsCount} recommendations</Badge>
                 </div>
@@ -42,7 +37,7 @@ export default function RecommendationGroup({
                             {formattedSavings}/mo
                         </span>
                     </div>
-                    <RecDrawer connection={connection} recommendations={recommendations} />
+                    <RecDrawer group={group} />
                 </div>
             </CardHeader>
         </Card>

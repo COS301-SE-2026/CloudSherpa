@@ -7,32 +7,31 @@ import {
     DrawerHeader,
 } from "@/components/atoms/drawer";
 import { Button } from "@/components/atoms/button";
-import { Recommendation } from "@/features/optimization/types/recommendations";
+import { RecommendationGroup } from "@/features/optimization/types/recommendations";
 import RecommendationCard from "@/features/optimization/components/recCard";
 import { useState, useMemo } from "react";
 import { X, Search } from "lucide-react";
 import { Input } from "@/components/atoms/input";
 
 interface RecDrawer {
-    connection: string;
-    recommendations: Recommendation[];
+    group: RecommendationGroup;
 }
 
-export default function RecDrawer({ connection, recommendations }: Readonly<RecDrawer>) {
+export default function RecDrawer({ group }: Readonly<RecDrawer>) {
     const [isOpen, setIsOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
 
     const filteredRecommendations = useMemo(() => {
-        if (!searchQuery.trim()) return recommendations;
+        if (!searchQuery.trim()) return group.recommendations;
 
         const lowerCaseQuery = searchQuery.toLowerCase();
 
-        return recommendations.filter(
+        return group.recommendations.filter(
             (rec) =>
                 rec.resource_id.toLowerCase().includes(lowerCaseQuery) ||
                 rec.action_type.toLowerCase().includes(lowerCaseQuery)
         );
-    }, [searchQuery, recommendations]);
+    }, [searchQuery, group.recommendations]);
 
     return (
         <Drawer direction="right" dismissible={false} open={isOpen} onOpenChange={setIsOpen}>
@@ -44,7 +43,7 @@ export default function RecDrawer({ connection, recommendations }: Readonly<RecD
             <DrawerContent className="w-[90vw]! sm:w-[40vw]! sm:max-w-[1000px]!">
                 <DrawerHeader className="flex flex-col">
                     <div className="flex flex-row lex-row justify-between items-center">
-                        <DrawerTitle className="text-xl">{connection}</DrawerTitle>
+                        <DrawerTitle className="text-xl">{group.displayName}</DrawerTitle>
                         <Button className="w-fit" variant="ghost" onClick={() => setIsOpen(false)}>
                             <X />
                         </Button>
