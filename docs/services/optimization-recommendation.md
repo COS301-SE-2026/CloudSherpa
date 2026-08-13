@@ -50,7 +50,7 @@ This is a scheduled background process responsible for all heavy lifting. Driven
 - **Calculating**: Computes heavy statistical summaries (percentiles, standard deviations) and saves them to SherpaDB.
 - **Evaluating**: Runs the generated statistics against optimization rules.
 - **Resolving**: Filters out duplicate or mutually exclusive actions (e.g., choosing "Terminate" over "Downsize") and checks safety policies.
-- **Persisting**: Writes the final, resolved recommendation (including the mathematical evidence, and optionally the estimated savings and target configurations) to the database.
+- **Persisting**: Writes the final, resolved recommendation (including the mathematical evidence) to the database.
 
 ### Service Application
 
@@ -66,7 +66,7 @@ The API layer acts as a lightweight delivery mechanism.
 
 ### Dashboard
 
-- **Display**: Renders the active recommendations and their estimated financial savings.
+- **Display**: Renders the active recommendations and their supportingevidence.
 - **Evidence Visualization**: Displays the underlying evidence (e.g., showing the user that their P95 CPU was only 12%) to build trust in the automated recommendation.
 - **Actionable Controls**: Allows the user to acknowledge or dismiss recommendations.
 
@@ -148,9 +148,9 @@ Before a rule is activated in the engine, it is executed via an internal EXPLAIN
 
 ## Recommendation Candidate Model
 
-When the Rule Engine executes these SQL queries, it does not immediately write a final recommendation to the database. Instead, the resulting rows are mapped into an in-memory Recommendation Candidate.
-
-This separation is necessary because multiple rules might flag the exact same resource. The candidate model acts as a temporary holding state containing all the context needed to make a final decision.
+Rule evaluation creates a recommendation row with status DRAFT.
+The conflict resolver evaluates DRAFT rows and promotes the winning row
+to ACTIVE. Other rows may become SUPERSEDED or DISMISSED.
 
 ### A Candidate contains:
 
@@ -178,7 +178,7 @@ The engine ranks actions by weight, favoring the most financially impactful or l
 
 ```mermaid
 flowchart TD
-    CANDIDATES[In-Memory Candidates\nMultiple drafts for a single resource]
+    CANDIDATES[Recommendation rows with status DRAFT]
     
     DEDUPE[1. Deduplication\nDrop identical drafts from the same rule]
     
@@ -188,9 +188,9 @@ flowchart TD
     
     SAVINGS[4. Tie-Breaker\nIf weights are equal, pick the draft with the highest savings]
     
-    FINAL[5. Final Decision\nSelect the single winning Candidate]
+    FINAL[5. Winning recommendation row with status ACTIVE]
     
-    PERSIST[(6. Persist to SherpaDB\nSave as an ACTIVE recommendation)]
+    PERSIST[6. Persist recommendation status]
 
     CANDIDATES --> DEDUPE
     DEDUPE --> SAFETY
@@ -214,6 +214,7 @@ A recommendation moves through a specific lifecycle based on system events and u
 
 ### Supported Statuses
 
+- **DRAFT**: A candidate created by the rule engine and awaiting conflict resolution.
 - **ACTIVE**: The recommendation is currently valid and awaiting user action.
 - **ACKNOWLEDGED**: The user has seen the recommendation and plans to act on it, temporarily hiding it from the primary alert view.
 - **DISMISSED**: The user explicitly rejected the recommendation.
@@ -225,12 +226,14 @@ A recommendation moves through a specific lifecycle based on system events and u
 
 ```mermaid
 stateDiagram-v2
-    [*] --> ACTIVE : Engine creates new recommendation
-    
-    ACTIVE --> APPLIED : User clicks "Applied"
-    ACTIVE --> DISMISSED : User clicks "Dismiss"
-    ACTIVE --> SUPERSEDED : Engine finds a better rule
-    ACTIVE --> EXPIRED : 30 days pass
+    [*] --> DRAFT : Rule engine creates candidate
+    DRAFT --> ACTIVE : Conflict resolver selects candidate
+    DRAFT --> SUPERSEDED : Another candidate wins
+    ACTIVE --> ACKNOWLEDGED : User acknowledges
+    ACTIVE --> DISMISSED : User dismisses
+    ACTIVE --> APPLIED : User applies
+    ACTIVE --> SUPERSEDED : Better recommendation is found
+    ACTIVE --> EXPIRED : Recommendation expires
     
     DISMISSED --> [*]
     SUPERSEDED --> [*]
@@ -240,24 +243,25 @@ stateDiagram-v2
 
 ## Database Tables and Relationships
 
-The Optimization Engine requires three primary tables in SherpaDB to maintain state, history, and results.
+The Optimization Engine uses four tenant-isolated tables in SherpaDB to maintain state, history, and results.
 
 ```mermaid
 erDiagram
     PROCESSING_WATERMARK {
-        uuid user_id PK
         string pipeline_name PK
         timestamp last_processed_period
         timestamp last_successful_run
+        timestamp updated_at
     }
     
-    OPTIMIZATION_METRIC_STATISTICS {
-        uuid statistics_id PK
+    OPTIMIZATION_RECOMMENDATION {
+        uuid recommendation_id PK
         uuid resource_id FK
-        string metric_name
-        string window_type
-        numeric p95_value
-        numeric completeness_ratio
+        string provider
+        string rule_id
+        string action_type
+        optimization_status_enum status
+        jsonb evidence
     }
     
     OPTIMIZATION_RECOMMENDATION {
@@ -270,19 +274,23 @@ erDiagram
         numeric estimated_monthly_savings
     }
 
+    RECOMMENDATION_HISTORY {
+        uuid history_id PK
+        uuid recommendation_id FK
+        uuid resource_id FK
+        string provider
+        string rule_id
+        string action_type
+        optimization_status_enum previous_status
+        optimization_status_enum new_status
+        jsonb evidence
+        timestamp changed_at
+    }
+
     RESOURCES ||--o{ OPTIMIZATION_METRIC_STATISTICS : "has pre-calculated"
     RESOURCES ||--o{ OPTIMIZATION_RECOMMENDATION : "receives"
     OPTIMIZATION_RECOMMENDATION }|--|| RULES : "generated by"
 ```
-
-## Cost and Savings Calculation Approach
-
-When the Rule Engine generates a DOWNSIZE candidate, it calculates savings using this streamlined, iterative logic:
-
-- **Identify Current SKU & Cost**: Extract the current 30-day normalized cost and SKU for the resource from SherpaDB.
-- **Identify Target SKU**: Query the Resource Catalog for the predefined "next size down" SKU in the same instance family.
-- **Calculate Target Cost**: Query the Pricing Catalog for the 30-day cost of that target SKU.
-- **Formula**: Estimated Monthly Savings = Current 30-day Cost - Target 30-day Cost.
 
 ## Recommendation API Endpoints and Response Structure
 
@@ -303,10 +311,6 @@ Endpoints:
   "provider": "AWS",
   "action_type": "DOWNSIZE",
   "status": "ACTIVE",
-  "current_configuration": {
-    "sku": "t3.2xlarge"
-  },
-  "currency": "USD",
   "evidence": {
     "cpu_percent_p95_4d": 18.4,
     "completeness_ratio": 0.99
