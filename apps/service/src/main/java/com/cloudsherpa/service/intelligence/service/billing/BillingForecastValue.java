@@ -1,4 +1,4 @@
-package com.cloudsherpa.service.intelligence.dto;
+package com.cloudsherpa.service.intelligence.service.billing;
 
 import java.math.BigDecimal;
 

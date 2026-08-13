@@ -16,7 +16,7 @@ import com.cloudsherpa.service.intelligence.dto.ResourceUsageForecastResponseDto
 import com.cloudsherpa.service.intelligence.dto.SanatizedSeries;
 import com.cloudsherpa.service.intelligence.exceptions.InsufficientContextAvailable;
 import com.cloudsherpa.service.intelligence.service.Sampler;
-import com.cloudsherpa.service.intelligence.service.UsageForecastingService;
+import com.cloudsherpa.service.intelligence.service.usage.UsageForecastingService;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;

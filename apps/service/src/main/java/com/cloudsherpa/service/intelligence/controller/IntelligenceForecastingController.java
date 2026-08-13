@@ -3,11 +3,11 @@ package com.cloudsherpa.service.intelligence.controller;
 import com.cloudsherpa.service.intelligence.dto.BillingForecastIndividualChargesRequestDto;
 import com.cloudsherpa.service.intelligence.dto.BillingForecastRequest;
 import com.cloudsherpa.service.intelligence.dto.BillingForecastResponseDto;
-import com.cloudsherpa.service.intelligence.dto.BillingForecastValue;
 import com.cloudsherpa.service.intelligence.dto.ResourceUsageForecastRequestDto;
 import com.cloudsherpa.service.intelligence.dto.ResourceUsageForecastResponseDto;
-import com.cloudsherpa.service.intelligence.service.BillingForecastingService;
-import com.cloudsherpa.service.intelligence.service.UsageForecastingService;
+import com.cloudsherpa.service.intelligence.service.billing.BillingForecastValue;
+import com.cloudsherpa.service.intelligence.service.billing.BillingIntelligenceService;
+import com.cloudsherpa.service.intelligence.service.usage.UsageForecastingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -32,17 +32,17 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Intelligence", description = "CloudSherpa Forecasting Intelligence Operations")
 public class IntelligenceForecastingController {
 
+  private final BillingIntelligenceService billingIntelligenceService;
   private final UsageForecastingService usageForecastingService;
-  private final BillingForecastingService billingForecastingService;
   private final boolean useMockForecasting;
 
   public IntelligenceForecastingController(
       UsageForecastingService usageForecastingService,
-      BillingForecastingService billingForecastingService,
-      @Value("${intelligence.forecasting.mock:false}") boolean useMockForecasting) {
+      @Value("${intelligence.forecasting.mock:false}") boolean useMockForecasting,
+      BillingIntelligenceService billingIntelligenceService) {
     this.usageForecastingService = usageForecastingService;
-    this.billingForecastingService = billingForecastingService;
     this.useMockForecasting = useMockForecasting;
+    this.billingIntelligenceService = billingIntelligenceService;
   }
 
   @Operation(
@@ -141,8 +141,7 @@ public class IntelligenceForecastingController {
       return ResponseEntity.status(HttpStatus.OK).body(mockResponse);
     } else {
       return ResponseEntity.ok()
-          .body(
-              billingForecastingService.forecastBillingByIndividualCharges(request, Instant.now()));
+          .body(billingIntelligenceService.processSelectCharges(request, Instant.now()));
     }
   }
 
@@ -174,8 +173,7 @@ public class IntelligenceForecastingController {
       @RequestBody BillingForecastRequest request) {
 
     return ResponseEntity.ok()
-        .body(
-            billingForecastingService.forecastBillingByAllNonCreditCharges(request, Instant.now()));
+        .body(billingIntelligenceService.processAllCharges(request, Instant.now()));
   }
 
   private ResourceUsageForecastResponseDto mockResourceUsageForecast() {
