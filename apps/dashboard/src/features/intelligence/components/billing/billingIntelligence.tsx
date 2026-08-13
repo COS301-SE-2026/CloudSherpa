@@ -1,6 +1,6 @@
 "use client";
 
-import { billingIntelligenceStore } from "@/features/intelligence/stores/billingIntelligenceStore";
+import { useBillingIntelligenceStore } from "@/features/intelligence/stores/billingIntelligenceStore";
 import BillingToolbar from "@/features/intelligence/components/billing/billingToolbar";
 import CostBreakdownList from "@/features/intelligence/components/billing/costBreakdownList";
 import BillingForecastChart from "@/features/intelligence/components/billing/billingForecastChart";
@@ -20,10 +20,11 @@ export default function BillingIntelligence() {
         forecastTimeWindowDays,
         billingData,
         isLoading,
+        disableFilters,
         fetchBillingData,
-    } = billingIntelligenceStore();
+    } = useBillingIntelligenceStore();
 
-    const selected = provider && accountId && resourceId;
+    const selected = disableFilters || (provider && accountId && resourceId);
 
     useEffect(() => {
         if (selected) {
