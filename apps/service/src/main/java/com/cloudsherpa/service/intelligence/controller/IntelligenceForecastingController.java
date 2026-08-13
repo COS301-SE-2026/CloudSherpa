@@ -124,7 +124,7 @@ public class IntelligenceForecastingController {
       @RequestBody BillingForecastIndividualChargesRequestDto request) {
 
     if (useMockForecasting) {
-        String mockChargeId = "mock-charge-id";
+      String mockChargeId = "mock-charge-id";
       BillingForecastResponseDto mockResponse =
           new BillingForecastResponseDto(
               BigDecimal.valueOf(42.50),
@@ -148,7 +148,8 @@ public class IntelligenceForecastingController {
 
   @Operation(
       summary = "Forecast Billing for all non-credit charges",
-      description = "Generates cumalative cost predection value and analytics for all non-credit charges")
+      description =
+          "Generates cumalative cost predection value and analytics for all non-credit charges")
   @ApiResponses(
       value = {
         @ApiResponse(

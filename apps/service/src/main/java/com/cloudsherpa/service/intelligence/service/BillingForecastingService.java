@@ -104,7 +104,13 @@ public class BillingForecastingService extends ForecastingService {
     logger.info("Total forecasted cost {}", totalCostForecast);
 
     return new BillingForecastResponseDto(
-        totalCostForecast, BigDecimal.ZERO, individualChargeForecasts, failedForecastCharges, BigDecimal.ZERO, BigDecimal.ZERO, "");
+        totalCostForecast,
+        BigDecimal.ZERO,
+        individualChargeForecasts,
+        failedForecastCharges,
+        BigDecimal.ZERO,
+        BigDecimal.ZERO,
+        "");
   }
 
   private SanitizedChargeSeries sanitizedChargeSeries(

@@ -11,5 +11,4 @@ public record BillingForecastResponseDto(
     List<String> failedForecastCharges,
     BigDecimal pastVariance,
     BigDecimal dailyBurnRate,
-    String highestCostDriver
-) {}
+    String highestCostDriver) {}
