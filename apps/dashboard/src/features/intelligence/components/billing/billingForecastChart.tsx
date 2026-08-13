@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/atoms/car
 import { useMemo } from "react";
 import ReactECharts from "echarts-for-react";
 import type { EChartsOption } from "echarts";
+import { useChartTheme } from "@/features/dashboard/hooks/useChartTheme";
 
 export interface BillingForecastSlices {
     label: string;
@@ -15,70 +16,118 @@ export interface BillingForecastSlices {
 interface BillingForecastChartProps {
     name: string;
     data: BillingForecastSlices[];
+    threshold?: number;
 }
 
-export default function BillingForecastChart({ name, data }: Readonly<BillingForecastChartProps>) {
+const LABEL_FOR_OTHER = "Other";
+
+export default function BillingForecastChart({
+    name,
+    data,
+    threshold = 10,
+}: Readonly<BillingForecastChartProps>) {
+    const { themeName, tokens } = useChartTheme();
+
+    const CHART_COLOUR_SCALE = [
+        tokens["primary-950"],
+        tokens["primary-900"],
+        tokens["primary-800"],
+        tokens["primary-700"],
+        tokens["primary-600"],
+        tokens["primary-500"],
+        tokens["primary-400"],
+        tokens["primary-300"],
+        tokens["primary-200"],
+        tokens["primary-100"],
+    ];
+
+    const groupingData = useMemo(() => {
+        const aboveTenPercent = data.filter((slice) => slice.percent >= threshold);
+
+        const belowTenPercent = data.filter((slice) => slice.percent < threshold);
+
+        const totalForOther = belowTenPercent.reduce((total, slice) => total + slice.percent, 0);
+
+        const result = [...aboveTenPercent];
+
+        if (totalForOther > 0) {
+            result.push({ label: LABEL_FOR_OTHER, percent: Math.round(totalForOther * 100) / 100 });
+        }
+
+        return result;
+    }, [data, threshold]);
+
     const option: EChartsOption = useMemo(
         () => ({
             tooltip: {
                 trigger: "item",
-                backgroundColor: "var(--background)",
-                borderColor: "var(--border)",
+                backgroundColor: tokens["card"],
+                borderColor: tokens["border"],
                 borderWidth: 1,
                 textStyle: {
-                    color: "var(--foreground)",
+                    color: tokens["foreground"],
                 },
                 formatter: (params: unknown) => {
-                    const p = params as { name: string; percent?: number };
-                    return `<strong>${p.name || ""}</strong><br/>Percentage: ${p.percent ?? 0}%`;
+                    const forParameter = params as { name: string; dataIndex: number };
+
+                    const percentage = groupingData[forParameter.dataIndex]?.percent ?? 0;
+
+                    return `<strong>${forParameter.name || ""}</strong><br/>Percentage: ${percentage}%`;
                 },
             },
-            color: ["#3b82f6", "#8b5cf6", "#10b981", "#f59e0b", "#f43f5e"],
+
+            color: groupingData.map(
+                (_, index) => CHART_COLOUR_SCALE[index % CHART_COLOUR_SCALE.length]
+            ),
+
             series: [
                 {
                     type: "pie",
                     radius: ["55%", "80%"],
                     avoidLabelOverlap: true,
                     itemStyle: {
-                        borderColor: "var(--card)",
+                        borderColor: tokens["card"],
                         borderWidth: 2,
                     },
                     label: {
                         show: true,
-                        color: "#e3e9ef",
+                        color: tokens["foreground"],
                         fontSize: 11,
                         fontWeight: 400,
                         textShadowBlur: 0,
                         textShadowColor: "transparent",
                         formatter: (params: unknown) => {
-                            const p = params as { name: string; percent?: number };
-                            return `${p.name || ""}\n${p.percent ?? 0}%`;
+                            const forParameter = params as { name: string; dataIndex: number };
+
+                            const percentage = groupingData[forParameter.dataIndex]?.percent ?? 0;
+
+                            return `${forParameter.name || ""}\n${percentage}%`;
                         },
                     },
                     labelLine: {
                         show: true,
                         lineStyle: {
-                            color: "var(--border)",
+                            color: tokens["border"],
                         },
                     },
                     emphasis: {
                         label: {
-                            color: "var(--foreground)",
+                            color: tokens["foreground"],
                             fontWeight: 500,
                         },
                         itemStyle: {
                             shadowBlur: 10,
-                            shadowColor: "var(--primary)",
+                            shadowColor: tokens["primary"],
                         },
                     },
-                    data: data.map((forData) => ({
+                    data: groupingData.map((forData) => ({
                         name: forData.label,
                         value: forData.percent,
                     })),
                 },
             ],
         }),
-        [data]
+        [groupingData, tokens]
     );
 
     return (
@@ -100,7 +149,12 @@ export default function BillingForecastChart({ name, data }: Readonly<BillingFor
                         No chart data available
                     </div>
                 ) : (
-                    <ReactECharts option={option} style={{ height: 320 }} notMerge />
+                    <ReactECharts
+                        option={option}
+                        style={{ height: 320 }}
+                        notMerge
+                        theme={themeName}
+                    />
                 )}
             </CardContent>
         </Card>

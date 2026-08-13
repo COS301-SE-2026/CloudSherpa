@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 
-import { UsageForecastData } from "@/features/intelligence/types/metrics";
+import { UsageForecastData } from "@/features/intelligence/types/dtos";
 import apiClient from "@/lib/fetch/api-client";
 import { AWS_METRIC_TYPE_BY_NAME_INVERSE } from "@/features/dashboard/stores/metric-store";
 import { MetricType } from "@/features/dashboard/types/metric";
@@ -29,14 +29,10 @@ export function useMakeUsageForecast() {
                     }
                 );
 
-                console.log(response);
-
                 return response;
             } catch (e) {
                 if (e instanceof Error) {
-                    setUsageForecastRequestError(
-                        "Some HTTP error occured, Gerard will change apiClient to throw custom errors with HTTP status code soon"
-                    );
+                    setUsageForecastRequestError(e.message);
                 } else {
                     setUsageForecastRequestError("Unknown error occured");
                 }

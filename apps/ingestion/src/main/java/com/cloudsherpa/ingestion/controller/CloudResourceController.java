@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
+import java.util.Set;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -89,5 +90,18 @@ public class CloudResourceController {
   public String generateAwsPermissionsPolicy(@RequestBody List<String> services) {
 
     return cloudResourceService.generateAwsPermissionsPolicy(services);
+  }
+
+  @Operation(
+      summary = "Generate GCP permissions list",
+      description = "Generates a least-privilege GCP permissions list for the selected services")
+  @ApiResponses(
+      value = {
+        @ApiResponse(responseCode = "200", description = "Permissions list successfully generated")
+      })
+  @PostMapping("/gcp/permissions")
+  public Set<String> generateGcpPermissionsPolicy(@RequestBody List<String> services) {
+
+    return cloudResourceService.generateGcpPermissionsList(services);
   }
 }

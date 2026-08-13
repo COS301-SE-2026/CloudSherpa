@@ -2,20 +2,32 @@
 
 import { useMemo, useRef } from "react";
 import ReactECharts from "echarts-for-react";
-import { RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
+import { AlertCircleIcon, RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
 import type { CallbackDataParams } from "echarts/types/dist/shared";
 import { formatChartData } from "@/features/intelligence/hooks/formatChartData";
 import { useChartTheme } from "@/features/dashboard/hooks/useChartTheme";
-import { useChartData } from "@/features/dashboard/hooks/useChartData";
 import { useUsageIntelligenceConfigStore } from "@/features/intelligence/stores/useUsageIntelligenceConfigStore";
 import { useUsageIntelligenceStore } from "@/features/intelligence/stores/useUsageIntelligenceStore";
 import { Card, CardContent, CardHeader } from "@/components/atoms/card";
 import { Button } from "@/components/atoms/button";
 import { timeMs, durationByPreset } from "@/lib/timeUtils";
+import { HistoricalUsageSeriesDto } from "../../types/dtos";
+import { UsageError } from "../../types/errors";
+import { Spinner } from "@/components/atoms/spinner";
+
+interface UsagePredictionChartProps {
+    readonly historicalUsageSeries: HistoricalUsageSeriesDto | null;
+    readonly usageError: UsageError | null;
+    readonly loading: boolean;
+}
 
 const now = Date.now();
 
-export default function UsagePredictionChart() {
+export default function UsagePredictionChart({
+    historicalUsageSeries,
+    usageError,
+    loading,
+}: UsagePredictionChartProps) {
     //styles
     const { themeName, tokens } = useChartTheme();
 
@@ -27,16 +39,19 @@ export default function UsagePredictionChart() {
     );
 
     //data
-    const forecastedMetrics = useUsageIntelligenceStore((state) => {
+    const usageForecast = useUsageIntelligenceStore((state) => {
         if (!resourceId || !metricType) return null;
         return state.forecasts[resourceId]?.[metricType] ?? null;
     });
 
-    const { timeSeriesData } = useChartData(resourceId || "", metricType || "anon");
-
-    const { historicalData, q1Data, q3Data, predictedData } = useMemo(
-        () => formatChartData(timeSeriesData, forecastedMetrics),
-        [timeSeriesData, forecastedMetrics]
+    const {
+        historicalUsagePoints,
+        lowerConfidenceBoundPoints,
+        confidenceBandRangePoints,
+        predictedUsagePoints,
+    } = useMemo(
+        () => formatChartData(historicalUsageSeries, usageForecast),
+        [historicalUsageSeries, usageForecast]
     );
 
     // 3. X-AXIS MATH HOOK
@@ -44,9 +59,9 @@ export default function UsagePredictionChart() {
         const minTime = now - durationByPreset[pastTimeWindowPreset];
         let maxTime: number;
 
-        if (forecastedMetrics && forecastedMetrics.horizonTimestamps.length > 0) {
-            const lastForecastIndex = forecastedMetrics.horizonTimestamps.length - 1;
-            const lastForecastIso = forecastedMetrics.horizonTimestamps[lastForecastIndex];
+        if (usageForecast && usageForecast.horizonTimestamps.length > 0) {
+            const lastForecastIndex = usageForecast.horizonTimestamps.length - 1;
+            const lastForecastIso = usageForecast.horizonTimestamps[lastForecastIndex];
             maxTime = new Date(lastForecastIso).getTime();
         } else {
             maxTime = now + timeMs.dayMs;
@@ -57,7 +72,7 @@ export default function UsagePredictionChart() {
             minXAxisTime: minTime,
             maxXAxisTime: maxTime,
         };
-    }, [pastTimeWindowPreset, forecastedMetrics]);
+    }, [pastTimeWindowPreset, usageForecast]);
 
     const echartsRef = useRef<ReactECharts>(null);
 
@@ -208,7 +223,7 @@ export default function UsagePredictionChart() {
                     focus: "series",
                     scale: true,
                 },
-                data: historicalData,
+                data: historicalUsagePoints,
                 lineStyle: {
                     color: tokens["chart-1"],
                 },
@@ -216,7 +231,7 @@ export default function UsagePredictionChart() {
             {
                 name: "Lower Bound",
                 type: "line",
-                data: q1Data,
+                data: lowerConfidenceBoundPoints,
                 stack: "confidence-band",
                 lineStyle: { opacity: 0 },
                 symbol: "none",
@@ -224,7 +239,7 @@ export default function UsagePredictionChart() {
             {
                 name: "Upper Bound",
                 type: "line",
-                data: q3Data,
+                data: confidenceBandRangePoints,
                 stack: "confidence-band",
                 symbol: "none",
                 lineStyle: { opacity: 0 },
@@ -236,7 +251,7 @@ export default function UsagePredictionChart() {
             {
                 name: "Predicted Usage",
                 type: "line",
-                data: predictedData,
+                data: predictedUsagePoints,
                 showSymbol: false,
                 symbol: "circle",
                 symbolSize: 6,
@@ -270,6 +285,20 @@ export default function UsagePredictionChart() {
         ],
     };
 
+    const cardContent = loading ? (
+        <div className="flex h-full w-full flex-col justify-center items-center gap-6">
+            <Spinner />
+        </div>
+    ) : (
+        <ReactECharts
+            ref={echartsRef}
+            option={option}
+            theme={themeName}
+            style={{ height: "100%", width: "100%" }}
+            notMerge={true}
+        />
+    );
+
     return (
         <Card className="h-full w-full gap-0 overflow-hidden">
             <CardHeader className="flex flex-row justify-end items-center gap-1 ">
@@ -294,13 +323,14 @@ export default function UsagePredictionChart() {
                 </Button>
             </CardHeader>
             <CardContent className="h-full p-0">
-                <ReactECharts
-                    ref={echartsRef}
-                    option={option}
-                    theme={themeName}
-                    style={{ height: "100%", width: "100%" }}
-                    notMerge={true}
-                />
+                {usageError?.item == "both" ? (
+                    <div className="flex h-full w-full flex-col justify-center items-center gap-6">
+                        <AlertCircleIcon className="text-destructive" />
+                        <strong>No data available</strong>
+                    </div>
+                ) : (
+                    cardContent
+                )}
             </CardContent>
         </Card>
     );
