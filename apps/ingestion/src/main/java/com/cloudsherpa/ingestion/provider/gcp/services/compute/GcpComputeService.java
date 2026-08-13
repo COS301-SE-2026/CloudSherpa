@@ -2,7 +2,8 @@ package com.cloudsherpa.ingestion.provider.gcp.services.compute;
 
 import com.cloudsherpa.ingestion.connector.CloudCredentials;
 import com.cloudsherpa.ingestion.models.ResourceDetail;
-import com.google.cloud.asset.v1.Asset;
+import com.cloudsherpa.ingestion.provider.gcp.factory.GcpClientFactory;
+import com.google.cloud.asset.v1.ResourceSearchResult;
 import com.google.cloud.compute.v1.Instance;
 import com.google.cloud.compute.v1.InstancesClient;
 import org.springframework.stereotype.Service;
@@ -11,10 +12,12 @@ import org.springframework.stereotype.Service;
 public class GcpComputeService implements ComputeService {
 
   @Override
-  public ResourceDetail getResourceDetail(Asset asset, CloudCredentials credentials) {
-    ComputeResourceIdentifier identifier = ComputeResourceIdentifier.fromAssetName(asset.getName());
+  public ResourceDetail getResourceDetail(
+      ResourceSearchResult resource, CloudCredentials credentials) {
+    ComputeResourceIdentifier identifier =
+        ComputeResourceIdentifier.fromAssetName(resource.getName());
 
-    try (InstancesClient client = InstancesClient.create()) {
+    try (InstancesClient client = GcpClientFactory.createInstancesClient(credentials)) {
 
       Instance instance =
           client.get(identifier.projectId(), identifier.zone(), identifier.instanceName());
@@ -29,7 +32,7 @@ public class GcpComputeService implements ComputeService {
 
     } catch (Exception e) {
       throw new IllegalStateException(
-          "Unable to describe GCP Compute Engine instance " + asset.getName(), e);
+          "Unable to describe GCP Compute Engine instance " + resource.getName(), e);
     }
   }
 }

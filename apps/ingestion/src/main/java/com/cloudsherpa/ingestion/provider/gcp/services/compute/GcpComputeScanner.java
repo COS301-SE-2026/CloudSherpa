@@ -3,7 +3,7 @@ package com.cloudsherpa.ingestion.provider.gcp.services.compute;
 import com.cloudsherpa.ingestion.connector.CloudCredentials;
 import com.cloudsherpa.ingestion.models.ResourceDetail;
 import com.cloudsherpa.ingestion.provider.gcp.scanner.GcpResourceScanner;
-import com.google.cloud.asset.v1.Asset;
+import com.google.cloud.asset.v1.ResourceSearchResult;
 import java.util.List;
 import org.springframework.stereotype.Component;
 
@@ -33,8 +33,8 @@ public class GcpComputeScanner implements GcpResourceScanner {
   }
 
   @Override
-  public ResourceDetail scan(Asset asset, CloudCredentials credentials) {
+  public ResourceDetail scan(ResourceSearchResult resource, CloudCredentials credentials) {
 
-    return computeService.getResourceDetail(asset, credentials);
+    return computeService.getResourceDetail(resource, credentials);
   }
 }

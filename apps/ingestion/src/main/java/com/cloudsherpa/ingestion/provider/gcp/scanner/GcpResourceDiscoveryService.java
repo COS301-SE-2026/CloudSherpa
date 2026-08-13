@@ -3,7 +3,7 @@ package com.cloudsherpa.ingestion.provider.gcp.scanner;
 import com.cloudsherpa.ingestion.connector.CloudCredentials;
 import com.cloudsherpa.ingestion.models.ResourceDetail;
 import com.cloudsherpa.ingestion.provider.gcp.asset.GcpAssetInventoryService;
-import com.google.cloud.asset.v1.Asset;
+import com.google.cloud.asset.v1.ResourceSearchResult;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -30,13 +30,19 @@ public class GcpResourceDiscoveryService {
   }
 
   public List<ResourceDetail> discover(CloudCredentials credentials, List<String> services) {
+    List<String> assetTypes =
+        scanners.values().stream()
+            .map(GcpResourceScanner::getAssetTypes)
+            .flatMap(List::stream)
+            .toList();
 
-    List<Asset> assets = assetInventoryService.listAssets(credentials);
+    List<ResourceSearchResult> resources =
+        assetInventoryService.searchResources(credentials, assetTypes);
 
-    return assets.stream()
+    return resources.stream()
         .map(
-            asset -> {
-              GcpResourceScanner scanner = findScanner(asset.getAssetType());
+            resource -> {
+              GcpResourceScanner scanner = findScanner(resource.getAssetType());
 
               if (scanner == null) { // unsupported resource type
                 return null;
@@ -47,7 +53,7 @@ public class GcpResourceDiscoveryService {
                 return null;
               }
 
-              return scanner.scan(asset, credentials);
+              return scanner.scan(resource, credentials);
             })
         .filter(Objects::nonNull)
         .toList();
