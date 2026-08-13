@@ -25,7 +25,9 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
     return (
         <Card onClick={() => setOpen(!open)}>
             <CardHeader>
-                <CardTitle>{recommendation.resource_displayName}</CardTitle>
+                <CardTitle>
+                    {recommendation.resource_displayName ?? recommendation.resource_id}
+                </CardTitle>
             </CardHeader>
             {open && (
                 <CardContent className="space-y-4">

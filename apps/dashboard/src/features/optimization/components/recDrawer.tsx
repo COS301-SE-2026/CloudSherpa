@@ -26,11 +26,14 @@ export default function RecDrawer({ group }: Readonly<RecDrawer>) {
 
         const lowerCaseQuery = searchQuery.toLowerCase();
 
-        return group.recommendations.filter(
-            (rec) =>
-                rec.resource_id.toLowerCase().includes(lowerCaseQuery) ||
+        return group.recommendations.filter((rec) => {
+            const searchableName = rec.resource_displayName ?? "";
+
+            return (
+                searchableName.toLowerCase().includes(lowerCaseQuery) ||
                 rec.action_type.toLowerCase().includes(lowerCaseQuery)
-        );
+            );
+        });
     }, [searchQuery, group.recommendations]);
 
     return (
