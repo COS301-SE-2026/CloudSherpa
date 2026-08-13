@@ -15,8 +15,8 @@
       {
         "name": "preferences",
         "schemaName": "public",
-        "x": 401.04631714850996,
-        "y": -253.81900499164806
+        "x": 428.83026778448186,
+        "y": -262.7360844587356
       },
       {
         "name": "cloud_connection",
@@ -81,14 +81,14 @@
       {
         "name": "widget_kpi",
         "schemaName": "public",
-        "x": 1681.9208319368613,
-        "y": -559.0371378359391
+        "x": 1831.259566605211,
+        "y": -357.6034957251425
       },
       {
         "name": "kpi_charges",
         "schemaName": "public",
-        "x": 1939.4233711501834,
-        "y": -589.9274449920866
+        "x": 2067.108569781459,
+        "y": -391.96679671078647
       },
       {
         "name": "widget_chart",
@@ -101,6 +101,36 @@
         "schemaName": "public",
         "x": 924.5486804469767,
         "y": -591.0371378359391
+      },
+      {
+        "name": "offered_metric",
+        "schemaName": "public",
+        "x": 376.62841796875,
+        "y": 12
+      },
+      {
+        "name": "optimization_metric_statistics",
+        "schemaName": "public",
+        "x": 795.3646560972165,
+        "y": 671.7957551812915
+      },
+      {
+        "name": "optimization_recommendation",
+        "schemaName": "public",
+        "x": 1108.9577656831452,
+        "y": 851.3856663205272
+      },
+      {
+        "name": "recommendation_history",
+        "schemaName": "public",
+        "x": 1661.2835326075244,
+        "y": 960.3079664514096
+      },
+      {
+        "name": "processing_watermark",
+        "schemaName": "public",
+        "x": 12,
+        "y": 12
       }
     ],
     "tableGroupCollapseStates": [],
