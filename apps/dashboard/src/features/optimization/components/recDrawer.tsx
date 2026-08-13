@@ -8,15 +8,10 @@ import {
 } from "@/components/atoms/drawer";
 import { Button } from "@/components/atoms/button";
 import { Recommendation } from "@/features/optimization/types/recommendations";
-import {
-    Accordion,
-    AccordionTrigger,
-    AccordionContent,
-    AccordionItem,
-} from "@/components/atoms/accordion";
-import { Card } from "@/components/atoms/card";
-import { useState } from "react";
-import { X } from "lucide-react";
+import RecommendationCard from "@/features/optimization/components/recCard";
+import { useState, useMemo } from "react";
+import { X, Search } from "lucide-react";
+import { Input } from "@/components/atoms/input";
 
 interface RecDrawer {
     connection: string;
@@ -25,6 +20,20 @@ interface RecDrawer {
 
 export default function RecDrawer({ connection, recommendations }: Readonly<RecDrawer>) {
     const [isOpen, setIsOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
+
+    const filteredRecommendations = useMemo(() => {
+        if (!searchQuery.trim()) return recommendations;
+
+        const lowerCaseQuery = searchQuery.toLowerCase();
+
+        return recommendations.filter(
+            (rec) =>
+                rec.resource_id.toLowerCase().includes(lowerCaseQuery) ||
+                rec.action_type.toLowerCase().includes(lowerCaseQuery)
+        );
+    }, [searchQuery, recommendations]);
+
     return (
         <Drawer direction="right" dismissible={false} open={isOpen} onOpenChange={setIsOpen}>
             <DrawerTrigger asChild>
@@ -40,35 +49,27 @@ export default function RecDrawer({ connection, recommendations }: Readonly<RecD
                             <X />
                         </Button>
                     </div>
+                    <div className="relative">
+                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            type="text"
+                            placeholder="Search by resource ID or action type..."
+                            className="pl-8"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                    </div>
                 </DrawerHeader>
-                <div className="p-4 overflow-y-auto">
-                    <Accordion type="single" collapsible className="w-full flex flex-col gap-4">
-                        {recommendations.map((rec) => (
-                            <Card key={rec.recommendation_id} className="overflow-hidden shadow-sm">
-                                <AccordionItem
-                                    value={rec.recommendation_id}
-                                    className="border-none"
-                                >
-                                    <AccordionTrigger className="hover:no-underline px-6 py-4">
-                                        <div className="flex flex-row text-left gap-1">
-                                            <span className="font-semibold text-base">
-                                                {rec.resource_id}
-                                            </span>
-                                            <span className="text-sm text-muted-foreground font-normal">
-                                                {rec.action_type}
-                                            </span>
-                                        </div>
-                                    </AccordionTrigger>
-
-                                    <AccordionContent className="px-6 pb-4">
-                                        <div className="p-4 bg-muted/50 rounded-md">
-                                            Details for this recommendation will go here later!
-                                        </div>
-                                    </AccordionContent>
-                                </AccordionItem>
-                            </Card>
-                        ))}
-                    </Accordion>
+                <div className="h-full w-full p-4 overflow-y-auto space-y-4">
+                    {filteredRecommendations.length > 0 ? (
+                        filteredRecommendations.map((rec) => (
+                            <RecommendationCard recommendation={rec} key={rec.resource_id} />
+                        ))
+                    ) : (
+                        <div className="flex justify-center p-8 text-muted-foreground text-sm">
+                            No recommendations found matching {searchQuery}
+                        </div>
+                    )}
                 </div>
             </DrawerContent>
         </Drawer>
