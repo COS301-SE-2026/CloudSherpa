@@ -31,6 +31,15 @@ CREATE TYPE PUBLIC.chart_type_enum AS ENUM ('gauge_chart', 'line_chart');
 -- Differentiates actual compute usage from other types.
 -- Maps to CUR: line_item_line_item_type
 CREATE TYPE public.charge_type_enum AS ENUM ('Usage', 'Other'); 
+CREATE TYPE public.optimization_status_enum AS ENUM (
+  'DRAFT',
+  'ACTIVE',
+  'ACKNOWLEDGED',
+  'DISMISSED',
+  'APPLIED',
+  'SUPERSEDED',
+  'EXPIRED'
+);
 
 -- ----------------------------------------------------------------
 -- PUBLIC TABLES 
@@ -547,6 +556,74 @@ BEGIN
     EXECUTE format($sql$
         CREATE INDEX IF NOT EXISTS ix_%1$s_costs_service_time 
         ON %1$I.normalized_costs (service_name, usage_start_time DESC);
+    $sql$, schema_name);
+
+    -- --------------------------------------------------------------------------
+    -- Optimization Tables
+    -- --------------------------------------------------------------------------
+
+    EXECUTE format($sql$
+        CREATE TABLE IF NOT EXISTS %I.optimization_metric_statistics (
+            statistics_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+            resource_id uuid NOT NULL REFERENCES %I.resource(resource_id) ON DELETE CASCADE,
+            provider public.provider_enum NOT NULL,
+            metric_name varchar(255) NOT NULL,
+            window_type varchar(10) NOT NULL,
+
+            minimum_value numeric,
+            maximum_value numeric,
+            average_value numeric,
+            median_value numeric,
+            p95_value numeric,
+            p99_value numeric,
+            standard_deviation numeric,
+            spike_count integer DEFAULT 0,
+            peak_duration_seconds integer DEFAULT 0,
+            completeness_ratio numeric,
+
+            window_start timestamptz NOT NULL,
+            window_end timestamptz NOT NULL,
+            calculated_at timestamptz DEFAULT NOW()
+        );
+    $sql$, schema_name, schema_name);
+
+    EXECUTE format($sql$
+        CREATE TABLE IF NOT EXISTS %I.optimization_recommendation (
+            recommendation_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+            resource_id uuid NOT NULL REFERENCES %I.resource(resource_id) ON DELETE CASCADE,
+            provider public.provider_enum NOT NULL,
+            rule_id varchar(255) NOT NULL,
+            action_type varchar(50) NOT NULL,
+            status public.optimization_status_enum NOT NULL DEFAULT 'DRAFT',
+            evidence jsonb DEFAULT '{}'::jsonb,
+            created_at timestamptz DEFAULT NOW(),
+            updated_at timestamptz DEFAULT NOW(),
+            expires_at timestamptz
+        );
+    $sql$, schema_name, schema_name);
+
+    EXECUTE format($sql$
+        CREATE TABLE IF NOT EXISTS %I.recommendation_history (
+            history_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+            recommendation_id uuid NOT NULL REFERENCES %I.optimization_recommendation(recommendation_id),
+            resource_id uuid NOT NULL REFERENCES %I.resource(resource_id) ON DELETE CASCADE,
+            provider public.provider_enum NOT NULL,
+            rule_id varchar(255) NOT NULL,
+            action_type varchar(50) NOT NULL,
+            previous_status public.optimization_status_enum,
+            new_status public.optimization_status_enum NOT NULL,
+            evidence jsonb DEFAULT '{}'::jsonb,
+            changed_at timestamptz DEFAULT NOW()
+        );
+    $sql$, schema_name, schema_name);
+
+    EXECUTE format($sql$
+        CREATE TABLE IF NOT EXISTS %I.processing_watermark (
+            pipeline_name varchar(255) PRIMARY KEY,
+            last_processed_period timestamptz,
+            last_successful_run timestamptz,
+            updated_at timestamptz DEFAULT NOW()
+        );
     $sql$, schema_name);
 
 END;
