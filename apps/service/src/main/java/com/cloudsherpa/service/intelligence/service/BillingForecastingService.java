@@ -6,6 +6,7 @@ import com.cloudsherpa.lib.repositories.NormalizedCostsRepository;
 import com.cloudsherpa.service.intelligence.dto.BillingForecastIndividualChargesRequestDto;
 import com.cloudsherpa.service.intelligence.dto.BillingForecastRequest;
 import com.cloudsherpa.service.intelligence.dto.BillingForecastResponseDto;
+import com.cloudsherpa.service.intelligence.dto.BillingForecastValue;
 import com.cloudsherpa.service.intelligence.dto.IntelligenceForecastRequestDto;
 import com.cloudsherpa.service.intelligence.dto.IntelligenceForecastResponseDto;
 import com.cloudsherpa.service.intelligence.dto.SanatizedSeries;
@@ -60,7 +61,7 @@ public class BillingForecastingService extends ForecastingService {
   private BillingForecastResponseDto executeBillingForecast(
       List<String> chargeIds, Instant timeOfRequest, int forecastSteps) {
     BigDecimal totalCostForecast = BigDecimal.valueOf(0);
-    Map<String, BigDecimal> individualChargeForecasts = new HashMap<>();
+    Map<String, BillingForecastValue> individualChargeForecasts = new HashMap<>();
     List<String> failedForecastCharges = new ArrayList<>();
     for (String chargeId : chargeIds) {
       logger.info(chargeId);
@@ -97,13 +98,13 @@ public class BillingForecastingService extends ForecastingService {
       logger.info("Forecasted charge for {} is {}", chargeId, aggregatedCharge);
 
       totalCostForecast = totalCostForecast.add(aggregatedCharge);
-      individualChargeForecasts.put(chargeId, aggregatedCharge);
+      individualChargeForecasts.put(chargeId, new BillingForecastValue(aggregatedCharge, null, ""));
     }
 
     logger.info("Total forecasted cost {}", totalCostForecast);
 
     return new BillingForecastResponseDto(
-        totalCostForecast, individualChargeForecasts, failedForecastCharges);
+        totalCostForecast, BigDecimal.ZERO, individualChargeForecasts, failedForecastCharges, BigDecimal.ZERO, BigDecimal.ZERO, "");
   }
 
   private SanitizedChargeSeries sanitizedChargeSeries(
