@@ -15,7 +15,7 @@ export const METRIC_UNITS: Record<MetricType, string> = {
     duration: "ms",
     throttles: "events",
     disk: "GB",
-    network: "MB",
+    network: "B",
     "read-capacity": "IOPS",
     "write-capacity": "IOPS",
     "first-byte-latency": "ms",
