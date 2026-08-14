@@ -34,10 +34,7 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
                 <CardContent className="space-y-4">
                     {/* hero section */}
                     <div className="grid grid-cols-2 gap-4">
-                        {/* action */}
                         <RecommendationCardHero value={recommendation.action_type} />
-                        {/* savings */}
-                        <RecommendationCardHero value={recommendation.estimated_monthly_savings} />
                     </div>
 
                     {/* explanation */}

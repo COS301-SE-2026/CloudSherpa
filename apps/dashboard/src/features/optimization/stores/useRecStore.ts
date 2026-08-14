@@ -2,32 +2,34 @@ import { create } from "zustand";
 import { Recommendation, RecommendationGroup } from "@/features/optimization/types/recommendations";
 import { getAwsAccountConnections, getAwsAccountResources } from "@/lib/fetch/aws-connection-api";
 
+const now = new Date();
+const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000);
+
 const mockRecommendations: Recommendation[] = [
     {
         recommendation_id: "123455",
         resource_id: "e302b553-94cd-4c8f-9fce-dc179ac1a39a",
         provider: "AWS",
+        rule_id: "rule-suspend-idle-resources",
         action_type: "SUSPEND",
         status: "ACTIVE",
-        current_configuration: "t3.xlarge",
-        target_configuration: "t3.medium",
-        estimated_monthly_savings: 120.5,
-        currency: "USD",
         evidence: 18,
-        completenessRatio: 0.99,
+        created_at: twoDaysAgo,
+        update_at: now,
+        expires_at: nextWeek,
     },
     {
         recommendation_id: "b2c3d4e5",
         resource_id: "a8e4b986-51c7-4b39-8d14-e9ad9db56c88",
         provider: "AWS",
+        rule_id: "rule-suspend-idle-resources",
         action_type: "DOWNSIZE",
         status: "ACTIVE",
-        current_configuration: "m5.large",
-        target_configuration: null,
-        estimated_monthly_savings: 75.0,
-        currency: "USD",
         evidence: 12,
-        completenessRatio: 0.99,
+        created_at: twoDaysAgo,
+        update_at: now,
+        expires_at: nextWeek,
     },
 ];
 
@@ -77,7 +79,7 @@ export const useRecStore = create<RecStore>((set) => ({
 
                 const enrichedRec: Recommendation = {
                     ...rec,
-                    resource_displayName: tempResourceNameMap[rec.resource_id] || null,
+                    resource_displayName: tempResourceNameMap[rec.resource_id] || undefined,
                 };
 
                 if (!groupedMap[accountId]) {

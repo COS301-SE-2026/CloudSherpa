@@ -14,16 +14,13 @@ export type Recommendation = {
     resource_id: string;
     resource_displayName?: string;
     provider: CloudProviderEnum;
+    rule_id: string;
     action_type: RecommendedAction;
     status: RecommendationStatus;
-
-    current_configuration: string;
-    target_configuration: string | null;
-
-    estimated_monthly_savings: number;
-    currency: string;
     evidence: number;
-    completenessRatio: number;
+    created_at: Date;
+    update_at: Date;
+    expires_at: Date;
 };
 
 export type RecommendationGroup = {

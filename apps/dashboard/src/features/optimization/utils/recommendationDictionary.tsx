@@ -10,10 +10,8 @@ export function getRecommendationDictionary(rec: Recommendation) {
             return (
                 <p className="text-sm text-muted-foreground leading-relaxed">
                     We observed a maximum utilization of <Highlight>{rec.evidence}%</Highlight> on
-                    this resource. By downsizing from{" "}
-                    <Highlight>{rec.current_configuration}</Highlight> to{" "}
-                    <Highlight>{rec.target_configuration}</Highlight>, you can safely handle your
-                    current workload while instantly reducing costs.
+                    this resource over a monitored period. Which leads us to believe your resource
+                    is underutilized, and we recommend downsizing
                 </p>
             );
 
@@ -21,19 +19,17 @@ export function getRecommendationDictionary(rec: Recommendation) {
             return (
                 <p className="text-sm text-muted-foreground leading-relaxed">
                     This resource appears abandoned with an average utilization of{" "}
-                    <Highlight>{rec.evidence}%</Highlight>. Since it is incurring costs without
-                    providing value, we recommend permanently terminating this{" "}
-                    <Highlight>{rec.current_configuration}</Highlight> instance.
+                    <Highlight>{rec.evidence}%</Highlight> over a monitored period. Since it is
+                    incurring costs without providing value, we recommend permanently terminating
+                    this resource.
                 </p>
             );
 
         case "MODERNIZE":
             return (
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                    You are currently running on legacy{" "}
-                    <Highlight>{rec.current_configuration}</Highlight> hardware. Modernizing to the
-                    newer <Highlight>{rec.target_configuration}</Highlight> generation will provide
-                    superior performance and better cost-efficiency for the exact same workload.
+                    You are currently running on legacy hardware. generation will provide superior
+                    performance and better cost-efficiency for the exact same workload.
                 </p>
             );
 
@@ -42,17 +38,16 @@ export function getRecommendationDictionary(rec: Recommendation) {
                 <p className="text-sm text-muted-foreground leading-relaxed">
                     We detected a predictable usage pattern with low utilization (
                     <Highlight>{rec.evidence}%</Highlight>) during off-hours. We recommend
-                    implementing a power schedule to automatically suspend this{" "}
-                    <Highlight>{rec.current_configuration}</Highlight> when not in active use.
+                    implementing a power schedule to automatically suspend this resource when not in
+                    active use.
                 </p>
             );
 
         default:
             return (
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                    Review this resource to ensure its{" "}
-                    <Highlight>{rec.current_configuration}</Highlight> configuration matches your
-                    current operational requirements.
+                    Review this resource to ensure its configuration matches your current
+                    operational requirements.
                 </p>
             );
     }
