@@ -191,3 +191,59 @@ Table normalized_costs {
     (service_name, usage_start_time) [name: "ix_tenant_costs_service_time"]
   }
 }
+
+Table optimization_metric_statistics {
+  statistics_id uuid [pk]
+  resource_id uuid [ref: > resource.resource_id]
+  provider provider_enum
+  metric_name varchar(255)
+  window_num_days integer
+
+  minimum_value numeric
+  maximum_value numeric
+  average_value numeric
+  median_value numeric
+  p95_value numeric
+  p99_value numeric
+  standard_deviation numeric
+  spike_count integer
+  peak_duration_seconds integer
+  completeness_ratio numeric
+
+  window_start timestamptz
+  window_end timestamptz
+  calculated_at timestamptz
+}
+
+Table optimization_recommendation {
+  recommendation_id uuid [pk]
+  resource_id uuid [ref: > resource.resource_id]
+  provider provider_enum
+  rule_id varchar(255)
+  action_type optimization_action_type_enum
+  status optimization_status_enum
+  evidence jsonb
+  created_at timestamptz
+  updated_at timestamptz
+  expires_at timestamptz
+}
+
+Table recommendation_history {
+  history_id uuid [pk]
+  recommendation_id uuid [ref: > optimization_recommendation.recommendation_id]
+  resource_id uuid [ref: > resource.resource_id]
+  provider provider_enum
+  rule_id varchar(255)
+  action_type varchar(50)
+  previous_status optimization_status_enum
+  new_status optimization_status_enum
+  evidence jsonb
+  changed_at timestamptz
+}
+
+Table processing_watermark {
+  pipeline_name varchar(255) [pk]
+  last_processed_period timestamptz
+  last_successful_run timestamptz
+  updated_at timestamptz
+}
