@@ -11,7 +11,12 @@ import com.cloudsherpa.ingestion.models.ResourceDetail;
 import com.cloudsherpa.ingestion.models.UsageRecordModel;
 import com.cloudsherpa.ingestion.provider.gcp.monitoring.CloudMonitoringMetricProvider;
 import com.cloudsherpa.ingestion.provider.gcp.monitoring.GcpCloudMonitoringMetricProvider;
-import com.cloudsherpa.ingestion.provider.scanner.ResourceDiscoveryService;
+import com.cloudsherpa.ingestion.provider.gcp.monitoring.MockCloudMonitoringMetricProvider;
+import com.cloudsherpa.ingestion.provider.gcp.scanner.GcpResourceDiscoveryService;
+import com.google.auth.oauth2.ServiceAccountCredentials;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import org.springframework.stereotype.Component;
 
@@ -19,14 +24,14 @@ import org.springframework.stereotype.Component;
 public class GcpCloudConnector implements CloudConnector, UsageCapable, BillingCapable {
   private final CloudMonitoringMetricProvider metricProvider;
   private final CloudMonitoringMetricProvider mockMetricProvider;
-  private final ResourceDiscoveryService discoveryService;
+  private final GcpResourceDiscoveryService discoveryService;
 
   public GcpCloudConnector(
-      ResourceDiscoveryService resourceDiscoveryService,
-      GcpCloudMonitoringMetricProvider mockMetricProvider) {
+      GcpResourceDiscoveryService discoveryService,
+      MockCloudMonitoringMetricProvider mockMetricProvider) {
     metricProvider = new GcpCloudMonitoringMetricProvider();
     this.mockMetricProvider = mockMetricProvider;
-    discoveryService = resourceDiscoveryService;
+    this.discoveryService = discoveryService;
   }
 
   @Override
@@ -60,17 +65,29 @@ public class GcpCloudConnector implements CloudConnector, UsageCapable, BillingC
 
   @Override
   public List<String> getAllOfferedServices() {
-    return discoveryService.getServices("GCP");
+    return discoveryService.getServices();
   }
 
   @Override
   public List<ResourceDetail> getAllResources(
       CloudCredentials credentials, List<String> serviceTypes) {
-    return List.of(); // to be implemented
+    return discoveryService.discover(credentials, serviceTypes);
   }
 
   @Override
   public boolean testConnection(CloudCredentials credentials) {
-    return true; // to be implemented
+    try {
+      ServiceAccountCredentials accountCredentials =
+          ServiceAccountCredentials.fromStream(
+              new ByteArrayInputStream(
+                  credentials.getServiceAccountJson().getBytes(StandardCharsets.UTF_8)));
+
+      accountCredentials.refreshAccessToken();
+
+      return true;
+
+    } catch (IOException e) {
+      return false;
+    }
   }
 }
