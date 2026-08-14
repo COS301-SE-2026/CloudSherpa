@@ -37,8 +37,34 @@ public class BillingAnalyticsService {
     String highestCostAcceleration =
         highestCostAcceleration(billingForecastResult.individualChargeSeries());
 
+    Map<String, BillingForecastValue> billingForecastSeries =
+        buildBillingForecastSeries(
+            billingForecastResult.individualChargeForecastResults(),
+            billingForecastResult.cumalativeForecastResult());
+
     return new BillingAnalyticsResult(
-        cumalativeHistorical, null, pastVariance, null, highestCostDriver, highestCostAcceleration);
+        cumalativeHistorical,
+        billingForecastSeries,
+        pastVariance,
+        null,
+        highestCostDriver,
+        highestCostAcceleration);
+  }
+
+  private Map<String, BillingForecastValue> buildBillingForecastSeries(
+      Map<String, BigDecimal> forecastSeries, BigDecimal cumalativeForecastValue) {
+    return forecastSeries.entrySet().stream()
+        .collect(
+            Collectors.toMap(
+                Map.Entry::getKey,
+                entry ->
+                    new BillingForecastValue(
+                        entry.getValue(),
+                        entry
+                            .getValue()
+                            .divide(cumalativeForecastValue)
+                            .multiply(BigDecimal.valueOf(100)),
+                        getChargeLabel(entry.getKey()))));
   }
 
   private String getChargeLabel(String chargeId) {
