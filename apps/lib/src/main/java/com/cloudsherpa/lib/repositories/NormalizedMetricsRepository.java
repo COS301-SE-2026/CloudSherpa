@@ -60,7 +60,7 @@ public interface NormalizedMetricsRepository extends JpaRepository<NormalizedMet
   @Query(
     value = 
       """
-          SELECT
+          SELECT DISTINCT
             nm.metric_value AS value,
             nm.period_start AS timestamp
             FROM normalized_metrics nm WHERE nm.resource_id = :resourceId AND nm.metric_name = :metricName AND nm.period_start > :from
