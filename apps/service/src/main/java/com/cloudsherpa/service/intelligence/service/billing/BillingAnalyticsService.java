@@ -2,6 +2,7 @@ package com.cloudsherpa.service.intelligence.service.billing;
 
 import com.cloudsherpa.lib.repositories.NormalizedCostsRepository;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -46,7 +47,12 @@ public class BillingAnalyticsService {
         cumalativeHistorical,
         billingForecastSeries,
         pastVariance,
-        null,
+        billingForecastResult
+            .cumalativeForecastResult()
+            .divide(
+                BigDecimal.valueOf(billingForecastResult.forecastSteps()),
+                4,
+                RoundingMode.UNNECESSARY),
         highestCostDriver,
         highestCostAcceleration);
   }
