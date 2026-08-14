@@ -47,4 +47,14 @@ public class IngestionResourceClient {
         .retrieve()
         .body(String.class);
   }
+
+  public List<String> generateGcpPermissions(List<String> services) {
+
+    return restClient
+        .post()
+        .uri("/api/cloud-resources/gcp/permissions")
+        .body(services)
+        .retrieve()
+        .body(new ParameterizedTypeReference<List<String>>() {});
+  }
 }
