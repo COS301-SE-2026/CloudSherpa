@@ -7,4 +7,5 @@ import java.util.Map;
 public record BillingForecastResult(
     BigDecimal cumalativeForecastResult,
     Map<String, BigDecimal> individualChargeForecastResults,
+    Map<String, List<BigDecimal>> individualChargeSeries,
     List<String> failedForecastCharges) {}

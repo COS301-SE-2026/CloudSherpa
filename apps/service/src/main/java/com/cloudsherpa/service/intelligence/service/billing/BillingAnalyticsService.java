@@ -5,11 +5,17 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class BillingAnalyticsService {
+
+  private final Logger logger = LoggerFactory.getLogger(BillingAnalyticsService.class);
 
   private final NormalizedCostsRepository normalizedCostsRepository;
 
@@ -62,6 +68,8 @@ public class BillingAnalyticsService {
             OffsetDateTime.ofInstant(to, ZoneOffset.UTC));
 
     if (cumalativeForecast.equals(pastCost)) {
+      logger.info(
+          "Past and forecast cumalative billing values exactly the same, returning 0 for variance");
       return BigDecimal.ZERO;
     }
 
@@ -70,14 +78,55 @@ public class BillingAnalyticsService {
     return absoluteDifference.divide(average).multiply(BigDecimal.valueOf(100.0));
   }
 
-  private String primaryCostDriver(Map<String, BigDecimal> individualChargeForecastResults) {
-    return individualChargeForecastResults.entrySet().stream()
+  private String primaryCostDriver(Map<String, BigDecimal> chargeSeries) {
+
+    return getMaxChargeValue(chargeSeries);
+  }
+
+  private String highestCostAcceleration(Map<String, List<BigDecimal>> chargeSeries) {
+    Map<String, BigDecimal> chargeHighestCostAccelerations =
+        chargeSeries.entrySet().stream()
+            .collect(
+                Collectors.toMap(
+                    Map.Entry::getKey, entry -> highestSeriesCostAcceleration(entry.getValue())));
+
+    return getMaxChargeValue(chargeHighestCostAccelerations);
+  }
+
+  private BigDecimal highestSeriesCostAcceleration(List<BigDecimal> series) {
+
+    if (series.size() < 3) {
+      return null;
+    }
+
+    BigDecimal costAcceleration = null;
+
+    // Formula: where Ci is the the cost at position i in the series
+    // acceleration = Ci - 2Ci-1 + Ci-2
+    // derived from the velocity and acceleration formulas
+
+    for (int i = 2; i < series.size(); i++) {
+      BigDecimal currentAcceleration =
+          calculateCostAcceleration(series.get(i), series.get(i - 1), series.get(i - 2));
+
+      costAcceleration =
+          costAcceleration == null
+              ? currentAcceleration
+              : costAcceleration.max(currentAcceleration);
+    }
+
+    return costAcceleration;
+  }
+
+  private BigDecimal calculateCostAcceleration(
+      BigDecimal latestCost, BigDecimal priorCost, BigDecimal twoPeriodsAgoCost) {
+    return latestCost.subtract(priorCost.multiply(BigDecimal.valueOf(2))).add(twoPeriodsAgoCost);
+  }
+
+  private <V extends Comparable<V>> String getMaxChargeValue(Map<String, V> map) {
+    return map.entrySet().stream()
         .max(Map.Entry.comparingByValue())
         .map(Map.Entry::getKey)
         .orElse(null);
-  }
-
-  private String highestCostAcceleration() {
-    return null;
   }
 }

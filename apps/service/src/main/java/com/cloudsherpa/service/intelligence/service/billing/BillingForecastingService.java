@@ -62,6 +62,7 @@ public class BillingForecastingService extends ForecastingService {
       List<String> chargeIds, Instant timeOfRequest, int forecastSteps) {
     BigDecimal totalCostForecast = BigDecimal.valueOf(0);
     Map<String, BigDecimal> individualChargeForecasts = new HashMap<>();
+    Map<String, List<BigDecimal>> chargeSeries = new HashMap<>();
     List<String> failedForecastCharges = new ArrayList<>();
     for (String chargeId : chargeIds) {
       logger.info(chargeId);
@@ -87,8 +88,11 @@ public class BillingForecastingService extends ForecastingService {
         LocalDateTime forecastTimestamp = intelligenceForecastResponseDto.timestamps().get(i);
 
         if (!forecastTimestamp.isBefore(LocalDateTime.ofInstant(timeOfRequest, ZoneOffset.UTC))) {
-          aggregatedCharge =
-              aggregatedCharge.add(intelligenceForecastResponseDto.forecast().get(i));
+          BigDecimal currentForecastValue = intelligenceForecastResponseDto.forecast().get(i);
+          aggregatedCharge = aggregatedCharge.add(currentForecastValue);
+          chargeSeries
+              .computeIfAbsent(chargeId, k -> new ArrayList<BigDecimal>())
+              .add(currentForecastValue);
         }
       }
 
@@ -104,7 +108,7 @@ public class BillingForecastingService extends ForecastingService {
     logger.info("Total forecasted cost {}", totalCostForecast);
 
     return new BillingForecastResult(
-        totalCostForecast, individualChargeForecasts, failedForecastCharges);
+        totalCostForecast, individualChargeForecasts, chargeSeries, failedForecastCharges);
   }
 
   private SanitizedChargeSeries sanitizedChargeSeries(
