@@ -9,9 +9,17 @@ import {
 import { Button } from "@/components/atoms/button";
 import { RecommendationGroup } from "@/features/optimization/types/recommendations";
 import RecommendationCard from "@/features/optimization/components/recCard";
-import { useState, useMemo } from "react";
+import { useState, useMemo, act } from "react";
 import { X, Search } from "lucide-react";
 import { Input } from "@/components/atoms/input";
+import Dropdown from "@/components/molecules/dropdown";
+
+const ACTIONS = [
+    { value: "TERMINATE", label: "Terminate" },
+    { value: "DOWNSIZE", label: "Downsize" },
+    { value: "MODERNIZE", label: "Modernize" },
+    { value: "SUSPEND", label: "Suspend" },
+];
 
 interface RecDrawer {
     group: RecommendationGroup;
@@ -20,21 +28,29 @@ interface RecDrawer {
 export default function RecDrawer({ group }: Readonly<RecDrawer>) {
     const [isOpen, setIsOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
+    const [actionFilter, setActionFilter] = useState("");
 
     const filteredRecommendations = useMemo(() => {
-        if (!searchQuery.trim()) return group.recommendations;
+        let filtered = group.recommendations;
 
-        const lowerCaseQuery = searchQuery.toLowerCase();
+        if (actionFilter) {
+            filtered = filtered.filter((rec) => rec.action_type === actionFilter);
+        }
 
-        return group.recommendations.filter((rec) => {
-            const searchableName = rec.resource_displayName ?? "";
+        if (searchQuery.trim()) {
+            const lowerCaseQuery = searchQuery.toLowerCase();
+            filtered = filtered.filter((rec) => {
+                const searchableName = rec.resource_displayName ?? "";
 
-            return (
-                searchableName.toLowerCase().includes(lowerCaseQuery) ||
-                rec.action_type.toLowerCase().includes(lowerCaseQuery)
-            );
-        });
-    }, [searchQuery, group.recommendations]);
+                return (
+                    searchableName.toLowerCase().includes(lowerCaseQuery) ||
+                    rec.action_type.toLowerCase().includes(lowerCaseQuery)
+                );
+            });
+        }
+
+        return filtered;
+    }, [searchQuery, actionFilter, group.recommendations]);
 
     return (
         <Drawer direction="right" dismissible={false} open={isOpen} onOpenChange={setIsOpen}>
@@ -51,14 +67,24 @@ export default function RecDrawer({ group }: Readonly<RecDrawer>) {
                             <X />
                         </Button>
                     </div>
-                    <div className="relative">
-                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            type="text"
-                            placeholder="Search by resource ID or action type..."
-                            className="pl-8"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
+                    <div className="flex flex-row w-full justify-end gap-2">
+                        <div className="relative w-full">
+                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                type="text"
+                                placeholder="Search by resource..."
+                                className="pl-8 w-full"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                        </div>
+                        <Dropdown
+                            options={ACTIONS}
+                            value={actionFilter}
+                            onSelect={setActionFilter}
+                            disableSearch
+                            widthVariant="medium"
+                            placeholder="Action..."
                         />
                     </div>
                 </DrawerHeader>
