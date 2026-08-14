@@ -583,9 +583,9 @@ DECLARE
   demo_gcp_account_id uuid := 'a0000000-0000-0000-0000-000000000002';
   demo_gcp_provider public.provider_enum := 'GCP';
   demo_gcp_account_type public.account_type_enum := 'gcp_project';
-  demo_gcp_instance := 'gce_instance';
-  demo_gcp_instancd_id := 'instance_id';
-  demo_gcp_region := 'us-central1';
+  demo_gcp_instance text := 'gce_instance';
+  demo_gcp_instancd_id text := 'instance_id';
+  demo_gcp_region text := 'us-central1';
 BEGIN
   INSERT INTO public.users (user_id, email, username, password_hash, created_at)
   VALUES (
