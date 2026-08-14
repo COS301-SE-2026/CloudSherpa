@@ -129,7 +129,7 @@ FROM
 JOIN 
     optimization_metric_statistics stat_4d 
     ON r.resource_id = stat_4d.resource_id 
-    AND stat_4d.window_type = '4d'
+    AND stat_4d.window_type = 4
 WHERE 
     -- Target specific resource types across any cloud
     r.resource_type IN ('compute_instance', 'virtual_machine')

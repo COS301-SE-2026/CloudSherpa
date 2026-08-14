@@ -197,7 +197,7 @@ Table optimization_metric_statistics {
   resource_id uuid [ref: > resource.resource_id]
   provider provider_enum
   metric_name varchar(255)
-  window_type varchar(10)
+  window_num_days integer
 
   minimum_value numeric
   maximum_value numeric

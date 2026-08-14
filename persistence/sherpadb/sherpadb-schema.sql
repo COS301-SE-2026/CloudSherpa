@@ -568,7 +568,7 @@ BEGIN
             resource_id uuid NOT NULL REFERENCES %I.resource(resource_id) ON DELETE CASCADE,
             provider public.provider_enum NOT NULL,
             metric_name varchar(255) NOT NULL,
-            window_type varchar(10) NOT NULL,
+            window_num_days integer NOT NULL,
 
             minimum_value numeric,
             maximum_value numeric,

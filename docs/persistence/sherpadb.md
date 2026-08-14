@@ -269,7 +269,7 @@ Stores pre-calculated statistics used by optimization rules.
 | **resource_id** | UUID | Resource associated with the statistics. |
 | **provider** | provider_enum | Cloud provider associated with the resource. |
 | **metric_name** | VARCHAR(255) | Canonical metric name. |
-| **window_type** | VARCHAR(10) | Statistical window, such as `4d`, `7d`, or `30d`. |
+| **window_num_days** | INTEGER | Number of days in the statistical window, such as `4`, `7`, or `30`. |
 | **minimum_value** | NUMERIC | Minimum observed metric value. |
 | **maximum_value** | NUMERIC | Maximum observed metric value. |
 | **average_value** | NUMERIC | Average metric value. |
