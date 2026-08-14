@@ -295,7 +295,7 @@ Stores both rule-generated candidates and final recommendations. The
 | **resource_id** | UUID | Resource targeted by the recommendation. |
 | **provider** | provider_enum | Cloud provider associated with the resource. |
 | **rule_id** | VARCHAR(255) | Rule that generated the recommendation. |
-| **action_type** | VARCHAR(50) | Recommended action, such as `DOWNSIZE`, `TERMINATE`, or `SUSPEND`. |
+| **action_type** | optimization_action_type_enum | Recommended action, such as `DOWNSIZE`, `TERMINATE`, or `SUSPEND`. |
 | **status** | optimization_status_enum | Current lifecycle status. |
 | **evidence** | JSONB | Metrics and reasoning supporting the recommendation. |
 | **created_at** | TIMESTAMPTZ | Time when the recommendation was created. |

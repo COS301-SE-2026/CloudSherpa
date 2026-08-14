@@ -220,7 +220,7 @@ Table optimization_recommendation {
   resource_id uuid [ref: > resource.resource_id]
   provider provider_enum
   rule_id varchar(255)
-  action_type varchar(50)
+  action_type optimization_action_type_enum
   status optimization_status_enum
   evidence jsonb
   created_at timestamptz

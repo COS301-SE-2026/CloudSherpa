@@ -41,6 +41,12 @@ CREATE TYPE public.optimization_status_enum AS ENUM (
   'EXPIRED'
 );
 
+CREATE TYPE public.optimization_action_type_enum AS ENUM (
+  'DOWNSIZE',
+  'TERMINATE',
+  'SUSPEND'
+);
+
 -- ----------------------------------------------------------------
 -- PUBLIC TABLES 
 -- ----------------------------------------------------------------
@@ -593,7 +599,7 @@ BEGIN
             resource_id uuid NOT NULL REFERENCES %I.resource(resource_id) ON DELETE CASCADE,
             provider public.provider_enum NOT NULL,
             rule_id varchar(255) NOT NULL,
-            action_type varchar(50) NOT NULL,
+            action_type public.optimization_action_type_enum NOT NULL,
             status public.optimization_status_enum NOT NULL DEFAULT 'DRAFT',
             evidence jsonb DEFAULT '{}'::jsonb,
             created_at timestamptz DEFAULT NOW(),
@@ -609,7 +615,7 @@ BEGIN
             resource_id uuid NOT NULL REFERENCES %I.resource(resource_id) ON DELETE CASCADE,
             provider public.provider_enum NOT NULL,
             rule_id varchar(255) NOT NULL,
-            action_type varchar(50) NOT NULL,
+            action_type public.optimization_action_type_enum NOT NULL,
             previous_status public.optimization_status_enum,
             new_status public.optimization_status_enum NOT NULL,
             evidence jsonb DEFAULT '{}'::jsonb,
