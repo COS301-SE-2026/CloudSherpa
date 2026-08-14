@@ -28,7 +28,17 @@ public class BillingAnalyticsService {
   public BillingAnalyticsResult process(
       BillingForecastResult billingForecastResult, Integer historicalDays) {
 
-    return null;
+    BigDecimal cumalativeHistorical =
+        getCumalativePast(billingForecastResult.firstForecastTimestamp(), historicalDays);
+    BigDecimal pastVariance =
+        variance(cumalativeHistorical, billingForecastResult.cumalativeForecastResult());
+    String highestCostDriver =
+        primaryCostDriver(billingForecastResult.individualChargeForecastResults());
+    String highestCostAcceleration =
+        highestCostAcceleration(billingForecastResult.individualChargeSeries());
+
+    return new BillingAnalyticsResult(
+        cumalativeHistorical, null, pastVariance, null, highestCostDriver, highestCostAcceleration);
   }
 
   private String getChargeLabel(String chargeId) {
@@ -52,9 +62,20 @@ public class BillingAnalyticsService {
     return chargeLabel.toString();
   }
 
-  private BigDecimal variance(
-      Instant firstForecastDate, Integer forecastSteps, BigDecimal cumalativeForecast) {
+  private BigDecimal variance(BigDecimal cumalativeHistorical, BigDecimal cumalativeForecast) {
 
+    if (cumalativeForecast.equals(cumalativeHistorical)) {
+      logger.info(
+          "Past and forecast cumalative billing values exactly the same, returning 0 for variance");
+      return BigDecimal.ZERO;
+    }
+
+    BigDecimal absoluteDifference = cumalativeForecast.subtract(cumalativeHistorical).abs();
+    BigDecimal average = cumalativeForecast.divide(absoluteDifference);
+    return absoluteDifference.divide(average).multiply(BigDecimal.valueOf(100.0));
+  }
+
+  private BigDecimal getCumalativePast(Instant firstForecastDate, Integer forecastSteps) {
     // Assumptions:
     // Forecast remain at daily granularity
 
@@ -62,24 +83,12 @@ public class BillingAnalyticsService {
     // cast to long to prevent int overflow
     Instant from = to.minusSeconds((long) DAY_IN_SECONDS * forecastSteps);
 
-    BigDecimal pastCost =
-        normalizedCostsRepository.sumTotalCostBetween(
-            OffsetDateTime.ofInstant(from, ZoneOffset.UTC),
-            OffsetDateTime.ofInstant(to, ZoneOffset.UTC));
-
-    if (cumalativeForecast.equals(pastCost)) {
-      logger.info(
-          "Past and forecast cumalative billing values exactly the same, returning 0 for variance");
-      return BigDecimal.ZERO;
-    }
-
-    BigDecimal absoluteDifference = cumalativeForecast.subtract(pastCost).abs();
-    BigDecimal average = cumalativeForecast.divide(absoluteDifference);
-    return absoluteDifference.divide(average).multiply(BigDecimal.valueOf(100.0));
+    return normalizedCostsRepository.sumTotalCostBetween(
+        OffsetDateTime.ofInstant(from, ZoneOffset.UTC),
+        OffsetDateTime.ofInstant(to, ZoneOffset.UTC));
   }
 
   private String primaryCostDriver(Map<String, BigDecimal> chargeSeries) {
-
     return getMaxChargeValue(chargeSeries);
   }
 
@@ -96,6 +105,7 @@ public class BillingAnalyticsService {
   private BigDecimal highestSeriesCostAcceleration(List<BigDecimal> series) {
 
     if (series.size() < 3) {
+      logger.info("Too little values in series to calculate cost acceleration");
       return null;
     }
 

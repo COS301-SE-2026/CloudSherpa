@@ -108,7 +108,12 @@ public class BillingForecastingService extends ForecastingService {
     logger.info("Total forecasted cost {}", totalCostForecast);
 
     return new BillingForecastResult(
-        totalCostForecast, individualChargeForecasts, chargeSeries, failedForecastCharges);
+        totalCostForecast,
+        individualChargeForecasts,
+        chargeSeries,
+        failedForecastCharges,
+        timeOfRequest,
+        forecastSteps);
   }
 
   private SanitizedChargeSeries sanitizedChargeSeries(

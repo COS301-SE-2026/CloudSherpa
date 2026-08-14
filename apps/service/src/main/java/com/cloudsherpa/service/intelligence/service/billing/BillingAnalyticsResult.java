@@ -8,4 +8,5 @@ public record BillingAnalyticsResult(
     Map<String, BillingForecastValue> billingForecastSeries,
     BigDecimal pastVariance,
     BigDecimal dailyBurnRate,
-    String highestCostDriver) {}
+    String highestCostDriver,
+    String highestCostAcceleration) {}
