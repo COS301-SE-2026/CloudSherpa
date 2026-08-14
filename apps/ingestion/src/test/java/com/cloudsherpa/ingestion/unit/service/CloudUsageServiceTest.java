@@ -6,7 +6,9 @@ import static org.mockito.Mockito.*;
 
 import com.cloudsherpa.ingestion.connector.*;
 import com.cloudsherpa.ingestion.models.*;
-import com.cloudsherpa.ingestion.normalization.normalizers.AwsNormalizer;
+import com.cloudsherpa.ingestion.normalization.model.NormalizedMetric;
+import com.cloudsherpa.ingestion.normalization.normalizers.Normalizer;
+import com.cloudsherpa.ingestion.normalization.normalizers.NormalizerFactory;
 import com.cloudsherpa.ingestion.service.CloudUsageService;
 import com.cloudsherpa.ingestion.service.SherpaDbPersistenceService;
 import java.time.Instant;
@@ -21,15 +23,22 @@ class CloudUsageServiceTest {
   private CloudConnectorFactory factory;
   private SherpaDbPersistenceService persistenceService;
   private CloudUsageService service;
-  private AwsNormalizer normalizer;
+  private NormalizerFactory normalizerFactory;
+  private Normalizer normalizer;
 
   @BeforeEach
   void setUp() {
 
     factory = mock(CloudConnectorFactory.class);
     persistenceService = mock(SherpaDbPersistenceService.class);
-    normalizer = mock(AwsNormalizer.class);
-    service = new CloudUsageService(factory, persistenceService, normalizer);
+    normalizerFactory = mock(NormalizerFactory.class);
+    normalizer = mock(Normalizer.class);
+
+    when(normalizerFactory.getNormalizer("AWS")).thenReturn(normalizer);
+    when(normalizer.normalize(any(UsageRecordModel.class)))
+        .thenReturn(mock(NormalizedMetric.class));
+
+    service = new CloudUsageService(factory, persistenceService, normalizerFactory);
   }
 
   @Test
@@ -55,6 +64,8 @@ class CloudUsageServiceTest {
     assertEquals(0, result.getBilling().size());
 
     verify(connector, times(1)).fetchUsage(any(), any());
+    verify(normalizerFactory).getNormalizer("AWS");
+    verify(normalizer).normalize(any(UsageRecordModel.class));
   }
 
   @Test
@@ -95,6 +106,9 @@ class CloudUsageServiceTest {
 
     assertEquals(1, result.getUsage().size());
     assertEquals(1, result.getBilling().size());
+
+    verify(normalizerFactory).getNormalizer("AWS");
+    verify(normalizer).normalize(any(UsageRecordModel.class));
   }
 
   @Test
@@ -111,6 +125,9 @@ class CloudUsageServiceTest {
     assertTrue(result.getUsage().isEmpty());
 
     verify(connector, times(1)).fetchUsage(any(), any());
+
+    verify(normalizerFactory).getNormalizer("AWS");
+    verify(normalizer, never()).normalize(any());
   }
 
   @Test
@@ -123,6 +140,8 @@ class CloudUsageServiceTest {
     service.ingest(buildRequest(false, false));
 
     verify(connector, never()).fetchUsage(any(), any());
+    verify(normalizerFactory).getNormalizer("AWS");
+    verify(normalizer, never()).normalize(any());
   }
 
   @Test
@@ -140,6 +159,9 @@ class CloudUsageServiceTest {
     IngestionResult result = service.ingestMock(buildRequest(false, false));
 
     assertTrue(result.getUsage().isEmpty());
+
+    verify(normalizerFactory, never()).getNormalizer(any());
+    verify(normalizer, never()).normalize(any());
   }
 
   @Test
@@ -154,6 +176,9 @@ class CloudUsageServiceTest {
     assertDoesNotThrow(() -> service.ingest(buildRequest(true, false)));
 
     verify(connector, times(1)).fetchUsage(any(), any());
+    verify(normalizerFactory).getNormalizer("AWS");
+    verify(normalizer).normalize(any(UsageRecordModel.class));
+    verify(persistenceService).recordMetric(any(), any(), any());
   }
 
   @Test
@@ -170,6 +195,9 @@ class CloudUsageServiceTest {
         .recordMetric(any(), any(), any());
 
     assertDoesNotThrow(() -> service.ingest(buildRequest(true, false)));
+    verify(normalizerFactory).getNormalizer("AWS");
+    verify(normalizer).normalize(any(UsageRecordModel.class));
+    verify(persistenceService).recordMetric(any(), any(), any());
   }
 
   @Test
@@ -195,6 +223,8 @@ class CloudUsageServiceTest {
     IngestionResult result = service.ingest(request);
 
     assertEquals(2, result.getUsage().size());
+    verify(normalizerFactory, times(2)).getNormalizer("AWS");
+    verify(normalizer, times(2)).normalize(any(UsageRecordModel.class));
   }
 
   private UsageRecordModel buildUsageRecord() {

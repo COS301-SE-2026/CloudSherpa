@@ -12,6 +12,7 @@ import com.cloudsherpa.ingestion.connector.CloudConnectorFactory;
 import com.cloudsherpa.ingestion.controller.CloudUsageController;
 import com.cloudsherpa.ingestion.models.UsageRecordModel;
 import com.cloudsherpa.ingestion.normalization.normalizers.AwsNormalizer;
+import com.cloudsherpa.ingestion.normalization.normalizers.NormalizerFactory;
 import com.cloudsherpa.ingestion.provider.aws.AwsCloudConnector;
 import com.cloudsherpa.ingestion.service.CloudUsageService;
 import com.cloudsherpa.ingestion.service.SherpaDbPersistenceService;
@@ -47,10 +48,13 @@ class CloudUsageControllerIntegrationTest {
 
   @MockitoBean private AwsNormalizer normalizer;
 
+  @MockitoBean private NormalizerFactory normalizerFactory;
+
   @BeforeEach
   void setUp() {
 
     when(connectorFactory.getConnector("AWS")).thenReturn(awsConnector);
+    when(normalizerFactory.getNormalizer("AWS")).thenReturn(normalizer);
 
     doNothing().when(sherpaDbPersistenceService).recordMetric(any(), any(), any());
   }
