@@ -6,5 +6,9 @@ import java.util.Map;
 
 public record BillingForecastResponseDto(
     BigDecimal cumalativeBillingForecastValue,
-    Map<String, BigDecimal> billingForecastSeries,
-    List<String> failedForecastCharges) {}
+    BigDecimal cumalitivePastForecastingValue,
+    Map<String, BillingForecastValue> billingForecastSeries,
+    List<String> failedForecastCharges,
+    BigDecimal pastVariance,
+    BigDecimal dailyBurnRate,
+    String highestCostDriver) {}
