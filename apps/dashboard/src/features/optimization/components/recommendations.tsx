@@ -4,7 +4,6 @@ import RecommendationGroupCard from "@/features/optimization/components/recGroup
 import { useRecStore } from "@/features/optimization/stores/useRecStore";
 import { Input } from "@/components/atoms/input";
 import Dropdown from "@/components/molecules/dropdown";
-import { Badge } from "@/components/atoms/badge";
 
 const FilterOptions = [
     { value: "aws", label: "AWS" },

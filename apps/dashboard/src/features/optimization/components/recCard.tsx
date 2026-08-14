@@ -4,6 +4,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/atoms/car
 import { useState } from "react";
 import { getRecommendationDictionary } from "@/features/optimization/utils/recommendationDictionary";
 import { Button } from "@/components/atoms/button";
+import RecommendationCardHero from "@/features/optimization/components/recCardHero";
 
 interface RecommendationCardProps {
     recommendation: Recommendation;
@@ -34,18 +35,9 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
                     {/* hero section */}
                     <div className="grid grid-cols-2 gap-4">
                         {/* action */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>{recommendation.action_type}</CardTitle>
-                            </CardHeader>
-                        </Card>
-
+                        <RecommendationCardHero value={recommendation.action_type} />
                         {/* savings */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>{recommendation.estimated_monthly_savings} </CardTitle>
-                            </CardHeader>
-                        </Card>
+                        <RecommendationCardHero value={recommendation.estimated_monthly_savings} />
                     </div>
 
                     {/* explanation */}

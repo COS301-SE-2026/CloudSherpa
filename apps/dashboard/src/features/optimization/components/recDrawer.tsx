@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/atoms/button";
 import { RecommendationGroup } from "@/features/optimization/types/recommendations";
 import RecommendationCard from "@/features/optimization/components/recCard";
-import { useState, useMemo, act } from "react";
+import { useState, useMemo } from "react";
 import { X, Search } from "lucide-react";
 import { Input } from "@/components/atoms/input";
 import Dropdown from "@/components/molecules/dropdown";
@@ -53,7 +53,7 @@ export default function RecDrawer({ group }: Readonly<RecDrawer>) {
     }, [searchQuery, actionFilter, group.recommendations]);
 
     return (
-        <Drawer direction="right" dismissible={false} open={isOpen} onOpenChange={setIsOpen}>
+        <Drawer direction="right" dismissible={true} open={isOpen} onOpenChange={setIsOpen}>
             <DrawerTrigger asChild>
                 <Button variant="secondary">View</Button>
             </DrawerTrigger>
@@ -67,7 +67,7 @@ export default function RecDrawer({ group }: Readonly<RecDrawer>) {
                             <X />
                         </Button>
                     </div>
-                    <div className="flex flex-row w-full justify-end gap-2">
+                    <div className="flex flex-row w-full justify-end gap-2 pt-2">
                         <div className="relative w-full">
                             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                             <Input
