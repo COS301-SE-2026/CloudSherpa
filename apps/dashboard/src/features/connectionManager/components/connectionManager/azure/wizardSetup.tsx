@@ -2,34 +2,39 @@
 
 import StepOneAzure from "./stepOne";
 import StepTwoAzure from "./stepTwo";
-import {useRouter} from "next/navigation";
-import {BaseWizard} from "@/features/connectionManager/components/connectionManager/wizardSetup/wizard";
+import { useRouter } from "next/navigation";
+import { BaseWizard } from "@/features/connectionManager/components/connectionManager/wizardSetup/wizard";
 
-export default function WizardSetupAzure(){
+export default function WizardSetupAzure() {
     const router = useRouter();
 
-    return(
+    return (
         <BaseWizard
-            eachStep = {[{forComponents : StepOneAzure}, {forComponents : StepTwoAzure},]}
+            eachStep={[{ forComponents: StepOneAzure }, { forComponents: StepTwoAzure }]}
 
-            onComplete = {() => {
+            onComplete={() => {
                 router.push("/manageConnections");
             }}
 
-            initialData = {{
-                name : "Azure connection", servicesSelected : [], resources : [],
+            initialData={{
+                name: "Azure connection",
+                servicesSelected: [],
+                resources: [],
             }}
 
-            getDataForStep = {(step, forData) => {
-                if(step === 0){
-                    return{name : forData.name || "Azure connection"};
+            getDataForStep={(step, forData) => {
+                if (step === 0) {
+                    return { name: forData.name || "Azure connection" };
                 }
 
-                if(step === 1){
-                    return{servicesSelected : forData.servicesSelected || [], resources : forData.resources || [],};
+                if (step === 1) {
+                    return {
+                        servicesSelected: forData.servicesSelected || [],
+                        resources: forData.resources || [],
+                    };
                 }
 
-                if(step === 2){
+                if (step === 2) {
                     return {};
                 }
 
