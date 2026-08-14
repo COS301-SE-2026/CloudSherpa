@@ -1,6 +1,6 @@
 "use client";
 import * as React from "react";
-import { LayoutDashboard, Network, Moon, Sun, HelpCircle } from "lucide-react";
+import { LayoutDashboard, Network, Moon, Sun, HelpCircle, Telescope } from "lucide-react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { useAuthContext } from "@/features/authentication/providers/AuthContext";
@@ -115,7 +115,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     <SidebarGroupContent>
                         <SidebarMenu>
                             <SidebarMenuItem>
-                                <SidebarMenuButton asChild tooltip="AWS">
+                                <SidebarMenuButton asChild tooltip="Add AWS connection">
                                     <Link href="/addConnection/aws">
                                         <Network />
                                         <span>AWS</span>
@@ -148,7 +148,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     <SidebarGroupContent>
                         <SidebarMenu>
                             <SidebarMenuItem>
-                                <SidebarMenuButton asChild tooltip="AWS">
+                                <SidebarMenuButton asChild tooltip="Manage Connections">
                                     <Link href="/manageConnections">
                                         <Network />
                                         <span>Connections</span>
@@ -164,10 +164,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     <SidebarGroupContent>
                         <SidebarMenu>
                             <SidebarMenuItem>
-                                <SidebarMenuButton asChild tooltip="AWS">
+                                <SidebarMenuButton asChild tooltip="Usage Forecasts">
                                     <Link href="/intelligence/usage">
-                                        <Network />
+                                        <Telescope />
                                         <span>Usage Forecasts</span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                            <SidebarMenuItem>
+                                <SidebarMenuButton asChild tooltip="Billing Forecasts">
+                                    <Link href="/intelligence/billing">
+                                        <Telescope />
+                                        <span>Billing Forecasts</span>
                                     </Link>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>

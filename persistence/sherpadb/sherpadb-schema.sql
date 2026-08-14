@@ -579,6 +579,13 @@ DECLARE
   demo_other_charge_type public.charge_type_enum := 'Other';
   demo_completed_status public.execution_status_enum := 'completed';
   demo_billing_account text := '564907680089';
+  demo_gcp_connection_id uuid := 'c0000000-0000-0000-0000-000000000002';
+  demo_gcp_account_id uuid := 'a0000000-0000-0000-0000-000000000002';
+  demo_gcp_provider public.provider_enum := 'GCP';
+  demo_gcp_account_type public.account_type_enum := 'gcp_project';
+  demo_gcp_instance text := 'gce_instance';
+  demo_gcp_instancd_id text := 'instance_id';
+  demo_gcp_region text := 'us-central1';
 BEGIN
   INSERT INTO public.users (user_id, email, username, password_hash, created_at)
   VALUES (
@@ -611,4 +618,35 @@ BEGIN
     'Test Account'
   )
   ON CONFLICT (account_id) DO NOTHING;
+
+  INSERT INTO public.cloud_connection (connection_id, user_id, provider, status)
+  VALUES (
+    demo_gcp_connection_id,
+    demo_user_id,
+    demo_gcp_provider,
+    demo_status
+  )
+  ON CONFLICT (connection_id) DO NOTHING;
+
+  INSERT INTO public.cloud_account (account_id, connection_id, account_type, ingestion_period, display_name)
+  VALUES (
+    demo_gcp_account_id,
+    demo_gcp_connection_id,
+    demo_gcp_account_type,
+    demo_ingestion_period,
+    'Test GCP Project'
+  )
+  ON CONFLICT (account_id) DO NOTHING;
+
+  INSERT INTO tenant_5ebe4340_c5ec_4833_ad93_06abf4609f03.resource (
+  resource_id, account_id, resource_type, resource_name, 
+  resource_identifier, resource_identifier_type, region, status, created_at, last_updated
+  ) VALUES
+  ('d0000000-0000-0000-0000-000000000001', demo_gcp_account_id, demo_gcp_instance, 'mock-gce-instance-1', 
+  'instance-1', demo_gcp_instancd_id , demo_gcp_region, demo_status, now(), now()),
+  ('d0000000-0000-0000-0000-000000000002', demo_gcp_account_id, demo_gcp_instance, 'mock-gce-instance-2', 
+  'instance-2', demo_gcp_instancd_id, demo_gcp_region, demo_status, now(), now()),
+  ('d0000000-0000-0000-0000-000000000003', demo_gcp_account_id, 'cloud_run_revision', 'mock-cloud-run-1', 
+  'email-processor-0001', 'revision_id', demo_gcp_region , demo_status, now(), now())
+  ON CONFLICT DO NOTHING;
 END $$;
