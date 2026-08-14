@@ -3,19 +3,20 @@ package com.cloudsherpa.service.intelligence.service.billing;
 import com.cloudsherpa.service.intelligence.dto.BillingForecastIndividualChargesRequestDto;
 import com.cloudsherpa.service.intelligence.dto.BillingForecastRequest;
 import com.cloudsherpa.service.intelligence.dto.BillingForecastResponseDto;
-import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
 import org.springframework.stereotype.Service;
 
 @Service
 public class BillingIntelligenceService {
 
   BillingForecastingService billingForecastingService;
+  BillingAnalyticsService billingAnalyticsService;
 
-  public BillingIntelligenceService(BillingForecastingService billingForecastingService) {
+  public BillingIntelligenceService(
+      BillingForecastingService billingForecastingService,
+      BillingAnalyticsService billingAnalyticsService) {
     this.billingForecastingService = billingForecastingService;
+    this.billingAnalyticsService = billingAnalyticsService;
   }
 
   public BillingForecastResponseDto processAllCharges(
@@ -23,7 +24,9 @@ public class BillingIntelligenceService {
     BillingForecastResult billingForecastResult =
         billingForecastingService.forecastBillingByAllNonCreditCharges(request, timeOfRequest);
 
-    return toBillingForecastResponseDto(billingForecastResult);
+    BillingAnalyticsResult billingAnalyticsResult =
+        billingAnalyticsService.process(billingForecastResult, request.forecastSteps());
+    return toBillingForecastResponseDto(billingForecastResult, billingAnalyticsResult);
   }
 
   public BillingForecastResponseDto processSelectCharges(
@@ -31,26 +34,23 @@ public class BillingIntelligenceService {
     BillingForecastResult billingForecastResult =
         billingForecastingService.forecastBillingByIndividualCharges(request, timeOfRequest);
 
-    return toBillingForecastResponseDto(billingForecastResult);
+    BillingAnalyticsResult billingAnalyticsResult =
+        billingAnalyticsService.process(billingForecastResult, request.forecastSteps());
+    return toBillingForecastResponseDto(billingForecastResult, billingAnalyticsResult);
   }
 
   // TEMPORARY ANALYTICS STUBS
-  private BillingForecastResponseDto toBillingForecastResponseDto(BillingForecastResult result) {
-    Map<String, BillingForecastValue> billingForecastSeries = new HashMap<>();
-    result
-        .individualChargeForecastResults()
-        .forEach(
-            (chargeId, value) ->
-                billingForecastSeries.put(
-                    chargeId, new BillingForecastValue(value, BigDecimal.ZERO, chargeId)));
+  private BillingForecastResponseDto toBillingForecastResponseDto(
+      BillingForecastResult forecastResult, BillingAnalyticsResult analyticsResult) {
 
     return new BillingForecastResponseDto(
-        result.cumalativeForecastResult(),
-        BigDecimal.ZERO,
-        billingForecastSeries,
-        result.failedForecastCharges(),
-        BigDecimal.ZERO,
-        BigDecimal.ZERO,
-        null);
+        forecastResult.cumalativeForecastResult(),
+        analyticsResult.cumalitivePastForecastValue(),
+        analyticsResult.billingForecastSeries(),
+        forecastResult.failedForecastCharges(),
+        analyticsResult.pastVariance(),
+        analyticsResult.dailyBurnRate(),
+        analyticsResult.highestCostDriver(),
+        analyticsResult.highestCostAcceleration());
   }
 }

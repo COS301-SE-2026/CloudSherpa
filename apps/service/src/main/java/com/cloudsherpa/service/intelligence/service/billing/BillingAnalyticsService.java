@@ -50,9 +50,7 @@ public class BillingAnalyticsService {
         billingForecastResult
             .cumalativeForecastResult()
             .divide(
-                BigDecimal.valueOf(billingForecastResult.forecastSteps()),
-                4,
-                RoundingMode.UNNECESSARY),
+                BigDecimal.valueOf(billingForecastResult.forecastSteps()), 4, RoundingMode.HALF_UP),
         highestCostDriver,
         highestCostAcceleration);
   }
@@ -68,7 +66,7 @@ public class BillingAnalyticsService {
                         entry.getValue(),
                         entry
                             .getValue()
-                            .divide(cumalativeForecastValue)
+                            .divide(cumalativeForecastValue, 5, RoundingMode.HALF_UP)
                             .multiply(BigDecimal.valueOf(100)),
                         getChargeLabel(entry.getKey()))));
   }
@@ -102,9 +100,15 @@ public class BillingAnalyticsService {
       return BigDecimal.ZERO;
     }
 
+    logger.info("Cumalative historical debug {}", cumalativeHistorical);
+
     BigDecimal absoluteDifference = cumalativeForecast.subtract(cumalativeHistorical).abs();
-    BigDecimal average = cumalativeForecast.divide(absoluteDifference);
-    return absoluteDifference.divide(average).multiply(BigDecimal.valueOf(100.0));
+
+    logger.info("Absolute difference {}", absoluteDifference);
+    BigDecimal average = cumalativeForecast.divide(absoluteDifference, 5, RoundingMode.HALF_UP);
+    return absoluteDifference
+        .divide(average, 5, RoundingMode.HALF_UP)
+        .multiply(BigDecimal.valueOf(100.0));
   }
 
   private BigDecimal getCumalativePast(Instant firstForecastDate, Integer forecastSteps) {
@@ -114,6 +118,8 @@ public class BillingAnalyticsService {
     Instant to = firstForecastDate.minusSeconds(DAY_IN_SECONDS);
     // cast to long to prevent int overflow
     Instant from = to.minusSeconds((long) DAY_IN_SECONDS * forecastSteps);
+
+    logger.info("Historical from {} Historical to {}", from, to);
 
     return normalizedCostsRepository.sumTotalCostBetween(
         OffsetDateTime.ofInstant(from, ZoneOffset.UTC),
