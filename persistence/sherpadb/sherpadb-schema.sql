@@ -621,7 +621,7 @@ BEGIN
             evidence jsonb DEFAULT '{}'::jsonb,
             changed_at timestamptz DEFAULT NOW()
         );
-    $sql$, schema_name, schema_name);
+    $sql$, schema_name, schema_name, schema_name);
 
     EXECUTE format($sql$
         CREATE TABLE IF NOT EXISTS %I.processing_watermark (
