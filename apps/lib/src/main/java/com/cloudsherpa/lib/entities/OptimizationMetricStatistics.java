@@ -76,43 +76,144 @@ public class OptimizationMetricStatistics {
 
     protected OptimizationMetricStatistics() {}
 
-    public OptimizationMetricStatistics(
-    UUID statisticsId,
-    UUID resourceId,
-    ProviderEnum provider,
-    String metricName,
-    Integer windowNumDays,
-    BigDecimal minimumValue,
-    BigDecimal maximumValue,
-    BigDecimal averageValue,
-    BigDecimal medianValue,
-    BigDecimal p95Value,
-    BigDecimal p99Value,
-    BigDecimal standardDeviation,
-    Integer spikeCount,
-    Integer peakDurationSeconds,
-    BigDecimal completenessRatio,
-    OffsetDateTime windowStart,
-    OffsetDateTime windowEnd,
-    OffsetDateTime calculatedAt) {
-        this.statisticsId = statisticsId;
-        this.resourceId = resourceId;
-        this.provider = provider;
-        this.metricName = metricName;
-        this.windowNumDays = windowNumDays;
-        this.minimumValue = minimumValue;
-        this.maximumValue = maximumValue;
-        this.averageValue = averageValue;
-        this.medianValue = medianValue;
-        this.p95Value = p95Value;
-        this.p99Value = p99Value;
-        this.standardDeviation = standardDeviation;
-        this.spikeCount = spikeCount;
-        this.peakDurationSeconds = peakDurationSeconds;
-        this.completenessRatio = completenessRatio;
-        this.windowStart = windowStart;
-        this.windowEnd = windowEnd;
-        this.calculatedAt = calculatedAt;
+    private OptimizationMetricStatistics(Builder builder) {
+        this.statisticsId = builder.statisticsId;
+        this.resourceId = builder.resourceId;
+        this.provider = builder.provider;
+        this.metricName = builder.metricName;
+        this.windowNumDays = builder.windowNumDays;
+        this.minimumValue = builder.minimumValue;
+        this.maximumValue = builder.maximumValue;
+        this.averageValue = builder.averageValue;
+        this.medianValue = builder.medianValue;
+        this.p95Value = builder.p95Value;
+        this.p99Value = builder.p99Value;
+        this.standardDeviation = builder.standardDeviation;
+        this.spikeCount = builder.spikeCount;
+        this.peakDurationSeconds = builder.peakDurationSeconds;
+        this.completenessRatio = builder.completenessRatio;
+        this.windowStart = builder.windowStart;
+        this.windowEnd = builder.windowEnd;
+        this.calculatedAt = builder.calculatedAt;
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private UUID statisticsId;
+        private UUID resourceId;
+        private ProviderEnum provider;
+        private String metricName;
+        private Integer windowNumDays;
+        private BigDecimal minimumValue;
+        private BigDecimal maximumValue;
+        private BigDecimal averageValue;
+        private BigDecimal medianValue;
+        private BigDecimal p95Value;
+        private BigDecimal p99Value;
+        private BigDecimal standardDeviation;
+        private Integer spikeCount;
+        private Integer peakDurationSeconds;
+        private BigDecimal completenessRatio;
+        private OffsetDateTime windowStart;
+        private OffsetDateTime windowEnd;
+        private OffsetDateTime calculatedAt;
+
+        public Builder statisticsId(UUID statisticsId) {
+            this.statisticsId = statisticsId;
+            return this;
+        }
+
+        public Builder resourceId(UUID resourceId) {
+            this.resourceId = resourceId;
+            return this;
+        }
+
+        public Builder provider(ProviderEnum provider) {
+            this.provider = provider;
+            return this;
+        }
+
+        public Builder metricName(String metricName) {
+            this.metricName = metricName;
+            return this;
+        }
+
+        public Builder windowNumDays(Integer windowNumDays) {
+            this.windowNumDays = windowNumDays;
+            return this;
+        }
+
+        public Builder minimumValue(BigDecimal minimumValue) {
+            this.minimumValue = minimumValue;
+            return this;
+        }
+
+        public Builder maximumValue(BigDecimal maximumValue) {
+            this.maximumValue = maximumValue;
+            return this;
+        }
+
+        public Builder averageValue(BigDecimal averageValue) {
+            this.averageValue = averageValue;
+            return this;
+        }
+
+        public Builder medianValue(BigDecimal medianValue) {
+            this.medianValue = medianValue;
+            return this;
+        }
+
+        public Builder p95Value(BigDecimal p95Value) {
+            this.p95Value = p95Value;
+            return this;
+        }
+
+        public Builder p99Value(BigDecimal p99Value) {
+            this.p99Value = p99Value;
+            return this;
+        }
+
+        public Builder standardDeviation(BigDecimal standardDeviation) {
+            this.standardDeviation = standardDeviation;
+            return this;
+        }
+
+        public Builder spikeCount(Integer spikeCount) {
+            this.spikeCount = spikeCount;
+            return this;
+        }
+
+        public Builder peakDurationSeconds(Integer peakDurationSeconds) {
+            this.peakDurationSeconds = peakDurationSeconds;
+            return this;
+        }
+
+        public Builder completenessRatio(BigDecimal completenessRatio) {
+            this.completenessRatio = completenessRatio;
+            return this;
+        }
+
+        public Builder windowStart(OffsetDateTime windowStart) {
+            this.windowStart = windowStart;
+            return this;
+        }
+
+        public Builder windowEnd(OffsetDateTime windowEnd) {
+            this.windowEnd = windowEnd;
+            return this;
+        }
+
+        public Builder calculatedAt(OffsetDateTime calculatedAt) {
+            this.calculatedAt = calculatedAt;
+            return this;
+        }
+
+        public OptimizationMetricStatistics build() {
+            return new OptimizationMetricStatistics(this);
+        }
     }
 
     public UUID getStatisticsId() {
