@@ -53,11 +53,8 @@ export default function UsageIntelligence() {
 
     const setUsageForecast = useUsageIntelligenceStore((state) => state.setUsageForecast);
 
-    const {
-        requestUsageForecast,
-        isUsageForecastResponseLoading, // NOSONAR: wip
-        usageForecastRequestError,
-    } = useMakeUsageForecast();
+    const { requestUsageForecast, isUsageForecastResponseLoading, usageForecastRequestError } =
+        useMakeUsageForecast();
 
     //data
     const usageForecast = useUsageIntelligenceStore((state) => {
@@ -65,7 +62,8 @@ export default function UsageIntelligence() {
         return state.forecasts[resourceId]?.[metricType] ?? null;
     });
 
-    const { historicalUsageSeries, historicalUsageError } = useUsageHistoricalData();
+    const { historicalUsageSeries, historicalUsageError, isHistoricalUsageLoading } =
+        useUsageHistoricalData();
 
     const pastSummary = useMemo(() => {
         if (!historicalUsageSeries?.values?.length) {
@@ -101,6 +99,9 @@ export default function UsageIntelligence() {
         void loadForecast();
     }, [resourceId, metricType, requestUsageForecast, setUsageForecast]);
 
+    // Loading state
+    const loading: boolean = isUsageForecastResponseLoading || isHistoricalUsageLoading;
+
     // Error state
     let usageError: UsageError | null = null;
 
@@ -134,6 +135,7 @@ export default function UsageIntelligence() {
                         description="maximum recorded usage"
                         tooltip="This represents the maximum recorded usage for both the past and forecasted usage"
                         usageError={usageError}
+                        loading={loading}
                     />
                     <SummaryCard
                         title="Min Usage"
@@ -144,6 +146,7 @@ export default function UsageIntelligence() {
                         description="minimum recorded usage"
                         tooltip="This represents the minimum recorded usage for both the past and forecasted usage"
                         usageError={usageError}
+                        loading={loading}
                     />
                     <SummaryCard
                         title="Average Usage"
@@ -154,6 +157,7 @@ export default function UsageIntelligence() {
                         description="average recorded usage"
                         tooltip="This represents the average recorded usage for both the past and forecasted usage"
                         usageError={usageError}
+                        loading={loading}
                     />
                 </section>
                 <section className="w-full flex-1 min-h-0 flex flex-col">
@@ -161,6 +165,7 @@ export default function UsageIntelligence() {
                         <UsagePredictionChart
                             historicalUsageSeries={historicalUsageSeries}
                             usageError={usageError}
+                            loading={loading}
                         />
                     ) : (
                         <Card className="h-full w-full flex flex-col items-center justify-center border-2 border-dashed">

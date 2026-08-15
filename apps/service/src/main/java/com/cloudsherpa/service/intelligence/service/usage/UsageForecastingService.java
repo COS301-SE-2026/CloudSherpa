@@ -1,4 +1,4 @@
-package com.cloudsherpa.service.intelligence.service;
+package com.cloudsherpa.service.intelligence.service.usage;
 
 import com.cloudsherpa.lib.dtos.TimestampedNumericDataPoint;
 import com.cloudsherpa.lib.repositories.NormalizedMetricsRepository;
@@ -8,6 +8,8 @@ import com.cloudsherpa.service.intelligence.dto.ResourceUsageForecastRequestDto;
 import com.cloudsherpa.service.intelligence.dto.ResourceUsageForecastResponseDto;
 import com.cloudsherpa.service.intelligence.dto.SanatizedSeries;
 import com.cloudsherpa.service.intelligence.exceptions.InsufficientContextAvailable;
+import com.cloudsherpa.service.intelligence.service.ForecastingService;
+import com.cloudsherpa.service.intelligence.service.Sampler;
 import java.util.List;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;

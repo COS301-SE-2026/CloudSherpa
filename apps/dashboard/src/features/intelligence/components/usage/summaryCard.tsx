@@ -4,6 +4,7 @@ import { Separator } from "@/components/atoms/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/atoms/tooltip";
 import { MetricType } from "@/features/dashboard/types/metric";
 import { UsageError } from "../../types/errors";
+import { Spinner } from "@/components/atoms/spinner";
 
 export const METRIC_UNITS: Record<MetricType, string> = {
     cpu: "%",
@@ -14,7 +15,7 @@ export const METRIC_UNITS: Record<MetricType, string> = {
     duration: "ms",
     throttles: "events",
     disk: "GB",
-    network: "MB",
+    network: "B",
     "read-capacity": "IOPS",
     "write-capacity": "IOPS",
     "first-byte-latency": "ms",
@@ -40,6 +41,7 @@ interface SummaryCardProps {
     tooltip: string;
     Icon?: LucideIcon;
     usageError: UsageError | null;
+    loading: boolean;
 }
 
 export default function SummaryCard({
@@ -51,7 +53,43 @@ export default function SummaryCard({
     tooltip,
     Icon,
     usageError,
+    loading,
 }: Readonly<SummaryCardProps>) {
+    const loadingCardContent = (
+        <div className="h-8 w-8">
+            <Spinner />
+        </div>
+    );
+
+    const cardContent = (
+        <>
+            {Icon && <Icon className="h-8 w-8 text-primary" />}
+            <div className="flex flex-row gap-4 justify-start items-center">
+                <span className="text-4xl">
+                    {usageError?.item == "usage" || usageError?.item == "both" ? (
+                        "—"
+                    ) : (
+                        <>
+                            {pastUsage.toLocaleString()}
+                            {unit}
+                        </>
+                    )}
+                </span>
+                <Separator orientation="vertical" />
+                <span className="text-4xl">
+                    {usageError?.item == "forecast" || usageError?.item == "both" ? (
+                        "—"
+                    ) : (
+                        <>
+                            {predictedUsage.toLocaleString()}
+                            {unit}
+                        </>
+                    )}
+                </span>
+            </div>
+        </>
+    );
+
     return (
         <Card>
             <CardHeader>
@@ -66,30 +104,7 @@ export default function SummaryCard({
                 </CardTitle>
             </CardHeader>
             <CardContent className="flex flex-row gap-5     justify-start items-center">
-                {Icon && <Icon className="h-8 w-8 text-primary" />}
-                <div className="flex flex-row gap-4 justify-start items-center">
-                    <span className="text-4xl">
-                        {usageError?.item == "usage" || usageError?.item == "both" ? (
-                            "—"
-                        ) : (
-                            <>
-                                {pastUsage.toLocaleString()}
-                                {unit}
-                            </>
-                        )}
-                    </span>
-                    <Separator orientation="vertical" />
-                    <span className="text-4xl">
-                        {usageError?.item == "forecast" || usageError?.item == "both" ? (
-                            "—"
-                        ) : (
-                            <>
-                                {predictedUsage.toLocaleString()}
-                                {unit}
-                            </>
-                        )}
-                    </span>
-                </div>
+                {loading ? loadingCardContent : cardContent}
             </CardContent>
             <CardFooter className="text-muted-foreground">{description}</CardFooter>
         </Card>
