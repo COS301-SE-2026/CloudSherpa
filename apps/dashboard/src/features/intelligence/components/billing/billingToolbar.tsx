@@ -31,6 +31,7 @@ export default function BillingToolbar() {
         resources,
         isFetching,
         disableFilters,
+        singleTimeSelector,
         pastTimeWindowDays,
         forecastTimeWindowDays,
         setTimeWindows,
@@ -97,17 +98,18 @@ export default function BillingToolbar() {
                 </div>
             )}
             <div className={`${disableFilters ? "ml-auto" : ""} flex flex-row gap-2`}>
-                <Dropdown
-                    options={PAST_TIME_PERIODS}
-                    value={pastTimeWindowDays.toString()}
-                    onSelect={(selectedVal) =>
-                        setTimeWindows(Number(selectedVal), forecastTimeWindowDays)
-                    }
-                    placeholder="Select past window"
-                    disableSearch={true}
-                    widthVariant="medium"
-                />
-
+                {!singleTimeSelector && (
+                    <Dropdown
+                        options={PAST_TIME_PERIODS}
+                        value={pastTimeWindowDays.toString()}
+                        onSelect={(selectedVal) =>
+                            setTimeWindows(Number(selectedVal), forecastTimeWindowDays)
+                        }
+                        placeholder="Select past window"
+                        disableSearch={true}
+                        widthVariant="medium"
+                    />
+                )}
                 <Dropdown
                     options={FORECAST_TIME_PERIODS}
                     value={forecastTimeWindowDays.toString()}
