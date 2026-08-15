@@ -45,7 +45,8 @@ public class OptimizationRecommendationController {
           String actionType,
       @Parameter(description = "Resource UUID") @RequestParam(required = false) UUID resourceId) {
 
-    return service.getRecommendations(status, provider, resourceType, actionType, resourceId);
+    // use with parameters: status, provider, resourceType, actionType, resourceId
+    return service.getRecommendations();
   }
 
   @GetMapping("/summary")

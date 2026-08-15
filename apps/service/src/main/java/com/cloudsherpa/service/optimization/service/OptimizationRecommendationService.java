@@ -8,8 +8,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class OptimizationRecommendationService {
 
-  public List<Map<String, Object>> getRecommendations(
-      String status, String provider, String resourceType, String actionType, UUID resourceId) {
+  // parameters: String status, String provider, String resourceType, String actionType, UUID
+  // resourceId
+  public List<Map<String, Object>> getRecommendations() {
 
     // Query persisted recommendations using the supplied filters.
     return List.of(mockRecommendation());
