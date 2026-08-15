@@ -5,16 +5,13 @@ import { Info, ListFilter, Search } from "lucide-react";
 import { Button } from "@/components/atoms/button";
 import { Input } from "@/components/atoms/input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/atoms/card";
+import { CostBreakdownItem } from "../../types/dtos";
+import { useState } from "react";
 
-interface CostBreakdownItems {
-    id: string;
-    label: string;
-    percent: number;
-}
 interface CostBreakdownListProps {
     name: string;
     description: string;
-    eachEntry?: CostBreakdownItems[];
+    eachEntry?: CostBreakdownItem[];
     search: string;
     onSearchChange: (value: string) => void;
 }
@@ -26,9 +23,13 @@ export default function CostBreakdownList({
     search,
     onSearchChange,
 }: Readonly<CostBreakdownListProps>) {
-    const forFilteredEntries = eachEntry.filter((forEntry) =>
-        forEntry.label.toLowerCase().includes(search.toLowerCase())
-    );
+    const [sortAscending, setSortAscending] = useState(false);
+
+    const forFilteredEntries = eachEntry
+        .filter((forEntry) => forEntry.label.toLowerCase().includes(search.toLowerCase()))
+        .toSorted((a, b) =>
+            sortAscending ? a.percentage - b.percentage : b.percentage - a.percentage
+        );
 
     return (
         <Card>
@@ -65,7 +66,13 @@ export default function CostBreakdownList({
                         />
                     </div>
 
-                    <Button variant="outline" size="icon">
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => {
+                            setSortAscending((current) => !current);
+                        }}
+                    >
                         {" "}
                         <ListFilter className="h-4 w-4" strokeWidth={1.75} />{" "}
                     </Button>
@@ -89,13 +96,13 @@ export default function CostBreakdownList({
                                     <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
                                         <div
                                             className="h-full bg-primary rounded-full"
-                                            style={{ width: `${entry.percent}%` }}
+                                            style={{ width: `${entry.percentage}%` }}
                                         />
                                     </div>
 
                                     <span className="text-xs text-muted-foreground w-9 text-right">
                                         {" "}
-                                        {entry.percent}%{" "}
+                                        {entry.percentage.toFixed(2)}%{" "}
                                     </span>
                                 </div>
                             </div>

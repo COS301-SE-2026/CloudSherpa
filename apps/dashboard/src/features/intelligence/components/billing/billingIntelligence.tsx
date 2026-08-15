@@ -171,13 +171,9 @@ export default function BillingIntelligence() {
                 />
 
                 <CostBreakdownList
-                    name="cost breakdown"
-                    description={`projected charges for ${pastTimeWindowDays} day window`}
-                    eachEntry={forBreakdown.map((breakdown) => ({
-                        id: breakdown.id,
-                        label: breakdown.label,
-                        percent: breakdown.percentage,
-                    }))}
+                    name="Individual Charge Cost Breakdown"
+                    description={`Projected Charges for ${pastTimeWindowDays} Day Window`}
+                    eachEntry={forBreakdown}
                     search={breakdownSearch}
                     onSearchChange={setBreakdownSearch}
                 />
