@@ -22,6 +22,7 @@ export default function BillingIntelligence() {
         billingData,
         isLoading,
         disableFilters,
+        setBillingData,
     } = useBillingIntelligenceStore();
 
     const { makeBillingForecast } = useMakeBillingForecast();
@@ -31,7 +32,9 @@ export default function BillingIntelligence() {
     useEffect(() => {
         async function laodForecast() {
             const result = await makeBillingForecast(30);
-            console.log(result);
+            if (result) {
+                setBillingData(result);
+            }
         }
 
         if (selected) {
