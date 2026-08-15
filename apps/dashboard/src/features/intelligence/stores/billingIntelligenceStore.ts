@@ -112,9 +112,11 @@ export const useBillingIntelligenceStore = create<BillingIntelligenceStore>((set
             billingData: null,
         });
 
-        const { accountId } = get();
-        if (accountId) {
-            get().fetchBillingData();
+        if (!get().disableFilters) {
+            const { accountId } = get();
+            if (accountId) {
+                get().fetchBillingData();
+            }
         }
     },
 

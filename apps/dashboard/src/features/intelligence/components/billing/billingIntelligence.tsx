@@ -26,13 +26,13 @@ export default function BillingIntelligence() {
         setBillingData,
     } = useBillingIntelligenceStore();
 
-    const { makeBillingForecast } = useMakeBillingForecast();
+    const { makeBillingForecast, billingForecastLoading } = useMakeBillingForecast();
 
     const selected = disableFilters || (provider && accountId && resourceId);
 
     useEffect(() => {
         async function laodForecast() {
-            const result = await makeBillingForecast(30);
+            const result = await makeBillingForecast(forecastTimeWindowDays);
             if (result) {
                 setBillingData(result);
             }
@@ -47,6 +47,7 @@ export default function BillingIntelligence() {
     const forBreakdown = billingData?.forBreakdown || [];
 
     const currency = getCurrencySymbol(forSummary?.currency ?? "USD");
+    const loading = isLoading || billingForecastLoading;
 
     if (!selected) {
         return (
@@ -72,7 +73,7 @@ export default function BillingIntelligence() {
         );
     }
 
-    if (isLoading) {
+    if (loading) {
         return (
             <div className="h-full w-full p-6 flex flex-col gap-4">
                 <BillingToolbar />
@@ -94,7 +95,7 @@ export default function BillingIntelligence() {
 
             <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <BillingSummaryCard
-                    name={`cumulative billing for last ${pastTimeWindowDays} days`}
+                    name={`cumulative billing for last ${forecastTimeWindowDays} days`}
                     value={
                         forSummary ? `${currency}${forSummary.cumulativeBilling.toFixed(2)}` : "-"
                     }
