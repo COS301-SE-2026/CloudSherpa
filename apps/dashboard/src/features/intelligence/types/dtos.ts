@@ -1,3 +1,5 @@
+import { CurrencyEnum } from "@/features/dashboard/types/currency";
+
 export interface UsageForecastData {
     horizonTimestamps: string[];
     predictedValues: number[];
@@ -38,7 +40,7 @@ export interface BillingSummaryDto {
 
     highestCostAccelerationId: string;
     highestCostAccelerationLabel: string;
-    currency: string;
+    currency: CurrencyEnum;
 }
 
 export interface CostBreakdownItem {
