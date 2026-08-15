@@ -41,6 +41,24 @@ public class OptimizationRecommendationController {
     return List.of(mockRecommendation());
   }
 
+  @GetMapping("/summary")
+  @Operation(
+      summary = "Get recommendation summary",
+      description = "Returns recommendation counts grouped by status and action type.")
+  public Map<String, Object> getRecommendationSummary() {
+    return Map.of(
+        "total", 3,
+        "active", 1,
+        "acknowledged", 1,
+        "dismissed", 0,
+        "applied", 1,
+        "byActionType",
+            Map.of(
+                "TERMINATE", 0,
+                "DOWNSIZE", 2,
+                "SUSPEND", 1));
+  }
+
   @GetMapping("/{recommendationId}")
   @Operation(
       summary = "Get an optimization recommendation",
