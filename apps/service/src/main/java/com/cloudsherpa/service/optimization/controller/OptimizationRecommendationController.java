@@ -1,4 +1,4 @@
-package com.cloudsherpa.service.optimization;
+package com.cloudsherpa.service.optimization.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
