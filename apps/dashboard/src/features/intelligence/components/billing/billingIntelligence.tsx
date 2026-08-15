@@ -8,6 +8,7 @@ import BillingStatisticsCard from "@/features/intelligence/components/billing/bi
 import BillingSummaryCard from "@/features/intelligence/components/billing/billingSummaryCard";
 import { TrendingUp } from "lucide-react";
 import { useEffect } from "react";
+import { useMakeBillingForecast } from "../../hooks/useMakeBillingForecast";
 
 export default function BillingIntelligence() {
     const {
@@ -21,23 +22,22 @@ export default function BillingIntelligence() {
         billingData,
         isLoading,
         disableFilters,
-        fetchBillingData,
     } = useBillingIntelligenceStore();
+
+    const { makeBillingForecast } = useMakeBillingForecast();
 
     const selected = disableFilters || (provider && accountId && resourceId);
 
     useEffect(() => {
-        if (selected) {
-            fetchBillingData();
+        async function laodForecast() {
+            const result = await makeBillingForecast(30);
+            console.log(result);
         }
-    }, [
-        accountId,
-        resourceId,
-        pastTimeWindowDays,
-        forecastTimeWindowDays,
-        selected,
-        fetchBillingData,
-    ]);
+
+        if (selected) {
+            void laodForecast();
+        }
+    }, [forecastTimeWindowDays, selected]);
 
     if (!selected) {
         return (

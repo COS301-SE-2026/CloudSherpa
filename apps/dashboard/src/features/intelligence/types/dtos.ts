@@ -9,3 +9,20 @@ export interface HistoricalUsageSeriesDto {
     values: number[];
     timestamps: string[];
 }
+
+export interface BillingForecastSeriesItem {
+    value: number;
+    percentageOfTotal: number;
+    chargeLabel: string;
+}
+
+export interface BillingForecastDto {
+    cumalativeBillingForecastValue: number;
+    cumalativePastForecastValue: number;
+    billingForecastSeries: Record<string, BillingForecastSeriesItem>;
+    failedForecastCharges: string[];
+    pastVariance: number;
+    dailyBurnRate: number;
+    highestCostDriver: string;
+    highestCostAcceleration: string;
+}
