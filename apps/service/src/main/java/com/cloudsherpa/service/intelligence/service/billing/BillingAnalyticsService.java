@@ -100,15 +100,16 @@ public class BillingAnalyticsService {
       return BigDecimal.ZERO;
     }
 
-    logger.info("Cumalative historical debug {}", cumalativeHistorical);
-
     BigDecimal absoluteDifference = cumalativeForecast.subtract(cumalativeHistorical).abs();
 
-    logger.info("Absolute difference {}", absoluteDifference);
-    BigDecimal average = cumalativeForecast.divide(absoluteDifference, 5, RoundingMode.HALF_UP);
+    BigDecimal average =
+        cumalativeForecast
+            .add(cumalativeHistorical)
+            .divide(BigDecimal.valueOf(2), 5, RoundingMode.HALF_UP)
+            .abs();
     return absoluteDifference
         .divide(average, 5, RoundingMode.HALF_UP)
-        .multiply(BigDecimal.valueOf(100.0));
+        .multiply(BigDecimal.valueOf(100));
   }
 
   private BigDecimal getCumalativePast(Instant firstForecastDate, Integer forecastSteps) {
