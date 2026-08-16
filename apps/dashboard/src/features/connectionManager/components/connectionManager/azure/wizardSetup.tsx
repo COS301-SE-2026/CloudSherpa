@@ -11,7 +11,11 @@ export default function WizardSetupAzure() {
 
     return (
         <BaseWizard
-            eachStep={[{ forComponents: StepOneAzure }, { forComponents: StepTwoAzure }, {forComponents : StepThreeAzure}]}
+            eachStep={[
+                { forComponents: StepOneAzure },
+                { forComponents: StepTwoAzure },
+                { forComponents: StepThreeAzure },
+            ]}
 
             onComplete={() => {
                 router.push("/manageConnections");

@@ -1,6 +1,8 @@
 "use client";
 
-import StepThreeBase, {StepThreePropsForBase} from "@/features/connectionManager/components/connectionManager/wizardSetup/stepThree";
+import StepThreeBase, {
+    StepThreePropsForBase,
+} from "@/features/connectionManager/components/connectionManager/wizardSetup/stepThree";
 
 /*
 - should have tanstack table for resources, as elect & deselect all for it
@@ -17,8 +19,6 @@ const hardCodedResources = [
     },
 ];
 
-export default function StepThreeGcp(propsForGcp : Readonly<StepThreePropsForBase>){
-    return(
-        <StepThreeBase {...propsForGcp} cloudProvider = "gcp" hardCodedResources = {hardCodedResources} errorMessage = "Unable to complete the GCP setup wizard"/>
-    )
+export default function StepThreeGcp(propsForGcp: Readonly<StepThreePropsForBase>) {
+    return <StepThreeBase {...propsForGcp} hardCodedResources={hardCodedResources} />;
 }

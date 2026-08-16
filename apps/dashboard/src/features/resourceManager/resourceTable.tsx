@@ -1,12 +1,31 @@
 "use client";
 
 import React from "react";
-import {useReactTable, getCoreRowModel, getFilteredRowModel, getSortedRowModel, createColumnHelper, flexRender, type SortingState, type ColumnFiltersState, type HeaderContext, type CellContext, type Table as TableType} from "@tanstack/react-table";
-import {ArrowUpDown} from "lucide-react";
-import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/atoms/table";
-import {Button} from "@/components/atoms/button";
-import {Badge} from "@/components/atoms/badge";
-import {Switch} from "@/components/atoms/switch";
+import {
+    useReactTable,
+    getCoreRowModel,
+    getFilteredRowModel,
+    getSortedRowModel,
+    createColumnHelper,
+    flexRender,
+    type SortingState,
+    type ColumnFiltersState,
+    type HeaderContext,
+    type CellContext,
+    type Table as TableType,
+} from "@tanstack/react-table";
+import { ArrowUpDown } from "lucide-react";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/atoms/table";
+import { Button } from "@/components/atoms/button";
+import { Badge } from "@/components/atoms/badge";
+import { Switch } from "@/components/atoms/switch";
 
 /* copied the fucns from the resource manager to create a shared resource table*/
 
@@ -38,7 +57,9 @@ function ListOfTags({ tags }: Readonly<{ tags: string[] }>) {
     );
 }
 
-export function ResourceHeaders<T extends Resource>({ column }: Readonly<HeaderContext<T, string>>) {
+export function ResourceHeaders<T extends Resource>({
+    column,
+}: Readonly<HeaderContext<T, string>>) {
     return (
         <Button
             variant="ghost"
@@ -68,7 +89,10 @@ export function ToggleHeader() {
     return <span className="block text-center"> Active/Inactive </span>;
 }
 
-export function ToggleCells<T extends Resource>({ row, table }: Readonly<CellContext<T, T["status"]>>) {
+export function ToggleCells<T extends Resource>({
+    row,
+    table,
+}: Readonly<CellContext<T, T["status"]>>) {
     const { changeStatus } = table.options.meta as ResourceAction;
 
     return (
@@ -100,12 +124,15 @@ export const columns = [
 ];
 
 export function useSharedResourceTable<T extends Resource>(
-    data : T[], changeStatus : (id : string) => Promise<void>, filter : string, setFilter : (value : string) => void
-){
+    data: T[],
+    changeStatus: (id: string) => Promise<void>,
+    filter: string,
+    setFilter: (value: string) => void
+) {
     const actions = React.useMemo<ResourceAction>(() => ({ changeStatus }), [changeStatus]);
 
     const [sort, setSort] = React.useState<SortingState>([]);
-    
+
     const [filterColumn, setFilterColumn] = React.useState<ColumnFiltersState>([]);
 
     const table = useReactTable({
@@ -133,15 +160,16 @@ export function useSharedResourceTable<T extends Resource>(
     return table;
 }
 
-interface PropsForResourceTable<T extends Resource>{
-    table : TableType<T>;
-    columnsLength : number;
+interface PropsForResourceTable<T extends Resource> {
+    table: TableType<T>;
+    columnsLength: number;
 }
 
 export function ResourceTable<T extends Resource>({
-    table, columnsLength,
-} : Readonly<PropsForResourceTable<T>>){
-    return(
+    table,
+    columnsLength,
+}: Readonly<PropsForResourceTable<T>>) {
+    return (
         <Table className="table-fixed w-full">
             <TableHeader>
                 {table.getHeaderGroups().map((headerGroup) => (
@@ -149,10 +177,7 @@ export function ResourceTable<T extends Resource>({
                         {headerGroup.headers.map((header) => (
                             <TableHead key={header.id}>
                                 {" "}
-                                {flexRender(
-                                    header.column.columnDef.header,
-                                    header.getContext()
-                                )}
+                                {flexRender(header.column.columnDef.header, header.getContext())}
                             </TableHead>
                         ))}
                     </TableRow>
@@ -176,10 +201,7 @@ export function ResourceTable<T extends Resource>({
                             {row.getVisibleCells().map((cell) => (
                                 <TableCell key={cell.id}>
                                     {" "}
-                                    {flexRender(
-                                        cell.column.columnDef.cell,
-                                        cell.getContext()
-                                    )}{" "}
+                                    {flexRender(cell.column.columnDef.cell, cell.getContext())}{" "}
                                 </TableCell>
                             ))}
                         </TableRow>
@@ -190,12 +212,13 @@ export function ResourceTable<T extends Resource>({
     );
 }
 
-export function filterForStatus(table : TableType<Resource>){
-    const filterStatus = (table.getColumn("status")?.getFilterValue() as string | undefined) ?? "all";
+export function filterForStatus(table: TableType<Resource>) {
+    const filterStatus =
+        (table.getColumn("status")?.getFilterValue() as string | undefined) ?? "all";
 
     const setFilterStatus = (value: string) => {
         table.getColumn("status")?.setFilterValue(value === "all" ? undefined : value);
     };
 
-    return {filterStatus, setFilterStatus};
+    return { filterStatus, setFilterStatus };
 }

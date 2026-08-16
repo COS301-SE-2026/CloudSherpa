@@ -3,9 +3,14 @@
 import React, { ReactNode, useState, useEffect, useMemo, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/atoms/card";
 import { Button } from "@/components/atoms/button";
-import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/atoms/tooltip";
-import {Label} from "@/components/atoms/label";
-import {Slider} from "@/components/atoms/slider";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/atoms/tooltip";
+import { Label } from "@/components/atoms/label";
+import { Slider } from "@/components/atoms/slider";
 import { Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { Input } from "@/components/atoms/input";
 import {
@@ -18,14 +23,23 @@ import {
     getPaginationRowModel,
     type Table as TableType,
 } from "@tanstack/react-table";
-import {Resource, ResourceHeaders, ResourceCells, SecondaryCells, TagCells, ToggleHeader, ToggleCells, ResourceTable} from "@/features/resourceManager/resourceTable";
+import {
+    Resource,
+    ResourceHeaders,
+    ResourceCells,
+    SecondaryCells,
+    TagCells,
+    ToggleHeader,
+    ToggleCells,
+    ResourceTable,
+} from "@/features/resourceManager/resourceTable";
 
-export interface PropsForIngestionSlider{
-    forIngestionPeriod : string;
-    setForIngestionPeriod : (value : string) => void;
-    count : number;
-    recIngestionPeriod : number;
-    formattingSecond : (seconds : string | number) => string;
+export interface PropsForIngestionSlider {
+    forIngestionPeriod: string;
+    setForIngestionPeriod: (value: string) => void;
+    count: number;
+    recIngestionPeriod: number;
+    formattingSecond: (seconds: string | number) => string;
 }
 export interface PropsForStepThree {
     heading: string;
@@ -37,17 +51,18 @@ export interface PropsForStepThree {
     children: ReactNode;
 }
 
-//copied from gpc step 3 
+//copied from gpc step 3
 export function SliderForIngestion({
-    forIngestionPeriod, setForIngestionPeriod, count, recIngestionPeriod, formattingSecond,
-} : Readonly<PropsForIngestionSlider>){
-    return(
+    forIngestionPeriod,
+    setForIngestionPeriod,
+    count,
+    recIngestionPeriod,
+    formattingSecond,
+}: Readonly<PropsForIngestionSlider>) {
+    return (
         <div className="space-y-2 pt-4 border-t border-border">
             <div className="flex items-center gap-2">
-                <Label
-                    htmlFor="ingestionPeriod"
-                    className="text-foreground text-sm font-medium"
-                >
+                <Label htmlFor="ingestionPeriod" className="text-foreground text-sm font-medium">
                     {" "}
                     Ingestion interval (seconds){" "}
                 </Label>
@@ -67,11 +82,10 @@ export function SliderForIngestion({
                         <TooltipContent>
                             <p>
                                 {" "}
-                                Recommended ingestion interval: {recIngestionPeriod} seconds
-                                based on {count} selected resources. Setting the interval to a
-                                lower value could incur costs due to API free tier limits. The
-                                ingestion interval determines the frequency of dashboard
-                                timeseries updates.
+                                Recommended ingestion interval: {recIngestionPeriod} seconds based
+                                on {count} selected resources. Setting the interval to a lower value
+                                could incur costs due to API free tier limits. The ingestion
+                                interval determines the frequency of dashboard timeseries updates.
                             </p>
                         </TooltipContent>
                     </Tooltip>
@@ -98,7 +112,7 @@ export function SliderForIngestion({
                 </p>
             </div>
         </div>
-    )
+    );
 }
 
 export function StepThree({
@@ -187,10 +201,18 @@ export interface StepThreePropsForBase {
     onNext: (data: Record<string, unknown>) => void;
     onBack?: () => void;
     ingestionPeriod?: string;
-    cloudProvider : "azure" | "gcp";
-    hardCodedResources : DetailsForResource[];
-    errorMessage : string;
+    hardCodedResources?: DetailsForResource[];
 }
+
+const hardCode: DetailsForResource[] = [
+    {
+        id: "resource1",
+        name: "Resource one",
+        type: "Service one",
+        region: "region 1",
+        tag: ["tag1", "tag2"],
+    },
+];
 
 interface ActionForResource {
     changeStatus: (id: string) => Promise<void>;
@@ -198,7 +220,9 @@ interface ActionForResource {
     toggleAll: () => void;
 }
 
-function SelectionHeader({ table }: Readonly<{ table: TableType<Resource & {selected : boolean}> }>) {
+function SelectionHeader({
+    table,
+}: Readonly<{ table: TableType<Resource & { selected: boolean }> }>) {
     const { toggleAll } = table.options.meta as ActionForResource;
 
     const rows = table.getRowModel().rows;
@@ -225,7 +249,10 @@ function SelectionHeader({ table }: Readonly<{ table: TableType<Resource & {sele
     );
 }
 
-function SelectionCells({ row, table }: Readonly<CellContext<Resource & {selected : boolean}, boolean>>) {
+function SelectionCells({
+    row,
+    table,
+}: Readonly<CellContext<Resource & { selected: boolean }, boolean>>) {
     const { toggleResource } = table.options.meta as ActionForResource;
 
     return (
@@ -246,7 +273,8 @@ export default function StepThreeBase({
     resources = [],
     onNext,
     onBack,
-    ingestionPeriod = "60", cloudProvider, hardCodedResources, errorMessage,
+    ingestionPeriod = "60",
+    hardCodedResources = hardCode,
 }: Readonly<StepThreePropsForBase>) {
     const [forPagination, setForPagination] = useState({ pageIndex: 0, pageSize: 8 });
 
@@ -256,7 +284,7 @@ export default function StepThreeBase({
 
     const [forIngestionPeriod, setForIngestionPeriod] = useState<string>(ingestionPeriod);
 
-    const [tableResources, setTableResources] = useState<(Resource & {selected : boolean})[]>([]);
+    const [tableResources, setTableResources] = useState<(Resource & { selected: boolean })[]>([]);
 
     const [filter, setFilter] = useState("");
 
@@ -342,20 +370,20 @@ export default function StepThreeBase({
         [changeStatus, toggleResource, handlingSelectedAll]
     );
 
-    const helperForColumns = createColumnHelper<Resource & {selected : boolean}>();
-    
+    const helperForColumns = createColumnHelper<Resource & { selected: boolean }>();
+
     const columns = [
         helperForColumns.accessor("selected", {
             header: SelectionHeader,
             cell: SelectionCells,
         }),
-    
+
         helperForColumns.accessor("name", { header: ResourceHeaders, cell: ResourceCells }),
         helperForColumns.accessor("type", { header: "Type", cell: SecondaryCells }),
-    
+
         helperForColumns.accessor("region", { header: "Region", cell: SecondaryCells }),
         helperForColumns.accessor("tag", { header: "Tags", cell: TagCells }),
-    
+
         helperForColumns.accessor("status", {
             header: ToggleHeader,
             filterFn: "equals",
@@ -460,7 +488,7 @@ export default function StepThreeBase({
                 </div>
 
                 <div className="rounded-lg border">
-                    <ResourceTable table = {table} columnsLength = {columns.length}/>
+                    <ResourceTable table={table} columnsLength={columns.length} />
 
                     {tableResources.length > 8 && (
                         <div className="flex items-center justify-center gap-2 py-4 border-t border-border">
@@ -498,8 +526,12 @@ export default function StepThreeBase({
                 </div>
             </div>
 
-            <SliderForIngestion forIngestionPeriod = {forIngestionPeriod} setForIngestionPeriod = {setForIngestionPeriod}
-                                count = {count} recIngestionPeriod = {recIngestionPeriod} formattingSecond = {formattingSecond}
+            <SliderForIngestion
+                forIngestionPeriod={forIngestionPeriod}
+                setForIngestionPeriod={setForIngestionPeriod}
+                count={count}
+                recIngestionPeriod={recIngestionPeriod}
+                formattingSecond={formattingSecond}
             />
         </StepThree>
     );
