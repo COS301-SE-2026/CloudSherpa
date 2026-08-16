@@ -15,7 +15,6 @@ public class GcpBillingIngestionService {
   }
 
   public void execute() {
-
     GcpBillingContext context = new GcpBillingContext();
 
     for (GcpBillingIngestionStep gcpBillingIngestionStep : gcpBillingIngestionSteps) {
