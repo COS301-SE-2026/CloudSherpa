@@ -1,16 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { StepThree } from "@/features/connectionManager/components/connectionManager/wizardSetup/stepThree";
+import { SliderForIngestion, StepThree } from "@/features/connectionManager/components/connectionManager/wizardSetup/stepThree";
 import { Button } from "@/components/atoms/button";
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-} from "@/components/atoms/tooltip";
-import { Slider } from "@/components/atoms/slider";
-import { Label } from "@/components/atoms/label";
 import { Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { Input } from "@/components/atoms/input";
 import {
@@ -365,62 +357,9 @@ export default function StepThreeGcp({
                 </div>
             </div>
 
-            <div className="space-y-2 pt-4 border-t border-border">
-                <div className="flex items-center gap-2">
-                    <Label
-                        htmlFor="ingestionPeriod"
-                        className="text-foreground text-sm font-medium"
-                    >
-                        {" "}
-                        Ingestion interval (seconds){" "}
-                    </Label>
-
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <button
-                                    type="button"
-                                    className="flex items-center justify-center w-5 h-5 rounded-full text-xs text-muted-foreground hover:text-foreground border border-border"
-                                >
-                                    {" "}
-                                    ?{" "}
-                                </button>
-                            </TooltipTrigger>
-
-                            <TooltipContent>
-                                <p>
-                                    {" "}
-                                    Recommended ingestion interval: {recIngestionPeriod} seconds
-                                    based on {count} selected resources. Setting the interval to a
-                                    lower value could incur costs due to API free tier limits. The
-                                    ingestion interval determines the frequency of dashboard
-                                    timeseries updates.
-                                </p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-                </div>
-
-                <div className="flex flex-col gap-2 justify-center items-end">
-                    <span className="text-sm font-medium">
-                        {" "}
-                        {formattingSecond(forIngestionPeriod)}{" "}
-                    </span>
-
-                    <Slider
-                        value={[Number(forIngestionPeriod)]}
-                        onValueChange={(changeVal) => setForIngestionPeriod(String(changeVal[0]))}
-                        min={60}
-                        max={400}
-                        step={1}
-                    />
-
-                    <p className="text-sm text-muted-foreground/70">
-                        {" "}
-                        Recommended: {formattingSecond(recIngestionPeriod)}{" "}
-                    </p>
-                </div>
-            </div>
+            <SliderForIngestion forIngestionPeriod = {forIngestionPeriod} setForIngestionPeriod = {setForIngestionPeriod}
+                                count = {count} recIngestionPeriod = {recIngestionPeriod} formattingSecond = {formattingSecond}
+            />
         </StepThree>
     );
 }
