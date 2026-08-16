@@ -1,59 +1,34 @@
 import { create } from "zustand";
 import { Recommendation, RecommendationGroup } from "@/features/optimization/types/recommendations";
 import { getAwsAccountConnections, getAwsAccountResources } from "@/lib/fetch/aws-connection-api";
-
-const now = new Date();
-const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000);
-
-const mockRecommendations: Recommendation[] = [
-    {
-        recommendationId: "123455",
-        resourceId: "e302b553-94cd-4c8f-9fce-dc179ac1a39a",
-        provider: "AWS",
-        ruleId: "rule-suspend-idle-resources",
-        actionType: "SUSPEND",
-        status: "ACTIVE",
-        evidence: {
-            cpuPercentP95_4d: 18,
-            completenessRatio: 0.99,
-        },
-        createdAt: twoDaysAgo,
-        updatedAt: now,
-        expiresAt: nextWeek,
-    },
-    {
-        recommendationId: "b2c3d4e5",
-        resourceId: "a8e4b986-51c7-4b39-8d14-e9ad9db56c88",
-        provider: "AWS",
-        ruleId: "rule-suspend-idle-resources",
-        actionType: "DOWNSIZE",
-        status: "ACTIVE",
-        evidence: {
-            cpuPercentP95_4d: 12,
-            completenessRatio: 0.95,
-        },
-        createdAt: twoDaysAgo,
-        updatedAt: now,
-        expiresAt: nextWeek,
-    },
-];
+import {
+    getOptimizationRecommendations,
+    acknowledgeRecommendation,
+    dismissRecommendation,
+    applyRecommendation,
+} from "@/lib/fetch/api-optimization";
 
 interface RecStore {
     recommendationGroups: RecommendationGroup[];
     isLoading: boolean;
-    fetchRecGroups: () => void;
+    fetchRecGroups: () => Promise<void>;
+    acknowledgeRec: (recommendationId: string) => Promise<void>;
+    dismissRec: (recommendationId: string) => Promise<void>;
+    applyRec: (recommendationId: string) => Promise<void>;
 }
 
-export const useRecStore = create<RecStore>((set) => ({
+export const useRecStore = create<RecStore>((set, get) => ({
     recommendationGroups: [],
     isLoading: false,
 
     fetchRecGroups: async () => {
-        try {
-            const fetchedRecommendations = mockRecommendations as Recommendation[];
+        set({ isLoading: true });
 
-            const fetchedConnections = await getAwsAccountConnections();
+        try {
+            const [fetchedRecommendations, fetchedConnections] = await Promise.all([
+                getOptimizationRecommendations(),
+                getAwsAccountConnections(),
+            ]);
 
             const tempAccountNameMap: Record<string, string> = {};
             fetchedConnections.forEach((account) => {
@@ -108,6 +83,33 @@ export const useRecStore = create<RecStore>((set) => ({
             }));
         } catch {
             set({ isLoading: false });
+        }
+    },
+
+    acknowledgeRec: async (recommendationId: string) => {
+        try {
+            await acknowledgeRecommendation(recommendationId);
+            await get().fetchRecGroups();
+        } catch (error) {
+            console.error("Failed to acknowledge recommendation:", error);
+        }
+    },
+
+    dismissRec: async (recommendationId: string) => {
+        try {
+            await dismissRecommendation(recommendationId);
+            await get().fetchRecGroups();
+        } catch (error) {
+            console.error("Failed to dismiss recommendation:", error);
+        }
+    },
+
+    applyRec: async (recommendationId: string) => {
+        try {
+            await applyRecommendation(recommendationId);
+            await get().fetchRecGroups();
+        } catch (error) {
+            console.error("Failed to apply recommendation:", error);
         }
     },
 }));

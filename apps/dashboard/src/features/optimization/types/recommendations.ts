@@ -12,6 +12,7 @@ export type RecommendationStatus =
 export type Recommendation = {
     recommendationId: string;
     resourceId: string;
+    resourceType: string;
     resourceDisplayName?: string;
     provider: CloudProviderEnum;
     ruleId: string;

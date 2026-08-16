@@ -5,6 +5,7 @@ import { useState } from "react";
 import { getRecommendationDictionary } from "@/features/optimization/utils/recommendationDictionary";
 import { Button } from "@/components/atoms/button";
 import RecommendationCardHero from "@/features/optimization/components/recCardHero";
+import { useRecStore } from "@/features/optimization/stores/useRecStore";
 
 interface RecommendationCardProps {
     recommendation: Recommendation;
