@@ -19,7 +19,7 @@ export default function RecommendationGroupCard({ group }: Readonly<Recommendati
                 <div className="flex flex-col gap-2">
                     <CardTitle>{group.displayName}</CardTitle>
                     <div className="flex flex-row gap-2">
-                        <Badge>{recommendationsCount} recommendations</Badge>
+                        <Badge>{provider}</Badge>
                     </div>
                 </div>
             </CardHeader>

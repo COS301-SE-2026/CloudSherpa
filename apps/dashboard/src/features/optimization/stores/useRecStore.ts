@@ -8,28 +8,34 @@ const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000);
 
 const mockRecommendations: Recommendation[] = [
     {
-        recommendation_id: "123455",
-        resource_id: "e302b553-94cd-4c8f-9fce-dc179ac1a39a",
+        recommendationId: "123455",
+        resourceId: "e302b553-94cd-4c8f-9fce-dc179ac1a39a",
         provider: "AWS",
-        rule_id: "rule-suspend-idle-resources",
-        action_type: "SUSPEND",
+        ruleId: "rule-suspend-idle-resources",
+        actionType: "SUSPEND",
         status: "ACTIVE",
-        evidence: 18,
-        created_at: twoDaysAgo,
-        update_at: now,
-        expires_at: nextWeek,
+        evidence: {
+            cpuPercentP95_4d: 18,
+            completenessRatio: 0.99,
+        },
+        createdAt: twoDaysAgo,
+        updatedAt: now,
+        expiresAt: nextWeek,
     },
     {
-        recommendation_id: "b2c3d4e5",
-        resource_id: "a8e4b986-51c7-4b39-8d14-e9ad9db56c88",
+        recommendationId: "b2c3d4e5",
+        resourceId: "a8e4b986-51c7-4b39-8d14-e9ad9db56c88",
         provider: "AWS",
-        rule_id: "rule-suspend-idle-resources",
-        action_type: "DOWNSIZE",
+        ruleId: "rule-suspend-idle-resources",
+        actionType: "DOWNSIZE",
         status: "ACTIVE",
-        evidence: 12,
-        created_at: twoDaysAgo,
-        update_at: now,
-        expires_at: nextWeek,
+        evidence: {
+            cpuPercentP95_4d: 12,
+            completenessRatio: 0.95,
+        },
+        createdAt: twoDaysAgo,
+        updatedAt: now,
+        expiresAt: nextWeek,
     },
 ];
 
@@ -75,11 +81,11 @@ export const useRecStore = create<RecStore>((set) => ({
             const groupedMap: Record<string, Recommendation[]> = {};
 
             fetchedRecommendations.forEach((rec) => {
-                const accountId = resourceToAccountMap[rec.resource_id] || "unassigned";
+                const accountId = resourceToAccountMap[rec.resourceId] || "unassigned";
 
                 const enrichedRec: Recommendation = {
                     ...rec,
-                    resource_displayName: tempResourceNameMap[rec.resource_id] || undefined,
+                    resourceDisplayName: tempResourceNameMap[rec.resourceId] || undefined,
                 };
 
                 if (!groupedMap[accountId]) {
@@ -91,7 +97,7 @@ export const useRecStore = create<RecStore>((set) => ({
             const finalGroups: RecommendationGroup[] = Object.entries(groupedMap).map(
                 ([accountId, recommendations]) => ({
                     accountId: accountId === "unassigned" ? null : accountId,
-                    displayName: tempAccountNameMap[accountId] || null, // Inject account name!
+                    displayName: tempAccountNameMap[accountId] || null,
                     recommendations,
                 })
             );

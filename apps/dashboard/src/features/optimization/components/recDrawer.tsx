@@ -34,17 +34,17 @@ export default function RecDrawer({ group }: Readonly<RecDrawer>) {
         let filtered = group.recommendations;
 
         if (actionFilter) {
-            filtered = filtered.filter((rec) => rec.action_type === actionFilter);
+            filtered = filtered.filter((rec) => rec.actionType === actionFilter);
         }
 
         if (searchQuery.trim()) {
             const lowerCaseQuery = searchQuery.toLowerCase();
             filtered = filtered.filter((rec) => {
-                const searchableName = rec.resource_displayName ?? "";
+                const searchableName = rec.resourceDisplayName ?? "";
 
                 return (
                     searchableName.toLowerCase().includes(lowerCaseQuery) ||
-                    rec.action_type.toLowerCase().includes(lowerCaseQuery)
+                    rec.actionType.toLowerCase().includes(lowerCaseQuery)
                 );
             });
         }
@@ -106,7 +106,7 @@ export default function RecDrawer({ group }: Readonly<RecDrawer>) {
                 <div className="h-full w-full p-4 overflow-y-auto space-y-4">
                     {filteredRecommendations.length > 0 ? (
                         filteredRecommendations.map((rec) => (
-                            <RecommendationCard recommendation={rec} key={rec.resource_id} />
+                            <RecommendationCard recommendation={rec} key={rec.resourceId} />
                         ))
                     ) : (
                         <div className="flex justify-center p-8 text-muted-foreground text-sm">

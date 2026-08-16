@@ -10,21 +10,30 @@ export type RecommendationStatus =
     "ACTIVE" | "ACKNOWLEDGED" | "DISMISSED" | "APPLIED" | "SUSPENDED" | "EXPIRED";
 
 export type Recommendation = {
-    recommendation_id: string;
-    resource_id: string;
-    resource_displayName?: string;
+    recommendationId: string;
+    resourceId: string;
+    resourceDisplayName?: string;
     provider: CloudProviderEnum;
-    rule_id: string;
-    action_type: RecommendedAction;
+    ruleId: string;
+    actionType: RecommendedAction;
     status: RecommendationStatus;
-    evidence: number;
-    created_at: Date;
-    update_at: Date;
-    expires_at: Date;
+    evidence: Record<string, number>;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    expiresAt?: Date | string;
 };
 
 export type RecommendationGroup = {
     accountId: string | null;
     displayName?: string | null;
     recommendations: Recommendation[];
+};
+
+export type RecommendationSummary = {
+    total: number;
+    active: number;
+    acknowledged: number;
+    dismissed: number;
+    applied: number;
+    byActionType: Partial<Record<RecommendedAction, number>>;
 };

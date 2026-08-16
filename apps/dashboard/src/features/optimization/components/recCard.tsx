@@ -27,7 +27,7 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
         <Card onClick={() => setOpen(!open)}>
             <CardHeader>
                 <CardTitle>
-                    {recommendation.resource_displayName ?? recommendation.resource_id}
+                    {recommendation.resourceDisplayName ?? recommendation.resourceId}
                 </CardTitle>
             </CardHeader>
             {open && (
@@ -35,7 +35,7 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
                     {/* hero section */}
                     <div className="grid grid-cols-2 gap-4">
                         <RecommendationCardHero
-                            value={recommendation.action_type}
+                            value={recommendation.actionType}
                             className="text-chart-1"
                         />
                     </div>
