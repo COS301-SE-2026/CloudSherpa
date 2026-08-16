@@ -1,3 +1,5 @@
+import { CurrencyEnum } from "@/features/dashboard/types/currency";
+
 export interface UsageForecastData {
     horizonTimestamps: string[];
     predictedValues: number[];
@@ -18,11 +20,37 @@ export interface BillingForecastSeriesItem {
 
 export interface BillingForecastDto {
     cumalativeBillingForecastValue: number;
-    cumalativePastForecastValue: number;
+    cumalitivePastForecastingValue: number;
     billingForecastSeries: Record<string, BillingForecastSeriesItem>;
     failedForecastCharges: string[];
     pastVariance: number;
     dailyBurnRate: number;
     highestCostDriver: string;
     highestCostAcceleration: string;
+}
+
+export interface BillingSummaryDto {
+    cumulativeBilling: number;
+    projectedHorizonCost: number;
+    forecastVariance: number;
+
+    dailyBurnRate: number;
+    primaryCostDriverId: string;
+    primaryCostDriverLabel: string;
+
+    highestCostAccelerationId: string;
+    highestCostAccelerationLabel: string;
+    currency: CurrencyEnum;
+}
+
+export interface CostBreakdownItem {
+    id: string;
+    chargeId: string;
+    label: string;
+
+    percentage: number;
+    cost: number;
+    serviceType: string;
+
+    resourceId: string;
 }

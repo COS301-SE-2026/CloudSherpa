@@ -10,9 +10,8 @@ import {
     MOCK_RESOURCES,
     getMockBillingData,
     mockApiResponse,
-    BillingSummaryDto,
-    CostBreakdownItem,
 } from "@/features/intelligence/mock/billingMockData";
+import { BillingForecastDto, BillingSummaryDto, CostBreakdownItem } from "../types/dtos";
 
 const USE_MOCK = true;
 
@@ -45,6 +44,7 @@ interface BillingIntelligenceStore {
     fetchResources: (accountId: string) => Promise<void>;
     fetchAccounts: (accountId: string) => Promise<void>;
     fetchBillingData: () => Promise<void>;
+    setBillingData: (responseData: BillingForecastDto) => void;
 
     reset: () => void;
 }
@@ -112,9 +112,11 @@ export const useBillingIntelligenceStore = create<BillingIntelligenceStore>((set
             billingData: null,
         });
 
-        const { accountId } = get();
-        if (accountId) {
-            get().fetchBillingData();
+        if (!get().disableFilters) {
+            const { accountId } = get();
+            if (accountId) {
+                get().fetchBillingData();
+            }
         }
     },
 
@@ -182,6 +184,43 @@ export const useBillingIntelligenceStore = create<BillingIntelligenceStore>((set
                 isLoading: false,
             });
         }
+    },
+
+    setBillingData(responseData) {
+        // Adapt the response to what is expected by the UI
+        const summary: BillingSummaryDto = {
+            cumulativeBilling: responseData.cumalitivePastForecastingValue,
+            projectedHorizonCost: responseData.cumalativeBillingForecastValue,
+            forecastVariance: responseData.pastVariance,
+            dailyBurnRate: responseData.dailyBurnRate,
+            primaryCostDriverId: responseData.highestCostDriver,
+            primaryCostDriverLabel:
+                responseData.billingForecastSeries[responseData.highestCostDriver].chargeLabel,
+            highestCostAccelerationId: responseData.highestCostAcceleration,
+            highestCostAccelerationLabel:
+                responseData.billingForecastSeries[responseData.highestCostAcceleration]
+                    .chargeLabel,
+            currency: "USD",
+        };
+
+        const costBreakdownItems = Object.entries(responseData.billingForecastSeries);
+
+        const costBreakdown: CostBreakdownItem[] = costBreakdownItems.map(([id, item]) => ({
+            id,
+            chargeId: id,
+            label: item.chargeLabel,
+            percentage: item.percentageOfTotal,
+            cost: item.value,
+            serviceType: id.split("%%%")[1],
+            resourceId: id.split("%%%")[0],
+        }));
+
+        const billingData = {
+            forSummary: summary,
+            forBreakdown: costBreakdown,
+        };
+
+        set({ billingData });
     },
 
     reset: () =>
