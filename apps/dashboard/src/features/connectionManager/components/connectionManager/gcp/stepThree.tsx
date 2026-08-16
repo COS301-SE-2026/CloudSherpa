@@ -11,32 +11,19 @@ import {
 } from "@/components/atoms/tooltip";
 import { Slider } from "@/components/atoms/slider";
 import { Label } from "@/components/atoms/label";
-import { Search, ArrowUpDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { Input } from "@/components/atoms/input";
-import { Badge } from "@/components/atoms/badge";
-import { Switch } from "@/components/atoms/switch";
 import {
     useReactTable,
     getCoreRowModel,
     getFilteredRowModel,
     getSortedRowModel,
     createColumnHelper,
-    flexRender,
-    type SortingState,
-    type ColumnFiltersState,
-    type HeaderContext,
     type CellContext,
     getPaginationRowModel,
     type Table as TableType,
 } from "@tanstack/react-table";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/atoms/table";
+import {Resource, ResourceHeaders, ResourceCells, SecondaryCells, TagCells, ToggleHeader, ToggleCells, ResourceTable} from "@/features/resourceManager/resourceTable";
 
 /*
 - should have tanstack table for resources, as elect & deselect all for it
@@ -58,13 +45,7 @@ interface StepThreePropsForGcp {
     ingestionPeriod?: string;
 }
 
-interface Resources {
-    id: string;
-    name: string;
-    type: string;
-    region: string;
-    tag: string[];
-    status: "active" | "inactive";
+interface Resources extends Resource{
     selected: boolean;
 }
 
@@ -83,64 +64,6 @@ const hardCodedResources: DetailsForResource[] = [
         tag: ["tag1", "tag2"],
     },
 ];
-
-function ListOfTags({ tags }: Readonly<{ tags: string[] }>) {
-    const displayedTags = tags.slice(0, 3);
-
-    return (
-        <div className="flex items-center gap-1 flex-wrap">
-            {displayedTags.map((tag) => (
-                <Badge key={tag} variant="secondary" className="text-[10px] font-normal">
-                    {" "}
-                    {tag}{" "}
-                </Badge>
-            ))}
-        </div>
-    );
-}
-
-function ResourceHeaders({ column }: Readonly<HeaderContext<Resources, string>>) {
-    return (
-        <Button
-            variant="ghost"
-            size="sm"
-            className="h-auto p-0 font-medium text-foreground hover:bg-transparent hover:text-foreground/80"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-            {" "}
-            Resource <ArrowUpDown size={12} className="ml-1.5 text-muted-foreground" />{" "}
-        </Button>
-    );
-}
-
-function ResourceCells({ getValue }: Readonly<CellContext<Resources, string>>) {
-    return <span className="font-medium"> {getValue()} </span>;
-}
-
-function SecondaryCells({ getValue }: Readonly<CellContext<Resources, string>>) {
-    return <span className="text-xs text-muted-foreground"> {getValue()} </span>;
-}
-
-function TagCells({ getValue }: Readonly<CellContext<Resources, string[]>>) {
-    return <ListOfTags tags={getValue()} />;
-}
-
-function ToggleHeader() {
-    return <span className="block text-center"> Active/Inactive </span>;
-}
-
-function ToggleCells({ row, table }: Readonly<CellContext<Resources, Resources["status"]>>) {
-    const { changeStatus } = table.options.meta as ActionForResource;
-
-    return (
-        <div className="flex justify-center">
-            <Switch
-                checked={row.original.status === "active"}
-                onCheckedChange={() => changeStatus(row.original.id)}
-            />
-        </div>
-    );
-}
 
 function SelectionHeader({ table }: Readonly<{ table: TableType<Resources> }>) {
     const { toggleAll } = table.options.meta as ActionForResource;
@@ -224,10 +147,6 @@ export default function StepThreeGcp({
     const [tableResources, setTableResources] = useState<Resources[]>([]);
 
     const [filter, setFilter] = useState("");
-
-    const [sort, setSort] = useState<SortingState>([]);
-
-    const [filterColumn, setFilterColumn] = useState<ColumnFiltersState>([]);
 
     const realResources = useMemo(
         () => (resources && resources.length > 0 ? resources : hardCodedResources),
@@ -317,14 +236,10 @@ export default function StepThreeGcp({
         meta: actions,
         state: {
             globalFilter: filter,
-            sorting: sort,
-            columnFilters: filterColumn,
             pagination: forPagination,
         },
         getRowId: (row) => row.id,
         onGlobalFilterChange: setFilter,
-        onSortingChange: setSort,
-        onColumnFiltersChange: setFilterColumn,
         getCoreRowModel: getCoreRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
         getSortedRowModel: getSortedRowModel(),
@@ -412,61 +327,7 @@ export default function StepThreeGcp({
                 </div>
 
                 <div className="rounded-lg border">
-                    <Table className="table-fixed w-full">
-                        <TableHeader>
-                            {table.getHeaderGroups().map((headerGroup) => (
-                                <TableRow key={headerGroup.id} className="hover:bg-transparent">
-                                    {headerGroup.headers.map((header) => (
-                                        <TableHead
-                                            key={header.id}
-                                            className={
-                                                header.column.id === "selected" ? "w-10" : undefined
-                                            }
-                                        >
-                                            {flexRender(
-                                                header.column.columnDef.header,
-                                                header.getContext()
-                                            )}
-                                        </TableHead>
-                                    ))}
-                                </TableRow>
-                            ))}
-                        </TableHeader>
-
-                        <TableBody>
-                            {table.getRowModel().rows.length === 0 ? (
-                                <TableRow>
-                                    <TableCell
-                                        colSpan={columns.length}
-                                        className="text-center text-xs text-muted-foreground py-6"
-                                    >
-                                        {" "}
-                                        No resources{" "}
-                                    </TableCell>
-                                </TableRow>
-                            ) : (
-                                table.getRowModel().rows.map((row) => (
-                                    <TableRow key={row.id}>
-                                        {row.getVisibleCells().map((cell) => (
-                                            <TableCell
-                                                key={cell.id}
-                                                className={
-                                                    cell.column.id === "selected"
-                                                        ? "w-10"
-                                                        : undefined
-                                                }
-                                            >
-                                                {flexRender(
-                                                    cell.column.columnDef.cell,
-                                                    cell.getContext()
-                                                )}
-                                            </TableCell>
-                                        ))}
-                                    </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
+                    <ResourceTable table = {table} columnsLength = {columns.length}/>
 
                     {tableResources.length > 8 && (
                         <div className="flex items-center justify-center gap-2 py-4 border-t border-border">
