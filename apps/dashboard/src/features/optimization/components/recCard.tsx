@@ -34,7 +34,10 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
                 <CardContent className="space-y-4">
                     {/* hero section */}
                     <div className="grid grid-cols-2 gap-4">
-                        <RecommendationCardHero value={recommendation.action_type} />
+                        <RecommendationCardHero
+                            value={recommendation.action_type}
+                            className="text-chart-1"
+                        />
                     </div>
 
                     {/* explanation */}

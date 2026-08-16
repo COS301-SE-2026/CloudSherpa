@@ -52,6 +52,11 @@ export default function RecDrawer({ group }: Readonly<RecDrawer>) {
         return filtered;
     }, [searchQuery, actionFilter, group.recommendations]);
 
+    const handleClearFilters = () => {
+        setActionFilter("");
+        setSearchQuery("");
+    };
+
     return (
         <Drawer direction="right" dismissible={true} open={isOpen} onOpenChange={setIsOpen}>
             <DrawerTrigger asChild>
@@ -67,25 +72,35 @@ export default function RecDrawer({ group }: Readonly<RecDrawer>) {
                             <X />
                         </Button>
                     </div>
-                    <div className="flex flex-row w-full justify-end gap-2 pt-2">
-                        <div className="relative w-full">
-                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                type="text"
-                                placeholder="Search by resource..."
-                                className="pl-8 w-full"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
+                    <div className="flex flex-row w-full justify-between gap-2 pt-2">
+                        {(actionFilter || searchQuery) && (
+                            <div>
+                                <Button variant="secondary" onClick={handleClearFilters}>
+                                    <X />
+                                    Clear Filters
+                                </Button>
+                            </div>
+                        )}
+                        <div className="flex flex-row justify-end gap-2 w-full">
+                            <div className="relative">
+                                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    type="text"
+                                    placeholder="Search by resource..."
+                                    className="pl-8 w-full lg:w-90"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                />
+                            </div>
+                            <Dropdown
+                                options={ACTIONS}
+                                value={actionFilter}
+                                onSelect={setActionFilter}
+                                disableSearch
+                                widthVariant="medium"
+                                placeholder="Action..."
                             />
                         </div>
-                        <Dropdown
-                            options={ACTIONS}
-                            value={actionFilter}
-                            onSelect={setActionFilter}
-                            disableSearch
-                            widthVariant="medium"
-                            placeholder="Action..."
-                        />
                     </div>
                 </DrawerHeader>
                 <div className="h-full w-full p-4 overflow-y-auto space-y-4">
