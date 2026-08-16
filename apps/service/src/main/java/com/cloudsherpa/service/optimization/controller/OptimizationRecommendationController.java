@@ -1,5 +1,6 @@
 package com.cloudsherpa.service.optimization.controller;
 
+import com.cloudsherpa.service.optimization.service.OptimizationRecommendationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,6 +21,12 @@ import org.springframework.web.bind.annotation.RestController;
     description = "Retrieve and manage cloud optimization recommendations")
 public class OptimizationRecommendationController {
 
+  private final OptimizationRecommendationService service;
+
+  public OptimizationRecommendationController(OptimizationRecommendationService service) {
+    this.service = service;
+  }
+
   @GetMapping
   @Operation(
       summary = "List optimization recommendations",
@@ -38,7 +45,8 @@ public class OptimizationRecommendationController {
           String actionType,
       @Parameter(description = "Resource UUID") @RequestParam(required = false) UUID resourceId) {
 
-    return List.of(mockRecommendation());
+    // use with parameters: status, provider, resourceType, actionType, resourceId
+    return service.getRecommendations();
   }
 
   @GetMapping("/summary")
@@ -46,17 +54,7 @@ public class OptimizationRecommendationController {
       summary = "Get recommendation summary",
       description = "Returns recommendation counts grouped by status and action type.")
   public Map<String, Object> getRecommendationSummary() {
-    return Map.of(
-        "total", 3,
-        "active", 1,
-        "acknowledged", 1,
-        "dismissed", 0,
-        "applied", 1,
-        "byActionType",
-            Map.of(
-                "TERMINATE", 0,
-                "DOWNSIZE", 2,
-                "SUSPEND", 1));
+    return service.getRecommendationSummary();
   }
 
   @GetMapping("/{recommendationId}")
@@ -67,7 +65,7 @@ public class OptimizationRecommendationController {
       @Parameter(description = "Recommendation UUID", required = true) @PathVariable
           UUID recommendationId) {
 
-    return mockRecommendation(recommendationId);
+    return service.getRecommendation(recommendationId);
   }
 
   @PostMapping("/{recommendationId}/acknowledge")
@@ -78,7 +76,7 @@ public class OptimizationRecommendationController {
       @Parameter(description = "Recommendation UUID", required = true) @PathVariable
           UUID recommendationId) {
 
-    return mockRecommendationWithStatus(recommendationId, "ACKNOWLEDGED");
+    return service.acknowledgeRecommendation(recommendationId);
   }
 
   @PostMapping("/{recommendationId}/dismiss")
@@ -89,7 +87,7 @@ public class OptimizationRecommendationController {
       @Parameter(description = "Recommendation UUID", required = true) @PathVariable
           UUID recommendationId) {
 
-    return mockRecommendationWithStatus(recommendationId, "DISMISSED");
+    return service.dismissRecommendation(recommendationId);
   }
 
   @PostMapping("/{recommendationId}/apply")
@@ -100,38 +98,6 @@ public class OptimizationRecommendationController {
       @Parameter(description = "Recommendation UUID", required = true) @PathVariable
           UUID recommendationId) {
 
-    return mockRecommendationWithStatus(recommendationId, "APPLIED");
-  }
-
-  // mock helpers
-  private Map<String, Object> mockRecommendation() {
-    return mockRecommendation(UUID.randomUUID());
-  }
-
-  private Map<String, Object> mockRecommendation(UUID recommendationId) {
-    return mockRecommendationWithStatus(recommendationId, "ACTIVE");
-  }
-
-  private Map<String, Object> mockRecommendationWithStatus(UUID recommendationId, String status) {
-
-    return Map.of(
-        "recommendationId",
-        recommendationId,
-        "resourceId",
-        UUID.fromString("b0000000-0000-0000-0000-000000000001"),
-        "resourceType",
-        "compute_instance",
-        "provider",
-        "AWS",
-        "ruleId",
-        "COMPUTE-DOWNSIZE",
-        "actionType",
-        "DOWNSIZE",
-        "status",
-        status,
-        "evidence",
-        Map.of(
-            "cpuPercentP95_4d", 18.4,
-            "completenessRatio", 0.99));
+    return service.applyRecommendation(recommendationId);
   }
 }
