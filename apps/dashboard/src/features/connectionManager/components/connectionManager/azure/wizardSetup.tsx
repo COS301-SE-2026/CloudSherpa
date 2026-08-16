@@ -2,6 +2,7 @@
 
 import StepOneAzure from "./stepOne";
 import StepTwoAzure from "./stepTwo";
+import StepThreeAzure from "./stepThree";
 import { useRouter } from "next/navigation";
 import { BaseWizard } from "@/features/connectionManager/components/connectionManager/wizardSetup/wizard";
 
@@ -10,7 +11,7 @@ export default function WizardSetupAzure() {
 
     return (
         <BaseWizard
-            eachStep={[{ forComponents: StepOneAzure }, { forComponents: StepTwoAzure }]}
+            eachStep={[{ forComponents: StepOneAzure }, { forComponents: StepTwoAzure }, {forComponents : StepThreeAzure}]}
 
             onComplete={() => {
                 router.push("/manageConnections");
