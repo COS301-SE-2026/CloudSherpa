@@ -33,6 +33,27 @@ import {
     ToggleCells,
     ResourceTable,
 } from "@/features/resourceManager/resourceTable";
+import { ResourceSelectionDto } from "@/lib/fetch/aws-connection-api";
+import { ResourceDetail } from "@/lib/fetch/cloud-resource-api";
+
+export interface TableResource extends Resource {
+    serviceCategory: string;
+    selected: boolean;
+}
+
+//added a helper func to convert the resource details to the table resources
+export function convertToTableResources(details: ResourceDetail): TableResource {
+    return {
+        id: details.resourceId,
+        name: details.name,
+        type: details.resourceType || "Unknown",
+        region: details.region || "Unknown",
+        tag: Object.entries(details.tags || {}).map(([key, value]) => `${key} : ${value}`),
+        status: "active" as "active" | "inactive",
+        serviceCategory: details.serviceCategory || "Unknown",
+        selected: false,
+    };
+}
 
 export interface PropsForIngestionSlider {
     forIngestionPeriod: string;
@@ -197,20 +218,21 @@ interface DetailsForResource {
 }
 
 export interface StepThreePropsForBase {
-    resources?: DetailsForResource[];
-    onNext: (data: Record<string, unknown>) => void;
+    resources?: ResourceDetail[];
+    onNext: (data: { selectedResources: ResourceSelectionDto[]; ingestionPeriod: string }) => void;
     onBack?: () => void;
     ingestionPeriod?: string;
-    hardCodedResources?: DetailsForResource[];
+    hardCodedResources?: ResourceDetail[];
 }
 
-const hardCode: DetailsForResource[] = [
+const hardCode: ResourceDetail[] = [
     {
-        id: "resource1",
+        resourceId: "resource1",
         name: "Resource one",
-        type: "Service one",
+        resourceType: "Service one",
+        serviceCategory: "Category one",
         region: "region 1",
-        tag: ["tag1", "tag2"],
+        tags: { tag1: "tag1", tag2: "tag2" },
     },
 ];
 
@@ -410,11 +432,11 @@ export default function StepThreeBase({
 
     useEffect(() => {
         const mappedResources = realResources.map((resources) => ({
-            id: resources.id,
+            id: resources.resourceId,
             name: resources.name,
-            type: resources.type || "Unknown",
+            type: resources.resourceType || "Unknown",
             region: resources.region || "Unknown",
-            tag: resources.tag || ["No tags"],
+            tag: Object.entries(resources.tags || {}).map(([key, value]) => `${key} : ${value}`),
             status: "active" as "active" | "inactive",
             selected: false,
         }));
@@ -428,14 +450,26 @@ export default function StepThreeBase({
         setErrors(null);
 
         try {
-            const resourcesSelected = tableResources
+            const resourcesSelected: ResourceSelectionDto[] = tableResources
                 .filter((forResources) => forResources.selected)
-                .map((forResources) => forResources.id);
+                .map((forResources) => ({
+                    resourceId: forResources.id,
+                    serviceType: forResources.type || "",
+                    resourceType: forResources.type || "",
+                    resourceName: forResources.name,
+                    region: forResources.region || "",
+                    tags: Object.fromEntries(
+                        forResources.tag.map((tag) => {
+                            const [key, value] = tag.split(": ");
+                            return [key, value || ""];
+                        })
+                    ),
+                    active: true,
+                }));
 
             onNext({
                 selectedResources: resourcesSelected,
                 ingestionPeriod: forIngestionPeriod,
-                tableResources: tableResources,
             });
         } catch {
             setErrors("Unable to complete GCP connection setup");

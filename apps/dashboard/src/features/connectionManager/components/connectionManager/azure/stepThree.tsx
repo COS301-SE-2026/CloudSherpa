@@ -6,11 +6,12 @@ import StepThreeBase, {
 
 const hardCodedResources = [
     {
-        id: "resource1",
+        resourceId: "resource1",
         name: "Resource one",
-        type: "Service one",
+        resourceType: "Service one",
+        serviceCategory: "Category one",
         region: "region 1",
-        tag: ["tag1", "tag2"],
+        tags: { tag1: "tag1", tag2: "tag2" },
     },
 ];
 
