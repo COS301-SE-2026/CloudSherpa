@@ -1,6 +1,6 @@
 "use client";
 
-import { billingIntelligenceStore } from "@/features/intelligence/stores/billingIntelligenceStore";
+import { useBillingIntelligenceStore } from "@/features/intelligence/stores/billingIntelligenceStore";
 import BillingToolbar from "@/features/intelligence/components/billing/billingToolbar";
 import CostBreakdownList from "@/features/intelligence/components/billing/costBreakdownList";
 import BillingForecastChart from "@/features/intelligence/components/billing/billingForecastChart";
@@ -8,6 +8,7 @@ import BillingStatisticsCard from "@/features/intelligence/components/billing/bi
 import BillingSummaryCard from "@/features/intelligence/components/billing/billingSummaryCard";
 import { TrendingUp } from "lucide-react";
 import { useEffect } from "react";
+import { useMakeBillingForecast } from "../../hooks/useMakeBillingForecast";
 
 export default function BillingIntelligence() {
     const {
@@ -20,23 +21,23 @@ export default function BillingIntelligence() {
         forecastTimeWindowDays,
         billingData,
         isLoading,
-        fetchBillingData,
-    } = billingIntelligenceStore();
+        disableFilters,
+    } = useBillingIntelligenceStore();
 
-    const selected = provider && accountId && resourceId;
+    const { makeBillingForecast } = useMakeBillingForecast();
+
+    const selected = disableFilters || (provider && accountId && resourceId);
 
     useEffect(() => {
-        if (selected) {
-            fetchBillingData();
+        async function laodForecast() {
+            const result = await makeBillingForecast(30);
+            console.log(result);
         }
-    }, [
-        accountId,
-        resourceId,
-        pastTimeWindowDays,
-        forecastTimeWindowDays,
-        selected,
-        fetchBillingData,
-    ]);
+
+        if (selected) {
+            void laodForecast();
+        }
+    }, [forecastTimeWindowDays, selected]);
 
     if (!selected) {
         return (

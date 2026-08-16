@@ -34,6 +34,8 @@ interface BillingIntelligenceStore {
 
     isLoading: boolean;
     error: string | null;
+    disableFilters: boolean;
+    singleTimeSelector: boolean;
 
     setProvider: (provider: string) => void;
     setAccount: (accountId: string, displayName: string) => void;
@@ -47,7 +49,7 @@ interface BillingIntelligenceStore {
     reset: () => void;
 }
 
-export const billingIntelligenceStore = create<BillingIntelligenceStore>((set, get) => ({
+export const useBillingIntelligenceStore = create<BillingIntelligenceStore>((set, get) => ({
     provider: null,
     accountId: null,
     resourceId: null,
@@ -65,6 +67,12 @@ export const billingIntelligenceStore = create<BillingIntelligenceStore>((set, g
     isLoading: false,
     error: null,
     billingData: null,
+
+    // Flags set during integration due to missing support
+    // disablefilter controls whether the Provider, Account, Resource filters are shown
+    // singleTimeSelector controls whether whether the historical time selector is hidden
+    disableFilters: true,
+    singleTimeSelector: true,
 
     setProvider: (provider) => {
         set({
