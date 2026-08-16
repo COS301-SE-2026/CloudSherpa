@@ -170,7 +170,7 @@ export function ResourceTable<T extends Resource>({
     columnsLength,
 }: Readonly<PropsForResourceTable<T>>) {
     return (
-        <Table className="table-fixed w-full">
+        <Table className="table-fixed table-auto">
             <TableHeader>
                 {table.getHeaderGroups().map((headerGroup) => (
                     <TableRow key={headerGroup.id} className="hover:bg-transparent">
