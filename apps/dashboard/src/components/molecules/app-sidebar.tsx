@@ -184,6 +184,22 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 </SidebarGroup>
 
                 <SidebarGroup>
+                    <SidebarGroupLabel>Optimization</SidebarGroupLabel>
+                    <SidebarGroupContent>
+                        <SidebarMenu>
+                            <SidebarMenuItem>
+                                <SidebarMenuButton asChild tooltip="AWS">
+                                    <Link href="/recommendations">
+                                        <Network />
+                                        <span>Recommendations</span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        </SidebarMenu>
+                    </SidebarGroupContent>
+                </SidebarGroup>
+
+                <SidebarGroup>
                     <SidebarGroupLabel> Support </SidebarGroupLabel>
 
                     <SidebarGroupContent>
