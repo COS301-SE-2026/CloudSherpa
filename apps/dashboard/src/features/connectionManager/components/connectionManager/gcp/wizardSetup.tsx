@@ -1,53 +1,97 @@
 "use client";
 
+import { useState } from "react";
 import StepOneGcp from "./stepOne";
 import StepTwoGcp from "./stepTwo";
 import StepThreeGcp from "./stepThree";
-import { BaseWizard } from "@/features/connectionManager/components/connectionManager/wizardSetup/wizard";
-import { useRouter } from "next/navigation";
+import { ResourceDetail } from "@/lib/fetch/cloud-resource-api";
+import { GcpCredentialsDto } from "@/lib/fetch/gcp-connection-api";
+
+interface WizardData {
+    credentials: GcpCredentialsDto | null;
+    displayName: string;
+    ingestionPeriod: number;
+    servicesSelected: string[];
+    resources: ResourceDetail[];
+}
 
 export default function WizardSetupGcp() {
-    const router = useRouter();
+    const [step, setStep] = useState<1 | 2 | 3>(1);
+
+    const [wizardData, setWizardData] = useState<WizardData>({
+        credentials: null,
+        displayName: "GCP Connection",
+        ingestionPeriod: 60,
+        servicesSelected: [],
+        resources: [],
+    });
+
+    const handleStepOneNext = (data: { displayName: string; credentials: GcpCredentialsDto }) => {
+        setWizardData((previous) => ({
+            ...previous,
+            displayName: data.displayName,
+            credentials: data.credentials,
+        }));
+
+        setStep(2);
+    };
+
+    const handleStepTwoNext = (data: {
+        displayName: string;
+        servicesSelected: string[];
+        resources: ResourceDetail[];
+        credentials: GcpCredentialsDto;
+    }) => {
+        setWizardData((previous) => ({
+            ...previous,
+            displayName: data.displayName,
+            servicesSelected: data.servicesSelected,
+            resources: data.resources,
+            credentials: data.credentials,
+        }));
+
+        setStep(3);
+    };
+
+    const handleStepThreeComplete = (ingestionPeriod: number) => {
+        setWizardData((previous) => ({
+            ...previous,
+            ingestionPeriod,
+        }));
+
+        console.log("GCP wizard completed:", {
+            ...wizardData,
+            ingestionPeriod,
+        });
+    };
+
+    const handleBack = () => {
+        setStep((previous) => (previous - 1) as 1 | 2 | 3);
+    };
 
     return (
-        <BaseWizard
-            eachStep={[
-                { forComponents: StepOneGcp },
-                { forComponents: StepTwoGcp },
-                { forComponents: StepThreeGcp },
-            ]}
+        <>
+            {step === 1 && <StepOneGcp onNext={handleStepOneNext} />}
 
-            onComplete={() => {
-                router.push("/manageConnections");
-            }}
+            {step === 2 && wizardData.credentials && (
+                <StepTwoGcp
+                    displayName={wizardData.displayName}
+                    credentials={wizardData.credentials}
+                    onNext={handleStepTwoNext}
+                    onBack={handleBack}
+                />
+            )}
 
-            initialData={{
-                name: "GCP connection",
-                servicesSelected: [],
-                resources: [],
-            }}
-
-            getDataForStep={(step, forData) => {
-                if (step === 0) {
-                    return {
-                        name: forData.name,
-                        credentials: { accountKey: forData.accountKey },
-                    };
-                }
-
-                if (step === 1) {
-                    return {
-                        servicesSelected: forData.servicesSelected || [],
-                        resources: forData.resources || [],
-                    };
-                }
-
-                if (step === 2) {
-                    return {};
-                }
-
-                return forData;
-            }}
-        />
+            {step === 3 && wizardData.credentials && (
+                <StepThreeGcp
+                    displayName={wizardData.displayName}
+                    ingestionPeriod={wizardData.ingestionPeriod}
+                    credentials={wizardData.credentials}
+                    resources={wizardData.resources}
+                    onComplete={handleStepThreeComplete}
+                    onBack={handleBack}
+                />
+            )}
+        </>
     );
 }

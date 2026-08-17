@@ -3,46 +3,76 @@
 import React, { useState } from "react";
 import { StepTwo } from "@/features/connectionManager/components/connectionManager/wizardSetup/stepTwo";
 import { Button } from "@/components/atoms/button";
-
-interface DetailsForResource {
-    id: string;
-    name: string;
-    type: string;
-}
-
-interface DetailsForGcp {
-    accountKey: string;
-}
+import {
+    getCloudServices,
+    generateGcpPermissionsPolicy,
+    getCloudResources,
+    ResourceDetail,
+} from "@/lib/fetch/cloud-resource-api";
+import { GcpCredentialsDto } from "@/lib/fetch/gcp-connection-api";
 
 interface StepTwoPropsForGcp {
-    credentials?: DetailsForGcp | null;
-    onNext: (forData: { servicesSelected: string[]; resources: DetailsForResource[] }) => void;
-
+    displayName: string;
+    credentials: GcpCredentialsDto;
+    onNext: (data: {
+        displayName: string;
+        servicesSelected: string[];
+        resources: ResourceDetail[];
+        credentials: GcpCredentialsDto;
+    }) => void;
     onBack?: () => void;
 }
 
-const HARDCODEDSERVICES = [{ id: "service1", name: "Service one" }];
-
-const HARDCODEDPERMISSIONS: Record<string, string[]> = {
-    service1: ["Permission one", "Permission two"],
-};
-
-export default function StepTwoGcp({ onNext, onBack }: Readonly<StepTwoPropsForGcp>) {
-    const [servicesAvailable] = useState<{ id: string; name: string }[]>(HARDCODEDSERVICES);
-
+export default function StepTwoGcp({
+    displayName,
+    credentials,
+    onNext,
+    onBack,
+}: Readonly<StepTwoPropsForGcp>) {
+    const [servicesAvailable, setServicesAvailable] = useState<string[]>([]);
     const [selectedServices, setSelectedServices] = useState<string[]>([]);
-
+    const [permissions, setPermissions] = useState<string[]>([]);
     const [forLoading, setForLoading] = useState(false);
 
     const [errors, setErrors] = useState("");
 
-    const permissions = React.useMemo(() => {
-        if (selectedServices.length === 0) {
-            return [];
-        }
+    React.useEffect(() => {
+        const loadPermissions = async () => {
+            if (selectedServices.length === 0) {
+                setPermissions([]);
+                return;
+            }
 
-        return selectedServices.flatMap((idForService) => HARDCODEDPERMISSIONS[idForService] || []);
+            try {
+                const result = await generateGcpPermissionsPolicy(selectedServices);
+
+                setPermissions(result);
+            } catch {
+                setErrors("Failed to determine required GCP permissions");
+            }
+        };
+
+        loadPermissions();
     }, [selectedServices]);
+
+    React.useEffect(() => {
+        const loadServices = async () => {
+            try {
+                setForLoading(true);
+                setErrors("");
+
+                const services = await getCloudServices("gcp");
+
+                setServicesAvailable(services);
+            } catch {
+                setErrors("Failed to load supported GCP services");
+            } finally {
+                setForLoading(false);
+            }
+        };
+
+        loadServices();
+    }, []);
 
     const checkingService = (idForService: string) => {
         setSelectedServices((previous) =>
@@ -55,27 +85,38 @@ export default function StepTwoGcp({ onNext, onBack }: Readonly<StepTwoPropsForG
     const handlingSubmit = async (submitting: React.SubmitEvent<HTMLFormElement>) => {
         submitting.preventDefault();
 
+        if (selectedServices.length === 0) {
+            setErrors("Please select at least one service");
+            return;
+        }
+
         try {
             setForLoading(true);
             setErrors("");
 
-            const resourcesDiscovered: DetailsForResource[] = [
-                { id: "gcp-resource-1", name: "Resource one", type: "service1" },
-            ];
+            const resourcesDiscovered = await getCloudResources(
+                "gcp",
+                credentials,
+                selectedServices
+            );
 
-            onNext({ servicesSelected: selectedServices, resources: resourcesDiscovered });
+            onNext({
+                displayName,
+                servicesSelected: selectedServices,
+                resources: resourcesDiscovered,
+                credentials,
+            });
         } catch {
-            setErrors("Failed to discover any resources");
+            setErrors("Failed to discover GCP resources");
         } finally {
             setForLoading(false);
         }
     };
-
     const handlingSelectedAll = () => {
         if (selectedServices.length == servicesAvailable.length) {
             setSelectedServices([]);
         } else {
-            setSelectedServices(servicesAvailable.map((services) => services.id));
+            setSelectedServices(servicesAvailable.map((services) => services));
         }
     };
 
@@ -111,17 +152,17 @@ export default function StepTwoGcp({ onNext, onBack }: Readonly<StepTwoPropsForG
                 <div className="space-y-3">
                     {servicesAvailable.map((service) => (
                         <label
-                            key={service.id}
+                            key={service}
                             className="flex items-center gap-3 w-full p-4 bg-background rounded-lg border border-border hover:border-primary/40 transition-all cursor-pointer focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2"
                         >
                             <input
                                 type="checkbox"
-                                checked={selectedServices.includes(service.id)}
-                                onChange={() => checkingService(service.id)}
+                                checked={selectedServices.includes(service)}
+                                onChange={() => checkingService(service)}
                                 className="w-4 h-4 rounded border-border bg-background text-primary focus:ring-2 focus:ring-primary"
                             />
 
-                            <span className="text-foreground font-medium"> {service.name} </span>
+                            <span className="text-foreground font-medium"> {service} </span>
                         </label>
                     ))}
                 </div>
