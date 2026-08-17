@@ -5,6 +5,7 @@ import { useRecStore } from "@/features/optimization/stores/useRecStore";
 import { Input } from "@/components/atoms/input";
 import { Search } from "lucide-react";
 import { Tabs, TabsTrigger, TabsList } from "@/components/atoms/tabs";
+import RecommendationCardHero from "@/features/optimization/components/recCardHero";
 
 const FilterOptions = [
     { value: "all", label: "ALL" },
@@ -16,6 +17,8 @@ const FilterOptions = [
 export default function Recommendations() {
     const fetchRecGroups = useRecStore((state) => state.fetchRecGroups);
     const recommendationGroups = useRecStore((state) => state.recommendationGroups);
+    const fetchSummary = useRecStore((state) => state.fetchSummary);
+    const summary = useRecStore((state) => state.summary);
     const isLoading = useRecStore((state) => state.isLoading);
 
     const [searchQuery, setSearchQuery] = useState("");
@@ -40,7 +43,8 @@ export default function Recommendations() {
 
     useEffect(() => {
         fetchRecGroups();
-    }, [fetchRecGroups]);
+        fetchSummary();
+    }, [fetchRecGroups, fetchSummary]);
 
     if (isLoading) {
         return (
@@ -55,13 +59,19 @@ export default function Recommendations() {
             <header className="flex flex-col space-y-4 py-2">
                 <h1 className="text-3xl font-semibold">Optimization Recommendations</h1>
             </header>
+            {/* recommendation summaries */}
+            {summary && (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-2">
+                    <RecommendationCardHero value={`Total: ${summary.total}`} />
+                    <RecommendationCardHero value={`Active: ${summary.active}`} />
+                    <RecommendationCardHero value={`Applied: ${summary.applied}`} />
+                    <RecommendationCardHero value={`Acknowledged: ${summary.acknowledged}`} />
+                    <RecommendationCardHero value={`Dismissed: ${summary.dismissed}`} />
+                </div>
+            )}
             {/* filter bar */}
             <div className="flex flex-row w-full justify-between gap-2">
-                <Tabs
-                    value={filter || undefined}
-                    onValueChange={(value) => setFilter(value)}
-                    className="mb-4"
-                >
+                <Tabs value={filter || undefined} onValueChange={(value) => setFilter(value)}>
                     <TabsList className="self-start inline-flex gap-1 h-auto p-1 bg-muted w-fit">
                         {FilterOptions.map((providers) => {
                             return (
@@ -87,8 +97,9 @@ export default function Recommendations() {
                     />
                 </div>
             </div>
+
             {filteredRecommendationGroups.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+                <div className="flex flex-col gap-2">
                     {filteredRecommendationGroups.map((group) => (
                         <RecommendationGroupCard
                             key={group.accountId ?? "unassigned"}

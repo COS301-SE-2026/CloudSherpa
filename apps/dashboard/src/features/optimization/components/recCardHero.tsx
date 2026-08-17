@@ -18,7 +18,7 @@ export default function RecommendationCardHero({
     return (
         <Tooltip>
             <TooltipTrigger>
-                <Card className="w-full">
+                <Card className="w-full group">
                     <CardHeader>
                         <CardTitle className={cn("text-xl flex flex-row justify-start", className)}>
                             {name ?? name}
@@ -27,7 +27,7 @@ export default function RecommendationCardHero({
                     </CardHeader>
                 </Card>
             </TooltipTrigger>
-            <TooltipContent>{tooltip}</TooltipContent>
+            {tooltip && <TooltipContent>{tooltip}</TooltipContent>}
         </Tooltip>
     );
 }
