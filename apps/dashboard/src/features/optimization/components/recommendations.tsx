@@ -35,8 +35,15 @@ export default function Recommendations() {
                       )
                     : true;
 
+            const query = searchQuery.trim().toLowerCase();
+
             const matchesSearch = searchQuery.trim()
-                ? (group.displayName ?? "").toLowerCase().includes(searchQuery.toLowerCase())
+                ? (group.displayName ?? "").toLowerCase().includes(query) ||
+                  group.recommendations.some(
+                      (rec) =>
+                          (rec.resourceId ?? "").toLowerCase().includes(query) ||
+                          (rec.resourceDisplayName ?? "").toLowerCase().includes(query)
+                  )
                 : true;
 
             return matchesProvider && matchesSearch;
