@@ -3,35 +3,87 @@ import { Badge } from "@/components/atoms/badge";
 import RecDrawer from "@/features/optimization/components/recDrawer";
 import { RecommendationGroup } from "@/features/optimization/types/recommendations";
 import { Separator } from "@/components/atoms/separator";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/atoms/dropdown-menu";
+import {
+    ContextMenu,
+    ContextMenuContent,
+    ContextMenuTrigger,
+    ContextMenuItem,
+} from "@/components/atoms/context-menu";
+import { EllipsisVertical, Eye } from "lucide-react";
+import { Button } from "@/components/atoms/button";
+import { useState } from "react";
 
 interface RecommendationGroupCardProps {
     group: RecommendationGroup;
 }
 
 export default function RecommendationGroupCard({ group }: Readonly<RecommendationGroupCardProps>) {
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    const handleOpenDrawer = () => setIsDrawerOpen(true);
+
     const recommendationsCount = group.recommendations.length;
 
     const provider = recommendationsCount > 0 ? group.recommendations[0].provider : "Unknown";
 
     return (
-        <Card className="h-50 flex flex-col justify-between">
-            <CardHeader>
-                <div className="flex flex-col gap-2">
-                    <CardTitle>{group.displayName}</CardTitle>
-                    <div className="flex flex-row gap-2">
+        <ContextMenu>
+            <ContextMenuTrigger>
+                <Card
+                    className="h-50 flex flex-col justify-between cursor-pointer hover:bg-muted/50"
+                    onClick={handleOpenDrawer}
+                >
+                    <CardHeader className="flex flex-col justify-start items-start gap-2">
+                        <div className="w-full flex flex-row justify-between items-center">
+                            <CardTitle>{group.displayName} </CardTitle>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8"
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        <EllipsisVertical className="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-fit">
+                                    <DropdownMenuItem
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleOpenDrawer();
+                                        }}
+                                    >
+                                        <Eye className="mr-2 h-4 w-4" />
+                                        View Recommendations
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
                         <Badge>{provider}</Badge>
-                    </div>
-                </div>
-            </CardHeader>
-            <CardFooter className="w-full flex flex-col justify-start gap-2">
-                <Separator />
-                <div className="flex flex-row justify-between items-center w-full">
-                    <span className="text-muted-foreground text-xs">
-                        {recommendationsCount} recommendations
-                    </span>
-                    <RecDrawer group={group} />
-                </div>
-            </CardFooter>
-        </Card>
+                    </CardHeader>
+                    <CardFooter className="w-full flex flex-col justify-start gap-2">
+                        <Separator />
+                        <div className="flex flex-row justify-end items-center w-full">
+                            <span className="text-muted-foreground text-s">
+                                {recommendationsCount} recommendations
+                            </span>
+                        </div>
+                    </CardFooter>
+                    <RecDrawer group={group} isOpen={isDrawerOpen} setIsOpen={setIsDrawerOpen} />
+                </Card>
+            </ContextMenuTrigger>
+            <ContextMenuContent>
+                <ContextMenuItem onClick={handleOpenDrawer}>
+                    <Eye className="mr-2 h-4 w-4" />
+                    View Recommendations
+                </ContextMenuItem>
+            </ContextMenuContent>
+        </ContextMenu>
     );
 }

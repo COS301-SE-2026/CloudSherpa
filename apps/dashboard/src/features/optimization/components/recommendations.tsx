@@ -3,6 +3,7 @@ import { useEffect, useState, useMemo } from "react";
 import RecommendationGroupCard from "@/features/optimization/components/recGroupCard";
 import { useRecStore } from "@/features/optimization/stores/useRecStore";
 import { Input } from "@/components/atoms/input";
+import { Search } from "lucide-react";
 import { Tabs, TabsTrigger, TabsList } from "@/components/atoms/tabs";
 
 const FilterOptions = [
@@ -55,7 +56,7 @@ export default function Recommendations() {
                 <h1 className="text-3xl font-semibold">Optimization Recommendations</h1>
             </header>
             {/* filter bar */}
-            <div className="flex flex-row w-full justify-between">
+            <div className="flex flex-row w-full justify-between gap-2">
                 <Tabs
                     value={filter || undefined}
                     onValueChange={(value) => setFilter(value)}
@@ -75,13 +76,16 @@ export default function Recommendations() {
                         })}
                     </TabsList>
                 </Tabs>
-                <Input
-                    type="text"
-                    placeholder="Search by Account..."
-                    className="pl-8  w-full lg:w-80"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                />
+                <div className="relative">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        type="text"
+                        placeholder="Search by Account..."
+                        className="pl-8  w-full lg:w-150"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                </div>
             </div>
             {filteredRecommendationGroups.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">

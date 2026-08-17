@@ -22,7 +22,9 @@ export const useRecStore = create<RecStore>((set, get) => ({
     isLoading: false,
 
     fetchRecGroups: async () => {
-        set({ isLoading: true });
+        if (get().recommendationGroups.length === 0) {
+            set({ isLoading: true });
+        }
 
         try {
             const [fetchedRecommendations, fetchedConnections] = await Promise.all([

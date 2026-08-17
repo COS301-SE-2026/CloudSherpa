@@ -6,6 +6,7 @@ import { getRecommendationDictionary } from "@/features/optimization/utils/recom
 import { Button } from "@/components/atoms/button";
 import RecommendationCardHero from "@/features/optimization/components/recCardHero";
 import { useRecStore } from "@/features/optimization/stores/useRecStore";
+import { Badge } from "@/components/atoms/badge";
 
 interface RecommendationCardProps {
     recommendation: Recommendation;
@@ -14,22 +15,38 @@ interface RecommendationCardProps {
 export default function RecommendationCard({ recommendation }: Readonly<RecommendationCardProps>) {
     const [open, setOpen] = useState(false);
 
-    const handleAcknowledge = (e: React.MouseEvent) => {
+    const acknowledgeRec = useRecStore((state) => state.acknowledgeRec);
+    const dismissRec = useRecStore((state) => state.dismissRec);
+    const applyRec = useRecStore((state) => state.applyRec);
+
+    const handleAcknowledge = async (e: React.MouseEvent) => {
         e.preventDefault();
-        console.log("Acknowledged!");
+        e.stopPropagation();
+        await acknowledgeRec(recommendation.recommendationId);
     };
 
-    const handleDismiss = (e: React.MouseEvent) => {
+    const handleDismiss = async (e: React.MouseEvent) => {
         e.preventDefault();
-        console.log("Dismissed!");
+        e.stopPropagation();
+        await dismissRec(recommendation.recommendationId);
+    };
+
+    const handleApply = async (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        await applyRec(recommendation.recommendationId);
     };
 
     return (
         <Card onClick={() => setOpen(!open)}>
-            <CardHeader>
+            <CardHeader className="flex flex-row justify-between">
                 <CardTitle>
                     {recommendation.resourceDisplayName ?? recommendation.resourceId}
                 </CardTitle>
+                <div className="flex flex-row gap-2">
+                    <Badge>{recommendation.actionType}</Badge>
+                    <Badge variant="secondary">{recommendation.status}</Badge>
+                </div>
             </CardHeader>
             {open && (
                 <CardContent className="space-y-4">
@@ -45,10 +62,13 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
                     {getRecommendationDictionary(recommendation)}
 
                     <div className="flex flex-row gap-4 justify-end items-center">
-                        <Button variant={"secondary"} onClick={() => handleAcknowledge}>
+                        <Button type="button" onClick={handleApply}>
+                            Apply
+                        </Button>
+                        <Button type="button" variant={"secondary"} onClick={handleAcknowledge}>
                             Acknowledge
                         </Button>
-                        <Button variant={"destructive"} onClick={() => handleDismiss}>
+                        <Button type="button" variant={"destructive"} onClick={handleDismiss}>
                             Dismiss
                         </Button>
                     </div>
