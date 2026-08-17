@@ -49,7 +49,7 @@ public class GcpBigQueryNormalizer implements CostRecordNormalizer<FieldValueLis
     gcpCostId
         .append(ProviderEnum.GCP)
         .append("%%%")
-        .append(valueList.get("billing_account_id").getStringValue())
+        .append(billingId)
         .append("%%%")
         .append(valueList.get("project_id").getStringValue())
         .append("%%%")
@@ -57,7 +57,7 @@ public class GcpBigQueryNormalizer implements CostRecordNormalizer<FieldValueLis
         .append("%%%")
         .append(valueList.get("sku_id").getStringValue())
         .append("%%%")
-        .append(valueList.get("resource_global_name").getStringValue())
+        .append(getResourceId(valueList))
         .append("%%%")
         .append(valueList.get("cost_type").getStringValue());
 
@@ -83,8 +83,16 @@ public class GcpBigQueryNormalizer implements CostRecordNormalizer<FieldValueLis
   public String getChargeId(FieldValueList valueList) {
     StringBuilder chargeId = new StringBuilder();
 
+    String resourceName;
+
+    if (valueList.get("resource_name").isNull()) {
+      resourceName = "null";
+    } else {
+      resourceName = valueList.get("resource_name").getStringValue();
+    }
+
     chargeId
-        .append(valueList.get("resource_name"))
+        .append(resourceName)
         .append("%%%")
         .append(valueList.get("service_description").getStringValue().replace(" ", "_"));
 
@@ -93,6 +101,11 @@ public class GcpBigQueryNormalizer implements CostRecordNormalizer<FieldValueLis
 
   @Override
   public String getResourceId(FieldValueList valueList) {
+
+    if (valueList.get("resource_global_name").isNull()) {
+      return "null";
+    }
+
     return valueList.get("resource_global_name").getStringValue();
   }
 
@@ -116,7 +129,7 @@ public class GcpBigQueryNormalizer implements CostRecordNormalizer<FieldValueLis
   public ChargeTypeEnum getChargeType(FieldValueList valueList) {
     // Can only be Usage or Other. Current conceptual mapping is
     // !credit = Usage else Other
-    throw new UnsupportedOperationException("Not implemented yet");
+    return ChargeTypeEnum.Usage; // temp
   }
 
   @Override
