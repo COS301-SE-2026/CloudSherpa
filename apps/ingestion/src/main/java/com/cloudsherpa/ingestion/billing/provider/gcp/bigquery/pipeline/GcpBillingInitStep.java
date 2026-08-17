@@ -1,6 +1,8 @@
 package com.cloudsherpa.ingestion.billing.provider.gcp.bigquery.pipeline;
 
 import com.cloudsherpa.ingestion.connector.CloudCredentials;
+import com.cloudsherpa.ingestion.provider.gcp.factory.GcpClientFactory;
+import com.google.cloud.bigquery.BigQuery;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -42,8 +44,11 @@ public class GcpBillingInitStep implements GcpBillingIngestionStep {
       GcpBillingConfig devGcpBillingConfig =
           new GcpBillingConfig(devProjectId, devDatasetId, devBillingAccountId);
 
+      CloudCredentials devCredentials = getGcpDevCredentials();
+
       context.setGcpBillingConfig(devGcpBillingConfig);
-      context.setCloudCredentials(getGcpDevCredentials());
+      context.setCloudCredentials(devCredentials);
+      context.setBigQueryClient(getBigQueryClient(devCredentials));
     }
   }
 
@@ -60,6 +65,14 @@ public class GcpBillingInitStep implements GcpBillingIngestionStep {
       return gcpCloudCredentials;
     } catch (IOException ioException) {
       throw new IllegalStateException("Could not load dev service account file", ioException);
+    }
+  }
+
+  private BigQuery getBigQueryClient(CloudCredentials credentials) {
+    try {
+      return GcpClientFactory.createBigQueryClient(credentials);
+    } catch (IOException ioException) {
+      throw new IllegalStateException("Failed to obtain BigQuery client", ioException);
     }
   }
 }
