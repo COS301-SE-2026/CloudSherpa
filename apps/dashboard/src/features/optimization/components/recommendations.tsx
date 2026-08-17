@@ -75,11 +75,26 @@ export default function Recommendations() {
             {/* recommendation summaries */}
             {summary && (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-2">
-                    <RecommendationCardHero value={`Total: ${summary.total}`} />
-                    <RecommendationCardHero value={`Active: ${summary.active}`} />
-                    <RecommendationCardHero value={`Applied: ${summary.applied}`} />
-                    <RecommendationCardHero value={`Acknowledged: ${summary.acknowledged}`} />
-                    <RecommendationCardHero value={`Dismissed: ${summary.dismissed}`} />
+                    <RecommendationCardHero
+                        value={`Total: ${summary.total}`}
+                        className="text-card-foreground"
+                    />
+                    <RecommendationCardHero
+                        value={`Active: ${summary.active}`}
+                        className="text-success"
+                    />
+                    <RecommendationCardHero
+                        value={`Applied: ${summary.applied}`}
+                        className="text-primary"
+                    />
+                    <RecommendationCardHero
+                        value={`Acknowledged: ${summary.acknowledged}`}
+                        className="text-warning"
+                    />
+                    <RecommendationCardHero
+                        value={`Dismissed: ${summary.dismissed}`}
+                        className="text-destructive"
+                    />
                 </div>
             )}
             {/* filter bar */}
