@@ -4,6 +4,10 @@ on:
     pull_request:
         types:
             - edited
+        paths:
+          - apps/service/**
+          - .github/workflows/service-ci.yml
+          - .github/workflows/service-ci-edit.yml
 
 jobs:
     service-validation-on-edit:
