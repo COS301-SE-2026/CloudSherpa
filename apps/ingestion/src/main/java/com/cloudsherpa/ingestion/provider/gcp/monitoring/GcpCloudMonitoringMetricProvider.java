@@ -188,6 +188,7 @@ public class GcpCloudMonitoringMetricProvider implements CloudMonitoringMetricPr
                           metricFilter.serviceType(),
                           metricFilter.resourceType())));
     }
+    client.close();
     for (UsageRecordModel result : results) {
       result.setProjectId(accountScope.getProjectId());
       result.setIngestionId(ingestionId);
