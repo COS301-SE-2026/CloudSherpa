@@ -36,25 +36,6 @@ import {
 import { ResourceSelectionDto } from "@/lib/fetch/aws-connection-api";
 import { ResourceDetail } from "@/lib/fetch/cloud-resource-api";
 
-export interface TableResource extends Resource {
-    serviceCategory: string;
-    selected: boolean;
-}
-
-//added a helper func to convert the resource details to the table resources
-export function convertToTableResources(details: ResourceDetail): TableResource {
-    return {
-        id: details.resourceId,
-        name: details.name,
-        type: details.resourceType || "Unknown",
-        region: details.region || "Unknown",
-        tag: Object.entries(details.tags || {}).map(([key, value]) => `${key} : ${value}`),
-        status: "active" as "active" | "inactive",
-        serviceCategory: details.serviceCategory || "Unknown",
-        selected: false,
-    };
-}
-
 export interface PropsForIngestionSlider {
     forIngestionPeriod: string;
     setForIngestionPeriod: (value: string) => void;
@@ -283,7 +264,7 @@ function SelectionCells({
                 type="checkbox"
                 checked={row.original.selected}
                 onChange={() => {
-                    toggleResource(row.original.id);
+                    toggleResource(row.original.resourceId);
                 }}
                 className="w-4 h-4 rounded border-border bg-background text-primary focus:ring-primary"
             />
@@ -352,10 +333,10 @@ export default function StepThreeBase({
     const changeStatus = useCallback(async (id: string) => {
         setTableResources((previous) =>
             previous.map((resources) =>
-                resources.id === id
+                resources.resourceId === id
                     ? {
                           ...resources,
-                          status: resources.status === "active" ? "inactive" : "active",
+                          active: !resources.active,
                       }
                     : resources
             )
@@ -365,7 +346,7 @@ export default function StepThreeBase({
     const toggleResource = useCallback((resourceId: string) => {
         setTableResources((previous) =>
             previous.map((forResources) =>
-                forResources.id === resourceId
+                forResources.resourceId === resourceId
                     ? { ...forResources, selected: !forResources.selected }
                     : forResources
             )
@@ -400,13 +381,13 @@ export default function StepThreeBase({
             cell: SelectionCells,
         }),
 
-        helperForColumns.accessor("name", { header: ResourceHeaders, cell: ResourceCells }),
-        helperForColumns.accessor("type", { header: "Type", cell: SecondaryCells }),
+        helperForColumns.accessor("resourceName", { header: ResourceHeaders, cell: ResourceCells }),
+        helperForColumns.accessor("serviceType", { header: "Type", cell: SecondaryCells }),
 
         helperForColumns.accessor("region", { header: "Region", cell: SecondaryCells }),
-        helperForColumns.accessor("tag", { header: "Tags", cell: TagCells }),
+        helperForColumns.accessor("tags", { header: "Tags", cell: TagCells }),
 
-        helperForColumns.accessor("status", {
+        helperForColumns.accessor("active", {
             header: ToggleHeader,
             filterFn: "equals",
             cell: ToggleCells,
@@ -421,7 +402,7 @@ export default function StepThreeBase({
             globalFilter: filter,
             pagination: forPagination,
         },
-        getRowId: (row) => row.id,
+        getRowId: (row) => row.resourceId,
         onGlobalFilterChange: setFilter,
         getCoreRowModel: getCoreRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
@@ -432,12 +413,13 @@ export default function StepThreeBase({
 
     useEffect(() => {
         const mappedResources = realResources.map((resources) => ({
-            id: resources.resourceId,
-            name: resources.name,
-            type: resources.resourceType || "Unknown",
+            resourceId: resources.resourceId,
+            serviceType: resources.serviceCategory || "",
+            resourceName: resources.name,
+            resourceType: resources.resourceType || "Unknown",
             region: resources.region || "Unknown",
-            tag: Object.entries(resources.tags || {}).map(([key, value]) => `${key} : ${value}`),
-            status: "active" as "active" | "inactive",
+            tags: resources.tags || {},
+            active: true,
             selected: false,
         }));
         setTableResources(mappedResources);
@@ -453,18 +435,13 @@ export default function StepThreeBase({
             const resourcesSelected: ResourceSelectionDto[] = tableResources
                 .filter((forResources) => forResources.selected)
                 .map((forResources) => ({
-                    resourceId: forResources.id,
-                    serviceType: forResources.type || "",
-                    resourceType: forResources.type || "",
-                    resourceName: forResources.name,
+                    resourceId: forResources.resourceId,
+                    serviceType: forResources.serviceType || "",
+                    resourceType: forResources.resourceType || "",
+                    resourceName: forResources.resourceName,
                     region: forResources.region || "",
-                    tags: Object.fromEntries(
-                        forResources.tag.map((tag) => {
-                            const [key, value] = tag.split(": ");
-                            return [key, value || ""];
-                        })
-                    ),
-                    active: true,
+                    tags: forResources.tags || {},
+                    active: forResources.active,
                 }));
 
             onNext({

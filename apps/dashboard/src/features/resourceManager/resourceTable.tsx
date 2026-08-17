@@ -26,17 +26,11 @@ import {
 import { Button } from "@/components/atoms/button";
 import { Badge } from "@/components/atoms/badge";
 import { Switch } from "@/components/atoms/switch";
+import { ResourceSelectionDto } from "@/lib/fetch/aws-connection-api";
 
 /* copied the fucns from the resource manager to create a shared resource table*/
 
-export interface Resource {
-    id: string;
-    name: string;
-    type: string;
-    region: string;
-    tag: string[];
-    status: "active" | "inactive";
-}
+export type Resource = ResourceSelectionDto;
 
 interface ResourceAction {
     changeStatus: (id: string) => Promise<void>;
@@ -81,25 +75,25 @@ export function SecondaryCells<T extends Resource>({ getValue }: Readonly<CellCo
     return <span className="text-xs text-muted-foreground"> {getValue()} </span>;
 }
 
-export function TagCells<T extends Resource>({ getValue }: Readonly<CellContext<T, string[]>>) {
-    return <ListOfTags tags={getValue()} />;
+export function TagCells<T extends Resource>({
+    getValue,
+}: Readonly<CellContext<T, Record<string, string>>>) {
+    const tags = Object.entries(getValue()).map(([key, value]) => `${key} : ${value}`);
+    return <ListOfTags tags={tags} />;
 }
 
 export function ToggleHeader() {
     return <span className="block text-center"> Active/Inactive </span>;
 }
 
-export function ToggleCells<T extends Resource>({
-    row,
-    table,
-}: Readonly<CellContext<T, T["status"]>>) {
+export function ToggleCells<T extends Resource>({ row, table }: Readonly<CellContext<T, boolean>>) {
     const { changeStatus } = table.options.meta as ResourceAction;
 
     return (
         <div className="flex justify-center">
             <Switch
-                checked={row.original.status === "active"}
-                onCheckedChange={() => changeStatus(row.original.id)}
+                checked={row.original.active}
+                onCheckedChange={() => changeStatus(row.original.resourceId)}
             />
         </div>
     );
@@ -108,15 +102,15 @@ export function ToggleCells<T extends Resource>({
 const helperForColumns = createColumnHelper<Resource>();
 
 export const columns = [
-    helperForColumns.accessor("name", { header: ResourceHeaders, cell: ResourceCells }),
+    helperForColumns.accessor("resourceName", { header: ResourceHeaders, cell: ResourceCells }),
 
-    helperForColumns.accessor("type", { header: "Type", cell: SecondaryCells }),
+    helperForColumns.accessor("serviceType", { header: "Type", cell: SecondaryCells }),
 
     helperForColumns.accessor("region", { header: "Region", cell: SecondaryCells }),
 
-    helperForColumns.accessor("tag", { header: "Tags", cell: TagCells }),
+    helperForColumns.accessor("tags", { header: "Tags", cell: TagCells }),
 
-    helperForColumns.accessor("status", {
+    helperForColumns.accessor("active", {
         header: ToggleHeader,
         filterFn: "equals",
         cell: ToggleCells,
@@ -141,7 +135,7 @@ export function useSharedResourceTable<T extends Resource>(
         meta: actions,
         state: { globalFilter: filter, sorting: sort, columnFilters: filterColumn },
 
-        getRowId: (row) => row.id,
+        getRowId: (row) => row.resourceId,
         onGlobalFilterChange: setFilter,
 
         onSortingChange: setSort,
@@ -214,10 +208,10 @@ export function ResourceTable<T extends Resource>({
 
 export function filterForStatus(table: TableType<Resource>) {
     const filterStatus =
-        (table.getColumn("status")?.getFilterValue() as string | undefined) ?? "all";
+        (table.getColumn("active")?.getFilterValue() as boolean | undefined) ?? undefined;
 
     const setFilterStatus = (value: string) => {
-        table.getColumn("status")?.setFilterValue(value === "all" ? undefined : value);
+        table.getColumn("active")?.setFilterValue(value === "all" ? undefined : value === "active");
     };
 
     return { filterStatus, setFilterStatus };
