@@ -219,57 +219,7 @@ const hardCode: ResourceDetail[] = [
 
 interface ActionForResource {
     changeStatus: (id: string) => Promise<void>;
-    toggleResource: (id: string) => void;
     toggleAll: () => void;
-}
-
-function SelectionHeader({
-    table,
-}: Readonly<{ table: TableType<Resource & { selected: boolean }> }>) {
-    const { toggleAll } = table.options.meta as ActionForResource;
-
-    const rows = table.getRowModel().rows;
-
-    const allSelected = rows.length > 0 && rows.every((row) => row.original.selected);
-
-    const someSelected = rows.some((row) => row.original.selected);
-
-    return (
-        <div className="flex justify-center">
-            <input
-                type="checkbox"
-                checked={allSelected}
-                ref={(input) => {
-                    if (input) {
-                        input.indeterminate = someSelected && !allSelected;
-                    }
-                }}
-
-                onChange={toggleAll}
-                className="w-4 h-4 rounded border-border bg-background text-primary focus:ring-primary"
-            />
-        </div>
-    );
-}
-
-function SelectionCells({
-    row,
-    table,
-}: Readonly<CellContext<Resource & { selected: boolean }, boolean>>) {
-    const { toggleResource } = table.options.meta as ActionForResource;
-
-    return (
-        <div className="flex justify-center">
-            <input
-                type="checkbox"
-                checked={row.original.selected}
-                onChange={() => {
-                    toggleResource(row.original.resourceId);
-                }}
-                className="w-4 h-4 rounded border-border bg-background text-primary focus:ring-primary"
-            />
-        </div>
-    );
 }
 
 export default function StepThreeBase({
@@ -343,16 +293,6 @@ export default function StepThreeBase({
         );
     }, []);
 
-    const toggleResource = useCallback((resourceId: string) => {
-        setTableResources((previous) =>
-            previous.map((forResources) =>
-                forResources.resourceId === resourceId
-                    ? { ...forResources, selected: !forResources.selected }
-                    : forResources
-            )
-        );
-    }, []);
-
     const handlingSelectedAll = useCallback(() => {
         setTableResources((previous) => {
             const allSelected = previous.every((forResources) => forResources.selected);
@@ -367,20 +307,14 @@ export default function StepThreeBase({
     const actions = useMemo<ActionForResource>(
         () => ({
             changeStatus,
-            toggleResource,
             toggleAll: handlingSelectedAll,
         }),
-        [changeStatus, toggleResource, handlingSelectedAll]
+        [changeStatus, handlingSelectedAll]
     );
 
     const helperForColumns = createColumnHelper<Resource & { selected: boolean }>();
 
     const columns = [
-        helperForColumns.accessor("selected", {
-            header: SelectionHeader,
-            cell: SelectionCells,
-        }),
-
         helperForColumns.accessor("resourceName", { header: ResourceHeaders, cell: ResourceCells }),
         helperForColumns.accessor("serviceType", { header: "Type", cell: SecondaryCells }),
 
@@ -420,7 +354,7 @@ export default function StepThreeBase({
             region: resources.region || "Unknown",
             tags: resources.tags || {},
             active: true,
-            selected: false,
+            selected: true,
         }));
         setTableResources(mappedResources);
     }, [realResources]);
@@ -432,9 +366,8 @@ export default function StepThreeBase({
         setErrors(null);
 
         try {
-            const resourcesSelected: ResourceSelectionDto[] = tableResources
-                .filter((forResources) => forResources.selected)
-                .map((forResources) => ({
+            const resourcesSelected: ResourceSelectionDto[] = tableResources.map(
+                (forResources) => ({
                     resourceId: forResources.resourceId,
                     serviceType: forResources.serviceType || "",
                     resourceType: forResources.resourceType || "",
@@ -442,7 +375,8 @@ export default function StepThreeBase({
                     region: forResources.region || "",
                     tags: forResources.tags || {},
                     active: forResources.active,
-                }));
+                })
+            );
 
             onNext({
                 selectedResources: resourcesSelected,
