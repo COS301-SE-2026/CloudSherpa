@@ -3,9 +3,10 @@ import { useEffect, useState, useMemo } from "react";
 import RecommendationGroupCard from "@/features/optimization/components/recGroupCard";
 import { useRecStore } from "@/features/optimization/stores/useRecStore";
 import { Input } from "@/components/atoms/input";
-import { Search } from "lucide-react";
+import { Search, ArrowUpDown } from "lucide-react";
 import { Tabs, TabsTrigger, TabsList } from "@/components/atoms/tabs";
 import RecommendationCardHero from "@/features/optimization/components/recCardHero";
+import { Button } from "@/components/atoms/button";
 
 const FilterOptions = [
     { value: "all", label: "ALL" },
@@ -23,9 +24,10 @@ export default function Recommendations() {
 
     const [searchQuery, setSearchQuery] = useState("");
     const [filter, setFilter] = useState("all");
+    const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
 
     const filteredRecommendationGroups = useMemo(() => {
-        return recommendationGroups.filter((group) => {
+        const filtered = recommendationGroups.filter((group) => {
             const matchesProvider =
                 filter !== "all"
                     ? group.recommendations.some(
@@ -39,7 +41,18 @@ export default function Recommendations() {
 
             return matchesProvider && matchesSearch;
         });
-    }, [searchQuery, filter, recommendationGroups]);
+
+        return filtered.sort((a, b) => {
+            const aCount = a.recommendations.length;
+            const bCount = b.recommendations.length;
+
+            if (sortOrder === "desc") {
+                return bCount - aCount;
+            } else {
+                return aCount - bCount;
+            }
+        });
+    }, [searchQuery, filter, recommendationGroups, sortOrder]);
 
     useEffect(() => {
         fetchRecGroups();
@@ -86,15 +99,24 @@ export default function Recommendations() {
                         })}
                     </TabsList>
                 </Tabs>
-                <div className="relative">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        type="text"
-                        placeholder="Search by Account..."
-                        className="pl-8  w-full lg:w-150"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
+                <div className="flex flex-row justify-end items-center gap-2">
+                    <div className="relative">
+                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            type="text"
+                            placeholder="Search by Account..."
+                            className="pl-8  w-full lg:w-150"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                    </div>
+                    {/* sort highest to lowest */}
+                    <Button
+                        variant="secondary"
+                        onClick={() => setSortOrder((prev) => (prev === "desc" ? "asc" : "desc"))}
+                    >
+                        <ArrowUpDown />
+                    </Button>
                 </div>
             </div>
 
