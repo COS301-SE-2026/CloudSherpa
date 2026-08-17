@@ -12,6 +12,9 @@ on:
         paths:
           - apps/ingestion/**
           - .github/workflows/ingestion-ci.yml
+      
+    workflow_call:
+      
 jobs:
     ingestion-validation:
         uses: ./.github/workflows/spring-ci.yml
