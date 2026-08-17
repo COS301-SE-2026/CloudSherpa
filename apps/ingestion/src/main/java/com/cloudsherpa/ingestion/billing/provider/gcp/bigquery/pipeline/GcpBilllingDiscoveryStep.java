@@ -6,6 +6,8 @@ import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.DatasetId;
 import com.google.cloud.bigquery.Table;
 import com.google.cloud.bigquery.TableId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +18,9 @@ import org.springframework.stereotype.Component;
 @Component
 @Order(2)
 public class GcpBilllingDiscoveryStep implements GcpBillingIngestionStep {
+
+  private final Logger logger = LoggerFactory.getLogger(GcpBilllingDiscoveryStep.class);
+
   public void execute(GcpBillingContext context) {
     // Ensures dataset exists, will throw DatasetNotFoundException if it does not exist
     datasetExists(context);
@@ -33,6 +38,7 @@ public class GcpBilllingDiscoveryStep implements GcpBillingIngestionStep {
               DatasetId.of(
                   context.getBillingConfig().projectId(), context.getBillingConfig().datasetId()));
     } catch (BigQueryException e) {
+      logger.error("Dataset {} not found", context.getBillingConfig().datasetId());
       throw new DatasetNotFoundException(context.getBillingConfig().datasetId(), e);
     }
   }
@@ -51,6 +57,8 @@ public class GcpBilllingDiscoveryStep implements GcpBillingIngestionStep {
         throw new TableNotFoundException(tableId, null);
       }
     } catch (BigQueryException e) {
+      logger.error(
+          "Table {} not found on dataset {}", tableId, context.getBillingConfig().datasetId());
       throw new TableNotFoundException(tableId, e);
     }
   }

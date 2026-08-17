@@ -62,6 +62,8 @@ public class GcpBillingInitStep implements GcpBillingIngestionStep {
 
   private CloudCredentials getGcpDevCredentials() {
     if (!devConfig) {
+      logger.error(
+          "GCP dev flag set to {} but an attempt was made to obtain dev credentials", devConfig);
       throw new IllegalStateException(
           "Cannot use dev GCP credentials when devConfig flag is not set to true");
     }
@@ -72,6 +74,7 @@ public class GcpBillingInitStep implements GcpBillingIngestionStep {
       gcpCloudCredentials.setServiceAccountJson(json);
       return gcpCloudCredentials;
     } catch (IOException ioException) {
+      logger.error("Failed to load dev service account file at {}", devServiceAccountPath);
       throw new IllegalStateException("Could not load dev service account file", ioException);
     }
   }
