@@ -22,6 +22,7 @@ public class GcpBilllingDiscoveryStep implements GcpBillingIngestionStep {
     String tableId = constructTableId(context);
     tableExists(context, tableId);
     context.setBillingExportTableIdentifier(tableId);
+    context.setFullyQualifiedExportTableIdentifier(constructFullyQualifiedTableId(context));
   }
 
   private void datasetExists(GcpBillingContext context) {
@@ -62,5 +63,20 @@ public class GcpBilllingDiscoveryStep implements GcpBillingIngestionStep {
         .append(context.getBillingConfig().billingAccountId().replace("-", "_"));
 
     return tableId.toString();
+  }
+
+  private String constructFullyQualifiedTableId(GcpBillingContext context) {
+    StringBuilder fullyQualifiedTableId = new StringBuilder();
+
+    GcpBillingConfig gcpBillingConfig = context.getBillingConfig();
+
+    fullyQualifiedTableId
+        .append(gcpBillingConfig.projectId())
+        .append(".")
+        .append(gcpBillingConfig.datasetId())
+        .append(".")
+        .append(constructTableId(context));
+
+    return fullyQualifiedTableId.toString();
   }
 }
