@@ -1,0 +1,12 @@
+name: Ingestion CI triggered on edit
+
+on:
+    pull_request:
+        types:
+            - edited
+
+jobs:
+    ingestion-validation-on-edit:
+        if: github.event.changes.base != null && (github.event.pull_request.base.ref == 'dev' || github.event.pull_request.base.ref == 'main')
+        uses: ./.github/workflows/ingestion-ci.yml
+        secrets: inherit
