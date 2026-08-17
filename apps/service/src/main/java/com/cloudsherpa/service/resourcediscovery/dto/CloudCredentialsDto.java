@@ -6,4 +6,6 @@ public record CloudCredentialsDto(
     String awsRegion,
     String tenantId,
     String clientId,
-    String clientSecret) {}
+    String clientSecret,
+    String projectId,
+    String serviceAccountJson) {}

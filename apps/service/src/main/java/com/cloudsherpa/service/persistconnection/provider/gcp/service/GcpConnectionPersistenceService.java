@@ -12,7 +12,6 @@ import com.cloudsherpa.lib.repositories.CloudCredentialRepository;
 import com.cloudsherpa.lib.repositories.ResourceRepository;
 import com.cloudsherpa.service.analytics.service.ResourceRegistryService;
 import com.cloudsherpa.service.persistconnection.provider.gcp.dto.GcpCredentialsDto;
-import com.cloudsherpa.service.persistconnection.provider.gcp.dto.GcpCredentialsPersistenceFormat;
 import com.cloudsherpa.service.persistconnection.provider.gcp.dto.PersistGcpConnectionRequest;
 import com.cloudsherpa.service.persistconnection.service.ConnectionPersistenceService;
 import com.cloudsherpa.service.persistconnection.service.CredentialEncryptionService;
@@ -96,12 +95,9 @@ public class GcpConnectionPersistenceService extends ConnectionPersistenceServic
   private void createCredential(CloudAccount account, GcpCredentialsDto credentials) {
     ObjectMapper objectMapper = new ObjectMapper();
     try {
-      String serviceAccountJson = objectMapper.writeValueAsString(credentials);
-      GcpCredentialsPersistenceFormat credentialsSaveObject =
-          new GcpCredentialsPersistenceFormat(credentials.projectId(), serviceAccountJson);
+      String saveJson = objectMapper.writeValueAsString(credentials);
 
-      String persistenceJson = objectMapper.writeValueAsString(credentialsSaveObject);
-      String encrypted = encryptionService.encrypt(persistenceJson);
+      String encrypted = encryptionService.encrypt(saveJson);
 
       CloudCredential credential =
           new CloudCredential(
