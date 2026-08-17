@@ -4,6 +4,10 @@ on:
     pull_request:
         types:
             - edited
+        paths:
+            - apps/dashboard/**
+            - .github/workflows/dashboard-ci.yml
+            - .github/workflows/dashboard-ci-edit.yml
 
 jobs:
     dashboard-validation-on-edit:
