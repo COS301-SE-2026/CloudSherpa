@@ -8,7 +8,7 @@ import { ChartType, ChartWidgetConfig } from "@/features/dashboard/types/widgets
 import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
 import { WidgetMenu } from "@/features/dashboard/components/widgetMenu";
 import { WidgetDropdown } from "@/features/dashboard/components/widgetDropdown";
-import { CircleAlert } from "lucide-react";
+import { CircleAlert, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
     Tooltip,
@@ -16,6 +16,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/atoms/tooltip";
+import { useRecStore } from "@/features/optimization/stores/useRecStore";
 
 interface BaseChartProps {
     resourceId: string;
@@ -51,6 +52,14 @@ export function ChartWidget({
     };
 
     const removeWidget = useDashboardStore((state) => state.actions.removeWidget);
+
+    const hasRecommendation = useRecStore((state) =>
+        state.recommendationGroups.some((group) =>
+            group.recommendations.some(
+                (rec) => rec.resourceId === resourceId && rec.status === "ACTIVE"
+            )
+        )
+    );
 
     const renderChartContent = () => {
         if (!ChartComponent) {
@@ -121,13 +130,36 @@ export function ChartWidget({
                                 </Tooltip>
                             </TooltipProvider>
                         )}
-                        {preview && (
-                            <WidgetDropdown
-                                onConfigure={openConfig}
-                                onDelete={() => removeWidget(id, id)}
-                                isEditMode={isEditMode}
-                            />
-                        )}
+                        <div className="flex flex-row justify-end items-center gap-2">
+                            {hasRecommendation && (
+                                <TooltipProvider delayDuration={100}>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <div className="flex items-center">
+                                                <Sparkles className="h-5 w-5 text-primary cursor-help" />
+                                            </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent
+                                            side="bottom"
+                                            align="end"
+                                            className="w-48 text-center text-xs"
+                                        >
+                                            <p>
+                                                The resource related to this widget has active
+                                                optimization recommendations.
+                                            </p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            )}
+                            {preview && (
+                                <WidgetDropdown
+                                    onConfigure={openConfig}
+                                    onDelete={() => removeWidget(id, id)}
+                                    isEditMode={isEditMode}
+                                />
+                            )}
+                        </div>
                     </div>
                 </CardHeader>
 
