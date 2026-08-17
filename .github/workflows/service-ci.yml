@@ -12,6 +12,8 @@ on:
         paths:
           - apps/service/**
           - .github/workflows/service-ci.yml
+
+    workflow_call:
         
 jobs:
     service-validation:

@@ -1,12 +1,66 @@
 package com.cloudsherpa.ingestion.billing.provider.gcp.bigquery.pipeline;
 
+import com.cloudsherpa.ingestion.billing.provider.gcp.bigquery.exceptions.DatasetNotFoundException;
+import com.cloudsherpa.ingestion.billing.provider.gcp.bigquery.exceptions.TableNotFoundException;
+import com.google.cloud.bigquery.BigQueryException;
+import com.google.cloud.bigquery.DatasetId;
+import com.google.cloud.bigquery.Table;
+import com.google.cloud.bigquery.TableId;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
+
+// Inspiration taken from GCP docs
+// https://docs.cloud.google.com/bigquery/docs/samples/bigquery-dataset-exists
+// https://docs.cloud.google.com/bigquery/docs/samples/bigquery-table-exists
 
 @Component
 @Order(2)
 public class GcpBilllingDiscoveryStep implements GcpBillingIngestionStep {
   public void execute(GcpBillingContext context) {
-    // tbd
+    // Ensures dataset exists, will throw DatasetNotFoundException if it does not exist
+    datasetExists(context);
+    String tableId = constructTableId(context);
+    tableExists(context, tableId);
+    context.setBillingExportTableIdentifier(tableId);
+  }
+
+  private void datasetExists(GcpBillingContext context) {
+    try {
+      context
+          .getBigQueryClient()
+          .getDataset(
+              DatasetId.of(
+                  context.getBillingConfig().projectId(), context.getBillingConfig().datasetId()));
+    } catch (BigQueryException e) {
+      throw new DatasetNotFoundException(context.getBillingConfig().datasetId(), e);
+    }
+  }
+
+  private void tableExists(GcpBillingContext context, String tableId) {
+    try {
+      Table table =
+          context
+              .getBigQueryClient()
+              .getTable(
+                  TableId.of(
+                      context.getBillingConfig().projectId(),
+                      context.getBillingConfig().datasetId(),
+                      tableId));
+      if (table == null) {
+        throw new TableNotFoundException(tableId, null);
+      }
+    } catch (BigQueryException e) {
+      throw new TableNotFoundException(tableId, e);
+    }
+  }
+
+  private String constructTableId(GcpBillingContext context) {
+    StringBuilder tableId = new StringBuilder();
+
+    tableId
+        .append("gcp_billing_export_resource_v1_")
+        .append(context.getBillingConfig().billingAccountId().replace("-", "_"));
+
+    return tableId.toString();
   }
 }
