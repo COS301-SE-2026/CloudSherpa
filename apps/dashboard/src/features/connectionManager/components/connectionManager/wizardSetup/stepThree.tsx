@@ -19,9 +19,7 @@ import {
     getFilteredRowModel,
     getSortedRowModel,
     createColumnHelper,
-    type CellContext,
     getPaginationRowModel,
-    type Table as TableType,
 } from "@tanstack/react-table";
 import {
     Resource,
