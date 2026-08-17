@@ -5,16 +5,12 @@ import com.google.cloud.bigquery.BigQuery;
 
 public class GcpBillingContext {
   private GcpBillingConfig billingConfig;
-  private String tableId;
   private CloudCredentials gcpCredentials;
   private BigQuery bigQueryClient;
+  private String billingExportTableIdentifier;
 
   public void setGcpBillingConfig(GcpBillingConfig billingConfig) {
     this.billingConfig = billingConfig;
-  }
-
-  public void setTableId(String tableId) {
-    this.tableId = tableId;
   }
 
   public void setCloudCredentials(CloudCredentials gcpCredentials) {
@@ -25,12 +21,12 @@ public class GcpBillingContext {
     this.bigQueryClient = bigQueryClient;
   }
 
-  public GcpBillingConfig getBillingConfig() {
-    return this.billingConfig;
+  public void setBillingExportTableIdentifier(String billingExportTableIdentifier) {
+    this.billingExportTableIdentifier = billingExportTableIdentifier;
   }
 
-  public String getTableId() {
-    return this.tableId;
+  public GcpBillingConfig getBillingConfig() {
+    return billingConfig;
   }
 
   public CloudCredentials getGcpCredentials() {
@@ -39,5 +35,9 @@ public class GcpBillingContext {
 
   public BigQuery getBigQueryClient() {
     return bigQueryClient;
+  }
+
+  public String getBillingExportTableIdentifier() {
+    return billingExportTableIdentifier;
   }
 }
