@@ -4,10 +4,6 @@ on:
     pull_request:
         types:
             - edited
-        paths:
-          - apps/ingestion/**
-          - .github/workflows/ingestion-ci.yml
-          - .github/workflows/ingestion-ci-edit.yml
 
 jobs:
     ingestion-validation-on-edit:
