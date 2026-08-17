@@ -18,7 +18,7 @@ export default function RecommendationCardHero({
     return (
         <Tooltip>
             <TooltipTrigger>
-                <Card>
+                <Card className="w-full">
                     <CardHeader>
                         <CardTitle className={cn("text-xl flex flex-row justify-start", className)}>
                             {name ?? name}

@@ -37,6 +37,18 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
         await applyRec(recommendation.recommendationId);
     };
 
+    const confidence =
+        recommendation.evidence?.completenessRatio !== undefined
+            ? `${(Number(recommendation.evidence.completenessRatio) * 100).toFixed(0)}%`
+            : "N/A";
+
+    //extract first entry that I assume will hold the long term evidence
+    const evidence = Object.entries(recommendation.evidence || {}).find(
+        ([key]) => key !== "completenessRatio"
+    );
+
+    const evidenceText = evidence ? `${evidence[0]}: ${evidence[1]}` : "N/A";
+
     return (
         <Card onClick={() => setOpen(!open)}>
             <CardHeader className="flex flex-row justify-between">
@@ -51,10 +63,19 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
             {open && (
                 <CardContent className="space-y-4">
                     {/* hero section */}
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
                         <RecommendationCardHero
                             value={recommendation.actionType}
                             className="text-chart-1"
+                        />
+                        {/* this needs to be fixed by converting to human readable format */}
+                        <RecommendationCardHero
+                            value={evidenceText}
+                            className="text-chart-4 truncate"
+                        />
+                        <RecommendationCardHero
+                            value={`${confidence} CONFIDENCE`}
+                            className="text-chart-3"
                         />
                     </div>
 
