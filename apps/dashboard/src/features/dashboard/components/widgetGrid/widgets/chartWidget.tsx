@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/atoms/card";
 import { LineChart } from "@/features/dashboard/components/widgetGrid/widgets/charts/LineChart";
 import { GaugeChart } from "@/features/dashboard/components/widgetGrid/widgets/charts/GaugeChart";
@@ -44,6 +44,14 @@ export function ChartWidget({
     const ChartComponent = CHART_COMPONENTS[chartType];
     const [hasNoData, setHasNoData] = useState(false);
     const router = useRouter();
+
+    const [isLayoutReady, setIsLayoutReady] = useState(false);
+
+    // echarts renders static svg content, this delays rendering till widget fully expanded
+    useEffect(() => {
+        const timer = setTimeout(() => setIsLayoutReady(true), 350);
+        return () => clearTimeout(timer);
+    }, []);
 
     const openConfig = () => {
         if (!isEditMode) {
@@ -162,9 +170,11 @@ export function ChartWidget({
                     </div>
                 </CardHeader>
 
-                <CardContent className="flex-1 w-full relative overflow-hidden">
-                    {renderChartContent()}
-                </CardContent>
+                {isLayoutReady && (
+                    <CardContent className="flex-1 w-full relative overflow-hidden">
+                        {renderChartContent()}
+                    </CardContent>
+                )}
             </Card>
         </WidgetMenu>
     );
