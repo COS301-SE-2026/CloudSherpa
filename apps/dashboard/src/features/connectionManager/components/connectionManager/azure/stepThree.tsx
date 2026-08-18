@@ -4,11 +4,6 @@ import StepThreeBase, {
     StepThreePropsForBase,
 } from "@/features/connectionManager/components/connectionManager/wizardSetup/stepThree";
 
-/*
-- should have tanstack table for resources, as elect & deselect all for it
-- should also have pagination
-*/
-
 const hardCodedResources = [
     {
         resourceId: "resource1",
@@ -20,6 +15,6 @@ const hardCodedResources = [
     },
 ];
 
-export default function StepThreeGcp(propsForGcp: Readonly<StepThreePropsForBase>) {
-    return <StepThreeBase {...propsForGcp} hardCodedResources={hardCodedResources} />;
+export default function StepThreeAzure(propsForAzure: Readonly<StepThreePropsForBase>) {
+    return <StepThreeBase {...propsForAzure} hardCodedResources={hardCodedResources} />;
 }

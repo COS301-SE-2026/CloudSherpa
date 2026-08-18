@@ -69,14 +69,14 @@
       {
         "name": "billing_export_config",
         "schemaName": "public",
-        "x": 1283.6817023491335,
-        "y": -20.137205607904036
+        "x": 1968.4691795367164,
+        "y": -20.13720560790398
       },
       {
         "name": "billing_export_execution",
         "schemaName": "public",
-        "x": 2026.8707768127092,
-        "y": -52.137205607904036
+        "x": 2043.3494307298306,
+        "y": 400.11340282411425
       },
       {
         "name": "widget_kpi",
@@ -131,6 +131,18 @@
         "schemaName": "public",
         "x": 12,
         "y": 12
+      },
+      {
+        "name": "aws_billing_export_config",
+        "schemaName": "public",
+        "x": 2524.5595055635163,
+        "y": -224.19566189364514
+      },
+      {
+        "name": "gcp_billing_export_config",
+        "schemaName": "public",
+        "x": 2523.4677086885163,
+        "y": 59.578691186518654
       }
     ],
     "tableGroupCollapseStates": [],
