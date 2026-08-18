@@ -17,19 +17,19 @@ import org.springframework.stereotype.Component;
 @Order(1)
 public class GcpBillingInitStep implements GcpBillingIngestionStep {
 
-  @Value("${dev.gcp.billing_dev}")
+  @Value("${dev.gcp.billing_dev:false}")
   private boolean devConfig;
 
-  @Value("${dev.gcp.project_id}")
+  @Value("${dev.gcp.project_id:}")
   private String devProjectId;
 
-  @Value("${dev.gcp.dataset_id}")
+  @Value("${dev.gcp.dataset_id:}")
   private String devDatasetId;
 
-  @Value("${dev.gcp.billing_account_id}")
+  @Value("${dev.gcp.billing_account_id:}")
   private String devBillingAccountId;
 
-  @Value("${dev.gcp.service_account_json_path}")
+  @Value("${dev.gcp.service_account_json_path:}")
   private String devServiceAccountPath;
 
   private final Logger logger = LoggerFactory.getLogger(GcpBillingInitStep.class);
@@ -37,7 +37,7 @@ public class GcpBillingInitStep implements GcpBillingIngestionStep {
   public void execute(GcpBillingContext context) {
     if (devConfig) {
       logger.info("GCP Billing Ingestion Dev Mode enabled ");
-      if (devProjectId == null || devDatasetId == null || devBillingAccountId == null) {
+      if (devProjectId.isBlank() || devDatasetId.isBlank() || devBillingAccountId.isBlank()) {
         throw new IllegalStateException(
             "Dev GCP billing ingestion config enabled but configuration values are missing");
       }
