@@ -13,7 +13,8 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.UUID;
 
-public class GcpBigQueryNormalizer implements CostRecordNormalizer<FieldValueList, BillingExport> {
+public class GcpBigQueryNormalizer
+    implements CostRecordNormalizer<GcpBigQueryBillingRecord, BillingExport> {
 
   // Does not make sense to include billingId in response since it is already required to make the
   // query, hence the billingId is
@@ -22,27 +23,29 @@ public class GcpBigQueryNormalizer implements CostRecordNormalizer<FieldValueLis
   private String billingId;
 
   @Override
-  public NormalizedCosts normalize(FieldValueList valueList, BillingExport billingExport)
+  public NormalizedCosts normalize(
+      GcpBigQueryBillingRecord gcpBillingRecord, BillingExport billingExport)
       throws NormalizationException {
     NormalizedCosts normalized = new NormalizedCosts();
 
-    normalized.setCostId(getCostId(valueList));
+    normalized.setCostId(getCostId(gcpBillingRecord));
     normalized.setExecutionId(getExecutionId(billingExport));
-    normalized.setChargeId(getChargeId(valueList));
-    normalized.setResourceId(getResourceId(valueList));
-    normalized.setProvider(getProvider(valueList));
-    normalized.setBillingAccountId(getBillingAccountId(valueList));
-    normalized.setChargeType(getChargeType(valueList));
-    normalized.setServiceName(getServiceName(valueList));
-    normalized.setCostAmount(getCostAmount(valueList));
-    normalized.setUsageStartTime(getUsageStartTime(valueList));
-    normalized.setUsageEndTime(getUsageEndTime(valueList));
+    normalized.setChargeId(getChargeId(gcpBillingRecord));
+    normalized.setResourceId(getResourceId(gcpBillingRecord));
+    normalized.setProvider(getProvider(gcpBillingRecord));
+    normalized.setBillingAccountId(getBillingAccountId(gcpBillingRecord));
+    normalized.setChargeType(getChargeType(gcpBillingRecord));
+    normalized.setServiceName(getServiceName(gcpBillingRecord));
+    normalized.setCostAmount(getCostAmount(gcpBillingRecord));
+    normalized.setUsageStartTime(getUsageStartTime(gcpBillingRecord));
+    normalized.setUsageEndTime(getUsageEndTime(gcpBillingRecord));
 
     return normalized;
   }
 
   @Override
-  public String getCostId(FieldValueList valueList) {
+  public String getCostId(GcpBigQueryBillingRecord gcpBillingRecord) {
+    FieldValueList valueList = gcpBillingRecord.fieldValueList();
 
     StringBuilder gcpCostId = new StringBuilder();
 
@@ -57,7 +60,7 @@ public class GcpBigQueryNormalizer implements CostRecordNormalizer<FieldValueLis
         .append("%%%")
         .append(valueList.get("sku_id").getStringValue())
         .append("%%%")
-        .append(getResourceId(valueList))
+        .append(getResourceId(gcpBillingRecord))
         .append("%%%")
         .append(valueList.get("cost_type").getStringValue());
 
@@ -70,17 +73,20 @@ public class GcpBigQueryNormalizer implements CostRecordNormalizer<FieldValueLis
   }
 
   @Override
-  public OffsetDateTime getUsageStartTime(FieldValueList valueList) {
+  public OffsetDateTime getUsageStartTime(GcpBigQueryBillingRecord gcpBillingRecord) {
+    FieldValueList valueList = gcpBillingRecord.fieldValueList();
     return getTimestamp(valueList.get("usage_start_time").getTimestampValue());
   }
 
   @Override
-  public OffsetDateTime getUsageEndTime(FieldValueList valueList) {
+  public OffsetDateTime getUsageEndTime(GcpBigQueryBillingRecord gcpBillingRecord) {
+    FieldValueList valueList = gcpBillingRecord.fieldValueList();
     return getTimestamp(valueList.get("usage_end_time").getTimestampValue());
   }
 
   @Override
-  public String getChargeId(FieldValueList valueList) {
+  public String getChargeId(GcpBigQueryBillingRecord gcpBillingRecord) {
+    FieldValueList valueList = gcpBillingRecord.fieldValueList();
     StringBuilder chargeId = new StringBuilder();
 
     String resourceName;
@@ -100,7 +106,8 @@ public class GcpBigQueryNormalizer implements CostRecordNormalizer<FieldValueLis
   }
 
   @Override
-  public String getResourceId(FieldValueList valueList) {
+  public String getResourceId(GcpBigQueryBillingRecord gcpBillingRecord) {
+    FieldValueList valueList = gcpBillingRecord.fieldValueList();
 
     if (valueList.get("resource_global_name").isNull()) {
       return "null";
@@ -110,40 +117,43 @@ public class GcpBigQueryNormalizer implements CostRecordNormalizer<FieldValueLis
   }
 
   @Override
-  public ProviderEnum getProvider(FieldValueList valueList) {
+  public ProviderEnum getProvider(GcpBigQueryBillingRecord gcpBillingRecord) {
     return ProviderEnum.GCP;
   }
 
   @Override
-  public String getBillingAccountId(FieldValueList valueList) {
+  public String getBillingAccountId(GcpBigQueryBillingRecord gcpBillingRecord) {
 
     if (billingId == null) {
       throw new IllegalArgumentException(
-          "The billing account ID for GCP billing exports needs to be explicitly set for a record to be normalized");
+          "The billing account ID for GCP billing exports needs to be explicitly set for a "
+              + "gcpBillingRecord to be normalized");
     }
 
     return billingId;
   }
 
   @Override
-  public ChargeTypeEnum getChargeType(FieldValueList valueList) {
+  public ChargeTypeEnum getChargeType(GcpBigQueryBillingRecord gcpBillingRecord) {
     // Can only be Usage or Other. Current conceptual mapping is
     // !credit = Usage else Other
     return ChargeTypeEnum.Usage; // temp
   }
 
   @Override
-  public String getServiceName(FieldValueList valueList) {
+  public String getServiceName(GcpBigQueryBillingRecord gcpBillingRecord) {
+    FieldValueList valueList = gcpBillingRecord.fieldValueList();
     return valueList.get("service_description").getStringValue();
   }
 
   @Override
-  public BigDecimal getCostAmount(FieldValueList valueList) {
+  public BigDecimal getCostAmount(GcpBigQueryBillingRecord gcpBillingRecord) {
+    FieldValueList valueList = gcpBillingRecord.fieldValueList();
     return valueList.get("cost").getNumericValue();
   }
 
   // Class specific public method to set billing id. If this is not called before the normalize
-  // record is called
+  // gcpBillingRecord is called
   // an exception will be thrown during normaization.
   public void setBillingId(String billingId) {
     this.billingId = billingId;

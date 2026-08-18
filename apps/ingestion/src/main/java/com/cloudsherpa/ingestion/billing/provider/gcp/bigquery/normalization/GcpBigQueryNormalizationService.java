@@ -31,9 +31,17 @@ public class GcpBigQueryNormalizationService {
         new BillingExport(UUID.randomUUID().toString(), UUID.randomUUID().toString(), List.of());
 
     for (FieldValueList fieldValueList : context.getTableResult().getValues()) {
-      NormalizedCosts normalizedCosts = gcpBigQueryNormalizer.normalize(fieldValueList, tempExport);
+
+      GcpBigQueryBillingRecord gcpBigQueryBillingRecord =
+          new GcpBigQueryBillingRecord(
+              fieldValueList, !fieldValueList.get("credits").getRepeatedValue().isEmpty());
+
+      NormalizedCosts normalizedCosts =
+          gcpBigQueryNormalizer.normalize(gcpBigQueryBillingRecord, tempExport);
       logger.info(
-          "Normalized GCP BigQuery cost record: costId={}, executionId={}, resourceId={}, chargeId={}, provider={}, billingAccountId={}, serviceName={}, chargeType={}, costAmount={}, currency={}, usageStartTime={}, usageEndTime={}, metadata={}",
+          "Normalized GCP BigQuery cost record: costId={}, executionId={}, resourceId={}, "
+              + "chargeId={}, provider={}, billingAccountId={}, serviceName={}, chargeType={}, "
+              + "costAmount={}, currency={}, usageStartTime={}, usageEndTime={}, metadata={}",
           normalizedCosts.getCostId(),
           normalizedCosts.getExecutionId(),
           normalizedCosts.getResourceId(),
