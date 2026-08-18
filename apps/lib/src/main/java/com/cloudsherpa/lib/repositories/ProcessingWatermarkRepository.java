@@ -7,7 +7,8 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ProcessingWatermarkRepository
-    extends JpaRepository<ProcessingWatermark, String> 
-    {
-        Optional<ProcessingWatermark> findByUserIdAndPipelineName(UUID userId, String pipelineName);
-    }
+    extends JpaRepository<ProcessingWatermark, UUID> {
+
+  Optional<ProcessingWatermark> findByUserIdAndPipelineName(
+      UUID userId, String pipelineName);
+}
