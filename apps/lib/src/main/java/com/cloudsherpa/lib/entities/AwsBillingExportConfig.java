@@ -33,4 +33,61 @@ public class AwsBillingExportConfig {
     private String exportName;
 
     protected AwsBillingExportConfig() {}
+
+    public AwsBillingExportConfig(
+        UUID configId,
+        String bucketName,
+        String bucketRegion,
+        String exportPrefix,
+        String exportName) {
+      this.configId = configId;
+      this.bucketName = bucketName;
+      this.bucketRegion = bucketRegion;
+      this.exportPrefix = exportPrefix;
+      this.exportName = exportName;
+    }
+
+    public UUID getConfigId() {
+      return configId;
+    }
+
+    public void setConfigId(UUID configId) {
+      this.configId = configId;
+    }
+
+    public BillingExportConfig getConfig() {
+      return config;
+    }
+
+    public String getBucketName() {
+      return bucketName;
+    }
+
+    public void setBucketName(String bucketName) {
+      this.bucketName = bucketName;
+    }
+
+    public String getBucketRegion() {
+      return bucketRegion;
+    }
+
+    public void setBucketRegion(String bucketRegion) {
+      this.bucketRegion = bucketRegion;
+    }
+
+    public String getExportPrefix() {
+      return exportPrefix;
+    }
+
+    public void setExportPrefix(String exportPrefix) {
+      this.exportPrefix = exportPrefix;
+    }
+
+    public String getExportName() {
+      return exportName;
+    }
+
+    public void setExportName(String exportName) {
+      this.exportName = exportName;
+    }
 }
