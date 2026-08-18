@@ -146,8 +146,8 @@ CREATE TABLE IF NOT EXISTS public.aws_billing_export_config (
 
 CREATE TABLE IF NOT EXISTS public.gcp_billing_export_config (
   config_id uuid PRIMARY KEY REFERENCES public.billing_export_config(config_id) ON DELETE CASCADE,
-  dataset_id varchar(1024),
-  billing_account_id char(18)
+  dataset_id varchar(1024) NOT NULL,
+  billing_account_id char(18) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS public.billing_export_execution (
