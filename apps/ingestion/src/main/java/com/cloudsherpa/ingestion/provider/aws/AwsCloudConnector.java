@@ -10,8 +10,8 @@ import com.cloudsherpa.ingestion.models.IngestionRequestEvent;
 import com.cloudsherpa.ingestion.models.ResourceDetail;
 import com.cloudsherpa.ingestion.models.UsageRecordModel;
 import com.cloudsherpa.ingestion.provider.aws.monitoring.AwsCloudWatchMetricProvider;
-import com.cloudsherpa.ingestion.provider.aws.monitoring.CloudWatchMetricProvider;
 import com.cloudsherpa.ingestion.provider.aws.monitoring.MockCloudWatchMetricProvider;
+import com.cloudsherpa.ingestion.provider.monitoring.CloudMonitoringMetricProvider;
 import com.cloudsherpa.ingestion.provider.scanner.ResourceDiscoveryService;
 import java.util.List;
 import org.springframework.stereotype.Component;
@@ -24,8 +24,8 @@ import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
 @Component("aws")
 public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingCapable {
 
-  private final CloudWatchMetricProvider metricProvider;
-  private final CloudWatchMetricProvider mockMetricProvider;
+  private final CloudMonitoringMetricProvider metricProvider;
+  private final CloudMonitoringMetricProvider mockMetricProvider;
   private final ResourceDiscoveryService discoveryService;
 
   public AwsCloudConnector(
