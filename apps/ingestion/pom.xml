@@ -46,7 +46,14 @@
 				<version>26.49.0</version>
 				<type>pom</type>
 				<scope>import</scope>
-			</dependency>
+      </dependency>
+      <dependency>
+          <groupId>com.azure</groupId>
+          <artifactId>azure-sdk-bom</artifactId>
+          <version>1.3.7</version>
+          <type>pom</type>
+          <scope>import</scope>
+      </dependency>
 			<dependency>
 				<groupId>org.testcontainers</groupId>
 				<artifactId>testcontainers-bom</artifactId>
@@ -176,6 +183,14 @@
 	<dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-bigquery</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>com.azure</groupId>
+        <artifactId>azure-identity</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>com.azure</groupId>
+        <artifactId>azure-monitor-query-metrics</artifactId>
     </dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
