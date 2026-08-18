@@ -39,6 +39,13 @@ public class TenantOptimizationWorker {
       watermark = new ProcessingWatermark(userId, PIPELINE_NAME, null, null, windowEnd);
     }
 
+    // Calculate 4-day statistics.
+    // Calculate 7-day statistics.
+    // Calculate 30-day statistics.
+    // Evaluate rules.
+    // Resolve recommendation conflicts.
+    // Persist recommendations.
+
     statisticsService.recalculateStatistics(windowEnd, 4);
     statisticsService.recalculateStatistics(windowEnd, 7);
     statisticsService.recalculateStatistics(windowEnd, 30);
