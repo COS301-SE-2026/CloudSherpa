@@ -1,8 +1,7 @@
-import { Card, CardFooter, CardHeader, CardTitle } from "@/components/atoms/card";
+import { Card, CardHeader, CardTitle } from "@/components/atoms/card";
 import { Badge } from "@/components/atoms/badge";
 import RecDrawer from "@/features/optimization/components/recDrawer";
 import { RecommendationGroup } from "@/features/optimization/types/recommendations";
-import { Separator } from "@/components/atoms/separator";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -35,12 +34,20 @@ export default function RecommendationGroupCard({ group }: Readonly<Recommendati
         <ContextMenu>
             <ContextMenuTrigger>
                 <Card
-                    className="h-50 flex flex-col justify-between cursor-pointer hover:bg-muted/50"
+                    className="flex flex-col justify-between cursor-pointer hover:bg-muted/50"
                     onClick={handleOpenDrawer}
                 >
-                    <CardHeader className="flex flex-col justify-start items-start gap-2">
-                        <div className="w-full flex flex-row justify-between items-center">
-                            <CardTitle>{group.displayName} </CardTitle>
+                    <CardHeader className="flex flex-row justify-start items-start gap-2">
+                        <div className="w-full flex flex-row justify-between items-center gap-2">
+                            <div className="flex flex-row justify-start items-center gap-2">
+                                <CardTitle>{group.displayName} </CardTitle>
+                                <div className="flex flex-row pl-2 gap-2">
+                                    <Badge>{provider}</Badge>
+                                    <Badge variant="secondary">
+                                        {recommendationsCount} recommendations
+                                    </Badge>
+                                </div>
+                            </div>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button
@@ -65,16 +72,7 @@ export default function RecommendationGroupCard({ group }: Readonly<Recommendati
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </div>
-                        <Badge>{provider}</Badge>
                     </CardHeader>
-                    <CardFooter className="w-full flex flex-col justify-start gap-2">
-                        <Separator />
-                        <div className="flex flex-row justify-end items-center w-full">
-                            <span className="text-muted-foreground text-s">
-                                {recommendationsCount} recommendations
-                            </span>
-                        </div>
-                    </CardFooter>
                     <RecDrawer group={group} isOpen={isDrawerOpen} setIsOpen={setIsDrawerOpen} />
                 </Card>
             </ContextMenuTrigger>

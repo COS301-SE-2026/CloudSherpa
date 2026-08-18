@@ -18,16 +18,18 @@ export default function RecommendationCardHero({
     return (
         <Tooltip>
             <TooltipTrigger>
-                <Card>
+                <Card className="w-full group">
                     <CardHeader>
-                        <CardTitle className={cn("text-xl flex flex-row justify-start", className)}>
+                        <CardTitle
+                            className={cn("text-xl flex flex-row justify-center", className)}
+                        >
                             {name ?? name}
                             {value}
                         </CardTitle>
                     </CardHeader>
                 </Card>
             </TooltipTrigger>
-            <TooltipContent>{tooltip}</TooltipContent>
+            {tooltip && <TooltipContent>{tooltip}</TooltipContent>}
         </Tooltip>
     );
 }

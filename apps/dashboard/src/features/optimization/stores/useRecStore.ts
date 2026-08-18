@@ -1,17 +1,26 @@
 import { create } from "zustand";
-import { Recommendation, RecommendationGroup } from "@/features/optimization/types/recommendations";
+import {
+    Recommendation,
+    RecommendationGroup,
+    RecommendationSummary,
+} from "@/features/optimization/types/recommendations";
 import { getAwsAccountConnections, getAwsAccountResources } from "@/lib/fetch/aws-connection-api";
 import {
     getOptimizationRecommendations,
     acknowledgeRecommendation,
     dismissRecommendation,
     applyRecommendation,
+    getRecommendationSummary,
 } from "@/lib/fetch/api-optimization";
 
 interface RecStore {
     recommendationGroups: RecommendationGroup[];
+    summary: RecommendationSummary | null;
     isLoading: boolean;
+    failedLoading: boolean;
+    failedLoadingMessage: string;
     fetchRecGroups: () => Promise<void>;
+    fetchSummary: () => Promise<void>;
     acknowledgeRec: (recommendationId: string) => Promise<void>;
     dismissRec: (recommendationId: string) => Promise<void>;
     applyRec: (recommendationId: string) => Promise<void>;
@@ -19,7 +28,23 @@ interface RecStore {
 
 export const useRecStore = create<RecStore>((set, get) => ({
     recommendationGroups: [],
+    summary: null,
     isLoading: false,
+    failedLoading: false,
+    failedLoadingMessage: "",
+
+    fetchSummary: async () => {
+        try {
+            const summary = await getRecommendationSummary();
+            set({ summary, failedLoading: false });
+        } catch (error) {
+            console.error("Failed to fetch recommendation summary:", error);
+            set({
+                failedLoading: true,
+                failedLoadingMessage: "Failed to fetch summary of recommendations",
+            });
+        }
+    },
 
     fetchRecGroups: async () => {
         if (get().recommendationGroups.length === 0) {
@@ -82,9 +107,14 @@ export const useRecStore = create<RecStore>((set, get) => ({
             set(() => ({
                 recommendationGroups: finalGroups,
                 isLoading: false,
+                failedLoading: false,
             }));
         } catch {
-            set({ isLoading: false });
+            set({
+                isLoading: false,
+                failedLoading: true,
+                failedLoadingMessage: "Failed to fetch recommendations",
+            });
         }
     },
 

@@ -1,7 +1,6 @@
 "use client";
 import {
     Drawer,
-    DrawerTrigger,
     DrawerContent,
     DrawerTitle,
     DrawerHeader,
@@ -11,9 +10,10 @@ import { Button } from "@/components/atoms/button";
 import { RecommendationGroup } from "@/features/optimization/types/recommendations";
 import RecommendationCard from "@/features/optimization/components/recCard";
 import { useState, useMemo } from "react";
-import { X, Search } from "lucide-react";
+import { X, Search, Eye, EyeOff } from "lucide-react";
 import { Input } from "@/components/atoms/input";
 import Dropdown from "@/components/molecules/dropdown";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/atoms/tooltip";
 
 const ACTIONS = [
     { value: "ALL", label: "All Actions" },
@@ -32,9 +32,13 @@ interface RecDrawer {
 export default function RecDrawer({ group, isOpen, setIsOpen }: Readonly<RecDrawer>) {
     const [searchQuery, setSearchQuery] = useState("");
     const [actionFilter, setActionFilter] = useState("ALL");
+    const [showHidden, setShowHidden] = useState(false);
 
     const filteredRecommendations = useMemo(() => {
-        let filtered = group.recommendations;
+        let filtered = group.recommendations.filter((rec) =>
+            showHidden ? rec.status === "DISMISSED" : rec.status !== "DISMISSED"
+        );
+        console.log(filtered);
 
         if (actionFilter && actionFilter !== "ALL") {
             filtered = filtered.filter((rec) => rec.actionType === actionFilter);
@@ -53,7 +57,7 @@ export default function RecDrawer({ group, isOpen, setIsOpen }: Readonly<RecDraw
         }
 
         return filtered;
-    }, [searchQuery, actionFilter, group.recommendations]);
+    }, [searchQuery, actionFilter, group.recommendations, showHidden]);
 
     return (
         <Drawer direction="right" dismissible={true} open={isOpen} onOpenChange={setIsOpen}>
@@ -63,7 +67,15 @@ export default function RecDrawer({ group, isOpen, setIsOpen }: Readonly<RecDraw
                     <div className="flex flex-row lex-row justify-between items-center">
                         <DrawerTitle className="text-xl">{group.displayName}</DrawerTitle>
                         {/* closes drawer */}
-                        <Button className="w-fit" variant="ghost" onClick={() => setIsOpen(false)}>
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setIsOpen(false);
+                            }}
+                        >
                             <X />
                         </Button>
                     </div>
@@ -74,7 +86,7 @@ export default function RecDrawer({ group, isOpen, setIsOpen }: Readonly<RecDraw
 
                 <div className="h-full w-full p-4 overflow-y-auto space-y-4">
                     {/* filters */}
-                    <div className="flex flex-row w-full justify-between gap-2 pt-2">
+                    <div className="flex flex-row w-full justify-between items-center gap-2 pt-2">
                         {/* search, uses relative and absolute to layer icon on input */}
                         <div className="relative w-full">
                             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -95,6 +107,24 @@ export default function RecDrawer({ group, isOpen, setIsOpen }: Readonly<RecDraw
                             widthVariant="large"
                             placeholder="Action..."
                         />
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    type="button"
+                                    variant="secondary"
+                                    size="icon"
+                                    className="shrink-0"
+                                    onClick={() => setShowHidden(!showHidden)}
+                                >
+                                    {showHidden ? (
+                                        <Eye className="h-4 w-4" />
+                                    ) : (
+                                        <EyeOff className="h-4 w-4" />
+                                    )}
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Show dismissed recommendations</TooltipContent>
+                        </Tooltip>
                     </div>
 
                     {/* map recommendations to individual cards */}
