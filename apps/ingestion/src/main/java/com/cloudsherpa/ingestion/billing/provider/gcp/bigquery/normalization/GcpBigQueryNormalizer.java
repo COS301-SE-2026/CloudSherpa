@@ -19,8 +19,8 @@ import org.slf4j.LoggerFactory;
 public class GcpBigQueryNormalizer
     implements CostRecordNormalizer<GcpBigQueryBillingRecord, BillingExport> {
 
-  private final Logger logger =
-      LoggerFactory.getLogger(GcpBigQueryNormalizer.class); // NOSONAR will use later
+  private final Logger logger = // NOSONAR will use later
+      LoggerFactory.getLogger(GcpBigQueryNormalizer.class);
 
   // Does not make sense to include billingId in response since it is already
   // required to make the
