@@ -133,11 +133,21 @@ CREATE TABLE IF NOT EXISTS public.cloud_credential (
 CREATE TABLE IF NOT EXISTS public.billing_export_config (
   config_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   account_id uuid REFERENCES public.cloud_account(account_id) ON DELETE CASCADE,
-  bucket_name varchar(255) NOT NULL,
-  bucket_region varchar(255) NOT NULL,
-  export_prefix varchar(255), 
-  export_name varchar(255) NOT NULL,
   created_at timestamptz DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS public.aws_billing_export_config (
+  config_id uuid PRIMARY KEY REFERENCES public.billing_export_config(config_id) ON DELETE CASCADE,
+  bucket_name varchar(63) NOT NULL,
+  bucket_region varchar(50) NOT NULL,
+  export_prefix varchar(256), 
+  export_name varchar(128) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS public.gcp_billing_export_config (
+  config_id uuid PRIMARY KEY REFERENCES public.billing_export_config(config_id) ON DELETE CASCADE,
+  dataset_id varchar(1024) NOT NULL,
+  billing_account_id char(18) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS public.billing_export_execution (
