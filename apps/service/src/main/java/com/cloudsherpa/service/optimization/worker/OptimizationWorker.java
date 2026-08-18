@@ -9,17 +9,18 @@ import org.springframework.stereotype.Component;
 public class OptimizationWorker {
 
   private final TenantService tenantService;
+  private final TenantOptimizationProcessor tenantOptimizationProcessor;
 
-  public OptimizationWorker(TenantService tenantService) {
+  public OptimizationWorker(
+      TenantService tenantService, TenantOptimizationProcessor tenantOptimizationProcessor) {
+    this.tenantOptimizationProcessor = tenantOptimizationProcessor;
     this.tenantService = tenantService;
   }
 
-  @Scheduled(fixedRate = 86400000) // once every 24 hours in ms
+  @Scheduled(fixedRate = 86400000L)
   public void run() {
     for (UUID tenantId : tenantService.findTenantIds()) {
-      processTenant(tenantId);
+      tenantOptimizationProcessor.process(tenantId);
     }
   }
-
-  void processTenant(UUID tenantId) {}
 }
