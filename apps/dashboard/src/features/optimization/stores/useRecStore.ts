@@ -39,8 +39,10 @@ export const useRecStore = create<RecStore>((set, get) => ({
             set({ summary, failedLoading: false });
         } catch (error) {
             console.error("Failed to fetch recommendation summary:", error);
-            set({ failedLoading: true });
-            set({ failedLoadingMessage: "Failed to fetch summary of recommendations" });
+            set({
+                failedLoading: true,
+                failedLoadingMessage: "Failed to fetch summary of recommendations",
+            });
         }
     },
 
@@ -108,9 +110,11 @@ export const useRecStore = create<RecStore>((set, get) => ({
                 failedLoading: false,
             }));
         } catch {
-            set({ isLoading: false });
-            set({ failedLoading: true });
-            set({ failedLoadingMessage: "Failed to fetch recommendations" });
+            set({
+                isLoading: false,
+                failedLoading: true,
+                failedLoadingMessage: "Failed to fetch recommendations",
+            });
         }
     },
 

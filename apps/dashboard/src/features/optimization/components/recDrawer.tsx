@@ -67,7 +67,15 @@ export default function RecDrawer({ group, isOpen, setIsOpen }: Readonly<RecDraw
                     <div className="flex flex-row lex-row justify-between items-center">
                         <DrawerTitle className="text-xl">{group.displayName}</DrawerTitle>
                         {/* closes drawer */}
-                        <Button className="w-fit" variant="ghost" onClick={() => setIsOpen(false)}>
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setIsOpen(false);
+                            }}
+                        >
                             <X />
                         </Button>
                     </div>
