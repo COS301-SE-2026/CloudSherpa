@@ -17,6 +17,8 @@ interface RecStore {
     recommendationGroups: RecommendationGroup[];
     summary: RecommendationSummary | null;
     isLoading: boolean;
+    failedLoading: boolean;
+    failedLoadingMessage: string;
     fetchRecGroups: () => Promise<void>;
     fetchSummary: () => Promise<void>;
     acknowledgeRec: (recommendationId: string) => Promise<void>;
@@ -28,13 +30,17 @@ export const useRecStore = create<RecStore>((set, get) => ({
     recommendationGroups: [],
     summary: null,
     isLoading: false,
+    failedLoading: false,
+    failedLoadingMessage: "",
 
     fetchSummary: async () => {
         try {
             const summary = await getRecommendationSummary();
-            set({ summary });
+            set({ summary, failedLoading: false });
         } catch (error) {
             console.error("Failed to fetch recommendation summary:", error);
+            set({ failedLoading: true });
+            set({ failedLoadingMessage: "Failed to fetch summary of recommendations" });
         }
     },
 
@@ -99,9 +105,12 @@ export const useRecStore = create<RecStore>((set, get) => ({
             set(() => ({
                 recommendationGroups: finalGroups,
                 isLoading: false,
+                failedLoading: false,
             }));
         } catch {
             set({ isLoading: false });
+            set({ failedLoading: true });
+            set({ failedLoadingMessage: "Failed to fetch recommendations" });
         }
     },
 

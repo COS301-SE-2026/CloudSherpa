@@ -7,6 +7,7 @@ import { Search, ArrowUpDown } from "lucide-react";
 import { Tabs, TabsTrigger, TabsList } from "@/components/atoms/tabs";
 import RecommendationCardHero from "@/features/optimization/components/recCardHero";
 import { Button } from "@/components/atoms/button";
+import { RecommendationErrorAlert } from "@/features/optimization/components/recError";
 
 const FilterOptions = [
     { value: "all", label: "ALL" },
@@ -21,6 +22,8 @@ export default function Recommendations() {
     const fetchSummary = useRecStore((state) => state.fetchSummary);
     const summary = useRecStore((state) => state.summary);
     const isLoading = useRecStore((state) => state.isLoading);
+    const recErrorState = useRecStore((state) => state.failedLoading);
+    const recErrorMessage = useRecStore((state) => state.failedLoadingMessage);
 
     const [searchQuery, setSearchQuery] = useState("");
     const [filter, setFilter] = useState("all");
@@ -80,6 +83,7 @@ export default function Recommendations() {
                 <h1 className="text-3xl font-semibold">Optimization Recommendations</h1>
             </header>
             {/* recommendation summaries */}
+            {recErrorState && <RecommendationErrorAlert recError={recErrorMessage} />}
             {summary && (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-2">
                     <RecommendationCardHero
