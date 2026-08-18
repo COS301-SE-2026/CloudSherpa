@@ -6,19 +6,27 @@ import com.cloudsherpa.ingestion.billing.provider.aws.cur.exceptions.Normalizati
 import com.cloudsherpa.lib.entities.ChargeTypeEnum;
 import com.cloudsherpa.lib.entities.NormalizedCosts;
 import com.cloudsherpa.lib.entities.ProviderEnum;
+import com.google.cloud.bigquery.FieldValue;
 import com.google.cloud.bigquery.FieldValueList;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class GcpBigQueryNormalizer
     implements CostRecordNormalizer<GcpBigQueryBillingRecord, BillingExport> {
 
-  // Does not make sense to include billingId in response since it is already required to make the
+  private final Logger logger =
+      LoggerFactory.getLogger(GcpBigQueryNormalizer.class); // NOSONAR will use later
+
+  // Does not make sense to include billingId in response since it is already
+  // required to make the
   // query, hence the billingId is
-  // set via a setter and the getBillingAccountId returns this attribute. (saves query costs at
+  // set via a setter and the getBillingAccountId returns this attribute. (saves
+  // query costs at
   // expense of extra normalization setter step)
   private String billingId;
 
@@ -135,9 +143,14 @@ public class GcpBigQueryNormalizer
 
   @Override
   public ChargeTypeEnum getChargeType(GcpBigQueryBillingRecord gcpBillingRecord) {
-    // Can only be Usage or Other. Current conceptual mapping is
-    // !credit = Usage else Other
-    return ChargeTypeEnum.Usage; // temp
+
+    CreditProcessingState creditProcessingState = gcpBillingRecord.creditProcessingState();
+
+    if (shouldEmitCreditRecord(creditProcessingState)) {
+      return ChargeTypeEnum.Other;
+    } else {
+      return ChargeTypeEnum.Usage;
+    }
   }
 
   @Override
@@ -149,10 +162,29 @@ public class GcpBigQueryNormalizer
   @Override
   public BigDecimal getCostAmount(GcpBigQueryBillingRecord gcpBillingRecord) {
     FieldValueList valueList = gcpBillingRecord.fieldValueList();
-    return valueList.get("cost").getNumericValue();
+    CreditProcessingState creditProcessingState = gcpBillingRecord.creditProcessingState();
+
+    if (!shouldEmitCreditRecord(creditProcessingState)) {
+      return valueList.get("cost").getNumericValue();
+    }
+
+    BigDecimal costAmount = BigDecimal.ZERO;
+
+    for (FieldValue creditValue : valueList.get("credits").getRepeatedValue()) {
+      // Refer to query (GcpBillingQueryStep), credit amount will always be the first element of the
+      // struct hence we can index by 0
+      BigDecimal creditAmount = creditValue.getRecordValue().get(0).getNumericValue();
+
+      if (creditAmount != null) {
+        costAmount = costAmount.add(creditAmount);
+      }
+    }
+
+    return costAmount;
   }
 
-  // Class specific public method to set billing id. If this is not called before the normalize
+  // Class specific public method to set billing id. If this is not called before
+  // the normalize
   // gcpBillingRecord is called
   // an exception will be thrown during normaization.
   public void setBillingId(String billingId) {
@@ -164,5 +196,9 @@ public class GcpBigQueryNormalizer
     Instant timestampInstant = Instant.ofEpochMilli(nanos / 1000);
     ZoneId zoneId = ZoneId.of("UTC");
     return OffsetDateTime.ofInstant(timestampInstant, zoneId);
+  }
+
+  private boolean shouldEmitCreditRecord(CreditProcessingState state) {
+    return state.getHasCredits() && !state.getProcessed();
   }
 }
