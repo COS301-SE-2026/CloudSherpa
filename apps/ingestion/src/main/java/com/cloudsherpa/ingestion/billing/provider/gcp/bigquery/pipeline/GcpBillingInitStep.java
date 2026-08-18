@@ -6,6 +6,7 @@ import com.google.cloud.bigquery.BigQuery;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,10 +51,19 @@ public class GcpBillingInitStep implements GcpBillingIngestionStep {
       context.setCloudCredentials(devCredentials);
       context.setBigQueryClient(getBigQueryClient(devCredentials));
     }
+
+    // Common behavior for both dev and other configurations
+    Instant queryFrom =
+        Instant.now()
+            .minusSeconds(
+                (long) 84_000 * 3); // temporarily set queryFrom to 3 days before time of ingestion
+    context.setQueryFrom(queryFrom);
   }
 
   private CloudCredentials getGcpDevCredentials() {
     if (!devConfig) {
+      logger.error(
+          "GCP dev flag set to {} but an attempt was made to obtain dev credentials", devConfig);
       throw new IllegalStateException(
           "Cannot use dev GCP credentials when devConfig flag is not set to true");
     }
@@ -64,6 +74,7 @@ public class GcpBillingInitStep implements GcpBillingIngestionStep {
       gcpCloudCredentials.setServiceAccountJson(json);
       return gcpCloudCredentials;
     } catch (IOException ioException) {
+      logger.error("Failed to load dev service account file at {}", devServiceAccountPath);
       throw new IllegalStateException("Could not load dev service account file", ioException);
     }
   }
