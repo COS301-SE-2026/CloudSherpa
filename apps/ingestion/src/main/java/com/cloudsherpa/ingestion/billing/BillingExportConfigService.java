@@ -2,6 +2,7 @@ package com.cloudsherpa.ingestion.billing;
 
 import com.cloudsherpa.lib.entities.AwsBillingExportConfig;
 import com.cloudsherpa.lib.entities.BillingExportConfig;
+import com.cloudsherpa.lib.entities.GcpBillingExportConfig;
 import com.cloudsherpa.lib.repositories.AwsBillingExportConfigRepository;
 import com.cloudsherpa.lib.repositories.BillingExportConfigRepository;
 import com.cloudsherpa.lib.repositories.GcpBillingExportConfigRepository;
@@ -30,5 +31,10 @@ public class BillingExportConfigService {
   public AwsBillingExportConfig getAccountAwsBillingExportConfig(UUID configId) {
     BillingExportConfig config = billingExportConfigRepository.findById(configId).orElseThrow();
     return awsBillingExportConfigRepository.findById(config.getId()).orElseThrow();
+  }
+
+  public GcpBillingExportConfig getGcpBillingExportConfig(UUID configId) {
+    BillingExportConfig config = getBillingExportConfig(configId);
+    return gcpBillingExportConfigRepository.findById(config.getId()).orElseThrow();
   }
 }
