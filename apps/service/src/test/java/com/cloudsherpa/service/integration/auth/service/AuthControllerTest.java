@@ -17,7 +17,8 @@ import org.testcontainers.utility.DockerImageName;
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = {
       "AES_ENCRYPTION_KEY=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
-      "INGESTION_BASE_URL=http://localhost:8081"
+      "INGESTION_BASE_URL=http://localhost:8081",
+      "intelligence-api-key=123"
     })
 // @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class AuthControllerTest {
