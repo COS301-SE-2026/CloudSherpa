@@ -1,5 +1,4 @@
 import { Skeleton } from "@/components/atoms/skeleton";
-import { Card } from "@/components/atoms/card";
 import { cn } from "@/lib/utils";
 
 interface AppSkeletonsProps {
