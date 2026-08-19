@@ -3,7 +3,6 @@ package com.cloudsherpa.ingestion.scheduler.billing;
 import com.cloudsherpa.ingestion.billing.provider.aws.cur.AwsCurIngestionService;
 import com.cloudsherpa.ingestion.billing.provider.gcp.bigquery.GcpBillingIngestionService;
 import com.cloudsherpa.lib.entities.ProviderEnum;
-import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -22,8 +21,7 @@ public class BillingIngestionClient {
 
     switch (provider) {
       case AWS -> awsCurIngestionService.execute(userId, configId);
-      case GCP -> gcpBillingIngestionService.execute(
-          UUID.fromString(userId), UUID.fromString(configId));
+      case GCP -> gcpBillingIngestionService.execute(userId, configId);
       case AZURE -> throw new UnsupportedOperationException(
           "Azure billing ingestion not implemented yet");
     }

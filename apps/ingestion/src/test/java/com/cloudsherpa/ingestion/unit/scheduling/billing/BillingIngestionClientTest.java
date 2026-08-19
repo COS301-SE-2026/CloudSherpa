@@ -9,7 +9,6 @@ import com.cloudsherpa.ingestion.billing.provider.aws.cur.AwsCurIngestionService
 import com.cloudsherpa.ingestion.billing.provider.gcp.bigquery.GcpBillingIngestionService;
 import com.cloudsherpa.ingestion.scheduler.billing.BillingIngestionClient;
 import com.cloudsherpa.lib.entities.ProviderEnum;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -49,8 +48,7 @@ class BillingIngestionClientTest {
     billingIngestionClient.execute(ProviderEnum.GCP, VALID_USER_ID, VALID_CONFIG_ID);
 
     // assert
-    verify(gcpBillingIngestionService)
-        .execute(UUID.fromString(VALID_USER_ID), UUID.fromString(VALID_CONFIG_ID));
+    verify(gcpBillingIngestionService).execute(VALID_USER_ID, VALID_CONFIG_ID);
     verify(awsCurIngestionService, never()).execute(any(), any());
   }
 
