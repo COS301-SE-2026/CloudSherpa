@@ -10,12 +10,16 @@ import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.RestClient;
 
 public abstract class ForecastingService {
   private final RestClient restClient;
   protected final Sampler sampler;
+
+  @Value("${intelligence-api-key}")
+  private String intelligenceApiKey;
 
   private final Logger logger = LoggerFactory.getLogger(ForecastingService.class);
 
@@ -63,6 +67,7 @@ public abstract class ForecastingService {
         .post()
         .uri("/forecast-chronos")
         .contentType(MediaType.APPLICATION_JSON)
+        .header("X-API-Key", intelligenceApiKey)
         .body(intelligenceForecastRequestDto)
         .retrieve()
         .body(IntelligenceForecastResponseDto.class);
