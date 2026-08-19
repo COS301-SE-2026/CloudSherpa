@@ -7,6 +7,7 @@ import { Button } from "@/components/atoms/button";
 import RecommendationCardHero from "@/features/optimization/components/recCardHero";
 import { useRecStore } from "@/features/optimization/stores/useRecStore";
 import { Badge } from "@/components/atoms/badge";
+import { toast } from "sonner";
 
 interface RecommendationCardProps {
     recommendation: Recommendation;
@@ -22,19 +23,37 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
     const handleAcknowledge = async (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        await acknowledgeRec(recommendation.recommendationId);
+        try {
+            await acknowledgeRec(recommendation.recommendationId);
+            toast.success(`Successfully acknowledged recommendation.`);
+        } catch {
+            toast.error(`Failed to acknowledge recommendation.`);
+            return;
+        }
     };
 
     const handleDismiss = async (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        await dismissRec(recommendation.recommendationId);
+        try {
+            await dismissRec(recommendation.recommendationId);
+            toast.success(`Successfully dismissed recommendation.`);
+        } catch {
+            toast.error(`Failed to dismiss recommendation.`);
+            return;
+        }
     };
 
     const handleApply = async (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        await applyRec(recommendation.recommendationId);
+        try {
+            await applyRec(recommendation.recommendationId);
+            toast.success(`Successfully flagged recommendation as applied.`);
+        } catch {
+            toast.error(`Failed to flag recommendation as applied.`);
+            return;
+        }
     };
 
     const confidence =
