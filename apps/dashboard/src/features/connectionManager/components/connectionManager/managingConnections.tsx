@@ -318,12 +318,9 @@ export default function ManagingConnections() {
                                                     </AlertDialogTitle>
 
                                                     <AlertDialogDescription>
-                                                        This will permanently delete the connection
-                                                        <strong>
-                                                            {" "}
-                                                            &quot;{connection.name}&quot;
-                                                        </strong>
-                                                        . This action cannot be undone.
+                                                        This will permanently delete the connection{" "}
+                                                        <strong>{connection.name};</strong>. This
+                                                        action cannot be undone.
                                                     </AlertDialogDescription>
                                                 </AlertDialogHeader>
 
