@@ -1,11 +1,15 @@
 package com.cloudsherpa.ingestion.billing.provider.gcp.bigquery.pipeline;
 
+import com.cloudsherpa.ingestion.billing.BillingExport;
 import com.cloudsherpa.ingestion.connector.CloudCredentials;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.TableResult;
 import java.time.Instant;
+import java.util.UUID;
 
 public class GcpBillingContext {
+  private final UUID userId;
+  private final UUID configId;
   private GcpBillingConfig billingConfig;
   private CloudCredentials gcpCredentials;
   private BigQuery bigQueryClient;
@@ -13,6 +17,12 @@ public class GcpBillingContext {
   private String fullyQualifiedExportTableIdentifier;
   private Instant queryFrom;
   private TableResult tableResult;
+  private BillingExport billingExport;
+
+  public GcpBillingContext(UUID userId, UUID configId) {
+    this.userId = userId;
+    this.configId = configId;
+  }
 
   public void setGcpBillingConfig(GcpBillingConfig billingConfig) {
     this.billingConfig = billingConfig;
@@ -42,6 +52,18 @@ public class GcpBillingContext {
     this.tableResult = tableResult;
   }
 
+  public void setBillingExport(BillingExport billingExport) {
+    this.billingExport = billingExport;
+  }
+
+  public UUID getUserId() {
+    return userId;
+  }
+
+  public UUID getConfigId() {
+    return configId;
+  }
+
   public GcpBillingConfig getBillingConfig() {
     return billingConfig;
   }
@@ -68,5 +90,9 @@ public class GcpBillingContext {
 
   public TableResult getTableResult() {
     return tableResult;
+  }
+
+  public BillingExport getBillingExport() {
+    return billingExport;
   }
 }
