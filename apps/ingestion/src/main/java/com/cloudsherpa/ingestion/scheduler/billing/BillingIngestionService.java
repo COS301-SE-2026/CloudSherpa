@@ -1,6 +1,7 @@
 package com.cloudsherpa.ingestion.scheduler.billing;
 
 import com.cloudsherpa.lib.entities.CloudAccount;
+import com.cloudsherpa.lib.entities.ProviderEnum;
 import com.cloudsherpa.lib.repositories.BillingExportConfigRepository;
 import com.cloudsherpa.lib.repositories.CloudAccountRepository;
 import jakarta.transaction.Transactional;
@@ -32,10 +33,11 @@ public class BillingIngestionService {
             .orElseThrow(
                 () -> new IllegalArgumentException("Cloud account not found: " + accountId));
     String userId = account.getConnection().getUser().getId().toString();
+    ProviderEnum provider = account.getConnection().getProvider();
 
     billingConfigRepository
         .findByAccountId(accountId)
-        .forEach(config -> client.execute(userId, config.getId().toString()));
+        .forEach(config -> client.execute(provider, userId, config.getId().toString()));
 
     Instant ingestionEndTime = Instant.now();
     account.setLastBillingIngestion(ingestionEndTime.atOffset(ZoneOffset.UTC));
