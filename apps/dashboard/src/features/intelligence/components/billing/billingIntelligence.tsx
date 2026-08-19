@@ -10,6 +10,7 @@ import { TrendingUp } from "lucide-react";
 import { useEffect } from "react";
 import { useMakeBillingForecast } from "../../hooks/useMakeBillingForecast";
 import { getCurrencySymbol } from "@/lib/utils";
+import AppSkeleton from "@/components/molecules/app-skeletons";
 
 export default function BillingIntelligence() {
     const {
@@ -78,13 +79,23 @@ export default function BillingIntelligence() {
             <div className="h-full w-full p-6 flex flex-col gap-4">
                 <BillingToolbar />
 
-                <div className="flex-1 flex items-center justify-center">
-                    <div className="text-center">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
-
-                        <p className="text-muted-foreground"> Loading billing data... </p>
-                    </div>
-                </div>
+                {/* cumalative costs */}
+                <section className="w-full h-45 grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <AppSkeleton variant="card" className="w-full h-full" />
+                    <AppSkeleton variant="card" className="w-full h-full" />
+                </section>
+                {/* other summary metrics */}
+                <section className="w-full h-45 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <AppSkeleton variant="card" className="w-full h-full" />
+                    <AppSkeleton variant="card" className="w-full h-full" />
+                    <AppSkeleton variant="card" className="w-full h-full" />
+                    <AppSkeleton variant="card" className="w-full h-full" />
+                </section>
+                {/* chart and cost breakdown */}
+                <section className="h-full w-full grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <AppSkeleton variant="card" className="w-full h-full" />
+                    <AppSkeleton variant="card" className="w-full h-full" />
+                </section>
             </div>
         );
     }
