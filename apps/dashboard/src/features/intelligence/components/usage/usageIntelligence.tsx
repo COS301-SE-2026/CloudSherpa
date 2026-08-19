@@ -15,6 +15,7 @@ import { timeMs } from "@/lib/timeUtils";
 import { useUsageHistoricalData } from "../../hooks/useUsageHistoricalData";
 import { UsageErrorAlert } from "./usageError";
 import { UsageError } from "../../types/errors";
+import AppSkeleton from "@/components/molecules/app-skeletons";
 
 function generateMockForecast(days: number): UsageForecastData {
     const hours = days * 24;
@@ -120,6 +121,30 @@ export default function UsageIntelligence() {
         };
     }
 
+    const renderChart = () => {
+        if (loading) {
+            return <AppSkeleton variant="card" className="w-full h-full" />;
+        } else if (resourceId && metricType) {
+            return (
+                <UsagePredictionChart
+                    historicalUsageSeries={historicalUsageSeries}
+                    usageError={usageError}
+                    loading={loading}
+                />
+            );
+        } else {
+            return (
+                <Card className="h-full w-full flex flex-col items-center justify-center border-2 border-dashed">
+                    <CardContent className="flex items-center justify-center p-0">
+                        <p className="text-muted-foreground">
+                            Select a resource and metric to view forecast.
+                        </p>
+                    </CardContent>
+                </Card>
+            );
+        }
+    };
+
     return (
         <div className="flex flex-col h-full w-full p-6 gap-4">
             <UsageToolbar />
@@ -160,23 +185,7 @@ export default function UsageIntelligence() {
                         loading={loading}
                     />
                 </section>
-                <section className="w-full flex-1 min-h-0 flex flex-col">
-                    {resourceId && metricType ? (
-                        <UsagePredictionChart
-                            historicalUsageSeries={historicalUsageSeries}
-                            usageError={usageError}
-                            loading={loading}
-                        />
-                    ) : (
-                        <Card className="h-full w-full flex flex-col items-center justify-center border-2 border-dashed">
-                            <CardContent className="flex items-center justify-center p-0">
-                                <p className="text-muted-foreground">
-                                    Select a resource and metric to view forecast.
-                                </p>
-                            </CardContent>
-                        </Card>
-                    )}
-                </section>
+                <section className="w-full flex-1 min-h-0 flex flex-col">{renderChart()}</section>
             </div>
         </div>
     );
