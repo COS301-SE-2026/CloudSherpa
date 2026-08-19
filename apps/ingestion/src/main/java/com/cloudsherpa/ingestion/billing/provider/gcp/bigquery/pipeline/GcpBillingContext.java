@@ -1,5 +1,6 @@
 package com.cloudsherpa.ingestion.billing.provider.gcp.bigquery.pipeline;
 
+import com.cloudsherpa.ingestion.billing.BillingExport;
 import com.cloudsherpa.ingestion.connector.CloudCredentials;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.TableResult;
@@ -16,6 +17,7 @@ public class GcpBillingContext {
   private String fullyQualifiedExportTableIdentifier;
   private Instant queryFrom;
   private TableResult tableResult;
+  private BillingExport billingExport;
 
   public GcpBillingContext(UUID userId, UUID configId) {
     this.userId = userId;
@@ -48,6 +50,10 @@ public class GcpBillingContext {
 
   public void setTableResult(TableResult tableResult) {
     this.tableResult = tableResult;
+  }
+
+  public void setBillingExport(BillingExport billingExport) {
+    this.billingExport = billingExport;
   }
 
   public UUID getUserId() {
@@ -84,5 +90,9 @@ public class GcpBillingContext {
 
   public TableResult getTableResult() {
     return tableResult;
+  }
+
+  public BillingExport getBillingExport() {
+    return billingExport;
   }
 }
