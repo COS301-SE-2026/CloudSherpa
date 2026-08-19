@@ -65,36 +65,10 @@ public class GcpBillingInitStep implements GcpBillingIngestionStep {
 
   public void execute(GcpBillingContext context) {
 
-    CloudCredentials cloudCredentials;
-
     if (devConfig) {
-      logger.info("GCP Billing Ingestion Dev Mode enabled ");
-      if (devProjectId.isBlank() || devDatasetId.isBlank() || devBillingAccountId.isBlank()) {
-        throw new IllegalStateException(
-            "Dev GCP billing ingestion config enabled but configuration values are missing");
-      }
-
-      BillingExportConfig billingExportConfig =
-          new BillingExportConfig(
-              context.getConfigId(),
-              UUID.fromString(devBillingAccountId),
-              OffsetDateTime.now(ZoneId.of("UTC")));
-      billingExportConfigService.saveBillingExport(billingExportConfig);
-      GcpBillingExportConfig gcpBillingExportConfig =
-          new GcpBillingExportConfig(
-              billingExportConfig.getId(), devDatasetId, devBillingAccountId);
-      billingExportConfigService.saveGcpBillingExport(gcpBillingExportConfig);
-
-      GcpBillingConfig devGcpBillingConfig =
-          new GcpBillingConfig(devProjectId, devDatasetId, devBillingAccountId);
-
-      cloudCredentials = getGcpDevCredentials();
-
-      context.setGcpBillingConfig(devGcpBillingConfig);
-      context.setCloudCredentials(cloudCredentials);
-      context.setBigQueryClient(getBigQueryClient(cloudCredentials));
+      devInit(context);
     } else {
-      cloudCredentials = getGcpAccountCloudCredentials(null);
+      init(context);
     }
 
     // Common behavior for both dev and other configurations
@@ -110,7 +84,7 @@ public class GcpBillingInitStep implements GcpBillingIngestionStep {
 
     context.setGcpBillingConfig(
         new GcpBillingConfig(
-            cloudCredentials.getProjectId(),
+            context.getGcpCredentials().getProjectId(),
             gcpBillingExportConfig.getDatasetId(),
             gcpBillingExportConfig.getBillingAccountId()));
 
@@ -119,6 +93,37 @@ public class GcpBillingInitStep implements GcpBillingIngestionStep {
             .minusSeconds(
                 (long) 84_000 * 3); // temporarily set queryFrom to 3 days before time of ingestion
     context.setQueryFrom(queryFrom);
+  }
+
+  private void devInit(GcpBillingContext context) {
+    logger.info("GCP Billing Ingestion Dev Mode enabled ");
+    if (devProjectId.isBlank() || devDatasetId.isBlank() || devBillingAccountId.isBlank()) {
+      throw new IllegalStateException(
+          "Dev GCP billing ingestion config enabled but configuration values are missing");
+    }
+
+    BillingExportConfig billingExportConfig =
+        new BillingExportConfig(
+            context.getConfigId(),
+            UUID.fromString(devBillingAccountId),
+            OffsetDateTime.now(ZoneId.of("UTC")));
+    billingExportConfigService.saveBillingExport(billingExportConfig);
+    GcpBillingExportConfig gcpBillingExportConfig =
+        new GcpBillingExportConfig(billingExportConfig.getId(), devDatasetId, devBillingAccountId);
+    billingExportConfigService.saveGcpBillingExport(gcpBillingExportConfig);
+
+    CloudCredentials cloudCredentials = getGcpDevCredentials();
+    context.setCloudCredentials(cloudCredentials);
+    context.setBigQueryClient(getBigQueryClient(cloudCredentials));
+  }
+
+  private void init(GcpBillingContext context) {
+    BillingExportConfig billingExportConfig =
+        billingExportConfigService.getBillingExportConfig(context.getConfigId());
+    CloudCredentials cloudCredentials =
+        getGcpAccountCloudCredentials(billingExportConfig.getAccountId());
+    context.setCloudCredentials(cloudCredentials);
+    context.setBigQueryClient(getBigQueryClient(cloudCredentials));
   }
 
   private CloudCredentials getGcpAccountCloudCredentials(UUID accountId) {
