@@ -70,7 +70,7 @@ public class GcpBigQueryNormalizer
         .append("%%%")
         .append(getResourceId(gcpBillingRecord))
         .append("%%%")
-        .append(valueList.get("cost_type").getStringValue());
+        .append(getChargeType(gcpBillingRecord).toString());
 
     return gcpCostId.toString();
   }
@@ -109,6 +109,10 @@ public class GcpBigQueryNormalizer
         .append(resourceName)
         .append("%%%")
         .append(valueList.get("service_description").getStringValue().replace(" ", "_"));
+
+    if (shouldEmitCreditRecord(gcpBillingRecord.creditProcessingState())) {
+      chargeId.append("_credit");
+    }
 
     return chargeId.toString();
   }
@@ -156,7 +160,13 @@ public class GcpBigQueryNormalizer
   @Override
   public String getServiceName(GcpBigQueryBillingRecord gcpBillingRecord) {
     FieldValueList valueList = gcpBillingRecord.fieldValueList();
-    return valueList.get("service_description").getStringValue();
+    String serviceDescription = valueList.get("service_description").getStringValue();
+
+    if (!shouldEmitCreditRecord(gcpBillingRecord.creditProcessingState())) {
+      return serviceDescription;
+    }
+
+    return serviceDescription + " Credit";
   }
 
   @Override

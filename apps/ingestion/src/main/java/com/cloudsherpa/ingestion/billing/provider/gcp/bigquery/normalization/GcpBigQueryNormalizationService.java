@@ -4,14 +4,11 @@ import com.cloudsherpa.ingestion.billing.provider.gcp.bigquery.pipeline.GcpBilli
 import com.cloudsherpa.ingestion.service.SherpaDbPersistenceService;
 import com.cloudsherpa.lib.entities.NormalizedCosts;
 import com.google.cloud.bigquery.FieldValueList;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class GcpBigQueryNormalizationService {
 
-  private final Logger logger = LoggerFactory.getLogger(GcpBigQueryNormalizationService.class);
   private final SherpaDbPersistenceService persistenceService;
 
   public GcpBigQueryNormalizationService(SherpaDbPersistenceService persistenceService) {
@@ -35,7 +32,7 @@ public class GcpBigQueryNormalizationService {
         NormalizedCosts normalizedCosts =
             gcpBigQueryNormalizer.normalize(gcpBigQueryBillingRecord, context.getBillingExport());
         gcpBigQueryBillingRecord.creditProcessingState().setProcessed(true);
-        persistenceService.recordCost(normalizedCosts, null);
+        persistenceService.recordCost(normalizedCosts, context.getUserId());
       }
 
       NormalizedCosts normalizedCosts =
