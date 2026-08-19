@@ -80,7 +80,7 @@ Table aws_billing_export_config {
 Table gcp_billing_export_config {
   config_id uuid [pk, ref: - billing_export_config.config_id]
   dataset_id varchar(1024)
-  billing_account_id char(18)
+  billing_account_id char(20)
 }
 
 Table billing_export_execution {

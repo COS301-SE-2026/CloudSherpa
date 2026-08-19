@@ -23,7 +23,7 @@ public class GcpBillingExportConfig {
     @Column(name = "dataset_id", length = 1024, nullable = false)
     private String datasetId;
 
-    @Column(name = "billing_account_id", length = 18, nullable = false)
+    @Column(name = "billing_account_id", length = 20, nullable = false)
     private String billingAccountId;
 
     protected GcpBillingExportConfig() {}
