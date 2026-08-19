@@ -50,7 +50,11 @@ public class GcpBillingQueryStep implements GcpBillingIngestionStep {
             usage_start_time,
             usage_end_time,
             export_time,
-            credits
+            ARRAY(
+                SELECT AS STRUCT
+                    credit.amount
+                FROM UNNEST(credits) AS credit
+            ) AS credits
         FROM `%s`
         WHERE TIMESTAMP_TRUNC(_PARTITIONTIME, DAY) > @window_start
         """

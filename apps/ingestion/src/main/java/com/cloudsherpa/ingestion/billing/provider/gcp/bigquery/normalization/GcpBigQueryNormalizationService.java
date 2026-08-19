@@ -23,23 +23,23 @@ public class GcpBigQueryNormalizationService {
     gcpBigQueryNormalizer.setBillingId(context.getBillingConfig().billingAccountId());
 
     for (FieldValueList fieldValueList : context.getTableResult().getValues()) {
+
+      GcpBigQueryBillingRecord gcpBigQueryBillingRecord =
+          new GcpBigQueryBillingRecord(fieldValueList, new CreditProcessingState());
+
+      if (!fieldValueList.get("credits").getRecordValue().isEmpty()) {
+        gcpBigQueryBillingRecord.creditProcessingState().setHasCredits(true);
+      }
+
+      if (gcpBigQueryBillingRecord.creditProcessingState().getHasCredits()) {
+        NormalizedCosts normalizedCosts =
+            gcpBigQueryNormalizer.normalize(gcpBigQueryBillingRecord, context.getBillingExport());
+        gcpBigQueryBillingRecord.creditProcessingState().setProcessed(true);
+        persistenceService.recordCost(normalizedCosts, null);
+      }
+
       NormalizedCosts normalizedCosts =
-          gcpBigQueryNormalizer.normalize(fieldValueList, context.getBillingExport());
-      logger.info(
-          "Normalized GCP BigQuery cost record: costId={}, executionId={}, resourceId={}, chargeId={}, provider={}, billingAccountId={}, serviceName={}, chargeType={}, costAmount={}, currency={}, usageStartTime={}, usageEndTime={}, metadata={}",
-          normalizedCosts.getCostId(),
-          normalizedCosts.getExecutionId(),
-          normalizedCosts.getResourceId(),
-          normalizedCosts.getChargeId(),
-          normalizedCosts.getProvider(),
-          normalizedCosts.getBillingAccountId(),
-          normalizedCosts.getServiceName(),
-          normalizedCosts.getChargeType(),
-          normalizedCosts.getCostAmount(),
-          normalizedCosts.getCurrency(),
-          normalizedCosts.getUsageStartTime(),
-          normalizedCosts.getUsageEndTime(),
-          normalizedCosts.getMetadata());
+          gcpBigQueryNormalizer.normalize(gcpBigQueryBillingRecord, context.getBillingExport());
       persistenceService.recordCost(normalizedCosts, context.getUserId());
     }
   }
