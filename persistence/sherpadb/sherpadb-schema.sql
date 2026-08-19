@@ -58,6 +58,18 @@ CREATE TABLE IF NOT EXISTS public.users (
   created_at timestamptz DEFAULT NOW()
 );
 
+CREATE TABLE public.processing_watermark (
+  watermark_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL REFERENCES public.users(user_id) ON DELETE CASCADE,
+  pipeline_name varchar(255) NOT NULL,
+  last_processed_period timestamptz,
+  last_successful_run timestamptz,
+  updated_at timestamptz DEFAULT NOW(),
+
+  CONSTRAINT uq_processing_watermark_user_pipeline
+    UNIQUE (user_id, pipeline_name)
+);
+
 CREATE TABLE IF NOT EXISTS public.preferences (
   user_id uuid PRIMARY KEY REFERENCES public.users(user_id) ON DELETE CASCADE,
   theme public.theme_enum,
@@ -632,16 +644,6 @@ BEGIN
             changed_at timestamptz DEFAULT NOW()
         );
     $sql$, schema_name, schema_name, schema_name);
-
-    EXECUTE format($sql$
-        CREATE TABLE IF NOT EXISTS %I.processing_watermark (
-            pipeline_name varchar(255) PRIMARY KEY,
-            last_processed_period timestamptz,
-            last_successful_run timestamptz,
-            updated_at timestamptz DEFAULT NOW()
-        );
-    $sql$, schema_name);
-
 END;
 $$ LANGUAGE plpgsql;
 
