@@ -17,7 +17,7 @@ public class OptimizationWorker {
     this.tenantService = tenantService;
   }
 
-  @Scheduled(fixedRate = 86400000L) // every 24 hours in ms
+  @Scheduled(fixedRateString = "${optimization.worker.fixed-rate-ms}")
   public void run() {
     for (UUID tenantId : tenantService.findTenantIds()) {
       tenantOptimizationProcessor.process(tenantId);
