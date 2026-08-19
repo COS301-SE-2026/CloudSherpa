@@ -139,6 +139,10 @@ public class BillingForecastingService extends ForecastingService {
       Duration timeBetweenLatestIngestionAndRequest =
           Duration.between(mostRecentBillingIngestionDate, timeOfRequest);
 
+      if (sanatizedSeries.periodicity() == 0) {
+        return null;
+      }
+
       int calculatedForecastSteps =
           calculateForecastSteps(
               timeBetweenLatestIngestion,

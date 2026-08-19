@@ -1,7 +1,10 @@
 import gc
+import os
+import secrets
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Security, status
+from fastapi.security import APIKeyHeader
 
 from models.model_loader import ModelLoader
 from schemas.forecast_request import ForecastRequest
@@ -25,8 +28,21 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+API_KEY = os.environ["API_KEY"]
 
-@app.post("/forecast-chronos")
+api_key_header = APIKeyHeader(name="X-API-Key")
+
+def verify_api_key(api_key: str = Security(api_key_header)):
+    if not secrets.compare_digest(api_key, API_KEY):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED
+        )
+
+@app.post("/forecast-chronos", dependencies=[Security(verify_api_key)])
 async def root(request: ForecastRequest) -> ChronosForecastResponse:
     model = app.state.models.get_model("chronos_univariate")
     return model.forecast(request)
+
+@app.get("/health")
+async def health():
+    return { "status": "ok" }

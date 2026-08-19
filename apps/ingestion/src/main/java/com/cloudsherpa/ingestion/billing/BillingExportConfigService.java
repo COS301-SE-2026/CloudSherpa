@@ -37,4 +37,17 @@ public class BillingExportConfigService {
     BillingExportConfig config = getBillingExportConfig(configId);
     return gcpBillingExportConfigRepository.findById(config.getId()).orElseThrow();
   }
+
+  // Allow dev runs to save configs to repos idempotently
+  public void saveBillingExport(BillingExportConfig billingExport) {
+    if (billingExportConfigRepository.findById(billingExport.getId()).isEmpty()) {
+      billingExportConfigRepository.save(billingExport);
+    }
+  }
+
+  public void saveGcpBillingExport(GcpBillingExportConfig gcpBillingExportConfig) {
+    if (gcpBillingExportConfigRepository.findById(gcpBillingExportConfig.getConfigId()).isEmpty()) {
+      gcpBillingExportConfigRepository.save(gcpBillingExportConfig);
+    }
+  }
 }

@@ -3,6 +3,8 @@ package com.cloudsherpa.ingestion.billing;
 import com.cloudsherpa.lib.entities.BillingExportExecution;
 import com.cloudsherpa.lib.entities.ExecutionStatusEnum;
 import com.cloudsherpa.lib.repositories.BillingExportExecutionRepository;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -19,9 +21,16 @@ public class BillingExportService {
   @Transactional
   public BillingExport initializeExport(String exportId, String configId, List<String> dataFiles) {
     BillingExport newExport = new BillingExport(exportId, configId, dataFiles);
-    billingExportExecutionRepository.save(
+    BillingExportExecution newExecution =
         new BillingExportExecution(
-            UUID.fromString(exportId), UUID.fromString(configId), ExecutionStatusEnum.pending));
+            UUID.fromString(exportId), UUID.fromString(configId), ExecutionStatusEnum.pending);
+
+    OffsetDateTime utcNow = OffsetDateTime.now(ZoneId.of("UTC"));
+
+    newExport.setStartedAt(utcNow);
+    newExecution.setStartedAt(utcNow);
+
+    billingExportExecutionRepository.save(newExecution);
     return newExport;
   }
 
