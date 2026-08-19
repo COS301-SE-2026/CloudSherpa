@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/atoms/card";
 import { LineChart } from "@/features/dashboard/components/widgetGrid/widgets/charts/LineChart";
 import { GaugeChart } from "@/features/dashboard/components/widgetGrid/widgets/charts/GaugeChart";
@@ -44,6 +44,32 @@ export function ChartWidget({
     const ChartComponent = CHART_COMPONENTS[chartType];
     const [hasNoData, setHasNoData] = useState(false);
     const router = useRouter();
+
+    // watch widget content while expanding
+    const contentRef = useRef<HTMLDivElement>(null);
+    const [isLayoutReady, setIsLayoutReady] = useState(false);
+
+    useEffect(() => {
+        if (!contentRef.current) return; //check content present
+
+        let resizeTimer: ReturnType<typeof setTimeout>;
+
+        // built in observer for referenced
+        const observer = new ResizeObserver(() => {
+            clearTimeout(resizeTimer);
+
+            resizeTimer = setTimeout(() => {
+                setIsLayoutReady(true);
+            }, 100);
+        });
+        //observers card content for pizel changes
+        observer.observe(contentRef.current);
+
+        return () => {
+            observer.disconnect();
+            clearTimeout(resizeTimer);
+        };
+    }, []);
 
     const openConfig = () => {
         if (!isEditMode) {
@@ -162,8 +188,12 @@ export function ChartWidget({
                     </div>
                 </CardHeader>
 
-                <CardContent className="flex-1 w-full relative overflow-hidden">
-                    {renderChartContent()}
+                <CardContent ref={contentRef} className="flex-1 w-full relative overflow-hidden">
+                    {isLayoutReady ? (
+                        renderChartContent()
+                    ) : (
+                        <div className="w-full h-full bg-muted/20 animate-pulse rounded" />
+                    )}
                 </CardContent>
             </Card>
         </WidgetMenu>
