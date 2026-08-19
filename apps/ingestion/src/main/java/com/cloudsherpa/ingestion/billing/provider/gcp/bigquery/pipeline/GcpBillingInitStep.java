@@ -64,7 +64,10 @@ public class GcpBillingInitStep implements GcpBillingIngestionStep {
   }
 
   public void execute(GcpBillingContext context) {
-
+    // Developer contraint for this method: for any non-trivial behavior method calls need to be
+    // used in this function
+    // to improve maintainability and readability due to the large branching factor and unrelated
+    // init steps
     if (devConfig) {
       devInit(context);
     } else {
@@ -72,27 +75,10 @@ public class GcpBillingInitStep implements GcpBillingIngestionStep {
     }
 
     // Common behavior for both dev and other configurations
-    BillingExportConfig billingExportConfig =
-        billingExportConfigService.getBillingExportConfig(context.getConfigId());
-    GcpBillingExportConfig gcpBillingExportConfig =
-        billingExportConfigService.getGcpBillingExportConfig(context.getConfigId());
-    BillingExport billingExport =
-        billingExportService.initializeExport(
-            billingExportConfig.getId().toString(), context.getConfigId().toString(), null);
-
-    context.setBillingExport(billingExport);
-
-    context.setGcpBillingConfig(
-        new GcpBillingConfig(
-            context.getGcpCredentials().getProjectId(),
-            gcpBillingExportConfig.getDatasetId(),
-            gcpBillingExportConfig.getBillingAccountId()));
-
-    Instant queryFrom =
-        Instant.now()
-            .minusSeconds(
-                (long) 84_000 * 3); // temporarily set queryFrom to 3 days before time of ingestion
-    context.setQueryFrom(queryFrom);
+    initGcpBillingConfig(context);
+    initBigQueryClient(context);
+    initQueryFromWindow(context);
+    initBillingExport(context);
   }
 
   private void devInit(GcpBillingContext context) {
@@ -164,5 +150,37 @@ public class GcpBillingInitStep implements GcpBillingIngestionStep {
     } catch (IOException ioException) {
       throw new IllegalStateException("Failed to obtain BigQuery client", ioException);
     }
+  }
+
+  private void initGcpBillingConfig(GcpBillingContext context) {
+    GcpBillingExportConfig gcpBillingExportConfig =
+        billingExportConfigService.getGcpBillingExportConfig(context.getConfigId());
+
+    context.setGcpBillingConfig(
+        new GcpBillingConfig(
+            context.getGcpCredentials().getProjectId(),
+            gcpBillingExportConfig.getDatasetId(),
+            gcpBillingExportConfig.getBillingAccountId()));
+  }
+
+  private void initBillingExport(GcpBillingContext context) {
+    BillingExport billingExport =
+        billingExportService.initializeExport(
+            context.getConfigId().toString(), context.getConfigId().toString(), null);
+
+    context.setBillingExport(billingExport);
+  }
+
+  private void initQueryFromWindow(GcpBillingContext context) {
+    Instant queryFrom =
+        Instant.now()
+            .minusSeconds(
+                (long) 84_000 * 3); // temporarily set queryFrom to 3 days before time of ingestion
+    context.setQueryFrom(queryFrom);
+  }
+
+  private void initBigQueryClient(GcpBillingContext context) {
+    // Assumes Credentials have already been set on the context
+    context.setBigQueryClient(getBigQueryClient(context.getGcpCredentials()));
   }
 }
