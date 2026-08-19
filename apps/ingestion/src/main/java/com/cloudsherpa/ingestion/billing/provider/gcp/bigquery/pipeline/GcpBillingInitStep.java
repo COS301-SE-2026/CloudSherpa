@@ -143,6 +143,7 @@ public class GcpBillingInitStep implements GcpBillingIngestionStep {
       String json = Files.readString(Path.of(devServiceAccountPath));
       CloudCredentials gcpCloudCredentials = new CloudCredentials();
       gcpCloudCredentials.setServiceAccountJson(json);
+      gcpCloudCredentials.setProjectId(devProjectId);
       return gcpCloudCredentials;
     } catch (IOException ioException) {
       logger.error("Failed to load dev service account file at {}", devServiceAccountPath);
