@@ -13,7 +13,7 @@ import { Button } from "@/components/atoms/button";
 import { timeMs, durationByPreset } from "@/lib/timeUtils";
 import { HistoricalUsageSeriesDto } from "../../types/dtos";
 import { UsageError } from "../../types/errors";
-import AppSkeleton from "@/components/molecules/app-skeletons";
+import { Spinner } from "@/components/atoms/spinner";
 
 interface UsagePredictionChartProps {
     readonly historicalUsageSeries: HistoricalUsageSeriesDto | null;
@@ -285,9 +285,7 @@ export default function UsagePredictionChart({
         ],
     };
 
-    const cardContent = loading ? (
-        <AppSkeleton variant="card" className="h-full w-full" />
-    ) : (
+    const cardContent = !loading ? (
         <ReactECharts
             ref={echartsRef}
             option={option}
@@ -295,6 +293,8 @@ export default function UsagePredictionChart({
             style={{ height: "100%", width: "100%" }}
             notMerge={true}
         />
+    ) : (
+        <Spinner className="w-10 h-10" />
     );
 
     return (

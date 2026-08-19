@@ -4,7 +4,6 @@ import { Separator } from "@/components/atoms/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/atoms/tooltip";
 import { MetricType } from "@/features/dashboard/types/metric";
 import { UsageError } from "../../types/errors";
-import AppSkeletons from "@/components/molecules/app-skeletons";
 
 export const METRIC_UNITS: Record<MetricType, string> = {
     cpu: "%",
@@ -41,7 +40,6 @@ interface SummaryCardProps {
     tooltip: string;
     Icon?: LucideIcon;
     usageError: UsageError | null;
-    loading: boolean;
 }
 
 export default function SummaryCard({
@@ -53,7 +51,6 @@ export default function SummaryCard({
     tooltip,
     Icon,
     usageError,
-    loading,
 }: Readonly<SummaryCardProps>) {
     const cardContent = (
         <>
@@ -84,9 +81,7 @@ export default function SummaryCard({
         </>
     );
 
-    if (loading) {
-        return <AppSkeletons variant="card" className="h-45" />;
-    } else if (!pastUsage || !predictedUsage) {
+    if (!pastUsage || !predictedUsage) {
         return <Card className="h-45 border-2 border-dashed"></Card>;
     } else {
         return (

@@ -10,7 +10,7 @@ import { TrendingUp } from "lucide-react";
 import { useEffect } from "react";
 import { useMakeBillingForecast } from "../../hooks/useMakeBillingForecast";
 import { getCurrencySymbol } from "@/lib/utils";
-import AppSkeleton from "@/components/molecules/app-skeletons";
+import { Spinner } from "@/components/atoms/spinner";
 
 export default function BillingIntelligence() {
     const {
@@ -79,23 +79,9 @@ export default function BillingIntelligence() {
             <div className="h-full w-full p-6 flex flex-col gap-4">
                 <BillingToolbar />
 
-                {/* cumalative costs */}
-                <section className="w-full h-45 grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    <AppSkeleton variant="card" className="w-full h-full" />
-                    <AppSkeleton variant="card" className="w-full h-full" />
-                </section>
-                {/* other summary metrics */}
-                <section className="w-full h-45 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <AppSkeleton variant="card" className="w-full h-full" />
-                    <AppSkeleton variant="card" className="w-full h-full" />
-                    <AppSkeleton variant="card" className="w-full h-full" />
-                    <AppSkeleton variant="card" className="w-full h-full" />
-                </section>
-                {/* chart and cost breakdown */}
-                <section className="h-full w-full grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    <AppSkeleton variant="card" className="w-full h-full" />
-                    <AppSkeleton variant="card" className="w-full h-full" />
-                </section>
+                <div className="h-full w-full flex flex-col justify-center items-center ">
+                    <Spinner className="h-10 w-10" />
+                </div>
             </div>
         );
     }

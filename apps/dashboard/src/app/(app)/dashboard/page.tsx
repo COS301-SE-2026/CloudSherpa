@@ -20,7 +20,6 @@ import { useMetricStore } from "@/features/dashboard/stores/metric-store";
 import { fetchDashboards, DashboardDTO } from "@/lib/fetch/api-dashboard";
 import { MetricType } from "@/features/dashboard/types/metric";
 import { useAuthContext } from "@/features/authentication/providers/AuthContext";
-import AppSkeleton from "@/components/molecules/app-skeletons";
 
 function processFetchedDashboards(fetchedData: DashboardDTO[]) {
     const dashboardsMap: Record<string, DashboardConfig> = {};
@@ -210,34 +209,8 @@ function DashboardContent() {
     const renderMainContent = () => {
         if (isLoading) {
             return (
-                <div className="flex flex-col gap-2">
-                    <div className="w-full flex flex-col md:flex-row gap-2">
-                        {Array.from({ length: 4 }).map((_, i) => (
-                            <AppSkeleton
-                                key={`list-skel-${i}`}
-                                variant="card"
-                                className="w-full h-40"
-                            />
-                        ))}
-                    </div>
-                    <div className="w-full flex flex-col md:flex-row gap-2">
-                        {Array.from({ length: 2 }).map((_, i) => (
-                            <AppSkeleton
-                                key={`list-skel-${i}`}
-                                variant="card"
-                                className="w-full h-70"
-                            />
-                        ))}
-                    </div>
-                    <div className="w-full grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-2">
-                        {Array.from({ length: 9 }).map((_, i) => (
-                            <AppSkeleton
-                                key={`list-skel-${i}`}
-                                variant="card"
-                                className="w-full h-70"
-                            />
-                        ))}
-                    </div>
+                <div className="h-full w-full flex flex-col justify-center items-center gap-2">
+                    <Spinner className="w-10 h-10" />
                 </div>
             );
         }

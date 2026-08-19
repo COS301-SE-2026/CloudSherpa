@@ -15,7 +15,7 @@ import { timeMs } from "@/lib/timeUtils";
 import { useUsageHistoricalData } from "../../hooks/useUsageHistoricalData";
 import { UsageErrorAlert } from "./usageError";
 import { UsageError } from "../../types/errors";
-import AppSkeleton from "@/components/molecules/app-skeletons";
+import { Spinner } from "@/components/atoms/spinner";
 
 function generateMockForecast(days: number): UsageForecastData {
     const hours = days * 24;
@@ -122,9 +122,7 @@ export default function UsageIntelligence() {
     }
 
     const renderChart = () => {
-        if (loading) {
-            return <AppSkeleton variant="card" className="w-full h-full" />;
-        } else if (resourceId && metricType) {
+        if (resourceId && metricType) {
             return (
                 <UsagePredictionChart
                     historicalUsageSeries={historicalUsageSeries}
@@ -145,6 +143,17 @@ export default function UsageIntelligence() {
         }
     };
 
+    if (loading) {
+        return (
+            <div className="flex flex-col h-full w-full p-6 gap-4">
+                <UsageToolbar />
+                <div className="w-full h-full flex flex-col justify-center items-center">
+                    <Spinner className="w-10 h-10" />
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="flex flex-col h-full w-full p-6 gap-4">
             <UsageToolbar />
@@ -160,7 +169,6 @@ export default function UsageIntelligence() {
                         description="maximum recorded usage"
                         tooltip="This represents the maximum recorded usage for both the past and forecasted usage"
                         usageError={usageError}
-                        loading={loading}
                     />
                     <SummaryCard
                         title="Min Usage"
@@ -171,7 +179,6 @@ export default function UsageIntelligence() {
                         description="minimum recorded usage"
                         tooltip="This represents the minimum recorded usage for both the past and forecasted usage"
                         usageError={usageError}
-                        loading={loading}
                     />
                     <SummaryCard
                         title="Average Usage"
@@ -182,7 +189,6 @@ export default function UsageIntelligence() {
                         description="average recorded usage"
                         tooltip="This represents the average recorded usage for both the past and forecasted usage"
                         usageError={usageError}
-                        loading={loading}
                     />
                 </section>
                 <section className="w-full flex-1 min-h-0 flex flex-col">{renderChart()}</section>

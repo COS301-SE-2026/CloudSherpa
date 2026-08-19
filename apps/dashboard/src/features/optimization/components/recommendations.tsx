@@ -8,7 +8,7 @@ import { Tabs, TabsTrigger, TabsList } from "@/components/atoms/tabs";
 import RecommendationCardHero from "@/features/optimization/components/recCardHero";
 import { Button } from "@/components/atoms/button";
 import { RecommendationErrorAlert } from "@/features/optimization/components/recError";
-import AppSkeleton from "@/components/molecules/app-skeletons";
+import { Spinner } from "@/components/atoms/spinner";
 
 const FilterOptions = [
     { value: "all", label: "ALL" },
@@ -76,33 +76,8 @@ export default function Recommendations() {
                 <header className="flex flex-col space-y-4 py-2">
                     <h1 className="text-3xl font-semibold">Optimization Recommendations</h1>
                 </header>
-                {/* sumry */}
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-2">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                        <AppSkeleton
-                            key={`metric-skel-${i}`}
-                            variant="card"
-                            className="w-full h-20"
-                        />
-                    ))}
-                </div>
-                {/* tools */}
-                <div className="flex flex-row h-12 w-full justify-between gap-2">
-                    <AppSkeleton variant="button" className="w-70" />
-                    <div className="flex flex-row h-full justify-end items-center gap-2">
-                        <AppSkeleton variant="button" className="w-full h-full lg:w-150" />
-                        <AppSkeleton variant="button" className="w-12 h-full" />
-                    </div>
-                </div>
-                {/* cards */}
-                <div className="flex flex-col w-full gap-2">
-                    {Array.from({ length: 8 }).map((_, i) => (
-                        <AppSkeleton
-                            key={`list-skel-${i}`}
-                            variant="card"
-                            className="w-full h-20"
-                        />
-                    ))}
+                <div className="h-full w-full flex flex-col justify-center items-center">
+                    <Spinner className="h-10 w-10" />
                 </div>
             </div>
         );

@@ -7,7 +7,15 @@
 */
 
 import { useEffect, useState } from "react";
-import { Trash2, ArrowLeft, SlidersHorizontal, Search, MoreVertical } from "lucide-react";
+import {
+    Trash2,
+    ArrowLeft,
+    SlidersHorizontal,
+    Search,
+    MoreVertical,
+    Eye,
+    Pencil,
+} from "lucide-react";
 import { Card, CardContent } from "@/components/atoms/card";
 import { Button } from "@/components/atoms/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/atoms/tabs";
@@ -20,7 +28,6 @@ import {
     DropdownMenuTrigger,
 } from "@/components/atoms/dropdown-menu";
 
-import { Eye, Pencil } from "lucide-react";
 import {
     CloudAccount,
     getAwsAccountConnections,
@@ -39,7 +46,7 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/atoms/alert-dialog";
-import AppSkeleton from "@/components/molecules/app-skeletons";
+import { Spinner } from "@/components/atoms/spinner";
 
 type Providers = "All" | "AWS" | "Azure" | "GCP";
 interface Connections {
@@ -182,28 +189,9 @@ export default function ManagingConnections() {
                             Connection Manager{" "}
                         </h1>
                     </div>
-                    <AppSkeleton variant="button" className="w-20 h-10" />
                 </div>
-                <div className="flex items-center justify-between mb-6">
-                    <AppSkeleton variant="button" className="w-50 h-10" />
-                    <div className="flex flex-row justify-end items-center gap-2">
-                        {Array.from({ length: 2 }).map((_, i) => (
-                            <AppSkeleton
-                                key={`list-skel-${i}`}
-                                variant="button"
-                                className="w-10 h-10"
-                            />
-                        ))}
-                    </div>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-                    {Array.from({ length: 16 }).map((_, i) => (
-                        <AppSkeleton
-                            key={`list-skel-${i}`}
-                            variant="card"
-                            className="w-full h-45"
-                        />
-                    ))}
+                <div className="w-full h-full flex items-center justify-center mb-6">
+                    <Spinner className="w-10 h-10" />
                 </div>
             </div>
         );
