@@ -52,7 +52,7 @@ export function ChartWidget({
     useEffect(() => {
         if (!contentRef.current) return; //check content present
 
-        let resizeTimer: NodeJS.Timeout;
+        let resizeTimer: ReturnType<typeof setTimeout>;
 
         // built in observer for referenced
         const observer = new ResizeObserver(() => {
