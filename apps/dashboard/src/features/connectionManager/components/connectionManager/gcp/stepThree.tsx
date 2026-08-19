@@ -27,7 +27,6 @@ import {
     type HeaderContext,
     type CellContext,
     getPaginationRowModel,
-    type Table as TableType,
 } from "@tanstack/react-table";
 import {
     Table,
@@ -37,69 +36,48 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/atoms/table";
-
+import {
+    createGcpConnection,
+    GcpCredentialsDto,
+    PersistGcpConnectionRequest,
+    ResourceSelectionDto,
+} from "@/lib/fetch/gcp-connection-api";
+import { ResourceDetail } from "@/lib/fetch/cloud-resource-api";
+import { useRouter } from "next/navigation";
 /*
 - should have tanstack table for resources, as elect & deselect all for it
 - should also have pagination
 */
-interface DetailsForResource {
-    id: string;
-    name: string;
-    type?: string;
-    region?: string;
-    tag?: string[];
-    status?: "active" | "inactive";
-}
 
 interface StepThreePropsForGcp {
-    resources?: DetailsForResource[];
-    onNext: (data: Record<string, unknown>) => void;
+    displayName: string;
+    resources: ResourceDetail[];
+    ingestionPeriod: number;
+    credentials: GcpCredentialsDto;
+    onComplete: (ingestionPeriod: number) => void;
     onBack?: () => void;
-    ingestionPeriod?: string;
-}
-
-interface Resources {
-    id: string;
-    name: string;
-    type: string;
-    region: string;
-    tag: string[];
-    status: "active" | "inactive";
-    selected: boolean;
 }
 
 interface ActionForResource {
-    changeStatus: (id: string) => Promise<void>;
     toggleResource: (id: string) => void;
     toggleAll: () => void;
 }
 
-const hardCodedResources: DetailsForResource[] = [
-    {
-        id: "resource1",
-        name: "Resource one",
-        type: "Service one",
-        region: "region 1",
-        tag: ["tag1", "tag2"],
-    },
-];
-
-function ListOfTags({ tags }: Readonly<{ tags: string[] }>) {
-    const displayedTags = tags.slice(0, 3);
+function ListOfTags({ tags }: Readonly<{ tags: Record<string, string> }>) {
+    const displayedTags = Object.entries(tags).slice(0, 3);
 
     return (
         <div className="flex items-center gap-1 flex-wrap">
-            {displayedTags.map((tag) => (
-                <Badge key={tag} variant="secondary" className="text-[10px] font-normal">
-                    {" "}
-                    {tag}{" "}
+            {displayedTags.map(([key, value]) => (
+                <Badge key={key} variant="secondary" className="text-[10px] font-normal">
+                    {key}: {value}
                 </Badge>
             ))}
         </div>
     );
 }
 
-function ResourceHeaders({ column }: Readonly<HeaderContext<Resources, string>>) {
+function ResourceHeaders({ column }: Readonly<HeaderContext<ResourceSelectionDto, string>>) {
     return (
         <Button
             variant="ghost"
@@ -113,15 +91,17 @@ function ResourceHeaders({ column }: Readonly<HeaderContext<Resources, string>>)
     );
 }
 
-function ResourceCells({ getValue }: Readonly<CellContext<Resources, string>>) {
+function ResourceCells({ getValue }: Readonly<CellContext<ResourceSelectionDto, string>>) {
     return <span className="font-medium"> {getValue()} </span>;
 }
 
-function SecondaryCells({ getValue }: Readonly<CellContext<Resources, string>>) {
+function SecondaryCells({ getValue }: Readonly<CellContext<ResourceSelectionDto, string>>) {
     return <span className="text-xs text-muted-foreground"> {getValue()} </span>;
 }
 
-function TagCells({ getValue }: Readonly<CellContext<Resources, string[]>>) {
+function TagCells({
+    getValue,
+}: Readonly<CellContext<ResourceSelectionDto, Record<string, string>>>) {
     return <ListOfTags tags={getValue()} />;
 }
 
@@ -129,89 +109,44 @@ function ToggleHeader() {
     return <span className="block text-center"> Active/Inactive </span>;
 }
 
-function ToggleCells({ row, table }: Readonly<CellContext<Resources, Resources["status"]>>) {
-    const { changeStatus } = table.options.meta as ActionForResource;
-
-    return (
-        <div className="flex justify-center">
-            <Switch
-                checked={row.original.status === "active"}
-                onCheckedChange={() => changeStatus(row.original.id)}
-            />
-        </div>
-    );
-}
-
-function SelectionHeader({ table }: Readonly<{ table: TableType<Resources> }>) {
-    const { toggleAll } = table.options.meta as ActionForResource;
-
-    const rows = table.getRowModel().rows;
-
-    const allSelected = rows.length > 0 && rows.every((row) => row.original.selected);
-
-    const someSelected = rows.some((row) => row.original.selected);
-
-    return (
-        <div className="flex justify-center">
-            <input
-                type="checkbox"
-                checked={allSelected}
-                ref={(input) => {
-                    if (input) {
-                        input.indeterminate = someSelected && !allSelected;
-                    }
-                }}
-
-                onChange={toggleAll}
-                className="w-4 h-4 rounded border-border bg-background text-primary focus:ring-primary"
-            />
-        </div>
-    );
-}
-
-function SelectionCells({ row, table }: Readonly<CellContext<Resources, boolean>>) {
+function ToggleCells({
+    row,
+    table,
+}: Readonly<CellContext<ResourceSelectionDto, ResourceSelectionDto["active"]>>) {
     const { toggleResource } = table.options.meta as ActionForResource;
 
     return (
         <div className="flex justify-center">
-            <input
-                type="checkbox"
-                checked={row.original.selected}
-                onChange={() => {
-                    toggleResource(row.original.id);
-                }}
-                className="w-4 h-4 rounded border-border bg-background text-primary focus:ring-primary"
+            <Switch
+                checked={row.original.active}
+                onCheckedChange={() => toggleResource(row.original.resourceId)}
             />
         </div>
     );
 }
 
-const helperForColumns = createColumnHelper<Resources>();
+const helperForColumns = createColumnHelper<ResourceSelectionDto>();
 
 const columns = [
-    helperForColumns.accessor("selected", {
-        header: SelectionHeader,
-        cell: SelectionCells,
-    }),
-
-    helperForColumns.accessor("name", { header: ResourceHeaders, cell: ResourceCells }),
-    helperForColumns.accessor("type", { header: "Type", cell: SecondaryCells }),
-
+    helperForColumns.accessor("resourceName", { header: ResourceHeaders, cell: ResourceCells }),
+    helperForColumns.accessor("serviceType", { header: "Type", cell: SecondaryCells }),
     helperForColumns.accessor("region", { header: "Region", cell: SecondaryCells }),
-    helperForColumns.accessor("tag", { header: "Tags", cell: TagCells }),
-
-    helperForColumns.accessor("status", {
+    helperForColumns.accessor("tags", { header: "Tags", cell: TagCells }),
+    helperForColumns.accessor("active", {
         header: ToggleHeader,
         filterFn: "equals",
         cell: ToggleCells,
+        enableSorting: false,
     }),
 ];
 
 export default function StepThreeGcp({
-    resources = [],
-    onNext,
+    displayName,
+    resources,
+    credentials,
+    onComplete,
     onBack,
-    ingestionPeriod = "60",
+    ingestionPeriod = 60,
 }: Readonly<StepThreePropsForGcp>) {
     const [forPagination, setForPagination] = useState({ pageIndex: 0, pageSize: 8 });
 
@@ -219,9 +154,9 @@ export default function StepThreeGcp({
 
     const [errors, setErrors] = useState<string | null>(null);
 
-    const [forIngestionPeriod, setForIngestionPeriod] = useState<string>(ingestionPeriod);
+    const [forIngestionPeriod, setForIngestionPeriod] = useState<number>(ingestionPeriod);
 
-    const [tableResources, setTableResources] = useState<Resources[]>([]);
+    const [tableResources, setTableResources] = useState<ResourceSelectionDto[]>([]);
 
     const [filter, setFilter] = useState("");
 
@@ -229,13 +164,9 @@ export default function StepThreeGcp({
 
     const [filterColumn, setFilterColumn] = useState<ColumnFiltersState>([]);
 
-    const realResources = useMemo(
-        () => (resources && resources.length > 0 ? resources : hardCodedResources),
-        [resources]
-    );
+    const realResources = resources;
 
-    const count = tableResources.filter((forResources) => forResources.selected).length;
-
+    const count = tableResources.filter((resource) => resource.active).length;
     const recIngestionPeriod = count * 5 * 20;
 
     const formattingSecond = (totalSeconds: string | number) => {
@@ -268,47 +199,36 @@ export default function StepThreeGcp({
         return minText || secText;
     };
 
-    const changeStatus = useCallback(async (id: string) => {
-        setTableResources((previous) =>
-            previous.map((resources) =>
-                resources.id === id
+    const toggleResource = (resourceId: string) => {
+        setTableResources((current) =>
+            current.map((resource) =>
+                resource.resourceId === resourceId
                     ? {
-                          ...resources,
-                          status: resources.status === "active" ? "inactive" : "active",
+                          ...resource,
+                          active: !resource.active,
                       }
-                    : resources
+                    : resource
             )
         );
-    }, []);
-
-    const toggleResource = useCallback((resourceId: string) => {
-        setTableResources((previous) =>
-            previous.map((forResources) =>
-                forResources.id === resourceId
-                    ? { ...forResources, selected: !forResources.selected }
-                    : forResources
-            )
-        );
-    }, []);
+    };
 
     const handlingSelectedAll = useCallback(() => {
         setTableResources((previous) => {
-            const allSelected = previous.every((forResources) => forResources.selected);
+            const allActive = previous.length > 0 && previous.every((resource) => resource.active);
 
             return previous.map((resource) => ({
                 ...resource,
-                selected: !allSelected,
+                active: !allActive,
             }));
         });
     }, []);
 
     const actions = useMemo<ActionForResource>(
         () => ({
-            changeStatus,
             toggleResource,
             toggleAll: handlingSelectedAll,
         }),
-        [changeStatus, toggleResource, handlingSelectedAll]
+        [toggleResource, handlingSelectedAll]
     );
 
     const table = useReactTable({
@@ -321,7 +241,7 @@ export default function StepThreeGcp({
             columnFilters: filterColumn,
             pagination: forPagination,
         },
-        getRowId: (row) => row.id,
+        getRowId: (row) => row.resourceId,
         onGlobalFilterChange: setFilter,
         onSortingChange: setSort,
         onColumnFiltersChange: setFilterColumn,
@@ -333,36 +253,49 @@ export default function StepThreeGcp({
     });
 
     useEffect(() => {
-        const mappedResources: Resources[] = realResources.map((resources) => ({
-            id: resources.id,
-            name: resources.name,
-            type: resources.type || "Unknown",
-            region: resources.region || "Unknown",
-            tag: resources.tag || ["No tags"],
-            status: "active",
-            selected: false,
+        const mappedResources: ResourceSelectionDto[] = realResources.map((resource) => ({
+            resourceId: resource.resourceId,
+            serviceType: resource.serviceCategory,
+            resourceType: resource.resourceType,
+            resourceName: resource.name,
+            region: resource.region,
+            tags: resource.tags,
+            active: true,
         }));
         setTableResources(mappedResources);
     }, [realResources]);
 
-    const handlingSubmit = async (forEvent: React.SubmitEvent<HTMLFormElement>) => {
-        forEvent.preventDefault();
+    const router = useRouter();
+
+    const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
+        event.preventDefault();
 
         setForSaving(true);
         setErrors(null);
 
         try {
-            const resourcesSelected = tableResources
-                .filter((forResources) => forResources.selected)
-                .map((forResources) => forResources.id);
+            const request: PersistGcpConnectionRequest = {
+                userId: "",
+                displayName,
+                ingestionPeriod: forIngestionPeriod.toString(),
+                credentials,
+                resources: tableResources.map((resource): ResourceSelectionDto => ({
+                    resourceId: resource.resourceId,
+                    serviceType: resource.serviceType,
+                    resourceType: resource.resourceType,
+                    resourceName: resource.resourceName,
+                    region: resource.region,
+                    tags: resource.tags,
+                    active: resource.active,
+                })),
+            };
 
-            onNext({
-                selectedResources: resourcesSelected,
-                ingestionPeriod: forIngestionPeriod,
-                tableResources: tableResources,
-            });
-        } catch {
-            setErrors("Unable to complete GCP connection setup");
+            await createGcpConnection(request);
+
+            onComplete(forIngestionPeriod);
+            router.push("/manageConnections");
+        } catch (err) {
+            setErrors(err instanceof Error ? err.message : "Unable to create GCP connection.");
         } finally {
             setForSaving(false);
         }
@@ -372,7 +305,7 @@ export default function StepThreeGcp({
         <StepThree
             heading="Select instances"
             description="Select the instance you want CloudSherpa to monitor"
-            onSubmit={handlingSubmit}
+            onSubmit={handleSubmit}
             onBack={onBack || (() => {})}
             forSaving={forSaving}
             forErrors={errors}
@@ -391,7 +324,7 @@ export default function StepThreeGcp({
                         onClick={handlingSelectedAll}
                         className="text-primary hover:text-accent text-sm transition-colors px-0"
                     >
-                        {tableResources.length > 0 && tableResources.every((r) => r.selected)
+                        {tableResources.length > 0 && tableResources.every((r) => r.active)
                             ? "Deselect All"
                             : "Select All"}
                     </Button>
@@ -548,7 +481,7 @@ export default function StepThreeGcp({
 
                     <Slider
                         value={[Number(forIngestionPeriod)]}
-                        onValueChange={(changeVal) => setForIngestionPeriod(String(changeVal[0]))}
+                        onValueChange={(changeVal) => setForIngestionPeriod(changeVal[0])}
                         min={60}
                         max={400}
                         step={1}

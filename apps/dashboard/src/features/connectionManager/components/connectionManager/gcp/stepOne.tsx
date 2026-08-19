@@ -5,13 +5,14 @@ import { StepOne } from "@/features/connectionManager/components/connectionManag
 import { UploadCloud, FileJson, X } from "lucide-react";
 import { Label } from "@/components/atoms/label";
 import { Input } from "@/components/atoms/input";
+import { GcpCredentialsDto, GcpCredentialsJson } from "@/lib/fetch/gcp-connection-api";
 
 interface StepOnePropsForGcp {
-    onNext: (data: { name: string; accountKey: string }) => void;
+    onNext: (data: { displayName: string; credentials: GcpCredentialsDto }) => void;
 }
 
 export default function StepOneGcp({ onNext }: Readonly<StepOnePropsForGcp>) {
-    const [name, setName] = useState("");
+    const [displayName, setDisplayName] = useState("");
 
     const [accountKey, setAccountKey] = useState<File | null>(null);
 
@@ -63,9 +64,24 @@ export default function StepOneGcp({ onNext }: Readonly<StepOnePropsForGcp>) {
             setIsSubmitting(true);
             const serviceAccountKeyJson = await readingFile(accountKey);
 
-            onNext({ name, accountKey: serviceAccountKeyJson });
+            try {
+                JSON.parse(serviceAccountKeyJson) as GcpCredentialsDto;
+            } catch {
+                setErrors("The uploaded file contains invalid JSON");
+                return;
+            }
+            const gcpCredentials = JSON.parse(serviceAccountKeyJson) as GcpCredentialsJson;
+            const credentials: GcpCredentialsDto = {
+                projectId: gcpCredentials.project_id,
+                serviceAccountJson: serviceAccountKeyJson,
+            };
+
+            onNext({
+                displayName,
+                credentials,
+            });
         } catch {
-            setErrors("Failed to load account key");
+            setErrors("Failed to load service account");
         } finally {
             setIsSubmitting(false);
         }
@@ -88,8 +104,8 @@ export default function StepOneGcp({ onNext }: Readonly<StepOnePropsForGcp>) {
                     id="name"
                     type="text"
                     placeholder="Connection name"
-                    value={name}
-                    onChange={(changing) => setName(changing.target.value)}
+                    value={displayName}
+                    onChange={(changing) => setDisplayName(changing.target.value)}
                     className="bg-background border-border rounded-md px-4 py-3 text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all w-full"
                     required
                 />

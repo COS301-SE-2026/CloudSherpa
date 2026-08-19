@@ -8,6 +8,7 @@ export interface CloudCredentials {
     clientId?: string;
     clientSecret?: string;
     projectId?: string;
+    serviceAccountJson?: string;
 }
 
 export interface ResourceDiscoveryRequest {
@@ -67,6 +68,16 @@ export async function getCloudResources(
  */
 export async function generateAwsPermissionsPolicy(services: string[]): Promise<AwsPolicy> {
     return apiClient<AwsPolicy>("/api/cloud-resources/aws/permissions", {
+        method: "POST",
+        body: JSON.stringify(services),
+    });
+}
+
+/**
+ * Generate a least-privilege GCP permission set for a set of selected services.
+ */
+export async function generateGcpPermissionsPolicy(services: string[]): Promise<string[]> {
+    return apiClient<string[]>("/api/cloud-resources/gcp/permissions", {
         method: "POST",
         body: JSON.stringify(services),
     });
