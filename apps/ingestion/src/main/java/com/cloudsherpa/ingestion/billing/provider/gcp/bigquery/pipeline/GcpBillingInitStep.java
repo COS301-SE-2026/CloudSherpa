@@ -173,7 +173,7 @@ public class GcpBillingInitStep implements GcpBillingIngestionStep {
   private void initBillingExport(GcpBillingContext context) {
     BillingExport billingExport =
         billingExportService.initializeExport(
-            context.getConfigId().toString(), context.getConfigId().toString(), null);
+            UUID.randomUUID().toString(), context.getConfigId().toString(), null);
 
     context.setBillingExport(billingExport);
   }
