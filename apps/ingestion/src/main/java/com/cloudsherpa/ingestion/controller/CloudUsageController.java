@@ -12,6 +12,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +32,9 @@ public class CloudUsageController {
   private final AwsCurIngestionService awsCurIngestionService;
   private final Environment environment;
   private final GcpBillingIngestionService gcpBillingIngestionService;
+
+  @Value("${dev.gcp.billing_config_id:}")
+  private String devGcpBillingConfigId;
 
   // CloudUsageService injected as dependency of CloudUsageController
   public CloudUsageController(
@@ -160,12 +165,18 @@ public class CloudUsageController {
             content = @Content)
       })
   @PostMapping("ingest/gcp/billing/bigquery")
-  public ResponseEntity<Void> ingestGcpBigqueryBilling() {
+  public ResponseEntity<String> ingestGcpBigqueryBilling() {
     if (!environment.matchesProfiles("dev")) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
-    gcpBillingIngestionService.execute();
+    if (devGcpBillingConfigId == null || devGcpBillingConfigId.isBlank()) {
+      return ResponseEntity.badRequest().body("Environment misconfigured");
+    }
+
+    gcpBillingIngestionService.execute(
+        UUID.fromString("5ebe4340-c5ec-4833-ad93-06abf4609f03"),
+        UUID.fromString(devGcpBillingConfigId));
 
     return ResponseEntity.ok().build();
   }

@@ -4,8 +4,11 @@ import com.cloudsherpa.ingestion.connector.CloudCredentials;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.TableResult;
 import java.time.Instant;
+import java.util.UUID;
 
 public class GcpBillingContext {
+  private final UUID userId;
+  private final UUID configId;
   private GcpBillingConfig billingConfig;
   private CloudCredentials gcpCredentials;
   private BigQuery bigQueryClient;
@@ -13,6 +16,11 @@ public class GcpBillingContext {
   private String fullyQualifiedExportTableIdentifier;
   private Instant queryFrom;
   private TableResult tableResult;
+
+  public GcpBillingContext(UUID userId, UUID configId) {
+    this.userId = userId;
+    this.configId = configId;
+  }
 
   public void setGcpBillingConfig(GcpBillingConfig billingConfig) {
     this.billingConfig = billingConfig;
@@ -40,6 +48,14 @@ public class GcpBillingContext {
 
   public void setTableResult(TableResult tableResult) {
     this.tableResult = tableResult;
+  }
+
+  public UUID getUserId() {
+    return userId;
+  }
+
+  public UUID getConfigId() {
+    return configId;
   }
 
   public GcpBillingConfig getBillingConfig() {
