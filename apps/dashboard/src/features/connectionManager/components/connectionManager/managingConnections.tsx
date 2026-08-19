@@ -163,7 +163,7 @@ export default function ManagingConnections() {
         router.push(`/addConnection/aws`); // just aws for now
     };
 
-    if (true) {
+    if (isLoading) {
         return (
             <div data-theme="dark" className="min-h-screen bg-background text-foreground p-8">
                 <div className="flex items-center justify-between mb-6">
