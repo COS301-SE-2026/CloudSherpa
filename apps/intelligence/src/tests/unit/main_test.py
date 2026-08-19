@@ -1,7 +1,9 @@
 import importlib
 import sys
 import types
+
 from fastapi.testclient import TestClient
+
 
 class FakeModel:
     def forecast(self, request):
