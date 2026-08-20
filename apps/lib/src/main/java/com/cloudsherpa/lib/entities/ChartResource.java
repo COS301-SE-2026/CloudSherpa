@@ -23,17 +23,26 @@ public class ChartResource {
   @JoinColumn(name = "widget_chart_id", nullable = false, insertable = false, updatable = false)
   private WidgetChart widgetChart;
 
+  @Column(name = "provider")
+  private ProviderEnum provider;
+
+  @Column(name = "account_id")
+  private UUID accountId;
+
   @Column(name = "resource_id")
   private UUID resourceId;
 
   @Column(name = "metric_type", length = 50)
   private String metricType;
 
-  protected ChartResource() {}
+  protected ChartResource() {
+  }
 
-  public ChartResource(UUID id, UUID widgetChartId, UUID resourceId, String metricType) {
+  public ChartResource(UUID id, UUID widgetChartId,ProviderEnum provider, UUID accountId,  UUID resourceId, String metricType) {
     this.id = id;
     this.widgetChartId = widgetChartId;
+    this.provider = provider; 
+    this.accountId = accountId; 
     this.resourceId = resourceId;
     this.metricType = metricType;
   }
@@ -52,6 +61,22 @@ public class ChartResource {
 
   public WidgetChart getWidgetChart() {
     return widgetChart;
+  }
+
+  public ProviderEnum getProvider() {
+    return provider; 
+  }
+
+  public void setProvider(ProviderEnum provider) {
+    this.provider = provider; 
+  }
+
+  public UUID getAccountId() {
+    return accountId; 
+  }
+
+  public void setAccountId(UUID accountId) {
+    this.accountId = accountId; 
   }
 
   public UUID getResourceId() {
