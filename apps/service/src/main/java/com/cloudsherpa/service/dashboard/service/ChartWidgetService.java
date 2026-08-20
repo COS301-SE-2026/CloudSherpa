@@ -7,6 +7,7 @@ import com.cloudsherpa.lib.repositories.ChartResourceRepository;
 import com.cloudsherpa.lib.repositories.WidgetChartRepository;
 import com.cloudsherpa.service.dashboard.dto.ChartWidgetConfigUpdateDTO;
 import com.cloudsherpa.service.dashboard.dto.ChartWidgetDTO;
+import com.cloudsherpa.service.metrics.MetricDisplayNameMapper;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.UUID;
@@ -16,12 +17,15 @@ import org.springframework.stereotype.Service;
 public class ChartWidgetService {
   private final WidgetChartRepository widgetChartRepository;
   private final ChartResourceRepository chartResourceRepository;
+  private final MetricDisplayNameMapper metricDisplayNameMapper;
 
   public ChartWidgetService(
       WidgetChartRepository widgetChartRepository,
-      ChartResourceRepository chartResourceRepository) {
+      ChartResourceRepository chartResourceRepository,
+      MetricDisplayNameMapper metricDisplayNameMapper) {
     this.widgetChartRepository = widgetChartRepository;
     this.chartResourceRepository = chartResourceRepository;
+    this.metricDisplayNameMapper = metricDisplayNameMapper;
   }
 
   @Transactional
@@ -66,6 +70,7 @@ public class ChartWidgetService {
 
     UUID resourceId = null;
     String metricType = null;
+    String metricDisplayName = null;
     WidgetChart chart = getWidgetChartByWidgetId(widget.getId());
 
     List<ChartResource> resources = chartResourceRepository.findByWidgetChartId(chart.getId());
@@ -73,6 +78,7 @@ public class ChartWidgetService {
     if (!resources.isEmpty()) {
       resourceId = resources.get(0).getResourceId();
       metricType = resources.get(0).getMetricType();
+      metricDisplayName = metricDisplayNameMapper.toDisplayName(metricType);
     }
 
     return new ChartWidgetDTO(
@@ -85,7 +91,8 @@ public class ChartWidgetService {
         widget.getHeight(),
         chart.getChartType(),
         resourceId,
-        metricType);
+        metricType,
+        metricDisplayName);
   }
 
   private WidgetChart getWidgetChartByWidgetId(UUID widgetId) {
