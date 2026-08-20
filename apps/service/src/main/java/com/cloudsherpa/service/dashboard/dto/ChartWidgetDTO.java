@@ -14,6 +14,5 @@ public record ChartWidgetDTO(
     Integer height,
     ChartTypeEnum chartType,
     UUID resourceId,
-    String metricType,
-    String metricDisplayName)
+    String metricType)
     implements WidgetDTO {}
