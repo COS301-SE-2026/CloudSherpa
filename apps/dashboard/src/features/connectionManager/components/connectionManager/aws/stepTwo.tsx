@@ -8,7 +8,8 @@ import {
     generateAwsPermissionsPolicy,
     getCloudResources,
 } from "@/lib/fetch/cloud-resource-api";
-import { BillingForm } from "../billingForm";
+import { BillingForm } from "./billingForm";
+import { BillingFormContainer } from "../billingFormContainer";
 import { Progress } from "@/components/atoms/progress";
 import { StepTwo } from "@/features/connectionManager/components/connectionManager/wizardSetup/stepTwo";
 
