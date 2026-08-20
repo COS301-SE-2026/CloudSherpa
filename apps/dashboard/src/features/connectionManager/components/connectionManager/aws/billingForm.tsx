@@ -1,10 +1,7 @@
 "use client";
 
 import { Button } from "@/components/atoms/button";
-import React, { useState } from "react";
 import { BillingConfig } from "./stepTwo";
-import { Checkbox } from "@/components/atoms/checkbox";
-import { Field } from "@/components/atoms/field";
 import { Label } from "@/components/atoms/label";
 import { BillingFormContainer } from "../billingFormContainer";
 
