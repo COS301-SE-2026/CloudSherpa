@@ -8,7 +8,7 @@ import {
     generateAwsPermissionsPolicy,
     getCloudResources,
 } from "@/lib/fetch/cloud-resource-api";
-import { BillingForm } from "./billingForm";
+import { AwsBillingForm } from "./billingForm";
 import { Progress } from "@/components/atoms/progress";
 import { StepTwo } from "@/features/connectionManager/components/connectionManager/wizardSetup/stepTwo";
 
@@ -208,7 +208,7 @@ export default function StepTwoAws({ credentials, onNext, onBack }: Readonly<Pro
             forLoading={loading}
             forErrors={error}
         >
-            <BillingForm
+            <AwsBillingForm
                 bucketName={bucketName}
                 setBucketName={setBucketName}
                 exportName={exportName}

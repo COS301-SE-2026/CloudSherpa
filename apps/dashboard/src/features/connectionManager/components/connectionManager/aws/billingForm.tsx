@@ -36,7 +36,7 @@ const regions = [
     "sa-east-1",
 ];
 
-export function BillingForm({
+export function AwsBillingForm({
     bucketName,
     setBucketName,
     bucketRegion,
