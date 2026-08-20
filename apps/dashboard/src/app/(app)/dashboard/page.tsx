@@ -211,8 +211,8 @@ function DashboardContent() {
     const renderMainContent = () => {
         if (isLoading) {
             return (
-                <div className="flex-1 flex items-center justify-center">
-                    <Spinner className="size-8" />
+                <div className="h-full w-full flex flex-col justify-center items-center gap-2">
+                    <Spinner className="w-10 h-10" />
                 </div>
             );
         }

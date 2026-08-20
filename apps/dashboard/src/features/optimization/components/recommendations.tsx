@@ -8,6 +8,7 @@ import { Tabs, TabsTrigger, TabsList } from "@/components/atoms/tabs";
 import RecommendationCardHero from "@/features/optimization/components/recCardHero";
 import { Button } from "@/components/atoms/button";
 import { RecommendationErrorAlert } from "@/features/optimization/components/recError";
+import { Spinner } from "@/components/atoms/spinner";
 
 const FilterOptions = [
     { value: "all", label: "ALL" },
@@ -71,95 +72,102 @@ export default function Recommendations() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-full w-full p-6 text-muted-foreground">
-                Loading optimization recommendations...
+            <div className="flex flex-col h-full w-full p-6 gap-4">
+                <header className="flex flex-col space-y-4 py-2">
+                    <h1 className="text-3xl font-semibold">Optimization Recommendations</h1>
+                </header>
+                <div className="h-full w-full flex flex-col justify-center items-center">
+                    <Spinner className="h-10 w-10" />
+                </div>
+            </div>
+        );
+    } else {
+        return (
+            <div className="flex flex-col h-full w-full p-6 gap-4">
+                <header className="flex flex-col space-y-4 py-2">
+                    <h1 className="text-3xl font-semibold">Optimization Recommendations</h1>
+                </header>
+                {/* recommendation summaries */}
+                {recErrorState && <RecommendationErrorAlert recError={recErrorMessage} />}
+                {summary && (
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-2">
+                        <RecommendationCardHero
+                            value={`Total ${summary.total}`}
+                            className="text-card-foreground"
+                        />
+                        <RecommendationCardHero
+                            value={`Active ${summary.active}`}
+                            className="text-success"
+                        />
+                        <RecommendationCardHero
+                            value={`Applied ${summary.applied}`}
+                            className="text-primary"
+                        />
+                        <RecommendationCardHero
+                            value={`Acknowledged ${summary.acknowledged}`}
+                            className="text-warning"
+                        />
+                        <RecommendationCardHero
+                            value={`Dismissed ${summary.dismissed}`}
+                            className="text-destructive"
+                        />
+                    </div>
+                )}
+                {/* filter bar */}
+                <div className="flex flex-row w-full justify-between gap-2">
+                    <Tabs value={filter || undefined} onValueChange={(value) => setFilter(value)}>
+                        <TabsList className="self-start inline-flex gap-1 h-auto p-1 bg-muted w-fit">
+                            {FilterOptions.map((providers) => {
+                                return (
+                                    <TabsTrigger
+                                        key={providers.value}
+                                        value={providers.value}
+                                        className={` font-medium transition-all bg-transparent`}
+                                    >
+                                        {providers.label}
+                                    </TabsTrigger>
+                                );
+                            })}
+                        </TabsList>
+                    </Tabs>
+                    <div className="flex flex-row justify-end items-center gap-2">
+                        <div className="relative">
+                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                type="text"
+                                placeholder="Search by Account..."
+                                className="pl-8  w-full lg:w-150"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                        </div>
+                        {/* sort highest to lowest */}
+                        <Button
+                            variant="secondary"
+                            onClick={() =>
+                                setSortOrder((prev) => (prev === "desc" ? "asc" : "desc"))
+                            }
+                        >
+                            <ArrowUpDown />
+                        </Button>
+                    </div>
+                </div>
+
+                {filteredRecommendationGroups.length > 0 ? (
+                    <div className="flex flex-col gap-2">
+                        {filteredRecommendationGroups.map((group) => (
+                            <RecommendationGroupCard
+                                key={group.accountId ?? "unassigned"}
+                                group={group}
+                            />
+                        ))}
+                    </div>
+                ) : (
+                    <div className="text-muted-foreground h-full w-full flex flex-col justify-center items-center">
+                        No recommendations found.
+                    </div>
+                )}
             </div>
         );
     }
-
-    return (
-        <div className="flex flex-col h-full w-full p-6 gap-4">
-            <header className="flex flex-col space-y-4 py-2">
-                <h1 className="text-3xl font-semibold">Optimization Recommendations</h1>
-            </header>
-            {/* recommendation summaries */}
-            {recErrorState && <RecommendationErrorAlert recError={recErrorMessage} />}
-            {summary && (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-2">
-                    <RecommendationCardHero
-                        value={`Total ${summary.total}`}
-                        className="text-card-foreground"
-                    />
-                    <RecommendationCardHero
-                        value={`Active ${summary.active}`}
-                        className="text-success"
-                    />
-                    <RecommendationCardHero
-                        value={`Applied ${summary.applied}`}
-                        className="text-primary"
-                    />
-                    <RecommendationCardHero
-                        value={`Acknowledged ${summary.acknowledged}`}
-                        className="text-warning"
-                    />
-                    <RecommendationCardHero
-                        value={`Dismissed ${summary.dismissed}`}
-                        className="text-destructive"
-                    />
-                </div>
-            )}
-            {/* filter bar */}
-            <div className="flex flex-row w-full justify-between gap-2">
-                <Tabs value={filter || undefined} onValueChange={(value) => setFilter(value)}>
-                    <TabsList className="self-start inline-flex gap-1 h-auto p-1 bg-muted w-fit">
-                        {FilterOptions.map((providers) => {
-                            return (
-                                <TabsTrigger
-                                    key={providers.value}
-                                    value={providers.value}
-                                    className={` font-medium transition-all bg-transparent`}
-                                >
-                                    {providers.label}
-                                </TabsTrigger>
-                            );
-                        })}
-                    </TabsList>
-                </Tabs>
-                <div className="flex flex-row justify-end items-center gap-2">
-                    <div className="relative">
-                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            type="text"
-                            placeholder="Search by Account..."
-                            className="pl-8  w-full lg:w-150"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                    </div>
-                    {/* sort highest to lowest */}
-                    <Button
-                        variant="secondary"
-                        onClick={() => setSortOrder((prev) => (prev === "desc" ? "asc" : "desc"))}
-                    >
-                        <ArrowUpDown />
-                    </Button>
-                </div>
-            </div>
-
-            {filteredRecommendationGroups.length > 0 ? (
-                <div className="flex flex-col gap-2">
-                    {filteredRecommendationGroups.map((group) => (
-                        <RecommendationGroupCard
-                            key={group.accountId ?? "unassigned"}
-                            group={group}
-                        />
-                    ))}
-                </div>
-            ) : (
-                <div className="text-muted-foreground h-full w-full flex flex-col justify-center items-center">
-                    No recommendations found.
-                </div>
-            )}
-        </div>
-    );
 }

@@ -285,11 +285,7 @@ export default function UsagePredictionChart({
         ],
     };
 
-    const cardContent = loading ? (
-        <div className="flex h-full w-full flex-col justify-center items-center gap-6">
-            <Spinner />
-        </div>
-    ) : (
+    const cardContent = !loading ? (
         <ReactECharts
             ref={echartsRef}
             option={option}
@@ -297,6 +293,8 @@ export default function UsagePredictionChart({
             style={{ height: "100%", width: "100%" }}
             notMerge={true}
         />
+    ) : (
+        <Spinner className="w-10 h-10" />
     );
 
     return (

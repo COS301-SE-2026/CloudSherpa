@@ -29,7 +29,7 @@ interface RecStore {
 export const useRecStore = create<RecStore>((set, get) => ({
     recommendationGroups: [],
     summary: null,
-    isLoading: false,
+    isLoading: true,
     failedLoading: false,
     failedLoadingMessage: "",
 
