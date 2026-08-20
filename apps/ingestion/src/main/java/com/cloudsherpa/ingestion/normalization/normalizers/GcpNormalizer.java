@@ -26,8 +26,10 @@ public class GcpNormalizer implements Normalizer {
     UUID accountUuid = parseUuid(accountKey);
     String resourceId = resolveResourceId(accountUuid, r);
 
-    String metricName =
-        prettifyGcpMetricName(r.getMetricName() != null ? r.getMetricName() : UNKNOWN);
+    String metricName = r.getMetricName();
+    if (metricName == null || metricName.isBlank()) {
+      metricName = UNKNOWN;
+    }
     String metricType = determineMetricType(metricName);
 
     double metricValue = r.getValue();
@@ -125,48 +127,5 @@ public class GcpNormalizer implements Normalizer {
       default:
         return t.toLowerCase();
     }
-  }
-
-  private String prettifyGcpMetricName(String fullMetricName) {
-    if (fullMetricName == null || fullMetricName.isEmpty()) {
-      return UNKNOWN;
-    }
-
-    String[] parts = fullMetricName.split("/");
-    int start = Math.max(0, parts.length - 2);
-
-    StringBuilder result = new StringBuilder();
-
-    for (int index = start; index < parts.length; index++) {
-
-      if (result.isEmpty()) {
-        result.append(' ');
-      }
-      result.append(convertSnakeToCamel(parts[index]));
-    }
-
-    return result.toString();
-  }
-
-  private String convertSnakeToCamel(String snake) {
-    if (snake == null || snake.isEmpty()) return "";
-
-    StringBuilder camel = new StringBuilder();
-    boolean capitalizeNext = true;
-
-    for (char c : snake.toCharArray()) {
-      if (c == '_') {
-        capitalizeNext = true;
-      } else {
-        if (capitalizeNext) {
-          camel.append(Character.toUpperCase(c));
-          capitalizeNext = false;
-        } else {
-          camel.append(c);
-        }
-      }
-    }
-
-    return camel.toString();
   }
 }
