@@ -93,6 +93,7 @@ export default function WizardSetupGcp() {
                     ingestionPeriod={wizardData.ingestionPeriod}
                     credentials={wizardData.credentials}
                     resources={wizardData.resources}
+                    billingConfig={wizardData.billingConfig}
                     onComplete={handleStepThreeComplete}
                     onBack={handleBack}
                 />
