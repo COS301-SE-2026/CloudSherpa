@@ -10,66 +10,9 @@ import { MetricStore, MetricType, Metric } from "@/features/dashboard/types/metr
     );
 */
 
-type AwsMetricName =
-    | "BucketSizeBytes"
-    | "Duration"
-    | "WriteThrottleEvents"
-    | "CPUUtilization"
-    | "DiskReadBytes"
-    | "NetworkIn"
-    | "ConsumedWriteCapacityUnits"
-    | "ConsumedReadCapacityUnits"
-    | "FirstByteLatency"
-    | "ReadLatency"
-    | "Errors"
-    | "DiskWriteBytes"
-    | "WriteLatency"
-    | "ReadThrottleEvents"
-    | "FreeStorageSpace"
-    | "AllRequests"
-    | "DatabaseConnections"
-    | "Invocations"
-    | "Throttles"
-    | "NetworkOut"
-    | "NumberOfObjects";
-
-export const AWS_METRIC_TYPE_BY_NAME: Record<AwsMetricName, MetricType> = {
-    BucketSizeBytes: "storage-used",
-    Duration: "duration",
-    WriteThrottleEvents: "throttles",
-    CPUUtilization: "cpu",
-    DiskReadBytes: "disk",
-    NetworkIn: "network",
-    ConsumedWriteCapacityUnits: "read-capacity",
-    ConsumedReadCapacityUnits: "write-capacity",
-    FirstByteLatency: "first-byte-latency",
-    ReadLatency: "latency",
-    Errors: "errors",
-    DiskWriteBytes: "disk",
-    WriteLatency: "latency",
-    ReadThrottleEvents: "throttles",
-    FreeStorageSpace: "storage-available",
-    AllRequests: "requests",
-    DatabaseConnections: "connections",
-    Invocations: "invocations",
-    Throttles: "throttles",
-    NetworkOut: "network",
-    NumberOfObjects: "object-count",
-};
-
-// Inverse helper for reverse metric lookup
-type Invert<T extends Record<PropertyKey, PropertyKey>> = {
-    [K in keyof T as T[K]]: K;
-};
-
-const invertRecord = <T extends Record<PropertyKey, PropertyKey>>(obj: T): Invert<T> => {
-    return Object.fromEntries(Object.entries(obj).map(([key, value]) => [value, key])) as Invert<T>;
-};
-
-export const AWS_METRIC_TYPE_BY_NAME_INVERSE = invertRecord(AWS_METRIC_TYPE_BY_NAME);
-
-function toMetricType(metricName: string): MetricType {
-    return AWS_METRIC_TYPE_BY_NAME[metricName as AwsMetricName] ?? "anon";
+function normalizeMetricKey(metricName: string | null | undefined): MetricType {
+    const value = metricName?.trim();
+    return value && value.length > 0 ? value : "anon";
 }
 
 function metricSeriesKey(metric: Metric): string {
@@ -101,7 +44,7 @@ export const useMetricStore = create<MetricStore>((set, get) => ({
     },
 
     addMetricFromDto: (metricDto) => {
-        const metricType = toMetricType(metricDto.metricName);
+        const metricType = normalizeMetricKey(metricDto.metricName);
 
         const metric: Metric = {
             resource_id: metricDto.resourceId,

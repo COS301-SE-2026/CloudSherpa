@@ -1,24 +1,6 @@
 import { MetricDTO } from "@/features/dashboard/types/dtos/metrics/MetricDto";
 
-export type MetricType =
-    | "cpu"
-    | "memory"
-    | "storage-used"
-    | "storage-available"
-    | "object-count"
-    | "duration"
-    | "throttles"
-    | "disk"
-    | "network"
-    | "read-capacity"
-    | "write-capacity"
-    | "first-byte-latency"
-    | "latency"
-    | "errors"
-    | "requests"
-    | "connections"
-    | "invocations"
-    | "anon";
+export type MetricType = string;
 
 export type Metric = {
     resource_id: string;

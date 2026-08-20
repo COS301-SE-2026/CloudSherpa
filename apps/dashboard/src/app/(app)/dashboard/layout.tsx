@@ -187,6 +187,7 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
             chartType: "line_chart",
             resourceId: null,
             metricType: null,
+            metricDisplayName: null,
         };
 
         const newLayout: LayoutItem = {
@@ -216,6 +217,7 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
                 height: newLayout.h,
                 resourceId: newConfig.resourceId,
                 metricType: newConfig.metricType,
+                metricDisplayName: newConfig.metricDisplayName,
             });
         } catch (error) {
             console.error("Failed to persist new widget", error);

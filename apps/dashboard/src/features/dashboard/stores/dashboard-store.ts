@@ -179,7 +179,7 @@ const createDashboardSlice: StateCreator<DashboardStore, [], [], DashboardSlice>
             }),
         updateChartWidgetConfig: async (widget) => {
             try {
-                await updateChartWidgetConfig(widget.id, {
+                const saved = await updateChartWidgetConfig(widget.id, {
                     id: widget.id,
                     widgetType: "CHART",
                     chartType: widget.chartType,
@@ -191,7 +191,10 @@ const createDashboardSlice: StateCreator<DashboardStore, [], [], DashboardSlice>
                 set((state) => ({
                     widgets: {
                         ...state.widgets,
-                        [widget.id]: widget,
+                        [widget.id]: {
+                            ...widget,
+                            metricDisplayName: saved.metricDisplayName,
+                        },
                     },
                 }));
             } catch (error) {

@@ -66,6 +66,7 @@ export default function ChartFormResource({
                                 ...configuration,
                                 resourceId: currentValue,
                                 metricType: metricType,
+                                metricDisplayName: null,
                             });
                         }}
                         widthVariant="full"
@@ -78,12 +79,13 @@ export default function ChartFormResource({
                         value={configuration.metricType}
                         options={availableMetrics.map((type) => ({
                             value: type,
-                            label: type.toUpperCase(),
+                            label: type,
                         }))}
                         onSelect={(currentValue) => {
                             setConfiguration({
                                 ...configuration,
                                 metricType: currentValue as MetricType,
+                                metricDisplayName: null,
                             });
                         }}
                         disabled={!configuration.resourceId}

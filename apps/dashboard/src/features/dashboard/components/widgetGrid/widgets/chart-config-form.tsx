@@ -29,6 +29,7 @@ export default function ChartConfigForm({ ChartId }: Readonly<ChartConfigFormPro
                   chartType: "line_chart",
                   resourceId: null,
                   metricType: null,
+                  metricDisplayName: null,
               };
     const [config, setConfig] = useState<ChartWidgetConfig>(resolvedWidgetConfig);
     const router = useRouter();

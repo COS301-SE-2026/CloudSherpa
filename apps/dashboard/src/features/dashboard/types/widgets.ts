@@ -45,6 +45,7 @@ export type ChartWidgetConfig = BaseWidgetConfig & {
     chartType: ChartType;
     resourceId: string | null;
     metricType: MetricType | null;
+    metricDisplayName: string | null;
 };
 
 export type KpiWidgetConfig = BaseWidgetConfig & {

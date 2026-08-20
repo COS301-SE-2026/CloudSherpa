@@ -100,7 +100,7 @@ export default function UsageToolbar() {
         <Dropdown
             options={availableMetrics.map((metric) => ({
                 value: metric,
-                label: metric.toUpperCase(),
+                label: metric,
             }))}
             value={metricType}
             onSelect={(val) => setMetricType(val as MetricType)}

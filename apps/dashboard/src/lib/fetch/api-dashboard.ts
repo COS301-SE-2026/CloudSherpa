@@ -17,6 +17,7 @@ export interface ChartWidgetDTO extends BaseWidgetDTO {
     chartType: ChartType;
     resourceId: string | null;
     metricType: string | null;
+    metricDisplayName: string | null;
 }
 
 export interface KpiWidgetDto extends BaseWidgetDTO {

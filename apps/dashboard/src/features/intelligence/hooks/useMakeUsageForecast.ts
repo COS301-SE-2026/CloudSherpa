@@ -4,7 +4,6 @@ import { useCallback, useState } from "react";
 
 import { UsageForecastData } from "@/features/intelligence/types/dtos";
 import apiClient from "@/lib/fetch/api-client";
-import { AWS_METRIC_TYPE_BY_NAME_INVERSE } from "@/features/dashboard/stores/metric-store";
 import { MetricType } from "@/features/dashboard/types/metric";
 
 export function useMakeUsageForecast() {
@@ -23,7 +22,7 @@ export function useMakeUsageForecast() {
                         method: "POST",
                         body: JSON.stringify({
                             resourceId: resourceId,
-                            metricType: AWS_METRIC_TYPE_BY_NAME_INVERSE[metricType],
+                            metricType: metricType,
                             forecastHorizon: "2026-08-11T06:33:44.992Z",
                         }),
                     }

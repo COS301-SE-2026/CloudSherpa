@@ -57,6 +57,7 @@ function processFetchedDashboards(fetchedData: DashboardDTO[]) {
                     displayName: w.displayName,
                     resourceId: w.resourceId,
                     metricType: w.metricType as MetricType | null,
+                    metricDisplayName: w.metricDisplayName,
                 });
             } else if (w.widgetType === "KPI") {
                 configsArray.push({
@@ -109,6 +110,7 @@ function DashboardContent() {
                 chartType,
                 resourceId,
                 metricType: resourceId ? (metricsByResource[resourceId]?.[0] ?? "anon") : "anon",
+                metricDisplayName: null,
             };
         },
         [getMetricList]
