@@ -10,6 +10,7 @@ import { TrendingUp } from "lucide-react";
 import { useEffect } from "react";
 import { useMakeBillingForecast } from "../../hooks/useMakeBillingForecast";
 import { getCurrencySymbol } from "@/lib/utils";
+import { Spinner } from "@/components/atoms/spinner";
 
 export default function BillingIntelligence() {
     const {
@@ -78,12 +79,8 @@ export default function BillingIntelligence() {
             <div className="h-full w-full p-6 flex flex-col gap-4">
                 <BillingToolbar />
 
-                <div className="flex-1 flex items-center justify-center">
-                    <div className="text-center">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
-
-                        <p className="text-muted-foreground"> Loading billing data... </p>
-                    </div>
+                <div className="h-full w-full flex flex-col justify-center items-center ">
+                    <Spinner className="h-10 w-10" />
                 </div>
             </div>
         );

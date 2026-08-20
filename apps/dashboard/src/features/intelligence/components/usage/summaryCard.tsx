@@ -4,7 +4,6 @@ import { Separator } from "@/components/atoms/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/atoms/tooltip";
 import { MetricType } from "@/features/dashboard/types/metric";
 import { UsageError } from "../../types/errors";
-import { Spinner } from "@/components/atoms/spinner";
 
 export const METRIC_UNITS: Record<MetricType, string> = {
     cpu: "%",
@@ -41,7 +40,6 @@ interface SummaryCardProps {
     tooltip: string;
     Icon?: LucideIcon;
     usageError: UsageError | null;
-    loading: boolean;
 }
 
 export default function SummaryCard({
@@ -53,14 +51,7 @@ export default function SummaryCard({
     tooltip,
     Icon,
     usageError,
-    loading,
 }: Readonly<SummaryCardProps>) {
-    const loadingCardContent = (
-        <div className="h-8 w-8">
-            <Spinner />
-        </div>
-    );
-
     const cardContent = (
         <>
             {Icon && <Icon className="h-8 w-8 text-primary" />}
@@ -90,23 +81,27 @@ export default function SummaryCard({
         </>
     );
 
-    return (
-        <Card>
-            <CardHeader>
-                <CardTitle className="flex flex-row justify-between">
-                    {title}
-                    <Tooltip>
-                        <TooltipTrigger>
-                            <Info className="h-5 w-5 text-muted-foreground" />
-                        </TooltipTrigger>
-                        <TooltipContent>{tooltip}</TooltipContent>
-                    </Tooltip>
-                </CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-row gap-5     justify-start items-center">
-                {loading ? loadingCardContent : cardContent}
-            </CardContent>
-            <CardFooter className="text-muted-foreground">{description}</CardFooter>
-        </Card>
-    );
+    if (!pastUsage || !predictedUsage) {
+        return <Card className="h-45 border-2 border-dashed"></Card>;
+    } else {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex flex-row justify-between">
+                        {title}
+                        <Tooltip>
+                            <TooltipTrigger>
+                                <Info className="h-5 w-5 text-muted-foreground" />
+                            </TooltipTrigger>
+                            <TooltipContent>{tooltip}</TooltipContent>
+                        </Tooltip>
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-row gap-5     justify-start items-center">
+                    {cardContent}
+                </CardContent>
+                <CardFooter className="text-muted-foreground">{description}</CardFooter>
+            </Card>
+        );
+    }
 }
