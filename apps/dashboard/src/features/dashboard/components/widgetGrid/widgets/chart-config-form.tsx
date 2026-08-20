@@ -35,14 +35,6 @@ export default function ChartConfigForm({ ChartId }: Readonly<ChartConfigFormPro
     const [config, setConfig] = useState<ChartWidgetConfig>(resolvedWidgetConfig);
     const router = useRouter();
 
-    //shared state for filtering
-    const [selectedProvider, setSelectedProvider] = useState<string | null>(
-        resolvedWidgetConfig.provider || "AWS"
-    );
-    const [selectedConnectionId, setSelectedConnectionId] = useState<string | null>(
-        resolvedWidgetConfig.accountId || null
-    );
-
     const handleSave = async () => {
         setIsSaving(true);
         try {
@@ -82,10 +74,9 @@ export default function ChartConfigForm({ ChartId }: Readonly<ChartConfigFormPro
                         <ChartFormDetails configuration={config} setConfiguration={setConfig} />
                         <ChartFormConnection configuration={config} setConfiguration={setConfig} />
                         <ChartFormResource
-                            key={selectedConnectionId || "empty-connection"}
+                            key={config.accountId || "empty-connection"}
                             configuration={config}
                             setConfiguration={setConfig}
-                            selectedConnectionId={selectedConnectionId}
                         />
                     </CardContent>
                 </Card>

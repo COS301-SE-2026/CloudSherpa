@@ -9,6 +9,12 @@ import Dropdown from "@/components/molecules/dropdown";
 
 const PROVIDERS = ["AWS", "AZURE", "GCP"];
 
+const PROVIDER_MAP: Record<string, string> = {
+    AWS: "AWS_ACCOUNT",
+    AZURE: "AZURE_SUBSCRIPTION",
+    GCP: "GCP_PROJECT",
+};
+
 interface ChartFormConnectionProps {
     configuration: ChartWidgetConfig;
     setConfiguration: (config: ChartWidgetConfig) => void;
@@ -22,8 +28,16 @@ export default function ChartFormConnection({
     const [connections, setConnections] = useState<CloudAccount[]>([]);
 
     useEffect(() => {
-        if (configuration.provider === "AWS") {
-            getAwsAccountConnections().then(setConnections).catch(console.error);
+        if (configuration.provider) {
+            getAwsAccountConnections()
+                .then((retrievedConnections) => {
+                    const targetType = PROVIDER_MAP[configuration.provider!];
+                    const filtered = retrievedConnections.filter(
+                        (conn) => (conn.accountType || "").toUpperCase() === targetType
+                    );
+                    setConnections(filtered);
+                })
+                .catch(console.error);
         }
     }, [configuration.provider]);
 
