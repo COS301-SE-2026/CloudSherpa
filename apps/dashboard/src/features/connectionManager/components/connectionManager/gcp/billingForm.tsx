@@ -43,7 +43,7 @@ export function GcpBillingForm({
                             type="text"
                             value={billingId}
                             onChange={(e) => setBillingId(e.target.value)}
-                            placeholder="000000-000000-000000-000000"
+                            placeholder="XXXXXX-XXXXXX-XXXXXX"
                         ></Input>
                     </Field>
                     <Field>
