@@ -9,16 +9,20 @@ import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
 import { ChartWidget } from "./chartWidget";
 import { useRouter } from "next/navigation";
 import ChartFormConnection from "./chart-form-connection";
+import { Spinner } from "@/components/atoms/spinner";
+import { useLoadDashboardData } from "@/features/dashboard/hooks/useLoadDash";
 
 interface ChartConfigFormProps {
     ChartId: string;
 }
 
-export default function ChartConfigForm({ ChartId }: Readonly<ChartConfigFormProps>) {
+export function ChartConfigFormInner({ ChartId }: Readonly<ChartConfigFormProps>) {
     const [isSaving, setIsSaving] = useState(false);
     const updateWidget = useDashboardStore((state) => state.actions.updateChartWidgetConfig);
     const getWidget = useDashboardStore((state) => state.actions.getWidget);
+
     const widgetConfig = getWidget(ChartId);
+
     const resolvedWidgetConfig: ChartWidgetConfig =
         widgetConfig?.widgetType === "CHART"
             ? widgetConfig
@@ -33,12 +37,13 @@ export default function ChartConfigForm({ ChartId }: Readonly<ChartConfigFormPro
                   metricType: null,
               };
     const [config, setConfig] = useState<ChartWidgetConfig>(resolvedWidgetConfig);
+
     const router = useRouter();
 
     const handleSave = async () => {
         setIsSaving(true);
         try {
-            await updateWidget(config);
+            updateWidget(config);
             console.log(config);
         } catch (error) {
             console.error("Failed to save configuration", error);
@@ -91,4 +96,18 @@ export default function ChartConfigForm({ ChartId }: Readonly<ChartConfigFormPro
             </div>
         </main>
     );
+}
+
+export default function ChartConfigForm({ ChartId }: Readonly<ChartConfigFormProps>) {
+    const { isLoading } = useLoadDashboardData();
+
+    if (isLoading) {
+        return (
+            <div className="flex-1 flex h-[50vh] items-center justify-center">
+                <Spinner className="size-8" />
+            </div>
+        );
+    }
+
+    return <ChartConfigFormInner ChartId={ChartId} />;
 }
