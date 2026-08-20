@@ -27,6 +27,8 @@ export default function ChartConfigForm({ ChartId }: Readonly<ChartConfigFormPro
                   displayName: "Default",
                   widgetType: "CHART",
                   chartType: "line_chart",
+                  provider: null,
+                  accountId: null,
                   resourceId: null,
                   metricType: null,
               };
@@ -34,13 +36,18 @@ export default function ChartConfigForm({ ChartId }: Readonly<ChartConfigFormPro
     const router = useRouter();
 
     //shared state for filtering
-    const [selectedProvider, setSelectedProvider] = useState<string | null>("AWS");
-    const [selectedConnectionId, setSelectedConnectionId] = useState<string | null>(null);
+    const [selectedProvider, setSelectedProvider] = useState<string | null>(
+        resolvedWidgetConfig.provider || "AWS"
+    );
+    const [selectedConnectionId, setSelectedConnectionId] = useState<string | null>(
+        resolvedWidgetConfig.accountId || null
+    );
 
     const handleSave = async () => {
         setIsSaving(true);
         try {
             await updateWidget(config);
+            console.log(config);
         } catch (error) {
             console.error("Failed to save configuration", error);
         } finally {
@@ -73,14 +80,7 @@ export default function ChartConfigForm({ ChartId }: Readonly<ChartConfigFormPro
                 <Card className="w-2/3">
                     <CardContent className="flex flex-col gap-6">
                         <ChartFormDetails configuration={config} setConfiguration={setConfig} />
-                        <ChartFormConnection
-                            configuration={config}
-                            setConfiguration={setConfig}
-                            selectedProvider={selectedProvider}
-                            setSelectedProvider={setSelectedProvider}
-                            selectedConnectionId={selectedConnectionId}
-                            setSelectedConnectionId={setSelectedConnectionId}
-                        />
+                        <ChartFormConnection configuration={config} setConfiguration={setConfig} />
                         <ChartFormResource
                             key={selectedConnectionId || "empty-connection"}
                             configuration={config}

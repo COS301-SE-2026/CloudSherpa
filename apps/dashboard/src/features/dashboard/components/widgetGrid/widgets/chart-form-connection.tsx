@@ -12,32 +12,20 @@ const PROVIDERS = ["AWS", "AZURE", "GCP"];
 interface ChartFormConnectionProps {
     configuration: ChartWidgetConfig;
     setConfiguration: (config: ChartWidgetConfig) => void;
-    selectedProvider: string | null;
-    setSelectedProvider: (provider: string) => void;
-    selectedConnectionId: string | null;
-    setSelectedConnectionId: (id: string) => void;
 }
 
 export default function ChartFormConnection({
     configuration,
     setConfiguration,
-    selectedProvider,
-    setSelectedProvider,
-    selectedConnectionId,
-    setSelectedConnectionId,
 }: Readonly<ChartFormConnectionProps>) {
     //fetch connections
     const [connections, setConnections] = useState<CloudAccount[]>([]);
 
     useEffect(() => {
-        if (selectedProvider === "AWS") {
-            getAwsAccountConnections()
-                .then((data) => {
-                    setConnections(data);
-                })
-                .catch(console.error);
+        if (configuration.provider === "AWS") {
+            getAwsAccountConnections().then(setConnections).catch(console.error);
         }
-    }, [selectedProvider]);
+    }, [configuration.provider]);
 
     return (
         <FieldSet>
@@ -52,17 +40,18 @@ export default function ChartFormConnection({
                 <div className="grid gap-2">
                     <Label>Provider</Label>
                     <Dropdown
-                        value={selectedProvider}
+                        value={configuration.provider}
                         options={PROVIDERS.map((provider) => ({
                             value: provider,
                             label: provider,
                         }))}
                         onSelect={(currentValue) => {
-                            setSelectedProvider(currentValue.toUpperCase());
+                            const provider = currentValue.toUpperCase();
 
-                            setSelectedConnectionId("");
                             setConfiguration({
                                 ...configuration,
+                                provider,
+                                accountId: null,
                                 resourceId: null,
                                 metricType: null,
                             });
@@ -75,15 +64,15 @@ export default function ChartFormConnection({
                 <div className="grid gap-2">
                     <Label>Connection</Label>
                     <Dropdown
-                        value={selectedConnectionId}
+                        value={configuration.accountId}
                         options={connections.map((connection) => ({
                             value: connection.id,
                             label: connection.displayName,
                         }))}
                         onSelect={(currentValue) => {
-                            setSelectedConnectionId(currentValue);
                             setConfiguration({
                                 ...configuration,
+                                accountId: currentValue,
                                 resourceId: null,
                                 metricType: null,
                             });

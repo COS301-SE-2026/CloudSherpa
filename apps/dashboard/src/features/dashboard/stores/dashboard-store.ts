@@ -184,6 +184,8 @@ const createDashboardSlice: StateCreator<DashboardStore, [], [], DashboardSlice>
                     widgetType: "CHART",
                     chartType: widget.chartType,
                     displayName: widget.displayName,
+                    provider: widget.provider,
+                    accountId: widget.accountId,
                     resourceId: widget.resourceId,
                     metricType: widget.metricType as string,
                 });

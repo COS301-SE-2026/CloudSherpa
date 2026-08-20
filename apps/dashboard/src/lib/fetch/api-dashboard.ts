@@ -15,6 +15,8 @@ export interface BaseWidgetDTO {
 export interface ChartWidgetDTO extends BaseWidgetDTO {
     widgetType: "CHART";
     chartType: ChartType;
+    provider: string | null;
+    accountId: string | null;
     resourceId: string | null;
     metricType: string | null;
 }
@@ -55,6 +57,8 @@ export interface ChartWidgetConfigUpdateDTO {
     widgetType: "CHART";
     chartType: ChartType;
     displayName: string | null;
+    provider: string | null;
+    accountId: string | null;
     resourceId: string | null;
     metricType: string | null;
 }
@@ -68,11 +72,23 @@ export interface KpiWidgetConfigUpdateDTO {
 }
 
 export async function fetchDashboards(): Promise<DashboardDTO[]> {
-    return await apiClient<DashboardDTO[]>("/dashboards", {
-        method: "GET",
-    });
+    try {
+        const data = await apiClient<DashboardDTO[]>("/dashboards", {
+            method: "GET",
+        });
+
+        // Log the successful response data to your browser/terminal console
+        console.log("Successfully fetched dashboards:", data);
+
+        return data;
+    } catch (error) {
+        // Log any errors that happen during the request
+        console.error("Failed to fetch dashboards:", error);
+        throw error;
+    }
 }
 export async function createDashboard(payload: DashboardCreateDTO): Promise<DashboardDTO> {
+    console.log(payload);
     return await apiClient<DashboardDTO>("/dashboards", {
         method: "POST",
         body: JSON.stringify(payload),
@@ -95,6 +111,7 @@ export async function updateDashboardLayout(
 }
 
 export async function createWidget(dashboardId: string, payload: WidgetDto): Promise<WidgetDto> {
+    console.log(payload);
     return await apiClient<WidgetDto>(`/dashboards/${dashboardId}/widgets`, {
         method: "POST",
         body: JSON.stringify(payload),

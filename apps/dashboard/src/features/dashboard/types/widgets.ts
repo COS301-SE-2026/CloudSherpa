@@ -43,6 +43,8 @@ export type BaseWidgetConfig = {
 export type ChartWidgetConfig = BaseWidgetConfig & {
     widgetType: "CHART";
     chartType: ChartType;
+    provider: string | null;
+    accountId: string | null;
     resourceId: string | null;
     metricType: MetricType | null;
 };

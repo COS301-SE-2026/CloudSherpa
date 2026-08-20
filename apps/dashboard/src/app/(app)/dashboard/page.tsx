@@ -55,6 +55,8 @@ function processFetchedDashboards(fetchedData: DashboardDTO[]) {
                     chartType: w.chartType,
                     widgetType: "CHART",
                     displayName: w.displayName,
+                    provider: w.provider,
+                    accountId: w.accountId,
                     resourceId: w.resourceId,
                     metricType: w.metricType as MetricType | null,
                 });
@@ -107,6 +109,8 @@ function DashboardContent() {
                 widgetType: "CHART",
                 displayName,
                 chartType,
+                provider: null,
+                accountId: null,
                 resourceId,
                 metricType: resourceId ? (metricsByResource[resourceId]?.[0] ?? "anon") : "anon",
             };
