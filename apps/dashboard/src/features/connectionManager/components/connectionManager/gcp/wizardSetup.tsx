@@ -6,6 +6,7 @@ import StepTwoGcp from "./stepTwo";
 import StepThreeGcp from "./stepThree";
 import { ResourceDetail } from "@/lib/fetch/cloud-resource-api";
 import { GcpCredentialsDto } from "@/lib/fetch/gcp-connection-api";
+import type { GcpBillingConfigType } from "./validTypes";
 
 interface WizardData {
     credentials: GcpCredentialsDto | null;
@@ -13,6 +14,7 @@ interface WizardData {
     ingestionPeriod: number;
     servicesSelected: string[];
     resources: ResourceDetail[];
+    billingConfig: GcpBillingConfigType | null;
 }
 
 export default function WizardSetupGcp() {
@@ -24,6 +26,7 @@ export default function WizardSetupGcp() {
         ingestionPeriod: 60,
         servicesSelected: [],
         resources: [],
+        billingConfig: null,
     });
 
     const handleStepOneNext = (data: { displayName: string; credentials: GcpCredentialsDto }) => {
@@ -41,6 +44,7 @@ export default function WizardSetupGcp() {
         servicesSelected: string[];
         resources: ResourceDetail[];
         credentials: GcpCredentialsDto;
+        billingConfig: GcpBillingConfigType | null;
     }) => {
         setWizardData((previous) => ({
             ...previous,
@@ -48,6 +52,7 @@ export default function WizardSetupGcp() {
             servicesSelected: data.servicesSelected,
             resources: data.resources,
             credentials: data.credentials,
+            billingConfig: data.billingConfig,
         }));
 
         setStep(3);
