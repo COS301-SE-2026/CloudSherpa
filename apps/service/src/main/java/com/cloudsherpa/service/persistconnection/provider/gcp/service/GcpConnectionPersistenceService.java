@@ -26,11 +26,16 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class GcpConnectionPersistenceService extends ConnectionPersistenceService {
+  private static final Logger logger =
+      LoggerFactory.getLogger(GcpConnectionPersistenceService.class);
+
   private final CloudConnectionRepository cloudConnectionRepository;
   private final CloudAccountRepository cloudAccountRepository;
   private final CloudCredentialRepository cloudCredentialRepository;
@@ -63,6 +68,7 @@ public class GcpConnectionPersistenceService extends ConnectionPersistenceServic
     createCredential(account, request.credentials());
     createResources(request.userId(), account, request.resources());
     if (request.billingConfig() != null) {
+      logger.info("Persisting GCP billing config for user {}", request.userId());
       createBillingExportConfig(account, request.billingConfig());
     }
   }

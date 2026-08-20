@@ -123,7 +123,7 @@ export default function StepTwoGcp({
                 servicesSelected: selectedServices,
                 resources: resourcesDiscovered,
                 credentials,
-                billingConfig: null,
+                billingConfig: validatedBillingConfig?.data ?? null,
             });
         } catch {
             setErrors("Failed to discover GCP resources");
