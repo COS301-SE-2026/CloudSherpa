@@ -38,6 +38,8 @@ export default function StepTwoGcp({
     const [errors, setErrors] = useState("");
 
     const [optedInToBilling, setOptedInToBilling] = useState(false);
+    const [billingId, setBillingId] = useState("");
+    const [billingDataset, setBillingDataset] = useState("");
 
     React.useEffect(() => {
         const loadPermissions = async () => {
@@ -134,6 +136,10 @@ export default function StepTwoGcp({
         >
             <GcpBillingForm
                 optedInToBilling={optedInToBilling}
+                billingId={billingId}
+                setBillingId={setBillingId}
+                setBillingDataset={setBillingDataset}
+                billingDataset={billingDataset}
                 handleOptedInToBillingChange={(checked) => {
                     setOptedInToBilling(checked);
                 }}
