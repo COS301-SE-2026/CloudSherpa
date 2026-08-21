@@ -9,7 +9,7 @@ import { StepOne } from "@/features/connectionManager/components/connectionManag
 
 interface StepOnePropsForAzure {
     onNext: (data: {
-        name: string;
+        displayName: string;
         tenantId: string;
         clientId: string;
         clientSecret: string;
@@ -17,7 +17,7 @@ interface StepOnePropsForAzure {
 }
 
 export default function StepOneAzure({ onNext }: Readonly<StepOnePropsForAzure>) {
-    const [name, setName] = useState("");
+    const [displayName, setDisplayName] = useState("");
 
     const [tenantId, setTenantId] = useState("");
 
@@ -28,7 +28,7 @@ export default function StepOneAzure({ onNext }: Readonly<StepOnePropsForAzure>)
     const handlingSubmit = (submitting: React.SubmitEvent<HTMLFormElement>) => {
         submitting.preventDefault();
 
-        onNext({ name, tenantId, clientId, clientSecret });
+        onNext({ displayName, tenantId, clientId, clientSecret });
     };
 
     return (
@@ -48,8 +48,8 @@ export default function StepOneAzure({ onNext }: Readonly<StepOnePropsForAzure>)
                     id="name"
                     type="text"
                     placeholder="Connection name"
-                    value={name}
-                    onChange={(forChanges) => setName(forChanges.target.value)}
+                    value={displayName}
+                    onChange={(forChanges) => setDisplayName(forChanges.target.value)}
                     className="bg-background border-border rounded-md px-4 py-3 text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all w-full"
                     required
                 />

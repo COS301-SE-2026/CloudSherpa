@@ -3,17 +3,11 @@
 import React, { useState } from "react";
 import { StepTwo } from "@/features/connectionManager/components/connectionManager/wizardSetup/stepTwo";
 import { Button } from "@/components/atoms/button";
+import { ResourceDetail } from "@/lib/fetch/cloud-resource-api";
 
 //copied and pasted from previous pr
-
-interface ResourcesDetails {
-    id: string;
-    name: string;
-    type: string;
-}
-
 interface StepTwoPropsForAzure {
-    onNext: (forData: { servicesSelected: string[]; resources: ResourcesDetails[] }) => void;
+    onNext: (forData: { servicesSelected: string[]; resources: ResourceDetail[] }) => void;
 
     onBack?: () => void;
 }
@@ -35,8 +29,8 @@ export default function StepTwoAzure({ onNext, onBack }: Readonly<StepTwoPropsFo
             setForLoading(true);
             setForErrors("");
 
-            const discoveredResources: ResourcesDetails[] = [
-                { id: "azure-resource-1", name: "Resource 1", type: "typeOne" },
+            const discoveredResources: ResourceDetail[] = [
+                { resourceId: "azure-resource-1", name: "Resource 1", resourceType: "typeOne", serviceCategory : "Service Category", region : "region1", tags : { tag : "tag1"}, },
             ];
 
             onNext({ servicesSelected: selectedService, resources: discoveredResources });
