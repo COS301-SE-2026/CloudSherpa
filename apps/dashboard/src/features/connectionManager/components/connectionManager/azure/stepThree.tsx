@@ -4,7 +4,7 @@ import React, { useState, useMemo } from "react";
 import {
     StepThree,
     ResourceTable,
-    IngestionSlider,
+    IngestionSlider, formattingSecond, useIngestionPeriod
 } from "@/features/connectionManager/components/connectionManager/wizardSetup/stepThree";
 import { ResourceSelectionDto } from "@/lib/fetch/aws-connection-api";
 import { ResourceDetail } from "@/lib/fetch/cloud-resource-api";
@@ -53,38 +53,7 @@ export default function StepThreeAzure({
             ResourceSelectionDto[] | ((previous: ResourceSelectionDto[]) => ResourceSelectionDto[])
     ) => {};
 
-    const activeCount = tableResources.filter((resource) => resource.active).length;
-
-    const recIngestionPeriod = activeCount * 5 * 20;
-
-    const formattingSecond = (totalSeconds: string | number) => {
-        const seconds = Number(totalSeconds);
-
-        if (Number.isNaN(seconds) || seconds <= 0) {
-            return "0 seconds";
-        }
-
-        const minutes = Math.floor(seconds / 60);
-        const secondsLeft = seconds % 60;
-
-        let minText = "";
-        if (minutes > 0) {
-            const labelEnding = minutes === 1 ? "" : "s";
-            minText = `${minutes} minute${labelEnding}`;
-        }
-
-        let secText = "";
-        if (secondsLeft > 0) {
-            const labelEnding = secondsLeft === 1 ? "" : "s";
-            secText = `${secondsLeft} second${labelEnding}`;
-        }
-
-        if (minText && secText) {
-            return `${minText} ${secText}`;
-        }
-
-        return minText || secText;
-    };
+    const {activeCount, recIngestionPeriod} = useIngestionPeriod(tableResources);
 
     const handlingSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
         event.preventDefault();
