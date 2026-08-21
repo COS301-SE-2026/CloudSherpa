@@ -1,14 +1,19 @@
 package com.cloudsherpa.service.optimization.rule;
 
 import com.cloudsherpa.lib.entities.OptimizationMetricStatistics;
+import com.cloudsherpa.lib.entities.ProviderEnum;
 import com.cloudsherpa.lib.entities.Resource;
 import com.cloudsherpa.lib.repositories.OptimizationMetricStatisticsRepository;
 import com.cloudsherpa.lib.repositories.ResourceRepository;
 import com.cloudsherpa.service.optimization.rule.model.MetricThresholdCondition;
 import com.cloudsherpa.service.optimization.rule.model.OptimizationRule;
+import com.cloudsherpa.service.optimization.rule.model.RecommendationCandidate;
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -33,10 +38,13 @@ public class RuleEngine {
     this.resourceRepository = resourceRepository;
   }
 
+  // Delegates to the ruleset
+  // Validates each rule, returns valid enabled rules
   public List<OptimizationRule> loadActiveRules(List<OptimizationRule> allRules) {
     return ruleSet.loadActiveRules(allRules);
   }
 
+  // Finds statistics that satisfy the one condition for the rule by using ConditionEvalkuator
   public List<OptimizationMetricStatistics> findMatchingStatistics(
       OptimizationRule rule, MetricThresholdCondition condition) {
 
@@ -62,6 +70,8 @@ public class RuleEngine {
     return matched;
   }
 
+  // Checks whether the statistic's resource is allowed by the rule
+  // No resource types means all types are accepted
   private boolean matchesResourceType(OptimizationRule rule, OptimizationMetricStatistics stats) {
 
     // If no types are specified, it's an automatic match
@@ -118,5 +128,91 @@ public class RuleEngine {
     }
 
     return matchingResourceIds;
+  }
+
+  // This is the main candidate-generation method
+  // Finds statistics matching each condition.
+  // Indexes them by condition and resource ID.
+  // Finds resources present in every condition.
+  // Builds evidence from the matching statistic values.
+  // Creates one DRAFT candidate per matching resource.
+  public List<RecommendationCandidate> evaluateRule(OptimizationRule rule) {
+    Map<MetricThresholdCondition, Map<UUID, OptimizationMetricStatistics>>
+        // Map structure: Condition -> (ResourceID -> Statistics)
+        // Example:
+        // CPU P95 < 20
+        //    Resource A -> CPU statistics
+        //    Resource B -> CPU statistics
+        statisticsByCondition = new HashMap<>();
+
+    Map<UUID, ProviderEnum> providerByResourceId = new HashMap<>();
+    Set<UUID> matchingResourceIds = null;
+
+    for (MetricThresholdCondition condition : rule.metricThresholdConditions()) {
+      // Resource ID -> matching statistics row
+      Map<UUID, OptimizationMetricStatistics> statisticsByResourceId = new HashMap<>();
+
+      for (OptimizationMetricStatistics stats : findMatchingStatistics(rule, condition)) {
+        statisticsByResourceId.put(stats.getResourceId(), stats);
+        providerByResourceId.put(stats.getResourceId(), stats.getProvider());
+      }
+
+      statisticsByCondition.put(condition, statisticsByResourceId);
+      // Condition 1 -> Resource A -> Statistics
+      // Condition 1 -> Resource B -> Statistics
+      // Condition 2 -> Resource B -> Statistics
+      // Condition 2 -> Resource C -> Statistics
+
+      // Keep only resources that match every condition (AND behavior)
+      if (matchingResourceIds == null) {
+        matchingResourceIds = new HashSet<>(statisticsByResourceId.keySet());
+      } else {
+        matchingResourceIds.retainAll(statisticsByResourceId.keySet());
+      }
+
+      if (matchingResourceIds.isEmpty()) {
+        return List.of();
+      }
+    }
+
+    if (matchingResourceIds == null) {
+      return List.of();
+    }
+
+    List<RecommendationCandidate> candidates = new ArrayList<>();
+
+    for (UUID resourceId : matchingResourceIds) {
+      Map<String, Object> evidence = new HashMap<>();
+
+      for (MetricThresholdCondition condition : rule.metricThresholdConditions()) {
+        OptimizationMetricStatistics stats = statisticsByCondition.get(condition).get(resourceId);
+
+        evidence.put(
+            conditionEvaluator.evidenceKey(condition), extractEvidenceValue(condition, stats));
+      }
+
+      candidates.add(
+          RecommendationCandidate.draft(
+              resourceId,
+              providerByResourceId.get(resourceId),
+              rule.ruleId(),
+              rule.actionType(),
+              evidence));
+    }
+
+    return candidates;
+  }
+
+  private BigDecimal extractEvidenceValue(
+      MetricThresholdCondition condition, OptimizationMetricStatistics stats) {
+    return switch (condition.field()) {
+      case MINIMUM -> stats.getMinimumValue();
+      case MAXIMUM -> stats.getMaximumValue();
+      case AVERAGE -> stats.getAverageValue();
+      case MEDIAN -> stats.getMedianValue();
+      case P95 -> stats.getP95Value();
+      case P99 -> stats.getP99Value();
+      case STANDARD_DEVIATION -> stats.getStandardDeviation();
+    };
   }
 }
