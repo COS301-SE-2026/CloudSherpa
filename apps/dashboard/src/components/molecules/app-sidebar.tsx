@@ -122,8 +122,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                     </Link>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
-
                             <SidebarMenuItem>
+                                <SidebarMenuButton asChild tooltip="Google Cloud Platform">
+                                    <Link href="/addConnection/gcp">
+                                        <Network />
+                                        <span>Google Cloud Platform</span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                            {/* <SidebarMenuItem>
                                 <SidebarMenuButton asChild tooltip="Google Cloud Platform">
                                     <Link href="/addConnection/gcp">
                                         <Network />
@@ -139,7 +146,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                         <span>Azure</span>
                                     </Link>
                                 </SidebarMenuButton>
-                            </SidebarMenuItem>
+                            </SidebarMenuItem> */}
                         </SidebarMenu>
                     </SidebarGroupContent>
                 </SidebarGroup>

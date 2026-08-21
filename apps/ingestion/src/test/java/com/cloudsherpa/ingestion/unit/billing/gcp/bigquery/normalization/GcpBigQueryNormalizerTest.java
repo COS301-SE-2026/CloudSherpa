@@ -120,7 +120,7 @@ class GcpBigQueryNormalizerTest {
     NormalizedCosts expected = new NormalizedCosts();
     expected.setCostId(
         "GCP%%%billing-account-1%%%project-1%%%service-1%%%sku-1%%%"
-            + "//compute.googleapis.com/projects/project-1/zones/us/vm-1%%%usage");
+            + "//compute.googleapis.com/projects/project-1/zones/us/vm-1%%%Usage");
     expected.setExecutionId(UUID.fromString("e95b9649-9df5-4353-add3-002638de271f"));
     expected.setChargeId("null%%%Compute_Engine");
     expected.setResourceId("//compute.googleapis.com/projects/project-1/zones/us/vm-1");

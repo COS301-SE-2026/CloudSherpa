@@ -65,7 +65,6 @@ public class GcpBilllingDiscoveryStep implements GcpBillingIngestionStep {
 
   private String constructTableId(GcpBillingContext context) {
     StringBuilder tableId = new StringBuilder();
-
     tableId
         .append("gcp_billing_export_resource_v1_")
         .append(context.getBillingConfig().billingAccountId().replace("-", "_"));
