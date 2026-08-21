@@ -3,17 +3,40 @@
 import React, { ReactNode, useState, useMemo, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/atoms/card";
 import { Button } from "@/components/atoms/button";
-import {Search, ChevronLeft, ChevronRight, ArrowUpDown} from "lucide-react";
-import {Input} from "@/components/atoms/input";
-import {Badge} from "@/components/atoms/badge";
-import {Switch} from "@/components/atoms/switch";
-import {useReactTable, getCoreRowModel, getFilteredRowModel, getSortedRowModel, createColumnHelper, flexRender, type SortingState, type ColumnFiltersState, type HeaderContext, type CellContext, getPaginationRowModel} from "@tanstack/react-table";
-import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/atoms/table";
-import {ResourceSelectionDto} from "@/lib/fetch/aws-connection-api";
-import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/atoms/tooltip";
-import {Slider} from "@/components/atoms/slider";
-import {Label} from "@/components/atoms/label";
-
+import { Search, ChevronLeft, ChevronRight, ArrowUpDown } from "lucide-react";
+import { Input } from "@/components/atoms/input";
+import { Badge } from "@/components/atoms/badge";
+import { Switch } from "@/components/atoms/switch";
+import {
+    useReactTable,
+    getCoreRowModel,
+    getFilteredRowModel,
+    getSortedRowModel,
+    createColumnHelper,
+    flexRender,
+    type SortingState,
+    type ColumnFiltersState,
+    type HeaderContext,
+    type CellContext,
+    getPaginationRowModel,
+} from "@tanstack/react-table";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/atoms/table";
+import { ResourceSelectionDto } from "@/lib/fetch/aws-connection-api";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/atoms/tooltip";
+import { Slider } from "@/components/atoms/slider";
+import { Label } from "@/components/atoms/label";
 
 export interface PropsForStepThree {
     heading: string;
@@ -25,46 +48,69 @@ export interface PropsForStepThree {
     children: ReactNode;
 }
 
-export interface PropsForIngestionSlider{
-    ingestionPeriod : number;
-    setIngestionPeriod : (value : number) => void;
-    activeCount : number;
-    recIngestionPeriod : number;
-    formatSeconds : (seconds : string | number) => string;
+export interface PropsForIngestionSlider {
+    ingestionPeriod: number;
+    setIngestionPeriod: (value: number) => void;
+    activeCount: number;
+    recIngestionPeriod: number;
+    formatSeconds: (seconds: string | number) => string;
 }
 
 export function IngestionSlider({
-    ingestionPeriod, setIngestionPeriod, activeCount, recIngestionPeriod, formatSeconds,
-} : Readonly<PropsForIngestionSlider>){
-    return(
-        <div className = "space-y-2 pt-4 border-t border-border">
-            <div className = "flex items-center gap-2">
-                <Label htmlFor = "ingestionPeriod" className = "text-foreground text-sm font-medium"> Ingestion interval (seconds) </Label>
+    ingestionPeriod,
+    setIngestionPeriod,
+    activeCount,
+    recIngestionPeriod,
+    formatSeconds,
+}: Readonly<PropsForIngestionSlider>) {
+    return (
+        <div className="space-y-2 pt-4 border-t border-border">
+            <div className="flex items-center gap-2">
+                <Label htmlFor="ingestionPeriod" className="text-foreground text-sm font-medium">
+                    {" "}
+                    Ingestion interval (seconds){" "}
+                </Label>
 
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <button type = "button" className = "flex items-center justify-center w-5 h-5 rounded-full text-xs text-muted-foreground hover:text-foreground border border-border"> ? </button>
+                            <button
+                                type="button"
+                                className="flex items-center justify-center w-5 h-5 rounded-full text-xs text-muted-foreground hover:text-foreground border border-border"
+                            >
+                                {" "}
+                                ?{" "}
+                            </button>
                         </TooltipTrigger>
 
                         <TooltipContent>
-                            <p> Recommended ingestion interval: {recIngestionPeriod} seconds based on {activeCount} selected resource. Setting the interval to a lower
-                                value could incur costs due to API free tier limits. The ingestion interval determines the frequency of dashboard timeseries updates.
+                            <p>
+                                {" "}
+                                Recommended ingestion interval: {recIngestionPeriod} seconds based
+                                on {activeCount} selected resource. Setting the interval to a lower
+                                value could incur costs due to API free tier limits. The ingestion
+                                interval determines the frequency of dashboard timeseries updates.
                             </p>
                         </TooltipContent>
-
                     </Tooltip>
                 </TooltipProvider>
             </div>
 
-            <div className = "flex flex-col gap-2 justify-center items-end">
-                <span className = "text-sm font-medium"> {formatSeconds(ingestionPeriod)} </span>
+            <div className="flex flex-col gap-2 justify-center items-end">
+                <span className="text-sm font-medium"> {formatSeconds(ingestionPeriod)} </span>
 
-                <Slider value = {[Number(ingestionPeriod)]} onValueChange = {(changeValue) => setIngestionPeriod(changeValue[0])}
-                        min = {60} max = {400} step = {1}
+                <Slider
+                    value={[Number(ingestionPeriod)]}
+                    onValueChange={(changeValue) => setIngestionPeriod(changeValue[0])}
+                    min={60}
+                    max={400}
+                    step={1}
                 />
 
-                <p className = "text-sm text-muted-foreground/70"> Recommended: {formatSeconds(recIngestionPeriod)} </p>
+                <p className="text-sm text-muted-foreground/70">
+                    {" "}
+                    Recommended: {formatSeconds(recIngestionPeriod)}{" "}
+                </p>
             </div>
         </div>
     );
@@ -152,36 +198,51 @@ const columns = [
     }),
 ];
 
-interface PropsForResourceTable{
-    data : ResourceSelectionDto[]; onDataChange : (newData : ResourceSelectionDto[] | ((previous : ResourceSelectionDto[]) => ResourceSelectionDto[])) => void;
-    onFilterChange : (value : string) => void; filterValue : string; pageSize?: number;
+interface PropsForResourceTable {
+    data: ResourceSelectionDto[];
+    onDataChange: (
+        newData:
+            ResourceSelectionDto[] | ((previous: ResourceSelectionDto[]) => ResourceSelectionDto[])
+    ) => void;
+    onFilterChange: (value: string) => void;
+    filterValue: string;
+    pageSize?: number;
 }
 
 export function ResourceTable({
-    data, onDataChange, onFilterChange, filterValue, pageSize = 8,
-} : Readonly<PropsForResourceTable>){
-    const [forPagination, setForPagination] = useState({ pageIndex: 0, pageSize});
-    
+    data,
+    onDataChange,
+    onFilterChange,
+    filterValue,
+    pageSize = 8,
+}: Readonly<PropsForResourceTable>) {
+    const [forPagination, setForPagination] = useState({ pageIndex: 0, pageSize });
+
     const [sort, setSort] = useState<SortingState>([]);
 
     const [filterColumn, setFilterColumn] = useState<ColumnFiltersState>([]);
 
-    const toggleResource = useCallback((resourceId: string) => {
-        onDataChange((current : ResourceSelectionDto[]) =>
-            current.map((resource : ResourceSelectionDto) =>
-                resource.resourceId === resourceId
-                    ? {
-                            ...resource,
-                            active: !resource.active,
-                        }
-                    : resource
-            )
-        );
-    }, [onDataChange]);
+    const toggleResource = useCallback(
+        (resourceId: string) => {
+            onDataChange((current: ResourceSelectionDto[]) =>
+                current.map((resource: ResourceSelectionDto) =>
+                    resource.resourceId === resourceId
+                        ? {
+                              ...resource,
+                              active: !resource.active,
+                          }
+                        : resource
+                )
+            );
+        },
+        [onDataChange]
+    );
 
     const toggleAll = useCallback(() => {
-        onDataChange((previous : ResourceSelectionDto[]) => {
-            const allActive = previous.length > 0 && previous.every((resource : ResourceSelectionDto) => resource.active);
+        onDataChange((previous: ResourceSelectionDto[]) => {
+            const allActive =
+                previous.length > 0 &&
+                previous.every((resource: ResourceSelectionDto) => resource.active);
 
             return previous.map((resource) => ({
                 ...resource,
@@ -219,9 +280,9 @@ export function ResourceTable({
         getPaginationRowModel: getPaginationRowModel(),
     });
 
-    const allActive = data.length>0 && data.every((resource) => resource.active);
+    const allActive = data.length > 0 && data.every((resource) => resource.active);
 
-    return(
+    return (
         <div className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
                 <h3 className="text-foreground text-sm font-semibold uppercase tracking-wider opacity-80">
@@ -236,9 +297,7 @@ export function ResourceTable({
                     onClick={toggleAll}
                     className="text-primary hover:text-accent text-sm transition-colors px-0"
                 >
-                    {data.length > 0 && allActive
-                        ? "Deselect All"
-                        : "Select All"}
+                    {data.length > 0 && allActive ? "Deselect All" : "Select All"}
                 </Button>
             </div>
 
@@ -296,9 +355,7 @@ export function ResourceTable({
                                         <TableCell
                                             key={cell.id}
                                             className={
-                                                cell.column.id === "selected"
-                                                    ? "w-10"
-                                                    : undefined
+                                                cell.column.id === "selected" ? "w-10" : undefined
                                             }
                                         >
                                             {flexRender(

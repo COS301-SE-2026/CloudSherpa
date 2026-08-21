@@ -1,7 +1,11 @@
 "use client";
 
-import React, { useState, useMemo} from "react";
-import { StepThree, ResourceTable, IngestionSlider } from "@/features/connectionManager/components/connectionManager/wizardSetup/stepThree";
+import React, { useState, useMemo } from "react";
+import {
+    StepThree,
+    ResourceTable,
+    IngestionSlider,
+} from "@/features/connectionManager/components/connectionManager/wizardSetup/stepThree";
 import {
     createGcpConnection,
     GcpCredentialsDto,
@@ -38,9 +42,9 @@ export default function StepThreeGcp({
 
     const [forIngestionPeriod, setForIngestionPeriod] = useState<number>(ingestionPeriod);
 
-    const tableResources : ResourceSelectionDto[] = useMemo(() => {
-        if(!resources || resources.length === 0){
-            return[];
+    const tableResources: ResourceSelectionDto[] = useMemo(() => {
+        if (!resources || resources.length === 0) {
+            return [];
         }
 
         return resources.map((resource) => ({
@@ -52,12 +56,12 @@ export default function StepThreeGcp({
             tags: resource.tags,
             active: true,
         }));
-        
     }, [resources]);
 
-    const setTableResources = (newData : ResourceSelectionDto[] | ((previous : ResourceSelectionDto[]) => ResourceSelectionDto[])) => {
-        
-    }
+    const setTableResources = (
+        newData:
+            ResourceSelectionDto[] | ((previous: ResourceSelectionDto[]) => ResourceSelectionDto[])
+    ) => {};
 
     const [filter, setFilter] = useState("");
 
@@ -140,11 +144,20 @@ export default function StepThreeGcp({
             forSaving={forSaving}
             forErrors={errors}
         >
+            <ResourceTable
+                data={tableResources}
+                onDataChange={setTableResources}
+                onFilterChange={setFilter}
+                filterValue={filter}
+            />
 
-            <ResourceTable data = {tableResources} onDataChange = {setTableResources} onFilterChange = {setFilter} filterValue = {filter}/>
-
-            <IngestionSlider ingestionPeriod = {forIngestionPeriod} setIngestionPeriod = {setForIngestionPeriod} activeCount = {activeCount} recIngestionPeriod = {recIngestionPeriod} formatSeconds = {formattingSecond}/>
-            
+            <IngestionSlider
+                ingestionPeriod={forIngestionPeriod}
+                setIngestionPeriod={setForIngestionPeriod}
+                activeCount={activeCount}
+                recIngestionPeriod={recIngestionPeriod}
+                formatSeconds={formattingSecond}
+            />
         </StepThree>
     );
 }

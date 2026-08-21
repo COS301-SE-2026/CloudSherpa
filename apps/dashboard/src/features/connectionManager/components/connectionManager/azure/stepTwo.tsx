@@ -30,7 +30,14 @@ export default function StepTwoAzure({ onNext, onBack }: Readonly<StepTwoPropsFo
             setForErrors("");
 
             const discoveredResources: ResourceDetail[] = [
-                { resourceId: "azure-resource-1", name: "Resource 1", resourceType: "typeOne", serviceCategory : "Service Category", region : "region1", tags : { tag : "tag1"}, },
+                {
+                    resourceId: "azure-resource-1",
+                    name: "Resource 1",
+                    resourceType: "typeOne",
+                    serviceCategory: "Service Category",
+                    region: "region1",
+                    tags: { tag: "tag1" },
+                },
             ];
 
             onNext({ servicesSelected: selectedService, resources: discoveredResources });
