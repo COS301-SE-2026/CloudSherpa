@@ -21,7 +21,7 @@ public interface NormalizedCostsRepository extends JpaRepository<NormalizedCosts
     @Query("""
             SELECT COALESCE(SUM(nc.costAmount), 0)
             FROM NormalizedCosts nc
-            WHERE nc.usageStartTime BETWEEN :fromDate AND :toDate
+            WHERE nc.usageStartTime BETWEEN :fromDate AND :toDate AND nc.costAmount > 0
             """)
     BigDecimal sumTotalCostBetween(
             @Param("fromDate") OffsetDateTime fromDate, @Param("toDate") OffsetDateTime toDate);
