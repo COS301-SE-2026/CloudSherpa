@@ -3,6 +3,7 @@ package com.cloudsherpa.ingestion.billing.provider.gcp.bigquery.normalization;
 import com.cloudsherpa.ingestion.billing.BillingExport;
 import com.cloudsherpa.ingestion.billing.CostRecordNormalizer;
 import com.cloudsherpa.ingestion.billing.provider.aws.cur.exceptions.NormalizationException;
+import com.cloudsherpa.ingestion.config.SpringContextBridge;
 import com.cloudsherpa.lib.entities.ChargeTypeEnum;
 import com.cloudsherpa.lib.entities.NormalizedCosts;
 import com.cloudsherpa.lib.entities.ProviderEnum;
@@ -21,6 +22,12 @@ public class GcpBigQueryNormalizer
 
   private final Logger logger = // NOSONAR will use later
       LoggerFactory.getLogger(GcpBigQueryNormalizer.class);
+
+  private final ServiceNameNormalizer serviceNameNormalizer;
+
+  public GcpBigQueryNormalizer() {
+    this.serviceNameNormalizer = SpringContextBridge.getBean(ServiceNameNormalizer.class);
+  }
 
   // Does not make sense to include billingId in response since it is already
   // required to make the
@@ -114,10 +121,6 @@ public class GcpBigQueryNormalizer
       return "null";
     }
 
-    String resourceId = valueList.get("resource_global_name").getStringValue();
-
-    if (valueList.get("sku_id").getStringValue().equals("1DF5-1F98-1DD1")) {}
-
     return valueList.get("resource_global_name").getStringValue();
   }
 
@@ -153,7 +156,7 @@ public class GcpBigQueryNormalizer
   @Override
   public String getServiceName(GcpBigQueryBillingRecord gcpBillingRecord) {
     FieldValueList valueList = gcpBillingRecord.fieldValueList();
-    return valueList.get("service_description").getStringValue();
+    return serviceNameNormalizer.normalizeServiceName(valueList);
   }
 
   @Override
