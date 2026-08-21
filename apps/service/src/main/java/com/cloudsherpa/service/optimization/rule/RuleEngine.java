@@ -44,152 +44,168 @@ public class RuleEngine {
     return ruleSet.loadActiveRules(allRules);
   }
 
-  // Finds statistics that satisfy the one condition for the rule by using ConditionEvalkuator
+  // Finds statistics that satisfy the one condition for the rule by using ConditionEvaluator
   public List<OptimizationMetricStatistics> findMatchingStatistics(
+      OptimizationRule rule, MetricThresholdCondition condition) {
+
+    Map<UUID, OptimizationMetricStatistics> latestStatisticsByResource =
+        findLatestStatistics(rule, condition);
+
+    List<OptimizationMetricStatistics> matchedStatistics = new ArrayList<>();
+
+    // The threshold is evaluated only after the latest row has been selected.
+    for (OptimizationMetricStatistics stats : latestStatisticsByResource.values()) {
+      if (conditionEvaluator.matches(condition, stats)) {
+        matchedStatistics.add(stats);
+      }
+    }
+
+    return matchedStatistics;
+  }
+
+  // Loads eligible rows and keeps only the newest row for each resource.
+  private Map<UUID, OptimizationMetricStatistics> findLatestStatistics(
       OptimizationRule rule, MetricThresholdCondition condition) {
 
     List<OptimizationMetricStatistics> candidates =
         statisticsRepository.findByMetricNameAndWindowNumDays(
             condition.metricName(), condition.windowNumDays());
 
-    List<OptimizationMetricStatistics> matched = new ArrayList<>();
+    Map<UUID, OptimizationMetricStatistics> latestStatisticsByResource = new HashMap<>();
 
     for (OptimizationMetricStatistics stats : candidates) {
-      boolean providerMatches =
-          rule.providers() == null
-              || rule.providers().isEmpty()
-              || rule.providers().contains(stats.getProvider());
+      if (!matchesRuleScope(rule, stats)) {
+        continue;
+      }
 
-      boolean resourceTypeMatches = matchesResourceType(rule, stats);
+      UUID resourceId = stats.getResourceId();
+      OptimizationMetricStatistics existing = latestStatisticsByResource.get(resourceId);
 
-      if (providerMatches && resourceTypeMatches && conditionEvaluator.matches(condition, stats)) {
-        matched.add(stats);
+      if (existing == null || isMoreRecent(stats, existing)) {
+        latestStatisticsByResource.put(resourceId, stats);
       }
     }
 
-    return matched;
+    return latestStatisticsByResource;
   }
 
-  // Checks whether the statistic's resource is allowed by the rule
-  // No resource types means all types are accepted
-  private boolean matchesResourceType(OptimizationRule rule, OptimizationMetricStatistics stats) {
+  // Provider and resource type filters decide whether a row belongs to the rule.
+  private boolean matchesRuleScope(OptimizationRule rule, OptimizationMetricStatistics stats) {
 
-    // If no types are specified, it's an automatic match
+    return matchesProvider(rule, stats) && matchesResourceType(rule, stats);
+  }
+
+  // An empty provider filter means that every provider is allowed.
+  private boolean matchesProvider(OptimizationRule rule, OptimizationMetricStatistics stats) {
+    return rule.providers() == null
+        || rule.providers().isEmpty()
+        || rule.providers().contains(stats.getProvider());
+  }
+
+  // An empty resource type filter means that every resource type is allowed.
+  private boolean matchesResourceType(OptimizationRule rule, OptimizationMetricStatistics stats) {
     if (rule.resourceTypes() == null || rule.resourceTypes().isEmpty()) {
       return true;
     }
 
-    Optional<Resource> optionalResource = resourceRepository.findById(stats.getResourceId());
+    Optional<Resource> resource = resourceRepository.findById(stats.getResourceId());
 
-    if (optionalResource.isEmpty()) {
-      return false;
-    }
-
-    Resource resource = optionalResource.get();
-
-    return rule.resourceTypes().contains(resource.getResourceType());
+    return resource
+        .map(Resource::getResourceType)
+        .filter(rule.resourceTypes()::contains)
+        .isPresent();
   }
 
-  // Set models the mathematical Set (also prevents duplicate resources)
-  // Finds the resources that matches every condition in 1 rule
-  public Set<UUID> findMatchingResourceIds(OptimizationRule rule) {
-    Set<UUID> matchingResourceIds = null;
-
-    for (MetricThresholdCondition condition : rule.metricThresholdConditions()) {
-
-      List<OptimizationMetricStatistics> statisticsList = findMatchingStatistics(rule, condition);
-
-      Set<UUID> conditionResourceIds = new HashSet<>();
-      for (OptimizationMetricStatistics stats : statisticsList) {
-        conditionResourceIds.add(stats.getResourceId());
-      }
-
-      // Keep only the resources that match ALL conditions (Intersection)
-      if (matchingResourceIds == null) {
-        // for the first condition, initialize the matchingResourcesIds
-        matchingResourceIds = conditionResourceIds;
-      } else {
-        // strip out anything that isn't in this new set
-
-        // AND behaviour
-        // Previous matches:  A, B
-        // Current matches:   B, C
-        // After retainAll:   B
-        matchingResourceIds.retainAll(conditionResourceIds);
-      }
-
-      if (matchingResourceIds.isEmpty()) {
-        return matchingResourceIds;
-      }
+  // Evaluates one rule and creates draft candidates for matching resources.
+  public List<RecommendationCandidate> evaluateRule(OptimizationRule rule) {
+    // Invalid or disabled rules must not generate recommendations.
+    if (!isActiveRule(rule)) {
+      return List.of();
     }
 
-    if (matchingResourceIds == null) {
+    List<Map<UUID, OptimizationMetricStatistics>> statisticsByCondition = new ArrayList<>();
+
+    Map<UUID, ProviderEnum> providerByResourceId = new HashMap<>();
+
+    // Each condition is evaluated independently before results are combined.
+    for (MetricThresholdCondition condition : rule.metricThresholdConditions()) {
+      Map<UUID, OptimizationMetricStatistics> matchingStatistics =
+          toStatisticsByResource(findMatchingStatistics(rule, condition));
+
+      statisticsByCondition.add(matchingStatistics);
+      addProviders(providerByResourceId, matchingStatistics);
+    }
+
+    Set<UUID> matchingResourceIds = findResourcesMatchingEveryCondition(statisticsByCondition);
+
+    if (matchingResourceIds.isEmpty()) {
+      return List.of();
+    }
+
+    return createCandidates(rule, matchingResourceIds, statisticsByCondition, providerByResourceId);
+  }
+
+  // RuleSet validates the rule and returns it only when it is enabled.
+  private boolean isActiveRule(OptimizationRule rule) {
+    return !ruleSet.loadActiveRules(List.of(rule)).isEmpty();
+  }
+
+  // Converts matching rows into quick resource ID lookups.
+  private Map<UUID, OptimizationMetricStatistics> toStatisticsByResource(
+      List<OptimizationMetricStatistics> statistics) {
+
+    Map<UUID, OptimizationMetricStatistics> statisticsByResource = new HashMap<>();
+
+    for (OptimizationMetricStatistics stat : statistics) {
+      statisticsByResource.put(stat.getResourceId(), stat);
+    }
+
+    return statisticsByResource;
+  }
+
+  // Stores the provider needed when the final candidate is created.
+  private void addProviders(
+      Map<UUID, ProviderEnum> providerByResourceId,
+      Map<UUID, OptimizationMetricStatistics> statisticsByResource) {
+
+    for (OptimizationMetricStatistics stats : statisticsByResource.values()) {
+      providerByResourceId.putIfAbsent(stats.getResourceId(), stats.getProvider());
+    }
+  }
+
+  // Intersects condition results so every condition must pass.
+  private Set<UUID> findResourcesMatchingEveryCondition(
+      List<Map<UUID, OptimizationMetricStatistics>> statisticsByCondition) {
+
+    if (statisticsByCondition.isEmpty()) {
       return Set.of();
+    }
+
+    Set<UUID> matchingResourceIds = new HashSet<>(statisticsByCondition.get(0).keySet());
+
+    for (int conditionIndex = 1; conditionIndex < statisticsByCondition.size(); conditionIndex++) {
+
+      matchingResourceIds.retainAll(statisticsByCondition.get(conditionIndex).keySet());
+
+      if (matchingResourceIds.isEmpty()) {
+        return Set.of();
+      }
     }
 
     return matchingResourceIds;
   }
 
-  // This is the main candidate-generation method
-  // Finds statistics matching each condition.
-  // Indexes them by condition and resource ID.
-  // Finds resources present in every condition.
-  // Builds evidence from the matching statistic values.
-  // Creates one DRAFT candidate per matching resource.
-  public List<RecommendationCandidate> evaluateRule(OptimizationRule rule) {
-    Map<MetricThresholdCondition, Map<UUID, OptimizationMetricStatistics>>
-        // Map structure: Condition -> (ResourceID -> Statistics)
-        // Example:
-        // CPU P95 < 20
-        //    Resource A -> CPU statistics
-        //    Resource B -> CPU statistics
-        statisticsByCondition = new HashMap<>();
-
-    Map<UUID, ProviderEnum> providerByResourceId = new HashMap<>();
-    Set<UUID> matchingResourceIds = null;
-
-    for (MetricThresholdCondition condition : rule.metricThresholdConditions()) {
-      // Resource ID -> matching statistics row
-      Map<UUID, OptimizationMetricStatistics> statisticsByResourceId = new HashMap<>();
-
-      for (OptimizationMetricStatistics stats : findMatchingStatistics(rule, condition)) {
-        statisticsByResourceId.put(stats.getResourceId(), stats);
-        providerByResourceId.put(stats.getResourceId(), stats.getProvider());
-      }
-
-      statisticsByCondition.put(condition, statisticsByResourceId);
-      // Condition 1 -> Resource A -> Statistics
-      // Condition 1 -> Resource B -> Statistics
-      // Condition 2 -> Resource B -> Statistics
-      // Condition 2 -> Resource C -> Statistics
-
-      // Keep only resources that match every condition (AND behavior)
-      if (matchingResourceIds == null) {
-        matchingResourceIds = new HashSet<>(statisticsByResourceId.keySet());
-      } else {
-        matchingResourceIds.retainAll(statisticsByResourceId.keySet());
-      }
-
-      if (matchingResourceIds.isEmpty()) {
-        return List.of();
-      }
-    }
-
-    if (matchingResourceIds == null) {
-      return List.of();
-    }
+  // Builds one DRAFT candidate for each resource that passed every condition.
+  private List<RecommendationCandidate> createCandidates(
+      OptimizationRule rule,
+      Set<UUID> matchingResourceIds,
+      List<Map<UUID, OptimizationMetricStatistics>> statisticsByCondition,
+      Map<UUID, ProviderEnum> providerByResourceId) {
 
     List<RecommendationCandidate> candidates = new ArrayList<>();
 
     for (UUID resourceId : matchingResourceIds) {
-      Map<String, Object> evidence = new HashMap<>();
-
-      for (MetricThresholdCondition condition : rule.metricThresholdConditions()) {
-        OptimizationMetricStatistics stats = statisticsByCondition.get(condition).get(resourceId);
-
-        evidence.put(
-            conditionEvaluator.evidenceKey(condition), extractEvidenceValue(condition, stats));
-      }
+      Map<String, Object> evidence = createEvidence(rule, resourceId, statisticsByCondition);
 
       candidates.add(
           RecommendationCandidate.draft(
@@ -203,8 +219,34 @@ public class RuleEngine {
     return candidates;
   }
 
+  // Collects the actual values that caused each condition to pass.
+  private Map<String, Object> createEvidence(
+      OptimizationRule rule,
+      UUID resourceId,
+      List<Map<UUID, OptimizationMetricStatistics>> statisticsByCondition) {
+
+    Map<String, Object> evidence = new HashMap<>();
+
+    for (int conditionIndex = 0;
+        conditionIndex < rule.metricThresholdConditions().size();
+        conditionIndex++) {
+
+      MetricThresholdCondition condition = rule.metricThresholdConditions().get(conditionIndex);
+
+      OptimizationMetricStatistics stats =
+          statisticsByCondition.get(conditionIndex).get(resourceId);
+
+      evidence.put(
+          conditionEvaluator.evidenceKey(condition), extractEvidenceValue(condition, stats));
+    }
+
+    return evidence;
+  }
+
+  // Selects the statistic field referenced by the condition.
   private BigDecimal extractEvidenceValue(
       MetricThresholdCondition condition, OptimizationMetricStatistics stats) {
+
     return switch (condition.field()) {
       case MINIMUM -> stats.getMinimumValue();
       case MAXIMUM -> stats.getMaximumValue();
@@ -214,5 +256,20 @@ public class RuleEngine {
       case P99 -> stats.getP99Value();
       case STANDARD_DEVIATION -> stats.getStandardDeviation();
     };
+  }
+
+  // Compares calculation timestamps to choose the newest row.
+  private boolean isMoreRecent(
+      OptimizationMetricStatistics candidate, OptimizationMetricStatistics existing) {
+
+    if (candidate.getCalculatedAt() == null) {
+      return false;
+    }
+
+    if (existing.getCalculatedAt() == null) {
+      return true;
+    }
+
+    return candidate.getCalculatedAt().isAfter(existing.getCalculatedAt());
   }
 }
