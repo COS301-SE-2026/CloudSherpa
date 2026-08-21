@@ -30,11 +30,11 @@ public class ChargeIdNormalizer {
       return skuChargeId;
     }
 
-    if (valueList.get("resource_global_name").isNull()) {
+    if (valueList.get("resource_name").isNull()) {
       return "NoResourceId" + "%%%" + serviceNameNormalizer.normalizeServiceName(valueList);
     }
 
-    return valueList.get("resource_global_name").getStringValue()
+    return valueList.get("resource_name").getStringValue()
         + "%%%"
         + serviceNameNormalizer.normalizeServiceName(valueList);
   }

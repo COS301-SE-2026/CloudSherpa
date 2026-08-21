@@ -113,11 +113,11 @@ public class GcpBigQueryNormalizer
   public String getResourceId(GcpBigQueryBillingRecord gcpBillingRecord) {
     FieldValueList valueList = gcpBillingRecord.fieldValueList();
 
-    if (valueList.get("resource_global_name").isNull()) {
+    if (valueList.get("resource_name").isNull()) {
       return "NoResourceId";
     }
 
-    return valueList.get("resource_global_name").getStringValue();
+    return valueList.get("resource_name").getStringValue();
   }
 
   @Override
