@@ -39,6 +39,7 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/atoms/alert-dialog";
+import { toast } from "sonner";
 
 type Providers = "All" | "AWS" | "Azure" | "GCP";
 interface Connections {
@@ -102,7 +103,10 @@ export default function ManagingConnections() {
             await loadConnections();
         } catch (error) {
             console.error("Failed to delete account", error);
+            toast.success(`Failed to delete connection.`);
+            return;
         }
+        toast.success(`Successfully deleted connection`);
     };
 
     function formatIngestionPeriod(seconds: number): string {

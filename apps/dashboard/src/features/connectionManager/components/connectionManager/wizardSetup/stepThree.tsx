@@ -33,6 +33,7 @@ import {
 } from "@/features/resourceManager/resourceTable";
 import { ResourceSelectionDto } from "@/lib/fetch/aws-connection-api";
 import { ResourceDetail } from "@/lib/fetch/cloud-resource-api";
+import { toast } from "sonner";
 
 export interface PropsForIngestionSlider {
     forIngestionPeriod: string;
@@ -382,8 +383,10 @@ export default function StepThreeBase({
             });
         } catch {
             setErrors("Unable to complete GCP connection setup");
+            toast.error(`Failed to create new connection.`);
         } finally {
             setForSaving(false);
+            toast.success(`Successfully created connection.`);
         }
     };
 
