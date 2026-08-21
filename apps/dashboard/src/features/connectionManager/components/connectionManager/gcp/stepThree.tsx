@@ -4,7 +4,9 @@ import React, { useState, useMemo } from "react";
 import {
     StepThree,
     ResourceTable,
-    IngestionSlider, formattingSecond, useIngestionPeriod
+    IngestionSlider,
+    formattingSecond,
+    useIngestionPeriod,
 } from "@/features/connectionManager/components/connectionManager/wizardSetup/stepThree";
 import {
     createGcpConnection,
@@ -58,7 +60,7 @@ export default function StepThreeGcp({
         }));
     }, [resources]);
 
-    const {activeCount, recIngestionPeriod} = useIngestionPeriod(tableResources);
+    const { activeCount, recIngestionPeriod } = useIngestionPeriod(tableResources);
 
     const setTableResources = (
         newData:

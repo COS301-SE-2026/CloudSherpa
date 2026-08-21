@@ -57,7 +57,7 @@ export interface PropsForIngestionSlider {
 }
 
 //copied from gcp step 3
-export function formattingSecond(totalSeconds: string | number) : string{
+export function formattingSecond(totalSeconds: string | number): string {
     const seconds = Number(totalSeconds);
 
     if (Number.isNaN(seconds) || seconds <= 0) {
@@ -85,27 +85,30 @@ export function formattingSecond(totalSeconds: string | number) : string{
     }
 
     return minText || secText;
-};
-
-export function calculatingIngestionPeriod(activeCount : number) : number{
-    return activeCount*5*20;
 }
 
-export function getActiveCount(resources : ResourceSelectionDto[]) : number{
+export function calculatingIngestionPeriod(activeCount: number): number {
+    return activeCount * 5 * 20;
+}
+
+export function getActiveCount(resources: ResourceSelectionDto[]): number {
     return resources.filter((resource) => resource.active).length;
 }
 
-export interface HookForIngestionPeriod{
-    activeCount : number;
-    recIngestionPeriod : number;
+export interface HookForIngestionPeriod {
+    activeCount: number;
+    recIngestionPeriod: number;
 }
 
-export function useIngestionPeriod(resources : ResourceSelectionDto[]) : HookForIngestionPeriod{
+export function useIngestionPeriod(resources: ResourceSelectionDto[]): HookForIngestionPeriod {
     const activeCount = useMemo(() => getActiveCount(resources), [resources]);
 
-    const recIngestionPeriod = useMemo(() => calculatingIngestionPeriod(activeCount), [activeCount]);
+    const recIngestionPeriod = useMemo(
+        () => calculatingIngestionPeriod(activeCount),
+        [activeCount]
+    );
 
-    return {activeCount, recIngestionPeriod};
+    return { activeCount, recIngestionPeriod };
 }
 
 export function IngestionSlider({

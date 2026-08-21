@@ -4,7 +4,9 @@ import React, { useState, useMemo } from "react";
 import {
     StepThree,
     ResourceTable,
-    IngestionSlider, formattingSecond, useIngestionPeriod
+    IngestionSlider,
+    formattingSecond,
+    useIngestionPeriod,
 } from "@/features/connectionManager/components/connectionManager/wizardSetup/stepThree";
 import { ResourceSelectionDto } from "@/lib/fetch/aws-connection-api";
 import { ResourceDetail } from "@/lib/fetch/cloud-resource-api";
@@ -53,7 +55,7 @@ export default function StepThreeAzure({
             ResourceSelectionDto[] | ((previous: ResourceSelectionDto[]) => ResourceSelectionDto[])
     ) => {};
 
-    const {activeCount, recIngestionPeriod} = useIngestionPeriod(tableResources);
+    const { activeCount, recIngestionPeriod } = useIngestionPeriod(tableResources);
 
     const handlingSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
         event.preventDefault();
