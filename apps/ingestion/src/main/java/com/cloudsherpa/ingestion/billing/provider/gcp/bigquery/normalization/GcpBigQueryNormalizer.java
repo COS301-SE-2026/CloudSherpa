@@ -103,10 +103,6 @@ public class GcpBigQueryNormalizer
       chargeId.append(getResourceId(gcpBillingRecord));
     }
 
-    if (shouldEmitCreditRecord(gcpBillingRecord.creditProcessingState())) {
-      chargeId.append("_credit");
-    }
-
     return chargeId.toString();
   }
 
@@ -148,7 +144,7 @@ public class GcpBigQueryNormalizer
     CreditProcessingState creditProcessingState = gcpBillingRecord.creditProcessingState();
 
     if (shouldEmitCreditRecord(creditProcessingState)) {
-      return ChargeTypeEnum.Other;
+      return ChargeTypeEnum.Credit;
     } else {
       return ChargeTypeEnum.Usage;
     }
@@ -157,13 +153,7 @@ public class GcpBigQueryNormalizer
   @Override
   public String getServiceName(GcpBigQueryBillingRecord gcpBillingRecord) {
     FieldValueList valueList = gcpBillingRecord.fieldValueList();
-    String serviceDescription = valueList.get("service_description").getStringValue();
-
-    if (!shouldEmitCreditRecord(gcpBillingRecord.creditProcessingState())) {
-      return serviceDescription;
-    }
-
-    return serviceDescription + " Credit";
+    return valueList.get("service_description").getStringValue();
   }
 
   @Override

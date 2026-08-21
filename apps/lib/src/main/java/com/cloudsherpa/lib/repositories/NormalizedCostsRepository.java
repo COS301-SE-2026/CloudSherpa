@@ -40,6 +40,7 @@ public interface NormalizedCostsRepository extends JpaRepository<NormalizedCosts
     @Query(value = """
             SELECT DISTINCT ON (nc.charge_id) nc.*
             FROM normalized_costs nc
+            WHERE nc.charge_type <> 'Credit'
             ORDER BY nc.charge_id
             """, nativeQuery = true)
     List<NormalizedCosts> findDistinctByChargeId();
