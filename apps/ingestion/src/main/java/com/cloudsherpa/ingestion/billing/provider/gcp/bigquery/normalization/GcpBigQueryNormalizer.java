@@ -97,18 +97,11 @@ public class GcpBigQueryNormalizer
     FieldValueList valueList = gcpBillingRecord.fieldValueList();
     StringBuilder chargeId = new StringBuilder();
 
-    String resourceName;
-
-    if (valueList.get("resource_name").isNull()) {
-      resourceName = "null";
+    if (valueList.get("sku_id").getStringValue().equals("1DF5-1F98-1DD1")) {
+      chargeId.append("BigQueryAnalysis");
     } else {
-      resourceName = valueList.get("resource_name").getStringValue();
+      chargeId.append(getResourceId(gcpBillingRecord));
     }
-
-    chargeId
-        .append(resourceName)
-        .append("%%%")
-        .append(valueList.get("service_description").getStringValue().replace(" ", "_"));
 
     if (shouldEmitCreditRecord(gcpBillingRecord.creditProcessingState())) {
       chargeId.append("_credit");
@@ -124,6 +117,10 @@ public class GcpBigQueryNormalizer
     if (valueList.get("resource_global_name").isNull()) {
       return "null";
     }
+
+    String resourceId = valueList.get("resource_global_name").getStringValue();
+
+    if (valueList.get("sku_id").getStringValue().equals("1DF5-1F98-1DD1")) {}
 
     return valueList.get("resource_global_name").getStringValue();
   }
