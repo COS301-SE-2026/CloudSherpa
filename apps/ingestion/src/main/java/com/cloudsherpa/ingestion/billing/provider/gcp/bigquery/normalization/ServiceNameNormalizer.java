@@ -7,8 +7,12 @@ import org.springframework.stereotype.Component;
 public class ServiceNameNormalizer {
   public String normalizeServiceName(FieldValueList valueList) {
 
-    return valueList.get("service_description").getStringValue()
-        + " "
-        + valueList.get("sku_description").getStringValue();
+    String skuDescription = valueList.get("sku_description").getStringValue();
+
+    if (skuDescription.toLowerCase().contains("data transfer")) {
+      return "Data Transfer";
+    }
+
+    return valueList.get("service_description").getStringValue() + " " + skuDescription;
   }
 }
