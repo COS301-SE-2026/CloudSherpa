@@ -3,7 +3,6 @@ package com.cloudsherpa.ingestion.billing.provider.gcp.bigquery.normalization;
 import com.cloudsherpa.ingestion.billing.BillingExport;
 import com.cloudsherpa.ingestion.billing.CostRecordNormalizer;
 import com.cloudsherpa.ingestion.billing.provider.aws.cur.exceptions.NormalizationException;
-import com.cloudsherpa.ingestion.config.SpringContextBridge;
 import com.cloudsherpa.lib.entities.ChargeTypeEnum;
 import com.cloudsherpa.lib.entities.NormalizedCosts;
 import com.cloudsherpa.lib.entities.ProviderEnum;
@@ -16,19 +15,22 @@ import java.time.ZoneId;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
+@Component
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class GcpBigQueryNormalizer
     implements CostRecordNormalizer<GcpBigQueryBillingRecord, BillingExport> {
 
   private final Logger logger = // NOSONAR will use later
       LoggerFactory.getLogger(GcpBigQueryNormalizer.class);
 
-  private final ServiceNameNormalizer serviceNameNormalizer;
   private final ChargeIdNormalizer chargeIdNormalizer;
 
-  public GcpBigQueryNormalizer() {
-    this.serviceNameNormalizer = SpringContextBridge.getBean(ServiceNameNormalizer.class);
-    this.chargeIdNormalizer = SpringContextBridge.getBean(ChargeIdNormalizer.class);
+  public GcpBigQueryNormalizer(ChargeIdNormalizer chargeIdNormalizer) {
+    this.chargeIdNormalizer = chargeIdNormalizer;
   }
 
   // Does not make sense to include billingId in response since it is already
@@ -150,7 +152,9 @@ public class GcpBigQueryNormalizer
   @Override
   public String getServiceName(GcpBigQueryBillingRecord gcpBillingRecord) {
     FieldValueList valueList = gcpBillingRecord.fieldValueList();
-    return serviceNameNormalizer.normalizeServiceName(valueList);
+    return valueList.get("service_description").getStringValue()
+        + " "
+        + valueList.get("sku_description").getStringValue();
   }
 
   @Override

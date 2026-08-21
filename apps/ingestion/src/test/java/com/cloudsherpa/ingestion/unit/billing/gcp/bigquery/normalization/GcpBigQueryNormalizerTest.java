@@ -5,9 +5,6 @@ import static com.google.cloud.bigquery.FieldValue.Attribute.REPEATED;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
 
 import com.cloudsherpa.ingestion.billing.BillingExport;
 import com.cloudsherpa.ingestion.billing.provider.gcp.bigquery.normalization.ChargeIdNormalizer;
@@ -15,7 +12,6 @@ import com.cloudsherpa.ingestion.billing.provider.gcp.bigquery.normalization.Cre
 import com.cloudsherpa.ingestion.billing.provider.gcp.bigquery.normalization.GcpBigQueryBillingRecord;
 import com.cloudsherpa.ingestion.billing.provider.gcp.bigquery.normalization.GcpBigQueryNormalizer;
 import com.cloudsherpa.ingestion.billing.provider.gcp.bigquery.normalization.ServiceNameNormalizer;
-import com.cloudsherpa.ingestion.config.SpringContextBridge;
 import com.cloudsherpa.lib.entities.ChargeTypeEnum;
 import com.cloudsherpa.lib.entities.NormalizedCosts;
 import com.cloudsherpa.lib.entities.ProviderEnum;
@@ -28,66 +24,46 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
 
 class GcpBigQueryNormalizerTest {
 
   private static final String BILLING_ID = "billing-account-1";
 
-  private ServiceNameNormalizer mockServiceNameNormalizer;
-
-  private ChargeIdNormalizer mockChargeIdNormalizer;
-
-  @BeforeEach
-  void setUp() {
-    mockServiceNameNormalizer = mock(ServiceNameNormalizer.class);
-    mockChargeIdNormalizer = mock(ChargeIdNormalizer.class);
-  }
-
   @Test
   void shouldCreateNormalizedCost() {
     // arrange
-    try (MockedStatic<SpringContextBridge> bridge = mockStatic(SpringContextBridge.class)) {
-      arrangeValidServiceAndChargeNormalizers(bridge);
+    GcpBigQueryNormalizer normalizer = newNormalizer();
+    normalizer.setBillingId(BILLING_ID);
+    NormalizedCosts expected = expectedNormalizedCosts();
 
-      GcpBigQueryNormalizer normalizer = new GcpBigQueryNormalizer();
-      normalizer.setBillingId(BILLING_ID);
-      NormalizedCosts expected = expectedNormalizedCosts();
-      // act
-      NormalizedCosts actual = normalizer.normalize(validNonCreditRecord(), validBillingExport());
+    // act
+    NormalizedCosts actual = normalizer.normalize(validNonCreditRecord(), validBillingExport());
 
-      // assert
-      assertAll(
-          () -> assertEquals(expected.getCostId(), actual.getCostId()),
-          () -> assertEquals(expected.getExecutionId(), actual.getExecutionId()),
-          () -> assertEquals(expected.getChargeId(), actual.getChargeId()),
-          () -> assertEquals(expected.getResourceId(), actual.getResourceId()),
-          () -> assertEquals(expected.getProvider(), actual.getProvider()),
-          () -> assertEquals(expected.getBillingAccountId(), actual.getBillingAccountId()),
-          () -> assertEquals(expected.getChargeType(), actual.getChargeType()),
-          () -> assertEquals(expected.getServiceName(), actual.getServiceName()),
-          () -> assertEquals(expected.getCostAmount(), actual.getCostAmount()),
-          () -> assertEquals(expected.getUsageStartTime(), actual.getUsageStartTime()),
-          () -> assertEquals(expected.getUsageEndTime(), actual.getUsageEndTime()));
-    }
+    // assert
+    assertAll(
+        () -> assertEquals(expected.getCostId(), actual.getCostId()),
+        () -> assertEquals(expected.getExecutionId(), actual.getExecutionId()),
+        () -> assertEquals(expected.getChargeId(), actual.getChargeId()),
+        () -> assertEquals(expected.getResourceId(), actual.getResourceId()),
+        () -> assertEquals(expected.getProvider(), actual.getProvider()),
+        () -> assertEquals(expected.getBillingAccountId(), actual.getBillingAccountId()),
+        () -> assertEquals(expected.getChargeType(), actual.getChargeType()),
+        () -> assertEquals(expected.getServiceName(), actual.getServiceName()),
+        () -> assertEquals(expected.getCostAmount(), actual.getCostAmount()),
+        () -> assertEquals(expected.getUsageStartTime(), actual.getUsageStartTime()),
+        () -> assertEquals(expected.getUsageEndTime(), actual.getUsageEndTime()));
   }
 
   @Test
   void shouldThrowWhenBillingIdNotSet() {
     // Arrange
+    GcpBigQueryNormalizer normalizer = newNormalizer();
+    GcpBigQueryBillingRecord gcpRecord = validNonCreditRecord();
 
-    try (MockedStatic<SpringContextBridge> bridge = mockStatic(SpringContextBridge.class)) {
-      arrangeValidServiceAndChargeNormalizers(bridge);
-
-      GcpBigQueryNormalizer normalizer = new GcpBigQueryNormalizer();
-      GcpBigQueryBillingRecord gcpRecord = validNonCreditRecord();
-
-      // Act & assert
-      assertThatThrownBy(() -> normalizer.getBillingAccountId(gcpRecord))
-          .isInstanceOf(IllegalArgumentException.class);
-    }
+    // Act & assert
+    assertThatThrownBy(() -> normalizer.getBillingAccountId(gcpRecord))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 
   private FieldValue primitive(String value) {
@@ -120,6 +96,7 @@ class GcpBigQueryNormalizerTest {
             nullValue(),
             primitive("//compute.googleapis.com/projects/project-1/zones/us/vm-1"),
             primitive("Compute Engine"),
+            primitive("N1 Predefined Instance Core"),
             numeric("12.34"),
             timestamp("1786442400.000000"),
             timestamp("1786446000.000000"),
@@ -131,6 +108,7 @@ class GcpBigQueryNormalizerTest {
         Field.of("resource_name", StandardSQLTypeName.STRING),
         Field.of("resource_global_name", StandardSQLTypeName.STRING),
         Field.of("service_description", StandardSQLTypeName.STRING),
+        Field.of("sku_description", StandardSQLTypeName.STRING),
         Field.of("cost", StandardSQLTypeName.NUMERIC),
         Field.of("usage_start_time", StandardSQLTypeName.TIMESTAMP),
         Field.of("usage_end_time", StandardSQLTypeName.TIMESTAMP),
@@ -149,12 +127,13 @@ class GcpBigQueryNormalizerTest {
             + "//compute.googleapis.com/projects/project-1/zones/us/vm-1%%%Usage");
     expected.setExecutionId(UUID.fromString("e95b9649-9df5-4353-add3-002638de271f"));
     expected.setChargeId(
-        "//compute.googleapis.com/projects/project-1/zones/us/vm-1%%%Compute Engine");
+        "//compute.googleapis.com/projects/project-1/zones/us/vm-1%%%"
+            + "Compute Engine N1 Predefined Instance Core");
     expected.setResourceId("//compute.googleapis.com/projects/project-1/zones/us/vm-1");
     expected.setProvider(ProviderEnum.GCP);
     expected.setBillingAccountId(BILLING_ID);
     expected.setChargeType(ChargeTypeEnum.Usage);
-    expected.setServiceName("Compute Engine");
+    expected.setServiceName("Compute Engine N1 Predefined Instance Core");
     expected.setCostAmount(new BigDecimal("12.34"));
     expected.setUsageStartTime(OffsetDateTime.of(2026, 8, 11, 10, 0, 0, 0, ZoneOffset.UTC));
     expected.setUsageEndTime(OffsetDateTime.of(2026, 8, 11, 11, 0, 0, 0, ZoneOffset.UTC));
@@ -166,18 +145,7 @@ class GcpBigQueryNormalizerTest {
         "e95b9649-9df5-4353-add3-002638de271f", "b7d1a897-66da-43e6-b499-30e53ce59207", List.of());
   }
 
-  private void arrangeValidServiceAndChargeNormalizers(MockedStatic<SpringContextBridge> bridge) {
-    bridge
-        .when(() -> SpringContextBridge.getBean(ServiceNameNormalizer.class))
-        .thenReturn(mockServiceNameNormalizer);
-    bridge
-        .when(() -> SpringContextBridge.getBean(ChargeIdNormalizer.class))
-        .thenReturn(mockChargeIdNormalizer);
-
-    FieldValueList row = validUsageRow();
-
-    when(mockServiceNameNormalizer.normalizeServiceName(row)).thenReturn("Compute Engine");
-    when(mockChargeIdNormalizer.normalizeChargeId(row))
-        .thenReturn("//compute.googleapis.com/projects/project-1/zones/us/vm-1%%%Compute Engine");
+  private GcpBigQueryNormalizer newNormalizer() {
+    return new GcpBigQueryNormalizer(new ChargeIdNormalizer(new ServiceNameNormalizer()));
   }
 }
