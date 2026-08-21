@@ -12,7 +12,8 @@ public class SpringContextBridge implements ApplicationContextAware {
 
   @Override
   public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-    context = applicationContext;
+    context = applicationContext; // NOSONAR Cannot make enclosing scope static due to implementing
+    // interface method
   }
 
   // Static helper method to fetch beans by class type

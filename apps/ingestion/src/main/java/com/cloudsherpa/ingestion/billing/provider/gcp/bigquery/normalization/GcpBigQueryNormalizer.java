@@ -24,9 +24,11 @@ public class GcpBigQueryNormalizer
       LoggerFactory.getLogger(GcpBigQueryNormalizer.class);
 
   private final ServiceNameNormalizer serviceNameNormalizer;
+  private final ChargeIdNormalizer chargeIdNormalizer;
 
   public GcpBigQueryNormalizer() {
     this.serviceNameNormalizer = SpringContextBridge.getBean(ServiceNameNormalizer.class);
+    this.chargeIdNormalizer = SpringContextBridge.getBean(ChargeIdNormalizer.class);
   }
 
   // Does not make sense to include billingId in response since it is already
@@ -102,15 +104,7 @@ public class GcpBigQueryNormalizer
   @Override
   public String getChargeId(GcpBigQueryBillingRecord gcpBillingRecord) {
     FieldValueList valueList = gcpBillingRecord.fieldValueList();
-    StringBuilder chargeId = new StringBuilder();
-
-    if (valueList.get("sku_id").getStringValue().equals("1DF5-1F98-1DD1")) {
-      chargeId.append("BigQueryAnalysis");
-    } else {
-      chargeId.append(getResourceId(gcpBillingRecord));
-    }
-
-    return chargeId.toString();
+    return chargeIdNormalizer.normalizeChargeId(valueList);
   }
 
   @Override
@@ -118,7 +112,7 @@ public class GcpBigQueryNormalizer
     FieldValueList valueList = gcpBillingRecord.fieldValueList();
 
     if (valueList.get("resource_global_name").isNull()) {
-      return "null";
+      return "NoResourceId";
     }
 
     return valueList.get("resource_global_name").getStringValue();
