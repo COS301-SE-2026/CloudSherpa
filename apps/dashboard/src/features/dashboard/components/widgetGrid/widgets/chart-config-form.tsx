@@ -43,8 +43,7 @@ export function ChartConfigFormInner({ ChartId }: Readonly<ChartConfigFormProps>
     const handleSave = async () => {
         setIsSaving(true);
         try {
-            updateWidget(config);
-            console.log(config);
+            await updateWidget(config);
         } catch (error) {
             console.error("Failed to save configuration", error);
         } finally {
