@@ -8,6 +8,13 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class ChargeIdNormalizer {
+
+  private final ServiceNameNormalizer serviceNameNormalizer;
+
+  public ChargeIdNormalizer(ServiceNameNormalizer serviceNameNormalizer) {
+    this.serviceNameNormalizer = serviceNameNormalizer;
+  }
+
   private static final Map<String, String> skuChargeNameMap =
       Map.ofEntries(
           entry("1DF5-1F98-1DD1", "BigQueryAnalysis"),
@@ -24,9 +31,11 @@ public class ChargeIdNormalizer {
     }
 
     if (valueList.get("resource_global_name").isNull()) {
-      return "NoResourceId";
+      return "NoResourceId" + "%%%" + serviceNameNormalizer.normalizeServiceName(valueList);
     }
 
-    return valueList.get("resource_global_name").getStringValue();
+    return valueList.get("resource_global_name").getStringValue()
+        + "%%%"
+        + serviceNameNormalizer.normalizeServiceName(valueList);
   }
 }

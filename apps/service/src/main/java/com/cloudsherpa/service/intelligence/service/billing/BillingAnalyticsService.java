@@ -77,6 +77,11 @@ public class BillingAnalyticsService {
     // AWSDataTransfer (i-067d6c946c07882dd)
     String[] splitChargeId = chargeId.split("%%%");
 
+    // Temporary GCP guard
+    if (splitChargeId.length < 2) {
+      return chargeId;
+    }
+
     StringBuilder chargeLabel = new StringBuilder();
 
     chargeLabel.append(splitChargeId[1]).append(" (");
