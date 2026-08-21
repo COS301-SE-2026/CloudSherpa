@@ -66,6 +66,20 @@ class GcpBigQueryNormalizerTest {
         .isInstanceOf(IllegalArgumentException.class);
   }
 
+  @Test
+  void shouldReturnNoResourceIdWhenResourceNameIsNull() {
+    // arrange
+    GcpBigQueryNormalizer normalizer = newNormalizer();
+
+    // act
+    String resourceId =
+        normalizer.getResourceId(
+            new GcpBigQueryBillingRecord(rowWithNullResourceName(), new CreditProcessingState()));
+
+    // assert
+    assertEquals("NoResourceId", resourceId);
+  }
+
   private FieldValue primitive(String value) {
     return FieldValue.of(PRIMITIVE, value);
   }
@@ -87,6 +101,40 @@ class GcpBigQueryNormalizerTest {
   }
 
   private FieldValueList validUsageRow() {
+    return FieldValueList.of(
+        List.of(
+            primitive("project-1"),
+            primitive("service-1"),
+            primitive("sku-1"),
+            primitive("usage"),
+            primitive("//compute.googleapis.com/projects/project-1/zones/us/vm-1"),
+            primitive("//compute.googleapis.com/projects/project-1/zones/us/vm-1"),
+            primitive("Compute Engine"),
+            primitive("N1 Predefined Instance Core"),
+            numeric("12.34"),
+            timestamp("1786442400.000000"),
+            timestamp("1786446000.000000"),
+            FieldValue.of(REPEATED, List.of())),
+        Field.of("project_id", StandardSQLTypeName.STRING),
+        Field.of("service_id", StandardSQLTypeName.STRING),
+        Field.of("sku_id", StandardSQLTypeName.STRING),
+        Field.of("cost_type", StandardSQLTypeName.STRING),
+        Field.of("resource_name", StandardSQLTypeName.STRING),
+        Field.of("resource_global_name", StandardSQLTypeName.STRING),
+        Field.of("service_description", StandardSQLTypeName.STRING),
+        Field.of("sku_description", StandardSQLTypeName.STRING),
+        Field.of("cost", StandardSQLTypeName.NUMERIC),
+        Field.of("usage_start_time", StandardSQLTypeName.TIMESTAMP),
+        Field.of("usage_end_time", StandardSQLTypeName.TIMESTAMP),
+        Field.newBuilder(
+                "credits",
+                StandardSQLTypeName.STRUCT,
+                Field.of("amount", StandardSQLTypeName.NUMERIC))
+            .setMode(Field.Mode.REPEATED)
+            .build());
+  }
+
+  private FieldValueList rowWithNullResourceName() {
     return FieldValueList.of(
         List.of(
             primitive("project-1"),
