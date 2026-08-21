@@ -33,7 +33,6 @@ export function GcpBillingForm({
             <FieldSet>
                 <FieldGroup>
                     <Field>
-                        handleOptedInToBillingChange
                         <FieldLabel htmlFor="billingId">Cloud Billing Account ID</FieldLabel>
                         <FieldDescription>
                             Enter the Google Cloud Billing account ID for this connection.
