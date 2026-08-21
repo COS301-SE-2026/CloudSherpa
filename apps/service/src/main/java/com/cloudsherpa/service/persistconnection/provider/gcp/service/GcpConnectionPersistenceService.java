@@ -1,16 +1,21 @@
 package com.cloudsherpa.service.persistconnection.provider.gcp.service;
 
 import com.cloudsherpa.lib.entities.AccountTypeEnum;
+import com.cloudsherpa.lib.entities.BillingExportConfig;
 import com.cloudsherpa.lib.entities.CloudAccount;
 import com.cloudsherpa.lib.entities.CloudConnection;
 import com.cloudsherpa.lib.entities.CloudCredential;
+import com.cloudsherpa.lib.entities.GcpBillingExportConfig;
 import com.cloudsherpa.lib.entities.ProviderEnum;
 import com.cloudsherpa.lib.entities.StatusEnum;
+import com.cloudsherpa.lib.repositories.BillingExportConfigRepository;
 import com.cloudsherpa.lib.repositories.CloudAccountRepository;
 import com.cloudsherpa.lib.repositories.CloudConnectionRepository;
 import com.cloudsherpa.lib.repositories.CloudCredentialRepository;
+import com.cloudsherpa.lib.repositories.GcpBillingExportConfigRepository;
 import com.cloudsherpa.lib.repositories.ResourceRepository;
 import com.cloudsherpa.service.analytics.service.ResourceRegistryService;
+import com.cloudsherpa.service.persistconnection.provider.gcp.dto.GcpBillingConfigDto;
 import com.cloudsherpa.service.persistconnection.provider.gcp.dto.GcpCredentialsDto;
 import com.cloudsherpa.service.persistconnection.provider.gcp.dto.PersistGcpConnectionRequest;
 import com.cloudsherpa.service.persistconnection.service.ConnectionPersistenceService;
@@ -21,15 +26,22 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class GcpConnectionPersistenceService extends ConnectionPersistenceService {
+  private static final Logger logger =
+      LoggerFactory.getLogger(GcpConnectionPersistenceService.class);
+
   private final CloudConnectionRepository cloudConnectionRepository;
   private final CloudAccountRepository cloudAccountRepository;
   private final CloudCredentialRepository cloudCredentialRepository;
   private final CredentialEncryptionService encryptionService;
+  private final BillingExportConfigRepository billingExportConfigRepository;
+  private final GcpBillingExportConfigRepository gcpBillingExportConfigRepository;
 
   public GcpConnectionPersistenceService(
       CloudConnectionRepository cloudConnectionRepository,
@@ -37,12 +49,16 @@ public class GcpConnectionPersistenceService extends ConnectionPersistenceServic
       CloudCredentialRepository cloudCredentialRepository,
       CredentialEncryptionService encryptionService,
       ResourceRepository resourceRepository,
-      ResourceRegistryService resourceRegistryService) {
+      ResourceRegistryService resourceRegistryService,
+      BillingExportConfigRepository billingExportConfigRepository,
+      GcpBillingExportConfigRepository gcpBillingExportConfigRepository) {
     super(cloudAccountRepository, resourceRepository, resourceRegistryService);
     this.cloudConnectionRepository = cloudConnectionRepository;
     this.cloudAccountRepository = cloudAccountRepository;
     this.cloudCredentialRepository = cloudCredentialRepository;
     this.encryptionService = encryptionService;
+    this.billingExportConfigRepository = billingExportConfigRepository;
+    this.gcpBillingExportConfigRepository = gcpBillingExportConfigRepository;
   }
 
   @Transactional
@@ -51,6 +67,10 @@ public class GcpConnectionPersistenceService extends ConnectionPersistenceServic
     CloudAccount account = createAccount(connection, request);
     createCredential(account, request.credentials());
     createResources(request.userId(), account, request.resources());
+    if (request.billingConfig() != null) {
+      logger.info("Persisting GCP billing config for user {}", request.userId());
+      createBillingExportConfig(account, request.billingConfig());
+    }
   }
 
   private CloudConnection getOrCreateConnection(PersistGcpConnectionRequest request) {
@@ -111,5 +131,19 @@ public class GcpConnectionPersistenceService extends ConnectionPersistenceServic
     } catch (JsonProcessingException e) {
       throw new IllegalArgumentException("Unable to serialize GCP credentials.", e);
     }
+  }
+
+  private void createBillingExportConfig(
+      CloudAccount account, GcpBillingConfigDto billingConfigDto) {
+    BillingExportConfig config =
+        new BillingExportConfig(
+            UUID.randomUUID(), account.getId(), OffsetDateTime.now(ZoneOffset.UTC));
+
+    BillingExportConfig savedConfig = billingExportConfigRepository.save(config);
+
+    GcpBillingExportConfig gcpExportConfig =
+        new GcpBillingExportConfig(
+            savedConfig.getId(), billingConfigDto.dataset(), billingConfigDto.billingId());
+    gcpBillingExportConfigRepository.save(gcpExportConfig);
   }
 }

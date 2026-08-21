@@ -11,6 +11,11 @@ import {
 } from "@/lib/fetch/cloud-resource-api";
 import { GcpCredentialsDto } from "@/lib/fetch/gcp-connection-api";
 import { GcpBillingForm } from "./billingForm";
+import {
+    GcpBillingConfig,
+    type GcpBillingConfigSafeParseType,
+    type GcpBillingConfigType,
+} from "./validTypes";
 
 interface StepTwoPropsForGcp {
     displayName: string;
@@ -20,6 +25,7 @@ interface StepTwoPropsForGcp {
         servicesSelected: string[];
         resources: ResourceDetail[];
         credentials: GcpCredentialsDto;
+        billingConfig: GcpBillingConfigType | null;
     }) => void;
     onBack?: () => void;
 }
@@ -38,6 +44,8 @@ export default function StepTwoGcp({
     const [errors, setErrors] = useState("");
 
     const [optedInToBilling, setOptedInToBilling] = useState(false);
+    const [billingId, setBillingId] = useState("");
+    const [billingDataset, setBillingDataset] = useState("");
 
     React.useEffect(() => {
         const loadPermissions = async () => {
@@ -87,6 +95,14 @@ export default function StepTwoGcp({
 
     const handlingSubmit = async (submitting: React.SubmitEvent<HTMLFormElement>) => {
         submitting.preventDefault();
+        setErrors("");
+
+        const validatedBillingConfig: GcpBillingConfigSafeParseType | null = validateBillingInput();
+
+        if (validatedBillingConfig != null && !validatedBillingConfig.success) {
+            setErrors("Please enter a valid billing configuration");
+            return;
+        }
 
         if (selectedServices.length === 0) {
             setErrors("Please select at least one service");
@@ -95,7 +111,6 @@ export default function StepTwoGcp({
 
         try {
             setForLoading(true);
-            setErrors("");
 
             const resourcesDiscovered = await getCloudResources(
                 "gcp",
@@ -108,6 +123,7 @@ export default function StepTwoGcp({
                 servicesSelected: selectedServices,
                 resources: resourcesDiscovered,
                 credentials,
+                billingConfig: validatedBillingConfig?.data ?? null,
             });
         } catch {
             setErrors("Failed to discover GCP resources");
@@ -123,6 +139,17 @@ export default function StepTwoGcp({
         }
     };
 
+    function validateBillingInput(): GcpBillingConfigSafeParseType | null {
+        if (!optedInToBilling) {
+            return null;
+        }
+
+        return GcpBillingConfig.safeParse({
+            billingId: billingId,
+            dataset: billingDataset,
+        });
+    }
+
     return (
         <StepTwo
             heading="Select service"
@@ -134,6 +161,10 @@ export default function StepTwoGcp({
         >
             <GcpBillingForm
                 optedInToBilling={optedInToBilling}
+                billingId={billingId}
+                setBillingId={setBillingId}
+                setBillingDataset={setBillingDataset}
+                billingDataset={billingDataset}
                 handleOptedInToBillingChange={(checked) => {
                     setOptedInToBilling(checked);
                 }}
