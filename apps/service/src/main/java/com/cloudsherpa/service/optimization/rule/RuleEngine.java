@@ -29,7 +29,7 @@ public class RuleEngine {
   }
 
   public List<OptimizationMetricStatistics> findMatchingStatistics(
-      MetricThresholdCondition condition) {
+      OptimizationRule rule, MetricThresholdCondition condition) {
 
     List<OptimizationMetricStatistics> candidates =
         statisticsRepository.findByMetricNameAndWindowNumDays(
@@ -38,7 +38,12 @@ public class RuleEngine {
     List<OptimizationMetricStatistics> matched = new ArrayList<>();
 
     for (OptimizationMetricStatistics stats : candidates) {
-      if (conditionEvaluator.matches(condition, stats)) {
+      boolean providerMatches =
+          rule.providers() == null
+              || rule.providers().isEmpty()
+              || rule.providers().contains(stats.getProvider());
+
+      if (providerMatches && conditionEvaluator.matches(condition, stats)) {
         matched.add(stats);
       }
     }
