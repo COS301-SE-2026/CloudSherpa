@@ -16,26 +16,24 @@ import Dropdown from "@/components/molecules/dropdown";
 interface ChartFormResourceProps {
     configuration: ChartWidgetConfig;
     setConfiguration: (config: ChartWidgetConfig) => void;
-    selectedConnectionId: string | null;
 }
 
 export default function ChartFormResource({
     configuration,
     setConfiguration,
-    selectedConnectionId,
 }: Readonly<ChartFormResourceProps>) {
     const [activeResources, setActiveResources] = useState<CloudResource[]>([]);
 
     useEffect(() => {
-        if (selectedConnectionId) {
-            getAwsAccountResources(selectedConnectionId)
+        if (configuration.accountId) {
+            getAwsAccountResources(configuration.accountId)
                 .then((resources) => {
                     const activeOnly = resources.filter((r) => r.status === ResourceStatus.ACTIVE);
                     setActiveResources(activeOnly);
                 })
                 .catch(console.error);
         }
-    }, [selectedConnectionId]);
+    }, [configuration.accountId]);
 
     const allAvailableMetrics = useMetricStore((state: MetricStore) => state.getMetricList);
 
