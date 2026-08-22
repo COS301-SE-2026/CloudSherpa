@@ -46,6 +46,63 @@ BEGIN
 END;
 $$;
 
+CREATE OR REPLACE FUNCTION seed_metric_series(
+    p_tenant_schema text,
+    p_metric_id uuid,
+    p_resource_id uuid,
+    p_metric_type text,
+    p_metric_name text,
+    p_to_timestamp timestamptz,
+    p_points integer
+)
+RETURNS integer
+LANGUAGE plpgsql AS
+$$
+DECLARE
+    rows_inserted integer;
+BEGIN 
+    RAISE NOTICE 'Seeding metric series for resource %', p_resource_id;
+
+    EXECUTE format($sql$
+        INSERT INTO %I.normalized_metrics (
+            metric_id,
+            resource_id,
+            recorded_at,
+            metric_type,
+            metric_name,
+            metric_value,
+            unit,
+            currency,
+            period_start,
+            period_end
+        )
+        SELECT
+            $1 AS metric_id,
+            $2 AS resource_id,
+            NOW() AS recorded_at,
+            $3 AS metric_type,
+            $4 AS metric_name,
+            i AS metric_value,
+            'NFR unit' AS unit,
+            'USD' AS currency,
+            $5 - (i * INTERVAL '5 min') AS period_start,
+            ($5 - (i * INTERVAL '5 min')) + INTERVAL '5 min' AS period_end
+        FROM generate_series(1, $6) AS series(i)
+        ON CONFLICT DO NOTHING
+    $sql$, p_tenant_schema)
+    USING
+        p_metric_id,
+        p_resource_id,
+        p_metric_type,
+        p_metric_name,
+        p_to_timestamp,
+        p_points;
+
+    GET DIAGNOSTICS rows_inserted = ROW_COUNT;
+    RETURN rows_inserted;
+END;
+$$;
+
 -- Creates the fixed AWS resources used by the NFR historical metric seed.
 CREATE OR REPLACE FUNCTION seed_normalized_metrics()
 RETURNS integer
@@ -64,6 +121,39 @@ DECLARE
     resource_id_08 uuid := '10000000-0000-0000-0000-000000000008';
     resource_id_09 uuid := '10000000-0000-0000-0000-000000000009';
     resource_id_10 uuid := '10000000-0000-0000-0000-000000000010';
+
+    metric_id_01 uuid := '20000000-0000-0000-0000-000000000001';
+    metric_name_01 text := 'CPUUtilization';
+    metric_type_01 text := 'cpu';
+    metric_id_02 uuid := '20000000-0000-0000-0000-000000000002';
+    metric_name_02 text := 'NetworkIn';
+    metric_type_02 text := 'network';
+    metric_id_03 uuid := '20000000-0000-0000-0000-000000000003';
+    metric_name_03 text := 'NetworkOut';
+    metric_type_03 text := 'network';
+    metric_id_04 uuid := '20000000-0000-0000-0000-000000000004';
+    metric_name_04 text := 'DiskReadBytes';
+    metric_type_04 text := 'disk';
+    metric_id_05 uuid := '20000000-0000-0000-0000-000000000005';
+    metric_name_05 text := 'DiskWriteBytes';
+    metric_type_05 text := 'disk';
+    metric_id_06 uuid := '20000000-0000-0000-0000-000000000006';
+    metric_name_06 text := 'DatabaseConnections';
+    metric_type_06 text := 'connections';
+    metric_id_07 uuid := '20000000-0000-0000-0000-000000000007';
+    metric_name_07 text := 'ReadLatency';
+    metric_type_07 text := 'latency';
+    metric_id_08 uuid := '20000000-0000-0000-0000-000000000008';
+    metric_name_08 text := 'Invocations';
+    metric_type_08 text := 'invocations';
+    metric_id_09 uuid := '20000000-0000-0000-0000-000000000009';
+    metric_name_09 text := 'CPUUtilization';
+    metric_type_09 text := 'cpu';
+    metric_id_10 uuid := '20000000-0000-0000-0000-000000000010';
+    metric_name_10 text := 'CPUUtilization';
+    metric_type_10 text := 'cpu';
+
+    to_timestamp timestamptz;
 BEGIN
     PERFORM seed_resource(
         tenant_schema, resource_id_01, aws_account_id,
@@ -105,6 +195,11 @@ BEGIN
         tenant_schema, resource_id_10, aws_account_id,
         'AWS/ElastiCache', 'nfr-cache-01', 'nfr-cache-01', 'CacheClusterId', 'us-east-1', 'active'
     );
+
+    RAISE NOTICE 'Resource Seeded, continuing to seed metrics';
+
+    to_timestamp := NOW();
+
 
 
     RETURN 0;
