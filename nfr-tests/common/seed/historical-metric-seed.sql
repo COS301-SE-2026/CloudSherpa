@@ -99,6 +99,8 @@ BEGIN
         p_points;
 
     GET DIAGNOSTICS rows_inserted = ROW_COUNT;
+
+    RAISE NOTICE 'Seeded % rows for resource %', rows_inserted, p_resource_id;
     RETURN rows_inserted;
 END;
 $$;
@@ -154,6 +156,8 @@ DECLARE
     metric_type_10 text := 'cpu';
 
     to_timestamp timestamptz;
+    metric_series_datapoints integer;
+    total_rows_seeded integer := 0;
 BEGIN
     PERFORM seed_resource(
         tenant_schema, resource_id_01, aws_account_id,
@@ -199,9 +203,50 @@ BEGIN
     RAISE NOTICE 'Resource Seeded, continuing to seed metrics';
 
     to_timestamp := NOW();
+    metric_series_datapoints := 10000;
 
+    total_rows_seeded := total_rows_seeded + seed_metric_series(
+        tenant_schema, metric_id_01, resource_id_01, metric_type_01, metric_name_01,
+        to_timestamp, metric_series_datapoints
+    );
+    total_rows_seeded := total_rows_seeded + seed_metric_series(
+        tenant_schema, metric_id_02, resource_id_02, metric_type_02, metric_name_02,
+        to_timestamp, metric_series_datapoints
+    );
+    total_rows_seeded := total_rows_seeded + seed_metric_series(
+        tenant_schema, metric_id_03, resource_id_03, metric_type_03, metric_name_03,
+        to_timestamp, metric_series_datapoints
+    );
+    total_rows_seeded := total_rows_seeded + seed_metric_series(
+        tenant_schema, metric_id_04, resource_id_04, metric_type_04, metric_name_04,
+        to_timestamp, metric_series_datapoints
+    );
+    total_rows_seeded := total_rows_seeded + seed_metric_series(
+        tenant_schema, metric_id_05, resource_id_05, metric_type_05, metric_name_05,
+        to_timestamp, metric_series_datapoints
+    );
+    total_rows_seeded := total_rows_seeded + seed_metric_series(
+        tenant_schema, metric_id_06, resource_id_06, metric_type_06, metric_name_06,
+        to_timestamp, metric_series_datapoints
+    );
+    total_rows_seeded := total_rows_seeded + seed_metric_series(
+        tenant_schema, metric_id_07, resource_id_07, metric_type_07, metric_name_07,
+        to_timestamp, metric_series_datapoints
+    );
+    total_rows_seeded := total_rows_seeded + seed_metric_series(
+        tenant_schema, metric_id_08, resource_id_08, metric_type_08, metric_name_08,
+        to_timestamp, metric_series_datapoints
+    );
+    total_rows_seeded := total_rows_seeded + seed_metric_series(
+        tenant_schema, metric_id_09, resource_id_09, metric_type_09, metric_name_09,
+        to_timestamp, metric_series_datapoints
+    );
+    total_rows_seeded := total_rows_seeded + seed_metric_series(
+        tenant_schema, metric_id_10, resource_id_10, metric_type_10, metric_name_10,
+        to_timestamp, metric_series_datapoints
+    );
 
-
-    RETURN 0;
+    RAISE NOTICE 'Finished normalized metric seeding with % rows', total_rows_seeded;
+    RETURN total_rows_seeded;
 END;
 $$;
