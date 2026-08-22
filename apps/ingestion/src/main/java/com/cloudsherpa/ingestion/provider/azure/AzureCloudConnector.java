@@ -9,8 +9,8 @@ import com.cloudsherpa.ingestion.models.BillingRecordModel;
 import com.cloudsherpa.ingestion.models.IngestionRequestEvent;
 import com.cloudsherpa.ingestion.models.ResourceDetail;
 import com.cloudsherpa.ingestion.models.UsageRecordModel;
-import com.cloudsherpa.ingestion.provider.aws.monitoring.AwsCloudWatchMetricProvider;
 import com.cloudsherpa.ingestion.provider.aws.monitoring.MockCloudWatchMetricProvider;
+import com.cloudsherpa.ingestion.provider.azure.monitoring.AzureCloudMonitorMetricProvider;
 import com.cloudsherpa.ingestion.provider.monitoring.CloudMonitoringMetricProvider;
 import java.util.List;
 import org.springframework.stereotype.Component;
@@ -22,7 +22,7 @@ public class AzureCloudConnector implements CloudConnector, UsageCapable, Billin
   private final CloudMonitoringMetricProvider mockMetricProvider;
 
   public AzureCloudConnector(MockCloudWatchMetricProvider mockMetricProvider) {
-    metricProvider = new AwsCloudWatchMetricProvider();
+    metricProvider = new AzureCloudMonitorMetricProvider();
     this.mockMetricProvider = mockMetricProvider;
   }
 
