@@ -6,76 +6,121 @@ import org.springframework.stereotype.Component;
 @Component
 public class MetricDisplayNameMapper {
 
+  // Canonical display names shared across providers.
+  public static final String CPU_UTILIZATION = "CPU Utilization";
+  public static final String NETWORK_IN = "Network In";
+  public static final String NETWORK_OUT = "Network Out";
+  public static final String DISK_READ_BYTES = "Disk Read Bytes";
+  public static final String DISK_WRITE_BYTES = "Disk Write Bytes";
+  public static final String STATUS_CHECK_FAILED = "Status Check Failed";
+  public static final String MEMORY_UTILIZATION = "Memory Utilization";
+  public static final String CPU_RESERVATION = "CPU Reservation";
+  public static final String MEMORY_RESERVATION = "Memory Reservation";
+  public static final String CLUSTER_FAILED_REQUEST_COUNT = "Cluster Failed Request Count";
+  public static final String CLUSTER_NODE_COUNT = "Cluster Node Count";
+  public static final String CLUSTER_REQUEST_TOTAL = "Cluster Request Total";
+  public static final String INVOCATIONS = "Invocations";
+  public static final String ERRORS = "Errors";
+  public static final String DURATION = "Duration";
+  public static final String CONCURRENT_EXECUTIONS = "Concurrent Executions";
+  public static final String THROTTLES = "Throttles";
+  public static final String DATABASE_CONNECTIONS = "Database Connections";
+  public static final String FREE_STORAGE_SPACE = "Free Storage Space";
+  public static final String READ_LATENCY = "Read Latency";
+  public static final String WRITE_LATENCY = "Write Latency";
+  public static final String FREEABLE_MEMORY = "Freeable Memory";
+  public static final String CURRENT_CONNECTIONS = "Current Connections";
+  public static final String EVICTIONS = "Evictions";
+  public static final String NETWORK_BYTES_IN = "Network Bytes In";
+  public static final String NETWORK_BYTES_OUT = "Network Bytes Out";
+  public static final String JVM_MEMORY_PRESSURE = "JVM Memory Pressure";
+  public static final String CLUSTER_INDEX_WRITES_BLOCKED = "Cluster Index Writes Blocked";
+  public static final String SEARCH_LATENCY = "Search Latency";
+  public static final String HEALTH_STATUS = "Health Status";
+  public static final String PERCENTAGE_DISK_SPACE_USED = "Percentage Disk Space Used";
+  public static final String READ_IOPS = "Read IOPS";
+  public static final String WRITE_IOPS = "Write IOPS";
+  public static final String RESERVED_CPU_CORES = "Reserved CPU cores";
+  public static final String CPU_USAGE_TIME = "CPU usage time";
+  public static final String MEMORY_USED = "Memory used";
+  public static final String POD_RESTART_COUNT = "Pod restart count";
+  public static final String FUNCTION_EXECUTIONS = "Function executions";
+  public static final String FUNCTION_EXECUTION_TIME = "Function execution time";
+  public static final String MEMORY_USAGE = "Memory usage";
+  public static final String ACTIVE_INSTANCES = "Active instances";
+  public static final String HTTP_REQUESTS = "HTTP requests";
+  public static final String REQUEST_LATENCY = "Request latency";
+  public static final String RUNNING_INSTANCES = "Running instances";
+  public static final String STORED_BYTES = "Stored bytes";
+  public static final String API_REQUESTS = "API requests";
+  public static final String BYTES_UPLOADED = "Bytes uploaded";
+  public static final String BYTES_DOWNLOADED = "Bytes downloaded";
+
   private static final Map<String, String> DISPLAY_NAMES =
       Map.ofEntries(
           // AWS metrics from offered_metric
-          Map.entry("CPUUtilization", "CPU Utilization"),
-          Map.entry("NetworkIn", "Network In"),
-          Map.entry("NetworkOut", "Network Out"),
-          Map.entry("DiskReadBytes", "Disk Read Bytes"),
-          Map.entry("DiskWriteBytes", "Disk Write Bytes"),
-          Map.entry("StatusCheckFailed", "Status Check Failed"),
-          Map.entry("MemoryUtilization", "Memory Utilization"),
-          Map.entry("CPUReservation", "CPU Reservation"),
-          Map.entry("MemoryReservation", "Memory Reservation"),
-          Map.entry("cluster_failed_request_count", "Cluster Failed Request Count"),
-          Map.entry("cluster_node_count", "Cluster Node Count"),
-          Map.entry("cluster_request_total", "Cluster Request Total"),
-          Map.entry("Invocations", "Invocations"),
-          Map.entry("Errors", "Errors"),
-          Map.entry("Duration", "Duration"),
-          Map.entry("ConcurrentExecutions", "Concurrent Executions"),
-          Map.entry("Throttles", "Throttles"),
-          Map.entry("DatabaseConnections", "Database Connections"),
-          Map.entry("FreeStorageSpace", "Free Storage Space"),
-          Map.entry("ReadLatency", "Read Latency"),
-          Map.entry("WriteLatency", "Write Latency"),
-          Map.entry("FreeableMemory", "Freeable Memory"),
-          Map.entry("CurrConnections", "Current Connections"),
-          Map.entry("Evictions", "Evictions"),
-          Map.entry("NetworkBytesIn", "Network Bytes In"),
-          Map.entry("NetworkBytesOut", "Network Bytes Out"),
-          Map.entry("JVMMemoryPressure", "JVM Memory Pressure"),
-          Map.entry("ClusterIndexWritesBlocked", "Cluster Index Writes Blocked"),
-          Map.entry("SearchLatency", "Search Latency"),
-          Map.entry("HealthStatus", "Health Status"),
-          Map.entry("PercentageDiskSpaceUsed", "Percentage Disk Space Used"),
-          Map.entry("ReadIOPS", "Read IOPS"),
-          Map.entry("WriteIOPS", "Write IOPS"),
+          Map.entry("CPUUtilization", CPU_UTILIZATION),
+          Map.entry("NetworkIn", NETWORK_IN),
+          Map.entry("NetworkOut", NETWORK_OUT),
+          Map.entry("DiskReadBytes", DISK_READ_BYTES),
+          Map.entry("DiskWriteBytes", DISK_WRITE_BYTES),
+          Map.entry("StatusCheckFailed", STATUS_CHECK_FAILED),
+          Map.entry("MemoryUtilization", MEMORY_UTILIZATION),
+          Map.entry("CPUReservation", CPU_RESERVATION),
+          Map.entry("MemoryReservation", MEMORY_RESERVATION),
+          Map.entry("cluster_failed_request_count", CLUSTER_FAILED_REQUEST_COUNT),
+          Map.entry("cluster_node_count", CLUSTER_NODE_COUNT),
+          Map.entry("cluster_request_total", CLUSTER_REQUEST_TOTAL),
+          Map.entry(INVOCATIONS, INVOCATIONS),
+          Map.entry(ERRORS, ERRORS),
+          Map.entry(DURATION, DURATION),
+          Map.entry("ConcurrentExecutions", CONCURRENT_EXECUTIONS),
+          Map.entry(THROTTLES, THROTTLES),
+          Map.entry("DatabaseConnections", DATABASE_CONNECTIONS),
+          Map.entry("FreeStorageSpace", FREE_STORAGE_SPACE),
+          Map.entry("ReadLatency", READ_LATENCY),
+          Map.entry("WriteLatency", WRITE_LATENCY),
+          Map.entry("FreeableMemory", FREEABLE_MEMORY),
+          Map.entry("CurrConnections", CURRENT_CONNECTIONS),
+          Map.entry(EVICTIONS, EVICTIONS),
+          Map.entry("NetworkBytesIn", NETWORK_BYTES_IN),
+          Map.entry("NetworkBytesOut", NETWORK_BYTES_OUT),
+          Map.entry("JVMMemoryPressure", JVM_MEMORY_PRESSURE),
+          Map.entry("ClusterIndexWritesBlocked", CLUSTER_INDEX_WRITES_BLOCKED),
+          Map.entry("SearchLatency", SEARCH_LATENCY),
+          Map.entry("HealthStatus", HEALTH_STATUS),
+          Map.entry("PercentageDiskSpaceUsed", PERCENTAGE_DISK_SPACE_USED),
+          Map.entry("ReadIOPS", READ_IOPS),
+          Map.entry("WriteIOPS", WRITE_IOPS),
 
           // GCP metrics from offered_metric
-          Map.entry("compute.googleapis.com/instance/cpu/utilization", "CPU utilization"),
-          Map.entry("compute.googleapis.com/instance/cpu/reserved_cores", "Reserved CPU cores"),
+          Map.entry("compute.googleapis.com/instance/cpu/utilization", CPU_UTILIZATION),
+          Map.entry("compute.googleapis.com/instance/cpu/reserved_cores", RESERVED_CPU_CORES),
+          Map.entry("compute.googleapis.com/instance/network/received_bytes_count", NETWORK_IN),
+          Map.entry("compute.googleapis.com/instance/network/sent_bytes_count", NETWORK_OUT),
+          Map.entry("compute.googleapis.com/instance/disk/read_bytes_count", DISK_READ_BYTES),
+          Map.entry("compute.googleapis.com/instance/disk/write_bytes_count", DISK_WRITE_BYTES),
+          Map.entry("compute.googleapis.com/instance/disk/read_ops_count", READ_IOPS),
+          Map.entry("compute.googleapis.com/instance/disk/write_ops_count", WRITE_IOPS),
+          Map.entry("kubernetes.io/node/cpu/core_usage_time", CPU_USAGE_TIME),
+          Map.entry("kubernetes.io/node/memory/used_bytes", MEMORY_USED),
+          Map.entry("kubernetes.io/node/network/received_bytes_count", NETWORK_IN),
+          Map.entry("kubernetes.io/node/network/sent_bytes_count", NETWORK_OUT),
+          Map.entry("kubernetes.io/pod/restart_count", POD_RESTART_COUNT),
+          Map.entry("cloudfunctions.googleapis.com/function/execution_count", FUNCTION_EXECUTIONS),
           Map.entry(
-              "compute.googleapis.com/instance/network/received_bytes_count",
-              "Network bytes received"),
-          Map.entry(
-              "compute.googleapis.com/instance/network/sent_bytes_count", "Network bytes sent"),
-          Map.entry("compute.googleapis.com/instance/disk/read_bytes_count", "Disk bytes read"),
-          Map.entry("compute.googleapis.com/instance/disk/write_bytes_count", "Disk bytes written"),
-          Map.entry("compute.googleapis.com/instance/disk/read_ops_count", "Disk read operations"),
-          Map.entry(
-              "compute.googleapis.com/instance/disk/write_ops_count", "Disk write operations"),
-          Map.entry("kubernetes.io/node/cpu/core_usage_time", "CPU usage time"),
-          Map.entry("kubernetes.io/node/memory/used_bytes", "Memory used"),
-          Map.entry("kubernetes.io/node/network/received_bytes_count", "Network bytes received"),
-          Map.entry("kubernetes.io/node/network/sent_bytes_count", "Network bytes sent"),
-          Map.entry("kubernetes.io/pod/restart_count", "Pod restart count"),
-          Map.entry(
-              "cloudfunctions.googleapis.com/function/execution_count", "Function executions"),
-          Map.entry(
-              "cloudfunctions.googleapis.com/function/execution_times", "Function execution time"),
-          Map.entry("cloudfunctions.googleapis.com/function/user_memory_bytes", "Memory usage"),
-          Map.entry("cloudfunctions.googleapis.com/function/active_instances", "Active instances"),
-          Map.entry("run.googleapis.com/request_count", "HTTP requests"),
-          Map.entry("run.googleapis.com/request_latencies", "Request latency"),
-          Map.entry("run.googleapis.com/container/cpu/utilizations", "CPU utilization"),
-          Map.entry("run.googleapis.com/container/memory/utilizations", "Memory utilization"),
-          Map.entry("run.googleapis.com/container/instance_count", "Running instances"),
-          Map.entry("storage.googleapis.com/storage/total_bytes", "Stored bytes"),
-          Map.entry("storage.googleapis.com/api/request_count", "API requests"),
-          Map.entry("storage.googleapis.com/network/received_bytes_count", "Bytes uploaded"),
-          Map.entry("storage.googleapis.com/network/sent_bytes_count", "Bytes downloaded"));
+              "cloudfunctions.googleapis.com/function/execution_times", FUNCTION_EXECUTION_TIME),
+          Map.entry("cloudfunctions.googleapis.com/function/user_memory_bytes", MEMORY_USAGE),
+          Map.entry("cloudfunctions.googleapis.com/function/active_instances", ACTIVE_INSTANCES),
+          Map.entry("run.googleapis.com/request_count", HTTP_REQUESTS),
+          Map.entry("run.googleapis.com/request_latencies", REQUEST_LATENCY),
+          Map.entry("run.googleapis.com/container/cpu/utilizations", CPU_UTILIZATION),
+          Map.entry("run.googleapis.com/container/memory/utilizations", MEMORY_UTILIZATION),
+          Map.entry("run.googleapis.com/container/instance_count", RUNNING_INSTANCES),
+          Map.entry("storage.googleapis.com/storage/total_bytes", STORED_BYTES),
+          Map.entry("storage.googleapis.com/api/request_count", API_REQUESTS),
+          Map.entry("storage.googleapis.com/network/received_bytes_count", BYTES_UPLOADED),
+          Map.entry("storage.googleapis.com/network/sent_bytes_count", BYTES_DOWNLOADED));
 
   public String toDisplayName(String canonicalName) {
     return DISPLAY_NAMES.getOrDefault(canonicalName, canonicalName);
