@@ -17,7 +17,7 @@ public class RuleCatalog {
       List.of("ec2_instance", "gce_instance");
 
   public List<OptimizationRule> getAllRules() {
-    return List.of(computeDownsizeRule(), computeTerminateIdleRule());
+    return List.of(computeDownsizeRule(), computeTerminateIdleRule(), computeSuspendIdleRule());
   }
 
   // Recommends downsizing compute instances whose P95 CPU stayed below 10% over the last 4 days.
@@ -66,6 +66,34 @@ public class RuleCatalog {
         null,
         COMPUTE_RESOURCE_TYPES,
         List.of(idleCpu, idleNetworkIn),
+        true,
+        null);
+  }
+
+  private OptimizationRule computeSuspendIdleRule() {
+    MetricThresholdCondition lowCpu =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.CPU_UTILIZATION,
+            3,
+            StatField.P95,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(15));
+
+    MetricThresholdCondition lowNetworkIn =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.NETWORK_IN,
+            3,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(2000));
+
+    return new OptimizationRule(
+        "COMPUTE-SUSPEND-IDLE",
+        true,
+        OptimizationActionTypeEnum.SUSPEND,
+        null,
+        COMPUTE_RESOURCE_TYPES,
+        List.of(lowCpu, lowNetworkIn),
         true,
         null);
   }
