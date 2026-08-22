@@ -38,6 +38,15 @@ export const kpiConfigColumns: ColumnDef<KPIConfigTableRow>[] = [
         accessorKey: "service",
         header: "Service",
         size: 100,
+        cell: ({ getValue }) => {
+            const value = getValue<string>();
+
+            return (
+                <div className="truncate cursor-text" title={value}>
+                    {value ?? "No Service Description"}
+                </div>
+            );
+        },
     },
     // {
     //     accessorKey: "resourceName",

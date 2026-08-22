@@ -30,7 +30,7 @@ CREATE TYPE public.execution_status_enum AS ENUM ('pending', 'processing', 'comp
 CREATE TYPE PUBLIC.chart_type_enum AS ENUM ('gauge_chart', 'line_chart');
 -- Differentiates actual compute usage from other types.
 -- Maps to CUR: line_item_line_item_type
-CREATE TYPE public.charge_type_enum AS ENUM ('Usage', 'Other'); 
+CREATE TYPE public.charge_type_enum AS ENUM ('Usage', 'Other', 'Credit'); 
 CREATE TYPE public.optimization_status_enum AS ENUM (
   'DRAFT',
   'ACTIVE',

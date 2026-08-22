@@ -15,12 +15,23 @@ import java.time.ZoneId;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
+@Component
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class GcpBigQueryNormalizer
     implements CostRecordNormalizer<GcpBigQueryBillingRecord, BillingExport> {
 
   private final Logger logger = // NOSONAR will use later
       LoggerFactory.getLogger(GcpBigQueryNormalizer.class);
+
+  private final ChargeIdNormalizer chargeIdNormalizer;
+
+  public GcpBigQueryNormalizer(ChargeIdNormalizer chargeIdNormalizer) {
+    this.chargeIdNormalizer = chargeIdNormalizer;
+  }
 
   // Does not make sense to include billingId in response since it is already
   // required to make the
@@ -95,37 +106,18 @@ public class GcpBigQueryNormalizer
   @Override
   public String getChargeId(GcpBigQueryBillingRecord gcpBillingRecord) {
     FieldValueList valueList = gcpBillingRecord.fieldValueList();
-    StringBuilder chargeId = new StringBuilder();
-
-    String resourceName;
-
-    if (valueList.get("resource_name").isNull()) {
-      resourceName = "null";
-    } else {
-      resourceName = valueList.get("resource_name").getStringValue();
-    }
-
-    chargeId
-        .append(resourceName)
-        .append("%%%")
-        .append(valueList.get("service_description").getStringValue().replace(" ", "_"));
-
-    if (shouldEmitCreditRecord(gcpBillingRecord.creditProcessingState())) {
-      chargeId.append("_credit");
-    }
-
-    return chargeId.toString();
+    return chargeIdNormalizer.normalizeChargeId(valueList);
   }
 
   @Override
   public String getResourceId(GcpBigQueryBillingRecord gcpBillingRecord) {
     FieldValueList valueList = gcpBillingRecord.fieldValueList();
 
-    if (valueList.get("resource_global_name").isNull()) {
-      return "null";
+    if (valueList.get("resource_name").isNull()) {
+      return "NoResourceId";
     }
 
-    return valueList.get("resource_global_name").getStringValue();
+    return valueList.get("resource_name").getStringValue();
   }
 
   @Override
@@ -151,7 +143,7 @@ public class GcpBigQueryNormalizer
     CreditProcessingState creditProcessingState = gcpBillingRecord.creditProcessingState();
 
     if (shouldEmitCreditRecord(creditProcessingState)) {
-      return ChargeTypeEnum.Other;
+      return ChargeTypeEnum.Credit;
     } else {
       return ChargeTypeEnum.Usage;
     }
@@ -160,13 +152,9 @@ public class GcpBigQueryNormalizer
   @Override
   public String getServiceName(GcpBigQueryBillingRecord gcpBillingRecord) {
     FieldValueList valueList = gcpBillingRecord.fieldValueList();
-    String serviceDescription = valueList.get("service_description").getStringValue();
-
-    if (!shouldEmitCreditRecord(gcpBillingRecord.creditProcessingState())) {
-      return serviceDescription;
-    }
-
-    return serviceDescription + " Credit";
+    return valueList.get("service_description").getStringValue()
+        + " "
+        + valueList.get("sku_description").getStringValue();
   }
 
   @Override
