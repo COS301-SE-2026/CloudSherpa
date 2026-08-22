@@ -1,6 +1,7 @@
 package com.cloudsherpa.service.dashboard.service;
 
 import com.cloudsherpa.lib.entities.ChartResource;
+import com.cloudsherpa.lib.entities.ProviderEnum;
 import com.cloudsherpa.lib.entities.Widget;
 import com.cloudsherpa.lib.entities.WidgetChart;
 import com.cloudsherpa.lib.repositories.ChartResourceRepository;
@@ -36,6 +37,8 @@ public class ChartWidgetService {
         new ChartResource(
             chartResourceId,
             widgetChartId,
+            chartWidgetDto.provider(),
+            chartWidgetDto.accountId(),
             chartWidgetDto.resourceId(),
             chartWidgetDto.metricType());
 
@@ -55,6 +58,8 @@ public class ChartWidgetService {
     }
 
     ChartResource resource = resources.get(0);
+    resource.setProvider(updateChartWidgetDto.provider());
+    resource.setAccountId(updateChartWidgetDto.accountId());
     resource.setMetricType(updateChartWidgetDto.metricType());
     resource.setResourceId(updateChartWidgetDto.resourceId());
 
@@ -64,6 +69,8 @@ public class ChartWidgetService {
 
   public ChartWidgetDTO mapToChartWidgetDTO(Widget widget) {
 
+    ProviderEnum provider = null;
+    UUID accountId = null;
     UUID resourceId = null;
     String metricType = null;
     WidgetChart chart = getWidgetChartByWidgetId(widget.getId());
@@ -71,6 +78,8 @@ public class ChartWidgetService {
     List<ChartResource> resources = chartResourceRepository.findByWidgetChartId(chart.getId());
 
     if (!resources.isEmpty()) {
+      provider = resources.get(0).getProvider();
+      accountId = resources.get(0).getAccountId();
       resourceId = resources.get(0).getResourceId();
       metricType = resources.get(0).getMetricType();
     }
@@ -84,6 +93,8 @@ public class ChartWidgetService {
         widget.getWidth(),
         widget.getHeight(),
         chart.getChartType(),
+        provider,
+        accountId,
         resourceId,
         metricType);
   }

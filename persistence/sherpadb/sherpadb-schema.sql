@@ -30,7 +30,7 @@ CREATE TYPE public.execution_status_enum AS ENUM ('pending', 'processing', 'comp
 CREATE TYPE PUBLIC.chart_type_enum AS ENUM ('gauge_chart', 'line_chart');
 -- Differentiates actual compute usage from other types.
 -- Maps to CUR: line_item_line_item_type
-CREATE TYPE public.charge_type_enum AS ENUM ('Usage', 'Other'); 
+CREATE TYPE public.charge_type_enum AS ENUM ('Usage', 'Other', 'Credit'); 
 CREATE TYPE public.optimization_status_enum AS ENUM (
   'DRAFT',
   'ACTIVE',
@@ -394,6 +394,8 @@ CREATE TABLE IF NOT EXISTS public.widget_chart (
 CREATE TABLE IF NOT EXISTS public.chart_resource (
   chart_resource_id uuid PRIMARY KEY,
   widget_chart_id uuid REFERENCES public.widget_chart(chart_id) ON DELETE CASCADE,
+  provider public.provider_enum,
+  account_id uuid,
   resource_id uuid, 
   metric_type varchar(50)
 );

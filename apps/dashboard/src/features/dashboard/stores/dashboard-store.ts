@@ -39,7 +39,7 @@ interface DashboardActions {
     removeDashboard: (id: string) => void;
     addWidget: (layout: LayoutItem, widget: WidgetConfig) => void;
     getWidget: (id: string) => WidgetConfig | undefined;
-    updateChartWidgetConfig: (widget: ChartWidgetConfig) => void;
+    updateChartWidgetConfig: (widget: ChartWidgetConfig) => Promise<void>;
     updateKpiWidgetConfig: (widget: KpiWidgetConfig) => void;
     removeWidget: (layoutId: string, widgetId: string) => void;
     updateLayouts: (newLayouts: LayoutItem[]) => void;
@@ -184,6 +184,8 @@ const createDashboardSlice: StateCreator<DashboardStore, [], [], DashboardSlice>
                     widgetType: "CHART",
                     chartType: widget.chartType,
                     displayName: widget.displayName,
+                    provider: widget.provider,
+                    accountId: widget.accountId,
                     resourceId: widget.resourceId,
                     metricType: widget.metricType as string,
                 });

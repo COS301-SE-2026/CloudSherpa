@@ -94,21 +94,20 @@ public class BillingAnalyticsService {
 
   private BigDecimal variance(BigDecimal cumalativeHistorical, BigDecimal cumalativeForecast) {
 
-    if (cumalativeForecast.equals(cumalativeHistorical)) {
+    if (cumalativeForecast.compareTo(cumalativeHistorical) == 0) {
       logger.info(
           "Past and forecast cumalative billing values exactly the same, returning 0 for variance");
       return BigDecimal.ZERO;
     }
 
-    BigDecimal absoluteDifference = cumalativeForecast.subtract(cumalativeHistorical).abs();
+    if (cumalativeHistorical.compareTo(BigDecimal.ZERO) == 0) {
+      logger.info("Historical cumulative billing value is 0, returning 100 for variance");
+      return BigDecimal.valueOf(100);
+    }
 
-    BigDecimal average =
-        cumalativeForecast
-            .add(cumalativeHistorical)
-            .divide(BigDecimal.valueOf(2), 5, RoundingMode.HALF_UP)
-            .abs();
-    return absoluteDifference
-        .divide(average, 5, RoundingMode.HALF_UP)
+    return cumalativeForecast
+        .subtract(cumalativeHistorical)
+        .divide(cumalativeHistorical.abs(), 5, RoundingMode.HALF_UP)
         .multiply(BigDecimal.valueOf(100));
   }
 

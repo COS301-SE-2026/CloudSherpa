@@ -44,6 +44,7 @@ import {
 } from "@/lib/fetch/gcp-connection-api";
 import { ResourceDetail } from "@/lib/fetch/cloud-resource-api";
 import { useRouter } from "next/navigation";
+import { GcpBillingConfigType } from "./validTypes";
 /*
 - should have tanstack table for resources, as elect & deselect all for it
 - should also have pagination
@@ -54,6 +55,7 @@ interface StepThreePropsForGcp {
     resources: ResourceDetail[];
     ingestionPeriod: number;
     credentials: GcpCredentialsDto;
+    billingConfig: GcpBillingConfigType | null;
     onComplete: (ingestionPeriod: number) => void;
     onBack?: () => void;
 }
@@ -144,6 +146,7 @@ export default function StepThreeGcp({
     displayName,
     resources,
     credentials,
+    billingConfig,
     onComplete,
     onBack,
     ingestionPeriod = 60,
@@ -288,6 +291,7 @@ export default function StepThreeGcp({
                     tags: resource.tags,
                     active: resource.active,
                 })),
+                billingConfig,
             };
 
             await createGcpConnection(request);

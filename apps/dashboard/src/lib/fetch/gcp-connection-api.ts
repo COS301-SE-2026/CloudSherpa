@@ -1,3 +1,4 @@
+import { GcpBillingConfigType } from "@/features/connectionManager/components/connectionManager/gcp/validTypes";
 import apiClient from "./api-client";
 
 export interface GcpCredentialsJson {
@@ -32,6 +33,7 @@ export interface PersistGcpConnectionRequest {
     ingestionPeriod: string;
     credentials: GcpCredentialsDto;
     resources: ResourceSelectionDto[];
+    billingConfig: GcpBillingConfigType | null;
 }
 
 export async function createGcpConnection(request: PersistGcpConnectionRequest): Promise<void> {
