@@ -30,7 +30,7 @@ concurrency:
     cancel-in-progress: true
 
 jobs:
-    cloudsherpa-build-and-e2e:
+    cloudsherpa-build-e2e-performance:
       permissions:
         id-token: write
         contents: read
@@ -95,6 +95,18 @@ jobs:
           working-directory: apps/dashboard
           run: npm ci --ignore-scripts
 
+        - name: Install psql
+          if: github.event_name == 'pull_request'
+          run: |
+            sudo apt-get update
+            sudo apt-get install -y postgresql-client
+        
+        - name: Setup k6 CLI
+          if: github.event_name == 'pull_request'
+          uses: grafana/setup-k6-action@db07bd9765aac508ef18982e52ab937fe633a065 # v1.2.1
+          with:
+            k6-version: 'latest'
+          
         - name: Set up playwright
           if: github.event_name == 'pull_request'
           working-directory: apps/dashboard
@@ -111,6 +123,20 @@ jobs:
           run: |
             npm run test:e2e
         
+        - name: Historical DB seed
+          if: github.event_name == 'pull_request'
+          run: |
+            psql postgresql://cloudsherpa:mock_pass@localhost:5432/sherpadb -a -f nfr-tests/common/seed/historical-metric-seed.sql 
+            psql postgresql://cloudsherpa:mock_pass@localhost:5432/sherpadb -c "SELECT seed_normalized_metrics();"
+        
+        - name: Run Historical Metric Fetch Load Test
+          if: github.event_name == 'pull_request'
+          uses: grafana/run-k6-action@de51a7390bdf0ac85a3bef493691bd71d4c7c158
+          with:
+            path: |
+              nfr-tests/historical-metric-load.js
+            flags: --report-local-vuls=true
+
         - name: Compose Down
           if: github.event_name == 'pull_request' && always()
           run: |
@@ -143,7 +169,7 @@ jobs:
 
     cloudsherpa-deploy:
         if: github.event_name == 'push'
-        needs: cloudsherpa-build-and-e2e
+        needs: cloudsherpa-build-e2e-performance
         permissions:
             id-token: write
         runs-on: ubuntu-latest
