@@ -3,7 +3,7 @@ import { sleep, check } from 'k6';
 
 const LOCAL = true;
 
-const BASE_URL = LOCAL ? 'http://host.docker.internal:8083' : 'http://service:8080';
+const BASE_URL = LOCAL ? 'http://host.docker.internal:8083' : 'http://service:8080'; // NOSONAR within same docker network with no TLS enforcer
 
 const now = new Date().toISOString();
 const thirtyDaysBack = new Date(Date.now() - 30*  86_400_000).toISOString();
@@ -32,7 +32,7 @@ export function setup() {
     };
 }
 
-export default function (data) {
+export default function (data) { // NOSONAR how k6 expects it
   const jar = http.cookieJar();
   jar.set(`${BASE_URL}`, 'auth_token', data.authToken);
 
