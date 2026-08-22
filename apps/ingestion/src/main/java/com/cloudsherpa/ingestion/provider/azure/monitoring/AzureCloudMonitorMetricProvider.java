@@ -11,6 +11,7 @@ import com.azure.monitor.query.metrics.models.MetricsQueryResult;
 import com.azure.monitor.query.metrics.models.MetricsQueryTimeInterval;
 import com.azure.monitor.query.metrics.models.TimeSeriesElement;
 import com.cloudsherpa.ingestion.connector.AccountScope;
+import com.cloudsherpa.ingestion.connector.CloudCredentials;
 import com.cloudsherpa.ingestion.connector.Instance;
 import com.cloudsherpa.ingestion.connector.InstanceScope;
 import com.cloudsherpa.ingestion.connector.Metric;
@@ -52,8 +53,6 @@ public class AzureCloudMonitorMetricProvider implements CloudMonitoringMetricPro
 
     validateRequest(accountScope, request);
 
-    MetricsClient client = AzureClientFactory.createMetricsClient(request.getCredentials());
-
     QueryContext queryContext = createQueryContext(accountScope, request);
 
     List<UsageRecordModel> results = new ArrayList<>();
@@ -63,13 +62,13 @@ public class AzureCloudMonitorMetricProvider implements CloudMonitoringMetricPro
         continue;
       }
 
-      results.addAll(collectServiceMetrics(client, serviceScope, queryContext));
+      results.addAll(collectServiceMetrics(request.getCredentials(), serviceScope, queryContext));
     }
     return results;
   }
 
   private List<UsageRecordModel> collectServiceMetrics(
-      MetricsClient client, ServiceScope serviceScope, QueryContext queryContext) {
+      CloudCredentials credentials, ServiceScope serviceScope, QueryContext queryContext) {
 
     Map<String, List<AzureResource>> resourcesByRegion = groupResourcesByRegion(serviceScope);
 
@@ -79,6 +78,9 @@ public class AzureCloudMonitorMetricProvider implements CloudMonitoringMetricPro
     List<UsageRecordModel> results = new ArrayList<>();
 
     for (Map.Entry<String, List<AzureResource>> regionEntry : resourcesByRegion.entrySet()) {
+      MetricsClient client =
+          AzureClientFactory.createMetricsClient(
+              credentials, regionEntry.getValue().getFirst().region);
       results.addAll(
           collectRegionMetrics(
               client,
@@ -109,7 +111,6 @@ public class AzureCloudMonitorMetricProvider implements CloudMonitoringMetricPro
             new QueryBatch(resourceBatch, metricBatch, serviceScope.getName(), region);
 
         MetricsQueryResourcesResult response = queryMetrics(client, batch, queryContext);
-
         results.addAll(processResponse(response, batch, serviceScope, queryContext));
       }
     }
@@ -280,38 +281,22 @@ public class AzureCloudMonitorMetricProvider implements CloudMonitoringMetricPro
             : "AZURE");
 
     usage.setAccountId(queryContext.accountScope().getAccountId());
-
     usage.setSubscriptionId(queryContext.accountScope().getSubscriptionId());
-
     usage.setServiceName(recordContext.serviceScope().getName());
-
     usage.setMetricName(metricResult.getMetricName());
-
     usage.setResourceId(recordContext.resource().resourceId());
-
     usage.setResourceType(getResourceType(metricResult, recordContext.serviceScope()));
-
     usage.setRegion(recordContext.resource().region());
-
     usage.setUnit(getUnit(metricResult, recordContext.requestedMetric()));
-
     usage.setValue(value);
-
     usage.setTimestamp(timestamp);
-
     usage.setIngestionTimestamp(Instant.now());
-
     usage.setRecordId(UUID.randomUUID());
-
     usage.setIngestionId(queryContext.ingestionId());
-
     usage.setDimensions(recordContext.dimensions());
-
     usage.setSource("AzureMonitor");
-
-    usage.setPeriodEnd(timestamp);
-
-    usage.setPeriodStart(timestamp.minusSeconds(queryContext.period()));
+    usage.setPeriodStart(timestamp);
+    usage.setPeriodEnd(timestamp.plusSeconds(queryContext.period()));
 
     return usage;
   }
