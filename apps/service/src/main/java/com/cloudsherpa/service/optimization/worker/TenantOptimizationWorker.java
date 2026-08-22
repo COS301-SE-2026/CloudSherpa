@@ -2,8 +2,8 @@ package com.cloudsherpa.service.optimization.worker;
 
 import com.cloudsherpa.lib.entities.ProcessingWatermark;
 import com.cloudsherpa.lib.repositories.ProcessingWatermarkRepository;
-import com.cloudsherpa.service.optimization.rule.RuleCatalog;
-import com.cloudsherpa.service.optimization.rule.RuleEngine;
+// import com.cloudsherpa.service.optimization.rule.RuleCatalog
+// import com.cloudsherpa.service.optimization.rule.RuleEngine
 import com.cloudsherpa.service.optimization.service.OptimizationStatisticsService;
 import jakarta.transaction.Transactional;
 import java.time.OffsetDateTime;
@@ -19,18 +19,17 @@ public class TenantOptimizationWorker {
 
   private final ProcessingWatermarkRepository watermarkRepository;
   private final OptimizationStatisticsService statisticsService;
-  private final RuleCatalog ruleCatalog;
-  private final RuleEngine ruleEngine;
+
+  // private final RuleCatalog ruleCatalog
+  // private final RuleEngine ruleEngine
 
   public TenantOptimizationWorker(
       ProcessingWatermarkRepository watermarkRepository,
-      OptimizationStatisticsService statisticsService,
-      RuleCatalog ruleCatalog,
-      RuleEngine ruleEngine) {
+      OptimizationStatisticsService statisticsService) {
     this.watermarkRepository = watermarkRepository;
     this.statisticsService = statisticsService;
-    this.ruleCatalog = ruleCatalog;
-    this.ruleEngine = ruleEngine;
+    // this.ruleCatalog = ruleCatalog
+    // this.ruleEngine = ruleEngine
   }
 
   @Transactional
