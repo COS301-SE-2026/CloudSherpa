@@ -1,5 +1,8 @@
 package com.cloudsherpa.service.optimization.service;
 
+import com.cloudsherpa.lib.entities.OptimizationRecommendation;
+import com.cloudsherpa.lib.repositories.OptimizationRecommendationRepository;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -8,12 +11,48 @@ import org.springframework.stereotype.Service;
 @Service
 public class OptimizationRecommendationService {
 
-  // parameters: String status, String provider, String resourceType, String actionType, UUID
-  // resourceId
+  private final OptimizationRecommendationRepository recommendationRepository;
+
+  public OptimizationRecommendationService(
+      OptimizationRecommendationRepository recommendationRepository) {
+    this.recommendationRepository = recommendationRepository;
+  }
+
+  // Query all recommendations from database
   public List<Map<String, Object>> getRecommendations() {
 
-    // Query persisted recommendations using the supplied filters.
-    return List.of(mockRecommendation());
+    List<OptimizationRecommendation> recommendations = recommendationRepository.findAll();
+
+    List<Map<String, Object>> resultList = new ArrayList<>(recommendations.size());
+
+    for (OptimizationRecommendation rec : recommendations) {
+      Map<String, Object> map = toMap(rec);
+      resultList.add(map);
+    }
+
+    return resultList;
+  }
+
+  private Map<String, Object> toMap(OptimizationRecommendation rec) {
+    return Map.of(
+        "recommendationId",
+        rec.getRecommendationId(),
+        "resourceId",
+        rec.getResourceId(),
+        "provider",
+        rec.getProvider().name(),
+        "ruleId",
+        rec.getRuleId(),
+        "actionType",
+        rec.getActionType().name(),
+        "status",
+        rec.getStatus().name(),
+        "evidence",
+        rec.getEvidence() != null ? rec.getEvidence() : Map.of(),
+        "createdAt",
+        rec.getCreatedAt(),
+        "updatedAt",
+        rec.getUpdatedAt());
   }
 
   public Map<String, Object> getRecommendation(UUID recommendationId) {
