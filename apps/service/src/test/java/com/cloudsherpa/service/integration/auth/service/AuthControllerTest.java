@@ -26,7 +26,7 @@ class AuthControllerTest {
   @Container @ServiceConnection
   static PostgreSQLContainer timescaledb =
       new PostgreSQLContainer(
-              DockerImageName.parse("timescale/timescaledb:2.16.1-pg16")
+              DockerImageName.parse("timescale/timescaledb-ha:pg16-ts2.29")
                   .asCompatibleSubstituteFor("postgres"))
           .withInitScript("sherpadb-schema.sql");
 
