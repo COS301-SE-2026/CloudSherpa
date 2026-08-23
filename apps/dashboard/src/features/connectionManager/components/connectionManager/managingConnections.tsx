@@ -112,7 +112,7 @@ export default function ManagingConnections() {
             await loadConnections();
         } catch (error) {
             console.error("Failed to delete account", error);
-            toast.success(`Failed to delete connection.`);
+            toast.error(`Failed to delete connection.`);
             return;
         }
         toast.success(`Successfully deleted connection`);
