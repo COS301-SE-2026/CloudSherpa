@@ -56,8 +56,14 @@ public class OptimizationRecommendationService {
   }
 
   public Map<String, Object> getRecommendation(UUID recommendationId) {
-    // Load recommendation by ID.
-    return mockRecommendation(recommendationId);
+    OptimizationRecommendation recommendation =
+        recommendationRepository.findById(recommendationId).orElse(null);
+
+    if (recommendation == null) {
+      return Map.of("error", "Recommendation not found");
+    }
+
+    return toMap(recommendation);
   }
 
   public Map<String, Object> acknowledgeRecommendation(UUID recommendationId) {
