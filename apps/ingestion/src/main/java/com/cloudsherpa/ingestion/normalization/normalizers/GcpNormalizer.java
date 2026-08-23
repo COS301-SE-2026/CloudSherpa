@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 public class GcpNormalizer implements Normalizer {
   private final ResourceRepository resourceRepository;
   public static final String UNKNOWN = "unknown";
+  public static final String PERCENT = "percent";
 
   public GcpNormalizer(ResourceRepository resourceRepository) {
     this.resourceRepository = resourceRepository;
@@ -34,6 +35,11 @@ public class GcpNormalizer implements Normalizer {
 
     double metricValue = r.getValue();
     String unit = normalizeGcpUnit(r.getUnit());
+
+    if (PERCENT.equals(unit)) {
+      metricValue = metricValue * 100;
+    }
+
     String currency = null;
 
     long periodStart = resolveEpochMilli(r.getPeriodStart(), r.getTimestamp());
@@ -120,8 +126,8 @@ public class GcpNormalizer implements Normalizer {
         return "bytes";
       case "s":
         return "seconds";
-      case "Percent", "percent", "10^2.%":
-        return "percent";
+      case "Percent", PERCENT, "10^2.%":
+        return PERCENT;
       case "Count", "1":
         return "count";
       default:
