@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 public class GcpNormalizer implements Normalizer {
   private final ResourceRepository resourceRepository;
   public static final String UNKNOWN = "unknown";
+  public static final String PERCENT = "percent";
 
   public GcpNormalizer(ResourceRepository resourceRepository) {
     this.resourceRepository = resourceRepository;
@@ -26,12 +27,19 @@ public class GcpNormalizer implements Normalizer {
     UUID accountUuid = parseUuid(accountKey);
     String resourceId = resolveResourceId(accountUuid, r);
 
-    String metricName =
-        prettifyGcpMetricName(r.getMetricName() != null ? r.getMetricName() : UNKNOWN);
+    String metricName = r.getMetricName();
+    if (metricName == null || metricName.isBlank()) {
+      metricName = UNKNOWN;
+    }
     String metricType = determineMetricType(metricName);
 
     double metricValue = r.getValue();
     String unit = normalizeGcpUnit(r.getUnit());
+
+    if (PERCENT.equals(unit)) {
+      metricValue = metricValue * 100;
+    }
+
     String currency = null;
 
     long periodStart = resolveEpochMilli(r.getPeriodStart(), r.getTimestamp());
@@ -118,55 +126,12 @@ public class GcpNormalizer implements Normalizer {
         return "bytes";
       case "s":
         return "seconds";
-      case "Percent", "percent", "10^2.%":
-        return "percent";
+      case "Percent", PERCENT, "10^2.%":
+        return PERCENT;
       case "Count", "1":
         return "count";
       default:
         return t.toLowerCase();
     }
-  }
-
-  private String prettifyGcpMetricName(String fullMetricName) {
-    if (fullMetricName == null || fullMetricName.isEmpty()) {
-      return UNKNOWN;
-    }
-
-    String[] parts = fullMetricName.split("/");
-    int start = Math.max(0, parts.length - 2);
-
-    StringBuilder result = new StringBuilder();
-
-    for (int index = start; index < parts.length; index++) {
-
-      if (result.isEmpty()) {
-        result.append(' ');
-      }
-      result.append(convertSnakeToCamel(parts[index]));
-    }
-
-    return result.toString();
-  }
-
-  private String convertSnakeToCamel(String snake) {
-    if (snake == null || snake.isEmpty()) return "";
-
-    StringBuilder camel = new StringBuilder();
-    boolean capitalizeNext = true;
-
-    for (char c : snake.toCharArray()) {
-      if (c == '_') {
-        capitalizeNext = true;
-      } else {
-        if (capitalizeNext) {
-          camel.append(Character.toUpperCase(c));
-          capitalizeNext = false;
-        } else {
-          camel.append(c);
-        }
-      }
-    }
-
-    return camel.toString();
   }
 }

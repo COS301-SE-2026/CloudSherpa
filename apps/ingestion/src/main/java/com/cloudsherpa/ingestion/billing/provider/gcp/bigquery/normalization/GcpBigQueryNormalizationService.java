@@ -4,19 +4,24 @@ import com.cloudsherpa.ingestion.billing.provider.gcp.bigquery.pipeline.GcpBilli
 import com.cloudsherpa.ingestion.service.SherpaDbPersistenceService;
 import com.cloudsherpa.lib.entities.NormalizedCosts;
 import com.google.cloud.bigquery.FieldValueList;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 
 @Service
 public class GcpBigQueryNormalizationService {
 
   private final SherpaDbPersistenceService persistenceService;
+  private final ObjectProvider<GcpBigQueryNormalizer> contexts;
 
-  public GcpBigQueryNormalizationService(SherpaDbPersistenceService persistenceService) {
+  public GcpBigQueryNormalizationService(
+      SherpaDbPersistenceService persistenceService,
+      ObjectProvider<GcpBigQueryNormalizer> contexts) {
     this.persistenceService = persistenceService;
+    this.contexts = contexts;
   }
 
   public void normalize(GcpBillingContext context) {
-    GcpBigQueryNormalizer gcpBigQueryNormalizer = new GcpBigQueryNormalizer();
+    GcpBigQueryNormalizer gcpBigQueryNormalizer = contexts.getObject();
     gcpBigQueryNormalizer.setBillingId(context.getBillingConfig().billingAccountId());
 
     for (FieldValueList fieldValueList : context.getTableResult().getValues()) {

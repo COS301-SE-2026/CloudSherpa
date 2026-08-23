@@ -35,7 +35,7 @@ public class BillingForecastingService extends ForecastingService {
 
   // Threshold to account for billing latency in reports, i.e. most recent report does not contain
   // all up to date charges
-  private static final int OLD_CHARGE_CUTOFF_DAYS = 2;
+  private static final int OLD_CHARGE_CUTOFF_DAYS = 7;
 
   public BillingForecastingService(
       NormalizedCostsRepository normalizedCostsRepository,

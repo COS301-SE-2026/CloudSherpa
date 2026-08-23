@@ -1,5 +1,6 @@
 package com.cloudsherpa.service.dashboard.dto;
 
+import com.cloudsherpa.lib.entities.ProviderEnum;
 import com.cloudsherpa.lib.entities.TypeEnum;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -22,6 +23,14 @@ public sealed interface WidgetConfigUpdateDTO
   TypeEnum widgetType();
 
   String displayName();
+
+  default ProviderEnum provider() {
+    return null;
+  }
+
+  default UUID accountId() {
+    return null;
+  }
 
   default UUID resourceId() {
     return null;

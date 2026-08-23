@@ -1,186 +1,31 @@
 "use client";
 
-import { useState, useCallback, useEffect, Suspense, useMemo } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, Suspense, useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 import { useToolbar } from "@/features/dashboard/components/toolbar/toolbarProvider";
 
 import { Spinner } from "@/components/atoms/spinner";
 import Grid from "@/features/dashboard/components/widgetGrid/grid";
-import {
-    LayoutItem,
-    DashboardConfig,
-    WidgetConfig,
-    ChartType,
-} from "@/features/dashboard/types/widgets";
+import { LayoutItem } from "@/features/dashboard/types/widgets";
 import { useDashboardStore, DashboardStore } from "@/features/dashboard/stores/dashboard-store";
 import { useMetricStream } from "@/features/dashboard/services/sse/metric-stream";
-import { useFetchMetrics } from "@/features/dashboard/hooks/useFetchMetrics";
-import { useResourceNameStore } from "@/features/dashboard/stores/resource-store";
-import { useMetricStore } from "@/features/dashboard/stores/metric-store";
-import { fetchDashboards, DashboardDTO } from "@/lib/fetch/api-dashboard";
-import { MetricType } from "@/features/dashboard/types/metric";
-import { useAuthContext } from "@/features/authentication/providers/AuthContext";
-
-function processFetchedDashboards(fetchedData: DashboardDTO[]) {
-    const dashboardsMap: Record<string, DashboardConfig> = {};
-    const layoutsArray: LayoutItem[] = [];
-    const configsArray: WidgetConfig[] = [];
-    for (const db of fetchedData) {
-        // const layoutItemIds = Array.prototype.concat(chartIds, kpiIds);
-
-        dashboardsMap[db.id] = {
-            id: db.id,
-            displayName: db.displayName,
-            timeFrom: db.timeFrom,
-            timeTo: db.timeTo,
-            predefinedTime: db.predefinedTime,
-            current: db.current,
-            // layoutItemIds: db.widgets.map((w) => w.id),
-            layoutItemIds: db.widgets.map((widget) => widget.id),
-        };
-
-        for (const w of db.widgets) {
-            layoutsArray.push({
-                id: w.id,
-                x: w.startX,
-                y: w.startY,
-                w: w.width,
-                h: w.height,
-                autoPosition: false,
-            });
-
-            if (w.widgetType === "CHART") {
-                configsArray.push({
-                    id: w.id,
-                    chartType: w.chartType,
-                    widgetType: "CHART",
-                    displayName: w.displayName,
-                    resourceId: w.resourceId,
-                    metricType: w.metricType as MetricType | null,
-                });
-            } else if (w.widgetType === "KPI") {
-                configsArray.push({
-                    id: w.id,
-                    widgetType: "KPI",
-                    displayName: w.displayName,
-                    chargeIds: w.chargeIds,
-                    aggregationWindowDays: w.aggregationWindowDays,
-                });
-            }
-        }
-    }
-
-    return { dashboardsMap, layoutsArray, configsArray };
-}
+import { useLoadDashboardData } from "@/features/dashboard/hooks/useLoadDash";
 
 function DashboardContent() {
     const { error: streamError } = useMetricStream();
-    const router = useRouter();
     const searchParams = useSearchParams();
     const urlId = searchParams.get("id");
-    const [isLoading, setIsLoading] = useState(true);
     const { isEditMode } = useToolbar();
+
+    const { isLoading, metricFetchError } = useLoadDashboardData();
 
     const dashboards = useDashboardStore((state: DashboardStore) => state.dashboards);
     const activeDashboardId = useDashboardStore((state: DashboardStore) => state.activeDashboardId);
     const layoutsMap = useDashboardStore((state: DashboardStore) => state.layouts);
-    const { isAuthReady, isAuthenticated } = useAuthContext();
 
-    // Metrics and resource name stores
-    const { metricFetchError, metricFetchLoad } = useFetchMetrics();
-    const fetchResourceNames = useResourceNameStore((state) => state.fetchResources);
-    const getMetricList = useMetricStore((state) => state.getMetricList);
-
-    const hydrateWindow = useDashboardStore((state) => state.hydrateWindowOnDashboardLoad);
-
-    const { setInitialState, updateLayouts, setActiveDashboard } = useDashboardStore(
+    const { updateLayouts, setActiveDashboard } = useDashboardStore(
         (state: DashboardStore) => state.actions
     );
-
-    const createDefaultWidgetConfig = useCallback(
-        (id: string, displayName: string, chartType: ChartType): WidgetConfig => {
-            const metricsByResource = getMetricList();
-            const resourceId = Object.keys(metricsByResource)[0];
-
-            return {
-                id,
-                widgetType: "CHART",
-                displayName,
-                chartType,
-                resourceId,
-                metricType: resourceId ? (metricsByResource[resourceId]?.[0] ?? "anon") : "anon",
-            };
-        },
-        [getMetricList]
-    );
-
-    useEffect(() => {
-        const loadDashboardData = async () => {
-            if (Object.keys(dashboards).length > 0) {
-                setIsLoading(false);
-                return;
-            }
-
-            if (!isAuthReady || !isAuthenticated) {
-                return;
-            }
-
-            await fetchResourceNames();
-            if (metricFetchLoad) {
-                return;
-            }
-            if (metricFetchError) {
-                setIsLoading(false);
-            }
-            try {
-                const fetchedData = await fetchDashboards();
-                const { dashboardsMap, layoutsArray, configsArray } =
-                    processFetchedDashboards(fetchedData);
-                setInitialState(dashboardsMap, layoutsArray, configsArray);
-                const currentDb = fetchedData.find((d) => d.current);
-                let defaultId = fetchedData[0]?.id;
-
-                if (urlId && dashboardsMap[urlId]) {
-                    defaultId = urlId;
-                } else if (currentDb) {
-                    defaultId = currentDb.id;
-                }
-
-                if (defaultId) {
-                    setActiveDashboard(defaultId);
-
-                    const selectedDashboard = fetchedData.find((d) => d.id === defaultId);
-                    if (selectedDashboard?.predefinedTime) {
-                        hydrateWindow(selectedDashboard?.predefinedTime);
-                    }
-
-                    if (urlId !== defaultId) {
-                        router.replace(`?id=${defaultId}`);
-                    }
-                }
-            } catch (error) {
-                console.error("Failed to load dashboards from API", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        loadDashboardData();
-    }, [
-        setInitialState,
-        setActiveDashboard,
-        router,
-        dashboards,
-        fetchResourceNames,
-        urlId,
-        createDefaultWidgetConfig,
-        metricFetchLoad,
-        isAuthReady,
-        isAuthenticated,
-        // metricFetchError,
-    ]);
-
-    useEffect(() => {}, [dashboards]);
 
     // sync Zustand store when the URL changes (i.e browser back/forward buttons)
     useEffect(() => {
@@ -191,6 +36,7 @@ function DashboardContent() {
 
     // computes the layouts array for the active dashboard
     const activeDashboard = activeDashboardId ? dashboards[activeDashboardId] : undefined;
+
     const widgetLayouts = useMemo(() => {
         return (
             activeDashboard?.layoutItemIds
@@ -209,8 +55,8 @@ function DashboardContent() {
     const renderMainContent = () => {
         if (isLoading) {
             return (
-                <div className="flex-1 flex items-center justify-center">
-                    <Spinner className="size-8" />
+                <div className="h-full w-full flex flex-col justify-center items-center gap-2">
+                    <Spinner className="w-10 h-10" />
                 </div>
             );
         }

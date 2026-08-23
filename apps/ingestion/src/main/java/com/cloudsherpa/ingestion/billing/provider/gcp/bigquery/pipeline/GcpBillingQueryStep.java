@@ -42,6 +42,7 @@ public class GcpBillingQueryStep implements GcpBillingIngestionStep {
             service.id AS service_id,
             service.description AS service_description,
             sku.id AS sku_id,
+            sku.description AS sku_description,
             resource.global_name AS resource_global_name,
             resource.name AS resource_name,
             cost_type,

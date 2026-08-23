@@ -12,7 +12,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
@@ -143,9 +142,11 @@ public class CloudUsageController {
                     schema = @Schema(implementation = AwsCurContext.class)))
       })
   @PostMapping("/ingest/aws/billing/cur")
-  public AwsCurContext ingestAwsBillingCur() {
-    return awsCurIngestionService.execute(
+  public ResponseEntity<Void> ingestAwsBillingCur() {
+    awsCurIngestionService.execute(
         "5ebe4340-c5ec-4833-ad93-06abf4609f03", "e0000000-0000-0000-0000-000000000001");
+
+    return ResponseEntity.ok().build();
   }
 
   @Operation(
@@ -175,8 +176,7 @@ public class CloudUsageController {
     }
 
     gcpBillingIngestionService.execute(
-        UUID.fromString("5ebe4340-c5ec-4833-ad93-06abf4609f03"),
-        UUID.fromString(devGcpBillingConfigId));
+        "5ebe4340-c5ec-4833-ad93-06abf4609f03", devGcpBillingConfigId);
 
     return ResponseEntity.ok().build();
   }

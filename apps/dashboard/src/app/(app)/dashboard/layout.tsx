@@ -188,6 +188,8 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
             id: sharedId,
             displayName: "New Chart",
             chartType: "line_chart",
+            provider: null,
+            accountId: null,
             resourceId: null,
             metricType: null,
         };
@@ -217,6 +219,8 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
                 startY: newLayout.y,
                 width: newLayout.w,
                 height: newLayout.h,
+                provider: newConfig.provider,
+                accountId: newConfig.accountId,
                 resourceId: newConfig.resourceId,
                 metricType: newConfig.metricType,
             });

@@ -17,6 +17,8 @@ public interface OptimizationMetricStatisticsRepository extends JpaRepository<Op
 
   List<OptimizationMetricStatistics> findByWindowStartAndWindowEnd(OffsetDateTime windowStart, OffsetDateTime windowEnd);
 
+  List<OptimizationMetricStatistics> findByMetricNameAndWindowNumDays(String metricName, Integer windowNumDays);
+  
   // Lets a recalculation reuse the existing ID and update the row instead of inserting duplicates
   Optional<OptimizationMetricStatistics>
     findByResourceIdAndMetricNameAndWindowNumDaysAndWindowStartAndWindowEnd(

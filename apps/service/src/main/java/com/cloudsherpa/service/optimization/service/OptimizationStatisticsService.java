@@ -4,6 +4,7 @@ import com.cloudsherpa.lib.entities.OptimizationMetricStatistics;
 import com.cloudsherpa.lib.projections.OptimizationStatisticsAggregate;
 import com.cloudsherpa.lib.repositories.NormalizedMetricsRepository;
 import com.cloudsherpa.lib.repositories.OptimizationMetricStatisticsRepository;
+import com.cloudsherpa.service.metrics.MetricDisplayNameMapper;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -22,12 +23,15 @@ public class OptimizationStatisticsService {
 
   private final OptimizationMetricStatisticsRepository statisticsRepository;
   private final NormalizedMetricsRepository normalizedMetricsRepository;
+  private final MetricDisplayNameMapper metricDisplayNameMapper;
 
   public OptimizationStatisticsService(
       OptimizationMetricStatisticsRepository statisticsRepository,
-      NormalizedMetricsRepository normalizedMetricsRepository) {
+      NormalizedMetricsRepository normalizedMetricsRepository,
+      MetricDisplayNameMapper metricDisplayNameMapper) {
     this.statisticsRepository = statisticsRepository;
     this.normalizedMetricsRepository = normalizedMetricsRepository;
+    this.metricDisplayNameMapper = metricDisplayNameMapper;
   }
 
   @Transactional(readOnly = true)
@@ -89,13 +93,15 @@ public class OptimizationStatisticsService {
       OffsetDateTime windowStart,
       OffsetDateTime windowEnd) {
 
+    String canonicalMetricName = metricDisplayNameMapper.toDisplayName(aggregate.getMetricName());
+
     UUID statisticsId;
 
     Optional<OptimizationMetricStatistics> existingStat =
         statisticsRepository
             .findByResourceIdAndMetricNameAndWindowNumDaysAndWindowStartAndWindowEnd(
                 aggregate.getResourceId(),
-                aggregate.getMetricName(),
+                canonicalMetricName,
                 windowNumDays,
                 windowStart,
                 windowEnd);
@@ -110,7 +116,7 @@ public class OptimizationStatisticsService {
         .statisticsId(statisticsId)
         .resourceId(aggregate.getResourceId())
         .provider(aggregate.getProvider())
-        .metricName(aggregate.getMetricName())
+        .metricName(canonicalMetricName)
         .windowNumDays(windowNumDays)
         .minimumValue(aggregate.getMinimumValue())
         .maximumValue(aggregate.getMaximumValue())

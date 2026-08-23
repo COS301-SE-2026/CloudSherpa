@@ -10,9 +10,10 @@ public record PersistGcpConnectionRequest(
     String displayName,
     Integer ingestionPeriod,
     GcpCredentialsDto credentials,
-    List<ResourceSelectionDto> resources) {
+    List<ResourceSelectionDto> resources,
+    GcpBillingConfigDto billingConfig) {
   public PersistGcpConnectionRequest withUserId(UUID userId) {
     return new PersistGcpConnectionRequest(
-        userId, accountId, displayName, ingestionPeriod, credentials, resources);
+        userId, accountId, displayName, ingestionPeriod, credentials, resources, billingConfig);
   }
 }
