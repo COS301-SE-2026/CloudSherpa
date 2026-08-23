@@ -1,6 +1,9 @@
 package com.cloudsherpa.service.optimization.rule;
 
 import com.cloudsherpa.lib.entities.OptimizationActionTypeEnum;
+import com.cloudsherpa.lib.entities.OptimizationRecommendation;
+import com.cloudsherpa.lib.entities.OptimizationStatusEnum;
+import com.cloudsherpa.lib.repositories.OptimizationRecommendationRepository;
 import com.cloudsherpa.service.optimization.rule.model.RecommendationCandidate;
 // import com.cloudsherpa.service.optimization.rule.model.RecommendationResult
 import java.time.OffsetDateTime;
@@ -8,11 +11,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ConflictResolver {
+
+  private final OptimizationRecommendationRepository recommendationRepository;
+
+  public ConflictResolver(OptimizationRecommendationRepository recommendationRepository) {
+    this.recommendationRepository = recommendationRepository;
+  }
 
   // Group candidates by resource
   public Map<UUID, List<RecommendationCandidate>> groupByResourceId(
@@ -117,6 +127,40 @@ public class ConflictResolver {
     return winner;
   }
 
+  private void persistWinners(List<RecommendationCandidate> winners, OffsetDateTime windowEnd) {
+    for (RecommendationCandidate winner : winners) {
+      // Check if a recommendation already exists for this resource and rule
+      Optional<OptimizationRecommendation> existing =
+          recommendationRepository.findByResourceIdAndRuleId(winner.resourceId(), winner.ruleId());
+
+      if (existing.isPresent()) {
+        OptimizationRecommendation rec = existing.get();
+
+        if (rec.getStatus().equals(OptimizationStatusEnum.ACTIVE)) {
+          continue;
+        }
+
+        // Update if it was in a different status
+        rec.setStatus(OptimizationStatusEnum.ACTIVE);
+        rec.setUpdatedAt(windowEnd);
+        recommendationRepository.save(rec);
+      } else {
+        // Create new recommendation
+        OptimizationRecommendation rec =
+            new OptimizationRecommendation(
+                winner.resourceId(),
+                winner.provider(),
+                winner.ruleId(),
+                winner.actionType(),
+                OptimizationStatusEnum.ACTIVE,
+                winner.evidence(),
+                windowEnd);
+
+        recommendationRepository.save(rec);
+      }
+    }
+  }
+
   public void resolveAndPersist(
       List<RecommendationCandidate> draftCandidates, UUID userId, OffsetDateTime windowEnd) {
 
@@ -137,5 +181,7 @@ public class ConflictResolver {
     }
 
     List<RecommendationCandidate> winners = rankAndSelectWinners(validated);
+
+    persistWinners(winners, windowEnd);
   }
 }
