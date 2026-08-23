@@ -111,8 +111,8 @@ RETURNS integer
 LANGUAGE plpgsql AS
 $$
 DECLARE
-    tenant_schema text := 'tenant_5ebe4340_c5ec_4833_ad93_06abf4609f03';
-    aws_account_id uuid := 'a0000000-0000-0000-0000-000000000001';
+    tenant_schema text := 'tenant_a1b6ebb6_2b13_41c2_b4ce_bc6c563ea246';
+    aws_account_id uuid := '06f744fd-76e5-4845-9780-ced666c26ffe';
     resource_id_01 uuid := '10000000-0000-0000-0000-000000000001';
     resource_id_02 uuid := '10000000-0000-0000-0000-000000000002';
     resource_id_03 uuid := '10000000-0000-0000-0000-000000000003';

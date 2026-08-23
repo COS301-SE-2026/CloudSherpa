@@ -1,9 +1,7 @@
 import http from 'k6/http';
 import { sleep, check } from 'k6';
 
-const LOCAL = true;
-
-const BASE_URL = LOCAL ? 'http://host.docker.internal:8083' : 'http://service:8080'; // NOSONAR within same docker network with no TLS enforcer
+const BASE_URL = __ENV.BASE_URL ?? 'http://host.docker.internal:8083';
 
 const now = new Date().toISOString();
 const thirtyDaysBack = new Date(Date.now() - 30*  86_400_000).toISOString();
@@ -14,8 +12,8 @@ export const options = {
 };
 
 const credentials = {
-  email: __ENV.USER_EMAIL,
-  password: __ENV.USER_PASSWORD
+  email: 'nfr-test-user@nfr-test.com',
+  password: 'nfr-test-pass@123!'
 }
 
 const params = {
