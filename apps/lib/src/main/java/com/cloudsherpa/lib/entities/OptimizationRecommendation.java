@@ -31,10 +31,12 @@ public class OptimizationRecommendation {
 
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
+  @JdbcTypeCode(SqlTypes.NAMED_ENUM)
   private OptimizationActionTypeEnum actionType;
 
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
+  @JdbcTypeCode(SqlTypes.NAMED_ENUM)
   private OptimizationStatusEnum status;
 
   @JdbcTypeCode(SqlTypes.JSON)
