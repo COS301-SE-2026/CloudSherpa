@@ -24,6 +24,7 @@ public class OptimizationRecommendation {
 
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
+  @JdbcTypeCode(SqlTypes.NAMED_ENUM)
   private ProviderEnum provider;
 
   @Column(nullable = false)
