@@ -275,7 +275,7 @@ export default function ManagingConnections() {
 
                 {/* this is for the list of conn */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-                    {filtered.map((connection) => (
+                    {searchFilter.map((connection) => (
                         <Card key={connection.id} className="border-border">
                             <CardContent className="p-4">
                                 <div className="flex items-center justify-between mb-3">
