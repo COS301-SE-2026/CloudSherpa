@@ -7,14 +7,7 @@
 */
 
 import { useEffect, useState } from "react";
-import {
-    Trash2,
-    ArrowLeft,
-    Search,
-    MoreVertical,
-    Eye,
-    Pencil, X
-} from "lucide-react";
+import { Trash2, ArrowLeft, Search, MoreVertical, Eye, Pencil, X } from "lucide-react";
 import { Card, CardContent } from "@/components/atoms/card";
 import { Button } from "@/components/atoms/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/atoms/tabs";
@@ -106,11 +99,18 @@ export default function ManagingConnections() {
                   (filteredConnections) => filteredConnections.provider === activeFilter
               );
 
-    const searchFilter = search.trim() === "" ? filtered : filtered.filter((connections) => {
-        const forQueries = search.toLowerCase().trim();
+    const searchFilter =
+        search.trim() === ""
+            ? filtered
+            : filtered.filter((connections) => {
+                  const forQueries = search.toLowerCase().trim();
 
-        return connections.name.toLowerCase().includes(forQueries) || connections.provider.toLowerCase().includes(forQueries) || connections.detail.toLowerCase().includes(forQueries);
-    });
+                  return (
+                      connections.name.toLowerCase().includes(forQueries) ||
+                      connections.provider.toLowerCase().includes(forQueries) ||
+                      connections.detail.toLowerCase().includes(forQueries)
+                  );
+              });
 
     const handleDeletion = async (id: string) => {
         try {
@@ -262,13 +262,25 @@ export default function ManagingConnections() {
 
                     {/* these are for the icons on the tiles of the conn */}
                     <div className="relative flex-1 max-w-xs">
-                        <Search className = "absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"/>
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
 
-                        <input type = "text" placeholder = "Search connections..." value = {search} onChange = {(forChanges) => setSearch(forChanges.target.value)}
-                               className = "w-full h-9 pl-9 pr-3 rounded-md border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"/>
-                        
+                        <input
+                            type="text"
+                            placeholder="Search connections..."
+                            value={search}
+                            onChange={(forChanges) => setSearch(forChanges.target.value)}
+                            className="w-full h-9 pl-9 pr-3 rounded-md border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                        />
+
                         {search && (
-                            <button type = "button" onClick = {() => setSearch("")} className = "absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"> <X size = {14}/> </button>
+                            <button
+                                type="button"
+                                onClick={() => setSearch("")}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
+                            >
+                                {" "}
+                                <X size={14} />{" "}
+                            </button>
                         )}
                     </div>
                 </div>
