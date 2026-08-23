@@ -76,7 +76,7 @@ public class TenantOptimizationWorker {
 
     // Resolve conflicts and persist final recommendations
     if (!draftCandidates.isEmpty()) {
-      conflictResolver.resolveAndPersist(draftCandidates, userId, windowEnd);
+      conflictResolver.resolveAndPersist(draftCandidates, windowEnd);
     }
 
     watermark.setLastProcessedPeriod(windowEnd);

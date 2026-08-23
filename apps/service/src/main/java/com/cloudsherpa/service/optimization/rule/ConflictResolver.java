@@ -161,7 +161,7 @@ public class ConflictResolver {
   }
 
   public void resolveAndPersist(
-      List<RecommendationCandidate> draftCandidates, UUID userId, OffsetDateTime windowEnd) {
+      List<RecommendationCandidate> draftCandidates, OffsetDateTime windowEnd) {
 
     if (draftCandidates.isEmpty()) {
       return;
