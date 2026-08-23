@@ -2,12 +2,17 @@ package com.cloudsherpa.service.optimization.worker;
 
 import com.cloudsherpa.lib.entities.ProcessingWatermark;
 import com.cloudsherpa.lib.repositories.ProcessingWatermarkRepository;
-// import com.cloudsherpa.service.optimization.rule.RuleCatalog
-// import com.cloudsherpa.service.optimization.rule.RuleEngine
+import com.cloudsherpa.service.optimization.rule.ConflictResolver;
+import com.cloudsherpa.service.optimization.rule.RuleCatalog;
+import com.cloudsherpa.service.optimization.rule.RuleEngine;
+import com.cloudsherpa.service.optimization.rule.model.OptimizationRule;
+import com.cloudsherpa.service.optimization.rule.model.RecommendationCandidate;
 import com.cloudsherpa.service.optimization.service.OptimizationStatisticsService;
 import jakarta.transaction.Transactional;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -19,17 +24,21 @@ public class TenantOptimizationWorker {
 
   private final ProcessingWatermarkRepository watermarkRepository;
   private final OptimizationStatisticsService statisticsService;
-
-  // private final RuleCatalog ruleCatalog
-  // private final RuleEngine ruleEngine
+  private final RuleCatalog ruleCatalog;
+  private final RuleEngine ruleEngine;
+  private final ConflictResolver conflictResolver;
 
   public TenantOptimizationWorker(
       ProcessingWatermarkRepository watermarkRepository,
-      OptimizationStatisticsService statisticsService) {
+      OptimizationStatisticsService statisticsService,
+      RuleCatalog ruleCatalog,
+      RuleEngine ruleEngine,
+      ConflictResolver conflictResolver) {
     this.watermarkRepository = watermarkRepository;
     this.statisticsService = statisticsService;
-    // this.ruleCatalog = ruleCatalog
-    // this.ruleEngine = ruleEngine
+    this.ruleCatalog = ruleCatalog;
+    this.ruleEngine = ruleEngine;
+    this.conflictResolver = conflictResolver;
   }
 
   @Transactional
@@ -55,23 +64,20 @@ public class TenantOptimizationWorker {
 
     // Evaluate rules: Load all rules from the catalog, validate them, and run each rule
     // against the newly calculated statistics to generate draft recommendation candidates.
-    // List<OptimizationRule> allRules = ruleCatalog.getAllRules()
-    // List<OptimizationRule> activeRules = ruleEngine.loadActiveRules(allRules)
+    List<OptimizationRule> allRules = ruleCatalog.getAllRules();
+    List<OptimizationRule> activeRules = ruleEngine.loadActiveRules(allRules);
 
-    // List<RecommendationCandidate> draftCandidates = new ArrayList<>()
-    // for OptimizationRule rule : activeRules{ (for loop)
-    //   List<RecommendationCandidate> ruleCandidates = ruleEngine.evaluateRule(rule)
-    //   draftCandidates.addAll(ruleCandidates)
-    //
+    List<RecommendationCandidate> draftCandidates = new ArrayList<>();
 
-    // Resolve recommendation conflicts.
-    // Apply the conflict resolution hierarchy (TERMINATE > MODERNIZE > DOWNSIZE > SUSPEND).
-    // Group candidates by resource_id, deduplicate, check safety policies, and select winners.
-    // Promote winning candidates from DRAFT -> ACTIVE status.
-    // Mark non-winners as SUPERSEDED or DISMISSED.
+    for (OptimizationRule rule : activeRules) {
+      List<RecommendationCandidate> ruleCandidates = ruleEngine.evaluateRule(rule);
+      draftCandidates.addAll(ruleCandidates);
+    }
 
-    // Persist recommendations.
-    // Save finalized recommendations to the optimization_recommendation table.
+    // Resolve conflicts and persist final recommendations
+    if (!draftCandidates.isEmpty()) {
+      conflictResolver.resolveAndPersist(draftCandidates, userId, windowEnd);
+    }
 
     watermark.setLastProcessedPeriod(windowEnd);
     watermark.setLastSuccessfulRun(windowEnd);
