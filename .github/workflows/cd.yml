@@ -135,6 +135,8 @@ jobs:
         - name: Run Historical Metric Fetch Load Test
           if: github.event_name == 'pull_request'
           uses: grafana/run-k6-action@de51a7390bdf0ac85a3bef493691bd71d4c7c158
+          env:
+            BASE_URL: http://localhost:8083
           with:
             path: |
               nfr-tests/historical-metric-load.js
