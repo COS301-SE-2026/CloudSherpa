@@ -104,8 +104,6 @@ jobs:
         - name: Setup k6 CLI
           if: github.event_name == 'pull_request'
           uses: grafana/setup-k6-action@db07bd9765aac508ef18982e52ab937fe633a065 # v1.2.1
-          with:
-            k6-version: 'latest'
           
         - name: Set up playwright
           if: github.event_name == 'pull_request'
