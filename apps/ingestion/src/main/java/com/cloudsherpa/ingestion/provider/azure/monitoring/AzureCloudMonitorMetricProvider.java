@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
@@ -148,11 +149,9 @@ public class AzureCloudMonitorMetricProvider implements CloudMonitoringMetricPro
 
   private MetricsQueryResourcesResult queryMetrics(
       MetricsClient client, QueryBatch batch, QueryContext queryContext) {
-    List<String> resourceIds =
-        batch.resources().stream().map(AzureResource::resourceId).collect(Collectors.toList());
+    List<String> resourceIds = batch.resources().stream().map(AzureResource::resourceId).toList();
 
-    List<String> metricNames =
-        batch.metrics().stream().map(Metric::getName).collect(Collectors.toList());
+    List<String> metricNames = batch.metrics().stream().map(Metric::getName).toList();
 
     MetricsQueryResourcesOptions options =
         new MetricsQueryResourcesOptions()
@@ -196,11 +195,9 @@ public class AzureCloudMonitorMetricProvider implements CloudMonitoringMetricPro
 
       AzureResource resource = resourcesById.get(resourceResult.getResourceId());
 
-      if (resource == null) {
-        continue;
+      if (resource != null) {
+        results.addAll(processResourceResult(resourceResult, resource, serviceScope, queryContext));
       }
-
-      results.addAll(processResourceResult(resourceResult, resource, serviceScope, queryContext));
     }
     return results;
   }
@@ -211,47 +208,70 @@ public class AzureCloudMonitorMetricProvider implements CloudMonitoringMetricPro
       ServiceScope serviceScope,
       QueryContext queryContext) {
 
+    if (resourceResult.getMetrics() == null) {
+      return new ArrayList<>();
+    }
+
     List<UsageRecordModel> results = new ArrayList<>();
 
-    if (resourceResult.getMetrics() == null) {
-      return results;
-    }
-
     for (MetricResult metricResult : resourceResult.getMetrics()) {
-      if (metricResult == null || metricResult.getTimeSeries() == null) {
-        continue;
-      }
-
-      Metric requestedMetric =
-          findRequestedMetric(queryContext.metrics(), metricResult.getMetricName());
-
-      for (TimeSeriesElement timeSeries : metricResult.getTimeSeries()) {
-
-        if (timeSeries == null || timeSeries.getValues() == null) {
-          continue;
-        }
-
-        Map<String, String> dimensions = getDimensions(timeSeries);
-
-        for (MetricValue metricValue : timeSeries.getValues()) {
-          UsageRecordModel usage =
-              createUsageRecord(
-                  new RecordContext(
-                      metricResult,
-                      metricValue,
-                      resource,
-                      serviceScope,
-                      requestedMetric,
-                      dimensions),
-                  queryContext);
-
-          if (usage != null) {
-            results.add(usage);
-          }
-        }
-      }
+      processMetricResult(metricResult, resource, serviceScope, queryContext, results);
     }
+
     return results;
+  }
+
+  private void processMetricResult(
+      MetricResult metricResult,
+      AzureResource resource,
+      ServiceScope serviceScope,
+      QueryContext queryContext,
+      List<UsageRecordModel> results) {
+
+    if (metricResult == null || metricResult.getTimeSeries() == null) {
+      return;
+    }
+
+    Metric requestedMetric =
+        findRequestedMetric(queryContext.metrics(), metricResult.getMetricName());
+
+    for (TimeSeriesElement timeSeries : metricResult.getTimeSeries()) {
+      processTimeSeries(
+          metricResult, timeSeries, resource, serviceScope, requestedMetric, queryContext, results);
+    }
+  }
+
+  private void processTimeSeries(
+      MetricResult metricResult,
+      TimeSeriesElement timeSeries,
+      AzureResource resource,
+      ServiceScope serviceScope,
+      Metric requestedMetric,
+      QueryContext queryContext,
+      List<UsageRecordModel> results) {
+
+    if (timeSeries == null || timeSeries.getValues() == null) {
+      return;
+    }
+
+    Map<String, String> dimensions = getDimensions(timeSeries);
+
+    for (MetricValue metricValue : timeSeries.getValues()) {
+      UsageRecordModel usage =
+          createUsageRecord(
+              new RecordContext(
+                  metricResult, metricValue, resource, serviceScope, requestedMetric, dimensions),
+              queryContext);
+
+      addIfPresent(results, usage);
+    }
+  }
+
+  private void addIfPresent(List<UsageRecordModel> results, UsageRecordModel usage) {
+
+    if (usage != null) {
+      results.add(usage);
+    }
   }
 
   private UsageRecordModel createUsageRecord(
@@ -338,7 +358,7 @@ public class AzureCloudMonitorMetricProvider implements CloudMonitoringMetricPro
     }
 
     return metrics.stream()
-        .filter(metric -> metric != null)
+        .filter(Objects::nonNull)
         .filter(metric -> metricName.equals(metric.getName()))
         .findFirst()
         .orElse(null);
