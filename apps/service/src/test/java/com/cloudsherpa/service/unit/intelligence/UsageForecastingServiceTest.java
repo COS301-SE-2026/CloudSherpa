@@ -16,7 +16,7 @@ import com.cloudsherpa.service.intelligence.dto.ResourceUsageForecastResponseDto
 import com.cloudsherpa.service.intelligence.dto.SanatizedSeries;
 import com.cloudsherpa.service.intelligence.exceptions.InsufficientContextAvailable;
 import com.cloudsherpa.service.intelligence.service.Sampler;
-import com.cloudsherpa.service.intelligence.service.UsageForecastingService;
+import com.cloudsherpa.service.intelligence.service.usage.UsageForecastingService;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -32,6 +32,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -221,8 +222,11 @@ class UsageForecastingServiceTest {
   }
 
   private void mockForecastingServiceResponse(IntelligenceForecastResponseDto response) {
+    ReflectionTestUtils.setField(usageForecastingService, "intelligenceApiKey", "test-key");
+
     when(restClient.post()).thenReturn(requestBodyUriSpec);
     when(requestBodyUriSpec.uri("/forecast-chronos")).thenReturn(requestBodySpec);
+    when(requestBodySpec.header("X-API-Key", "test-key")).thenReturn(requestBodySpec);
     when(requestBodySpec.contentType(MediaType.APPLICATION_JSON)).thenReturn(requestBodySpec);
     when(requestBodySpec.body(any(IntelligenceForecastRequestDto.class)))
         .thenReturn(requestBodySpec);

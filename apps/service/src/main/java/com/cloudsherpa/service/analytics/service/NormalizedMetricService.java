@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -25,6 +27,8 @@ import org.springframework.web.server.ResponseStatusException;
 public class NormalizedMetricService {
   private final NormalizedMetricsRepository normalizedMetricsRepository;
   private final ResourceRepository resourceRepository;
+
+  private final Logger logger = LoggerFactory.getLogger(NormalizedMetricService.class);
 
   NormalizedMetricService(
       NormalizedMetricsRepository normalizedMetricsRepository,
@@ -86,6 +90,7 @@ public class NormalizedMetricService {
 
   public ResourceMetricHistoricalResponseDto fetchHistoricalDataForResourceMetric(
       UUID resourceId, String metricType, OffsetDateTime from) {
+
     ZoneOffset offset = from.getOffset();
     Instant fromInstant = from.toInstant();
     List<TimestampedNumericDataPoint> fetchedResourceMetrics =
@@ -93,6 +98,8 @@ public class NormalizedMetricService {
             resourceId, metricType, fromInstant);
 
     if (fetchedResourceMetrics.isEmpty()) {
+      logger.info(
+          "Lookup failed for resource {}, metric {} and data {}", resourceId, metricType, from);
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No resource metrics found");
     }
 

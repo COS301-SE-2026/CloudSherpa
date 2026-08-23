@@ -1,6 +1,6 @@
 "use client";
 
-import { billingIntelligenceStore } from "@/features/intelligence/stores/billingIntelligenceStore";
+import { useBillingIntelligenceStore } from "@/features/intelligence/stores/billingIntelligenceStore";
 import Dropdown from "@/components/molecules/dropdown";
 
 const PROVIDERS = ["AWS", "GCP"];
@@ -30,77 +30,86 @@ export default function BillingToolbar() {
         accounts,
         resources,
         isFetching,
+        disableFilters,
+        singleTimeSelector,
         pastTimeWindowDays,
         forecastTimeWindowDays,
         setTimeWindows,
-    } = billingIntelligenceStore();
+    } = useBillingIntelligenceStore();
 
     return (
         <header className="h-16 flex flex-row items-center justify-between">
-            <div className="flex flex-row gap-2">
-                <Dropdown
-                    options={PROVIDERS.map((providers) => ({ value: providers, label: providers }))}
-                    value={provider}
-                    onSelect={(value) => setProvider(value)}
-                    placeholder="Select provider"
-                    disableSearch={true}
-                    widthVariant="medium"
-                />
+            {!disableFilters && (
+                <div className="flex flex-row gap-2">
+                    <Dropdown
+                        options={PROVIDERS.map((providers) => ({
+                            value: providers,
+                            label: providers,
+                        }))}
+                        value={provider}
+                        onSelect={(value) => setProvider(value)}
+                        placeholder="Select provider"
+                        disableSearch={true}
+                        widthVariant="medium"
+                    />
 
-                <Dropdown
-                    options={accounts.map((forAccount) => ({
-                        value: forAccount.id,
-                        label: forAccount.displayName,
-                    }))}
-                    value={accountId}
-                    onSelect={(selectedVal) => {
-                        const accountSelected = accounts.find(
-                            (findAccount) => findAccount.id === selectedVal
-                        );
+                    <Dropdown
+                        options={accounts.map((forAccount) => ({
+                            value: forAccount.id,
+                            label: forAccount.displayName,
+                        }))}
+                        value={accountId}
+                        onSelect={(selectedVal) => {
+                            const accountSelected = accounts.find(
+                                (findAccount) => findAccount.id === selectedVal
+                            );
 
-                        if (accountSelected) {
-                            setAccount(accountSelected.id, accountSelected.displayName);
+                            if (accountSelected) {
+                                setAccount(accountSelected.id, accountSelected.displayName);
+                            }
+                        }}
+                        placeholder={isFetching && provider ? "Loading accounts" : "Select Account"}
+                        disabled={!provider || isFetching}
+                        widthVariant="medium"
+                    />
+
+                    <Dropdown
+                        options={resources.map((forResources) => ({
+                            value: forResources.id,
+                            label: forResources.resourceName,
+                        }))}
+                        value={resourceId}
+                        onSelect={(selectedVal) => {
+                            const resourceSelected = resources.find(
+                                (resource) => resource.id === selectedVal
+                            );
+
+                            if (resourceSelected) {
+                                setResource(resourceSelected.id, resourceSelected.resourceName);
+                            }
+                        }}
+
+                        placeholder={
+                            isFetching && accountId ? "Loading resources" : "Select Resource"
                         }
-                    }}
-                    placeholder={isFetching && provider ? "Loading accounts" : "Select Account"}
-                    disabled={!provider || isFetching}
-                    widthVariant="medium"
-                />
-
-                <Dropdown
-                    options={resources.map((forResources) => ({
-                        value: forResources.id,
-                        label: forResources.resourceName,
-                    }))}
-                    value={resourceId}
-                    onSelect={(selectedVal) => {
-                        const resourceSelected = resources.find(
-                            (resource) => resource.id === selectedVal
-                        );
-
-                        if (resourceSelected) {
-                            setResource(resourceSelected.id, resourceSelected.resourceName);
+                        disabled={!accountId || isFetching}
+                        widthVariant="medium"
+                    />
+                </div>
+            )}
+            <div className={`${disableFilters ? "ml-auto" : ""} flex flex-row gap-2`}>
+                {!singleTimeSelector && (
+                    <Dropdown
+                        options={PAST_TIME_PERIODS}
+                        value={pastTimeWindowDays.toString()}
+                        onSelect={(selectedVal) =>
+                            setTimeWindows(Number(selectedVal), forecastTimeWindowDays)
                         }
-                    }}
-
-                    placeholder={isFetching && accountId ? "Loading resources" : "Select Resource"}
-                    disabled={!accountId || isFetching}
-                    widthVariant="medium"
-                />
-            </div>
-
-            <div className="flex flex-row gap-2">
-                <Dropdown
-                    options={PAST_TIME_PERIODS}
-                    value={pastTimeWindowDays.toString()}
-                    onSelect={(selectedVal) =>
-                        setTimeWindows(Number(selectedVal), forecastTimeWindowDays)
-                    }
-                    placeholder="Select past window"
-                    disableSearch={true}
-                    widthVariant="medium"
-                />
-
+                        placeholder="Select past window"
+                        disableSearch={true}
+                        widthVariant="medium"
+                    />
+                )}
                 <Dropdown
                     options={FORECAST_TIME_PERIODS}
                     value={forecastTimeWindowDays.toString()}

@@ -3,6 +3,7 @@ package com.cloudsherpa.ingestion.billing.provider.aws.cur.pipeline;
 import com.cloudsherpa.ingestion.billing.BillingExportConfigService;
 import com.cloudsherpa.ingestion.connector.CloudCredentials;
 import com.cloudsherpa.ingestion.scheduler.encryption.CredentialEncryptionService;
+import com.cloudsherpa.lib.entities.AwsBillingExportConfig;
 import com.cloudsherpa.lib.entities.BillingExportConfig;
 import com.cloudsherpa.lib.entities.BillingExportExecution;
 import com.cloudsherpa.lib.entities.CloudCredential;
@@ -50,14 +51,18 @@ public class AwsCurContextInitStep implements AwsCurIngestionPipelineStep {
     this.logger.info("Initializing AWS CUR Ingestion Pipeline Context");
     getProcessedExports(context);
 
-    BillingExportConfig billingExportConfig =
-        billingExportConfigService.getAccountBillingExportConfig(
-            UUID.fromString(context.getConfigId()));
+    UUID configId = UUID.fromString(context.getConfigId());
 
-    context.setBucketName(billingExportConfig.getBucketName().strip());
-    context.setBucketRegion(Region.of(billingExportConfig.getBucketRegion()));
-    context.setExportPrefix(billingExportConfig.getExportPrefix());
-    context.setExportName(billingExportConfig.getExportName());
+    BillingExportConfig billingExportConfig =
+        billingExportConfigService.getBillingExportConfig(configId);
+
+    AwsBillingExportConfig awsBillingExportConfig =
+        billingExportConfigService.getAccountAwsBillingExportConfig(configId);
+
+    context.setBucketName(awsBillingExportConfig.getBucketName().strip());
+    context.setBucketRegion(Region.of(awsBillingExportConfig.getBucketRegion()));
+    context.setExportPrefix(awsBillingExportConfig.getExportPrefix());
+    context.setExportName(awsBillingExportConfig.getExportName());
     context.setAccountId(billingExportConfig.getAccountId());
     context.setAwsCurTmpDir(Path.of(awsCurTmpDir));
 

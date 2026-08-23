@@ -30,7 +30,22 @@ CREATE TYPE public.execution_status_enum AS ENUM ('pending', 'processing', 'comp
 CREATE TYPE PUBLIC.chart_type_enum AS ENUM ('gauge_chart', 'line_chart');
 -- Differentiates actual compute usage from other types.
 -- Maps to CUR: line_item_line_item_type
-CREATE TYPE public.charge_type_enum AS ENUM ('Usage', 'Other'); 
+CREATE TYPE public.charge_type_enum AS ENUM ('Usage', 'Other', 'Credit'); 
+CREATE TYPE public.optimization_status_enum AS ENUM (
+  'DRAFT',
+  'ACTIVE',
+  'ACKNOWLEDGED',
+  'DISMISSED',
+  'APPLIED',
+  'SUPERSEDED',
+  'EXPIRED'
+);
+
+CREATE TYPE public.optimization_action_type_enum AS ENUM (
+  'DOWNSIZE',
+  'TERMINATE',
+  'SUSPEND'
+);
 
 -- ----------------------------------------------------------------
 -- PUBLIC TABLES 
@@ -41,6 +56,18 @@ CREATE TABLE IF NOT EXISTS public.users (
   username varchar(100) NOT NULL,
   password_hash varchar(255) NOT NULL,
   created_at timestamptz DEFAULT NOW()
+);
+
+CREATE TABLE public.processing_watermark (
+  watermark_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL REFERENCES public.users(user_id) ON DELETE CASCADE,
+  pipeline_name varchar(255) NOT NULL,
+  last_processed_period timestamptz,
+  last_successful_run timestamptz,
+  updated_at timestamptz DEFAULT NOW(),
+
+  CONSTRAINT uq_processing_watermark_user_pipeline
+    UNIQUE (user_id, pipeline_name)
 );
 
 CREATE TABLE IF NOT EXISTS public.preferences (
@@ -118,11 +145,21 @@ CREATE TABLE IF NOT EXISTS public.cloud_credential (
 CREATE TABLE IF NOT EXISTS public.billing_export_config (
   config_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   account_id uuid REFERENCES public.cloud_account(account_id) ON DELETE CASCADE,
-  bucket_name varchar(255) NOT NULL,
-  bucket_region varchar(255) NOT NULL,
-  export_prefix varchar(255), 
-  export_name varchar(255) NOT NULL,
   created_at timestamptz DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS public.aws_billing_export_config (
+  config_id uuid PRIMARY KEY REFERENCES public.billing_export_config(config_id) ON DELETE CASCADE,
+  bucket_name varchar(63) NOT NULL,
+  bucket_region varchar(50) NOT NULL,
+  export_prefix varchar(256), 
+  export_name varchar(128) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS public.gcp_billing_export_config (
+  config_id uuid PRIMARY KEY REFERENCES public.billing_export_config(config_id) ON DELETE CASCADE,
+  dataset_id varchar(1024) NOT NULL,
+  billing_account_id char(20) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS public.billing_export_execution (
@@ -357,6 +394,8 @@ CREATE TABLE IF NOT EXISTS public.widget_chart (
 CREATE TABLE IF NOT EXISTS public.chart_resource (
   chart_resource_id uuid PRIMARY KEY,
   widget_chart_id uuid REFERENCES public.widget_chart(chart_id) ON DELETE CASCADE,
+  provider public.provider_enum,
+  account_id uuid,
   resource_id uuid, 
   metric_type varchar(50)
 );
@@ -549,6 +588,64 @@ BEGIN
         ON %1$I.normalized_costs (service_name, usage_start_time DESC);
     $sql$, schema_name);
 
+    -- --------------------------------------------------------------------------
+    -- Optimization Tables
+    -- --------------------------------------------------------------------------
+
+    EXECUTE format($sql$
+        CREATE TABLE IF NOT EXISTS %I.optimization_metric_statistics (
+            statistics_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+            resource_id uuid NOT NULL REFERENCES %I.resource(resource_id) ON DELETE CASCADE,
+            provider public.provider_enum NOT NULL,
+            metric_name varchar(255) NOT NULL,
+            window_num_days integer NOT NULL,
+
+            minimum_value numeric,
+            maximum_value numeric,
+            average_value numeric,
+            median_value numeric,
+            p95_value numeric,
+            p99_value numeric,
+            standard_deviation numeric,
+            spike_count integer DEFAULT 0,
+            peak_duration_seconds integer DEFAULT 0,
+            completeness_ratio numeric,
+
+            window_start timestamptz NOT NULL,
+            window_end timestamptz NOT NULL,
+            calculated_at timestamptz DEFAULT NOW()
+        );
+    $sql$, schema_name, schema_name);
+
+    EXECUTE format($sql$
+        CREATE TABLE IF NOT EXISTS %I.optimization_recommendation (
+            recommendation_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+            resource_id uuid NOT NULL REFERENCES %I.resource(resource_id) ON DELETE CASCADE,
+            provider public.provider_enum NOT NULL,
+            rule_id varchar(255) NOT NULL,
+            action_type public.optimization_action_type_enum NOT NULL,
+            status public.optimization_status_enum NOT NULL DEFAULT 'DRAFT',
+            evidence jsonb DEFAULT '{}'::jsonb,
+            created_at timestamptz DEFAULT NOW(),
+            updated_at timestamptz DEFAULT NOW(),
+            expires_at timestamptz
+        );
+    $sql$, schema_name, schema_name);
+
+    EXECUTE format($sql$
+        CREATE TABLE IF NOT EXISTS %I.recommendation_history (
+            history_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+            recommendation_id uuid NOT NULL REFERENCES %I.optimization_recommendation(recommendation_id),
+            resource_id uuid NOT NULL REFERENCES %I.resource(resource_id) ON DELETE CASCADE,
+            provider public.provider_enum NOT NULL,
+            rule_id varchar(255) NOT NULL,
+            action_type public.optimization_action_type_enum NOT NULL,
+            previous_status public.optimization_status_enum,
+            new_status public.optimization_status_enum NOT NULL,
+            evidence jsonb DEFAULT '{}'::jsonb,
+            changed_at timestamptz DEFAULT NOW()
+        );
+    $sql$, schema_name, schema_name, schema_name);
 END;
 $$ LANGUAGE plpgsql;
 
@@ -579,6 +676,13 @@ DECLARE
   demo_other_charge_type public.charge_type_enum := 'Other';
   demo_completed_status public.execution_status_enum := 'completed';
   demo_billing_account text := '564907680089';
+  demo_gcp_connection_id uuid := 'c0000000-0000-0000-0000-000000000002';
+  demo_gcp_account_id uuid := 'a0000000-0000-0000-0000-000000000002';
+  demo_gcp_provider public.provider_enum := 'GCP';
+  demo_gcp_account_type public.account_type_enum := 'gcp_project';
+  demo_gcp_instance text := 'gce_instance';
+  demo_gcp_instancd_id text := 'instance_id';
+  demo_gcp_region text := 'us-central1';
 BEGIN
   INSERT INTO public.users (user_id, email, username, password_hash, created_at)
   VALUES (
@@ -611,4 +715,35 @@ BEGIN
     'Test Account'
   )
   ON CONFLICT (account_id) DO NOTHING;
+
+  INSERT INTO public.cloud_connection (connection_id, user_id, provider, status)
+  VALUES (
+    demo_gcp_connection_id,
+    demo_user_id,
+    demo_gcp_provider,
+    demo_status
+  )
+  ON CONFLICT (connection_id) DO NOTHING;
+
+  INSERT INTO public.cloud_account (account_id, connection_id, account_type, ingestion_period, display_name)
+  VALUES (
+    demo_gcp_account_id,
+    demo_gcp_connection_id,
+    demo_gcp_account_type,
+    demo_ingestion_period,
+    'Test GCP Project'
+  )
+  ON CONFLICT (account_id) DO NOTHING;
+
+  INSERT INTO tenant_5ebe4340_c5ec_4833_ad93_06abf4609f03.resource (
+  resource_id, account_id, resource_type, resource_name, 
+  resource_identifier, resource_identifier_type, region, status, created_at, last_updated
+  ) VALUES
+  ('d0000000-0000-0000-0000-000000000001', demo_gcp_account_id, demo_gcp_instance, 'mock-gce-instance-1', 
+  'instance-1', demo_gcp_instancd_id , demo_gcp_region, demo_status, now(), now()),
+  ('d0000000-0000-0000-0000-000000000002', demo_gcp_account_id, demo_gcp_instance, 'mock-gce-instance-2', 
+  'instance-2', demo_gcp_instancd_id, demo_gcp_region, demo_status, now(), now()),
+  ('d0000000-0000-0000-0000-000000000003', demo_gcp_account_id, 'cloud_run_revision', 'mock-cloud-run-1', 
+  'email-processor-0001', 'revision_id', demo_gcp_region , demo_status, now(), now())
+  ON CONFLICT DO NOTHING;
 END $$;

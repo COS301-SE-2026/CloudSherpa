@@ -37,6 +37,7 @@ services:
       AES_ENCRYPTION_KEY: FEAQKb55DXR2FICZk4MFk3d1YhP7sjZEkLuuKcr7ISY=
       DASHBOARD_HOST: http://localhost:3000,https://cloudsherpa.gjjcs.org
       INGESTION_BASE_URL: http://ingestion:8080
+      INTELLIGENCE_API_KEY: abc123 
     depends_on:
       sherpa-db:
         condition: service_healthy
@@ -58,6 +59,11 @@ services:
     depends_on:
       service:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
 
   sherpa-db:
     image: timescale/timescaledb:2.16.1-pg16

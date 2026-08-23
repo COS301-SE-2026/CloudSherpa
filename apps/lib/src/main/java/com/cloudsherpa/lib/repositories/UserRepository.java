@@ -1,7 +1,7 @@
 package com.cloudsherpa.lib.repositories;
 
 import com.cloudsherpa.lib.entities.User;
-
+import java.util.List;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -23,4 +23,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
   @Transactional
   @Query(value = "SELECT public.create_new_tenant(:tenantId)", nativeQuery = true)
   void createTenantSchema(@Param("tenantId") UUID tenantId);
+
+  @Query("select u.id from User u")
+  List<UUID> findAllTenantIds();
 }

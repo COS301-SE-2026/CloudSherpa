@@ -4,6 +4,7 @@ import {
     type CloudAccount,
     type CloudResource,
 } from "@/lib/fetch/aws-connection-api";
+import type { BillingSummaryDto, CostBreakdownItem } from "../types/dtos";
 
 export const MOCK_ACCOUNTS: CloudAccount[] = [
     {
@@ -47,23 +48,6 @@ export const MOCK_RESOURCES: Record<string, CloudResource[]> = {
     ],
 };
 
-export interface BillingSummaryDto {
-    cumulativeBilling: number;
-    projectedHorizonCost: number;
-    forecastVariance: number;
-
-    dailyBurnRate: number;
-    primaryCostDriverId: string;
-    primaryCostDriverLabel: string;
-
-    highestCostAccelerationId: string;
-    highestCostAccelerationLabel: string;
-    currency: string;
-
-    periodStart: string;
-    periodEnd: string;
-}
-
 export const MOCK_BILLING_SUMMARY: BillingSummaryDto = {
     cumulativeBilling: 1567.04,
     projectedHorizonCost: 2348.86,
@@ -76,23 +60,7 @@ export const MOCK_BILLING_SUMMARY: BillingSummaryDto = {
     highestCostAccelerationId: "id-cost-acc",
     highestCostAccelerationLabel: "cost-acc-label",
     currency: "ZAR",
-
-    periodStart: "2026-07-08T00:00:00.000Z",
-    periodEnd: "2026-08-07T00:00:00.000Z",
 };
-
-export interface CostBreakdownItem {
-    id: string;
-    chargeId: string;
-    label: string;
-
-    percentage: number;
-    cost: number;
-    serviceType: string;
-
-    resourceId: string;
-    region: string;
-}
 
 export const MOCK_COST_BREAKDOWN: CostBreakdownItem[] = [
     {
@@ -103,7 +71,6 @@ export const MOCK_COST_BREAKDOWN: CostBreakdownItem[] = [
         cost: 438.77,
         serviceType: "service one",
         resourceId: "resource one",
-        region: "region1",
     },
     {
         id: "2",
@@ -113,7 +80,6 @@ export const MOCK_COST_BREAKDOWN: CostBreakdownItem[] = [
         cost: 155.46,
         serviceType: "service two",
         resourceId: "resource two",
-        region: "region2",
     },
     {
         id: "3",
@@ -123,7 +89,6 @@ export const MOCK_COST_BREAKDOWN: CostBreakdownItem[] = [
         cost: 236.98,
         serviceType: "service three",
         resourceId: "resource three",
-        region: "region3",
     },
     {
         id: "4",
@@ -133,7 +98,6 @@ export const MOCK_COST_BREAKDOWN: CostBreakdownItem[] = [
         cost: 324.87,
         serviceType: "service four",
         resourceId: "resource four",
-        region: "region4",
     },
     {
         id: "5",
@@ -143,7 +107,6 @@ export const MOCK_COST_BREAKDOWN: CostBreakdownItem[] = [
         cost: 215.78,
         serviceType: "service five",
         resourceId: "resource five",
-        region: "region5",
     },
     {
         id: "6",
@@ -153,7 +116,6 @@ export const MOCK_COST_BREAKDOWN: CostBreakdownItem[] = [
         cost: 698.23,
         serviceType: "service six",
         resourceId: "resource six",
-        region: "region6",
     },
 ];
 

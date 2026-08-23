@@ -10,6 +10,16 @@
     --popover: var(--color-neutral-900);
     --popover-foreground: var(--color-neutral-50);
     --primary: var(--color-brand-500);
+    --primary-100: var(--color-brand-100);
+    --primary-200: var(--color-brand-200);
+    --primary-300: var(--color-brand-300);
+    --primary-400: var(--color-brand-400);
+    --primary-500: var(--color-brand-500);
+    --primary-600: var(--color-brand-600);
+    --primary-700: var(--color-brand-700);
+    --primary-800: var(--color-brand-800);
+    --primary-900: var(--color-brand-900);
+    --primary-950: var(--color-brand-950);
     --primary-foreground: var(--color-brand-50);
     --secondary: var(--color-neutral-800);
     --secondary-foreground: var(--color-neutral-50);

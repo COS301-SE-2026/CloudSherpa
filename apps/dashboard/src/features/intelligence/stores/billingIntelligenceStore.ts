@@ -10,9 +10,8 @@ import {
     MOCK_RESOURCES,
     getMockBillingData,
     mockApiResponse,
-    BillingSummaryDto,
-    CostBreakdownItem,
 } from "@/features/intelligence/mock/billingMockData";
+import { BillingForecastDto, BillingSummaryDto, CostBreakdownItem } from "../types/dtos";
 
 const USE_MOCK = true;
 
@@ -34,6 +33,8 @@ interface BillingIntelligenceStore {
 
     isLoading: boolean;
     error: string | null;
+    disableFilters: boolean;
+    singleTimeSelector: boolean;
 
     setProvider: (provider: string) => void;
     setAccount: (accountId: string, displayName: string) => void;
@@ -43,11 +44,12 @@ interface BillingIntelligenceStore {
     fetchResources: (accountId: string) => Promise<void>;
     fetchAccounts: (accountId: string) => Promise<void>;
     fetchBillingData: () => Promise<void>;
+    setBillingData: (responseData: BillingForecastDto) => void;
 
     reset: () => void;
 }
 
-export const billingIntelligenceStore = create<BillingIntelligenceStore>((set, get) => ({
+export const useBillingIntelligenceStore = create<BillingIntelligenceStore>((set, get) => ({
     provider: null,
     accountId: null,
     resourceId: null,
@@ -65,6 +67,12 @@ export const billingIntelligenceStore = create<BillingIntelligenceStore>((set, g
     isLoading: false,
     error: null,
     billingData: null,
+
+    // Flags set during integration due to missing support
+    // disablefilter controls whether the Provider, Account, Resource filters are shown
+    // singleTimeSelector controls whether whether the historical time selector is hidden
+    disableFilters: true,
+    singleTimeSelector: true,
 
     setProvider: (provider) => {
         set({
@@ -104,9 +112,11 @@ export const billingIntelligenceStore = create<BillingIntelligenceStore>((set, g
             billingData: null,
         });
 
-        const { accountId } = get();
-        if (accountId) {
-            get().fetchBillingData();
+        if (!get().disableFilters) {
+            const { accountId } = get();
+            if (accountId) {
+                get().fetchBillingData();
+            }
         }
     },
 
@@ -174,6 +184,43 @@ export const billingIntelligenceStore = create<BillingIntelligenceStore>((set, g
                 isLoading: false,
             });
         }
+    },
+
+    setBillingData(responseData) {
+        // Adapt the response to what is expected by the UI
+        const summary: BillingSummaryDto = {
+            cumulativeBilling: responseData.cumalitivePastForecastingValue,
+            projectedHorizonCost: responseData.cumalativeBillingForecastValue,
+            forecastVariance: responseData.pastVariance,
+            dailyBurnRate: responseData.dailyBurnRate,
+            primaryCostDriverId: responseData.highestCostDriver,
+            primaryCostDriverLabel:
+                responseData.billingForecastSeries[responseData.highestCostDriver].chargeLabel,
+            highestCostAccelerationId: responseData.highestCostAcceleration,
+            highestCostAccelerationLabel:
+                responseData.billingForecastSeries[responseData.highestCostAcceleration]
+                    .chargeLabel,
+            currency: "USD",
+        };
+
+        const costBreakdownItems = Object.entries(responseData.billingForecastSeries);
+
+        const costBreakdown: CostBreakdownItem[] = costBreakdownItems.map(([id, item]) => ({
+            id,
+            chargeId: id,
+            label: item.chargeLabel,
+            percentage: item.percentageOfTotal,
+            cost: item.value,
+            serviceType: id.split("%%%")[1],
+            resourceId: id.split("%%%")[0],
+        }));
+
+        const billingData = {
+            forSummary: summary,
+            forBreakdown: costBreakdown,
+        };
+
+        set({ billingData });
     },
 
     reset: () =>

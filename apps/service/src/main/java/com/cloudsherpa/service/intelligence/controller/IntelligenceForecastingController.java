@@ -5,8 +5,9 @@ import com.cloudsherpa.service.intelligence.dto.BillingForecastRequest;
 import com.cloudsherpa.service.intelligence.dto.BillingForecastResponseDto;
 import com.cloudsherpa.service.intelligence.dto.ResourceUsageForecastRequestDto;
 import com.cloudsherpa.service.intelligence.dto.ResourceUsageForecastResponseDto;
-import com.cloudsherpa.service.intelligence.service.BillingForecastingService;
-import com.cloudsherpa.service.intelligence.service.UsageForecastingService;
+import com.cloudsherpa.service.intelligence.service.billing.BillingForecastValue;
+import com.cloudsherpa.service.intelligence.service.billing.BillingIntelligenceService;
+import com.cloudsherpa.service.intelligence.service.usage.UsageForecastingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -31,17 +32,17 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Intelligence", description = "CloudSherpa Forecasting Intelligence Operations")
 public class IntelligenceForecastingController {
 
+  private final BillingIntelligenceService billingIntelligenceService;
   private final UsageForecastingService usageForecastingService;
-  private final BillingForecastingService billingForecastingService;
   private final boolean useMockForecasting;
 
   public IntelligenceForecastingController(
       UsageForecastingService usageForecastingService,
-      BillingForecastingService billingForecastingService,
-      @Value("${intelligence.forecasting.mock:false}") boolean useMockForecasting) {
+      @Value("${intelligence.forecasting.mock:false}") boolean useMockForecasting,
+      BillingIntelligenceService billingIntelligenceService) {
     this.usageForecastingService = usageForecastingService;
-    this.billingForecastingService = billingForecastingService;
     this.useMockForecasting = useMockForecasting;
+    this.billingIntelligenceService = billingIntelligenceService;
   }
 
   @Operation(
@@ -92,7 +93,7 @@ public class IntelligenceForecastingController {
   @Operation(
       summary = "Forecast Billing with Charges",
       description =
-          "Generates cumalative cost predection value for list of charges"
+          "Generates cumalative cost predection value and analytics for list of charges"
               + " of which the List can contain a single or multiple charges")
   @ApiResponses(
       value = {
@@ -123,23 +124,32 @@ public class IntelligenceForecastingController {
       @RequestBody BillingForecastIndividualChargesRequestDto request) {
 
     if (useMockForecasting) {
+      String mockChargeId = "mock-charge-id";
       BillingForecastResponseDto mockResponse =
           new BillingForecastResponseDto(
               BigDecimal.valueOf(42.50),
-              Map.of("mock-charge-id", BigDecimal.valueOf(42.5)),
-              List.of());
+              BigDecimal.ZERO,
+              Map.of(
+                  mockChargeId,
+                  new BillingForecastValue(
+                      BigDecimal.valueOf(42.5), BigDecimal.valueOf(100), mockChargeId)),
+              List.of(),
+              BigDecimal.ZERO,
+              BigDecimal.valueOf(42.5),
+              mockChargeId,
+              mockChargeId);
 
       return ResponseEntity.status(HttpStatus.OK).body(mockResponse);
     } else {
       return ResponseEntity.ok()
-          .body(
-              billingForecastingService.forecastBillingByIndividualCharges(request, Instant.now()));
+          .body(billingIntelligenceService.processSelectCharges(request, Instant.now()));
     }
   }
 
   @Operation(
       summary = "Forecast Billing for all non-credit charges",
-      description = "Generates cumalative cost predection value for all non-credit charges")
+      description =
+          "Generates cumalative cost predection value and analytics for all non-credit charges")
   @ApiResponses(
       value = {
         @ApiResponse(
@@ -156,7 +166,7 @@ public class IntelligenceForecastingController {
             content = @Content),
         @ApiResponse(
             responseCode = "404",
-            description = "No nom-credit charges found",
+            description = "No non-credit charges found",
             content = @Content)
       })
   @PostMapping("/billing")
@@ -164,8 +174,7 @@ public class IntelligenceForecastingController {
       @RequestBody BillingForecastRequest request) {
 
     return ResponseEntity.ok()
-        .body(
-            billingForecastingService.forecastBillingByAllNonCreditCharges(request, Instant.now()));
+        .body(billingIntelligenceService.processAllCharges(request, Instant.now()));
   }
 
   private ResourceUsageForecastResponseDto mockResourceUsageForecast() {

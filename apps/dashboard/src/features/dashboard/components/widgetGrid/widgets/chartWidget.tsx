@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/atoms/card";
 import { LineChart } from "@/features/dashboard/components/widgetGrid/widgets/charts/LineChart";
 import { GaugeChart } from "@/features/dashboard/components/widgetGrid/widgets/charts/GaugeChart";
@@ -8,7 +8,7 @@ import { ChartType, ChartWidgetConfig } from "@/features/dashboard/types/widgets
 import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
 import { WidgetMenu } from "@/features/dashboard/components/widgetMenu";
 import { WidgetDropdown } from "@/features/dashboard/components/widgetDropdown";
-import { CircleAlert } from "lucide-react";
+import { CircleAlert, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
     Tooltip,
@@ -16,6 +16,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/atoms/tooltip";
+import { useRecStore } from "@/features/optimization/stores/useRecStore";
 
 interface BaseChartProps {
     resourceId: string;
@@ -44,6 +45,32 @@ export function ChartWidget({
     const [hasNoData, setHasNoData] = useState(false);
     const router = useRouter();
 
+    // watch widget content while expanding
+    const contentRef = useRef<HTMLDivElement>(null);
+    const [isLayoutReady, setIsLayoutReady] = useState(false);
+
+    useEffect(() => {
+        if (!contentRef.current) return; //check content present
+
+        let resizeTimer: ReturnType<typeof setTimeout>;
+
+        // built in observer for referenced
+        const observer = new ResizeObserver(() => {
+            clearTimeout(resizeTimer);
+
+            resizeTimer = setTimeout(() => {
+                setIsLayoutReady(true);
+            }, 100);
+        });
+        //observers card content for pizel changes
+        observer.observe(contentRef.current);
+
+        return () => {
+            observer.disconnect();
+            clearTimeout(resizeTimer);
+        };
+    }, []);
+
     const openConfig = () => {
         if (!isEditMode) {
             router.push(`/edit/metrics/${config.id}`);
@@ -51,6 +78,14 @@ export function ChartWidget({
     };
 
     const removeWidget = useDashboardStore((state) => state.actions.removeWidget);
+
+    const hasRecommendation = useRecStore((state) =>
+        state.recommendationGroups.some((group) =>
+            group.recommendations.some(
+                (rec) => rec.resourceId === resourceId && rec.status === "ACTIVE"
+            )
+        )
+    );
 
     const renderChartContent = () => {
         if (!ChartComponent) {
@@ -102,7 +137,7 @@ export function ChartWidget({
             >
                 <CardHeader className="flex flex-row items-center justify-between ">
                     <CardTitle>{displayName}</CardTitle>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-row justify-end items-center gap-2">
                         {hasNoData && (
                             <TooltipProvider delayDuration={100}>
                                 <Tooltip>
@@ -121,7 +156,29 @@ export function ChartWidget({
                                 </Tooltip>
                             </TooltipProvider>
                         )}
-                        {preview && (
+                        {hasRecommendation && !hasNoData && (
+                            <TooltipProvider delayDuration={100}>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <div className="flex items-center">
+                                            <Sparkles className="h-5 w-5 text-primary cursor-help" />
+                                        </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent
+                                        side="bottom"
+                                        align="end"
+                                        className="w-48 text-center text-xs"
+                                    >
+                                        <p>
+                                            The resource related to this widget has active
+                                            optimization recommendations.
+                                        </p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        )}
+
+                        {!preview && (
                             <WidgetDropdown
                                 onConfigure={openConfig}
                                 onDelete={() => removeWidget(id, id)}
@@ -131,8 +188,12 @@ export function ChartWidget({
                     </div>
                 </CardHeader>
 
-                <CardContent className="flex-1 w-full relative overflow-hidden">
-                    {renderChartContent()}
+                <CardContent ref={contentRef} className="flex-1 w-full relative overflow-hidden">
+                    {isLayoutReady ? (
+                        renderChartContent()
+                    ) : (
+                        <div className="w-full h-full bg-muted/20 animate-pulse rounded" />
+                    )}
                 </CardContent>
             </Card>
         </WidgetMenu>

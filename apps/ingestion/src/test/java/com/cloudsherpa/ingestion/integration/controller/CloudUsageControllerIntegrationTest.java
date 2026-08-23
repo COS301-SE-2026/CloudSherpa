@@ -8,10 +8,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.cloudsherpa.ingestion.billing.provider.aws.cur.AwsCurIngestionService;
+import com.cloudsherpa.ingestion.billing.provider.gcp.bigquery.GcpBillingIngestionService;
 import com.cloudsherpa.ingestion.connector.CloudConnectorFactory;
 import com.cloudsherpa.ingestion.controller.CloudUsageController;
 import com.cloudsherpa.ingestion.models.UsageRecordModel;
 import com.cloudsherpa.ingestion.normalization.normalizers.AwsNormalizer;
+import com.cloudsherpa.ingestion.normalization.normalizers.NormalizerFactory;
 import com.cloudsherpa.ingestion.provider.aws.AwsCloudConnector;
 import com.cloudsherpa.ingestion.service.CloudUsageService;
 import com.cloudsherpa.ingestion.service.SherpaDbPersistenceService;
@@ -39,6 +41,8 @@ class CloudUsageControllerIntegrationTest {
 
   @MockitoBean private AwsCurIngestionService awsCurIngestionService;
 
+  @MockitoBean private GcpBillingIngestionService gcpBillingIngestionService;
+
   @MockitoBean private CloudConnectorFactory connectorFactory;
 
   @MockitoBean private SherpaDbPersistenceService sherpaDbPersistenceService;
@@ -47,10 +51,13 @@ class CloudUsageControllerIntegrationTest {
 
   @MockitoBean private AwsNormalizer normalizer;
 
+  @MockitoBean private NormalizerFactory normalizerFactory;
+
   @BeforeEach
   void setUp() {
 
     when(connectorFactory.getConnector("AWS")).thenReturn(awsConnector);
+    when(normalizerFactory.getNormalizer("AWS")).thenReturn(normalizer);
 
     doNothing().when(sherpaDbPersistenceService).recordMetric(any(), any(), any());
   }

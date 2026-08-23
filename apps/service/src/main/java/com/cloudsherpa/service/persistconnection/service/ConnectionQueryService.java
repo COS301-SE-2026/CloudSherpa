@@ -2,12 +2,12 @@ package com.cloudsherpa.service.persistconnection.service;
 
 import com.cloudsherpa.lib.entities.CloudAccount;
 import com.cloudsherpa.lib.entities.CloudConnection;
-import com.cloudsherpa.lib.entities.ProviderEnum;
 import com.cloudsherpa.lib.entities.Resource;
 import com.cloudsherpa.lib.repositories.CloudAccountRepository;
 import com.cloudsherpa.lib.repositories.CloudConnectionRepository;
 import com.cloudsherpa.lib.repositories.ResourceRepository;
 import com.cloudsherpa.service.persistconnection.dto.CloudAccountDetailsResponse;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -28,27 +28,19 @@ public class ConnectionQueryService {
   }
 
   public List<CloudAccount> getAccountConnections(UUID userId) {
-    CloudConnection connection = getConnection(userId);
-    if (connection == null) {
+    List<CloudConnection> connections = getConnection(userId);
+    if (connections == null) {
       return List.of();
     }
-    return cloudAccountRepository.findByConnectionId(connection.getId());
+    List<CloudAccount> accounts = new ArrayList<>();
+    connections.forEach(
+        connection ->
+            accounts.addAll(cloudAccountRepository.findByConnectionId(connection.getId())));
+    return accounts;
   }
 
-  private CloudConnection getConnection(UUID userId) {
-
-    List<CloudConnection> connections =
-        cloudConnectionRepository.findByUserIdAndProvider(userId, ProviderEnum.AWS);
-
-    if (connections.size() > 1) {
-      throw new IllegalStateException(
-          "Expected exactly one AWS connection for user "
-              + userId
-              + " but found "
-              + connections.size());
-    }
-
-    return connections.isEmpty() ? null : connections.getFirst();
+  private List<CloudConnection> getConnection(UUID userId) {
+    return cloudConnectionRepository.findByUserId(userId);
   }
 
   public CloudAccountDetailsResponse getAccountDetails(UUID accountId) {

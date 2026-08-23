@@ -1,6 +1,6 @@
 "use client";
 
-import { billingIntelligenceStore } from "@/features/intelligence/stores/billingIntelligenceStore";
+import { useBillingIntelligenceStore } from "@/features/intelligence/stores/billingIntelligenceStore";
 import BillingToolbar from "@/features/intelligence/components/billing/billingToolbar";
 import CostBreakdownList from "@/features/intelligence/components/billing/costBreakdownList";
 import BillingForecastChart from "@/features/intelligence/components/billing/billingForecastChart";
@@ -8,6 +8,9 @@ import BillingStatisticsCard from "@/features/intelligence/components/billing/bi
 import BillingSummaryCard from "@/features/intelligence/components/billing/billingSummaryCard";
 import { TrendingUp } from "lucide-react";
 import { useEffect } from "react";
+import { useMakeBillingForecast } from "../../hooks/useMakeBillingForecast";
+import { getCurrencySymbol } from "@/lib/utils";
+import { Spinner } from "@/components/atoms/spinner";
 
 export default function BillingIntelligence() {
     const {
@@ -20,23 +23,32 @@ export default function BillingIntelligence() {
         forecastTimeWindowDays,
         billingData,
         isLoading,
-        fetchBillingData,
-    } = billingIntelligenceStore();
+        disableFilters,
+        setBillingData,
+    } = useBillingIntelligenceStore();
 
-    const selected = provider && accountId && resourceId;
+    const { makeBillingForecast, billingForecastLoading } = useMakeBillingForecast();
+
+    const selected = disableFilters || (provider && accountId && resourceId);
 
     useEffect(() => {
-        if (selected) {
-            fetchBillingData();
+        async function laodForecast() {
+            const result = await makeBillingForecast(forecastTimeWindowDays);
+            if (result) {
+                setBillingData(result);
+            }
         }
-    }, [
-        accountId,
-        resourceId,
-        pastTimeWindowDays,
-        forecastTimeWindowDays,
-        selected,
-        fetchBillingData,
-    ]);
+
+        if (selected) {
+            void laodForecast();
+        }
+    }, [forecastTimeWindowDays, selected]);
+
+    const forSummary = billingData?.forSummary;
+    const forBreakdown = billingData?.forBreakdown || [];
+
+    const currency = getCurrencySymbol(forSummary?.currency ?? "USD");
+    const loading = isLoading || billingForecastLoading;
 
     if (!selected) {
         return (
@@ -62,24 +74,17 @@ export default function BillingIntelligence() {
         );
     }
 
-    if (isLoading) {
+    if (loading) {
         return (
             <div className="h-full w-full p-6 flex flex-col gap-4">
                 <BillingToolbar />
 
-                <div className="flex-1 flex items-center justify-center">
-                    <div className="text-center">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
-
-                        <p className="text-muted-foreground"> Loading billing data... </p>
-                    </div>
+                <div className="h-full w-full flex flex-col justify-center items-center ">
+                    <Spinner className="h-10 w-10" />
                 </div>
             </div>
         );
     }
-
-    const forSummary = billingData?.forSummary;
-    const forBreakdown = billingData?.forBreakdown || [];
 
     return (
         <div className="h-full w-full p-6 flex flex-col gap-4">
@@ -87,8 +92,10 @@ export default function BillingIntelligence() {
 
             <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <BillingSummaryCard
-                    name={`cumulative billing for last ${pastTimeWindowDays} days`}
-                    value={forSummary ? `${forSummary.cumulativeBilling.toFixed(2)}` : "-"}
+                    name={`cumulative billing for last ${forecastTimeWindowDays} days`}
+                    value={
+                        forSummary ? `${currency}${forSummary.cumulativeBilling.toFixed(2)}` : "-"
+                    }
                     description={
                         forSummary
                             ? `Based on ${pastTimeWindowDays} day window`
@@ -99,7 +106,11 @@ export default function BillingIntelligence() {
 
                 <BillingSummaryCard
                     name={`projected horizon cost (${forecastTimeWindowDays} days)`}
-                    value={forSummary ? `${forSummary.projectedHorizonCost.toFixed(2)}` : "-"}
+                    value={
+                        forSummary
+                            ? `${currency}${forSummary.projectedHorizonCost.toFixed(2)}`
+                            : "-"
+                    }
                     description={
                         forSummary ? `${forecastTimeWindowDays} day forecast` : "No data available"
                     }
@@ -120,7 +131,7 @@ export default function BillingIntelligence() {
 
                 <BillingStatisticsCard
                     name="daily burn rate"
-                    value={forSummary ? `${forSummary.dailyBurnRate.toFixed(2)}` : "-"}
+                    value={forSummary ? `${currency}${forSummary.dailyBurnRate.toFixed(2)}` : "-"}
                     description={forSummary ? "Projected daily spend" : "No data available"}
                     valueClassName="text-primary"
                 />
@@ -158,13 +169,9 @@ export default function BillingIntelligence() {
                 />
 
                 <CostBreakdownList
-                    name="cost breakdown"
-                    description={`projected charges for ${pastTimeWindowDays} day window`}
-                    eachEntry={forBreakdown.map((breakdown) => ({
-                        id: breakdown.id,
-                        label: breakdown.label,
-                        percent: breakdown.percentage,
-                    }))}
+                    name="Individual Charge Cost Breakdown"
+                    description={`Projected Charges for ${pastTimeWindowDays} Day Window`}
+                    eachEntry={forBreakdown}
                     search={breakdownSearch}
                     onSearchChange={setBreakdownSearch}
                 />

@@ -9,16 +9,20 @@ import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
 import { ChartWidget } from "./chartWidget";
 import { useRouter } from "next/navigation";
 import ChartFormConnection from "./chart-form-connection";
+import { Spinner } from "@/components/atoms/spinner";
+import { useLoadDashboardData } from "@/features/dashboard/hooks/useLoadDash";
 
 interface ChartConfigFormProps {
     ChartId: string;
 }
 
-export default function ChartConfigForm({ ChartId }: Readonly<ChartConfigFormProps>) {
+export function ChartConfigFormInner({ ChartId }: Readonly<ChartConfigFormProps>) {
     const [isSaving, setIsSaving] = useState(false);
     const updateWidget = useDashboardStore((state) => state.actions.updateChartWidgetConfig);
     const getWidget = useDashboardStore((state) => state.actions.getWidget);
+
     const widgetConfig = getWidget(ChartId);
+
     const resolvedWidgetConfig: ChartWidgetConfig =
         widgetConfig?.widgetType === "CHART"
             ? widgetConfig
@@ -27,15 +31,14 @@ export default function ChartConfigForm({ ChartId }: Readonly<ChartConfigFormPro
                   displayName: "Default",
                   widgetType: "CHART",
                   chartType: "line_chart",
+                  provider: null,
+                  accountId: null,
                   resourceId: null,
                   metricType: null,
               };
     const [config, setConfig] = useState<ChartWidgetConfig>(resolvedWidgetConfig);
-    const router = useRouter();
 
-    //shared state for filtering
-    const [selectedProvider, setSelectedProvider] = useState<string | null>("AWS");
-    const [selectedConnectionId, setSelectedConnectionId] = useState<string | null>(null);
+    const router = useRouter();
 
     const handleSave = async () => {
         setIsSaving(true);
@@ -73,19 +76,11 @@ export default function ChartConfigForm({ ChartId }: Readonly<ChartConfigFormPro
                 <Card className="w-2/3">
                     <CardContent className="flex flex-col gap-6">
                         <ChartFormDetails configuration={config} setConfiguration={setConfig} />
-                        <ChartFormConnection
-                            configuration={config}
-                            setConfiguration={setConfig}
-                            selectedProvider={selectedProvider}
-                            setSelectedProvider={setSelectedProvider}
-                            selectedConnectionId={selectedConnectionId}
-                            setSelectedConnectionId={setSelectedConnectionId}
-                        />
+                        <ChartFormConnection configuration={config} setConfiguration={setConfig} />
                         <ChartFormResource
-                            key={selectedConnectionId || "empty-connection"}
+                            key={config.accountId || "empty-connection"}
                             configuration={config}
                             setConfiguration={setConfig}
-                            selectedConnectionId={selectedConnectionId}
                         />
                     </CardContent>
                 </Card>
@@ -100,4 +95,18 @@ export default function ChartConfigForm({ ChartId }: Readonly<ChartConfigFormPro
             </div>
         </main>
     );
+}
+
+export default function ChartConfigForm({ ChartId }: Readonly<ChartConfigFormProps>) {
+    const { isLoading } = useLoadDashboardData();
+
+    if (isLoading) {
+        return (
+            <div className="flex-1 flex h-[50vh] items-center justify-center">
+                <Spinner className="size-8" />
+            </div>
+        );
+    }
+
+    return <ChartConfigFormInner ChartId={ChartId} />;
 }

@@ -8,6 +8,7 @@ import com.cloudsherpa.ingestion.billing.BillingExportConfigService;
 import com.cloudsherpa.ingestion.billing.provider.aws.cur.pipeline.AwsCurContext;
 import com.cloudsherpa.ingestion.billing.provider.aws.cur.pipeline.AwsCurContextInitStep;
 import com.cloudsherpa.ingestion.scheduler.encryption.CredentialEncryptionService;
+import com.cloudsherpa.lib.entities.AwsBillingExportConfig;
 import com.cloudsherpa.lib.entities.BillingExportConfig;
 import com.cloudsherpa.lib.entities.BillingExportExecution;
 import com.cloudsherpa.lib.entities.CloudCredential;
@@ -47,6 +48,7 @@ class AwsCurContextInitStepTest {
   AwsCurContext context;
   AwsCurContextInitStep step;
   BillingExportConfig validConfig;
+  AwsBillingExportConfig validAwsConfig;
   CloudCredential validCredential;
 
   @BeforeEach
@@ -61,15 +63,11 @@ class AwsCurContextInitStepTest {
 
     context = new AwsCurContext(userId, configId);
 
-    validConfig =
-        new BillingExportConfig(
-            configUuid,
-            accountId,
-            " test-bucket ",
-            "eu-north-1",
-            "cur-prefix",
-            "cur-export",
-            OffsetDateTime.now());
+    validConfig = new BillingExportConfig(configUuid, accountId, OffsetDateTime.now());
+
+    validAwsConfig =
+        new AwsBillingExportConfig(
+            configUuid, " test-bucket ", "eu-north-1", "cur-prefix", "cur-export");
 
     String credentialJson =
         """
@@ -162,8 +160,9 @@ class AwsCurContextInitStepTest {
   @Test
   void executeShouldThrowWhenNoAwsCredentialsForAccountId() {
     // arrange
-    when(billingExportConfigService.getAccountBillingExportConfig(configUuid))
-        .thenReturn(validConfig);
+    when(billingExportConfigService.getBillingExportConfig(configUuid)).thenReturn(validConfig);
+    when(billingExportConfigService.getAccountAwsBillingExportConfig(configUuid))
+        .thenReturn(validAwsConfig);
 
     mockProcessedExport(validBillingExportId);
 
@@ -178,8 +177,9 @@ class AwsCurContextInitStepTest {
   @Test
   void executeShouldThrowWhenCredentialsInvalidJsonEncoding() {
     // arrange
-    when(billingExportConfigService.getAccountBillingExportConfig(configUuid))
-        .thenReturn(validConfig);
+    when(billingExportConfigService.getBillingExportConfig(configUuid)).thenReturn(validConfig);
+    when(billingExportConfigService.getAccountAwsBillingExportConfig(configUuid))
+        .thenReturn(validAwsConfig);
     mockProcessedExport(validBillingExportId);
 
     String credentialInvalidJson =
@@ -208,8 +208,9 @@ class AwsCurContextInitStepTest {
   }
 
   private void mockValidConfigAndCredential() {
-    when(billingExportConfigService.getAccountBillingExportConfig(configUuid))
-        .thenReturn(validConfig);
+    when(billingExportConfigService.getBillingExportConfig(configUuid)).thenReturn(validConfig);
+    when(billingExportConfigService.getAccountAwsBillingExportConfig(configUuid))
+        .thenReturn(validAwsConfig);
 
     when(cloudCredentialRepository.findByAccountIdAndProvider(accountId, "AWS"))
         .thenReturn(List.of(validCredential));

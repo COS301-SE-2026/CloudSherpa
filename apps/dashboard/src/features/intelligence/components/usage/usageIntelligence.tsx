@@ -5,15 +5,17 @@ import UsagePredictionChart from "@/features/intelligence/components/usage/usage
 import { useUsageIntelligenceConfigStore } from "@/features/intelligence/stores/useUsageIntelligenceConfigStore";
 import { useUsageIntelligenceStore } from "@/features/intelligence/stores/useUsageIntelligenceStore";
 import { useEffect, useMemo } from "react";
-import { UsageForecastData } from "@/features/intelligence/types/metrics";
-import { TrendingUp, TrendingDown, Minus, AlertCircleIcon } from "lucide-react";
+import { UsageForecastData } from "@/features/intelligence/types/dtos";
+import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { useFetchMetrics } from "@/features/dashboard/hooks/useFetchMetrics";
 import { Card, CardContent } from "@/components/atoms/card";
-import { useChartData } from "@/features/dashboard/hooks/useChartData";
 import { getArraySummary } from "@/features/intelligence/utils/getUsageSummaries";
 import { useMakeUsageForecast } from "../../hooks/useMakeUsageForecast";
-import { Alert, AlertDescription, AlertTitle } from "@/components/atoms/alert";
 import { timeMs } from "@/lib/timeUtils";
+import { useUsageHistoricalData } from "../../hooks/useUsageHistoricalData";
+import { UsageErrorAlert } from "./usageError";
+import { UsageError } from "../../types/errors";
+import { Spinner } from "@/components/atoms/spinner";
 
 function generateMockForecast(days: number): UsageForecastData {
     const hours = days * 24;
@@ -52,33 +54,32 @@ export default function UsageIntelligence() {
 
     const setUsageForecast = useUsageIntelligenceStore((state) => state.setUsageForecast);
 
-    const {
-        requestUsageForecast,
-        isUsageForecastResponseLoading, // NOSONAR: wip
-        usageForecastRequestError,
-    } = useMakeUsageForecast();
+    const { requestUsageForecast, isUsageForecastResponseLoading, usageForecastRequestError } =
+        useMakeUsageForecast();
 
     //data
-    const forecastedMetrics = useUsageIntelligenceStore((state) => {
+    const usageForecast = useUsageIntelligenceStore((state) => {
         if (!resourceId || !metricType) return null;
         return state.forecasts[resourceId]?.[metricType] ?? null;
     });
-    const { timeSeriesData } = useChartData(resourceId || "", metricType || "anon");
+
+    const { historicalUsageSeries, historicalUsageError, isHistoricalUsageLoading } =
+        useUsageHistoricalData();
 
     const pastSummary = useMemo(() => {
-        if (!timeSeriesData?.length) {
+        if (!historicalUsageSeries?.values?.length) {
             return { min: 0, max: 0, avg: 0 };
         }
-        const values = timeSeriesData.map((d) => d.value);
+        const values = historicalUsageSeries.values;
         return getArraySummary(values);
-    }, [timeSeriesData]);
+    }, [historicalUsageSeries]);
 
     const forecastSummary = useMemo(() => {
-        if (!forecastedMetrics?.predictedValues) {
+        if (!usageForecast?.predictedValues) {
             return { min: 0, max: 0, avg: 0 };
         }
-        return getArraySummary(forecastedMetrics.predictedValues);
-    }, [forecastedMetrics]);
+        return getArraySummary(usageForecast.predictedValues);
+    }, [usageForecast]);
 
     useEffect(() => {
         if (!resourceId || !metricType) return;
@@ -86,14 +87,6 @@ export default function UsageIntelligence() {
         // Within this scope, typescript knows these are non null
         const selectedResourceId = resourceId;
         const selectedMetricType = metricType;
-
-        console.log(`Resource ID: ${resourceId}`);
-        console.log(`Metric: ${metricType}`);
-
-        const currentForecasts = useUsageIntelligenceStore.getState().forecasts;
-        const isCached = !!currentForecasts[selectedResourceId]?.[selectedMetricType];
-
-        if (isCached) return;
 
         async function loadForecast() {
             const forecastData = await requestUsageForecast(selectedResourceId, selectedMetricType);
@@ -107,19 +100,65 @@ export default function UsageIntelligence() {
         void loadForecast();
     }, [resourceId, metricType, requestUsageForecast, setUsageForecast]);
 
+    // Loading state
+    const loading: boolean = isUsageForecastResponseLoading || isHistoricalUsageLoading;
+
+    // Error state
+    let usageError: UsageError | null = null;
+
+    if (historicalUsageError && usageForecastRequestError) {
+        usageError = {
+            item: "both",
+            errorMessage: "Failed to fetch historical metrics or make a usage forecast.",
+        };
+    }
+    if (historicalUsageError) {
+        usageError = { item: "usage", errorMessage: "Error fetching historical metrics." };
+    } else if (usageForecastRequestError) {
+        usageError = {
+            item: "forecast",
+            errorMessage: "Error while making forecast, historical usage still shown.",
+        };
+    }
+
+    const renderChart = () => {
+        if (resourceId && metricType) {
+            return (
+                <UsagePredictionChart
+                    historicalUsageSeries={historicalUsageSeries}
+                    usageError={usageError}
+                    loading={loading}
+                />
+            );
+        } else {
+            return (
+                <Card className="h-full w-full flex flex-col items-center justify-center border-2 border-dashed">
+                    <CardContent className="flex items-center justify-center p-0">
+                        <p className="text-muted-foreground">
+                            Select a resource and metric to view forecast.
+                        </p>
+                    </CardContent>
+                </Card>
+            );
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="flex flex-col h-full w-full p-6 gap-4">
+                <UsageToolbar />
+                <div className="w-full h-full flex flex-col justify-center items-center">
+                    <Spinner className="w-10 h-10" />
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="flex flex-col h-full w-full p-6 gap-4">
             <UsageToolbar />
             <div className="flex flex-col gap-4 h-full">
-                {usageForecastRequestError && (
-                    <section>
-                        <Alert variant={"destructive"}>
-                            <AlertCircleIcon />
-                            <AlertTitle>Failed to fetch forecast</AlertTitle>
-                            <AlertDescription>{usageForecastRequestError}</AlertDescription>
-                        </Alert>
-                    </section>
-                )}
+                {usageError && <UsageErrorAlert usageError={usageError} />}
                 <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                     <SummaryCard
                         title="Max Usage"
@@ -129,6 +168,7 @@ export default function UsageIntelligence() {
                         predictedUsage={forecastSummary.max}
                         description="maximum recorded usage"
                         tooltip="This represents the maximum recorded usage for both the past and forecasted usage"
+                        usageError={usageError}
                     />
                     <SummaryCard
                         title="Min Usage"
@@ -138,6 +178,7 @@ export default function UsageIntelligence() {
                         predictedUsage={forecastSummary.min}
                         description="minimum recorded usage"
                         tooltip="This represents the minimum recorded usage for both the past and forecasted usage"
+                        usageError={usageError}
                     />
                     <SummaryCard
                         title="Average Usage"
@@ -147,21 +188,10 @@ export default function UsageIntelligence() {
                         predictedUsage={forecastSummary.avg}
                         description="average recorded usage"
                         tooltip="This represents the average recorded usage for both the past and forecasted usage"
+                        usageError={usageError}
                     />
                 </section>
-                <section className="w-full flex-1 min-h-0 flex flex-col">
-                    {resourceId && metricType ? (
-                        <UsagePredictionChart />
-                    ) : (
-                        <Card className="h-full w-full flex flex-col items-center justify-center border-2 border-dashed">
-                            <CardContent className="flex items-center justify-center p-0">
-                                <p className="text-muted-foreground">
-                                    Select a resource and metric to view forecast.
-                                </p>
-                            </CardContent>
-                        </Card>
-                    )}
-                </section>
+                <section className="w-full flex-1 min-h-0 flex flex-col">{renderChart()}</section>
             </div>
         </div>
     );

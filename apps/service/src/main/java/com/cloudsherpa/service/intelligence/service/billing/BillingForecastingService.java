@@ -1,16 +1,17 @@
-package com.cloudsherpa.service.intelligence.service;
+package com.cloudsherpa.service.intelligence.service.billing;
 
 import com.cloudsherpa.lib.dtos.TimestampedNumericDataPoint;
 import com.cloudsherpa.lib.entities.ProviderEnum;
 import com.cloudsherpa.lib.repositories.NormalizedCostsRepository;
 import com.cloudsherpa.service.intelligence.dto.BillingForecastIndividualChargesRequestDto;
 import com.cloudsherpa.service.intelligence.dto.BillingForecastRequest;
-import com.cloudsherpa.service.intelligence.dto.BillingForecastResponseDto;
 import com.cloudsherpa.service.intelligence.dto.IntelligenceForecastRequestDto;
 import com.cloudsherpa.service.intelligence.dto.IntelligenceForecastResponseDto;
 import com.cloudsherpa.service.intelligence.dto.SanatizedSeries;
 import com.cloudsherpa.service.intelligence.dto.SanitizedChargeSeries;
 import com.cloudsherpa.service.intelligence.registry.ChargeProviderRegistry;
+import com.cloudsherpa.service.intelligence.service.ForecastingService;
+import com.cloudsherpa.service.intelligence.service.Sampler;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
@@ -34,7 +35,7 @@ public class BillingForecastingService extends ForecastingService {
 
   // Threshold to account for billing latency in reports, i.e. most recent report does not contain
   // all up to date charges
-  private static final int OLD_CHARGE_CUTOFF_DAYS = 2;
+  private static final int OLD_CHARGE_CUTOFF_DAYS = 7;
 
   public BillingForecastingService(
       NormalizedCostsRepository normalizedCostsRepository,
@@ -46,21 +47,22 @@ public class BillingForecastingService extends ForecastingService {
     this.chargeProviderRegistry = chargeProviderRegistry;
   }
 
-  public BillingForecastResponseDto forecastBillingByIndividualCharges(
+  public BillingForecastResult forecastBillingByIndividualCharges(
       BillingForecastIndividualChargesRequestDto request, Instant timeOfRequest) {
     return executeBillingForecast(request.chargeIds(), timeOfRequest, request.forecastSteps());
   }
 
-  public BillingForecastResponseDto forecastBillingByAllNonCreditCharges(
+  public BillingForecastResult forecastBillingByAllNonCreditCharges(
       BillingForecastRequest request, Instant timeOfRequest) {
     List<String> chargeIds = normalizedCostsRepository.findDistinctChargeIdsNonCredit();
     return executeBillingForecast(chargeIds, timeOfRequest, request.forecastSteps());
   }
 
-  private BillingForecastResponseDto executeBillingForecast(
+  private BillingForecastResult executeBillingForecast(
       List<String> chargeIds, Instant timeOfRequest, int forecastSteps) {
     BigDecimal totalCostForecast = BigDecimal.valueOf(0);
     Map<String, BigDecimal> individualChargeForecasts = new HashMap<>();
+    Map<String, List<BigDecimal>> chargeSeries = new HashMap<>();
     List<String> failedForecastCharges = new ArrayList<>();
     for (String chargeId : chargeIds) {
       logger.info(chargeId);
@@ -86,8 +88,11 @@ public class BillingForecastingService extends ForecastingService {
         LocalDateTime forecastTimestamp = intelligenceForecastResponseDto.timestamps().get(i);
 
         if (!forecastTimestamp.isBefore(LocalDateTime.ofInstant(timeOfRequest, ZoneOffset.UTC))) {
-          aggregatedCharge =
-              aggregatedCharge.add(intelligenceForecastResponseDto.forecast().get(i));
+          BigDecimal currentForecastValue = intelligenceForecastResponseDto.forecast().get(i);
+          aggregatedCharge = aggregatedCharge.add(currentForecastValue);
+          chargeSeries
+              .computeIfAbsent(chargeId, k -> new ArrayList<BigDecimal>())
+              .add(currentForecastValue);
         }
       }
 
@@ -102,8 +107,13 @@ public class BillingForecastingService extends ForecastingService {
 
     logger.info("Total forecasted cost {}", totalCostForecast);
 
-    return new BillingForecastResponseDto(
-        totalCostForecast, individualChargeForecasts, failedForecastCharges);
+    return new BillingForecastResult(
+        totalCostForecast,
+        individualChargeForecasts,
+        chargeSeries,
+        failedForecastCharges,
+        timeOfRequest,
+        forecastSteps);
   }
 
   private SanitizedChargeSeries sanitizedChargeSeries(
@@ -128,6 +138,10 @@ public class BillingForecastingService extends ForecastingService {
 
       Duration timeBetweenLatestIngestionAndRequest =
           Duration.between(mostRecentBillingIngestionDate, timeOfRequest);
+
+      if (sanatizedSeries.periodicity() == 0) {
+        return null;
+      }
 
       int calculatedForecastSteps =
           calculateForecastSteps(

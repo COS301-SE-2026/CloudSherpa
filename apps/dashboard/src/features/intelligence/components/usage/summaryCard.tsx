@@ -3,6 +3,7 @@ import { Info, LucideIcon } from "lucide-react";
 import { Separator } from "@/components/atoms/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/atoms/tooltip";
 import { MetricType } from "@/features/dashboard/types/metric";
+import { UsageError } from "../../types/errors";
 
 export const METRIC_UNITS: Record<MetricType, string> = {
     cpu: "%",
@@ -13,7 +14,7 @@ export const METRIC_UNITS: Record<MetricType, string> = {
     duration: "ms",
     throttles: "events",
     disk: "GB",
-    network: "MB",
+    network: "B",
     "read-capacity": "IOPS",
     "write-capacity": "IOPS",
     "first-byte-latency": "ms",
@@ -38,6 +39,7 @@ interface SummaryCardProps {
     description: string;
     tooltip: string;
     Icon?: LucideIcon;
+    usageError: UsageError | null;
 }
 
 export default function SummaryCard({
@@ -48,35 +50,58 @@ export default function SummaryCard({
     description,
     tooltip,
     Icon,
+    usageError,
 }: Readonly<SummaryCardProps>) {
-    return (
-        <Card>
-            <CardHeader>
-                <CardTitle className="flex flex-row justify-between">
-                    {title}
-                    <Tooltip>
-                        <TooltipTrigger>
-                            <Info className="h-5 w-5 text-muted-foreground" />
-                        </TooltipTrigger>
-                        <TooltipContent>{tooltip}</TooltipContent>
-                    </Tooltip>
-                </CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-row gap-5     justify-start items-center">
-                {Icon && <Icon className="h-8 w-8 text-primary" />}
-                <div className="flex flex-row gap-4 justify-start items-center">
-                    <span className="text-4xl">
-                        {pastUsage.toLocaleString()}
-                        {unit}
-                    </span>
-                    <Separator orientation="vertical" />
-                    <span className="text-4xl">
-                        {predictedUsage.toLocaleString()}
-                        {unit}
-                    </span>
-                </div>
-            </CardContent>
-            <CardFooter className="text-muted-foreground">{description}</CardFooter>
-        </Card>
+    const cardContent = (
+        <>
+            {Icon && <Icon className="h-8 w-8 text-primary" />}
+            <div className="flex flex-row gap-4 justify-start items-center">
+                <span className="text-4xl">
+                    {usageError?.item == "usage" || usageError?.item == "both" ? (
+                        "—"
+                    ) : (
+                        <>
+                            {pastUsage.toLocaleString()}
+                            {unit}
+                        </>
+                    )}
+                </span>
+                <Separator orientation="vertical" />
+                <span className="text-4xl">
+                    {usageError?.item == "forecast" || usageError?.item == "both" ? (
+                        "—"
+                    ) : (
+                        <>
+                            {predictedUsage.toLocaleString()}
+                            {unit}
+                        </>
+                    )}
+                </span>
+            </div>
+        </>
     );
+
+    if (!pastUsage || !predictedUsage) {
+        return <Card className="h-45 border-2 border-dashed"></Card>;
+    } else {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex flex-row justify-between">
+                        {title}
+                        <Tooltip>
+                            <TooltipTrigger>
+                                <Info className="h-5 w-5 text-muted-foreground" />
+                            </TooltipTrigger>
+                            <TooltipContent>{tooltip}</TooltipContent>
+                        </Tooltip>
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-row gap-5     justify-start items-center">
+                    {cardContent}
+                </CardContent>
+                <CardFooter className="text-muted-foreground">{description}</CardFooter>
+            </Card>
+        );
+    }
 }
