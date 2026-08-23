@@ -1,7 +1,10 @@
 package com.cloudsherpa.service.optimization.service;
 
 import com.cloudsherpa.lib.entities.OptimizationRecommendation;
+import com.cloudsherpa.lib.entities.OptimizationStatusEnum;
 import com.cloudsherpa.lib.repositories.OptimizationRecommendationRepository;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -55,6 +58,23 @@ public class OptimizationRecommendationService {
         rec.getUpdatedAt());
   }
 
+  private Map<String, Object> updateRecommendationStatus(
+      UUID recommendationId, OptimizationStatusEnum newStatus) {
+    OptimizationRecommendation recommendation =
+        recommendationRepository.findById(recommendationId).orElse(null);
+
+    if (recommendation == null) {
+      return Map.of("error", "Recommendation not found");
+    }
+
+    recommendation.setStatus(newStatus);
+    recommendation.setUpdatedAt(OffsetDateTime.now(ZoneOffset.UTC));
+
+    recommendationRepository.save(recommendation);
+
+    return toMap(recommendation);
+  }
+
   public Map<String, Object> getRecommendation(UUID recommendationId) {
     OptimizationRecommendation recommendation =
         recommendationRepository.findById(recommendationId).orElse(null);
@@ -68,17 +88,17 @@ public class OptimizationRecommendationService {
 
   public Map<String, Object> acknowledgeRecommendation(UUID recommendationId) {
     // Validate ACTIVE -> ACKNOWLEDGED.
-    return mockRecommendationWithStatus(recommendationId, "ACKNOWLEDGED");
+    return updateRecommendationStatus(recommendationId, OptimizationStatusEnum.ACKNOWLEDGED);
   }
 
   public Map<String, Object> dismissRecommendation(UUID recommendationId) {
     // Validate ACTIVE -> DISMISSED.
-    return mockRecommendationWithStatus(recommendationId, "DISMISSED");
+    return updateRecommendationStatus(recommendationId, OptimizationStatusEnum.DISMISSED);
   }
 
   public Map<String, Object> applyRecommendation(UUID recommendationId) {
     // Validate ACTIVE -> APPLIED.
-    return mockRecommendationWithStatus(recommendationId, "APPLIED");
+    return updateRecommendationStatus(recommendationId, OptimizationStatusEnum.APPLIED);
   }
 
   public Map<String, Object> getRecommendationSummary() {
