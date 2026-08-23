@@ -14,8 +14,8 @@ export const options = {
 };
 
 const credentials = {
-  email: __ENV.USER_EMAIL,
-  password: __ENV.USER_PASSWORD
+  email: 'nfr-test-user@nfr-test.com',
+  password: 'nfr-test-pass@123!'
 }
 
 const params = {

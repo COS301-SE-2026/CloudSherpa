@@ -9,7 +9,12 @@ docker run --rm \
   --env K6_WEB_DASHBOARD=true \
   --env K6_WEB_DASHBOARD_PORT=-1 \
   --env K6_WEB_DASHBOARD_EXPORT=/apps/report.html \
-  --env USER_EMAIL="" \
-  --env USER_PASSWORD="" \
   grafana/k6 run - < historical-metric-load.js
 ```
+
+## NFR Test User
+
+- User ID: `a1b6ebb6-2b13-41c2-b4ce-bc6c563ea246`
+- Email: `nfr-test-user@nfr-test.com`
+- Username: `nfr-test-user`
+- Password: `nfr-test-pass@123!`
