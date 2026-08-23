@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import {
     StepThree,
     ResourceTable,
@@ -44,7 +44,7 @@ export default function StepThreeGcp({
 
     const [forIngestionPeriod, setForIngestionPeriod] = useState<number>(ingestionPeriod);
 
-    const tableResources: ResourceSelectionDto[] = useMemo(() => {
+    const [tableResources, setTableResources] = useState<ResourceSelectionDto[]>(() => {
         if (!resources || resources.length === 0) {
             return [];
         }
@@ -58,14 +58,9 @@ export default function StepThreeGcp({
             tags: resource.tags,
             active: true,
         }));
-    }, [resources]);
+    });
 
     const { activeCount, recIngestionPeriod } = useIngestionPeriod(tableResources);
-
-    const setTableResources = (
-        newData:
-            ResourceSelectionDto[] | ((previous: ResourceSelectionDto[]) => ResourceSelectionDto[])
-    ) => {};
 
     const [filter, setFilter] = useState("");
 
