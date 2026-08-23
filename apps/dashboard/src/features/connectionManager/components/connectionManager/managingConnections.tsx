@@ -261,15 +261,12 @@ export default function ManagingConnections() {
                     </Tabs>
 
                     {/* these are for the icons on the tiles of the conn */}
-                    <div className="flex items-center gap-2">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-muted-foreground hover:text-foreground h-8 w-8"
-                        >
-                            {" "}
-                            <Search size={16} />{" "}
-                        </Button>
+                    <div className="relative flex-1 max-w-xs">
+                        <Search className = "absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"/>
+
+                        <input type = "text" placeholder = "Search connections..." value = {search} onChange = {(forChanges) => setSearch(forChanges.target.value)}
+                               className = "w-full h-9 pl-9 pr-3 rounded-md border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"/>
+                               
                     </div>
                 </div>
 
