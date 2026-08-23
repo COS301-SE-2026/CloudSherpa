@@ -128,6 +128,7 @@ jobs:
           env: 
             DUMMY_PASS: mock_pass
           run: |
+            psql "postgresql://cloudsherpa:${DUMMY_PASS}@localhost:5432/sherpadb" -a -f nfr-tests/common/seed/nfr-user.sql 
             psql "postgresql://cloudsherpa:${DUMMY_PASS}@localhost:5432/sherpadb" -a -f nfr-tests/common/seed/historical-metric-seed.sql 
             psql "postgresql://cloudsherpa:${DUMMY_PASS}@localhost:5432/sherpadb" -c "SELECT seed_normalized_metrics();" 
         
@@ -137,7 +138,6 @@ jobs:
           with:
             path: |
               nfr-tests/historical-metric-load.js
-            flags: --report-local-vuls=true
 
         - name: Compose Down
           if: github.event_name == 'pull_request' && always()

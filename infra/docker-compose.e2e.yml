@@ -58,6 +58,11 @@ services:
     depends_on:
       service:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
 
   sherpa-db:
     image: timescale/timescaledb:2.16.1-pg16
