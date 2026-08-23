@@ -10,7 +10,6 @@ import { useEffect, useState } from "react";
 import {
     Trash2,
     ArrowLeft,
-    SlidersHorizontal,
     Search,
     MoreVertical,
     Eye,
@@ -262,14 +261,6 @@ export default function ManagingConnections() {
                         >
                             {" "}
                             <Search size={16} />{" "}
-                        </Button>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-muted-foreground hover:text-foreground h-8 w-8"
-                        >
-                            {" "}
-                            <SlidersHorizontal size={16} />{" "}
                         </Button>
                     </div>
                 </div>
