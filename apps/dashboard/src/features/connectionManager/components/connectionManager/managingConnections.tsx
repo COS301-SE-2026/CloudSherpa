@@ -90,6 +90,8 @@ export default function ManagingConnections() {
     const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
 
+    const [search, setSearch] = useState("");
+
     const handleViewDetails = (connectionId: string) => {
         router.push(`/manageConnections/${connectionId}`);
     };
@@ -103,6 +105,12 @@ export default function ManagingConnections() {
             : connections.filter(
                   (filteredConnections) => filteredConnections.provider === activeFilter
               );
+
+    const searchFilter = search.trim() === "" ? filtered : filtered.filter((connections) => {
+        const forQueries = search.toLowerCase().trim();
+
+        return connections.name.toLowerCase().includes(forQueries) || connections.provider.toLowerCase().includes(forQueries) || connections.detail.toLowerCase().includes(forQueries);
+    });
 
     const handleDeletion = async (id: string) => {
         try {
