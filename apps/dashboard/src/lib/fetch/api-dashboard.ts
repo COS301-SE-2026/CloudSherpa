@@ -83,7 +83,6 @@ export async function fetchDashboards(): Promise<DashboardDTO[]> {
     }
 }
 export async function createDashboard(payload: DashboardCreateDTO): Promise<DashboardDTO> {
-    console.log(payload);
     return await apiClient<DashboardDTO>("/dashboards", {
         method: "POST",
         body: JSON.stringify(payload),
