@@ -1,8 +1,10 @@
 package com.cloudsherpa.ingestion.provider.aws.permissions;
 
+import com.cloudsherpa.ingestion.provider.scanner.ResourceDiscoveryService;
 import java.util.*;
 
 public final class AwsPermissionsRegistry {
+  private static ResourceDiscoveryService discoveryRegistryProvider;
 
   private AwsPermissionsRegistry() {}
 
@@ -33,77 +35,34 @@ public final class AwsPermissionsRegistry {
           "cur:ListTagsForResource");
 
   private static final Map<String, Set<String>> REGISTRY =
-      Map.of(
-          "AWS/EC2",
-          Set.of(
-              "ec2:DescribeInstances",
-              "ec2:DescribeInstanceStatus",
-              "ec2:DescribeInstanceTypes",
-              "ec2:DescribeVolumes",
-              "ec2:DescribeRegions",
-              "ec2:DescribeAvailabilityZones",
-              "ec2:DescribeNetworkInterfaces",
-              "ec2:DescribeSecurityGroups",
-              "ec2:DescribeTags",
-              "ec2:DescribeImages"),
-          "AWS/ECS",
-          Set.of(
-              "ecs:ListClusters",
-              "ecs:DescribeClusters",
-              "ecs:ListServices",
-              "ecs:DescribeServices",
-              "ecs:ListTasks",
-              "ecs:DescribeTasks",
-              "ecs:ListTagsForResource"),
-          "CONTAINERINSIGHTS",
-          Set.of(
-              "eks:ListClusters",
-              "eks:DescribeCluster",
-              "eks:ListNodegroups",
-              "eks:DescribeNodegroup",
-              "eks:ListTagsForResource"),
-          "AWS/RDS",
-          Set.of(
-              "rds:DescribeDBInstances",
-              "rds:DescribeDBClusters",
-              "rds:DescribeDBSnapshots",
-              "rds:DescribeDBSubnetGroups",
-              "rds:DescribeOptionGroups",
-              "rds:ListTagsForResource"),
-          "AWS/DYNAMODB",
-          Set.of("dynamodb:ListTables", "dynamodb:DescribeTable", "dynamodb:ListTagsOfResource"),
-          "S3",
-          Set.of(
-              "s3:ListAllMyBuckets",
-              "s3:ListBucket",
-              "s3:GetBucketLocation",
-              "s3:GetBucketTagging",
-              "s3:GetObject"),
-          "AWS/LAMBDA",
-          Set.of(
-              "lambda:ListFunctions",
-              "lambda:GetFunction",
-              "lambda:GetFunctionConfiguration",
-              "lambda:ListTags"),
-          "AWS/ELASTICACHE",
-          Set.of(
-              "elasticache:DescribeCacheClusters",
-              "elasticache:DescribeReplicationGroups",
-              "elasticache:DescribeSnapshots",
-              "elasticache:ListTagsForResource"),
-          "AWS/ES",
-          Set.of(
-              "opensearch:ListDomainNames",
-              "opensearch:DescribeDomain",
-              "opensearch:DescribeDomains",
-              "opensearch:ListTags"),
-          "AWS/REDSHIFT",
-          Set.of(
-              "redshift:DescribeClusters",
-              "redshift:DescribeClusterSnapshots",
-              "redshift:DescribeClusterSubnetGroups",
-              "redshift:DescribeClusterParameterGroups",
-              "redshift:DescribeTags"));
+      mergePermissionMaps(
+          Map.of(
+              "S3",
+              Set.of(
+                  "s3:ListAllMyBuckets",
+                  "s3:ListBucket",
+                  "s3:GetBucketLocation",
+                  "s3:GetBucketTagging",
+                  "s3:GetObject")),
+          discoveryRegistryProvider.getPermissionsRegistry());
+
+  public static Map<String, Set<String>> mergePermissionMaps(
+      Map<String, Set<String>> first, Map<String, Set<String>> second) {
+
+    Map<String, Set<String>> result = new HashMap<>(first);
+
+    second.forEach(
+        (service, permissions) ->
+            result.merge(
+                service,
+                new HashSet<>(permissions),
+                (existing, incoming) -> {
+                  existing.addAll(incoming);
+                  return existing;
+                }));
+
+    return result;
+  }
 
   public static Set<String> getPermissions(String service) {
     return REGISTRY.getOrDefault(service.toUpperCase(Locale.ROOT), Collections.emptySet());
