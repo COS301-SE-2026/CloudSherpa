@@ -74,9 +74,16 @@ function ResourceTags({ tags }: Readonly<ResourceTagsProps>) {
     return (
         <div className="flex flex-wrap justify-end gap-2 max-w-md">
             {Object.entries(tags).map(([key, value]) => (
-                <Badge key={`${key}-${value}`} variant="secondary">
-                    {key}: {value}
-                </Badge>
+                <Tooltip key={`${key}-${value}`}>
+                    <TooltipTrigger>
+                        <Badge variant="secondary">
+                            {key}: {value}
+                        </Badge>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        {key}: {value}
+                    </TooltipContent>
+                </Tooltip>
             ))}
         </div>
     );

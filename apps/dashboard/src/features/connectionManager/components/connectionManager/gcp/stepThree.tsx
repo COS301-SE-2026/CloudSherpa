@@ -71,9 +71,16 @@ function ListOfTags({ tags }: Readonly<{ tags: Record<string, string> }>) {
     return (
         <div className="flex items-center gap-1 flex-wrap">
             {displayedTags.map(([key, value]) => (
-                <Badge key={key} variant="secondary" className="text-[10px] font-normal">
-                    {key}: {value}
-                </Badge>
+                <Tooltip key={key}>
+                    <TooltipTrigger>
+                        <Badge variant="secondary" className="text-[10px] font-normal">
+                            {key}: {value}
+                        </Badge>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        {key}: {value}
+                    </TooltipContent>
+                </Tooltip>
             ))}
         </div>
     );
@@ -94,7 +101,14 @@ function ResourceHeaders({ column }: Readonly<HeaderContext<ResourceSelectionDto
 }
 
 function ResourceCells({ getValue }: Readonly<CellContext<ResourceSelectionDto, string>>) {
-    return <span className="font-medium"> {getValue()} </span>;
+    return (
+        <Tooltip>
+            <TooltipTrigger>
+                <span className="font-medium"> {getValue()} </span>
+            </TooltipTrigger>
+            <TooltipContent>{getValue()}</TooltipContent>
+        </Tooltip>
+    );
 }
 
 function SecondaryCells({ getValue }: Readonly<CellContext<ResourceSelectionDto, string>>) {
