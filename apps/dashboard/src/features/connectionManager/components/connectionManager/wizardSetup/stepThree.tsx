@@ -181,11 +181,27 @@ function ListOfTags({ tags }: Readonly<{ tags: Record<string, string> }>) {
 
     return (
         <div className="flex items-center gap-1 flex-wrap">
-            {displayedTags.map(([key, value]) => (
-                <Badge key={key} variant="secondary" className="text-[10px] font-normal">
-                    {key}: {value}
-                </Badge>
-            ))}
+            {displayedTags.map(([key, value]) => {
+                const wholeTag = `${key} : ${value}`;
+
+                return(
+                    <TooltipProvider key = {key}>
+                        <Tooltip>
+                            
+                            <TooltipTrigger asChild>
+                                <Badge variant = "secondary" className = "text-[10px] font-normal cursor-default w-[80px] flex-shrink-0">
+                                    <span className = "truncate w-full text-left"> {wholeTag} </span>
+                                </Badge>
+                            </TooltipTrigger>
+
+                            <TooltipContent>
+                                <p className = "max-w-xs break-all"> {wholeTag} </p>
+                            </TooltipContent>
+
+                        </Tooltip>
+                    </TooltipProvider>
+                );
+            })}
         </div>
     );
 }
