@@ -1,4 +1,4 @@
-package com.cloudsherpa.ingestion.provider.aws;
+package com.cloudsherpa.ingestion.provider.azure;
 
 import com.cloudsherpa.ingestion.connector.AccountScope;
 import com.cloudsherpa.ingestion.connector.BillingCapable;
@@ -9,31 +9,21 @@ import com.cloudsherpa.ingestion.models.BillingRecordModel;
 import com.cloudsherpa.ingestion.models.IngestionRequestEvent;
 import com.cloudsherpa.ingestion.models.ResourceDetail;
 import com.cloudsherpa.ingestion.models.UsageRecordModel;
-import com.cloudsherpa.ingestion.provider.aws.monitoring.AwsCloudWatchMetricProvider;
 import com.cloudsherpa.ingestion.provider.aws.monitoring.MockCloudWatchMetricProvider;
+import com.cloudsherpa.ingestion.provider.azure.monitoring.AzureCloudMonitorMetricProvider;
 import com.cloudsherpa.ingestion.provider.monitoring.CloudMonitoringMetricProvider;
-import com.cloudsherpa.ingestion.provider.scanner.ResourceDiscoveryService;
 import java.util.List;
 import org.springframework.stereotype.Component;
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
 
-@Component("aws")
-public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingCapable {
+@Component("azure")
+public class AzureCloudConnector implements CloudConnector, UsageCapable, BillingCapable {
 
   private final CloudMonitoringMetricProvider metricProvider;
   private final CloudMonitoringMetricProvider mockMetricProvider;
-  private final ResourceDiscoveryService discoveryService;
 
-  public AwsCloudConnector(
-      ResourceDiscoveryService resourceDiscoveryService,
-      MockCloudWatchMetricProvider mockMetricProvider) {
-    metricProvider = new AwsCloudWatchMetricProvider();
+  public AzureCloudConnector(MockCloudWatchMetricProvider mockMetricProvider) {
+    metricProvider = new AzureCloudMonitorMetricProvider();
     this.mockMetricProvider = mockMetricProvider;
-    discoveryService = resourceDiscoveryService;
   }
 
   @Override
@@ -50,13 +40,13 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
 
   @Override
   public List<String> getAllOfferedServices() {
-    return discoveryService.getServices("AWS");
+    return List.of(); // mock for now
   }
 
   @Override
   public List<ResourceDetail> getAllResources(
       CloudCredentials credentials, List<String> serviceTypes) {
-    return discoveryService.discover("AWS", serviceTypes, credentials);
+    return List.of(); // mock for now
   }
 
   @Override
@@ -67,33 +57,12 @@ public class AwsCloudConnector implements CloudConnector, UsageCapable, BillingC
 
   @Override
   public boolean testConnection(CloudCredentials credentials) {
-    CloudWatchClient client =
-        CloudWatchClient.builder()
-            .credentialsProvider(DefaultCredentialsProvider.create())
-            .region(Region.EU_NORTH_1)
-            .build();
-
-    if (credentials != null) {
-      AwsBasicCredentials awsCredentials =
-          AwsBasicCredentials.create(
-              credentials.getAccessKeyId(), credentials.getSecretAccessKey());
-      client =
-          CloudWatchClient.builder()
-              .credentialsProvider(StaticCredentialsProvider.create(awsCredentials))
-              .region(Region.EU_NORTH_1)
-              .build();
-    }
-    try {
-      client.listMetrics();
-      return true;
-    } catch (Exception e) {
-      return false;
-    }
+    return true; // unimplemented
   }
 
   @Override
   public String getProviderName() {
-    return "AWS";
+    return "Azure";
   }
 
   @Override

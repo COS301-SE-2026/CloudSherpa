@@ -7,6 +7,7 @@ public class CloudCredentials {
   private String secretAccessKey;
 
   // Azure
+  private String subscriptionId;
   private String tenantId;
   private String clientId;
   private String clientSecret;
@@ -29,6 +30,14 @@ public class CloudCredentials {
 
   public void setSecretAccessKey(String secretAccessKey) {
     this.secretAccessKey = secretAccessKey;
+  }
+
+  public String getSubscriptionId() {
+    return subscriptionId;
+  }
+
+  public void setSubscriptionId(String subscriptionId) {
+    this.subscriptionId = subscriptionId;
   }
 
   public String getTenantId() {
