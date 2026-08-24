@@ -7,45 +7,33 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import org.springframework.stereotype.Component;
 
-public final class GcpPermissionsRegistry {
-  private static GcpResourceDiscoveryService discoveryRegistryProvider;
+@Component
+public class GcpPermissionsRegistry {
 
-  private GcpPermissionsRegistry() {}
+  private final GcpResourceDiscoveryService discoveryRegistryProvider;
+
+  public GcpPermissionsRegistry(GcpResourceDiscoveryService discoveryRegistryProvider) {
+    this.discoveryRegistryProvider = discoveryRegistryProvider;
+  }
 
   public static final Set<String> COMMON_READ_ONLY =
       Set.of(
           // Cloud Monitoring
-          "monitoring.timeSeries.list",
-          "monitoring.metricDescriptors.list",
-          "monitoring.metricDescriptors.get",
-          "monitoring.monitoredResourceDescriptors.list",
-          "monitoring.monitoredResourceDescriptors.get",
+          "Monitoring Viewer",
 
           // Cloud Asset Inventory
-          "cloudasset.assets.searchAllResources",
+          "Cloud Asset Viewer",
 
           // Service Usage
-          "serviceusage.services.use");
+          "Service Usage Viewer");
 
-  private static final Map<String, Set<String>> REGISTRY =
-      mergePermissionMaps(
-          discoveryRegistryProvider.getPermissionsRegistry(),
-          Map.of(
-              "gke_cluster",
-              Set.of("container.clusters.get"),
-              "cloud_function",
-              Set.of("cloudfunctions.functions.get"),
-              "cloud_run_service",
-              Set.of("run.services.get"),
-              "gcs_bucket",
-              Set.of("storage.buckets.get"),
-              "bigquery",
-              Set.of(
-                  "bigquery.datasets.get",
-                  "bigquery.tables.get",
-                  "bigquery.tables.getData",
-                  "bigquery.jobs.create")));
+  public Map<String, Set<String>> getRegistry() {
+    return mergePermissionMaps(
+        discoveryRegistryProvider.getPermissionsRegistry(),
+        Map.of("bigquery", Set.of("BigQuery Data Viewer", "BigQuery Job User")));
+  }
 
   public static Map<String, Set<String>> mergePermissionMaps(
       Map<String, Set<String>> first, Map<String, Set<String>> second) {
@@ -55,7 +43,7 @@ public final class GcpPermissionsRegistry {
     second.forEach(
         (service, permissions) ->
             result.merge(
-                service,
+                service.toLowerCase(Locale.ROOT),
                 new HashSet<>(permissions),
                 (existing, incoming) -> {
                   existing.addAll(incoming);
@@ -65,12 +53,12 @@ public final class GcpPermissionsRegistry {
     return result;
   }
 
-  public static Set<String> getPermissions(String service) {
-    return REGISTRY.getOrDefault(service.toLowerCase(Locale.ROOT), Collections.emptySet());
+  public Set<String> getPermissions(String service) {
+    return getRegistry().getOrDefault(service.toLowerCase(Locale.ROOT), Collections.emptySet());
   }
 
-  public static Set<String> getPermissions(Set<String> services) {
-    Set<String> permissions = new java.util.HashSet<>(COMMON_READ_ONLY);
+  public Set<String> getPermissions(Set<String> services) {
+    Set<String> permissions = new HashSet<>(COMMON_READ_ONLY);
 
     for (String service : services) {
       permissions.addAll(getPermissions(service));

@@ -24,19 +24,22 @@ public class GcpResourceDiscoveryService {
 
     this.assetInventoryService = assetInventoryService;
 
-    this.scanners = scanners.stream()
-        .flatMap(
-            scanner -> scanner.getAssetTypes().stream().map(type -> Map.entry(type, scanner)))
-        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    this.scanners =
+        scanners.stream()
+            .flatMap(
+                scanner -> scanner.getAssetTypes().stream().map(type -> Map.entry(type, scanner)))
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
   public List<ResourceDetail> discover(CloudCredentials credentials, List<String> services) {
-    List<String> assetTypes = scanners.values().stream()
-        .map(GcpResourceScanner::getAssetTypes)
-        .flatMap(List::stream)
-        .toList();
+    List<String> assetTypes =
+        scanners.values().stream()
+            .map(GcpResourceScanner::getAssetTypes)
+            .flatMap(List::stream)
+            .toList();
 
-    List<ResourceSearchResult> resources = assetInventoryService.searchResources(credentials, assetTypes);
+    List<ResourceSearchResult> resources =
+        assetInventoryService.searchResources(credentials, assetTypes);
 
     return resources.stream()
         .map(

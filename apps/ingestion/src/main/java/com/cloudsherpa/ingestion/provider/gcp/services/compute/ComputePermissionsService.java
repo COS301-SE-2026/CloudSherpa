@@ -9,6 +9,6 @@ public class ComputePermissionsService implements AwsPermissionsService {
 
   @Override
   public Set<String> getPermissionsRequired() {
-    return Set.of("compute.instances.get");
+    return Set.of("Compute Viewer");
   }
 }

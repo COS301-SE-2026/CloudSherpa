@@ -1,12 +1,16 @@
 package com.cloudsherpa.ingestion.provider.aws.permissions;
 
 import com.cloudsherpa.ingestion.provider.scanner.ResourceDiscoveryService;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import org.springframework.stereotype.Component;
 
-public final class AwsPermissionsRegistry {
-  private static ResourceDiscoveryService discoveryRegistryProvider;
-
-  private AwsPermissionsRegistry() {}
+@Component
+public class AwsPermissionsRegistry {
 
   public static final Set<String> COMMON_READ_ONLY =
       Set.of(
@@ -34,17 +38,26 @@ public final class AwsPermissionsRegistry {
           "cur:GetUsageReport",
           "cur:ListTagsForResource");
 
-  private static final Map<String, Set<String>> REGISTRY =
-      mergePermissionMaps(
-          Map.of(
-              "S3",
-              Set.of(
-                  "s3:ListAllMyBuckets",
-                  "s3:ListBucket",
-                  "s3:GetBucketLocation",
-                  "s3:GetBucketTagging",
-                  "s3:GetObject")),
-          discoveryRegistryProvider.getPermissionsRegistry());
+  private final Map<String, Set<String>> registry;
+
+  public AwsPermissionsRegistry(ResourceDiscoveryService discoveryRegistryProvider) {
+
+    this.registry =
+        mergePermissionMaps(
+            Map.of(
+                "S3",
+                Set.of(
+                    "s3:ListAllMyBuckets",
+                    "s3:ListBucket",
+                    "s3:GetBucketLocation",
+                    "s3:GetBucketTagging",
+                    "s3:GetObject")),
+            discoveryRegistryProvider.getPermissionsRegistry());
+  }
+
+  public Map<String, Set<String>> getRegistry() {
+    return registry;
+  }
 
   public static Map<String, Set<String>> mergePermissionMaps(
       Map<String, Set<String>> first, Map<String, Set<String>> second) {
@@ -54,7 +67,7 @@ public final class AwsPermissionsRegistry {
     second.forEach(
         (service, permissions) ->
             result.merge(
-                service,
+                service.toUpperCase(Locale.ROOT),
                 new HashSet<>(permissions),
                 (existing, incoming) -> {
                   existing.addAll(incoming);
@@ -64,7 +77,17 @@ public final class AwsPermissionsRegistry {
     return result;
   }
 
-  public static Set<String> getPermissions(String service) {
-    return REGISTRY.getOrDefault(service.toUpperCase(Locale.ROOT), Collections.emptySet());
+  public Set<String> getPermissions(String service) {
+    return registry.getOrDefault(service.toUpperCase(Locale.ROOT), Collections.emptySet());
+  }
+
+  public Set<String> getPermissions(Set<String> services) {
+    Set<String> permissions = new HashSet<>(COMMON_READ_ONLY);
+
+    for (String service : services) {
+      permissions.addAll(getPermissions(service));
+    }
+
+    return Set.copyOf(permissions);
   }
 }
