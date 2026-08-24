@@ -83,7 +83,10 @@ function ListOfTags({ tags }: Readonly<{ tags: string[] }>) {
             {displayedTags.map((tag) => (
                 <Tooltip key={tag}>
                     <TooltipTrigger>
-                        <Badge variant="secondary" className="text-[10px] font-normal">
+                        <Badge
+                            variant="secondary"
+                            className="block max-w-50 text-[10px] font-normal truncate"
+                        >
                             {" "}
                             {tag}{" "}
                         </Badge>
@@ -113,8 +116,8 @@ function ResourceHeaders({ column }: Readonly<HeaderContext<Resource, string>>) 
 function ResourceCells({ getValue }: Readonly<CellContext<Resource, string>>) {
     return (
         <Tooltip>
-            <TooltipTrigger>
-                <span className="font-medium"> {getValue()} </span>
+            <TooltipTrigger asChild>
+                <span className="block max-w-50 truncate font-medium">{getValue()}</span>
             </TooltipTrigger>
             <TooltipContent>{getValue()}</TooltipContent>
         </Tooltip>
