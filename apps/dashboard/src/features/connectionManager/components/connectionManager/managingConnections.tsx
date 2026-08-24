@@ -234,11 +234,10 @@ export default function ManagingConnections() {
                 </div>
 
                 {/* this is for the provider tabs */}
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-4 mb-6">
                     <Tabs
                         value={activeFilter || undefined}
                         onValueChange={(value) => setActiveFilter(value as Providers)}
-                        className="mb-4"
                     >
                         <TabsList className="self-start inline-flex gap-1 h-auto p-1 bg-muted rounded-lg w-fit">
                             {(["All", "AWS", "Azure", "GCP"] as Providers[]).map((providers) => {
