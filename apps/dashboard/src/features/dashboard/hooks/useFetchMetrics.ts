@@ -41,6 +41,7 @@ export function useFetchMetrics() {
     const selectedPreset = useDashboardStore((state: DashboardStoreState) => state.selectedPreset);
 
     const fetchMetrics = useCallback(async () => {
+        console.log("started fetch");
         setMetricFetchLoad(true);
         setMetricFetchError(null);
 
@@ -54,14 +55,13 @@ export function useFetchMetrics() {
 
         try {
             const metrics: MetricDTO[] = await apiClient(url);
-
-            // Need to insert metrics in order of period start
+            console.log("fetching");
             for (const metric of metrics) {
                 addMetricFromDto(metric);
             }
         } catch (error) {
             console.warn(`Failed to fetch metrics: ${error}`);
-
+            console.log("fucked up fetch");
             setMetricFetchError(error instanceof Error ? error : new Error(String(error)));
         } finally {
             setMetricFetchLoad(false);

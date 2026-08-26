@@ -5,7 +5,9 @@ import com.cloudsherpa.lib.projections.AggregatedMetric;
 import com.cloudsherpa.lib.projections.ResourceNames;
 import com.cloudsherpa.lib.repositories.NormalizedMetricsRepository;
 import com.cloudsherpa.lib.repositories.ResourceRepository;
+import com.cloudsherpa.service.analytics.dto.AggregatedMetricDto;
 import com.cloudsherpa.service.analytics.dto.ResourceMetricHistoricalResponseDto;
+import com.cloudsherpa.service.metrics.MetricDisplayNameMapper;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -27,17 +29,20 @@ import org.springframework.web.server.ResponseStatusException;
 public class NormalizedMetricService {
   private final NormalizedMetricsRepository normalizedMetricsRepository;
   private final ResourceRepository resourceRepository;
+  private final MetricDisplayNameMapper metricMapper;
 
   private final Logger logger = LoggerFactory.getLogger(NormalizedMetricService.class);
 
   NormalizedMetricService(
       NormalizedMetricsRepository normalizedMetricsRepository,
-      ResourceRepository resourceRepository) {
+      ResourceRepository resourceRepository,
+      MetricDisplayNameMapper metricMapper) {
     this.normalizedMetricsRepository = normalizedMetricsRepository;
     this.resourceRepository = resourceRepository;
+    this.metricMapper = metricMapper;
   }
 
-  public List<AggregatedMetric> fetchHistoricalData(String from, String to, String interval) {
+  public List<AggregatedMetricDto> fetchHistoricalData(String from, String to, String interval) {
     OffsetDateTime parsedFromDate;
     OffsetDateTime parsedToDate;
     String normalizedInterval = interval.toLowerCase(Locale.ROOT);
@@ -72,8 +77,24 @@ public class NormalizedMetricService {
             HttpStatus.BAD_REQUEST, "Invalid interval. Supported values: daily, weekly, monthly");
     }
 
-    return normalizedMetricsRepository.findAggregatedMetricsByPeriod(
-        parsedFromDate, parsedToDate, bucketWidth);
+    List<AggregatedMetric> rawMetrics =
+        normalizedMetricsRepository.findAggregatedMetricsByPeriod(
+            parsedFromDate, parsedToDate, bucketWidth);
+
+    // Map raw metrics to DTOs with clean display names
+    return rawMetrics.stream()
+        .map(
+            m ->
+                new AggregatedMetricDto(
+                    m.getResourceId(),
+                    m.getMetricType(),
+                    metricMapper.toDisplayName(m.getMetricName()),
+                    m.getMetricValue(),
+                    m.getUnit(),
+                    m.getPeriodStart() != null ? m.getPeriodStart().atOffset(ZoneOffset.UTC) : null,
+                    m.getPeriodEnd() != null ? m.getPeriodEnd().atOffset(ZoneOffset.UTC) : null,
+                    m.getSampleCount()))
+        .toList();
   }
 
   public Map<String, String> fetchResourceNames() {
@@ -93,9 +114,12 @@ public class NormalizedMetricService {
 
     ZoneOffset offset = from.getOffset();
     Instant fromInstant = from.toInstant();
+
+    String canonicalMetricType = metricMapper.toCanonicalName(metricType);
+
     List<TimestampedNumericDataPoint> fetchedResourceMetrics =
         normalizedMetricsRepository.getTimestampedMetricValuesAfterDate(
-            resourceId, metricType, fromInstant);
+            resourceId, canonicalMetricType, fromInstant);
 
     if (fetchedResourceMetrics.isEmpty()) {
       logger.info(

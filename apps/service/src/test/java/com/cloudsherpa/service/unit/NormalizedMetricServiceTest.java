@@ -9,8 +9,13 @@ import com.cloudsherpa.lib.projections.AggregatedMetric;
 import com.cloudsherpa.lib.projections.ResourceNames;
 import com.cloudsherpa.lib.repositories.NormalizedMetricsRepository;
 import com.cloudsherpa.lib.repositories.ResourceRepository;
+import com.cloudsherpa.service.analytics.dto.AggregatedMetricDto;
 import com.cloudsherpa.service.analytics.service.NormalizedMetricService;
+import com.cloudsherpa.service.metrics.MetricDisplayNameMapper;
+import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -28,6 +33,8 @@ class NormalizedMetricServiceTest {
 
   @Mock private NormalizedMetricsRepository normalizedMetricsRepository;
 
+  @Mock private MetricDisplayNameMapper metricMapper;
+
   @Mock private ResourceRepository resourceRepository;
 
   @InjectMocks private NormalizedMetricService normalizedMetricService;
@@ -39,14 +46,40 @@ class NormalizedMetricServiceTest {
 
     OffsetDateTime parsedFrom = OffsetDateTime.parse(from);
     OffsetDateTime parsedTo = OffsetDateTime.parse(to);
+    Instant now = Instant.now();
+    UUID resourceId = UUID.randomUUID();
 
     AggregatedMetric aggregatedMetric = mock(AggregatedMetric.class);
-    List<AggregatedMetric> expected = List.of(aggregatedMetric);
+    when(aggregatedMetric.getResourceId()).thenReturn(resourceId);
+    when(aggregatedMetric.getMetricType()).thenReturn("usage");
+    when(aggregatedMetric.getMetricName()).thenReturn("raw.metric.string");
+    when(aggregatedMetric.getMetricValue()).thenReturn(BigDecimal.TEN);
+    when(aggregatedMetric.getUnit()).thenReturn("bytes");
+    when(aggregatedMetric.getPeriodStart()).thenReturn(now);
+    when(aggregatedMetric.getPeriodEnd()).thenReturn(now);
+    when(aggregatedMetric.getSampleCount()).thenReturn(1L);
+
+    when(metricMapper.toDisplayName("raw.metric.string")).thenReturn("Clean UI Name");
+
+    List<AggregatedMetric> repositoryResult = List.of(aggregatedMetric);
 
     when(normalizedMetricsRepository.findAggregatedMetricsByPeriod(parsedFrom, parsedTo, "1 day"))
-        .thenReturn(expected);
+        .thenReturn(repositoryResult);
 
-    List<AggregatedMetric> actual = normalizedMetricService.fetchHistoricalData(from, to, "daily");
+    AggregatedMetricDto expectedDto =
+        new AggregatedMetricDto(
+            resourceId,
+            "usage",
+            "Clean UI Name",
+            BigDecimal.TEN,
+            "bytes",
+            now.atOffset(ZoneOffset.UTC),
+            now.atOffset(ZoneOffset.UTC),
+            1L);
+    List<AggregatedMetricDto> expected = List.of(expectedDto);
+
+    List<AggregatedMetricDto> actual =
+        normalizedMetricService.fetchHistoricalData(from, to, "daily");
 
     assertEquals(expected, actual);
   }

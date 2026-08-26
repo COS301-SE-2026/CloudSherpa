@@ -1,6 +1,7 @@
 package com.cloudsherpa.service.analytics.controller;
 
 import com.cloudsherpa.lib.projections.AggregatedMetric;
+import com.cloudsherpa.service.analytics.dto.AggregatedMetricDto;
 import com.cloudsherpa.service.analytics.dto.ResourceMetricHistoricalRequestDto;
 import com.cloudsherpa.service.analytics.dto.ResourceMetricHistoricalResponseDto;
 import com.cloudsherpa.service.analytics.dto.ResourceNameDto;
@@ -57,12 +58,12 @@ public class AnalyticsController {
                         @ArraySchema(schema = @Schema(implementation = AggregatedMetric.class))))
       })
   @GetMapping("/historical")
-  public ResponseEntity<List<AggregatedMetric>> getHistoricalData(
+  public ResponseEntity<List<AggregatedMetricDto>> getHistoricalData(
       @RequestParam("from") String fromDate,
       @RequestParam("to") String toDate,
       @RequestParam(name = "interval", defaultValue = "daily") String interval) {
     try {
-      List<AggregatedMetric> aggregatedMetrics =
+      List<AggregatedMetricDto> aggregatedMetrics =
           normalizedMetricService.fetchHistoricalData(fromDate, toDate, interval);
 
       if (aggregatedMetrics.isEmpty()) {

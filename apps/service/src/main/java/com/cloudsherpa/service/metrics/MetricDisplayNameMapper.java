@@ -1,6 +1,7 @@
 package com.cloudsherpa.service.metrics;
 
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -122,7 +123,17 @@ public class MetricDisplayNameMapper {
           Map.entry("storage.googleapis.com/network/received_bytes_count", BYTES_UPLOADED),
           Map.entry("storage.googleapis.com/network/sent_bytes_count", BYTES_DOWNLOADED));
 
+  private static final Map<String, String> CANONICAL_NAMES =
+      DISPLAY_NAMES.entrySet().stream()
+          .collect(
+              Collectors.toMap(
+                  Map.Entry::getValue, Map.Entry::getKey, (existing, replacement) -> existing));
+
   public String toDisplayName(String canonicalName) {
     return DISPLAY_NAMES.getOrDefault(canonicalName, canonicalName);
+  }
+
+  public String toCanonicalName(String displayName) {
+    return CANONICAL_NAMES.getOrDefault(displayName, displayName);
   }
 }
