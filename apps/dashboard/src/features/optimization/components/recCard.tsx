@@ -8,6 +8,7 @@ import RecommendationCardHero from "@/features/optimization/components/recCardHe
 import { useRecStore } from "@/features/optimization/stores/useRecStore";
 import { Badge } from "@/components/atoms/badge";
 import { toast } from "sonner";
+import { formatEvidenceText } from "@/features/optimization/utils/formatEvidence";
 
 interface RecommendationCardProps {
     recommendation: Recommendation;
@@ -15,6 +16,12 @@ interface RecommendationCardProps {
 
 export default function RecommendationCard({ recommendation }: Readonly<RecommendationCardProps>) {
     const [open, setOpen] = useState(false);
+
+    const evidence = Object.entries(recommendation.evidence || {}).find(
+        ([key]) => key !== "completenessRatio"
+    );
+
+    const evidenceText = evidence ? formatEvidenceText(evidence[0], evidence[1]) : "N/A";
 
     const acknowledgeRec = useRecStore((state) => state.acknowledgeRec);
     const dismissRec = useRecStore((state) => state.dismissRec);
@@ -61,20 +68,13 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
             ? `${(Number(recommendation.evidence.completenessRatio) * 100).toFixed(0)}%`
             : "N/A";
 
-    //extract first entry that I assume will hold the long term evidence
-    const evidence = Object.entries(recommendation.evidence || {}).find(
-        ([key]) => key !== "completenessRatio"
-    );
-
-    const evidenceText = evidence ? `${evidence[0]}: ${evidence[1]}` : "N/A";
-
     return (
         <Card onClick={() => setOpen(!open)}>
             <CardHeader className="flex flex-row justify-between">
                 <CardTitle>
                     {recommendation.resourceDisplayName ?? recommendation.resourceId}
                 </CardTitle>
-                <div className="flex flex-row gap-2">
+                <div className="flex flex-col md:flex-row gap-2">
                     <Badge>{recommendation.actionType}</Badge>
                     <Badge variant="secondary">{recommendation.status}</Badge>
                 </div>
@@ -82,19 +82,14 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
             {open && (
                 <CardContent className="space-y-4">
                     {/* hero section */}
-                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                         <RecommendationCardHero
                             value={recommendation.actionType}
                             className="text-chart-1"
                         />
-                        {/* this needs to be fixed by converting to human readable format */}
                         <RecommendationCardHero
                             value={evidenceText}
                             className="text-chart-4 truncate"
-                        />
-                        <RecommendationCardHero
-                            value={`${confidence} CONFIDENCE`}
-                            className="text-chart-3"
                         />
                     </div>
 

@@ -38,8 +38,6 @@ export default function RecDrawer({ group, isOpen, setIsOpen }: Readonly<RecDraw
         let filtered = group.recommendations.filter((rec) =>
             showHidden ? rec.status === "DISMISSED" : rec.status !== "DISMISSED"
         );
-        console.log(filtered);
-
         if (actionFilter && actionFilter !== "ALL") {
             filtered = filtered.filter((rec) => rec.actionType === actionFilter);
         }
@@ -62,7 +60,7 @@ export default function RecDrawer({ group, isOpen, setIsOpen }: Readonly<RecDraw
     return (
         <Drawer direction="right" dismissible={true} open={isOpen} onOpenChange={setIsOpen}>
             {/* drawer width could be volatile so will keep an eye on it */}
-            <DrawerContent className="w-[90vw]! sm:w-[40vw]! lg:w-[45vw]! sm:max-w-[1400px]! p-4">
+            <DrawerContent className="w-[90vw]! sm:w-[80vw]! lg:w-[60vw]! sm:max-w-[1600px]! p-4">
                 <DrawerHeader className="flex flex-col">
                     <div className="flex flex-row lex-row justify-between items-center">
                         <DrawerTitle className="text-xl">{group.displayName}</DrawerTitle>
