@@ -319,7 +319,12 @@ export default function StepThreeAws({
                         value={[Number(period)]}
                         onValueChange={(vals) => setPeriod(String(vals[0]))}
                         min={60}
-                        max={400}
+                        max={720}
+                        className={
+                            Number(period) < recommendedPeriod
+                                ? "[&>span>span]:bg-warning [&_[role=slider]]:border-warning"
+                                : ""
+                        }
                     />
 
                     <p className="text-xs text-muted-foreground/70 ">
