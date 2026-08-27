@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
     StepThree,
     ResourceTable,
@@ -30,8 +30,6 @@ export default function StepThreeAzure({
 
     const [errors, setErrors] = useState<string | null>(null);
 
-    const [forIngestionPeriod, setForIngestionPeriod] = useState<number>(ingestionPeriod);
-
     const [filter, setFilter] = useState("");
 
     const tableResources: ResourceSelectionDto[] = useMemo(() => {
@@ -56,6 +54,15 @@ export default function StepThreeAzure({
     ) => {};
 
     const { activeCount, recIngestionPeriod } = useIngestionPeriod(tableResources);
+
+    const [forIngestionPeriod, setForIngestionPeriod] = useState<number>(recIngestionPeriod);
+
+    const [prevActiveCount, setPrevActiveCount] = useState(activeCount);
+
+    if (activeCount !== prevActiveCount) {
+        setPrevActiveCount(activeCount);
+        setForIngestionPeriod(activeCount > 0 ? recIngestionPeriod : 60);
+    }
 
     const handlingSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
         event.preventDefault();

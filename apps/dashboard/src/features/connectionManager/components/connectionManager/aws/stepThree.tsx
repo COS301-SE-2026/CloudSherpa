@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Checkbox } from "@/components/atoms/checkbox";
 import { Badge } from "@/components/atoms/badge";
 import {
@@ -158,10 +158,17 @@ export default function StepThreeAws({
     );
     const router = useRouter();
 
+    const recommendedPeriod = selectedResources.length * 5 * 20;
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [period, setPeriod] = useState<string>(ingestionPeriod);
-    const recommendedPeriod = selectedResources.length * 5 * 20;
+    const [period, setPeriod] = useState<string>(ingestionPeriod || String(recommendedPeriod));
+
+    const [prevSelectedCount, setPrevSelectedCount] = useState(selectedResources.length);
+
+    if (selectedResources.length !== prevSelectedCount) {
+        setPrevSelectedCount(selectedResources.length);
+        setPeriod(selectedResources.length > 0 ? String(recommendedPeriod) : "60");
+    }
 
     const groupedResources = groupResourcesByCategory(resources);
 
