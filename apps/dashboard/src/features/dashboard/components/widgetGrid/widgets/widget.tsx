@@ -13,7 +13,7 @@ export default function Widget({ config }: Readonly<WidgetProps>) {
     return (
         <>
             {config.widgetType === "CHART" ? (
-                <ChartWidget config={config} />
+                <ChartWidget config={config} isEditMode={isEditMode} />
             ) : (
                 <KPIWidget config={config} isEditMode={isEditMode} />
             )}
