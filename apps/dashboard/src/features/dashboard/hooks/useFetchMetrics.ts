@@ -55,6 +55,7 @@ export function useFetchMetrics() {
 
         try {
             const metrics: MetricDTO[] = await apiClient(url);
+
             for (const metric of metrics) {
                 addMetricFromDto(metric);
             }

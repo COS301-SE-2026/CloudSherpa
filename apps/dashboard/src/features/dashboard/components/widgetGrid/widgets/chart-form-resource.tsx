@@ -28,6 +28,7 @@ export default function ChartFormResource({
         if (configuration.accountId) {
             getAwsAccountResources(configuration.accountId)
                 .then((resources) => {
+                    console.log(resources);
                     const activeOnly = resources.filter((r) => r.status === ResourceStatus.ACTIVE);
                     setActiveResources(activeOnly);
                 })

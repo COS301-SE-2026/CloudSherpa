@@ -115,11 +115,13 @@ public class NormalizedMetricService {
     ZoneOffset offset = from.getOffset();
     Instant fromInstant = from.toInstant();
 
-    String canonicalMetricType = metricMapper.toCanonicalName(metricType);
+    String provider = resourceRepository.findProviderByResourceId(resourceId);
+
+    String exactMetricName = metricMapper.toCanonicalName(provider, metricType);
 
     List<TimestampedNumericDataPoint> fetchedResourceMetrics =
         normalizedMetricsRepository.getTimestampedMetricValuesAfterDate(
-            resourceId, canonicalMetricType, fromInstant);
+            resourceId, exactMetricName, fromInstant);
 
     if (fetchedResourceMetrics.isEmpty()) {
       logger.info(
