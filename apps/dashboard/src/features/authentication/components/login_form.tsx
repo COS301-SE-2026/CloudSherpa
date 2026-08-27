@@ -18,7 +18,7 @@ interface LoginFormProps {
 
 export default function LoginForm({ isLoading = false, onToggle }: Readonly<LoginFormProps>) {
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-    const { login, loginFailure, loginSuccess, redirectCountdown } = useLogin();
+    const { login, loginFailure, loginSuccess } = useLogin();
 
     const { email, password, emailError, passwordError, validateEmail, validatePassword } =
         useAuthInputValidation();
@@ -48,11 +48,6 @@ export default function LoginForm({ isLoading = false, onToggle }: Readonly<Logi
                     <CheckCircle2Icon />
 
                     <AlertTitle> You have successfully logged in! </AlertTitle>
-
-                    <AlertDescription>
-                        {" "}
-                        You will be redirected to the dashboard in {redirectCountdown} seconds{" "}
-                    </AlertDescription>
                 </Alert>
             )}
 

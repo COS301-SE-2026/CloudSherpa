@@ -9,8 +9,6 @@ export function useLogin() {
 
     const [loginSuccess, setLoginSuccess] = useState(false);
 
-    const [redirectCountdown, setRedirectCountdown] = useState(0);
-
     const authContext = useAuthContext();
     const router = useRouter();
 
@@ -22,24 +20,14 @@ export function useLogin() {
                 setLoginFailure(false);
 
                 setLoginSuccess(true);
-                setRedirectCountdown(3);
 
                 if (redirect) {
-                    const countDownId = setInterval(() => {
-                        setRedirectCountdown((countdown) => countdown - 1);
-                    }, 1000);
-
-                    setTimeout(() => {
-                        clearInterval(countDownId);
-
-                        router.push("/dashboard");
-                    }, 3000);
+                    router.push("/dashboard");
                 }
             } else {
                 setLoginFailure(true);
 
                 setLoginSuccess(false);
-                setRedirectCountdown(0);
             }
         } catch (error) {
             if (error instanceof Error) {
@@ -52,9 +40,8 @@ export function useLogin() {
 
             setLoginFailure(true);
             setLoginSuccess(false);
-            setRedirectCountdown(0);
         }
     }
 
-    return { login, loginFailure, loginSuccess, redirectCountdown };
+    return { login, loginFailure, loginSuccess };
 }
