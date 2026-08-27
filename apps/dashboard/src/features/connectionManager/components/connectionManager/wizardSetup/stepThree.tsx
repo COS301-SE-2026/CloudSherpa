@@ -160,6 +160,11 @@ export function IngestionSlider({
                     min={60}
                     max={400}
                     step={1}
+                    className={
+                        Number(ingestionPeriod) < recIngestionPeriod
+                            ? "[&>span>span]:bg-warning [&_[role=slider]]:border-warning"
+                            : ""
+                    }
                 />
 
                 <p className="text-sm text-muted-foreground/70">
