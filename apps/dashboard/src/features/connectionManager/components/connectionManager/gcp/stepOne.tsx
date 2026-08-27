@@ -175,16 +175,8 @@ export default function StepOneGcp({ onNext }: Readonly<StepOnePropsForGcp>) {
 
                             <p className="text-sm text-muted-foreground/70">
                                 {" "}
-                                drag and drop your file here <br /> or{" "}
+                                drag and drop your file here <br /> or <br /> click to browse files
                             </p>
-
-                            <button
-                                type="button"
-                                className="bg-foreground text-background hover:bg-primary hover:text-background px-4 py-2 rounded-md text-sm font-medium transition-colors"
-                            >
-                                {" "}
-                                browse files{" "}
-                            </button>
                         </>
                     )}
                 </button>
