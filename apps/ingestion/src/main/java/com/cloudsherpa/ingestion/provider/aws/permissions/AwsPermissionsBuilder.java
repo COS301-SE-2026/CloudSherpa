@@ -3,21 +3,26 @@ package com.cloudsherpa.ingestion.provider.aws.permissions;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.*;
+import org.springframework.stereotype.Component;
 
-public final class AwsPermissionsBuilder {
+@Component
+public class AwsPermissionsBuilder {
 
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+  private final AwsPermissionsRegistry awsPermissionsRegistry;
 
-  private AwsPermissionsBuilder() {}
+  public AwsPermissionsBuilder(AwsPermissionsRegistry awsPermissionsRegistry) {
+    this.awsPermissionsRegistry = awsPermissionsRegistry;
+  }
 
-  public static String buildPolicy(Collection<String> services) {
+  public String buildPolicy(Collection<String> services) {
 
     Set<String> permissions = new TreeSet<>();
 
     permissions.addAll(AwsPermissionsRegistry.COMMON_READ_ONLY);
 
     for (String service : services) {
-      permissions.addAll(AwsPermissionsRegistry.getPermissions(service));
+      permissions.addAll(awsPermissionsRegistry.getPermissions(service));
     }
 
     Map<String, Object> statement = new LinkedHashMap<>();
