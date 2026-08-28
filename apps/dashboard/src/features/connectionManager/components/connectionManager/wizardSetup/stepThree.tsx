@@ -176,6 +176,25 @@ interface ActionForResource {
     toggleAll: () => void;
 }
 
+function Truncation({
+    tagsAndName,
+    className = "",
+}: Readonly<{ tagsAndName: string; className?: string }>) {
+    return (
+        <TooltipProvider>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <span className={`block truncate ${className}`}> {tagsAndName} </span>
+                </TooltipTrigger>
+
+                <TooltipContent>
+                    <p className="max-w-xs break-all"> {tagsAndName} </p>
+                </TooltipContent>
+            </Tooltip>
+        </TooltipProvider>
+    );
+}
+
 function ListOfTags({ tags }: Readonly<{ tags: Record<string, string> }>) {
     const displayedTags = Object.entries(tags).slice(0, 3);
 
@@ -184,22 +203,14 @@ function ListOfTags({ tags }: Readonly<{ tags: Record<string, string> }>) {
             {displayedTags.map(([key, value]) => {
                 const wholeTag = `${key} : ${value}`;
 
-                return(
-                    <TooltipProvider key = {key}>
-                        <Tooltip>
-                            
-                            <TooltipTrigger asChild>
-                                <Badge variant = "secondary" className = "text-[10px] font-normal cursor-default w-[80px] flex-shrink-0">
-                                    <span className = "truncate w-full text-left"> {wholeTag} </span>
-                                </Badge>
-                            </TooltipTrigger>
-
-                            <TooltipContent>
-                                <p className = "max-w-xs break-all"> {wholeTag} </p>
-                            </TooltipContent>
-
-                        </Tooltip>
-                    </TooltipProvider>
+                return (
+                    <Badge
+                        key={key}
+                        variant="secondary"
+                        className="text-[10px] font-normal cursor-default w-[80px] flex-shrink-0"
+                    >
+                        <Truncation tagsAndName={wholeTag} className="w-full text-left" />
+                    </Badge>
                 );
             })}
         </div>
@@ -221,7 +232,7 @@ function ResourceHeaders({ column }: Readonly<HeaderContext<ResourceSelectionDto
 }
 
 function ResourceCells({ getValue }: Readonly<CellContext<ResourceSelectionDto, string>>) {
-    return <span className="font-medium"> {getValue()} </span>;
+    return <Truncation tagsAndName={getValue()} className="font-medium w-[110px]" />;
 }
 
 function SecondaryCells({ getValue }: Readonly<CellContext<ResourceSelectionDto, string>>) {
