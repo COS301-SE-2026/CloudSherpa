@@ -21,7 +21,7 @@ export default function LoginForm({ isLoading = false, onToggle }: Readonly<Logi
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const { login, loginFailure, loginSuccess } = useLogin();
 
-    const { email, password, emailError, passwordError, validateEmail, validatePassword } =
+    const { email, password, emailError, passwordError, validateEmail, onLoginPasswordChange } =
         useAuthInputValidation();
 
     const togglePasswordVisibility = () => setIsPasswordVisible(!isPasswordVisible);
@@ -43,7 +43,6 @@ export default function LoginForm({ isLoading = false, onToggle }: Readonly<Logi
             <div className="text-center">
                 {!loginSuccess && <h2 className="text-3xl font-bold tracking-tight">Sign in</h2>}
             </div>
-
             {loginFailure && (
                 <div className="text-center">
                     <Alert variant="destructive">
@@ -53,7 +52,6 @@ export default function LoginForm({ isLoading = false, onToggle }: Readonly<Logi
                     </Alert>
                 </div>
             )}
-
             {!loginSuccess && (
                 <form className="space-y-6" onSubmit={handleFormSubmit} noValidate>
                     <div className="space-y-2">
@@ -88,7 +86,7 @@ export default function LoginForm({ isLoading = false, onToggle }: Readonly<Logi
                                 id="password"
                                 type={isPasswordVisible ? "text" : "password"}
                                 value={password}
-                                onChange={(e) => validatePassword(e.target.value)}
+                                onChange={(e) => onLoginPasswordChange(e.target.value)}
                                 required
                                 disabled={isLoading}
                                 className={cn(
@@ -118,16 +116,7 @@ export default function LoginForm({ isLoading = false, onToggle }: Readonly<Logi
                     <Button
                         type="submit"
                         className="w-full"
-                        disabled={
-                            isLoading ||
-                            !!emailError ||
-                            !!passwordError ||
-                            email.length === 0 ||
-                            password.length < 8 ||
-                            !/[A-Z]/.test(password) ||
-                            !/\d/.test(password) ||
-                            !/[!@#$%^&*()_+={}[\]:;"'<>,.?/|\\~`-]/.test(password)
-                        }
+                        disabled={isLoading || !!emailError || email.length === 0}
                     >
                         {" "}
                         {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -136,7 +125,7 @@ export default function LoginForm({ isLoading = false, onToggle }: Readonly<Logi
                 </form>
             )}
             {loginSuccess && (
-                <div className="w-full h-full flex flex-col justify-center items-center">
+                <div className="h-full w-full flex flex-col justify-center items-center">
                     <Spinner className="h-10 w-10" />
                 </div>
             )}
