@@ -178,7 +178,7 @@ export function ChartWidget({
                             </TooltipProvider>
                         )}
 
-                        {!preview && (
+                        {!preview && !isEditMode && (
                             <WidgetDropdown
                                 onConfigure={openConfig}
                                 onDelete={() => removeWidget(id, id)}
