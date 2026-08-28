@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, act } from "react";
+import React, { useState } from "react";
 import {
     StepThree,
     ResourceTable,
