@@ -158,6 +158,27 @@ public class ConflictResolver {
         recommendationRepository.save(rec);
       }
     }
+
+    supersedePreviousRecommendations(winners, windowEnd);
+  }
+
+  private void supersedePreviousRecommendations(
+      List<RecommendationCandidate> winners, OffsetDateTime windowEnd) {
+
+    for (RecommendationCandidate winner : winners) {
+      List<OptimizationRecommendation> allActive =
+          recommendationRepository.findActiveByResourceId(winner.resourceId());
+
+      for (OptimizationRecommendation active : allActive) {
+        // If it's not the winning rule, supersede it
+        if (!active.getRuleId().equals(winner.ruleId())) {
+          active.setStatus(OptimizationStatusEnum.SUPERSEDED);
+          active.setUpdatedAt(windowEnd);
+
+          recommendationRepository.save(active);
+        }
+      }
+    }
   }
 
   public void resolveAndPersist(
