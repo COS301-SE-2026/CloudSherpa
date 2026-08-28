@@ -13,13 +13,12 @@ import { useAuthInputValidation } from "@/features/authentication/hooks/useAuthI
 import { Spinner } from "@/components/atoms/spinner";
 
 interface LoginFormProps {
-    isLoading?: boolean;
     onToggle?: () => void;
 }
 
-export default function LoginForm({ isLoading = false, onToggle }: Readonly<LoginFormProps>) {
+export default function LoginForm({ onToggle }: Readonly<LoginFormProps>) {
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-    const { login, loginFailure, loginSuccess } = useLogin();
+    const { login, loginFailure, loginSuccess, isLoading } = useLogin();
 
     const { email, password, emailError, passwordError, validateEmail, onLoginPasswordChange } =
         useAuthInputValidation();
@@ -41,7 +40,7 @@ export default function LoginForm({ isLoading = false, onToggle }: Readonly<Logi
     return (
         <div className="w-full max-w-sm space-y-8 p-4">
             <div className="text-center">
-                {!loginSuccess && <h2 className="text-3xl font-bold tracking-tight">Sign in</h2>}
+                <h2 className="text-3xl font-bold tracking-tight">Sign in</h2>
             </div>
             {loginFailure && (
                 <div className="text-center">
@@ -52,83 +51,76 @@ export default function LoginForm({ isLoading = false, onToggle }: Readonly<Logi
                     </Alert>
                 </div>
             )}
-            {!loginSuccess && (
-                <form className="space-y-6" onSubmit={handleFormSubmit} noValidate>
-                    <div className="space-y-2">
-                        <Label htmlFor="email">Email</Label>
+            <form className="space-y-6" onSubmit={handleFormSubmit} noValidate>
+                <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                        id="email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => validateEmail(e.target.value)}
+                        placeholder="name@company.com"
+                        required
+                        disabled={isLoading}
+                        className={cn(
+                            "pr-10",
+                            emailError
+                                ? "border-destructive focus-visible:ring-destructive"
+                                : "focus-visible:ring-ring"
+                        )}
+                    />
+                    {emailError && (
+                        <div className="flex items-center gap-2 text-destructive text-xs mt-1 animate-in fade-in duration-300">
+                            <AlertCircle size={14} />
+                            <span>{emailError}</span>
+                        </div>
+                    )}
+                </div>
+
+                <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <div className="relative">
                         <Input
-                            id="email"
-                            type="email"
-                            value={email}
-                            onChange={(e) => validateEmail(e.target.value)}
-                            placeholder="name@company.com"
+                            id="password"
+                            type={isPasswordVisible ? "text" : "password"}
+                            value={password}
+                            onChange={(e) => onLoginPasswordChange(e.target.value)}
                             required
                             disabled={isLoading}
                             className={cn(
                                 "pr-10",
-                                emailError
+                                passwordError
                                     ? "border-destructive focus-visible:ring-destructive"
                                     : "focus-visible:ring-ring"
                             )}
                         />
-                        {emailError && (
-                            <div className="flex items-center gap-2 text-destructive text-xs mt-1 animate-in fade-in duration-300">
-                                <AlertCircle size={14} />
-                                <span>{emailError}</span>
-                            </div>
-                        )}
+                        <button
+                            type="button"
+                            onClick={togglePasswordVisibility}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-ring"
+                        >
+                            {isPasswordVisible ? <Eye size={20} /> : <EyeOff size={20} />}
+                        </button>
                     </div>
 
-                    <div className="space-y-2">
-                        <Label htmlFor="password">Password</Label>
-                        <div className="relative">
-                            <Input
-                                id="password"
-                                type={isPasswordVisible ? "text" : "password"}
-                                value={password}
-                                onChange={(e) => onLoginPasswordChange(e.target.value)}
-                                required
-                                disabled={isLoading}
-                                className={cn(
-                                    "pr-10",
-                                    passwordError
-                                        ? "border-destructive focus-visible:ring-destructive"
-                                        : "focus-visible:ring-ring"
-                                )}
-                            />
-                            <button
-                                type="button"
-                                onClick={togglePasswordVisibility}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-ring"
-                            >
-                                {isPasswordVisible ? <Eye size={20} /> : <EyeOff size={20} />}
-                            </button>
+                    {passwordError && (
+                        <div className="flex items-center gap-2 text-destructive text-xs mt-1 animate-in fade-in duration-300">
+                            <AlertCircle size={14} />
+                            <span>{passwordError}</span>
                         </div>
-
-                        {passwordError && (
-                            <div className="flex items-center gap-2 text-destructive text-xs mt-1 animate-in fade-in duration-300">
-                                <AlertCircle size={14} />
-                                <span>{passwordError}</span>
-                            </div>
-                        )}
-                    </div>
-
-                    <Button
-                        type="submit"
-                        className="w-full"
-                        disabled={isLoading || !!emailError || email.length === 0}
-                    >
-                        {" "}
-                        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        {isLoading ? "Authenticating..." : "Log In"}
-                    </Button>
-                </form>
-            )}
-            {loginSuccess && (
-                <div className="h-full w-full flex flex-col justify-center items-center">
-                    <Spinner className="h-10 w-10" />
+                    )}
                 </div>
-            )}
+
+                <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={isLoading || !!emailError || email.length === 0}
+                >
+                    {" "}
+                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isLoading ? "Authenticating..." : "Log In"}
+                </Button>
+            </form>
 
             <div className="mt-6 text-center md:hidden">
                 <div className="text-sm text-muted-foreground">

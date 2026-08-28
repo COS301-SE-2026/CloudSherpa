@@ -4,15 +4,20 @@ import { LoginRequestDto } from "@/features/authentication/types/dtos/auth/Login
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthContext } from "../providers/AuthContext";
+import { toast } from "sonner";
+
 export function useLogin() {
     const [loginFailure, setLoginFailure] = useState(false);
 
     const [loginSuccess, setLoginSuccess] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     const authContext = useAuthContext();
     const router = useRouter();
 
     async function login(loginPayload: LoginRequestDto, redirect?: boolean) {
+        setIsLoading(true);
+        setLoginFailure(false);
         try {
             const loginResult = await authContext?.login(loginPayload);
 
@@ -20,6 +25,10 @@ export function useLogin() {
                 setLoginFailure(false);
 
                 setLoginSuccess(true);
+
+                setTimeout(() => {
+                    toast.success("Successfully logged in");
+                }, 1000);
 
                 if (redirect) {
                     router.push("/dashboard");
@@ -40,8 +49,10 @@ export function useLogin() {
 
             setLoginFailure(true);
             setLoginSuccess(false);
+        } finally {
+            setIsLoading(false);
         }
     }
 
-    return { login, loginFailure, loginSuccess };
+    return { login, loginFailure, loginSuccess, isLoading };
 }
