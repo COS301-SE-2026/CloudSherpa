@@ -2,7 +2,9 @@ package com.cloudsherpa.service.optimization.service;
 
 import com.cloudsherpa.lib.entities.OptimizationRecommendation;
 import com.cloudsherpa.lib.entities.OptimizationStatusEnum;
+import com.cloudsherpa.lib.entities.RecommendationHistory;
 import com.cloudsherpa.lib.repositories.OptimizationRecommendationRepository;
+import com.cloudsherpa.lib.repositories.RecommendationHistoryRepository;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -16,10 +18,13 @@ import org.springframework.stereotype.Service;
 public class OptimizationRecommendationService {
 
   private final OptimizationRecommendationRepository recommendationRepository;
+  private final RecommendationHistoryRepository historyRepository;
 
   public OptimizationRecommendationService(
-      OptimizationRecommendationRepository recommendationRepository) {
+      OptimizationRecommendationRepository recommendationRepository,
+      RecommendationHistoryRepository historyRepository) {
     this.recommendationRepository = recommendationRepository;
+    this.historyRepository = historyRepository;
   }
 
   // Query all recommendations from database
@@ -145,11 +150,37 @@ public class OptimizationRecommendationService {
       return Map.of("error", "Recommendation not found");
     }
 
+    OptimizationStatusEnum previousStatus = recommendation.getStatus();
+    OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
+
     recommendation.setStatus(newStatus);
     recommendation.setUpdatedAt(OffsetDateTime.now(ZoneOffset.UTC));
 
     recommendationRepository.save(recommendation);
 
+    logRecommendationStatusChange(recommendation, previousStatus, newStatus, now);
+
     return toMap(recommendation);
+  }
+
+  private void logRecommendationStatusChange(
+      OptimizationRecommendation recommendation,
+      OptimizationStatusEnum previousStatus,
+      OptimizationStatusEnum newStatus,
+      OffsetDateTime changedAt) {
+
+    RecommendationHistory history =
+        new RecommendationHistory(
+            recommendation.getRecommendationId(),
+            recommendation.getResourceId(),
+            recommendation.getProvider(),
+            recommendation.getRuleId(),
+            recommendation.getActionType(),
+            previousStatus,
+            newStatus,
+            recommendation.getEvidence(),
+            changedAt);
+
+    historyRepository.save(history);
   }
 }
