@@ -137,9 +137,6 @@ public class NormalizedMetricService {
     metricsByResourceId.forEach(
         (resourceId, metrics) ->
             groupedResourceMetrics.add(new ResourceMetricsGroupDto(resourceId, metrics)));
-
-    logger.info("Resource metric entries: {}", groupedResourceMetrics);
-
     return groupedResourceMetrics;
   }
 }
