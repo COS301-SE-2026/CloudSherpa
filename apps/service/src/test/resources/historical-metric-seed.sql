@@ -60,6 +60,7 @@ LANGUAGE plpgsql AS
 $$
 DECLARE
     rows_inserted integer;
+    sample_interval INTERVAL := INTERVAL '5 min';
 BEGIN 
     RAISE NOTICE 'Seeding metric series for resource %', p_resource_id;
 
@@ -85,8 +86,8 @@ BEGIN
             i AS metric_value,
             'NFR unit' AS unit,
             'USD' AS currency,
-            $5 - (i * INTERVAL '5 min') AS period_start,
-            ($5 - (i * INTERVAL '5 min')) + INTERVAL '5 min' AS period_end
+            $5 - (i * $7) AS period_start,
+            ($5 - (i * $7)) + $7 AS period_end
         FROM generate_series(1, $6) AS series(i)
         ON CONFLICT DO NOTHING
     $sql$, p_tenant_schema)
@@ -96,7 +97,8 @@ BEGIN
         p_metric_type,
         p_metric_name,
         p_to_timestamp,
-        p_points;
+        p_points,
+        sample_interval;
 
     GET DIAGNOSTICS rows_inserted = ROW_COUNT;
 
@@ -136,18 +138,22 @@ DECLARE
     to_timestamp timestamptz;
     metric_series_datapoints integer;
     total_rows_seeded integer := 0;
+
+    resource_active_status public.status_enum := 'active';
+    instance_id text := 'InstanceId';
+    region text := 'eu-north-1';
 BEGIN
     PERFORM seed_resource(
         tenant_schema, resource_id_01, aws_account_id,
-        'AWS/EC2', 'nfr-ec2-01', 'i-nfr000001', 'InstanceId', 'us-east-1', 'active'
+        'AWS/EC2', 'nfr-ec2-01', 'i-nfr000001', instance_id, region, resource_active_status
     );
     PERFORM seed_resource(
         tenant_schema, resource_id_02, aws_account_id,
-        'AWS/EC2', 'nfr-ec2-02', 'i-nfr000002', 'InstanceId', 'us-east-1', 'active'
+        'AWS/EC2', 'nfr-ec2-02', 'i-nfr000002', instance_id, region, resource_active_status
     );
     PERFORM seed_resource(
         tenant_schema, resource_id_03, aws_account_id,
-        'AWS/EC2', 'nfr-ec2-03', 'i-nfr000003', 'InstanceId', 'us-east-1', 'active'
+        'AWS/EC2', 'nfr-ec2-03', 'i-nfr000003', instance_id, region, resource_active_status
     );
     RAISE NOTICE 'Resource Seeded, continuing to seed metrics';
 
