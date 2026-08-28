@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import com.cloudsherpa.lib.dtos.ResourceMetricEntry;
 import com.cloudsherpa.lib.dtos.TimestampedNumericDataPoint;
 import com.cloudsherpa.lib.entities.NormalizedMetrics;
 import com.cloudsherpa.lib.projections.AggregatedMetric;
@@ -100,4 +101,12 @@ public interface NormalizedMetricsRepository extends JpaRepository<NormalizedMet
   List<OptimizationStatisticsAggregate> aggregateStatistics(
       @Param("windowStart") OffsetDateTime windowStart,
       @Param("windowEnd") OffsetDateTime windowEnd);
+
+  @Query(
+    value = """
+        SELECT DISTINCT resource_id AS resourceId, metric_type AS metricType, metric_name AS metricName FROM normalized_metrics nm
+        """,
+        nativeQuery = true
+  )
+  List<ResourceMetricEntry> findDistinctResourceMetrics();
 }
