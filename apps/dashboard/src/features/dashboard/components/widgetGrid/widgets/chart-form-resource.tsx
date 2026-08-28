@@ -68,6 +68,7 @@ export default function ChartFormResource({
                         }}
                         widthVariant="full"
                         placeholder="select resource..."
+                        emptyMessage="No resources found"
                     />
                 </div>
                 <div className="grid gap-2">
@@ -87,6 +88,7 @@ export default function ChartFormResource({
                         disabled={!configuration.resourceId}
                         widthVariant="full"
                         placeholder="select metric..."
+                        emptyMessage="No metrics found"
                     />
                 </div>
             </FieldGroup>

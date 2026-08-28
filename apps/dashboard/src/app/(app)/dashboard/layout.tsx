@@ -13,6 +13,7 @@ import {
     useToolbar,
 } from "@/features/dashboard/components/toolbar/toolbarProvider";
 import { DateRange } from "react-day-picker";
+import { toast } from "sonner";
 
 // The layout ID and widget IDs are shared, i.e. layout id ===  widget_id, hence only one UUID is generated
 function generateSharedId() {
@@ -71,8 +72,10 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
             router.push(`?id=${newId}`);
             try {
                 await createDashboard({ id: newId, displayName: name });
+                toast.success(`Successfully created ${name} dashboard.`);
             } catch (error) {
                 console.error("Failed to persist new dashboard", error);
+                toast.error(`Failed to create ${name} dashboard.`);
             }
         },
         [addDashboard, router]

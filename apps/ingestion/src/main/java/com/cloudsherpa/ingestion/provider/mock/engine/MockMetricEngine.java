@@ -267,6 +267,7 @@ public class MockMetricEngine {
     usageRecord.setProvider(requestContext.accountScope().getProvider());
     usageRecord.setAccountId(requestContext.accountScope().getAccountId());
     usageRecord.setProjectId(requestContext.accountScope().getProjectId());
+    usageRecord.setSubscriptionId(requestContext.accountScope().getSubscriptionId());
     usageRecord.setRegion("us-central1");
     usageRecord.setServiceName(simulationContext.serviceScope().getName());
     usageRecord.setMetricName(metricDefinition.name());

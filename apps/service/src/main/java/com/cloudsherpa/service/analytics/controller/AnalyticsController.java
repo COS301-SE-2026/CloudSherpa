@@ -5,7 +5,9 @@ import com.cloudsherpa.lib.projections.AggregatedMetric;
 import com.cloudsherpa.service.analytics.dto.DownsampledSeriesRequestDto;
 import com.cloudsherpa.service.analytics.dto.ResourceMetricHistoricalRequestDto;
 import com.cloudsherpa.service.analytics.dto.ResourceMetricHistoricalResponseDto;
+import com.cloudsherpa.service.analytics.dto.ResourceMetricsGroupDto;
 import com.cloudsherpa.service.analytics.dto.ResourceNameDto;
+import com.cloudsherpa.service.analytics.model.ResourceMetric;
 import com.cloudsherpa.service.analytics.service.NormalizedMetricService;
 import com.cloudsherpa.service.analytics.service.ResourceRegistryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -168,5 +170,33 @@ public class AnalyticsController {
             .periodStart(start.plusMinutes(30))
             .periodEnd(start.plusHours(1))
             .build());
+  }
+
+  @Operation(summary = "For each resource return available/recorded metrics")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Succesfully fetched available metrics for each resource",
+            content =
+                @Content(
+                    array =
+                        @ArraySchema(
+                            schema = @Schema(implementation = ResourceMetricsGroupDto.class))))
+      })
+  @GetMapping("/resource-metrics")
+  public ResponseEntity<List<ResourceMetricsGroupDto>> getResourceMetrics() {
+
+    List<ResourceMetricsGroupDto> mockDto =
+        List.of(
+            new ResourceMetricsGroupDto(
+                UUID.fromString("b0000000-0000-0000-0000-000000000001"),
+                List.of(
+                    new ResourceMetric("compute.googleapis.com/instance/cpu/utilization", "cpu"),
+                    new ResourceMetric(
+                        "compute.googleapis.com/instance/network/received_bytes_count",
+                        "network in"))));
+
+    return ResponseEntity.ok().body(mockDto);
   }
 }

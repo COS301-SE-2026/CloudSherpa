@@ -26,6 +26,7 @@ interface DropdownProps {
     placeholder: string;
     widthVariant?: "small" | "medium" | "large" | "full";
     className?: string;
+    emptyMessage?: string;
 }
 
 const WIDTH_VARIANTS = {
@@ -44,6 +45,7 @@ export default function Dropdown({
     placeholder = "select option...",
     widthVariant = "full",
     className,
+    emptyMessage = "No options found",
 }: Readonly<DropdownProps>) {
     const [open, setOpen] = useState(false);
 
@@ -68,9 +70,9 @@ export default function Dropdown({
                 </PopoverTrigger>
                 <PopoverContent className="p-0 w-(--radix-popover-trigger-width)">
                     <Command>
-                        {!disableSearch && <CommandInput placeholder="Search resources..." />}
+                        {!disableSearch && <CommandInput placeholder="Search ..." />}
                         <CommandList>
-                            <CommandEmpty>No resource found</CommandEmpty>
+                            <CommandEmpty>{emptyMessage}</CommandEmpty>
                             <CommandGroup>
                                 {options.map((opt) => (
                                     <CommandItem
