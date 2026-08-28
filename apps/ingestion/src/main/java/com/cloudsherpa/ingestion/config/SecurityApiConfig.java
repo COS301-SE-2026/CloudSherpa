@@ -15,10 +15,10 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityApiConfig {
 
-  private final AuthenticationFilter authenticationFilter;
+  private final AuthenticationService authenticationService;
 
-  public SecurityApiConfig(AuthenticationFilter authenticationFilter) {
-    this.authenticationFilter = authenticationFilter;
+  public SecurityApiConfig(AuthenticationService authenticationService) {
+    this.authenticationService = authenticationService;
   }
 
   @Bean
@@ -32,7 +32,9 @@ public class SecurityApiConfig {
             httpSecuritySessionManagementConfigurer ->
                 httpSecuritySessionManagementConfigurer.sessionCreationPolicy(
                     SessionCreationPolicy.STATELESS))
-        .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        .addFilterBefore(
+            new AuthenticationFilter(authenticationService),
+            UsernamePasswordAuthenticationFilter.class);
     return http.build();
   }
 }

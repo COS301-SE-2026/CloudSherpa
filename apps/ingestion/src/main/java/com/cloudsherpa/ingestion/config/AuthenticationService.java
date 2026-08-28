@@ -1,11 +1,11 @@
 package com.cloudsherpa.ingestion.config;
 
 import jakarta.servlet.http.HttpServletRequest;
-import org.jvnet.hk2.annotations.Service;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.stereotype.Service;
 
 @Service
 public class AuthenticationService {
