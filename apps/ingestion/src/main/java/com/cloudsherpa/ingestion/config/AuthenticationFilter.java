@@ -10,16 +10,24 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.GenericFilterBean;
 
+@Component
 public class AuthenticationFilter extends GenericFilterBean {
+
+  private final AuthenticationService authenticationService;
+
+  public AuthenticationFilter(AuthenticationService authenticationService) {
+    this.authenticationService = authenticationService;
+  }
 
   @Override
   public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain)
       throws IOException, ServletException {
     try {
       Authentication authentication =
-          AuthenticationService.getAuthentication((HttpServletRequest) request);
+          authenticationService.getAuthentication((HttpServletRequest) request);
       SecurityContextHolder.getContext().setAuthentication(authentication);
       filterChain.doFilter(request, response);
     } catch (Exception exp) {
