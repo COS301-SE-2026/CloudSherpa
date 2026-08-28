@@ -39,13 +39,11 @@ export default function StepThreeGcp({
     billingConfig,
     onComplete,
     onBack,
-    ingestionPeriod = 60,
+    ingestionPeriod,
 }: Readonly<StepThreePropsForGcp>) {
     const [forSaving, setForSaving] = useState(false);
 
     const [errors, setErrors] = useState<string | null>(null);
-
-    const [forIngestionPeriod, setForIngestionPeriod] = useState<number>(ingestionPeriod);
 
     const [tableResources, setTableResources] = useState<ResourceSelectionDto[]>(() => {
         if (!resources || resources.length === 0) {
@@ -64,6 +62,15 @@ export default function StepThreeGcp({
     });
 
     const { activeCount, recIngestionPeriod } = useIngestionPeriod(tableResources);
+
+    const [forIngestionPeriod, setForIngestionPeriod] = useState<number>(recIngestionPeriod);
+
+    const [prevActiveCount, setPrevActiveCount] = useState(activeCount);
+
+    if (activeCount !== prevActiveCount) {
+        setPrevActiveCount(activeCount);
+        setForIngestionPeriod(activeCount > 0 ? recIngestionPeriod : 60);
+    }
 
     const [filter, setFilter] = useState("");
 

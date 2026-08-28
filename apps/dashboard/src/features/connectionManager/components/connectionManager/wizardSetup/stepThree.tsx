@@ -158,8 +158,13 @@ export function IngestionSlider({
                     value={[Number(ingestionPeriod)]}
                     onValueChange={(changeValue) => setIngestionPeriod(changeValue[0])}
                     min={60}
-                    max={400}
+                    max={720}
                     step={1}
+                    className={
+                        Number(ingestionPeriod) < recIngestionPeriod
+                            ? "[&>span>span]:bg-warning [&_[role=slider]]:border-warning"
+                            : ""
+                    }
                 />
 
                 <p className="text-sm text-muted-foreground/70">
