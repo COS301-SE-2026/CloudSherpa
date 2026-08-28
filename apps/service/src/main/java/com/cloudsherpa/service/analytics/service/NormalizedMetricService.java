@@ -118,6 +118,6 @@ public class NormalizedMetricService {
 
   public List<NormalizedMetrics> fetchDownsampledSeries(DownsampledSeriesRequestDto request) {
     return normalizedMetricsRepository.getDownsampledNormalizedMetrics(
-        request.resourceId().toString(), request.metricName(), request.from(), request.to());
+        request.resourceId(), request.metricName(), request.from(), request.to());
   }
 }

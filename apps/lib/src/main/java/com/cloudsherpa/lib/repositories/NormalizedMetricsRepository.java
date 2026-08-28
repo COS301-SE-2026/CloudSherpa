@@ -89,14 +89,14 @@ public interface NormalizedMetricsRepository extends JpaRepository<NormalizedMet
       @Param("windowEnd") OffsetDateTime windowEnd);
 
   @Query(value = """
-  SELECT *
+  SELECT nm.*
   FROM unnest((
     SELECT lttb(period_start, CAST(metric_value AS double precision), 300)
-    FROM normalized_metrics WHERE resource_id = :resourceId AND metric_name = :metricName AND period_start >= windowStart AND period_end >= windowEnd
-  )) INNER JOIN (SELECT * FROM normalized_metrics WHERE resource_id = :resourceId AND :metricName AND period_start >= windowStart AND period_end >= windowEnd) nm ON time=nm.period_start AND value=nm.metric_value;
+    FROM normalized_metrics WHERE resource_id = :resourceId AND metric_name = :metricName AND period_start >= :windowStart AND period_end <= :windowEnd
+  )) AS sampled(time, value) INNER JOIN (SELECT * FROM normalized_metrics WHERE resource_id = :resourceId AND metric_name = :metricName AND period_start >= :windowStart AND period_end <= :windowEnd) nm ON sampled.time = nm.period_start;
       """, nativeQuery = true)
   List<NormalizedMetrics> getDownsampledNormalizedMetrics(
-    @Param("resourceId") String resourceId,
+    @Param("resourceId") UUID resourceId,
     @Param("metricName") String metricName,
     @Param("windowStart") Instant windowStart,
     @Param("windowEnd") Instant windowEnd
