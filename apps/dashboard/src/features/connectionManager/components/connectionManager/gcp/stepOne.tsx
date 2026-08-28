@@ -175,7 +175,8 @@ export default function StepOneGcp({ onNext }: Readonly<StepOnePropsForGcp>) {
 
                             <p className="text-sm text-muted-foreground/70">
                                 {" "}
-                                drag and drop your file here <br /> or <br /> click to browse files
+                                Drag and drop your file here <br /> or <br />{" "}
+                                <strong>Click to browse files</strong>
                             </p>
                         </>
                     )}
