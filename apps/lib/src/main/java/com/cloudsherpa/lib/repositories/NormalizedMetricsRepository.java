@@ -95,7 +95,7 @@ public interface NormalizedMetricsRepository extends JpaRepository<NormalizedMet
     FROM normalized_metrics WHERE resource_id = :resourceId AND metric_name = :metricName AND period_start >= windowStart AND period_end >= windowEnd
   )) INNER JOIN (SELECT * FROM normalized_metrics WHERE resource_id = :resourceId AND :metricName AND period_start >= windowStart AND period_end >= windowEnd) nm ON time=nm.period_start AND value=nm.metric_value;
       """, nativeQuery = true)
-  List<NormalizedMetrics> downsampledNormalizedMetrics(
+  List<NormalizedMetrics> getDownsampledNormalizedMetrics(
     @Param("resourceId") String resourceId,
     @Param("metricName") String metricName,
     @Param("windowStart") Instant windowStart,
