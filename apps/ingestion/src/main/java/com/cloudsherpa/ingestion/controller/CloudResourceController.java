@@ -104,4 +104,17 @@ public class CloudResourceController {
 
     return cloudResourceService.generateGcpPermissionsList(services);
   }
+
+  @Operation(
+      summary = "Generate Azure permissions list",
+      description = "Generates a least-privilege Azure permissions list for the selected services")
+  @ApiResponses(
+      value = {
+        @ApiResponse(responseCode = "200", description = "Permissions list successfully generated")
+      })
+  @PostMapping("/azure/permissions")
+  public Set<String> generateAzurePermissionsPolicy(@RequestBody List<String> services) {
+
+    return cloudResourceService.generateAzurePermissionsList(services);
+  }
 }
