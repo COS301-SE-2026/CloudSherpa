@@ -20,7 +20,7 @@ public class AzureMockRegistry implements MockMetricRegistry {
   public AzureMockRegistry(MetricDefinitionFactory metrics) {
     registry =
         new MockRegistryBuilder()
-            .service("AZURE/VM")
+            .service("Microsoft.Compute/virtualMachines")
             .baseLoad(35)
             .variance(35)
             .burstChance(.05)
@@ -31,7 +31,7 @@ public class AzureMockRegistry implements MockMetricRegistry {
                 metrics.throughput("OS Disk Read Bytes/sec", BYTES_PER_SECOND),
                 metrics.throughput("OS Disk Write Bytes/sec", BYTES_PER_SECOND))
             .register()
-            .service("AZURE/SQL_DATABASE")
+            .service("Microsoft.Sql/servers/databases")
             .baseLoad(30)
             .variance(40)
             .burstChance(.04)
@@ -42,7 +42,7 @@ public class AzureMockRegistry implements MockMetricRegistry {
                 metrics.counter("deadlock", COUNT),
                 metrics.cpu("dtu_consumption_percent", PERCENT))
             .register()
-            .service("AZURE/STORAGE_BLOB")
+            .service("Microsoft.Storage/storageAccounts/blobServices")
             .baseLoad(25)
             .variance(35)
             .burstChance(.03)
@@ -53,7 +53,7 @@ public class AzureMockRegistry implements MockMetricRegistry {
                 metrics.throughput("Ingress", BYTES),
                 metrics.throughput("Egress", BYTES))
             .register()
-            .service("AZURE/APP_SERVICE")
+            .service("Microsoft.Web/sites")
             .baseLoad(25)
             .variance(45)
             .burstChance(.06)
