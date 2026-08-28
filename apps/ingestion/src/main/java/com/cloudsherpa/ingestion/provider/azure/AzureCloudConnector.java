@@ -11,6 +11,7 @@ import com.cloudsherpa.ingestion.models.ResourceDetail;
 import com.cloudsherpa.ingestion.models.UsageRecordModel;
 import com.cloudsherpa.ingestion.provider.aws.monitoring.MockCloudWatchMetricProvider;
 import com.cloudsherpa.ingestion.provider.azure.monitoring.AzureCloudMonitorMetricProvider;
+import com.cloudsherpa.ingestion.provider.azure.scanner.AzureResourceDiscoveryService;
 import com.cloudsherpa.ingestion.provider.monitoring.CloudMonitoringMetricProvider;
 import java.util.List;
 import org.springframework.stereotype.Component;
@@ -20,10 +21,14 @@ public class AzureCloudConnector implements CloudConnector, UsageCapable, Billin
 
   private final CloudMonitoringMetricProvider metricProvider;
   private final CloudMonitoringMetricProvider mockMetricProvider;
+  private final AzureResourceDiscoveryService discoveryService;
 
-  public AzureCloudConnector(MockCloudWatchMetricProvider mockMetricProvider) {
+  public AzureCloudConnector(
+      MockCloudWatchMetricProvider mockMetricProvider,
+      AzureResourceDiscoveryService discoveryService) {
     metricProvider = new AzureCloudMonitorMetricProvider();
     this.mockMetricProvider = mockMetricProvider;
+    this.discoveryService = discoveryService;
   }
 
   @Override
@@ -40,13 +45,13 @@ public class AzureCloudConnector implements CloudConnector, UsageCapable, Billin
 
   @Override
   public List<String> getAllOfferedServices() {
-    return List.of(); // mock for now
+    return discoveryService.getServices();
   }
 
   @Override
   public List<ResourceDetail> getAllResources(
       CloudCredentials credentials, List<String> serviceTypes) {
-    return List.of(); // mock for now
+    return discoveryService.discover(credentials, serviceTypes);
   }
 
   @Override
