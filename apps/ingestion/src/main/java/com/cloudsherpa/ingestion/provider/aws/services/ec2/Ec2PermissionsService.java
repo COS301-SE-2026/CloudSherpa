@@ -1,11 +1,11 @@
 package com.cloudsherpa.ingestion.provider.aws.services.ec2;
 
-import com.cloudsherpa.ingestion.provider.aws.permissions.AwsPermissionsService;
+import com.cloudsherpa.ingestion.provider.permissions.PermissionsService;
 import java.util.Set;
 import org.springframework.stereotype.Component;
 
 @Component
-public class Ec2PermissionsService implements AwsPermissionsService {
+public class Ec2PermissionsService implements PermissionsService {
 
   @Override
   public Set<String> getPermissionsRequired() {
