@@ -5,6 +5,7 @@ import { RegisterRequestDto } from "@/features/authentication/types/dtos/auth/Re
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLogin } from "./useLogin";
+import { toast } from "sonner";
 
 export function useRegistration() {
     const [registrationFailure, setRegistrationFailure] = useState(false);
@@ -43,6 +44,9 @@ export function useRegistration() {
 
             setTimeout(async () => {
                 clearInterval(countDownId);
+                setTimeout(() => {
+                    toast.success("Account successfully created!");
+                }, 1000);
                 router.push("/dashboard");
             }, redirectCountdown * 1000);
         } catch (error) {

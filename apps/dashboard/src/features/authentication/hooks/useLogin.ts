@@ -26,11 +26,10 @@ export function useLogin() {
 
                 setLoginSuccess(true);
 
-                setTimeout(() => {
-                    toast.success("Successfully logged in");
-                }, 1000);
-
                 if (redirect) {
+                    setTimeout(() => {
+                        toast.success("Successfully logged in");
+                    }, 1000);
                     router.push("/dashboard");
                 }
             } else {
