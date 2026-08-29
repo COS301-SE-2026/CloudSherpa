@@ -126,7 +126,8 @@ jobs:
           env: 
             DUMMY_PASS: mock_pass
           run: |
-            psql "postgresql://cloudsherpa:${DUMMY_PASS}@localhost:5432/sherpadb" -a -f nfr-tests/common/seed/nfr-user.sql 
+            psql "postgresql://cloudsherpa:${DUMMY_PASS}@localhost:5432/sherpadb" -a -f nfr-tests/common/seed/common.sql 
+            psql "postgresql://cloudsherpa:${DUMMY_PASS}@localhost:5432/sherpadb" -a -f nfr-tests/common/seed/nfr-user.sql
             psql "postgresql://cloudsherpa:${DUMMY_PASS}@localhost:5432/sherpadb" -a -f nfr-tests/common/seed/historical-metric-seed.sql 
             psql "postgresql://cloudsherpa:${DUMMY_PASS}@localhost:5432/sherpadb" -c "SELECT seed_normalized_metrics();" 
         
