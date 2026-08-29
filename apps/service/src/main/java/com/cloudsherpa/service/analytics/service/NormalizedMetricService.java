@@ -95,8 +95,8 @@ public class NormalizedMetricService {
                     metricMapper.toDisplayName(m.getMetricName()),
                     m.getMetricValue(),
                     m.getUnit(),
-                    m.getPeriodStart() != null ? m.getPeriodStart().atOffset(ZoneOffset.UTC) : null,
-                    m.getPeriodEnd() != null ? m.getPeriodEnd().atOffset(ZoneOffset.UTC) : null,
+                    m.getPeriodStart().atOffset(ZoneOffset.UTC),
+                    m.getPeriodEnd().atOffset(ZoneOffset.UTC),
                     m.getSampleCount()))
         .toList();
   }
