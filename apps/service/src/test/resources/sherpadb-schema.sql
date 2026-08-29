@@ -5,6 +5,7 @@ CREATE SCHEMA IF NOT EXISTS public;
 
 CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
+CREATE EXTENSION IF NOT EXISTS timescaledb_toolkit;
 
 CREATE TYPE public.provider_enum AS ENUM ('AWS', 'AZURE', 'GCP');
 CREATE TYPE public.status_enum AS ENUM ('active', 'disabled');

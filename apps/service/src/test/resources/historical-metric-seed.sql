@@ -113,6 +113,7 @@ RETURNS integer
 LANGUAGE plpgsql AS
 $$
 DECLARE
+    -- BE VERY CAREFUL CHANGING THESE, TESTS RELY ON THESE LITERALS
     tenant_schema text := 'tenant_5ebe4340_c5ec_4833_ad93_06abf4609f03';
     aws_account_id uuid := 'a0000000-0000-0000-0000-000000000001';
     resource_id_01 uuid := '10000000-0000-0000-0000-000000000001';
@@ -186,5 +187,3 @@ BEGIN
     RETURN total_rows_seeded;
 END;
 $$;
-
-SELECT seed_normalized_metrics(10);
