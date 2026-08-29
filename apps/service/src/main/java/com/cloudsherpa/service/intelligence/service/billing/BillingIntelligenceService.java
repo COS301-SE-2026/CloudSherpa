@@ -4,6 +4,8 @@ import com.cloudsherpa.service.intelligence.dto.BillingForecastIndividualCharges
 import com.cloudsherpa.service.intelligence.dto.BillingForecastRequest;
 import com.cloudsherpa.service.intelligence.dto.BillingForecastResponseDto;
 import java.time.Instant;
+import java.util.UUID;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -19,8 +21,9 @@ public class BillingIntelligenceService {
     this.billingAnalyticsService = billingAnalyticsService;
   }
 
+  @Cacheable(value = "billing-forecast", key = "#request +':'+#userId")
   public BillingForecastResponseDto processAllCharges(
-      BillingForecastRequest request, Instant timeOfRequest) {
+      BillingForecastRequest request, Instant timeOfRequest, UUID userId) {
     BillingForecastResult billingForecastResult =
         billingForecastingService.forecastBillingByAllNonCreditCharges(request, timeOfRequest);
 
