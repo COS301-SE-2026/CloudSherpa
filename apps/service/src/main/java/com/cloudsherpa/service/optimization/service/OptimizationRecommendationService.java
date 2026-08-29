@@ -16,6 +16,8 @@ import org.springframework.stereotype.Service;
 public class OptimizationRecommendationService {
 
   private final OptimizationRecommendationRepository recommendationRepository;
+  private static final String ERROR = "error";
+  private static final String RECOMMENDATION_NOT_FOUND = "Recommendation not found";
 
   public OptimizationRecommendationService(
       OptimizationRecommendationRepository recommendationRepository) {
@@ -43,7 +45,7 @@ public class OptimizationRecommendationService {
         recommendationRepository.findById(recommendationId).orElse(null);
 
     if (recommendation == null) {
-      return Map.of("error", "Recommendation not found");
+      return Map.of(ERROR, RECOMMENDATION_NOT_FOUND);
     }
 
     return toMap(recommendation);
@@ -143,7 +145,7 @@ public class OptimizationRecommendationService {
         recommendationRepository.findById(recommendationId).orElse(null);
 
     if (recommendation == null) {
-      return Map.of("error", "Recommendation not found");
+      return Map.of(ERROR, RECOMMENDATION_NOT_FOUND);
     }
 
     OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
@@ -161,11 +163,11 @@ public class OptimizationRecommendationService {
         recommendationRepository.findById(recommendationId).orElse(null);
 
     if (recommendation == null) {
-      return Map.of("error", "Recommendation not found");
+      return Map.of(ERROR, RECOMMENDATION_NOT_FOUND);
     }
 
     if (!recommendation.getStatus().equals(OptimizationStatusEnum.DISMISSED)) {
-      return Map.of("error", "Only dismissed recommendations can be re-enabled");
+      return Map.of(ERROR, "Only dismissed recommendations can be re-enabled");
     }
 
     // Delete the dismissed recommendation entirely
