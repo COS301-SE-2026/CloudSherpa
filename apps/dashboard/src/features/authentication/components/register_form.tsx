@@ -1,7 +1,7 @@
 import { Button } from "@/components/atoms/button";
 import { Input } from "@/components/atoms/input";
 import { Label } from "@/components/atoms/label";
-import { Loader2, Eye, EyeOff, AlertCircle, CheckCircle2Icon } from "lucide-react";
+import { Loader2, Eye, EyeOff, AlertCircle } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useRegistration } from "@/features/authentication/hooks/useRegistration";
@@ -10,11 +10,10 @@ import { Alert, AlertTitle, AlertDescription } from "@/components/atoms/alert";
 import { useAuthInputValidation } from "@/features/authentication/hooks/useAuthInputValidation";
 
 interface RegisterFormProps {
-    isLoading?: boolean; //indicates loading state of form for asynchronous events.
     onToggle?: () => void;
 }
 
-export default function RegisterForm({ isLoading = false, onToggle }: Readonly<RegisterFormProps>) {
+export default function RegisterForm({ onToggle }: Readonly<RegisterFormProps>) {
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false);
     const [confirmPassword, setConfirmPassword] = useState("");
@@ -23,7 +22,7 @@ export default function RegisterForm({ isLoading = false, onToggle }: Readonly<R
     const { email, password, emailError, passwordError, validateEmail, validatePassword } =
         useAuthInputValidation();
 
-    const { register, registrationFailure } = useRegistration();
+    const { register, registrationFailure, isLoading } = useRegistration();
 
     const togglePasswordVisibility = () => setIsPasswordVisible(!isPasswordVisible);
     const toggleConfirmPasswordVisibility = () =>

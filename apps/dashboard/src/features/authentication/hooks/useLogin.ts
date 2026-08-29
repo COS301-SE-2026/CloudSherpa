@@ -4,7 +4,6 @@ import { LoginRequestDto } from "@/features/authentication/types/dtos/auth/Login
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthContext } from "../providers/AuthContext";
-import { toast } from "sonner";
 
 export function useLogin() {
     const [loginFailure, setLoginFailure] = useState(false);
@@ -27,10 +26,7 @@ export function useLogin() {
                 setLoginSuccess(true);
 
                 if (redirect) {
-                    setTimeout(() => {
-                        toast.success("Successfully logged in");
-                    }, 1000);
-                    router.push("/dashboard");
+                    router.push("/dashboard?new_login=true");
                 }
             } else {
                 setLoginFailure(true);

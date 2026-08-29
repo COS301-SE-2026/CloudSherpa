@@ -1,13 +1,18 @@
 "use client"; //use client indicates that the page will be rendered by the client browser and not the server
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AuthOverlay } from "@/features/authentication/components/auth_overlay";
 import { AuthPanel } from "@/features/authentication/components/auth_panel";
 import LoginForm from "@/features/authentication/components/login_form";
 import RegisterForm from "@/features/authentication/components/register_form";
+import { toast } from "sonner";
 
 export default function Authentication() {
     const [isSignUp, setIsSignUp] = useState(false);
+
+    useEffect(() => {
+        toast.dismiss();
+    }, []);
 
     return (
         <div className="fixed inset-0 overflow-hidden bg-background font-sans">

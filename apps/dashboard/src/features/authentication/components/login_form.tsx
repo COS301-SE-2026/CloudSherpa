@@ -3,14 +3,13 @@
 import { Button } from "@/components/atoms/button";
 import { Input } from "@/components/atoms/input";
 import { Label } from "@/components/atoms/label";
-import { Loader2, Eye, EyeOff, AlertCircle, AlertCircleIcon, CheckCircle2Icon } from "lucide-react";
+import { Loader2, Eye, EyeOff, AlertCircle, AlertCircleIcon } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useLogin } from "@/features/authentication/hooks/useLogin";
 import { LoginRequestDto } from "@/features/authentication/types/dtos/auth/LoginRequestDto";
 import { Alert, AlertTitle, AlertDescription } from "@/components/atoms/alert";
 import { useAuthInputValidation } from "@/features/authentication/hooks/useAuthInputValidation";
-import { Spinner } from "@/components/atoms/spinner";
 
 interface LoginFormProps {
     onToggle?: () => void;
@@ -18,7 +17,7 @@ interface LoginFormProps {
 
 export default function LoginForm({ onToggle }: Readonly<LoginFormProps>) {
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-    const { login, loginFailure, loginSuccess, isLoading } = useLogin();
+    const { login, loginFailure, isLoading } = useLogin();
 
     const { email, password, emailError, passwordError, validateEmail, onLoginPasswordChange } =
         useAuthInputValidation();
