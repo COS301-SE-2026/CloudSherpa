@@ -36,12 +36,9 @@ import {
     TableRow,
 } from "@/components/atoms/table";
 import { Search, ArrowUpDown } from "lucide-react";
-import {
-    getAwsAccountResources,
-    ResourceStatus,
-    updateAwsResourceStatus,
-} from "@/lib/fetch/aws-connection-api";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/atoms/tooltip";
+import { getAwsAccountResources, updateAwsResourceStatus } from "@/lib/fetch/cloud-account-api";
+import { ResourceStatus } from "@/lib/fetch/dto/cloud-resource";
 
 interface Resource {
     id: string;
