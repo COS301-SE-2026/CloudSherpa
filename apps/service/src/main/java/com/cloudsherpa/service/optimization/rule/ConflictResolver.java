@@ -3,9 +3,7 @@ package com.cloudsherpa.service.optimization.rule;
 import com.cloudsherpa.lib.entities.OptimizationActionTypeEnum;
 import com.cloudsherpa.lib.entities.OptimizationRecommendation;
 import com.cloudsherpa.lib.entities.OptimizationStatusEnum;
-import com.cloudsherpa.lib.entities.RecommendationHistory;
 import com.cloudsherpa.lib.repositories.OptimizationRecommendationRepository;
-import com.cloudsherpa.lib.repositories.RecommendationHistoryRepository;
 import com.cloudsherpa.service.optimization.rule.model.RecommendationCandidate;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -20,13 +18,9 @@ import org.springframework.stereotype.Component;
 public class ConflictResolver {
 
   private final OptimizationRecommendationRepository recommendationRepository;
-  private final RecommendationHistoryRepository historyRepository;
 
-  public ConflictResolver(
-      OptimizationRecommendationRepository recommendationRepository,
-      RecommendationHistoryRepository historyRepository) {
+  public ConflictResolver(OptimizationRecommendationRepository recommendationRepository) {
     this.recommendationRepository = recommendationRepository;
-    this.historyRepository = historyRepository;
   }
 
   // Group candidates by resource
@@ -145,13 +139,10 @@ public class ConflictResolver {
           continue;
         }
 
-        // Update if it was in a different status
-        OptimizationStatusEnum previousStatus = rec.getStatus();
         rec.setStatus(OptimizationStatusEnum.ACTIVE);
         rec.setUpdatedAt(windowEnd);
         recommendationRepository.save(rec);
 
-        logStatusChange(rec, previousStatus, OptimizationStatusEnum.ACTIVE, windowEnd);
       } else {
         // Create new recommendation
         OptimizationRecommendation rec =
@@ -165,9 +156,6 @@ public class ConflictResolver {
                 windowEnd);
 
         recommendationRepository.save(rec);
-
-        logStatusChange(
-            rec, OptimizationStatusEnum.DRAFT, OptimizationStatusEnum.ACTIVE, windowEnd);
       }
     }
 
@@ -215,26 +203,5 @@ public class ConflictResolver {
     List<RecommendationCandidate> winners = rankAndSelectWinners(validated);
 
     persistWinners(winners, windowEnd);
-  }
-
-  private void logStatusChange(
-      OptimizationRecommendation recommendation,
-      OptimizationStatusEnum previousStatus,
-      OptimizationStatusEnum newStatus,
-      OffsetDateTime changedAt) {
-
-    RecommendationHistory history =
-        new RecommendationHistory(
-            recommendation.getRecommendationId(),
-            recommendation.getResourceId(),
-            recommendation.getProvider(),
-            recommendation.getRuleId(),
-            recommendation.getActionType(),
-            previousStatus,
-            newStatus,
-            recommendation.getEvidence(),
-            changedAt);
-
-    historyRepository.save(history);
   }
 }
