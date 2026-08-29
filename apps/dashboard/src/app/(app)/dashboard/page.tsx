@@ -62,12 +62,6 @@ function DashboardContent() {
         const isNewLogin = searchParams.get("new_login") === "true";
         const isNewAccount = searchParams.get("new_account") === "true";
 
-        // if url is cleaned after useEffect first run, reset lock so login/register toasts will show again if user logs in again
-        if (!isNewLogin && !isNewAccount) {
-            authToastHandled.current = false;
-            return;
-        }
-
         // this lock prevents the toast from triggering more than once on page render
         if (!authToastHandled.current) {
             authToastHandled.current = true;
