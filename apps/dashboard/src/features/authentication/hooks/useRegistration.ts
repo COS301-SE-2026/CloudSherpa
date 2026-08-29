@@ -9,13 +9,13 @@ import { useLogin } from "./useLogin";
 export function useRegistration() {
     const [registrationFailure, setRegistrationFailure] = useState(false);
     const [registrationSuccess, setRegistrationSuccess] = useState(false);
-    // In seconds
-    const [redirectCountdown, setRedirectCountdown] = useState(3);
+    const [isLoading, setIsLoading] = useState(false);
 
     const router = useRouter();
     const { login, loginFailure } = useLogin();
 
     async function register(registerPayload: RegisterRequestDto) {
+        setIsLoading(true);
         try {
             await apiClient("/auth/register", {
                 method: "POST",
@@ -37,14 +37,7 @@ export function useRegistration() {
             setRegistrationFailure(false);
             setRegistrationSuccess(true);
 
-            const countDownId = setInterval(() => {
-                setRedirectCountdown((countdown) => countdown - 1);
-            }, 1000);
-
-            setTimeout(async () => {
-                clearInterval(countDownId);
-                router.push("/dashboard");
-            }, redirectCountdown * 1000);
+            router.push("/dashboard?new_account=true");
         } catch (error) {
             if (error instanceof Error) {
                 console.warn(`Registration failed: ${error.message}`);
@@ -55,8 +48,10 @@ export function useRegistration() {
 
             setRegistrationFailure(true);
             setRegistrationSuccess(false);
+        } finally {
+            setIsLoading(false);
         }
     }
 
-    return { register, registrationFailure, registrationSuccess, redirectCountdown };
+    return { register, registrationFailure, registrationSuccess, isLoading };
 }
