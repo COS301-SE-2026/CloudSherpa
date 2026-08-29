@@ -24,9 +24,9 @@ public interface OptimizationRecommendationRepository
   Optional<OptimizationRecommendation> findByResourceIdAndRuleId(
       @Param("resourceId") UUID resourceId, @Param("ruleId") String ruleId);
 
-  // Find suppressed recommendations for a resource and rule (user dismissal)
+      // Find dismissed recommendations for a resource and rule (user dismissal)
   @Query(
-      "SELECT o FROM OptimizationRecommendation o WHERE o.resourceId = :resourceId AND o.ruleId = :ruleId AND o.status = 'SUPPRESSED'")
-  Optional<OptimizationRecommendation> findSuppressedByResourceIdAndRuleId(
+      "SELECT o FROM OptimizationRecommendation o WHERE o.resourceId = :resourceId AND o.ruleId = :ruleId AND o.status = 'DISMISSED'")
+  Optional<OptimizationRecommendation> findDismissedByResourceIdAndRuleId(
       @Param("resourceId") UUID resourceId, @Param("ruleId") String ruleId);
 }

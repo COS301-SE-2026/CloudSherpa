@@ -210,11 +210,10 @@ public class RuleEngine {
     List<RecommendationCandidate> candidates = new ArrayList<>();
 
     for (UUID resourceId : matchingResourceIds) {
-      Optional<OptimizationRecommendation> suppressed =
-          recommendationRepository.findSuppressedByResourceIdAndRuleId(resourceId, rule.ruleId());
+      Optional<OptimizationRecommendation> dismissed =
+          recommendationRepository.findDismissedByResourceIdAndRuleId(resourceId, rule.ruleId());
 
-      if (suppressed.isPresent()) {
-        // skip this rule since the user has supressed it
+      if (dismissed.isPresent()) {
         continue;
       }
 

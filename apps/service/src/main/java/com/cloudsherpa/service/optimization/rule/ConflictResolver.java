@@ -188,9 +188,6 @@ public class ConflictResolver {
           active.setUpdatedAt(windowEnd);
 
           recommendationRepository.save(active);
-
-          logStatusChange(
-              active, OptimizationStatusEnum.ACTIVE, OptimizationStatusEnum.SUPERSEDED, windowEnd);
         }
       }
     }

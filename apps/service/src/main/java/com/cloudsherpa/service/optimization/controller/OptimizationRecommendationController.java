@@ -100,4 +100,9 @@ public class OptimizationRecommendationController {
 
     return service.applyRecommendation(recommendationId);
   }
+
+  @PostMapping("/{recommendationId}/re-enable")
+  public Map<String, Object> reEnableRecommendation(@PathVariable UUID recommendationId) {
+    return service.reEnableRecommendation(recommendationId);
+  }
 }

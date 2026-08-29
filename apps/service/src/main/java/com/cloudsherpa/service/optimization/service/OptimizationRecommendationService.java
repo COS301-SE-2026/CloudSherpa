@@ -183,4 +183,28 @@ public class OptimizationRecommendationService {
 
     historyRepository.save(history);
   }
+
+  public Map<String, Object> reEnableRecommendation(UUID recommendationId) {
+    OptimizationRecommendation recommendation =
+        recommendationRepository.findById(recommendationId).orElse(null);
+
+    if (recommendation == null) {
+      return Map.of("error", "Recommendation not found");
+    }
+
+    if (!recommendation.getStatus().equals(OptimizationStatusEnum.DISMISSED)) {
+      return Map.of("error", "Only dismissed recommendations can be re-enabled");
+    }
+
+    OptimizationStatusEnum previousStatus = recommendation.getStatus();
+
+    // Delete the dismissed recommendation entirely
+    recommendationRepository.deleteById(recommendationId);
+
+    // Log the removal (user action to re-enable recommendations)
+    logRecommendationStatusChange(
+        recommendation, previousStatus, null, OffsetDateTime.now(ZoneOffset.UTC));
+
+    return Map.of("message", "Recommendation re-enabled successfully");
+  }
 }

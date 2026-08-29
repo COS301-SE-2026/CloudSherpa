@@ -7,6 +7,5 @@ public enum OptimizationStatusEnum {
   DISMISSED,
   APPLIED,
   SUPERSEDED,
-  SUPPRESSED,
   EXPIRED
 }
