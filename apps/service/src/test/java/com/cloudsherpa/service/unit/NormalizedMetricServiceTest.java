@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -41,7 +40,6 @@ class NormalizedMetricServiceTest {
 
   @Mock private com.cloudsherpa.service.metrics.MetricDisplayNameMapper metricMapper;
 
-  @Disabled("fix after frontend integration")
   @Test
   void fetchHistoricalDataReturnsMetricsBetweenDates() {
     String from = "2026-04-01T00:00:00Z";
@@ -71,7 +69,7 @@ class NormalizedMetricServiceTest {
 
     List<MetricDto> expected =
         List.of(
-            new com.cloudsherpa.service.analytics.dto.MetricDto(
+            new MetricDto(
                 resourceId,
                 "Gauge",
                 "CPU Utilization",
@@ -81,8 +79,7 @@ class NormalizedMetricServiceTest {
                 end.atOffset(java.time.ZoneOffset.UTC),
                 5L));
 
-    List<com.cloudsherpa.service.analytics.dto.MetricDto> actual =
-        normalizedMetricService.fetchHistoricalData(from, to, "daily");
+    List<MetricDto> actual = normalizedMetricService.fetchHistoricalData(from, to, "daily");
 
     assertEquals(expected, actual);
   }
