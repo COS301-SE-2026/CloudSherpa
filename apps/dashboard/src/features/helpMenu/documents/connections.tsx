@@ -3,6 +3,8 @@
 import { Plug } from "lucide-react";
 import HelpCenter from "@/features/helpMenu/documents/documentsPage";
 import { creatingIns } from "@/features/helpMenu/documents/createInstructions";
+import {useSearchParams} from "next/navigation";
+import {Suspense} from "react";
 
 /*
 - this page give users all the info on how to add, remove and manage their conn
@@ -95,16 +97,58 @@ const Gcp_INS = creatingIns([
     },
 ]);
 
-export default function Connection() {
+const Azure_INS = creatingIns([
+    {name : "Navigate to Connection Manager",
+     description : "Access the Connection Manager from your dashboard",
+     details : [
+        "From your dashboard, locate the sidebar on the left",
+        "Click on the Connection Manager",
+        "You will redirected to the Connection Manager page where you can view and configure your cloud connections",
+     ],
+    },
+]);
+
+function ContentForConnections(){
+    const searchParams = useSearchParams();
+
+    const forProviders = searchParams.get("forProviders");
+
+    const getInstructions = () => {
+        switch(forProviders){
+            case "aws" :
+                return {instructions : Aws_INS, name : "Connecting your AWS cloud provider", description : "Follow these steps to connect your AWS account"};
+            
+            case "gcp" :
+                return {instructions : Gcp_INS, name : "Connecting your GCP cloud provider", description : "Follow these steps to connect your GCP account"};
+            
+            case "azure" :
+                return {instructions : Azure_INS, name : "Connecting your Azure cloud provider", description : "Follow these steps to connect your Azure account"};
+
+            default : 
+                return {
+                    instructions: Aws_INS,
+                    name: "Connecting your AWS cloud provider",
+                    description: "Follow these five steps to connect your AWS account"
+                };
+
+        }
+    };
     
+    const {instructions, name, description} = getInstructions();
 
     return (
         <HelpCenter
-            name="Connecting your AWS cloud provider"
-            description="Follow these five steps to connect your AWS account"
+            name={name}
+            description={description}
             breadcrumb="Connections"
             icon={Plug}
-            instructions={INS}
+            instructions={instructions}
         />
+    );
+}
+
+export default function Connection(){
+    return(
+        <Suspense fallback = {<div className = "flex items-center justify min-h-screen"> Loading... </div>}> <ContentForConnections/> </Suspense>
     );
 }
