@@ -120,7 +120,7 @@ jobs:
         - name: Compose Up
           if: github.event_name == 'pull_request'
           run: |
-            docker compose -f infra/docker-compose.e2e.yml up -d
+            docker compose -f infra/docker-compose.e2e.yml up -d --wait
 
         - name: Playwright E2E tests
           if: github.event_name == 'pull_request'
