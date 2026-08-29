@@ -1,5 +1,5 @@
 "use client";
-import { MetricType, MetricStore } from "@/features/dashboard/types/metric";
+import { MetricStore } from "@/features/dashboard/types/metric";
 import { useMetricStore } from "@/features/dashboard/stores/metric-store";
 import { useState, useEffect } from "react";
 import { ChartWidgetConfig } from "@/features/dashboard/types/widgets";
