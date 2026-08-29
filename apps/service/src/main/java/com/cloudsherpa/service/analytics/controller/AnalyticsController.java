@@ -39,6 +39,8 @@ public class AnalyticsController {
   private final NormalizedMetricService normalizedMetricService;
   private final ResourceRegistryService resourceRegistryService;
 
+  private static final boolean RESOURCE_METRICS_MOCK = false;
+
   AnalyticsController(
       NormalizedMetricService normalizedMetricService,
       ResourceRegistryService resourceRegistryService) {
@@ -170,16 +172,22 @@ public class AnalyticsController {
   @GetMapping("/resource-metrics")
   public ResponseEntity<List<ResourceMetricsGroupDto>> getResourceMetrics() {
 
-    List<ResourceMetricsGroupDto> mockDto =
-        List.of(
-            new ResourceMetricsGroupDto(
-                UUID.fromString("b0000000-0000-0000-0000-000000000001"),
-                List.of(
-                    new ResourceMetric("compute.googleapis.com/instance/cpu/utilization", "cpu"),
-                    new ResourceMetric(
-                        "compute.googleapis.com/instance/network/received_bytes_count",
-                        "network in"))));
+    if (RESOURCE_METRICS_MOCK) {
+      List<ResourceMetricsGroupDto> mockDto =
+          List.of(
+              new ResourceMetricsGroupDto(
+                  UUID.fromString("b0000000-0000-0000-0000-000000000001"),
+                  List.of(
+                      new ResourceMetric("compute.googleapis.com/instance/cpu/utilization", "cpu"),
+                      new ResourceMetric(
+                          "compute.googleapis.com/instance/network/received_bytes_count",
+                          "network in"))));
 
-    return ResponseEntity.ok().body(mockDto);
+      return ResponseEntity.ok().body(mockDto);
+    }
+
+    List<ResourceMetricsGroupDto> resourceMetrics = normalizedMetricService.fetchResourceMetrics();
+
+    return ResponseEntity.ok().body(resourceMetrics);
   }
 }

@@ -1,5 +1,6 @@
 package com.cloudsherpa.service.analytics.service;
 
+import com.cloudsherpa.lib.dtos.ResourceMetricEntry;
 import com.cloudsherpa.lib.dtos.TimestampedNumericDataPoint;
 import com.cloudsherpa.lib.entities.NormalizedMetrics;
 import com.cloudsherpa.lib.projections.AggregatedMetric;
@@ -8,6 +9,8 @@ import com.cloudsherpa.lib.repositories.NormalizedMetricsRepository;
 import com.cloudsherpa.lib.repositories.ResourceRepository;
 import com.cloudsherpa.service.analytics.dto.DownsampledSeriesRequestDto;
 import com.cloudsherpa.service.analytics.dto.ResourceMetricHistoricalResponseDto;
+import com.cloudsherpa.service.analytics.dto.ResourceMetricsGroupDto;
+import com.cloudsherpa.service.analytics.model.ResourceMetric;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -119,5 +122,28 @@ public class NormalizedMetricService {
   public List<NormalizedMetrics> fetchDownsampledSeries(DownsampledSeriesRequestDto request) {
     return normalizedMetricsRepository.getDownsampledNormalizedMetrics(
         request.resourceId(), request.metricName(), request.from(), request.to());
+  }
+
+  public List<ResourceMetricsGroupDto> fetchResourceMetrics() {
+
+    List<ResourceMetricEntry> distinctResourceMetrics =
+        normalizedMetricsRepository.findDistinctResourceMetrics();
+
+    List<ResourceMetricsGroupDto> groupedResourceMetrics = new ArrayList<>();
+
+    Map<UUID, List<ResourceMetric>> metricsByResourceId = new HashMap<>();
+
+    for (ResourceMetricEntry distinctResourceMetric : distinctResourceMetrics) {
+      metricsByResourceId
+          .computeIfAbsent(distinctResourceMetric.resourceId(), resourceId -> new ArrayList<>())
+          .add(
+              new ResourceMetric(
+                  distinctResourceMetric.metricName(), distinctResourceMetric.metricType()));
+    }
+
+    metricsByResourceId.forEach(
+        (resourceId, metrics) ->
+            groupedResourceMetrics.add(new ResourceMetricsGroupDto(resourceId, metrics)));
+    return groupedResourceMetrics;
   }
 }

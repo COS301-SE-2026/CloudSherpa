@@ -4,9 +4,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.cloudsherpa.lib.entities.NormalizedMetrics;
 import com.cloudsherpa.service.analytics.dto.DownsampledSeriesRequestDto;
+import com.cloudsherpa.service.analytics.dto.ResourceMetricsGroupDto;
+import com.cloudsherpa.service.analytics.model.ResourceMetric;
 import com.cloudsherpa.service.analytics.service.NormalizedMetricService;
 import com.cloudsherpa.service.config.TenantContext;
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
@@ -32,7 +35,7 @@ import org.testcontainers.utility.MountableFile;
       "INGESTION_BASE_URL=http://localhost:8081",
       "intelligence-api-key=123"
     })
-class NormalizedMetricsServiceIntegrationTest {
+class NormalizedMetricServiceIntegrationTest {
 
   @Container @ServiceConnection
   static PostgreSQLContainer timescaledb =
@@ -94,6 +97,31 @@ class NormalizedMetricsServiceIntegrationTest {
     metricsCleanup();
   }
 
+  @Test
+  void fetchResourceMetricsShouldCreateResourceMetricsGroupList() {
+    UUID resource1Uuid = UUID.fromString("10000000-0000-0000-0000-000000000001");
+    UUID resource2Uuid = UUID.fromString("10000000-0000-0000-0000-000000000002");
+    UUID resource3Uuid = UUID.fromString("10000000-0000-0000-0000-000000000003");
+
+    List<ResourceMetricsGroupDto> expected =
+        List.of(
+            new ResourceMetricsGroupDto(
+                resource1Uuid, List.of(new ResourceMetric("CPUUtilization", "cpu"))),
+            new ResourceMetricsGroupDto(
+                resource2Uuid, List.of(new ResourceMetric("NetworkIn", "network"))),
+            new ResourceMetricsGroupDto(
+                resource3Uuid,
+                List.of(
+                    new ResourceMetric("NetworkOut", "network"),
+                    new ResourceMetric("DiskReadBytes", "disk"),
+                    new ResourceMetric("DiskWriteBytes", "disk"))));
+
+    List<ResourceMetricsGroupDto> actual = normalizedMetricService.fetchResourceMetrics();
+
+    assertEquals(expected.size(), actual.size());
+    assertEquals(sortedResourceMetricsGroups(expected), sortedResourceMetricsGroups(actual));
+  }
+
   @AfterEach
   void clearTenant() {
     TenantContext.clear();
@@ -106,5 +134,21 @@ class NormalizedMetricsServiceIntegrationTest {
   private void metricsCleanup() {
     jdbcTemplate.execute(
         "TRUNCATE TABLE tenant_5ebe4340_c5ec_4833_ad93_06abf4609f03.normalized_metrics");
+  }
+
+  private List<ResourceMetricsGroupDto> sortedResourceMetricsGroups(
+      List<ResourceMetricsGroupDto> groups) {
+    return groups.stream()
+        .map(
+            group ->
+                new ResourceMetricsGroupDto(
+                    group.resourceId(),
+                    group.metrics().stream()
+                        .sorted(
+                            Comparator.comparing(ResourceMetric::metricName)
+                                .thenComparing(ResourceMetric::metricType))
+                        .toList()))
+        .sorted(Comparator.comparing(ResourceMetricsGroupDto::resourceId))
+        .toList();
   }
 }
