@@ -154,9 +154,9 @@ public class OptimizationRecommendationService {
     OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
 
     recommendation.setStatus(newStatus);
-    recommendation.setUpdatedAt(OffsetDateTime.now(ZoneOffset.UTC));
+    recommendation.setUpdatedAt(now);
 
-    recommendationRepository.save(recommendation);
+    recommendation = recommendationRepository.save(recommendation);
 
     logRecommendationStatusChange(recommendation, previousStatus, newStatus, now);
 
