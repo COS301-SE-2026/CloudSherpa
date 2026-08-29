@@ -102,6 +102,70 @@ const DOCUMENTS: Documents[] = [
 
 type FilterForTutorials = (typeof TUTFILTERS)[number];
 
+const PopUp = ({
+    isOpen, onClose, onSelectProvider
+} : {
+    isOpen : boolean; onClose : () => void; onSelectProvider : (provider : string) => void;
+}) => {
+    if(!isOpen){
+        return null;
+    }
+
+    return(
+        <Dialog open = {isOpen} onOpenChange = {onClose}>
+            <DialogContent className = "max-w-md">
+                <DialogHeader className = "text-center pb-2">
+                    <div className = "flex justify-center mb-4">
+                        <div className = "p-3 bg-primary-100 dark:bg-primary-900/30 rounded-full"> <Plug size = {28} className = "text-primary"/> </div>
+                    </div>
+
+                    <DialogTitle className = "text-2xl font-bold text-foreground"> Connect a Cloud Provider </DialogTitle>
+                    <p className = "text-muted-foreground mt-2 text-sm"> Choose which cloud provider you would like to connect to CloudSherpa </p>
+                </DialogHeader>
+
+                <div className = "space-y-3 py-2">
+                    <Button type = "button" variant = "outline" onClick = {() => {onSelectProvider("aws"); onClose();}}
+                            className = "w-full flex items-center justify-between px-4 py-6 h-auto hover:border-primary hover:bg-muted/50 group">
+
+                        <span className = "flex items-center gap-3">
+                            <span className = "text-left">
+                                <span className = "font-semibold text-foreground block"> AWS </span>
+                                <span className = "text-sm text-muted-foreground block"> Amazon Web Services </span>
+                            </span>
+                        </span>
+                    </Button>
+
+                    <Button type = "button" variant = "outline" onClick = {() => {onSelectProvider("gcp"); onClose();}}
+                            className = "w-full flex items-center justify-between px-4 py-6 h-auto hover:border-primary hover:bg-muted/50 group">
+
+                        <span className = "flex items-center gap-3">
+                            <span className = "text-left">
+                                <span className = "font-semibold text-foreground block"> GCP </span>
+                                <span className = "text-sm text-muted-foreground block"> Google Cloud Platform </span>
+                            </span>
+                        </span>
+                    </Button>
+
+                    <Button type = "button" variant = "outline" onClick = {() => {onSelectProvider("azure"); onClose();}}
+                            className = "w-full flex items-center justify-between px-4 py-6 h-auto hover:border-primary hover:bg-muted/50 group">
+
+                        <span className = "flex items-center gap-3">
+                            <span className = "text-left">
+                                <span className = "font-semibold text-foreground block"> Azure </span>
+                                <span className = "text-sm text-muted-foreground block"> Microsoft Azure </span>
+                            </span>
+                        </span>
+                    </Button>
+                </div>
+
+                <div className = "mt-2 pt-4 border-t border-border">
+                    <Button type = "button" variant = "ghost" onClick = {onClose} className = "w-full text-sm text-muted-foreground hover:text-foreground"> Cancel </Button>
+                </div>
+            </DialogContent>
+        </Dialog>
+    );
+};
+
 function DocumentsAndTutorialsSuspense() {
     const router = useRouter();
 
@@ -123,6 +187,8 @@ function DocumentsAndTutorialsSuspense() {
 
     //htmliframeelement rep an html iframe ele & provides type safety
     const youtubeIframe = useRef<HTMLIFrameElement>(null);
+
+    const [isPopUpOpen, setIsPopUpOpen] = useState(false);
 
     const searchDocument = useMemo(() => {
         if (!search.trim()) {
@@ -176,8 +242,22 @@ function DocumentsAndTutorialsSuspense() {
         setVideoSelected(null);
     };
 
+    const handlingCategoryClick = (category : BrowseCategory) => {
+        if(category.id === "connections"){
+            setIsPopUpOpen(true);
+        }else if(category.href){
+            router.push(category.href);
+        }
+    };
+
+    const handlingSelectedProvider = (provider : string) => {
+        router.push(`/helpMenu/documents/connections?forProviders=${provider}`);
+    };
+
     return (
         <div className="min-h-screen bg-background">
+            <PopUp isOpen = {isPopUpOpen} onClose = {() => setIsPopUpOpen(false)} onSelectProvider = {handlingSelectedProvider}/>
+
             {/* this is for the video dialog (youtube iframe) */}
             <Dialog open={videoDialogOpen} onOpenChange={handlingVideoClose}>
                 <DialogContent className="max-w-3xl p-0 overflow-hidden bg-background">
