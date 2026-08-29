@@ -17,7 +17,7 @@ import {
     TooltipTrigger,
 } from "@/components/atoms/tooltip";
 import { useRecStore } from "@/features/optimization/stores/useRecStore";
-import { useFetchMetricHistoricalData} from "@/features/dashboard/hooks/useFetchMetricHistoricalData"; 
+import { useFetchMetricHistoricalData } from "@/features/dashboard/hooks/useFetchMetricHistoricalData";
 
 interface BaseChartProps {
     resourceId: string;
@@ -54,11 +54,11 @@ export function ChartWidget({
     const toMs = useDashboardStore((state) => state.toMs);
 
     useFetchMetricHistoricalData({
-        resourceId : resourceId ?? "",
-        metricType : metricType as MetricType,
-        fromMs : fromMs,
-        toMs : toMs,
-        metricName : metricName,
+        resourceId: resourceId ?? "",
+        metricType: metricType as MetricType,
+        fromMs: fromMs,
+        toMs: toMs,
+        metricName: metricName,
     });
 
     useEffect(() => {

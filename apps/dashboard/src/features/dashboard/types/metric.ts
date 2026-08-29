@@ -36,12 +36,10 @@ export type Metric = {
 // Maps timestamp: record
 export type MetricSeries = Record<string, Metric>;
 
-export interface AvailableMetric{
-    resourceId : string;
+export interface AvailableMetric {
+    resourceId: string;
 
-    metrics : {metricName : string;
-               metricType : string;
-    }[];
+    metrics: { metricName: string; metricType: string }[];
 }
 
 export type MetricStore = {
@@ -50,9 +48,9 @@ export type MetricStore = {
     addMetric: (metric: Metric) => void;
     addMetricFromDto: (metricDto: MetricDTO) => void;
 
-    initializeMetricSeries : (availableMetrics : AvailableMetric[]) => void;
+    initializeMetricSeries: (availableMetrics: AvailableMetric[]) => void;
 
-    setMetricSeries : (resourceId : string, metricType : MetricType, metrics : Metric[]) => void;
+    setMetricSeries: (resourceId: string, metricType: MetricType, metrics: Metric[]) => void;
 
     clearStore: () => void;
     getResourceList: () => string[];

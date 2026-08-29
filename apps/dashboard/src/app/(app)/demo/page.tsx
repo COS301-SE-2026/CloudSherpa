@@ -17,6 +17,7 @@ const MOCK_CHART_WIDGETS: WidgetConfig[] = [
         accountId: "stuff",
         resourceId: "demo-server-01",
         metricType: "cpu",
+        metricName: "cpu",
     },
     {
         id: "mock-widget-2",
@@ -27,6 +28,7 @@ const MOCK_CHART_WIDGETS: WidgetConfig[] = [
         accountId: "stuff",
         resourceId: "demo-server-01",
         metricType: "memory",
+        metricName: "memory",
     },
 ];
 

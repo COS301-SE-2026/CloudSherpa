@@ -115,7 +115,7 @@ export const useMetricStore = create<MetricStore>((set, get) => ({
         }));
     },
 
-    initializeMetricSeries : (availableMetrics) => {
+    initializeMetricSeries: (availableMetrics) => {
         console.log("Available metrics:", availableMetrics);
 
         set((state) => {
@@ -123,37 +123,35 @@ export const useMetricStore = create<MetricStore>((set, get) => ({
                 ...state.seriesByKey,
             };
 
-            for(const resource of availableMetrics){
-                if(!resource.resourceId){
+            for (const resource of availableMetrics) {
+                if (!resource.resourceId) {
                     continue;
                 }
 
-                for(const metric of resource.metrics){
-                    if(!metric.metricType || metric.metricType === "string"){
+                for (const metric of resource.metrics) {
+                    if (!metric.metricType || metric.metricType === "string") {
                         continue;
                     }
 
                     const key = `${resource.resourceId}:${metric.metricType}`;
 
-                    if(!seriesByKey[key]){
+                    if (!seriesByKey[key]) {
                         seriesByKey[key] = {};
                     }
                 }
             }
 
-            return {seriesByKey,};
+            return { seriesByKey };
         });
     },
 
-    setMetricSeries : (
-        resourceId, metricType, metrics
-    ) => {
+    setMetricSeries: (resourceId, metricType, metrics) => {
         const key = `${resourceId}:${metricType}`;
 
-        const series = Object.fromEntries(metrics.map((metric) => [metric.timestamp, metric,]));
+        const series = Object.fromEntries(metrics.map((metric) => [metric.timestamp, metric]));
 
         set((state) => ({
-            seriesByKey : {
+            seriesByKey: {
                 ...state.seriesByKey,
                 [key]: series,
             },

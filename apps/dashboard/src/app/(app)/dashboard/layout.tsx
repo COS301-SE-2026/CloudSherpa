@@ -192,6 +192,7 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
             accountId: null,
             resourceId: null,
             metricType: null,
+            metricName: undefined,
         };
 
         const newLayout: LayoutItem = {
