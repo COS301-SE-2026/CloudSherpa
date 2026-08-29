@@ -25,7 +25,8 @@ public class OptimizationRecommendationService {
   // Query all recommendations from database
   public List<Map<String, Object>> getRecommendations() {
 
-    List<OptimizationRecommendation> recommendations = recommendationRepository.findAll();
+    List<OptimizationRecommendation> recommendations =
+        recommendationRepository.findAllExcludingSuperseded();
 
     List<Map<String, Object>> resultList = new ArrayList<>(recommendations.size());
 

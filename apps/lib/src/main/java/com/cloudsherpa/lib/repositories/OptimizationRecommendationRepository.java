@@ -29,4 +29,7 @@ public interface OptimizationRecommendationRepository
       "SELECT o FROM OptimizationRecommendation o WHERE o.resourceId = :resourceId AND o.ruleId = :ruleId AND o.status = 'DISMISSED'")
   Optional<OptimizationRecommendation> findDismissedByResourceIdAndRuleId(
       @Param("resourceId") UUID resourceId, @Param("ruleId") String ruleId);
+
+      @Query("SELECT o FROM OptimizationRecommendation o WHERE o.status != 'SUPERSEDED'")
+  List<OptimizationRecommendation> findAllExcludingSuperseded();
 }
