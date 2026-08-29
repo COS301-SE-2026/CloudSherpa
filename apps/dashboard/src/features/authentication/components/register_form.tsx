@@ -23,8 +23,7 @@ export default function RegisterForm({ isLoading = false, onToggle }: Readonly<R
     const { email, password, emailError, passwordError, validateEmail, validatePassword } =
         useAuthInputValidation();
 
-    const { register, registrationFailure, registrationSuccess, redirectCountdown } =
-        useRegistration();
+    const { register, registrationFailure } = useRegistration();
 
     const togglePasswordVisibility = () => setIsPasswordVisible(!isPasswordVisible);
     const toggleConfirmPasswordVisibility = () =>
@@ -56,16 +55,6 @@ export default function RegisterForm({ isLoading = false, onToggle }: Readonly<R
             <div className="text-center">
                 <h2 className="text-3xl font-bold tracking-tight">Sign Up</h2>
             </div>
-
-            {registrationSuccess && (
-                <Alert>
-                    <CheckCircle2Icon />
-                    <AlertTitle>Successful Registration</AlertTitle>
-                    <AlertDescription>
-                        You will be redirected to the dashboard in {redirectCountdown} seconds
-                    </AlertDescription>
-                </Alert>
-            )}
 
             {registrationFailure && (
                 <div className="text-center">

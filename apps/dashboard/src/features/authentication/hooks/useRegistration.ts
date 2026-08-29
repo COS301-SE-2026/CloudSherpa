@@ -10,8 +10,6 @@ import { toast } from "sonner";
 export function useRegistration() {
     const [registrationFailure, setRegistrationFailure] = useState(false);
     const [registrationSuccess, setRegistrationSuccess] = useState(false);
-    // In seconds
-    const [redirectCountdown, setRedirectCountdown] = useState(3);
 
     const router = useRouter();
     const { login, loginFailure } = useLogin();
@@ -38,17 +36,10 @@ export function useRegistration() {
             setRegistrationFailure(false);
             setRegistrationSuccess(true);
 
-            const countDownId = setInterval(() => {
-                setRedirectCountdown((countdown) => countdown - 1);
+            setTimeout(() => {
+                toast.success("Account successfully created!");
             }, 1000);
-
-            setTimeout(async () => {
-                clearInterval(countDownId);
-                setTimeout(() => {
-                    toast.success("Account successfully created!");
-                }, 1000);
-                router.push("/dashboard");
-            }, redirectCountdown * 1000);
+            router.push("/dashboard");
         } catch (error) {
             if (error instanceof Error) {
                 console.warn(`Registration failed: ${error.message}`);
@@ -62,5 +53,5 @@ export function useRegistration() {
         }
     }
 
-    return { register, registrationFailure, registrationSuccess, redirectCountdown };
+    return { register, registrationFailure, registrationSuccess };
 }
