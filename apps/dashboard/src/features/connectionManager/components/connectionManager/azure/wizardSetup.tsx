@@ -7,14 +7,10 @@ import StepTwoAzure from "./stepTwo";
 import StepThreeAzure from "./stepThree";
 import { useState } from "react";
 import { ResourceDetail } from "@/lib/fetch/dto/cloud-resource";
+import { AzureCredentialsDto } from "@/lib/fetch/dto/cloud-credentials";
 
 interface DataForWizard {
-    credentials: {
-        subscriptionId: string;
-        tenantId: string;
-        clientId: string;
-        clientSecret: string;
-    } | null;
+    credentials: AzureCredentialsDto | null;
 
     displayName: string;
     ingestionPeriod: number;
@@ -94,6 +90,7 @@ export default function WizardSetupAzure() {
             {step === 3 && (
                 <StepThreeAzure
                     displayName={wizardData.displayName}
+                    credentials={wizardData.credentials!}
                     ingestionPeriod={wizardData.ingestionPeriod}
                     resources={wizardData.resources}
                     onComplete={handleStepThreeComplete}

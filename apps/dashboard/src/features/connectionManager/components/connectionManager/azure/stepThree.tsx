@@ -9,16 +9,25 @@ import {
     useIngestionPeriod,
 } from "@/features/connectionManager/components/connectionManager/wizardSetup/stepThree";
 import { ResourceDetail, ResourceSelectionDto } from "@/lib/fetch/dto/cloud-resource";
+import { AzureCredentialsDto } from "@/lib/fetch/dto/cloud-credentials";
+import {
+    createAzureConnection,
+    PersistAzureConnectionRequest,
+} from "@/lib/fetch/azure-connection-api";
+import router from "next/router";
 
 interface StepThreePropsForAzure {
     displayName: string;
     resources: ResourceDetail[];
+    credentials: AzureCredentialsDto;
     onComplete: (ingestionPeriod: number) => void;
     onBack?: () => void;
     ingestionPeriod?: number;
 }
 
 export default function StepThreeAzure({
+    displayName,
+    credentials,
     resources = [],
     onComplete,
     onBack,
@@ -65,17 +74,31 @@ export default function StepThreeAzure({
         event.preventDefault();
 
         setForSaving(true);
-
         setErrors(null);
 
         try {
+            const request: PersistAzureConnectionRequest = {
+                userId: "",
+                displayName,
+                ingestionPeriod: forIngestionPeriod.toString(),
+                credentials,
+                resources: tableResources.map((resource): ResourceSelectionDto => ({
+                    resourceId: resource.resourceId,
+                    serviceType: resource.serviceType,
+                    resourceType: resource.resourceType,
+                    resourceName: resource.resourceName,
+                    region: resource.region,
+                    tags: resource.tags,
+                    active: resource.active,
+                })),
+            };
+
+            await createAzureConnection(request);
+
             onComplete(forIngestionPeriod);
-        } catch (forError) {
-            setErrors(
-                forError instanceof Error
-                    ? forError.message
-                    : "Unable to create an Azure connection"
-            );
+            router.push("/manageConnections");
+        } catch (err) {
+            setErrors(err instanceof Error ? err.message : "Unable to create Azure connection.");
         } finally {
             setForSaving(false);
         }

@@ -19,7 +19,7 @@ export interface PersistAzureConnectionRequest {
     resources: ResourceSelectionDto[];
 }
 
-export async function createGcpConnection(request: PersistAzureConnectionRequest): Promise<void> {
+export async function createAzureConnection(request: PersistAzureConnectionRequest): Promise<void> {
     await apiClient<void>("/azure/connections", {
         method: "POST",
         body: JSON.stringify(request),
