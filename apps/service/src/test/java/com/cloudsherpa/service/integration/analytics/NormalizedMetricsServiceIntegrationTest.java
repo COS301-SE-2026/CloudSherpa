@@ -29,7 +29,8 @@ import org.testcontainers.utility.MountableFile;
     properties = {
       "AES_ENCRYPTION_KEY=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
       "INGESTION_BASE_URL=http://localhost:8081",
-      "intelligence-api-key=123"
+      "intelligence-api-key=123",
+      "INGESTION_API_KEY=test_key"
     })
 class NormalizedMetricsServiceIntegrationTest {
   @Container @ServiceConnection
@@ -60,15 +61,15 @@ class NormalizedMetricsServiceIntegrationTest {
     List<ResourceMetricsGroupDto> expected =
         List.of(
             new ResourceMetricsGroupDto(
-                resource1Uuid, List.of(new ResourceMetric("CPUUtilization", "cpu"))),
+                resource1Uuid, List.of(new ResourceMetric("CPU Utilization", "cpu"))),
             new ResourceMetricsGroupDto(
-                resource2Uuid, List.of(new ResourceMetric("NetworkIn", "network"))),
+                resource2Uuid, List.of(new ResourceMetric("Network In", "network"))),
             new ResourceMetricsGroupDto(
                 resource3Uuid,
                 List.of(
-                    new ResourceMetric("NetworkOut", "network"),
-                    new ResourceMetric("DiskReadBytes", "disk"),
-                    new ResourceMetric("DiskWriteBytes", "disk"))));
+                    new ResourceMetric("Network Out", "network"),
+                    new ResourceMetric("Disk Read Bytes", "disk"),
+                    new ResourceMetric("Disk Write Bytes", "disk"))));
 
     List<ResourceMetricsGroupDto> actual = normalizedMetricService.fetchResourceMetrics();
 

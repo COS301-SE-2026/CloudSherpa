@@ -9,6 +9,7 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import com.cloudsherpa.lib.projections.ResourceNames;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface ResourceRepository extends JpaRepository<Resource, UUID> {
   // Find all resources for a specific account
@@ -37,4 +38,17 @@ public interface ResourceRepository extends JpaRepository<Resource, UUID> {
 
   @Query("select r.id as id, r.resourceType as resourceName from Resource r")
   List<ResourceNames> findResourceNames();
+
+  @Query(
+      value = 
+      """
+          SELECT CAST(cc.provider AS text)
+          FROM resource r
+          JOIN public.cloud_account ca ON ca.account_id = r.account_id
+          JOIN public.cloud_connection cc ON cc.connection_id = ca.connection_id
+          WHERE r.resource_id = :resourceId
+      """,
+      nativeQuery = true
+  )
+  String findProviderByResourceId(@Param("resourceId") UUID resourceId);
 }
