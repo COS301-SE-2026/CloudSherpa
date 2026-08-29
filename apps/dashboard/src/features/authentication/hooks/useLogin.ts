@@ -4,17 +4,19 @@ import { LoginRequestDto } from "@/features/authentication/types/dtos/auth/Login
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthContext } from "../providers/AuthContext";
+
 export function useLogin() {
     const [loginFailure, setLoginFailure] = useState(false);
 
     const [loginSuccess, setLoginSuccess] = useState(false);
-
-    const [redirectCountdown, setRedirectCountdown] = useState(0);
+    const [isLoading, setIsLoading] = useState(false);
 
     const authContext = useAuthContext();
     const router = useRouter();
 
     async function login(loginPayload: LoginRequestDto, redirect?: boolean) {
+        setIsLoading(true);
+        setLoginFailure(false);
         try {
             const loginResult = await authContext?.login(loginPayload);
 
@@ -22,24 +24,14 @@ export function useLogin() {
                 setLoginFailure(false);
 
                 setLoginSuccess(true);
-                setRedirectCountdown(3);
 
                 if (redirect) {
-                    const countDownId = setInterval(() => {
-                        setRedirectCountdown((countdown) => countdown - 1);
-                    }, 1000);
-
-                    setTimeout(() => {
-                        clearInterval(countDownId);
-
-                        router.push("/dashboard");
-                    }, 3000);
+                    router.push("/dashboard?new_login=true");
                 }
             } else {
                 setLoginFailure(true);
 
                 setLoginSuccess(false);
-                setRedirectCountdown(0);
             }
         } catch (error) {
             if (error instanceof Error) {
@@ -52,9 +44,10 @@ export function useLogin() {
 
             setLoginFailure(true);
             setLoginSuccess(false);
-            setRedirectCountdown(0);
+        } finally {
+            setIsLoading(false);
         }
     }
 
-    return { login, loginFailure, loginSuccess, redirectCountdown };
+    return { login, loginFailure, loginSuccess, isLoading };
 }

@@ -1,11 +1,14 @@
 package com.cloudsherpa.service.analytics.service;
 
+import com.cloudsherpa.lib.dtos.ResourceMetricEntry;
 import com.cloudsherpa.lib.dtos.TimestampedNumericDataPoint;
 import com.cloudsherpa.lib.projections.AggregatedMetric;
 import com.cloudsherpa.lib.projections.ResourceNames;
 import com.cloudsherpa.lib.repositories.NormalizedMetricsRepository;
 import com.cloudsherpa.lib.repositories.ResourceRepository;
 import com.cloudsherpa.service.analytics.dto.ResourceMetricHistoricalResponseDto;
+import com.cloudsherpa.service.analytics.dto.ResourceMetricsGroupDto;
+import com.cloudsherpa.service.analytics.model.ResourceMetric;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -112,5 +115,28 @@ public class NormalizedMetricService {
     }
 
     return new ResourceMetricHistoricalResponseDto(values, timestamps);
+  }
+
+  public List<ResourceMetricsGroupDto> fetchResourceMetrics() {
+
+    List<ResourceMetricEntry> distinctResourceMetrics =
+        normalizedMetricsRepository.findDistinctResourceMetrics();
+
+    List<ResourceMetricsGroupDto> groupedResourceMetrics = new ArrayList<>();
+
+    Map<UUID, List<ResourceMetric>> metricsByResourceId = new HashMap<>();
+
+    for (ResourceMetricEntry distinctResourceMetric : distinctResourceMetrics) {
+      metricsByResourceId
+          .computeIfAbsent(distinctResourceMetric.resourceId(), resourceId -> new ArrayList<>())
+          .add(
+              new ResourceMetric(
+                  distinctResourceMetric.metricName(), distinctResourceMetric.metricType()));
+    }
+
+    metricsByResourceId.forEach(
+        (resourceId, metrics) ->
+            groupedResourceMetrics.add(new ResourceMetricsGroupDto(resourceId, metrics)));
+    return groupedResourceMetrics;
   }
 }
