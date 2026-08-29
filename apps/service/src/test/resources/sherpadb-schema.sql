@@ -30,7 +30,7 @@ CREATE TYPE public.execution_status_enum AS ENUM ('pending', 'processing', 'comp
 CREATE TYPE PUBLIC.chart_type_enum AS ENUM ('gauge_chart', 'line_chart');
 -- Differentiates actual compute usage from other types.
 -- Maps to CUR: line_item_line_item_type
-CREATE TYPE public.charge_type_enum AS ENUM ('Usage', 'Other'); 
+CREATE TYPE public.charge_type_enum AS ENUM ('Usage', 'Other', 'Credit'); 
 CREATE TYPE public.optimization_status_enum AS ENUM (
   'DRAFT',
   'ACTIVE',
@@ -56,6 +56,18 @@ CREATE TABLE IF NOT EXISTS public.users (
   username varchar(100) NOT NULL,
   password_hash varchar(255) NOT NULL,
   created_at timestamptz DEFAULT NOW()
+);
+
+CREATE TABLE public.processing_watermark (
+  watermark_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL REFERENCES public.users(user_id) ON DELETE CASCADE,
+  pipeline_name varchar(255) NOT NULL,
+  last_processed_period timestamptz,
+  last_successful_run timestamptz,
+  updated_at timestamptz DEFAULT NOW(),
+
+  CONSTRAINT uq_processing_watermark_user_pipeline
+    UNIQUE (user_id, pipeline_name)
 );
 
 CREATE TABLE IF NOT EXISTS public.preferences (
@@ -147,7 +159,7 @@ CREATE TABLE IF NOT EXISTS public.aws_billing_export_config (
 CREATE TABLE IF NOT EXISTS public.gcp_billing_export_config (
   config_id uuid PRIMARY KEY REFERENCES public.billing_export_config(config_id) ON DELETE CASCADE,
   dataset_id varchar(1024) NOT NULL,
-  billing_account_id char(18) NOT NULL
+  billing_account_id char(20) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS public.billing_export_execution (
@@ -382,6 +394,8 @@ CREATE TABLE IF NOT EXISTS public.widget_chart (
 CREATE TABLE IF NOT EXISTS public.chart_resource (
   chart_resource_id uuid PRIMARY KEY,
   widget_chart_id uuid REFERENCES public.widget_chart(chart_id) ON DELETE CASCADE,
+  provider public.provider_enum,
+  account_id uuid,
   resource_id uuid, 
   metric_type varchar(50)
 );
@@ -632,18 +646,15 @@ BEGIN
             changed_at timestamptz DEFAULT NOW()
         );
     $sql$, schema_name, schema_name, schema_name);
-
-    EXECUTE format($sql$
-        CREATE TABLE IF NOT EXISTS %I.processing_watermark (
-            pipeline_name varchar(255) PRIMARY KEY,
-            last_processed_period timestamptz,
-            last_successful_run timestamptz,
-            updated_at timestamptz DEFAULT NOW()
-        );
-    $sql$, schema_name);
-
 END;
 $$ LANGUAGE plpgsql;
+
+\set demo_password ''
+\getenv demo_password DEMO_PASSWORD
+
+-- Custom variable
+-- Must be separated by a .
+SET sherpa.demo_password = :'demo_password';
 
 -- ----------------------------------------------------------------
 -- DEMO SEED DATA
@@ -678,7 +689,7 @@ BEGIN
     demo_user_id,
     'demo@gmail.com',
     'demo@gmail.com',
-    crypt('Password@2', gen_salt('bf', 12)),
+    crypt(current_setting('sherpa.demo_password'), gen_salt('bf', 12)),
     now()
   )
   ON CONFLICT DO NOTHING;
