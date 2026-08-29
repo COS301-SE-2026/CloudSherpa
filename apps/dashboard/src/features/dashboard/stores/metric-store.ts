@@ -115,6 +115,51 @@ export const useMetricStore = create<MetricStore>((set, get) => ({
         }));
     },
 
+    initializeMetricSeries : (availableMetrics) => {
+        console.log("Available metrics:", availableMetrics);
+
+        set((state) => {
+            const seriesByKey = {
+                ...state.seriesByKey,
+            };
+
+            for(const resource of availableMetrics){
+                if(!resource.resourceId){
+                    continue;
+                }
+
+                for(const metric of resource.metrics){
+                    if(!metric.metricType || metric.metricType === "string"){
+                        continue;
+                    }
+
+                    const key = `${resource.resourceId}:${metric.metricType}`;
+
+                    if(!seriesByKey[key]){
+                        seriesByKey[key] = {};
+                    }
+                }
+            }
+
+            return {seriesByKey,};
+        });
+    },
+
+    setMetricSeries : (
+        resourceId, metricType, metrics
+    ) => {
+        const key = `${resourceId}:${metricType}`;
+
+        const series = Object.fromEntries(metrics.map((metric) => [metric.timestamp, metric,]));
+
+        set((state) => ({
+            seriesByKey : {
+                ...state.seriesByKey,
+                [key]: series,
+            },
+        }));
+    },
+
     clearStore: () => {
         set(() => ({
             seriesByKey: {},
