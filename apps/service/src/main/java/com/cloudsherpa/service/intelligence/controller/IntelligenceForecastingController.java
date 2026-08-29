@@ -19,9 +19,12 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -171,10 +174,12 @@ public class IntelligenceForecastingController {
       })
   @PostMapping("/billing")
   public ResponseEntity<BillingForecastResponseDto> billingForecast(
-      @RequestBody BillingForecastRequest request) {
-
+      @RequestBody BillingForecastRequest request, JwtAuthenticationToken token) {
+    Jwt jwt = token.getToken();
     return ResponseEntity.ok()
-        .body(billingIntelligenceService.processAllCharges(request, Instant.now()));
+        .body(
+            billingIntelligenceService.processAllCharges(
+                request, Instant.now(), UUID.fromString(jwt.getSubject())));
   }
 
   private ResourceUsageForecastResponseDto mockResourceUsageForecast() {

@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { StepTwo } from "@/features/connectionManager/components/connectionManager/wizardSetup/stepTwo";
 import { Button } from "@/components/atoms/button";
+import { Progress } from "@/components/atoms/progress";
 import {
     getCloudServices,
     generateGcpPermissionsPolicy,
@@ -46,6 +47,9 @@ export default function StepTwoGcp({
     const [optedInToBilling, setOptedInToBilling] = useState(false);
     const [billingId, setBillingId] = useState("");
     const [billingDataset, setBillingDataset] = useState("");
+
+    const [progress, setProgress] = useState(0);
+    const [currentScanningService, setCurrentScanningService] = useState("");
 
     React.useEffect(() => {
         const loadPermissions = async () => {
@@ -111,17 +115,25 @@ export default function StepTwoGcp({
 
         try {
             setForLoading(true);
+            setProgress(0);
+            setCurrentScanningService("");
 
-            const resourcesDiscovered = await getCloudResources(
-                "gcp",
-                credentials,
-                selectedServices
-            );
+            let discoveredResources: ResourceDetail[] = [];
+            for (let i = 0; i < selectedServices.length; i++) {
+                const currentService = selectedServices[i];
+
+                setCurrentScanningService(currentService);
+
+                const resources = await getCloudResources("gcp", credentials, [currentService]);
+                discoveredResources = [...discoveredResources, ...resources];
+
+                setProgress(((i + 1) / selectedServices.length) * 100);
+            }
 
             onNext({
                 displayName,
                 servicesSelected: selectedServices,
-                resources: resourcesDiscovered,
+                resources: discoveredResources,
                 credentials,
                 billingConfig: validatedBillingConfig?.data ?? null,
             });
@@ -233,6 +245,20 @@ export default function StepTwoGcp({
                     )}
                 </div>
             </section>
+
+            {forLoading && (
+                <div className="space-y-2 w-full pt-4">
+                    <div className="flex justify-between text-sm text-muted-foreground font-medium">
+                        <span>
+                            {currentScanningService
+                                ? `Scanning ${currentScanningService.toUpperCase()}...`
+                                : "Preparing scan..."}
+                        </span>
+                        <span>{Math.round(progress)}%</span>
+                    </div>
+                    <Progress value={progress} className="w-full h-2" />
+                </div>
+            )}
         </StepTwo>
     );
 }

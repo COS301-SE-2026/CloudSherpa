@@ -7,15 +7,7 @@
 */
 
 import { useEffect, useState } from "react";
-import {
-    Trash2,
-    ArrowLeft,
-    SlidersHorizontal,
-    Search,
-    MoreVertical,
-    Eye,
-    Pencil,
-} from "lucide-react";
+import { Trash2, ArrowLeft, Search, MoreVertical, Eye, Pencil, X } from "lucide-react";
 import { Card, CardContent } from "@/components/atoms/card";
 import { Button } from "@/components/atoms/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/atoms/tabs";
@@ -47,6 +39,7 @@ import {
     AlertDialogTrigger,
 } from "@/components/atoms/alert-dialog";
 import { Spinner } from "@/components/atoms/spinner";
+import { toast } from "sonner";
 
 type Providers = "All" | "AWS" | "Azure" | "GCP";
 interface Connections {
@@ -91,6 +84,8 @@ export default function ManagingConnections() {
     const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
 
+    const [search, setSearch] = useState("");
+
     const handleViewDetails = (connectionId: string) => {
         router.push(`/manageConnections/${connectionId}`);
     };
@@ -105,13 +100,29 @@ export default function ManagingConnections() {
                   (filteredConnections) => filteredConnections.provider === activeFilter
               );
 
+    const searchFilter =
+        search.trim() === ""
+            ? filtered
+            : filtered.filter((connections) => {
+                  const forQueries = search.toLowerCase().trim();
+
+                  return (
+                      connections.name.toLowerCase().includes(forQueries) ||
+                      connections.provider.toLowerCase().includes(forQueries) ||
+                      connections.detail.toLowerCase().includes(forQueries)
+                  );
+              });
+
     const handleDeletion = async (id: string) => {
         try {
             await deleteAwsAccount(id);
             await loadConnections();
         } catch (error) {
             console.error("Failed to delete account", error);
+            toast.error(`Failed to delete connection.`);
+            return;
         }
+        toast.success(`Successfully deleted connection`);
     };
 
     function formatIngestionPeriod(seconds: number): string {
@@ -227,11 +238,10 @@ export default function ManagingConnections() {
                 </div>
 
                 {/* this is for the provider tabs */}
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-4 mb-6">
                     <Tabs
                         value={activeFilter || undefined}
                         onValueChange={(value) => setActiveFilter(value as Providers)}
-                        className="mb-4"
                     >
                         <TabsList className="self-start inline-flex gap-1 h-auto p-1 bg-muted rounded-lg w-fit">
                             {(["All", "AWS", "Azure", "GCP"] as Providers[]).map((providers) => {
@@ -254,29 +264,33 @@ export default function ManagingConnections() {
                     </Tabs>
 
                     {/* these are for the icons on the tiles of the conn */}
-                    <div className="flex items-center gap-2">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-muted-foreground hover:text-foreground h-8 w-8"
-                        >
-                            {" "}
-                            <Search size={16} />{" "}
-                        </Button>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-muted-foreground hover:text-foreground h-8 w-8"
-                        >
-                            {" "}
-                            <SlidersHorizontal size={16} />{" "}
-                        </Button>
+                    <div className="relative flex-1 max-w-xs">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+
+                        <input
+                            type="text"
+                            placeholder="Search connections..."
+                            value={search}
+                            onChange={(forChanges) => setSearch(forChanges.target.value)}
+                            className="w-full h-9 pl-9 pr-3 rounded-md border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                        />
+
+                        {search && (
+                            <button
+                                type="button"
+                                onClick={() => setSearch("")}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
+                            >
+                                {" "}
+                                <X size={14} />{" "}
+                            </button>
+                        )}
                     </div>
                 </div>
 
                 {/* this is for the list of conn */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-                    {filtered.map((connection) => (
+                    {searchFilter.map((connection) => (
                         <Card key={connection.id} className="border-border">
                             <CardContent className="p-4">
                                 <div className="flex items-center justify-between mb-3">

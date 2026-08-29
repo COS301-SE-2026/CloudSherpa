@@ -9,16 +9,22 @@ export function getRecommendationDictionary(rec: Recommendation) {
         ([key]) => key !== "completenessRatio"
     );
 
-    const primaryMetricValue = primaryMetricEntry ? primaryMetricEntry[1] : "Unknown";
+    let formattedValue = "Unknown";
+    if (primaryMetricEntry) {
+        const [key, value] = primaryMetricEntry;
+        const isPercentage = key.toLowerCase().includes("utilization") || value < 1;
+        formattedValue = isPercentage
+            ? `${(value * 100).toFixed(1)}`
+            : Number(value.toFixed(1)).toString();
+    }
 
     switch (rec.actionType) {
         case "DOWNSIZE":
             return (
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                    We observed a maximum utilization of
-                    <Highlight>{primaryMetricValue}%</Highlight> on this resource over a monitored
-                    period. Which leads us to believe your resource is underutilized, and we
-                    recommend downsizing
+                    We observed a maximum utilization of <Highlight>{formattedValue}%</Highlight> on
+                    this resource over a monitored period. Which leads us to believe your resource
+                    is underutilized, and we recommend downsizing
                 </p>
             );
 
@@ -26,8 +32,8 @@ export function getRecommendationDictionary(rec: Recommendation) {
             return (
                 <p className="text-sm text-muted-foreground leading-relaxed">
                     This resource appears abandoned with an average utilization of
-                    <Highlight>{primaryMetricValue}%</Highlight> over a monitored period. Since it
-                    is incurring costs without providing value, we recommend permanently terminating
+                    <Highlight>{formattedValue}%</Highlight> over a monitored period. Since it is
+                    incurring costs without providing value, we recommend permanently terminating
                     this resource.
                 </p>
             );
@@ -44,7 +50,7 @@ export function getRecommendationDictionary(rec: Recommendation) {
             return (
                 <p className="text-sm text-muted-foreground leading-relaxed">
                     We detected a predictable usage pattern with low utilization (
-                    <Highlight>{primaryMetricValue}%</Highlight>) during off-hours. We recommend
+                    <Highlight>{formattedValue}%</Highlight>) during off-hours. We recommend
                     implementing a power schedule to automatically suspend this resource when not in
                     active use.
                 </p>

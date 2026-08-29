@@ -93,6 +93,7 @@ export default function ChartFormConnection({
                         }}
                         widthVariant="full"
                         placeholder="select connection..."
+                        emptyMessage="No connections found"
                     />
                 </div>
             </FieldGroup>

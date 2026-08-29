@@ -3,7 +3,7 @@
 import { Button } from "@/components/atoms/button";
 import { Input } from "@/components/atoms/input";
 import { Label } from "@/components/atoms/label";
-import { Loader2, Eye, EyeOff, AlertCircle, AlertCircleIcon, CheckCircle2Icon } from "lucide-react";
+import { Loader2, Eye, EyeOff, AlertCircle, AlertCircleIcon } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useLogin } from "@/features/authentication/hooks/useLogin";
@@ -12,15 +12,14 @@ import { Alert, AlertTitle, AlertDescription } from "@/components/atoms/alert";
 import { useAuthInputValidation } from "@/features/authentication/hooks/useAuthInputValidation";
 
 interface LoginFormProps {
-    isLoading?: boolean;
     onToggle?: () => void;
 }
 
-export default function LoginForm({ isLoading = false, onToggle }: Readonly<LoginFormProps>) {
+export default function LoginForm({ onToggle }: Readonly<LoginFormProps>) {
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-    const { login, loginFailure, loginSuccess, redirectCountdown } = useLogin();
+    const { login, loginFailure, isLoading } = useLogin();
 
-    const { email, password, emailError, passwordError, validateEmail, validatePassword } =
+    const { email, password, emailError, passwordError, validateEmail, onLoginPasswordChange } =
         useAuthInputValidation();
 
     const togglePasswordVisibility = () => setIsPasswordVisible(!isPasswordVisible);
@@ -42,20 +41,6 @@ export default function LoginForm({ isLoading = false, onToggle }: Readonly<Logi
             <div className="text-center">
                 <h2 className="text-3xl font-bold tracking-tight">Sign in</h2>
             </div>
-
-            {loginSuccess && (
-                <Alert>
-                    <CheckCircle2Icon />
-
-                    <AlertTitle> You have successfully logged in! </AlertTitle>
-
-                    <AlertDescription>
-                        {" "}
-                        You will be redirected to the dashboard in {redirectCountdown} seconds{" "}
-                    </AlertDescription>
-                </Alert>
-            )}
-
             {loginFailure && (
                 <div className="text-center">
                     <Alert variant="destructive">
@@ -65,7 +50,6 @@ export default function LoginForm({ isLoading = false, onToggle }: Readonly<Logi
                     </Alert>
                 </div>
             )}
-
             <form className="space-y-6" onSubmit={handleFormSubmit} noValidate>
                 <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
@@ -99,7 +83,7 @@ export default function LoginForm({ isLoading = false, onToggle }: Readonly<Logi
                             id="password"
                             type={isPasswordVisible ? "text" : "password"}
                             value={password}
-                            onChange={(e) => validatePassword(e.target.value)}
+                            onChange={(e) => onLoginPasswordChange(e.target.value)}
                             required
                             disabled={isLoading}
                             className={cn(
@@ -129,16 +113,7 @@ export default function LoginForm({ isLoading = false, onToggle }: Readonly<Logi
                 <Button
                     type="submit"
                     className="w-full"
-                    disabled={
-                        isLoading ||
-                        !!emailError ||
-                        !!passwordError ||
-                        email.length === 0 ||
-                        password.length < 8 ||
-                        !/[A-Z]/.test(password) ||
-                        !/\d/.test(password) ||
-                        !/[!@#$%^&*()_+={}[\]:;"'<>,.?/|\\~`-]/.test(password)
-                    }
+                    disabled={isLoading || !!emailError || email.length === 0}
                 >
                     {" "}
                     {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

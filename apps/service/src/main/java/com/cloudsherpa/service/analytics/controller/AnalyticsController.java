@@ -1,9 +1,13 @@
 package com.cloudsherpa.service.analytics.controller;
 
+import com.cloudsherpa.lib.entities.NormalizedMetrics;
 import com.cloudsherpa.lib.projections.AggregatedMetric;
+import com.cloudsherpa.service.analytics.dto.DownsampledSeriesRequestDto;
 import com.cloudsherpa.service.analytics.dto.ResourceMetricHistoricalRequestDto;
 import com.cloudsherpa.service.analytics.dto.ResourceMetricHistoricalResponseDto;
+import com.cloudsherpa.service.analytics.dto.ResourceMetricsGroupDto;
 import com.cloudsherpa.service.analytics.dto.ResourceNameDto;
+import com.cloudsherpa.service.analytics.model.ResourceMetric;
 import com.cloudsherpa.service.analytics.service.NormalizedMetricService;
 import com.cloudsherpa.service.analytics.service.ResourceRegistryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,6 +38,8 @@ public class AnalyticsController {
 
   private final NormalizedMetricService normalizedMetricService;
   private final ResourceRegistryService resourceRegistryService;
+
+  private static final boolean RESOURCE_METRICS_MOCK = false;
 
   AnalyticsController(
       NormalizedMetricService normalizedMetricService,
@@ -118,5 +124,70 @@ public class AnalyticsController {
         .body(
             normalizedMetricService.fetchHistoricalDataForResourceMetric(
                 request.resourceId(), request.metricType(), request.fromDate()));
+  }
+
+  @Operation(
+      summary = "Get downsampled historical metric series for a specific resource and metric")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Succesfully returns downsampled historical metric series",
+            content =
+                @Content(
+                    array =
+                        @ArraySchema(schema = @Schema(implementation = NormalizedMetrics.class))))
+      })
+  @PostMapping("/downsampled-historical-series")
+  public ResponseEntity<List<NormalizedMetrics>> postMethodName(
+      @io.swagger.v3.oas.annotations.parameters.RequestBody(
+              description = "POST parameters for downsampled historical metric series",
+              required = true,
+              content =
+                  @Content(schema = @Schema(implementation = DownsampledSeriesRequestDto.class)))
+          @RequestBody
+          DownsampledSeriesRequestDto request) {
+
+    if (request.from().isAfter(request.to())) {
+      return ResponseEntity.badRequest().build();
+    }
+
+    List<NormalizedMetrics> downsampledSeries =
+        normalizedMetricService.fetchDownsampledSeries(request);
+    return ResponseEntity.ok().body(downsampledSeries);
+  }
+
+  @Operation(summary = "For each resource return available/recorded metrics")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Succesfully fetched available metrics for each resource",
+            content =
+                @Content(
+                    array =
+                        @ArraySchema(
+                            schema = @Schema(implementation = ResourceMetricsGroupDto.class))))
+      })
+  @GetMapping("/resource-metrics")
+  public ResponseEntity<List<ResourceMetricsGroupDto>> getResourceMetrics() {
+
+    if (RESOURCE_METRICS_MOCK) {
+      List<ResourceMetricsGroupDto> mockDto =
+          List.of(
+              new ResourceMetricsGroupDto(
+                  UUID.fromString("b0000000-0000-0000-0000-000000000001"),
+                  List.of(
+                      new ResourceMetric("compute.googleapis.com/instance/cpu/utilization", "cpu"),
+                      new ResourceMetric(
+                          "compute.googleapis.com/instance/network/received_bytes_count",
+                          "network in"))));
+
+      return ResponseEntity.ok().body(mockDto);
+    }
+
+    List<ResourceMetricsGroupDto> resourceMetrics = normalizedMetricService.fetchResourceMetrics();
+
+    return ResponseEntity.ok().body(resourceMetrics);
   }
 }

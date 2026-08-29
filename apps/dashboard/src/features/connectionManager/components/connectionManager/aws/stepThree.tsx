@@ -158,10 +158,17 @@ export default function StepThreeAws({
     );
     const router = useRouter();
 
+    const recommendedPeriod = selectedResources.length * 5 * 20;
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [period, setPeriod] = useState<string>(ingestionPeriod);
-    const recommendedPeriod = selectedResources.length * 5 * 20;
+    const [period, setPeriod] = useState<string>(ingestionPeriod || String(recommendedPeriod));
+
+    const [prevSelectedCount, setPrevSelectedCount] = useState(selectedResources.length);
+
+    if (selectedResources.length !== prevSelectedCount) {
+        setPrevSelectedCount(selectedResources.length);
+        setPeriod(selectedResources.length > 0 ? String(recommendedPeriod) : "60");
+    }
 
     const groupedResources = groupResourcesByCategory(resources);
 
@@ -312,7 +319,12 @@ export default function StepThreeAws({
                         value={[Number(period)]}
                         onValueChange={(vals) => setPeriod(String(vals[0]))}
                         min={60}
-                        max={400}
+                        max={720}
+                        className={
+                            Number(period) < recommendedPeriod
+                                ? "[&>span>span]:bg-warning [&_[role=slider]]:border-warning"
+                                : ""
+                        }
                     />
 
                     <p className="text-xs text-muted-foreground/70 ">

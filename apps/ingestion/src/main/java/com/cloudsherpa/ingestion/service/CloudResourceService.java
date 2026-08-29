@@ -16,9 +16,16 @@ import org.springframework.stereotype.Service;
 @Service
 public class CloudResourceService {
   private final CloudConnectorFactory factory;
+  private final GcpPermissionsRegistry gcpPermissionsRegistry;
+  private final AwsPermissionsBuilder awsPermissionsBuilder;
 
-  public CloudResourceService(CloudConnectorFactory factory) {
+  public CloudResourceService(
+      CloudConnectorFactory factory,
+      GcpPermissionsRegistry gcpPermissionsRegistry,
+      AwsPermissionsBuilder awsPermissionsBuilder) {
     this.factory = factory;
+    this.gcpPermissionsRegistry = gcpPermissionsRegistry;
+    this.awsPermissionsBuilder = awsPermissionsBuilder;
   }
 
   public List<String> getAllOfferedServices(String provider) {
@@ -37,10 +44,10 @@ public class CloudResourceService {
   }
 
   public String generateAwsPermissionsPolicy(List<String> services) {
-    return AwsPermissionsBuilder.buildPolicy(services);
+    return awsPermissionsBuilder.buildPolicy(services);
   }
 
   public Set<String> generateGcpPermissionsList(List<String> services) {
-    return GcpPermissionsRegistry.getPermissions(services.stream().collect(Collectors.toSet()));
+    return gcpPermissionsRegistry.getPermissions(services.stream().collect(Collectors.toSet()));
   }
 }

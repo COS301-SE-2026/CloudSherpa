@@ -41,6 +41,7 @@ import {
     ResourceStatus,
     updateAwsResourceStatus,
 } from "@/lib/fetch/aws-connection-api";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/atoms/tooltip";
 
 interface Resource {
     id: string;
@@ -80,10 +81,18 @@ function ListOfTags({ tags }: Readonly<{ tags: string[] }>) {
     return (
         <div className="flex items-center gap-1 flex-wrap">
             {displayedTags.map((tag) => (
-                <Badge key={tag} variant="secondary" className="text-[10px] font-normal">
-                    {" "}
-                    {tag}{" "}
-                </Badge>
+                <Tooltip key={tag}>
+                    <TooltipTrigger>
+                        <Badge
+                            variant="secondary"
+                            className="block max-w-50 text-[10px] font-normal truncate"
+                        >
+                            {" "}
+                            {tag}{" "}
+                        </Badge>
+                    </TooltipTrigger>
+                    <TooltipContent>{tag}</TooltipContent>
+                </Tooltip>
             ))}
         </div>
     );
@@ -105,7 +114,14 @@ function ResourceHeaders({ column }: Readonly<HeaderContext<Resource, string>>) 
 }
 
 function ResourceCells({ getValue }: Readonly<CellContext<Resource, string>>) {
-    return <span className="font-medium"> {getValue()} </span>;
+    return (
+        <Tooltip>
+            <TooltipTrigger asChild>
+                <span className="block max-w-50 truncate font-medium">{getValue()}</span>
+            </TooltipTrigger>
+            <TooltipContent>{getValue()}</TooltipContent>
+        </Tooltip>
+    );
 }
 
 function SecondaryCells({ getValue }: Readonly<CellContext<Resource, string>>) {
