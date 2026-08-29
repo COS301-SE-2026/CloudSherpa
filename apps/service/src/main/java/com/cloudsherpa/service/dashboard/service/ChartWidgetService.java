@@ -61,6 +61,7 @@ public class ChartWidgetService {
     resource.setProvider(updateChartWidgetDto.provider());
     resource.setAccountId(updateChartWidgetDto.accountId());
     resource.setMetricType(updateChartWidgetDto.metricType());
+    resource.setMetricName(updateChartWidgetDto.metricName());
     resource.setResourceId(updateChartWidgetDto.resourceId());
 
     widgetChartRepository.save(widgetChart);
@@ -83,6 +84,7 @@ public class ChartWidgetService {
       accountId = resources.get(0).getAccountId();
       resourceId = resources.get(0).getResourceId();
       metricType = resources.get(0).getMetricType();
+      metricName = resources.get(0).getMetricName();
     }
 
     return new ChartWidgetDTO(
