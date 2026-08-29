@@ -5,7 +5,6 @@ import { RegisterRequestDto } from "@/features/authentication/types/dtos/auth/Re
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLogin } from "./useLogin";
-import { toast } from "sonner";
 
 export function useRegistration() {
     const [registrationFailure, setRegistrationFailure] = useState(false);
