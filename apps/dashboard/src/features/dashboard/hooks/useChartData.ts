@@ -1,9 +1,9 @@
 // src/features/dashboard/hooks/useChartData.ts
 import { useMemo } from "react";
 import { useMetricStore } from "@/features/dashboard/stores/metric-store";
-import { MetricType, metricSeriesToArray } from "@/features/dashboard/types/metric";
+import { metricSeriesToArray } from "@/features/dashboard/types/metric";
 
-export function useChartData(resourceId: string, metricType: MetricType) {
+export function useChartData(resourceId: string, metricType: string) {
     const series = useMetricStore((state) => state.seriesByKey[`${resourceId}:${metricType}`]);
 
     return useMemo(() => {

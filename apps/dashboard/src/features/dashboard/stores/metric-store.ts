@@ -73,7 +73,7 @@ function toMetricType(metricName: string): MetricType {
 }
 
 function metricSeriesKey(metric: Metric): string {
-    return `${metric.resource_id}:${metric.metricType}`;
+    return `${metric.resource_id}:${metric.metricName}`;
 }
 
 function upsertMetric(

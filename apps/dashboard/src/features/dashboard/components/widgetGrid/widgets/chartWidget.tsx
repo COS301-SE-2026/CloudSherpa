@@ -20,7 +20,7 @@ import { useRecStore } from "@/features/optimization/stores/useRecStore";
 
 interface BaseChartProps {
     resourceId: string;
-    metricType: MetricType;
+    metricType: string;
     onDataStatusChange?: (hasData: boolean) => void;
 }
 
@@ -40,7 +40,7 @@ export function ChartWidget({
     preview = false,
     isEditMode = false,
 }: Readonly<WidgetProps>) {
-    const { chartType, displayName, resourceId, metricType, id } = config;
+    const { chartType, displayName, resourceId, metricName, id } = config;
     const ChartComponent = CHART_COMPONENTS[chartType];
     const [hasNoData, setHasNoData] = useState(false);
     const router = useRouter();
@@ -96,7 +96,7 @@ export function ChartWidget({
             );
         }
 
-        if (!resourceId || !metricType) {
+        if (!resourceId || !metricName) {
             return (
                 <div className="flex flex-col  h-full items-center justify-center gap-2">
                     {isEditMode ? (
@@ -118,7 +118,7 @@ export function ChartWidget({
         return (
             <ChartComponent
                 resourceId={resourceId}
-                metricType={metricType}
+                metricType={metricName}
                 onDataStatusChange={(hasData) => setHasNoData(!hasData)}
             />
         );

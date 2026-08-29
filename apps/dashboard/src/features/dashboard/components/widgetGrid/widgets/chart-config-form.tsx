@@ -34,8 +34,10 @@ export function ChartConfigFormInner({ ChartId }: Readonly<ChartConfigFormProps>
                   provider: null,
                   accountId: null,
                   resourceId: null,
+                  metricName: "",
                   metricType: null,
               };
+
     const [config, setConfig] = useState<ChartWidgetConfig>(resolvedWidgetConfig);
 
     const router = useRouter();
@@ -44,6 +46,7 @@ export function ChartConfigFormInner({ ChartId }: Readonly<ChartConfigFormProps>
         setIsSaving(true);
         try {
             await updateWidget(config);
+            console.log(config);
         } catch (error) {
             console.error("Failed to save configuration", error);
         } finally {

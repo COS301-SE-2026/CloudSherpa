@@ -63,7 +63,7 @@ export default function ChartFormResource({
                             setConfiguration({
                                 ...configuration,
                                 resourceId: currentValue,
-                                metricType: metricType,
+                                metricName: metricType,
                             });
                         }}
                         widthVariant="full"
@@ -74,7 +74,7 @@ export default function ChartFormResource({
                 <div className="grid gap-2">
                     <Label>Metric Type</Label>
                     <Dropdown
-                        value={configuration.metricType}
+                        value={configuration.metricName}
                         options={availableMetrics.map((type) => ({
                             value: type,
                             label: type.toUpperCase(),
@@ -82,7 +82,7 @@ export default function ChartFormResource({
                         onSelect={(currentValue) => {
                             setConfiguration({
                                 ...configuration,
-                                metricType: currentValue as MetricType,
+                                metricName: currentValue as string,
                             });
                         }}
                         disabled={!configuration.resourceId}
