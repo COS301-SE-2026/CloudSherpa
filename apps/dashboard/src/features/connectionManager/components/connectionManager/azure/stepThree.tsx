@@ -14,7 +14,7 @@ import {
     createAzureConnection,
     PersistAzureConnectionRequest,
 } from "@/lib/fetch/azure-connection-api";
-import router from "next/router";
+import { useRouter } from "next/navigation";
 
 interface StepThreePropsForAzure {
     displayName: string;
@@ -38,7 +38,9 @@ export default function StepThreeAzure({
 
     const [filter, setFilter] = useState("");
 
-    const tableResources: ResourceSelectionDto[] = useMemo(() => {
+    const router = useRouter();
+
+    const [tableResources, setTableResources] = useState<ResourceSelectionDto[]>(() => {
         if (!resources || resources.length === 0) {
             return [];
         }
@@ -52,12 +54,7 @@ export default function StepThreeAzure({
             tags: resource.tags || {},
             active: true,
         }));
-    }, [resources]);
-
-    const setTableResources = (
-        newData:
-            ResourceSelectionDto[] | ((previous: ResourceSelectionDto[]) => ResourceSelectionDto[])
-    ) => {};
+    });
 
     const { activeCount, recIngestionPeriod } = useIngestionPeriod(tableResources);
 

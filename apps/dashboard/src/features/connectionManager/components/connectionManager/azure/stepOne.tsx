@@ -61,13 +61,13 @@ export default function StepOneAzure({ onNext }: Readonly<StepOnePropsForAzure>)
             <div className="space-y-2">
                 <Label htmlFor="subscriptionID" className="text-foreground text-sm font-medium">
                     {" "}
-                    Tenant ID{" "}
+                    Subscription ID{" "}
                 </Label>
 
                 <Input
                     id="subscriptionID"
                     type="text"
-                    placeholder="eg."
+                    placeholder="Azure subscription ID"
                     value={subscriptionId}
                     onChange={(forChanges) => setSubscriptionId(forChanges.target.value)}
                     className="bg-background border-border rounded-md px-4 py-3 text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all w-full"
@@ -84,7 +84,7 @@ export default function StepOneAzure({ onNext }: Readonly<StepOnePropsForAzure>)
                 <Input
                     id="tenantID"
                     type="text"
-                    placeholder="eg."
+                    placeholder="Tenant ID"
                     value={tenantId}
                     onChange={(forChanges) => setTenantId(forChanges.target.value)}
                     className="bg-background border-border rounded-md px-4 py-3 text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all w-full"
@@ -101,7 +101,7 @@ export default function StepOneAzure({ onNext }: Readonly<StepOnePropsForAzure>)
                 <Input
                     id="clientID"
                     type="text"
-                    placeholder="eg."
+                    placeholder="Client ID"
                     value={clientId}
                     onChange={(forChanges) => setClientId(forChanges.target.value)}
                     className="bg-background border-border rounded-md px-4 py-3 text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all w-full"
@@ -118,7 +118,7 @@ export default function StepOneAzure({ onNext }: Readonly<StepOnePropsForAzure>)
                 <Input
                     id="clientSecret"
                     type="password"
-                    placeholder="Enter your client secret"
+                    placeholder="••••••••••••••••••••••••"
                     onChange={(forChanges) => setClientSecret(forChanges.target.value)}
                     className="bg-background border-border rounded-md px-4 py-3 text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all w-full"
                     required
