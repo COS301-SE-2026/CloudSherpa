@@ -99,6 +99,8 @@ class NormalizedMetricServiceIntegrationTest {
 
   @Test
   void fetchResourceMetricsShouldCreateResourceMetricsGroupList() {
+    seedHistoricalMetrics(100);
+
     UUID resource1Uuid = UUID.fromString("10000000-0000-0000-0000-000000000001");
     UUID resource2Uuid = UUID.fromString("10000000-0000-0000-0000-000000000002");
     UUID resource3Uuid = UUID.fromString("10000000-0000-0000-0000-000000000003");

@@ -650,13 +650,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-\set demo_password ''
-\getenv demo_password DEMO_PASSWORD
-
--- Custom variable
--- Must be separated by a .
-SET sherpa.demo_password = :'demo_password';
-
 -- ----------------------------------------------------------------
 -- DEMO SEED DATA
 -- ----------------------------------------------------------------
@@ -688,9 +681,9 @@ BEGIN
   INSERT INTO public.users (user_id, email, username, password_hash, created_at)
   VALUES (
     demo_user_id,
-    'demo@gmail.com',
-    'demo@gmail.com',
-    crypt(current_setting('sherpa.demo_password'), gen_salt('bf', 12)),
+    'test@gmail.com',
+    'test@gmail.com',
+    crypt('test123@abcd', gen_salt('bf', 12)),
     now()
   )
   ON CONFLICT DO NOTHING;
