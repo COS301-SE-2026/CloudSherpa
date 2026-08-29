@@ -2,18 +2,23 @@ package com.cloudsherpa.service.unit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.cloudsherpa.lib.dtos.ResourceMetricEntry;
 import com.cloudsherpa.lib.projections.AggregatedMetric;
 import com.cloudsherpa.lib.projections.ResourceNames;
 import com.cloudsherpa.lib.repositories.NormalizedMetricsRepository;
 import com.cloudsherpa.lib.repositories.ResourceRepository;
+import com.cloudsherpa.service.analytics.dto.ResourceMetricsGroupDto;
+import com.cloudsherpa.service.analytics.model.ResourceMetric;
 import com.cloudsherpa.service.analytics.service.NormalizedMetricService;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -87,5 +92,48 @@ class NormalizedMetricServiceTest {
     Map<String, String> actual = normalizedMetricService.fetchResourceNames();
 
     assertEquals(Map.of(), actual);
+  }
+
+  @Test
+  void fetchResourceMetricsShouldCreateResourceMetricsGroupList() {
+    // arrange
+
+    UUID resource1Uuid = UUID.fromString("0356dda1-c0f8-442b-8c56-558925283af6");
+    UUID resource2Uuid = UUID.fromString("fccc77e8-26f2-40a1-86c4-2f8756b08333");
+
+    when(normalizedMetricsRepository.findDistinctResourceMetrics())
+        .thenReturn(
+            List.of(
+                new ResourceMetricEntry(resource1Uuid, "cpu", "CPUUtilization"),
+                new ResourceMetricEntry(resource1Uuid, "memory", "MemoryUtilization"),
+                new ResourceMetricEntry(resource2Uuid, "network", "NetworkIn")));
+
+    List<ResourceMetricsGroupDto> expected =
+        List.of(
+            new ResourceMetricsGroupDto(
+                resource1Uuid,
+                List.of(
+                    new ResourceMetric("CPUUtilization", "cpu"),
+                    new ResourceMetric("MemoryUtilization", "memory"))),
+            new ResourceMetricsGroupDto(
+                resource2Uuid, List.of(new ResourceMetric("NetworkIn", "network"))));
+
+    // act
+    List<ResourceMetricsGroupDto> actual = normalizedMetricService.fetchResourceMetrics();
+
+    // assert
+    assertEquals(expected.size(), actual.size());
+    assertEquals(
+        expected.stream().collect(Collectors.toSet()), actual.stream().collect(Collectors.toSet()));
+  }
+
+  @Test
+  void normalizedMetricsShouldReturnEmptyListWhenNoResources() {
+    when(normalizedMetricsRepository.findDistinctResourceMetrics()).thenReturn(List.of());
+
+    List<ResourceMetricsGroupDto> actual = normalizedMetricService.fetchResourceMetrics();
+
+    assertEquals(0, actual.size());
+    assertTrue(actual.isEmpty());
   }
 }
