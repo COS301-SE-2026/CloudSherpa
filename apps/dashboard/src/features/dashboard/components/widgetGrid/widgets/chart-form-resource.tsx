@@ -77,7 +77,7 @@ export default function ChartFormResource({
                         value={configuration.metricName}
                         options={availableMetrics.map((type) => ({
                             value: type,
-                            label: type.toUpperCase(),
+                            label: type,
                         }))}
                         onSelect={(currentValue) => {
                             setConfiguration({

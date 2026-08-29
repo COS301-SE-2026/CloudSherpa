@@ -73,6 +73,7 @@ public class ChartWidgetService {
     UUID accountId = null;
     UUID resourceId = null;
     String metricType = null;
+    String metricName = null;
     WidgetChart chart = getWidgetChartByWidgetId(widget.getId());
 
     List<ChartResource> resources = chartResourceRepository.findByWidgetChartId(chart.getId());
@@ -96,7 +97,8 @@ public class ChartWidgetService {
         provider,
         accountId,
         resourceId,
-        metricType);
+        metricType,
+        metricName);
   }
 
   private WidgetChart getWidgetChartByWidgetId(UUID widgetId) {

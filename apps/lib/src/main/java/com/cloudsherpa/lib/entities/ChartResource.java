@@ -42,6 +42,9 @@ public class ChartResource {
   @Column(name = "metric_type", length = 50)
   private String metricType;
 
+  @Column(name = "metric_name", length = 100)
+  private String metricName; 
+
   protected ChartResource() {
   }
 
