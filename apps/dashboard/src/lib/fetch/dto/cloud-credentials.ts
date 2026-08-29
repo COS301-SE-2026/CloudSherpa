@@ -19,6 +19,7 @@ export interface CloudCredentials {
     accessKeyId?: string;
     secretAccessKey?: string;
     awsRegion?: string;
+    subscriptionId?: string;
     tenantId?: string;
     clientId?: string;
     clientSecret?: string;

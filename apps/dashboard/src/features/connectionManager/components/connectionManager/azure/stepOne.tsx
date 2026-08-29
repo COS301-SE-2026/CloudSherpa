@@ -10,6 +10,7 @@ import { StepOne } from "@/features/connectionManager/components/connectionManag
 interface StepOnePropsForAzure {
     onNext: (data: {
         displayName: string;
+        subscriptionId: string;
         tenantId: string;
         clientId: string;
         clientSecret: string;
@@ -18,6 +19,8 @@ interface StepOnePropsForAzure {
 
 export default function StepOneAzure({ onNext }: Readonly<StepOnePropsForAzure>) {
     const [displayName, setDisplayName] = useState("");
+
+    const [subscriptionId, setSubscriptionId] = useState("");
 
     const [tenantId, setTenantId] = useState("");
 
@@ -28,7 +31,7 @@ export default function StepOneAzure({ onNext }: Readonly<StepOnePropsForAzure>)
     const handlingSubmit = (submitting: React.SubmitEvent<HTMLFormElement>) => {
         submitting.preventDefault();
 
-        onNext({ displayName, tenantId, clientId, clientSecret });
+        onNext({ displayName, subscriptionId, tenantId, clientId, clientSecret });
     };
 
     return (
@@ -50,6 +53,23 @@ export default function StepOneAzure({ onNext }: Readonly<StepOnePropsForAzure>)
                     placeholder="Connection name"
                     value={displayName}
                     onChange={(forChanges) => setDisplayName(forChanges.target.value)}
+                    className="bg-background border-border rounded-md px-4 py-3 text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all w-full"
+                    required
+                />
+            </div>
+
+            <div className="space-y-2">
+                <Label htmlFor="subscriptionID" className="text-foreground text-sm font-medium">
+                    {" "}
+                    Tenant ID{" "}
+                </Label>
+
+                <Input
+                    id="subscriptionID"
+                    type="text"
+                    placeholder="eg."
+                    value={subscriptionId}
+                    onChange={(forChanges) => setSubscriptionId(forChanges.target.value)}
                     className="bg-background border-border rounded-md px-4 py-3 text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all w-full"
                     required
                 />
