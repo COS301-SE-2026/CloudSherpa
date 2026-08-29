@@ -28,7 +28,6 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/atoms/table";
-import { ResourceSelectionDto } from "@/lib/fetch/aws-connection-api";
 import {
     Tooltip,
     TooltipContent,
@@ -37,6 +36,7 @@ import {
 } from "@/components/atoms/tooltip";
 import { Slider } from "@/components/atoms/slider";
 import { Label } from "@/components/atoms/label";
+import { ResourceSelectionDto } from "@/lib/fetch/azure-connection-api";
 
 export interface PropsForStepThree {
     heading: string;

@@ -6,7 +6,7 @@ import StepOneAzure from "./stepOne";
 import StepTwoAzure from "./stepTwo";
 import StepThreeAzure from "./stepThree";
 import { useState } from "react";
-import { ResourceDetail } from "@/lib/fetch/cloud-resource-api";
+import { ResourceDetail } from "@/lib/fetch/dto/cloud-resource";
 
 interface DataForWizard {
     displayName: string;

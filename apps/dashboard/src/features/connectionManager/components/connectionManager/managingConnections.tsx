@@ -20,12 +20,6 @@ import {
     DropdownMenuTrigger,
 } from "@/components/atoms/dropdown-menu";
 
-import {
-    CloudAccount,
-    getAwsAccountConnections,
-    getAwsAccountResourceCount,
-    deleteAwsAccount,
-} from "@/lib/fetch/aws-connection-api";
 import { useRouter } from "next/navigation";
 import {
     AlertDialog,
@@ -40,6 +34,12 @@ import {
 } from "@/components/atoms/alert-dialog";
 import { Spinner } from "@/components/atoms/spinner";
 import { toast } from "sonner";
+import {
+    deleteAwsAccount,
+    getAwsAccountConnections,
+    getAwsAccountResourceCount,
+} from "@/lib/fetch/cloud-account-api";
+import { CloudAccount } from "@/lib/fetch/dto/cloud-account";
 
 type Providers = "All" | "AWS" | "Azure" | "GCP";
 interface Connections {

@@ -5,7 +5,7 @@ import { StepOne } from "@/features/connectionManager/components/connectionManag
 import { UploadCloud, FileJson, X } from "lucide-react";
 import { Label } from "@/components/atoms/label";
 import { Input } from "@/components/atoms/input";
-import { GcpCredentialsDto, GcpCredentialsJson } from "@/lib/fetch/gcp-connection-api";
+import { GcpCredentialsDto, GcpCredentialsJson } from "@/lib/fetch/dto/cloud-credentials";
 
 interface StepOnePropsForGcp {
     onNext: (data: { displayName: string; credentials: GcpCredentialsDto }) => void;

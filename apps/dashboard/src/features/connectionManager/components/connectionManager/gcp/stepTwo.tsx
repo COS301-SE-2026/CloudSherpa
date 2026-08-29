@@ -8,15 +8,15 @@ import {
     getCloudServices,
     generateGcpPermissionsPolicy,
     getCloudResources,
-    ResourceDetail,
 } from "@/lib/fetch/cloud-resource-api";
-import { GcpCredentialsDto } from "@/lib/fetch/gcp-connection-api";
 import { GcpBillingForm } from "./billingForm";
 import {
     GcpBillingConfig,
     type GcpBillingConfigSafeParseType,
     type GcpBillingConfigType,
 } from "./validTypes";
+import { GcpCredentialsDto } from "@/lib/fetch/dto/cloud-credentials";
+import { ResourceDetail } from "@/lib/fetch/dto/cloud-resource";
 
 interface StepTwoPropsForGcp {
     displayName: string;

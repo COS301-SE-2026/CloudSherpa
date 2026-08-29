@@ -8,8 +8,7 @@ import {
     formattingSecond,
     useIngestionPeriod,
 } from "@/features/connectionManager/components/connectionManager/wizardSetup/stepThree";
-import { ResourceSelectionDto } from "@/lib/fetch/aws-connection-api";
-import { ResourceDetail } from "@/lib/fetch/cloud-resource-api";
+import { ResourceDetail, ResourceSelectionDto } from "@/lib/fetch/dto/cloud-resource";
 
 interface StepThreePropsForAzure {
     displayName: string;
@@ -20,11 +19,9 @@ interface StepThreePropsForAzure {
 }
 
 export default function StepThreeAzure({
-    displayName,
     resources = [],
     onComplete,
     onBack,
-    ingestionPeriod = 60,
 }: Readonly<StepThreePropsForAzure>) {
     const [forSaving, setForSaving] = useState(false);
 

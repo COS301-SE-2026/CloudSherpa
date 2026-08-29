@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { StepTwo } from "@/features/connectionManager/components/connectionManager/wizardSetup/stepTwo";
 import { Button } from "@/components/atoms/button";
-import { ResourceDetail } from "@/lib/fetch/cloud-resource-api";
+import { ResourceDetail } from "@/lib/fetch/dto/cloud-resource";
 
 //copied and pasted from previous pr
 interface StepTwoPropsForAzure {
