@@ -190,6 +190,8 @@ function DocumentsAndTutorialsSuspense() {
 
     const [isPopUpOpen, setIsPopUpOpen] = useState(false);
 
+    const [selectedProvider, setSelectedProvider] = useState<string | null>(null);
+
     const searchDocument = useMemo(() => {
         if (!search.trim()) {
             return DOCUMENTS;
@@ -250,9 +252,34 @@ function DocumentsAndTutorialsSuspense() {
         }
     };
 
+    const handlingCategoryKey = (clicked : React.KeyboardEvent, category : BrowseCategory) => {
+        if(clicked.key === "Enter" || clicked.key === " "){
+            clicked.preventDefault();
+
+            handlingCategoryClick(category);
+        }
+    };
+
     const handlingSelectedProvider = (provider : string) => {
+        setSelectedProvider(provider);
         router.push(`/helpMenu/documents/connections?forProviders=${provider}`);
     };
+
+    const handlingDocumentsClicked = (documents : Documents) => {
+        if(documents.category === "Connections"){
+            setIsPopUpOpen(true);
+        }else{
+            router.push(documents.href);
+        }
+    };
+
+    const handlingDocumentKey = (clicked : React.KeyboardEvent, documents : Documents) => {
+        if(clicked.key === "Enter" || clicked.key === " "){
+            clicked.preventDefault();
+
+            handlingDocumentsClicked(documents);
+        }
+    }
 
     return (
         <div className="min-h-screen bg-background">
@@ -422,20 +449,11 @@ function DocumentsAndTutorialsSuspense() {
                                         role="button"
                                         tabIndex={0}
 
-                                        onClick={() => {
-                                            if (forCategories.href) {
-                                                router.push(forCategories.href);
-                                            }
-                                        }}
+                                        onClick={() => handlingCategoryClick(forCategories)}
 
-                                        onKeyDown={(change) => {
-                                            if (
-                                                (change.key === "Enter" || change.key === " ") &&
-                                                forCategories.href
-                                            ) {
-                                                router.push(forCategories.href);
-                                            }
-                                        }}
+                                        onKeyDown={(change) => 
+                                            handlingCategoryKey(change, forCategories)
+                                        }
 
                                         className="cursor-pointer border-border bg-muted/40 transition-colors hover:border-primary/50"
                                     >
@@ -480,16 +498,9 @@ function DocumentsAndTutorialsSuspense() {
                                             role="button"
                                             tabIndex={0}
 
-                                            onClick={() => router.push(docs.href)}
+                                            onClick={() => handlingDocumentsClicked(docs)}
 
-                                            onKeyDown={(keyPress) => {
-                                                if (
-                                                    keyPress.key === "Enter" ||
-                                                    keyPress.key === " "
-                                                ) {
-                                                    router.push(docs.href);
-                                                }
-                                            }}
+                                            onKeyDown={(keyPress) => handlingDocumentKey(keyPress, docs)}
 
                                             className="cursor-pointer gap-0 overflow-hidden border-border bg-muted/40 p-0 transition-color hover:border-primary/50"
                                         >
@@ -499,7 +510,7 @@ function DocumentsAndTutorialsSuspense() {
 
                                                 onClick={(clicked) => {
                                                     clicked.stopPropagation();
-                                                    router.push(docs.href);
+                                                    handlingDocumentsClicked(docs);
                                                 }}
                                             >
                                                 <span className="min-w-0">
