@@ -80,7 +80,7 @@ BEGIN
         completed_at = EXCLUDED.completed_at,
         error_message = EXCLUDED.error_message;
 
-    RAISE NOTICE 'Seeded AWS export execution';
+    RAISE NOTICE 'Seeded AWS billing export execution';
 END;
 $$;
 -- normalized costs
@@ -103,6 +103,7 @@ DECLARE
     billing_account_id varchar(255) := 'Account Holder 1';
     sample_interval INTERVAL := INTERVAL '1 hour';
 BEGIN
+    RAISE NOTICE 'Seeding normalized costs for charge %', p_charge_id;
     EXECUTE format($sql$
         INSERT INTO %I.normalized_costs (
             cost_id,
@@ -116,11 +117,10 @@ BEGIN
             cost_amount,
             currency,
             usage_start_time,
-            usage_end_time,
-            metadata
+            usage_end_time
         )
         SELECT
-            $1  AS cost_id,
+            $1 AS cost_id,
             $2 AS execution_id,
             $3 AS resource_id,
             $4 AS charge_id,
@@ -130,9 +130,9 @@ BEGIN
             $8 AS charge_type,
             i::numeric(16, 8) AS cost_amount,
             $9 AS currency,
-            $10 - (i * sample_interval) AS usage_start_time,
-            ($10 - (i * sample_interval)) + sample_interval AS usage_end_time,
-        FROM generate_series(1, $11) AS series(i)
+            $10 - (i * $11) AS usage_start_time,
+            ($10 - (i * $11)) + $11 AS usage_end_time
+        FROM generate_series(1, $12) AS series(i)
         ON CONFLICT DO NOTHING
     $sql$, p_tenant_schema)
     USING
@@ -146,10 +146,14 @@ BEGIN
         charge_type,
         currency,
         p_to_timestamp,
+		sample_interval,
         p_points;
 
     GET DIAGNOSTICS rows_inserted = ROW_COUNT;
+    RAISE NOTICE 'Seeded normalized costs for charge % with % rows', p_charge_id, rows_inserted;
+
     RETURN rows_inserted;
+
 END;
 $$;
 
@@ -164,12 +168,34 @@ DECLARE
     billing_export_config_id uuid := 'c181db1b-e20b-4b34-a606-af13a2d48524';
     billing_export_execution_id uuid := '9b3602b5-bf53-4de3-a5d9-3704734f8255';
 
+    normalized_costs_seed_points integer := 100;
+
+    service_name_01 VARCHAR(255) := 'AWSDataTransfer';
     resource_id_01 VARCHAR(2048) := 'i-0000000000';
     charge_id_01 VARCHAR(2048) := 'i-0000000000%%%AWSDataTransfer';
-    service_name_01 VARCHAR(255) := 'AWSDataTransfer';
+    cost_id_01 text := 'seed-cost-id-01'; 
+
+    service_name_02 VARCHAR(255) := 'AmazonEC2';
+    resource_id_02 VARCHAR(2048) := 'i-0000000001';
+    charge_id_02 VARCHAR(2048) := 'i-0000000001%%%AmazonEC2';
+    cost_id_02 text := 'seed-cost-id-02';
+
+    service_name_03 VARCHAR(255) := 'AmazonRDS';
+    resource_id_03 VARCHAR(2048) := 'db-0000000001';
+    charge_id_03 VARCHAR(2048) := 'db-0000000001%%%AmazonRDS';
+    cost_id_03 text := 'seed-cost-id-03';
 BEGIN
     PERFORM seed_aws_billing_config(aws_account_id, billing_export_config_id);
     PERFORM seed_billing_export_execution(billing_export_config_id, billing_export_execution_id);
 
+    PERFORM populate_normalized_costs(
+        tenant_schema, cost_id_01, billing_export_execution_id, resource_id_01, charge_id_01, service_name_01, NOW(), normalized_costs_seed_points
+    );
+    PERFORM populate_normalized_costs(
+        tenant_schema, cost_id_02, billing_export_execution_id, resource_id_02, charge_id_02, service_name_02, NOW(), normalized_costs_seed_points
+    );
+    PERFORM populate_normalized_costs(
+        tenant_schema, cost_id_03, billing_export_execution_id, resource_id_03, charge_id_03, service_name_03, NOW(), normalized_costs_seed_points
+    );
 END;
 $$;
