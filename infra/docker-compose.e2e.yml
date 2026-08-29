@@ -11,6 +11,7 @@ services:
       POSTGRES_USER: cloudsherpa
       POSTGRES_PASSWORD: mock_pass
       SPRING_PROFILES_ACTIVE: dev
+      API_KEY: abc123
     depends_on:
       sherpa-db:
         condition: service_healthy
@@ -39,6 +40,7 @@ services:
       INGESTION_BASE_URL: http://ingestion:8080
       INTELLIGENCE_API_KEY: abc123 
       INTELLIGENCE_URL: http://intelligence:5000
+      INGESTION_API_KEY: abc123
     depends_on:
       sherpa-db:
         condition: service_healthy
