@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, Suspense, useMemo } from "react";
-import { useSearchParams } from "next/navigation";
+import { useCallback, useEffect, Suspense, useMemo, useRef } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useToolbar } from "@/features/dashboard/components/toolbar/toolbarProvider";
 
 import { Spinner } from "@/components/atoms/spinner";
@@ -10,6 +10,7 @@ import { LayoutItem } from "@/features/dashboard/types/widgets";
 import { useDashboardStore, DashboardStore } from "@/features/dashboard/stores/dashboard-store";
 import { useMetricStream } from "@/features/dashboard/services/sse/metric-stream";
 import { useLoadDashboardData } from "@/features/dashboard/hooks/useLoadDash";
+import { toast } from "sonner";
 
 function DashboardContent() {
     const { error: streamError } = useMetricStream();
@@ -51,6 +52,34 @@ function DashboardContent() {
         },
         [updateLayouts]
     );
+
+    const router = useRouter();
+    const pathname = usePathname();
+    const authToastHandled = useRef(false);
+
+    useEffect(() => {
+        // checks if where user is coming from
+        const isNewLogin = searchParams.get("new_login") === "true";
+        const isNewAccount = searchParams.get("new_account") === "true";
+
+        // this lock prevents the toast from triggering more than once on page render
+        if (!authToastHandled.current) {
+            authToastHandled.current = true;
+
+            const params = new URLSearchParams(searchParams.toString());
+
+            if (isNewLogin) {
+                toast.success("Successfully logged in!");
+                params.delete("new_login");
+            } else if (isNewAccount) {
+                toast.success("Successfully created account!");
+                params.delete("new_account");
+            }
+
+            // cleans url
+            router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+        }
+    }, [searchParams, pathname, router]);
 
     const renderMainContent = () => {
         if (isLoading) {

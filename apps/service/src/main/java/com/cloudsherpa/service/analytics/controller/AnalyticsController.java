@@ -1,6 +1,8 @@
 package com.cloudsherpa.service.analytics.controller;
 
+import com.cloudsherpa.lib.entities.NormalizedMetrics;
 import com.cloudsherpa.lib.projections.AggregatedMetric;
+import com.cloudsherpa.service.analytics.dto.DownsampledSeriesRequestDto;
 import com.cloudsherpa.service.analytics.dto.ResourceMetricHistoricalRequestDto;
 import com.cloudsherpa.service.analytics.dto.ResourceMetricHistoricalResponseDto;
 import com.cloudsherpa.service.analytics.dto.ResourceMetricsGroupDto;
@@ -15,6 +17,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +40,8 @@ public class AnalyticsController {
 
   private final NormalizedMetricService normalizedMetricService;
   private final ResourceRegistryService resourceRegistryService;
+
+  private static final boolean RESOURCE_METRICS_MOCK = false;
 
   AnalyticsController(
       NormalizedMetricService normalizedMetricService,
@@ -122,6 +128,52 @@ public class AnalyticsController {
                 request.resourceId(), request.metricType(), request.fromDate()));
   }
 
+  @Operation(
+      summary = "Get downsampled historical metric series for a specific resource and metric")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Succesfully returns downsampled historical metric series",
+            content =
+                @Content(
+                    array =
+                        @ArraySchema(schema = @Schema(implementation = NormalizedMetrics.class))))
+      })
+  @PostMapping("/downsampled-historical-series")
+  public List<NormalizedMetrics> postMethodName(
+      @io.swagger.v3.oas.annotations.parameters.RequestBody(
+              description = "POST parameters for downsampled historical metric series",
+              required = true,
+              content =
+                  @Content(schema = @Schema(implementation = DownsampledSeriesRequestDto.class)))
+          @RequestBody
+          DownsampledSeriesRequestDto request) {
+    OffsetDateTime start = OffsetDateTime.parse("2026-08-28T00:00:00Z");
+
+    return List.of(
+        new NormalizedMetrics.Builder()
+            .resourceId(UUID.fromString("00000000-0000-0000-0000-000000000001"))
+            .recordedAt(start)
+            .metricType("usage")
+            .metricName("CPUUtilization")
+            .metricValue(BigDecimal.valueOf(42.5))
+            .unit("percent")
+            .periodStart(start)
+            .periodEnd(start.plusMinutes(30))
+            .build(),
+        new NormalizedMetrics.Builder()
+            .resourceId(UUID.fromString("00000000-0000-0000-0000-000000000001"))
+            .recordedAt(start.plusHours(1))
+            .metricType("usage")
+            .metricName("CPUUtilization")
+            .metricValue(BigDecimal.valueOf(57.25))
+            .unit("percent")
+            .periodStart(start.plusMinutes(30))
+            .periodEnd(start.plusHours(1))
+            .build());
+  }
+
   @Operation(summary = "For each resource return available/recorded metrics")
   @ApiResponses(
       value = {
@@ -137,16 +189,22 @@ public class AnalyticsController {
   @GetMapping("/resource-metrics")
   public ResponseEntity<List<ResourceMetricsGroupDto>> getResourceMetrics() {
 
-    List<ResourceMetricsGroupDto> mockDto =
-        List.of(
-            new ResourceMetricsGroupDto(
-                UUID.fromString("b0000000-0000-0000-0000-000000000001"),
-                List.of(
-                    new ResourceMetric("compute.googleapis.com/instance/cpu/utilization", "cpu"),
-                    new ResourceMetric(
-                        "compute.googleapis.com/instance/network/received_bytes_count",
-                        "network in"))));
+    if (RESOURCE_METRICS_MOCK) {
+      List<ResourceMetricsGroupDto> mockDto =
+          List.of(
+              new ResourceMetricsGroupDto(
+                  UUID.fromString("b0000000-0000-0000-0000-000000000001"),
+                  List.of(
+                      new ResourceMetric("compute.googleapis.com/instance/cpu/utilization", "cpu"),
+                      new ResourceMetric(
+                          "compute.googleapis.com/instance/network/received_bytes_count",
+                          "network in"))));
 
-    return ResponseEntity.ok().body(mockDto);
+      return ResponseEntity.ok().body(mockDto);
+    }
+
+    List<ResourceMetricsGroupDto> resourceMetrics = normalizedMetricService.fetchResourceMetrics();
+
+    return ResponseEntity.ok().body(resourceMetrics);
   }
 }

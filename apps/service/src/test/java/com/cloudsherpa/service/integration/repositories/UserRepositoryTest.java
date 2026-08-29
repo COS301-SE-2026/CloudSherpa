@@ -23,13 +23,13 @@ class UserRepositoryTest {
   @Container @ServiceConnection
   static PostgreSQLContainer timescaledb =
       new PostgreSQLContainer(
-              DockerImageName.parse("timescale/timescaledb:2.16.1-pg16")
+              DockerImageName.parse("timescale/timescaledb-ha:pg16-ts2.29")
                   .asCompatibleSubstituteFor("postgres"))
           .withInitScript("sherpadb-schema.sql");
 
   @Test
   void testFindByEmailIgnoreCase() {
-    User user = userRepository.findByEmailIgnoreCase("demo@gmail.com");
+    User user = userRepository.findByEmailIgnoreCase("test@gmail.com");
     assertThat(user).isNotNull();
   }
 }
