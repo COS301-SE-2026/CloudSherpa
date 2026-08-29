@@ -2,10 +2,12 @@ package com.cloudsherpa.service.analytics.service;
 
 import com.cloudsherpa.lib.dtos.ResourceMetricEntry;
 import com.cloudsherpa.lib.dtos.TimestampedNumericDataPoint;
+import com.cloudsherpa.lib.entities.NormalizedMetrics;
 import com.cloudsherpa.lib.projections.AggregatedMetric;
 import com.cloudsherpa.lib.projections.ResourceNames;
 import com.cloudsherpa.lib.repositories.NormalizedMetricsRepository;
 import com.cloudsherpa.lib.repositories.ResourceRepository;
+import com.cloudsherpa.service.analytics.dto.DownsampledSeriesRequestDto;
 import com.cloudsherpa.service.analytics.dto.MetricDto;
 import com.cloudsherpa.service.analytics.dto.ResourceMetricHistoricalResponseDto;
 import com.cloudsherpa.service.analytics.dto.ResourceMetricsGroupDto;
@@ -141,6 +143,11 @@ public class NormalizedMetricService {
     }
 
     return new ResourceMetricHistoricalResponseDto(values, timestamps);
+  }
+
+  public List<NormalizedMetrics> fetchDownsampledSeries(DownsampledSeriesRequestDto request) {
+    return normalizedMetricsRepository.getDownsampledNormalizedMetrics(
+        request.resourceId(), request.metricName(), request.from(), request.to());
   }
 
   public List<ResourceMetricsGroupDto> fetchResourceMetrics() {

@@ -29,7 +29,7 @@ class UserRepositoryTest {
 
   @Test
   void testFindByEmailIgnoreCase() {
-    User user = userRepository.findByEmailIgnoreCase("demo@gmail.com");
+    User user = userRepository.findByEmailIgnoreCase("test@gmail.com");
     assertThat(user).isNotNull();
   }
 }
