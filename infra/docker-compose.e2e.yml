@@ -38,8 +38,11 @@ services:
       DASHBOARD_HOST: http://localhost:3000,https://cloudsherpa.gjjcs.org
       INGESTION_BASE_URL: http://ingestion:8080
       INTELLIGENCE_API_KEY: abc123 
+      INTELLIGENCE_URL: http://intelligence:5000
     depends_on:
       sherpa-db:
+        condition: service_healthy
+      intelligence:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "localhost:8080/actuator/health"]
@@ -64,6 +67,19 @@ services:
       interval: 5s
       timeout: 10s
       retries: 5
+
+  intelligence:
+    image: ${INTELLIGENCE_IMAGE}
+    container_name: intelligence
+    ports:
+      - "5000:5000"
+    environment:
+      - API_KEY=abc123
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
 
   sherpa-db:
     image: timescale/timescaledb-ha:pg16-ts2.29
