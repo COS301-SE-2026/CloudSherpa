@@ -103,63 +103,117 @@ const DOCUMENTS: Documents[] = [
 type FilterForTutorials = (typeof TUTFILTERS)[number];
 
 const PopUp = ({
-    isOpen, onClose, onSelectProvider
-} : {
-    isOpen : boolean; onClose : () => void; onSelectProvider : (provider : string) => void;
+    isOpen,
+    onClose,
+    onSelectProvider,
+}: {
+    isOpen: boolean;
+    onClose: () => void;
+    onSelectProvider: (provider: string) => void;
 }) => {
-    if(!isOpen){
+    if (!isOpen) {
         return null;
     }
 
-    return(
-        <Dialog open = {isOpen} onOpenChange = {onClose}>
-            <DialogContent className = "max-w-md">
-                <DialogHeader className = "text-center pb-2">
-                    <div className = "flex justify-center mb-4">
-                        <div className = "p-3 bg-primary-100 dark:bg-primary-900/30 rounded-full"> <Plug size = {28} className = "text-primary"/> </div>
+    return (
+        <Dialog open={isOpen} onOpenChange={onClose}>
+            <DialogContent className="max-w-md">
+                <DialogHeader className="text-center pb-2">
+                    <div className="flex justify-center mb-4">
+                        <div className="p-3 bg-primary-100 dark:bg-primary-900/30 rounded-full">
+                            {" "}
+                            <Plug size={28} className="text-primary" />{" "}
+                        </div>
                     </div>
 
-                    <DialogTitle className = "text-2xl font-bold text-foreground"> Connect a Cloud Provider </DialogTitle>
-                    <p className = "text-muted-foreground mt-2 text-sm"> Choose which cloud provider you would like to connect to CloudSherpa </p>
+                    <DialogTitle className="text-2xl font-bold text-foreground">
+                        {" "}
+                        Connect a Cloud Provider{" "}
+                    </DialogTitle>
+                    <p className="text-muted-foreground mt-2 text-sm">
+                        {" "}
+                        Choose which cloud provider you would like to connect to CloudSherpa{" "}
+                    </p>
                 </DialogHeader>
 
-                <div className = "space-y-3 py-2">
-                    <Button type = "button" variant = "outline" onClick = {() => {onSelectProvider("aws"); onClose();}}
-                            className = "w-full flex items-center justify-between px-4 py-6 h-auto hover:border-primary hover:bg-muted/50 group">
-
-                        <span className = "flex items-center gap-3">
-                            <span className = "text-left">
-                                <span className = "font-semibold text-foreground block"> AWS </span>
-                                <span className = "text-sm text-muted-foreground block"> Amazon Web Services </span>
+                <div className="space-y-3 py-2">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                            onSelectProvider("aws");
+                            onClose();
+                        }}
+                        className="w-full flex items-center justify-between px-4 py-6 h-auto hover:border-primary hover:bg-muted/50 group"
+                    >
+                        <span className="flex items-center gap-3">
+                            <span className="text-left">
+                                <span className="font-semibold text-foreground block"> AWS </span>
+                                <span className="text-sm text-muted-foreground block">
+                                    {" "}
+                                    Amazon Web Services{" "}
+                                </span>
                             </span>
                         </span>
+
+                        <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                     </Button>
 
-                    <Button type = "button" variant = "outline" onClick = {() => {onSelectProvider("gcp"); onClose();}}
-                            className = "w-full flex items-center justify-between px-4 py-6 h-auto hover:border-primary hover:bg-muted/50 group">
-
-                        <span className = "flex items-center gap-3">
-                            <span className = "text-left">
-                                <span className = "font-semibold text-foreground block"> GCP </span>
-                                <span className = "text-sm text-muted-foreground block"> Google Cloud Platform </span>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                            onSelectProvider("gcp");
+                            onClose();
+                        }}
+                        className="w-full flex items-center justify-between px-4 py-6 h-auto hover:border-primary hover:bg-muted/50 group"
+                    >
+                        <span className="flex items-center gap-3">
+                            <span className="text-left">
+                                <span className="font-semibold text-foreground block"> GCP </span>
+                                <span className="text-sm text-muted-foreground block">
+                                    {" "}
+                                    Google Cloud Platform{" "}
+                                </span>
                             </span>
                         </span>
+
+                        <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                     </Button>
 
-                    <Button type = "button" variant = "outline" onClick = {() => {onSelectProvider("azure"); onClose();}}
-                            className = "w-full flex items-center justify-between px-4 py-6 h-auto hover:border-primary hover:bg-muted/50 group">
-
-                        <span className = "flex items-center gap-3">
-                            <span className = "text-left">
-                                <span className = "font-semibold text-foreground block"> Azure </span>
-                                <span className = "text-sm text-muted-foreground block"> Microsoft Azure </span>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                            onSelectProvider("azure");
+                            onClose();
+                        }}
+                        className="w-full flex items-center justify-between px-4 py-6 h-auto hover:border-primary hover:bg-muted/50 group"
+                    >
+                        <span className="flex items-center gap-3">
+                            <span className="text-left">
+                                <span className="font-semibold text-foreground block"> Azure </span>
+                                <span className="text-sm text-muted-foreground block">
+                                    {" "}
+                                    Microsoft Azure{" "}
+                                </span>
                             </span>
                         </span>
+
+                        <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                     </Button>
                 </div>
 
-                <div className = "mt-2 pt-4 border-t border-border">
-                    <Button type = "button" variant = "ghost" onClick = {onClose} className = "w-full text-sm text-muted-foreground hover:text-foreground"> Cancel </Button>
+                <div className="mt-2 pt-4 border-t border-border">
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={onClose}
+                        className="w-full text-sm text-muted-foreground hover:text-foreground"
+                    >
+                        {" "}
+                        Cancel{" "}
+                    </Button>
                 </div>
             </DialogContent>
         </Dialog>
@@ -244,46 +298,50 @@ function DocumentsAndTutorialsSuspense() {
         setVideoSelected(null);
     };
 
-    const handlingCategoryClick = (category : BrowseCategory) => {
-        if(category.id === "connections"){
+    const handlingCategoryClick = (category: BrowseCategory) => {
+        if (category.id === "connections") {
             setIsPopUpOpen(true);
-        }else if(category.href){
+        } else if (category.href) {
             router.push(category.href);
         }
     };
 
-    const handlingCategoryKey = (clicked : React.KeyboardEvent, category : BrowseCategory) => {
-        if(clicked.key === "Enter" || clicked.key === " "){
+    const handlingCategoryKey = (clicked: React.KeyboardEvent, category: BrowseCategory) => {
+        if (clicked.key === "Enter" || clicked.key === " ") {
             clicked.preventDefault();
 
             handlingCategoryClick(category);
         }
     };
 
-    const handlingSelectedProvider = (provider : string) => {
+    const handlingSelectedProvider = (provider: string) => {
         setSelectedProvider(provider);
         router.push(`/helpMenu/documents/connections?forProviders=${provider}`);
     };
 
-    const handlingDocumentsClicked = (documents : Documents) => {
-        if(documents.category === "Connections"){
+    const handlingDocumentsClicked = (documents: Documents) => {
+        if (documents.category === "Connections") {
             setIsPopUpOpen(true);
-        }else{
+        } else {
             router.push(documents.href);
         }
     };
 
-    const handlingDocumentKey = (clicked : React.KeyboardEvent, documents : Documents) => {
-        if(clicked.key === "Enter" || clicked.key === " "){
+    const handlingDocumentKey = (clicked: React.KeyboardEvent, documents: Documents) => {
+        if (clicked.key === "Enter" || clicked.key === " ") {
             clicked.preventDefault();
 
             handlingDocumentsClicked(documents);
         }
-    }
+    };
 
     return (
         <div className="min-h-screen bg-background">
-            <PopUp isOpen = {isPopUpOpen} onClose = {() => setIsPopUpOpen(false)} onSelectProvider = {handlingSelectedProvider}/>
+            <PopUp
+                isOpen={isPopUpOpen}
+                onClose={() => setIsPopUpOpen(false)}
+                onSelectProvider={handlingSelectedProvider}
+            />
 
             {/* this is for the video dialog (youtube iframe) */}
             <Dialog open={videoDialogOpen} onOpenChange={handlingVideoClose}>
@@ -451,7 +509,7 @@ function DocumentsAndTutorialsSuspense() {
 
                                         onClick={() => handlingCategoryClick(forCategories)}
 
-                                        onKeyDown={(change) => 
+                                        onKeyDown={(change) =>
                                             handlingCategoryKey(change, forCategories)
                                         }
 
@@ -500,7 +558,9 @@ function DocumentsAndTutorialsSuspense() {
 
                                             onClick={() => handlingDocumentsClicked(docs)}
 
-                                            onKeyDown={(keyPress) => handlingDocumentKey(keyPress, docs)}
+                                            onKeyDown={(keyPress) =>
+                                                handlingDocumentKey(keyPress, docs)
+                                            }
 
                                             className="cursor-pointer gap-0 overflow-hidden border-border bg-muted/40 p-0 transition-color hover:border-primary/50"
                                         >
