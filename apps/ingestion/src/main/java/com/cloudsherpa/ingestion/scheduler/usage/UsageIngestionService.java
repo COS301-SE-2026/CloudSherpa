@@ -143,6 +143,11 @@ public class UsageIngestionService {
       accountScopes.add(accountScope);
       request.setScopes(accountScopes);
       CloudCredentials credentials = mapper.readValue(decryptedCredential, CloudCredentials.class);
+
+      if ("AZURE".equalsIgnoreCase(account.getConnection().getProvider().toString())) {
+        accountScope.setSubscriptionId(credentials.getSubscriptionId());
+      }
+
       request.setCredentials(credentials);
       tenantSchemaService.usePublicSchema();
       client.ingest(request);
