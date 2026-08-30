@@ -382,26 +382,16 @@ BEGIN
  c_gcp_bucket_name, c_gcp_bytes_unit, 'Bytes downloaded'),
 
  -- Azure Virtual Machines
-(c_azure_provider_enum, c_azure_virtual_machine_service,
- 'Percentage CPU', c_azure_resource_id, NULL, 'CPU utilization'),
-(c_azure_provider_enum, c_azure_virtual_machine_service,
- 'Network In Total', c_azure_resource_id, NULL, 'Network bytes received'),
-(c_azure_provider_enum, c_azure_virtual_machine_service,
- 'Network Out Total', c_azure_resource_id, NULL, 'Network bytes sent'),
-(c_azure_provider_enum, c_azure_virtual_machine_service,
- 'Disk Read Bytes', c_azure_resource_id, NULL, 'Disk bytes read'),
-(c_azure_provider_enum, c_azure_virtual_machine_service,
- 'Disk Write Bytes', c_azure_resource_id, NULL, 'Disk bytes written'),
-(c_azure_provider_enum, c_azure_virtual_machine_service,
- 'Disk Read Operations/Sec', c_azure_resource_id, NULL, 'Disk read IOPS'),
-(c_azure_provider_enum, c_azure_virtual_machine_service,
- 'Disk Write Operations/Sec', c_azure_resource_id, NULL, 'Disk write IOPS'),
-(c_azure_provider_enum, c_azure_virtual_machine_service,
- 'OS Disk Latency', c_azure_resource_id, NULL, 'OS disk latency'),
-(c_azure_provider_enum, c_azure_virtual_machine_service,
- 'Inbound Flows', c_azure_resource_id, NULL, 'Inbound network flows'),
-(c_azure_provider_enum, c_azure_virtual_machine_service,
- 'Outbound Flows', c_azure_resource_id, NULL, 'Outbound network flows')
+(c_azure_provider_enum, c_azure_virtual_machine_service, 'Percentage CPU', c_azure_resource_id, NULL, 'CPU utilization'),
+(c_azure_provider_enum, c_azure_virtual_machine_service, 'Network In Total', c_azure_resource_id, NULL, 'Network bytes received'),
+(c_azure_provider_enum, c_azure_virtual_machine_service, 'Network Out Total', c_azure_resource_id, NULL, 'Network bytes sent'),
+(c_azure_provider_enum, c_azure_virtual_machine_service, 'Disk Read Bytes', c_azure_resource_id, NULL, 'Disk bytes read'),
+(c_azure_provider_enum, c_azure_virtual_machine_service, 'Disk Write Bytes', c_azure_resource_id, NULL, 'Disk bytes written'),
+(c_azure_provider_enum, c_azure_virtual_machine_service, 'Disk Read Operations/Sec', c_azure_resource_id, NULL, 'Disk read IOPS'),
+(c_azure_provider_enum, c_azure_virtual_machine_service, 'Disk Write Operations/Sec', c_azure_resource_id, NULL, 'Disk write IOPS'),
+(c_azure_provider_enum, c_azure_virtual_machine_service, 'OS Disk Latency', c_azure_resource_id, NULL, 'OS disk latency'),
+(c_azure_provider_enum, c_azure_virtual_machine_service, 'Inbound Flows', c_azure_resource_id, NULL, 'Inbound network flows'),
+(c_azure_provider_enum, c_azure_virtual_machine_service, 'Outbound Flows', c_azure_resource_id, NULL, 'Outbound network flows')
     ON CONFLICT DO NOTHING;
 END $$;
 
