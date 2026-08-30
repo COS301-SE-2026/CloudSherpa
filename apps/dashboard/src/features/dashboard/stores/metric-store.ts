@@ -117,8 +117,6 @@ export const useMetricStore = create<MetricStore>((set, get) => ({
     },
 
     initializeMetricSeries: (availableMetrics) => {
-        console.log("Available metrics:", availableMetrics);
-
         set((state) => {
             const seriesByKey = {
                 ...state.seriesByKey,
@@ -141,7 +139,6 @@ export const useMetricStore = create<MetricStore>((set, get) => ({
                     }
                 }
             }
-
             return { seriesByKey };
         });
     },
@@ -176,18 +173,15 @@ export const useMetricStore = create<MetricStore>((set, get) => ({
 
     getMetricList: () => {
         const { seriesByKey } = get();
-
         const mapMetricNames: Record<string, Set<string>> = {};
 
-        Object.values(seriesByKey).forEach((series) => {
-            Object.values(series).forEach((metric) => {
-                const resourceId = metric.resource_id;
+        Object.keys(seriesByKey).forEach((key) => {
+            const [resourceId, metricName] = key.split(":");
 
-                if (!mapMetricNames[resourceId]) {
-                    mapMetricNames[resourceId] = new Set<string>();
-                }
-                mapMetricNames[resourceId].add(metric.metricName);
-            });
+            if (!mapMetricNames[resourceId]) {
+                mapMetricNames[resourceId] = new Set<string>();
+            }
+            mapMetricNames[resourceId].add(metricName);
         });
 
         const finalArray: Record<string, string[]> = {};
