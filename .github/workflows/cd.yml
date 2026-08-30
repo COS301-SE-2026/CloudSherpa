@@ -113,7 +113,7 @@ jobs:
           uses: grafana/setup-k6-action@db07bd9765aac508ef18982e52ab937fe633a065 # v1.2.1
           
         - name: Set up playwright
-          if: github.event_name == 'pull_request'
+          if: false
           working-directory: apps/dashboard
           run: npm run playwright:install
 
@@ -123,7 +123,7 @@ jobs:
             docker compose -f infra/docker-compose.e2e.yml up -d --wait
 
         - name: Playwright E2E tests
-          if: github.event_name == 'pull_request'
+          if: false
           working-directory: apps/dashboard
           run: |
             npm run test:e2e

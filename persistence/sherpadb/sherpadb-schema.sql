@@ -633,21 +633,6 @@ BEGIN
             expires_at timestamptz
         );
     $sql$, schema_name, schema_name);
-
-    EXECUTE format($sql$
-        CREATE TABLE IF NOT EXISTS %I.recommendation_history (
-            history_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-            recommendation_id uuid NOT NULL REFERENCES %I.optimization_recommendation(recommendation_id),
-            resource_id uuid NOT NULL REFERENCES %I.resource(resource_id) ON DELETE CASCADE,
-            provider public.provider_enum NOT NULL,
-            rule_id varchar(255) NOT NULL,
-            action_type public.optimization_action_type_enum NOT NULL,
-            previous_status public.optimization_status_enum,
-            new_status public.optimization_status_enum NOT NULL,
-            evidence jsonb DEFAULT '{}'::jsonb,
-            changed_at timestamptz DEFAULT NOW()
-        );
-    $sql$, schema_name, schema_name, schema_name);
 END;
 $$ LANGUAGE plpgsql;
 

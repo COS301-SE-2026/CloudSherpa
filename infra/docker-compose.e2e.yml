@@ -12,6 +12,7 @@ services:
       POSTGRES_PASSWORD: mock_pass
       SPRING_PROFILES_ACTIVE: dev
       API_KEY: abc123
+      AES_ENCRYPTION_KEY: FEAQKb55DXR2FICZk4MFk3d1YhP7sjZEkLuuKcr7ISY=
     depends_on:
       sherpa-db:
         condition: service_healthy
