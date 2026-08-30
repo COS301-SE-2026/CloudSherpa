@@ -13,6 +13,7 @@ LANGUAGE plpgsql AS
 $$
 DECLARE
     rows_inserted integer;
+    sample_interval INTERVAL := '5 min';
 BEGIN 
     RAISE NOTICE 'Seeding metric series for resource %', p_resource_id;
 
@@ -36,9 +37,9 @@ BEGIN
             i AS metric_value,
             'NFR unit' AS unit,
             'USD' AS currency,
-            $4 - (i * INTERVAL '5 min') AS period_start,
-            ($4 - (i * INTERVAL '5 min')) + INTERVAL '5 min' AS period_end
-        FROM generate_series(1, $5) AS series(i)
+            $4 - (i * $5) AS period_start,
+            ($4 - (i * $5)) + $5 AS period_end
+        FROM generate_series(1, $6) AS series(i)
         ON CONFLICT DO NOTHING
     $sql$, p_tenant_schema)
     USING
@@ -46,6 +47,7 @@ BEGIN
         p_metric_type,
         p_metric_name,
         p_to_timestamp,
+        sample_interval,
         p_points;
 
     GET DIAGNOSTICS rows_inserted = ROW_COUNT;
