@@ -22,7 +22,6 @@ type HistoricalMetricResponseDto = DownsampledHistoricalMetricResponseDto[];
 
 interface PropsForUseFetchHistoricalDataProps {
     resourceId: string;
-    metricType: MetricType;
     fromMs: number;
     toMs?: number;
     metricName?: string;
@@ -30,10 +29,9 @@ interface PropsForUseFetchHistoricalDataProps {
 
 export function useFetchMetricHistoricalData({
     resourceId,
-    metricType,
     fromMs,
     toMs,
-    metricName,
+    metricName = "",
 }: PropsForUseFetchHistoricalDataProps) {
     const setMetricSeries = useMetricStore((state) => state.setMetricSeries);
 
@@ -44,7 +42,7 @@ export function useFetchMetricHistoricalData({
     const request = useRef<string | null>(null);
 
     useEffect(() => {
-        if (!resourceId || !metricType || !Number.isFinite(fromMs)) {
+        if (!resourceId || !metricName || !Number.isFinite(fromMs)) {
             return;
         }
 
@@ -85,7 +83,7 @@ export function useFetchMetricHistoricalData({
                 }
 
                 if (!response || !Array.isArray(response) || response.length === 0) {
-                    setMetricSeries(resourceId, metricType, []);
+                    setMetricSeries(resourceId, metricName, []);
                     return;
                 }
 
@@ -101,7 +99,7 @@ export function useFetchMetricHistoricalData({
                     periodEnd: item.periodEnd,
                 }));
 
-                setMetricSeries(resourceId, metricType, metrics);
+                setMetricSeries(resourceId, metricName, metrics);
             } catch (error) {
                 if (cancelled) {
                     return;
@@ -111,7 +109,7 @@ export function useFetchMetricHistoricalData({
 
                 setForErrors(fetchError);
 
-                setMetricSeries(resourceId, metricType, []);
+                setMetricSeries(resourceId, metricName, []);
             } finally {
                 if (!cancelled) {
                     setIsLoading(false);
@@ -124,7 +122,7 @@ export function useFetchMetricHistoricalData({
         return () => {
             cancelled = true;
         };
-    }, [resourceId, metricType, fromMs, toMs, metricName, setMetricSeries]);
+    }, [resourceId, fromMs, toMs, metricName, setMetricSeries]);
 
     return { isLoading, forErrors };
 }

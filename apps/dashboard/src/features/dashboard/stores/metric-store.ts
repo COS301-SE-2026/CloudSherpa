@@ -134,7 +134,7 @@ export const useMetricStore = create<MetricStore>((set, get) => ({
                         continue;
                     }
 
-                    const key = `${resource.resourceId}:${metric.metricType}`;
+                    const key = `${resource.resourceId}:${metric.metricName}`;
 
                     if (!seriesByKey[key]) {
                         seriesByKey[key] = {};
@@ -146,8 +146,8 @@ export const useMetricStore = create<MetricStore>((set, get) => ({
         });
     },
 
-    setMetricSeries: (resourceId, metricType, metrics) => {
-        const key = `${resourceId}:${metricType}`;
+    setMetricSeries: (resourceId, metricName, metrics) => {
+        const key = `${resourceId}:${metricName}`;
 
         const series = Object.fromEntries(metrics.map((metric) => [metric.timestamp, metric]));
 

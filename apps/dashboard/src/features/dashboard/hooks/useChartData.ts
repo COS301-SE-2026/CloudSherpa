@@ -3,8 +3,8 @@ import { useMemo } from "react";
 import { useMetricStore } from "@/features/dashboard/stores/metric-store";
 import { metricSeriesToArray } from "@/features/dashboard/types/metric";
 
-export function useChartData(resourceId: string, metricType: string) {
-    const series = useMetricStore((state) => state.seriesByKey[`${resourceId}:${metricType}`]);
+export function useChartData(resourceId: string, metricName: string) {
+    const series = useMetricStore((state) => state.seriesByKey[`${resourceId}:${metricName}`]);
 
     return useMemo(() => {
         const values = metricSeriesToArray(series);

@@ -50,7 +50,7 @@ export type MetricStore = {
 
     initializeMetricSeries: (availableMetrics: AvailableMetric[]) => void;
 
-    setMetricSeries: (resourceId: string, metricType: MetricType, metrics: Metric[]) => void;
+    setMetricSeries: (resourceId: string, metricName: string, metrics: Metric[]) => void;
 
     clearStore: () => void;
     getResourceList: () => string[];

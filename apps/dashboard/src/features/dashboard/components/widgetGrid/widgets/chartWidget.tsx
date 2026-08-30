@@ -17,7 +17,6 @@ import {
 } from "@/components/atoms/tooltip";
 import { useRecStore } from "@/features/optimization/stores/useRecStore";
 import { useFetchMetricHistoricalData } from "@/features/dashboard/hooks/useFetchMetricHistoricalData";
-import { MetricType } from "@/features/dashboard/types/metric";
 
 interface BaseChartProps {
     resourceId: string;
@@ -41,7 +40,7 @@ export function ChartWidget({
     preview = false,
     isEditMode = false,
 }: Readonly<WidgetProps>) {
-    const { chartType, displayName, resourceId, metricName, id, metricType } = config;
+    const { chartType, displayName, resourceId, metricName, id } = config;
     const ChartComponent = CHART_COMPONENTS[chartType];
     const [hasNoData, setHasNoData] = useState(false);
     const router = useRouter();
@@ -55,7 +54,6 @@ export function ChartWidget({
 
     useFetchMetricHistoricalData({
         resourceId: resourceId ?? "",
-        metricType: metricType as MetricType,
         fromMs: fromMs,
         toMs: toMs,
         metricName: metricName ?? undefined,
