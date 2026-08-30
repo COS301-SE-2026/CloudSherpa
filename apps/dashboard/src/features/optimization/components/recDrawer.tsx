@@ -9,10 +9,11 @@ import {
 import { Button } from "@/components/atoms/button";
 import { RecommendationGroup } from "@/features/optimization/types/recommendations";
 import RecommendationCard from "@/features/optimization/components/recCard";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { X, Search } from "lucide-react";
 import { Input } from "@/components/atoms/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/atoms/tabs";
+import { useRecStore } from "@/features/optimization/stores/useRecStore";
 
 interface RecDrawer {
     group: RecommendationGroup;
@@ -23,6 +24,18 @@ interface RecDrawer {
 export default function RecDrawer({ group, isOpen, setIsOpen }: Readonly<RecDrawer>) {
     const [searchQuery, setSearchQuery] = useState("");
     const [statusTab, setStatusTab] = useState<"active" | "applied" | "dismissed">("active");
+
+    const fetchRecGroups = useRecStore((state) => state.fetchRecGroups);
+
+    useEffect(() => {
+        if (!isOpen) return;
+
+        const interval = setInterval(() => {
+            fetchRecGroups();
+        }, 20000); // 10800000 every 3 hours
+
+        return () => clearInterval(interval);
+    }, [isOpen, fetchRecGroups]);
 
     const filteredRecommendations = useMemo(() => {
         let filtered = group.recommendations.filter((rec) => {
@@ -115,7 +128,7 @@ export default function RecDrawer({ group, isOpen, setIsOpen }: Readonly<RecDraw
                     {/* map recommendations to individual cards */}
                     {filteredRecommendations.length > 0 ? (
                         filteredRecommendations.map((rec) => (
-                            <RecommendationCard recommendation={rec} key={rec.resourceId} />
+                            <RecommendationCard recommendation={rec} key={rec.recommendationId} />
                         ))
                     ) : (
                         <div className="flex justify-center p-8 text-muted-foreground text-sm">

@@ -122,6 +122,7 @@ export const useRecStore = create<RecStore>((set, get) => ({
         try {
             await dismissRecommendation(recommendationId);
             await get().fetchRecGroups();
+            await get().fetchSummary();
         } catch (error) {
             console.error("Failed to dismiss recommendation:", error);
         }
@@ -131,6 +132,7 @@ export const useRecStore = create<RecStore>((set, get) => ({
         try {
             await applyRecommendation(recommendationId);
             await get().fetchRecGroups();
+            await get().fetchSummary();
         } catch (error) {
             console.error("Failed to apply recommendation:", error);
         }
@@ -140,6 +142,7 @@ export const useRecStore = create<RecStore>((set, get) => ({
         try {
             await reEnableRecommendation(recommendationId);
             await get().fetchRecGroups();
+            await get().fetchSummary();
         } catch (error) {
             console.error("Failed to re-enable recommendation:", error);
         }

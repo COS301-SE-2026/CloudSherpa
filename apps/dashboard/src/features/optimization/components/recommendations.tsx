@@ -68,6 +68,13 @@ export default function Recommendations() {
     useEffect(() => {
         fetchRecGroups();
         fetchSummary();
+
+        const interval = setInterval(() => {
+            fetchRecGroups();
+            fetchSummary();
+        }, 20000); // 10800000 every 3 hours
+
+        return () => clearInterval(interval);
     }, [fetchRecGroups, fetchSummary]);
 
     if (isLoading) {
@@ -92,7 +99,7 @@ export default function Recommendations() {
                 {summary && (
                     <div className="grid grid-cols-4 gap-3 mb-2">
                         <RecommendationCardHero
-                            value={`Total ${summary.total}`}
+                            value={`Total ${summary.active + summary.applied + summary.dismissed}`}
                             className="text-card-foreground"
                         />
                         <RecommendationCardHero

@@ -137,7 +137,12 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
     const renderActionButtons = () => {
         if (recommendation.status === "DISMISSED") {
             return (
-                <Button type="button" variant="outline" onClick={handleReEnable}>
+                <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleReEnable}
+                    className="cursor-pointer"
+                >
                     Re-enable
                 </Button>
             );
@@ -149,10 +154,15 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
 
         return (
             <>
-                <Button type="button" variant="destructive" onClick={handleDismiss}>
+                <Button
+                    type="button"
+                    variant="destructive"
+                    onClick={handleDismiss}
+                    className="cursor-pointer"
+                >
                     Dismiss
                 </Button>
-                <Button type="button" onClick={handleApply}>
+                <Button type="button" onClick={handleApply} className="cursor-pointer">
                     Apply
                 </Button>
             </>
