@@ -1,28 +1,10 @@
 import apiClient from "./api-client";
-
-export interface CloudCredentials {
-    accessKeyId?: string;
-    secretAccessKey?: string;
-    awsRegion?: string;
-    tenantId?: string;
-    clientId?: string;
-    clientSecret?: string;
-    projectId?: string;
-    serviceAccountJson?: string;
-}
+import { CloudCredentials } from "./dto/cloud-credentials";
+import { ResourceDetail } from "./dto/cloud-resource";
 
 export interface ResourceDiscoveryRequest {
     services: string[];
     credentials: CloudCredentials;
-}
-
-export interface ResourceDetail {
-    resourceId: string;
-    name: string;
-    resourceType: string;
-    serviceCategory: string;
-    region: string;
-    tags: Record<string, string>;
 }
 
 export interface AwsPolicy {

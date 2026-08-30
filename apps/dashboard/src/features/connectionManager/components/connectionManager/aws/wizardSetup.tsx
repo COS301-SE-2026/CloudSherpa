@@ -3,7 +3,7 @@ import { useState } from "react";
 import StepOneAws from "./stepOne";
 import StepTwoAws from "./stepTwo";
 import StepThreeAws from "./stepThree";
-import { ResourceDetail } from "@/lib/fetch/cloud-resource-api";
+import { ResourceDetail } from "@/lib/fetch/dto/cloud-resource";
 
 interface BillingConfig {
     prefix: string;

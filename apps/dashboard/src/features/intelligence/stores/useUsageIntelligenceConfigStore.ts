@@ -1,20 +1,16 @@
 import { create } from "zustand";
 import { MetricType } from "@/features/dashboard/types/metric";
-
-import {
-    getAwsAccountConnections,
-    getAwsAccountResources,
-    CloudAccount,
-    CloudResource,
-} from "@/lib/fetch/aws-connection-api";
 import { persist } from "zustand/middleware";
 import { TimeWindowPreset } from "@/features/dashboard/types/timewindow";
+import { getAwsAccountConnections, getAwsAccountResources } from "@/lib/fetch/cloud-account-api";
+import { CloudAccount } from "@/lib/fetch/dto/cloud-account";
+import { CloudResource } from "@/lib/fetch/dto/cloud-resource";
 
 interface UsageIntelligenceConfigStore {
     provider: string | null;
     accountId: string | null;
     resourceId: string | null;
-    metricType: MetricType | null;
+    metricName: string | null;
     accountDisplayName: string | null;
     resourceDisplayName: string | null;
 
@@ -27,7 +23,7 @@ interface UsageIntelligenceConfigStore {
     setProvider: (provider: string) => void;
     setAccount: (accountId: string, displayName: string) => void;
     setResource: (resourceId: string, displayName: string) => void;
-    setMetricType: (metricType: MetricType) => void;
+    setMetricName: (metricName: string) => void;
     setTimeWindows: (past: TimeWindowPreset) => void;
     fetchAccounts: (provider: string) => Promise<void>;
     fetchResources: (accountId: string) => Promise<void>;
@@ -40,7 +36,7 @@ export const useUsageIntelligenceConfigStore = create<UsageIntelligenceConfigSto
             provider: null,
             accountId: null,
             resourceId: null,
-            metricType: null,
+            metricName: null,
             accountDisplayName: null,
             resourceDisplayName: null,
             pastTimeWindowPreset: "T_6_HOUR",
@@ -53,7 +49,7 @@ export const useUsageIntelligenceConfigStore = create<UsageIntelligenceConfigSto
                     provider,
                     accountId: null,
                     resourceId: null,
-                    metricType: null,
+                    metricName: null,
                     accounts: [],
                     resources: [],
                 });
@@ -65,7 +61,7 @@ export const useUsageIntelligenceConfigStore = create<UsageIntelligenceConfigSto
                     accountId,
                     accountDisplayName,
                     resourceId: null,
-                    metricType: null,
+                    metricName: null,
                 });
                 get().fetchResources(accountId);
             },
@@ -74,12 +70,12 @@ export const useUsageIntelligenceConfigStore = create<UsageIntelligenceConfigSto
                 set({
                     resourceId,
                     resourceDisplayName,
-                    metricType: null,
+                    metricName: null,
                 }),
 
-            setMetricType: (metricType) =>
+            setMetricName: (metricName) =>
                 set({
-                    metricType,
+                    metricName,
                 }),
 
             setTimeWindows: (past) =>
@@ -115,7 +111,7 @@ export const useUsageIntelligenceConfigStore = create<UsageIntelligenceConfigSto
                     provider: null,
                     accountId: null,
                     resourceId: null,
-                    metricType: null,
+                    metricName: null,
                     accountDisplayName: null,
                     resourceDisplayName: null,
                     pastTimeWindowPreset: "T_6_HOUR",

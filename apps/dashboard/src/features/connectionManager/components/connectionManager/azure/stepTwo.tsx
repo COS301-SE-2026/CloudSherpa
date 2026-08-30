@@ -1,48 +1,94 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { StepTwo } from "@/features/connectionManager/components/connectionManager/wizardSetup/stepTwo";
 import { Button } from "@/components/atoms/button";
-import { ResourceDetail } from "@/lib/fetch/cloud-resource-api";
+import { ResourceDetail } from "@/lib/fetch/dto/cloud-resource";
+import { getCloudResources, getCloudServices } from "@/lib/fetch/cloud-resource-api";
+import { Progress } from "@/components/atoms/progress";
+import { CloudCredentials } from "@/lib/fetch/dto/cloud-credentials";
 
 //copied and pasted from previous pr
 interface StepTwoPropsForAzure {
+    credentials: CloudCredentials | null;
     onNext: (forData: { servicesSelected: string[]; resources: ResourceDetail[] }) => void;
 
     onBack?: () => void;
 }
 
-const HARDCODED = [{ id: "idOne", name: "ServiceOne" }];
+export default function StepTwoAzure({
+    credentials,
+    onNext,
+    onBack,
+}: Readonly<StepTwoPropsForAzure>) {
+    const [servicesAvailable, setServicesAvailable] = useState<{ id: string; name: string }[]>([]);
 
-export default function StepTwoAzure({ onNext, onBack }: Readonly<StepTwoPropsForAzure>) {
-    const [servicesAvailable] = useState<{ id: string; name: string }[]>(HARDCODED);
     const [selectedService, setSelectedService] = useState<string[]>([]);
 
     const [forLoading, setForLoading] = useState(false);
 
     const [forErrors, setForErrors] = useState("");
 
-    const handlingSubmit = async (forSubmitting: React.SubmitEvent<HTMLFormElement>) => {
-        forSubmitting.preventDefault();
+    const [progress, setProgress] = useState(0);
 
+    const [currentScanningService, setCurrentScanningService] = useState("");
+
+    useEffect(() => {
+        const loadServices = async () => {
+            const services = await getCloudServices("azure");
+
+            setServicesAvailable(
+                services.map((s) => ({
+                    id: s,
+                    name: s.toUpperCase(),
+                }))
+            );
+        };
+
+        loadServices();
+    }, []);
+
+    const handlingSubmit = async (forHandlingSubmit: React.FormEvent<HTMLFormElement>) => {
+        forHandlingSubmit.preventDefault();
         try {
             setForLoading(true);
             setForErrors("");
+            setProgress(0);
+            setCurrentScanningService("");
 
-            const discoveredResources: ResourceDetail[] = [
-                {
-                    resourceId: "azure-resource-1",
-                    name: "Resource 1",
-                    resourceType: "typeOne",
-                    serviceCategory: "Service Category",
-                    region: "region1",
-                    tags: { tag: "tag1" },
-                },
-            ];
+            let discoveredResources: ResourceDetail[] = [];
+            for (let i = 0; i < selectedService.length; i++) {
+                const currentService = selectedService[i];
+
+                // Update UI text
+                setCurrentScanningService(currentService);
+
+                const resources = await getCloudResources(
+                    "azure",
+                    {
+                        subscriptionId: credentials?.subscriptionId,
+                        tenantId: credentials?.tenantId,
+                        clientId: credentials?.clientId,
+                        clientSecret: credentials?.clientSecret,
+                    },
+                    [currentService]
+                );
+
+                discoveredResources = [...discoveredResources, ...resources];
+
+                setProgress(((i + 1) / selectedService.length) * 100);
+            }
+
+            if (discoveredResources.length === 0) {
+                setForErrors("No resources were discovered.");
+                return;
+            }
 
             onNext({ servicesSelected: selectedService, resources: discoveredResources });
-        } catch {
-            setForErrors("Failed to discover any resources");
+        } catch (err) {
+            console.error(err);
+
+            setForErrors("Failed to discover resources. Check credentials and permissions.");
         } finally {
             setForLoading(false);
         }
@@ -122,6 +168,19 @@ export default function StepTwoAzure({ onNext, onBack }: Readonly<StepTwoPropsFo
                     Permissions{" "}
                 </h3>
             </section>
+            {forLoading && (
+                <div className="space-y-2 w-full pt-4">
+                    <div className="flex justify-between text-sm text-muted-foreground font-medium">
+                        <span>
+                            {currentScanningService
+                                ? `Scanning ${currentScanningService.toUpperCase()}...`
+                                : "Preparing scan..."}
+                        </span>
+                        <span>{Math.round(progress)}%</span>
+                    </div>
+                    <Progress value={progress} className="w-full h-2" />
+                </div>
+            )}
         </StepTwo>
     );
 }

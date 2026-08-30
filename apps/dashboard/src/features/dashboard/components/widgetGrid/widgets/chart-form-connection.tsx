@@ -4,8 +4,9 @@ import { ChartWidgetConfig } from "@/features/dashboard/types/widgets";
 import { Label } from "@/components/atoms/label";
 import { FieldSet, FieldLegend, FieldDescription, FieldGroup } from "@/components/atoms/field";
 import { FormCountCircle } from "@/components/atoms/form-count-circle";
-import { getAwsAccountConnections, CloudAccount } from "@/lib/fetch/aws-connection-api";
 import Dropdown from "@/components/molecules/dropdown";
+import { getAwsAccountConnections } from "@/lib/fetch/cloud-account-api";
+import { CloudAccount } from "@/lib/fetch/dto/cloud-account";
 
 const PROVIDERS = ["AWS", "AZURE", "GCP"];
 

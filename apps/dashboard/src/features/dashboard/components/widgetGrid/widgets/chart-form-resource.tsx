@@ -6,12 +6,9 @@ import { ChartWidgetConfig } from "@/features/dashboard/types/widgets";
 import { Label } from "@/components/atoms/label";
 import { FieldSet, FieldLegend, FieldDescription, FieldGroup } from "@/components/atoms/field";
 import { FormCountCircle } from "@/components/atoms/form-count-circle";
-import {
-    getAwsAccountResources,
-    CloudResource,
-    ResourceStatus,
-} from "@/lib/fetch/aws-connection-api";
 import Dropdown from "@/components/molecules/dropdown";
+import { getAwsAccountResources } from "@/lib/fetch/cloud-account-api";
+import { CloudResource, ResourceStatus } from "@/lib/fetch/dto/cloud-resource";
 
 interface ChartFormResourceProps {
     configuration: ChartWidgetConfig;
@@ -77,7 +74,7 @@ export default function ChartFormResource({
                         value={configuration.metricName}
                         options={availableMetrics.map((type) => ({
                             value: type,
-                            label: type.toUpperCase(),
+                            label: type,
                         }))}
                         onSelect={(currentValue) => {
                             setConfiguration({

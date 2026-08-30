@@ -90,7 +90,6 @@ export function useMetricStream() {
         const eventSource = new EventSource(sseUrl, { withCredentials: true });
 
         eventSource.onopen = () => {
-            console.log("SSE connected");
             setError(null);
         };
 

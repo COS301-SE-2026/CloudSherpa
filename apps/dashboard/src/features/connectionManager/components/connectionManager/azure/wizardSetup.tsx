@@ -6,9 +6,12 @@ import StepOneAzure from "./stepOne";
 import StepTwoAzure from "./stepTwo";
 import StepThreeAzure from "./stepThree";
 import { useState } from "react";
-import { ResourceDetail } from "@/lib/fetch/cloud-resource-api";
+import { ResourceDetail } from "@/lib/fetch/dto/cloud-resource";
+import { AzureCredentialsDto } from "@/lib/fetch/dto/cloud-credentials";
 
 interface DataForWizard {
+    credentials: AzureCredentialsDto | null;
+
     displayName: string;
     ingestionPeriod: number;
     servicesSelected: string[];
@@ -20,16 +23,29 @@ export default function WizardSetupAzure() {
     const [step, setStep] = useState<1 | 2 | 3>(1);
 
     const [wizardData, setWizardData] = useState<DataForWizard>({
+        credentials: null,
         displayName: "Azure Connection",
         ingestionPeriod: 60,
         servicesSelected: [],
         resources: [],
     });
 
-    const handleStepOneNext = (data: { displayName: string }) => {
+    const handleStepOneNext = (data: {
+        displayName: string;
+        subscriptionId: string;
+        clientId: string;
+        tenantId: string;
+        clientSecret: string;
+    }) => {
         setWizardData((previous) => ({
             ...previous,
             displayName: data.displayName,
+            credentials: {
+                subscriptionId: data.subscriptionId,
+                tenantId: data.tenantId,
+                clientId: data.clientId,
+                clientSecret: data.clientSecret,
+            },
         }));
 
         setStep(2);
@@ -63,11 +79,18 @@ export default function WizardSetupAzure() {
         <>
             {step === 1 && <StepOneAzure onNext={handleStepOneNext} />}
 
-            {step === 2 && <StepTwoAzure onNext={handleStepTwoNext} onBack={handleBack} />}
+            {step === 2 && (
+                <StepTwoAzure
+                    credentials={wizardData.credentials}
+                    onNext={handleStepTwoNext}
+                    onBack={handleBack}
+                />
+            )}
 
             {step === 3 && (
                 <StepThreeAzure
                     displayName={wizardData.displayName}
+                    credentials={wizardData.credentials!}
                     ingestionPeriod={wizardData.ingestionPeriod}
                     resources={wizardData.resources}
                     onComplete={handleStepThreeComplete}

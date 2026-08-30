@@ -197,7 +197,7 @@ const createDashboardSlice: StateCreator<DashboardStore, [], [], DashboardSlice>
                     accountId: widget.accountId,
                     resourceId: widget.resourceId,
                     metricType: widget.metricType as string,
-                    metricName: widget.metricName,
+                    metricName: widget.metricName as string,
                 });
 
                 set((state) => ({
