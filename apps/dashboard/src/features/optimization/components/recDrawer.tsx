@@ -10,10 +10,10 @@ import { Button } from "@/components/atoms/button";
 import { RecommendationGroup } from "@/features/optimization/types/recommendations";
 import RecommendationCard from "@/features/optimization/components/recCard";
 import { useState, useMemo } from "react";
-import { X, Search, Eye, EyeOff } from "lucide-react";
+import { X, Search } from "lucide-react";
 import { Input } from "@/components/atoms/input";
 import Dropdown from "@/components/molecules/dropdown";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/atoms/tooltip";
+import { Tabs, TabsList, TabsTrigger } from "@/components/atoms/tabs";
 
 const ACTIONS = [
     { value: "ALL", label: "All Actions" },
@@ -32,11 +32,11 @@ interface RecDrawer {
 export default function RecDrawer({ group, isOpen, setIsOpen }: Readonly<RecDrawer>) {
     const [searchQuery, setSearchQuery] = useState("");
     const [actionFilter, setActionFilter] = useState("ALL");
-    const [showHidden, setShowHidden] = useState(false);
+    const [statusTab, setStatusTab] = useState<"active" | "dismissed">("active");
 
     const filteredRecommendations = useMemo(() => {
         let filtered = group.recommendations.filter((rec) =>
-            showHidden ? rec.status === "DISMISSED" : rec.status !== "DISMISSED"
+            statusTab === "dismissed" ? rec.status === "DISMISSED" : rec.status !== "DISMISSED"
         );
         if (actionFilter && actionFilter !== "ALL") {
             filtered = filtered.filter((rec) => rec.actionType === actionFilter);
@@ -55,7 +55,10 @@ export default function RecDrawer({ group, isOpen, setIsOpen }: Readonly<RecDraw
         }
 
         return filtered;
-    }, [searchQuery, actionFilter, group.recommendations, showHidden]);
+    }, [searchQuery, actionFilter, group.recommendations, statusTab]);
+
+    const activeCount = group.recommendations.filter((rec) => rec.status !== "DISMISSED").length;
+    const dismissedCount = group.recommendations.filter((rec) => rec.status === "DISMISSED").length;
 
     return (
         <Drawer direction="right" dismissible={true} open={isOpen} onOpenChange={setIsOpen}>
@@ -105,24 +108,19 @@ export default function RecDrawer({ group, isOpen, setIsOpen }: Readonly<RecDraw
                             widthVariant="large"
                             placeholder="Action..."
                         />
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button
-                                    type="button"
-                                    variant="secondary"
-                                    size="icon"
-                                    className="shrink-0"
-                                    onClick={() => setShowHidden(!showHidden)}
-                                >
-                                    {showHidden ? (
-                                        <Eye className="h-4 w-4" />
-                                    ) : (
-                                        <EyeOff className="h-4 w-4" />
-                                    )}
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>Show dismissed recommendations</TooltipContent>
-                        </Tooltip>
+                        <Tabs
+                            value={statusTab}
+                            onValueChange={(value) => setStatusTab(value as "active" | "dismissed")}
+                        >
+                            <TabsList className="h-auto p-1">
+                                <TabsTrigger value="active" className="text-sm">
+                                    Active ({activeCount})
+                                </TabsTrigger>
+                                <TabsTrigger value="dismissed" className="text-sm">
+                                    Dismissed ({dismissedCount})
+                                </TabsTrigger>
+                            </TabsList>
+                        </Tabs>
                     </div>
 
                     {/* map recommendations to individual cards */}
