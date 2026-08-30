@@ -5,7 +5,6 @@ import com.cloudsherpa.ingestion.models.ResourceDetail;
 import com.cloudsherpa.ingestion.provider.gcp.asset.GcpAssetInventoryService;
 import com.google.cloud.asset.v1.ResourceSearchResult;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -78,7 +77,6 @@ public class GcpResourceDiscoveryService {
     return scanners.values().stream()
         .collect(
             Collectors.toMap(
-                scanner -> scanner.getServiceName().toLowerCase(Locale.ROOT),
-                GcpResourceScanner::getPermissionsRequired));
+                GcpResourceScanner::getServiceName, GcpResourceScanner::getPermissionsRequired));
   }
 }
