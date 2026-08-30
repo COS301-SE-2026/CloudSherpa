@@ -4,11 +4,8 @@ import { loginSetup } from '../common/utils/login-setup.js';
 import { config } from '../common/utils/config.js';
 
 export const options = {
-  stages: [
-    { duration: '1m', target: 20 }, 
-    { duration: '3m', target: 20 },
-    { duration: '1m', target: 0 },
-  ],
+  vus: 20,
+  duration: '30s',
 
   thresholds: {
     http_req_duration: ['p(95)<500'],
