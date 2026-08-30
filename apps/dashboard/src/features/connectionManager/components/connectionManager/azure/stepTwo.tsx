@@ -4,7 +4,11 @@ import React, { useEffect, useState } from "react";
 import { StepTwo } from "@/features/connectionManager/components/connectionManager/wizardSetup/stepTwo";
 import { Button } from "@/components/atoms/button";
 import { ResourceDetail } from "@/lib/fetch/dto/cloud-resource";
-import { getCloudResources, getCloudServices } from "@/lib/fetch/cloud-resource-api";
+import {
+    generateAzurePermissionsPolicy,
+    getCloudResources,
+    getCloudServices,
+} from "@/lib/fetch/cloud-resource-api";
 import { Progress } from "@/components/atoms/progress";
 import { CloudCredentials } from "@/lib/fetch/dto/cloud-credentials";
 
@@ -32,6 +36,27 @@ export default function StepTwoAzure({
     const [progress, setProgress] = useState(0);
 
     const [currentScanningService, setCurrentScanningService] = useState("");
+
+    const [permissions, setPermissions] = useState<string[]>([]);
+
+    React.useEffect(() => {
+        const loadPermissions = async () => {
+            if (selectedService.length === 0) {
+                setPermissions([]);
+                return;
+            }
+
+            try {
+                const result = await generateAzurePermissionsPolicy(selectedService);
+
+                setPermissions(result);
+            } catch {
+                setForErrors("Failed to determine required Azure permissions");
+            }
+        };
+
+        loadPermissions();
+    }, [selectedService]);
 
     useEffect(() => {
         const loadServices = async () => {
@@ -167,6 +192,24 @@ export default function StepTwoAzure({
                     {" "}
                     Permissions{" "}
                 </h3>
+                <div className="rounded-lg border border-border bg-background p-4 space-y-3">
+                    {permissions.length === 0 ? (
+                        <p className="text-sm text-muted-foreground/70">
+                            {" "}
+                            Select a service to view the permissions{" "}
+                        </p>
+                    ) : (
+                        permissions.map((permissions) => (
+                            <div
+                                key={permissions}
+                                className="rounded-md bg-card px-4 py-3 text-sm text-foreground"
+                            >
+                                {" "}
+                                - {permissions}{" "}
+                            </div>
+                        ))
+                    )}
+                </div>
             </section>
             {forLoading && (
                 <div className="space-y-2 w-full pt-4">

@@ -64,3 +64,13 @@ export async function generateGcpPermissionsPolicy(services: string[]): Promise<
         body: JSON.stringify(services),
     });
 }
+
+/**
+ * Generate a least-privilege Azure permission set for a set of selected services.
+ */
+export async function generateAzurePermissionsPolicy(services: string[]): Promise<string[]> {
+    return apiClient<string[]>("/api/cloud-resources/azure/permissions", {
+        method: "POST",
+        body: JSON.stringify(services),
+    });
+}
