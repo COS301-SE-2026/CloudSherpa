@@ -74,14 +74,6 @@ async function configureKPIWidgetName(page: Page) {
     return uniqueWidgetName;
 }
 
-async function configureChartWidgetName(page: Page) {
-    const uniqueWidgetName = `testChart-${Date.now()}`;
-    await page.getByRole("textbox").fill(uniqueWidgetName);
-    await page.getByRole("button", { name: "Save Chart" }).click();
-    await expect(page.getByText(uniqueWidgetName)).toBeVisible();
-    return uniqueWidgetName;
-}
-
 test.describe("dashboard", () => {
     test.beforeEach(async ({ page }) => {
         await registerAndLoginNewUser(page);
@@ -160,11 +152,27 @@ test.describe("dashboard", () => {
         await configureChartWidgetName(page);
     });
 
-    test("Delete chart widget", async ({ page }) => {
+    test("Delete KPI widget", async ({ page }) => {
+        //create dash
+        await createNewDashboard(page);
+        //create new chart widget
+        await createNewKPIWidget(page);
+        //delete new chart widget
+        await page.getByLabel("chart options button").click();
+        await page.getByRole("menuitem", { name: "Delete Widget" }).click();
+        //negative result
+        await expect(page.getByText("New KPI").first()).not.toBeVisible();
+    });
+
+    test("Delete Chart widget", async ({ page }) => {
         //create dash
         await createNewDashboard(page);
         //create new chart widget
         await createNewChartWidget(page);
-        await deleteChartWidget(page);
+        //delete new chart widget
+        await page.getByLabel("chart options button").click();
+        await page.getByRole("menuitem", { name: "Delete Widget" }).click();
+        //negative result
+        await expect(page.getByText("New Chart").first()).not.toBeVisible();
     });
 });
