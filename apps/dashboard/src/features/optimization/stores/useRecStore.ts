@@ -10,6 +10,7 @@ import {
     dismissRecommendation,
     applyRecommendation,
     getRecommendationSummary,
+    reEnableRecommendation,
 } from "@/lib/fetch/api-optimization";
 
 interface RecStore {
@@ -18,6 +19,7 @@ interface RecStore {
     isLoading: boolean;
     failedLoading: boolean;
     failedLoadingMessage: string;
+    reEnableRec: (recommendationId: string) => Promise<void>;
     fetchRecGroups: () => Promise<void>;
     fetchSummary: () => Promise<void>;
     dismissRec: (recommendationId: string) => Promise<void>;
@@ -131,6 +133,15 @@ export const useRecStore = create<RecStore>((set, get) => ({
             await get().fetchRecGroups();
         } catch (error) {
             console.error("Failed to apply recommendation:", error);
+        }
+    },
+
+    reEnableRec: async (recommendationId: string) => {
+        try {
+            await reEnableRecommendation(recommendationId);
+            await get().fetchRecGroups();
+        } catch (error) {
+            console.error("Failed to re-enable recommendation:", error);
         }
     },
 }));

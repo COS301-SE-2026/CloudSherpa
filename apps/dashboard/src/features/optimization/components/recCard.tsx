@@ -17,6 +17,7 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
 
     const dismissRec = useRecStore((state) => state.dismissRec);
     const applyRec = useRecStore((state) => state.applyRec);
+    const reEnableRec = useRecStore((state) => state.reEnableRec);
 
     const handleDismiss = async (e: React.MouseEvent) => {
         e.preventDefault();
@@ -38,6 +39,18 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
             toast.success(`Successfully flagged recommendation as applied.`);
         } catch {
             toast.error(`Failed to flag recommendation as applied.`);
+            return;
+        }
+    };
+
+    const handleReEnable = async (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        try {
+            await reEnableRec(recommendation.recommendationId);
+            toast.success(`Successfully re-enabled recommendation.`);
+        } catch {
+            toast.error(`Failed to re-enable recommendation.`);
             return;
         }
     };
@@ -122,6 +135,31 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
         return cards;
     };
 
+    const renderActionButtons = () => {
+        if (recommendation.status === "DISMISSED") {
+            return (
+                <Button type="button" variant="outline" onClick={handleReEnable}>
+                    Re-enable
+                </Button>
+            );
+        }
+
+        if (recommendation.status === "APPLIED") {
+            return "";
+        }
+
+        return (
+            <>
+                <Button type="button" variant="destructive" onClick={handleDismiss}>
+                    Dismiss
+                </Button>
+                <Button type="button" onClick={handleApply}>
+                    Apply
+                </Button>
+            </>
+        );
+    };
+
     return (
         <Card onClick={() => setOpen(!open)} className="cursor-pointer">
             <CardHeader className="flex flex-row justify-between items-center gap-2">
@@ -146,7 +184,7 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                             {getEvidenceCards().map((card, index) => (
                                 <div
-                                    key={index}
+                                    key={card.label}
                                     className="bg-muted/80 dark:bg-muted/60 rounded-lg p-4"
                                 >
                                     <p className="text-sm font-bold text-foreground mb-1">
@@ -163,12 +201,7 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
                     {getRecommendationDictionary(recommendation)}
 
                     <div className="flex flex-row gap-4 justify-end items-center">
-                        <Button type="button" onClick={handleApply}>
-                            Apply
-                        </Button>
-                        <Button type="button" variant={"destructive"} onClick={handleDismiss}>
-                            Dismiss
-                        </Button>
+                        {renderActionButtons()}
                     </div>
                 </CardContent>
             )}

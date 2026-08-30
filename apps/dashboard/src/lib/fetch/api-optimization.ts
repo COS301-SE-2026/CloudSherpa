@@ -61,3 +61,18 @@ export const applyRecommendation = async (recommendationId: string): Promise<Rec
         throw error;
     }
 };
+
+export const reEnableRecommendation = async (recommendationId: string): Promise<Recommendation> => {
+    try {
+        const data = await apiClient<Recommendation>(
+            `/optimization/recommendations/${recommendationId}/re-enable`,
+            {
+                method: "POST",
+            }
+        );
+        return data;
+    } catch (error) {
+        console.error("Failed to re-enable recommendation:", error);
+        throw error;
+    }
+};
