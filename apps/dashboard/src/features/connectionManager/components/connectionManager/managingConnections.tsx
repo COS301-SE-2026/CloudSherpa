@@ -228,13 +228,36 @@ export default function ManagingConnections() {
                         </h1>
                     </div>
 
-                    <Button
-                        onClick={handleAdd}
-                        className="text-sm px-3 py-1.5 h-auto bg-primary hover:bg-primary/90"
-                    >
-                        {" "}
-                        + add
-                    </Button>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button className="text-sm px-3 py-1.5 h-auto bg-primary hover:bg-primary/90">
+                                + add
+                            </Button>
+                        </DropdownMenuTrigger>
+
+                        <DropdownMenuContent align="end" className="w-40">
+                            <DropdownMenuItem
+                                onClick={() => router.push("/addConnection/aws")}
+                                className="cursor-pointer font-medium"
+                            >
+                                AWS Connection
+                            </DropdownMenuItem>
+
+                            <DropdownMenuItem
+                                onClick={() => router.push("/addConnection/azure")}
+                                className="cursor-pointer font-medium"
+                            >
+                                Azure Connection
+                            </DropdownMenuItem>
+
+                            <DropdownMenuItem
+                                onClick={() => router.push("/addConnection/gcp")}
+                                className="cursor-pointer font-medium"
+                            >
+                                GCP Connection
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
 
                 {/* this is for the provider tabs */}
