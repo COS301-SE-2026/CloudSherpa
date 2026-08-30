@@ -284,6 +284,10 @@ DECLARE
     c_gcp_service_name CONSTANT varchar(100) := 'service_name';
     c_gcp_bucket_name CONSTANT varchar(100) := 'bucket_name';
 
+    -- GCP metrics
+    c_gcp_network_bytes_received CONSTANT varchar(255) := 'Network bytes received';
+    c_gcp_network_bytes_sent CONSTANT varchar(255) := 'Network bytes sent';
+
     -- GCP units
     c_gcp_percent_unit CONSTANT varchar(50) := '10^2.%';
     c_gcp_count_unit CONSTANT varchar(50) := 'Count';
@@ -291,10 +295,18 @@ DECLARE
     c_gcp_seconds_unit CONSTANT varchar(50) := 's';
     c_gcp_milliseconds_unit CONSTANT varchar(50) := 'ms';
 
-    -- Azure Virtual Machines
+    -- Azure name
     c_azure_provider_enum CONSTANT public.provider_enum := 'AZURE';
-    c_azure_virtual_machine_service CONSTANT varchar(255) := 'Microsoft.Compute/virtualMachines';
+
+    -- Azure metrics
+    c_azure_network_bytes_received CONSTANT varchar(255) := 'Network bytes received';
+    c_azure_network_bytes_sent CONSTANT varchar(255) := 'Network bytes sent';
+
+    -- Azure identifier fields
     c_azure_resource_id CONSTANT varchar(100) := 'resource_id';
+
+    -- Azure service types
+    c_azure_virtual_machine_service CONSTANT varchar(255) := 'Microsoft.Compute/virtualMachines';
 BEGIN
 
     INSERT INTO public.offered_metric (
@@ -312,9 +324,9 @@ BEGIN
 ('GCP', c_gcp_gce_service, 'compute.googleapis.com/instance/cpu/reserved_cores',
  c_gcp_instance_id, c_gcp_count_unit, 'Reserved CPU cores'),
 ('GCP', c_gcp_gce_service, 'compute.googleapis.com/instance/network/received_bytes_count',
- c_gcp_instance_id, c_gcp_bytes_unit, 'Network bytes received'),
+ c_gcp_instance_id, c_gcp_bytes_unit, c_gcp_network_bytes_received),
 ('GCP', c_gcp_gce_service, 'compute.googleapis.com/instance/network/sent_bytes_count',
- c_gcp_instance_id, c_gcp_bytes_unit, 'Network bytes sent'),
+ c_gcp_instance_id, c_gcp_bytes_unit, c_gcp_network_bytes_sent),
 ('GCP', c_gcp_gce_service, 'compute.googleapis.com/instance/disk/read_bytes_count',
  c_gcp_instance_id, c_gcp_bytes_unit, 'Disk bytes read'),
 ('GCP', c_gcp_gce_service, 'compute.googleapis.com/instance/disk/write_bytes_count',
@@ -330,9 +342,9 @@ BEGIN
 ('GCP', c_gcp_gke_service, 'kubernetes.io/node/memory/used_bytes',
  c_gcp_cluster_name, c_gcp_bytes_unit, 'Memory used'),
 ('GCP', c_gcp_gke_service, 'kubernetes.io/node/network/received_bytes_count',
- c_gcp_cluster_name, c_gcp_bytes_unit, 'Network bytes received'),
+ c_gcp_cluster_name, c_gcp_bytes_unit, c_gcp_network_bytes_received),
 ('GCP', c_gcp_gke_service, 'kubernetes.io/node/network/sent_bytes_count',
- c_gcp_cluster_name, c_gcp_bytes_unit, 'Network bytes sent'),
+ c_gcp_cluster_name, c_gcp_bytes_unit, c_gcp_network_bytes_sent),
 ('GCP', c_gcp_gke_service, 'kubernetes.io/pod/restart_count',
  c_gcp_cluster_name, c_gcp_count_unit, 'Pod restart count'),
 
@@ -383,8 +395,8 @@ BEGIN
 
  -- Azure Virtual Machines
 (c_azure_provider_enum, c_azure_virtual_machine_service, 'Percentage CPU', c_azure_resource_id, NULL, 'CPU utilization'),
-(c_azure_provider_enum, c_azure_virtual_machine_service, 'Network In Total', c_azure_resource_id, NULL, 'Network bytes received'),
-(c_azure_provider_enum, c_azure_virtual_machine_service, 'Network Out Total', c_azure_resource_id, NULL, 'Network bytes sent'),
+(c_azure_provider_enum, c_azure_virtual_machine_service, 'Network In Total', c_azure_resource_id, NULL, c_azure_network_bytes_received),
+(c_azure_provider_enum, c_azure_virtual_machine_service, 'Network Out Total', c_azure_resource_id, NULL, c_azure_network_bytes_sent),
 (c_azure_provider_enum, c_azure_virtual_machine_service, 'Disk Read Bytes', c_azure_resource_id, NULL, 'Disk bytes read'),
 (c_azure_provider_enum, c_azure_virtual_machine_service, 'Disk Write Bytes', c_azure_resource_id, NULL, 'Disk bytes written'),
 (c_azure_provider_enum, c_azure_virtual_machine_service, 'Disk Read Operations/Sec', c_azure_resource_id, NULL, 'Disk read IOPS'),
