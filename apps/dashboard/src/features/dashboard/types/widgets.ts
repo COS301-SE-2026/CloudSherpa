@@ -48,7 +48,6 @@ export type ChartWidgetConfig = BaseWidgetConfig & {
     resourceId: string | null;
     metricName: string | null;
     metricType: MetricType | null;
-    metricName?: string;
 };
 
 export type KpiWidgetConfig = BaseWidgetConfig & {

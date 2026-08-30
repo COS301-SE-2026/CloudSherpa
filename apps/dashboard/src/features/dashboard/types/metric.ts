@@ -27,7 +27,6 @@ export type Metric = {
     timestamp: string;
     value: number;
 
-    metricName?: string;
     unit?: string;
     currency?: string;
     periodStart?: string;

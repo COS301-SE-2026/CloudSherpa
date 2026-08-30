@@ -36,7 +36,6 @@ export function ChartConfigFormInner({ ChartId }: Readonly<ChartConfigFormProps>
                   resourceId: null,
                   metricName: "",
                   metricType: null,
-                  metricName: undefined,
               };
 
     const [config, setConfig] = useState<ChartWidgetConfig>(resolvedWidgetConfig);
