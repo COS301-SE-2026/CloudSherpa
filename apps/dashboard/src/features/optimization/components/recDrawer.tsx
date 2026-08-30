@@ -32,7 +32,7 @@ export default function RecDrawer({ group, isOpen, setIsOpen }: Readonly<RecDraw
 
         const interval = setInterval(() => {
             fetchRecGroups();
-        }, 20000); // 10800000 every 3 hours
+        }, 10800000); // every 3 hours
 
         return () => clearInterval(interval);
     }, [isOpen, fetchRecGroups]);

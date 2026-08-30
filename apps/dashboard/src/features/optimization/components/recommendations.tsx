@@ -72,7 +72,7 @@ export default function Recommendations() {
         const interval = setInterval(() => {
             fetchRecGroups();
             fetchSummary();
-        }, 20000); // 10800000 every 3 hours
+        }, 10800000); // every 3 hours
 
         return () => clearInterval(interval);
     }, [fetchRecGroups, fetchSummary]);
