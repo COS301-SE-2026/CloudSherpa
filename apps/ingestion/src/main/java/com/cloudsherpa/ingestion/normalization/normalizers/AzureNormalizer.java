@@ -44,9 +44,12 @@ public class AzureNormalizer implements Normalizer {
     if (mnLower.contains("cost") || mnLower.contains("charge") || mnLower.contains("billing")) {
       metricType = "cost";
     } else if (mnLower.contains("latency")
+        || mnLower.contains("response time")
         || mnLower.contains("duration")
         || mnLower.contains("error")
-        || mnLower.contains("throttle")) {
+        || mnLower.contains("throttle")
+        || mnLower.contains("deadlock")
+        || mnLower.contains("availability")) {
       metricType = "performance";
     }
 
