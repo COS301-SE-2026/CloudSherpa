@@ -1,6 +1,7 @@
 package com.cloudsherpa.service.metrics;
 
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -56,9 +57,8 @@ public class MetricDisplayNameMapper {
   public static final String BYTES_UPLOADED = "Bytes uploaded";
   public static final String BYTES_DOWNLOADED = "Bytes downloaded";
 
-  private static final Map<String, String> DISPLAY_NAMES =
+  private static final Map<String, String> AWS_DISPLAY_NAMES =
       Map.ofEntries(
-          // AWS metrics from offered_metric
           Map.entry("CPUUtilization", CPU_UTILIZATION),
           Map.entry("NetworkIn", NETWORK_IN),
           Map.entry("NetworkOut", NETWORK_OUT),
@@ -91,9 +91,11 @@ public class MetricDisplayNameMapper {
           Map.entry("HealthStatus", HEALTH_STATUS),
           Map.entry("PercentageDiskSpaceUsed", PERCENTAGE_DISK_SPACE_USED),
           Map.entry("ReadIOPS", READ_IOPS),
-          Map.entry("WriteIOPS", WRITE_IOPS),
+          Map.entry("WriteIOPS", WRITE_IOPS));
 
-          // GCP metrics from offered_metric
+  // GCP metrics from offered_metric
+  private static final Map<String, String> GCP_DISPLAY_NAMES =
+      Map.ofEntries(
           Map.entry("compute.googleapis.com/instance/cpu/utilization", CPU_UTILIZATION),
           Map.entry("compute.googleapis.com/instance/cpu/reserved_cores", RESERVED_CPU_CORES),
           Map.entry("compute.googleapis.com/instance/network/received_bytes_count", NETWORK_IN),
@@ -123,6 +125,27 @@ public class MetricDisplayNameMapper {
           Map.entry("storage.googleapis.com/network/sent_bytes_count", BYTES_DOWNLOADED));
 
   public String toDisplayName(String canonicalName) {
-    return DISPLAY_NAMES.getOrDefault(canonicalName, canonicalName);
+    if (AWS_DISPLAY_NAMES.containsKey(canonicalName)) {
+      return AWS_DISPLAY_NAMES.get(canonicalName);
+    }
+    return GCP_DISPLAY_NAMES.getOrDefault(canonicalName, canonicalName);
+  }
+
+  private static final Map<String, String> AWS_CANONICAL_NAMES =
+      AWS_DISPLAY_NAMES.entrySet().stream()
+          .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey, (e, r) -> e));
+
+  private static final Map<String, String> GCP_CANONICAL_NAMES =
+      GCP_DISPLAY_NAMES.entrySet().stream()
+          .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey, (e, r) -> e));
+
+  // New provider-aware reverse lookup
+  public String toCanonicalName(String provider, String displayName) {
+    if ("AWS".equalsIgnoreCase(provider)) {
+      return AWS_CANONICAL_NAMES.getOrDefault(displayName, displayName);
+    } else if ("GCP".equalsIgnoreCase(provider)) {
+      return GCP_CANONICAL_NAMES.getOrDefault(displayName, displayName);
+    }
+    return displayName;
   }
 }

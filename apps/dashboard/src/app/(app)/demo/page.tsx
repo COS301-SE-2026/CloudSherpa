@@ -17,7 +17,7 @@ const MOCK_CHART_WIDGETS: WidgetConfig[] = [
         accountId: "stuff",
         resourceId: "demo-server-01",
         metricType: "cpu",
-        metricName: "cpu",
+        metricName: "CPU UTILIZATION",
     },
     {
         id: "mock-widget-2",
@@ -28,7 +28,7 @@ const MOCK_CHART_WIDGETS: WidgetConfig[] = [
         accountId: "stuff",
         resourceId: "demo-server-01",
         metricType: "memory",
-        metricName: "memory",
+        metricName: "MEMORY",
     },
 ];
 
@@ -65,6 +65,7 @@ export default function DemoPage() {
                     value: value,
                     resource_id: "demo-server-01",
                     metricType: "cpu",
+                    metricName: "CPU UTILIZATION",
                 };
 
                 return acc;
@@ -79,6 +80,7 @@ export default function DemoPage() {
                 value: 72.5,
                 resource_id: "demo-server-01",
                 metricType: "memory",
+                metricName: "MEMORY",
             },
         };
 

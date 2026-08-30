@@ -2,13 +2,17 @@ package com.cloudsherpa.service.analytics.service;
 
 import com.cloudsherpa.lib.dtos.ResourceMetricEntry;
 import com.cloudsherpa.lib.dtos.TimestampedNumericDataPoint;
+import com.cloudsherpa.lib.entities.NormalizedMetrics;
 import com.cloudsherpa.lib.projections.AggregatedMetric;
 import com.cloudsherpa.lib.projections.ResourceNames;
 import com.cloudsherpa.lib.repositories.NormalizedMetricsRepository;
 import com.cloudsherpa.lib.repositories.ResourceRepository;
+import com.cloudsherpa.service.analytics.dto.DownsampledSeriesRequestDto;
+import com.cloudsherpa.service.analytics.dto.MetricDto;
 import com.cloudsherpa.service.analytics.dto.ResourceMetricHistoricalResponseDto;
 import com.cloudsherpa.service.analytics.dto.ResourceMetricsGroupDto;
 import com.cloudsherpa.service.analytics.model.ResourceMetric;
+import com.cloudsherpa.service.metrics.MetricDisplayNameMapper;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -30,17 +34,20 @@ import org.springframework.web.server.ResponseStatusException;
 public class NormalizedMetricService {
   private final NormalizedMetricsRepository normalizedMetricsRepository;
   private final ResourceRepository resourceRepository;
+  private final MetricDisplayNameMapper metricMapper;
 
   private final Logger logger = LoggerFactory.getLogger(NormalizedMetricService.class);
 
   NormalizedMetricService(
       NormalizedMetricsRepository normalizedMetricsRepository,
-      ResourceRepository resourceRepository) {
+      ResourceRepository resourceRepository,
+      MetricDisplayNameMapper metricMapper) {
     this.normalizedMetricsRepository = normalizedMetricsRepository;
     this.resourceRepository = resourceRepository;
+    this.metricMapper = metricMapper;
   }
 
-  public List<AggregatedMetric> fetchHistoricalData(String from, String to, String interval) {
+  public List<MetricDto> fetchHistoricalData(String from, String to, String interval) {
     OffsetDateTime parsedFromDate;
     OffsetDateTime parsedToDate;
     String normalizedInterval = interval.toLowerCase(Locale.ROOT);
@@ -75,8 +82,23 @@ public class NormalizedMetricService {
             HttpStatus.BAD_REQUEST, "Invalid interval. Supported values: daily, weekly, monthly");
     }
 
-    return normalizedMetricsRepository.findAggregatedMetricsByPeriod(
-        parsedFromDate, parsedToDate, bucketWidth);
+    List<AggregatedMetric> rawMetrics =
+        normalizedMetricsRepository.findAggregatedMetricsByPeriod(
+            parsedFromDate, parsedToDate, bucketWidth);
+
+    return rawMetrics.stream()
+        .map(
+            m ->
+                new MetricDto(
+                    m.getResourceId(),
+                    m.getMetricType(),
+                    metricMapper.toDisplayName(m.getMetricName()),
+                    m.getMetricValue(),
+                    m.getUnit(),
+                    m.getPeriodStart().atOffset(ZoneOffset.UTC),
+                    m.getPeriodEnd().atOffset(ZoneOffset.UTC),
+                    m.getSampleCount()))
+        .toList();
   }
 
   public Map<String, String> fetchResourceNames() {
@@ -96,9 +118,15 @@ public class NormalizedMetricService {
 
     ZoneOffset offset = from.getOffset();
     Instant fromInstant = from.toInstant();
+
+    // get providr
+    String provider = resourceRepository.findProviderByResourceId(resourceId);
+
+    String canonMetricName = metricMapper.toCanonicalName(provider, metricType);
+
     List<TimestampedNumericDataPoint> fetchedResourceMetrics =
         normalizedMetricsRepository.getTimestampedMetricValuesAfterDate(
-            resourceId, metricType, fromInstant);
+            resourceId, canonMetricName, fromInstant);
 
     if (fetchedResourceMetrics.isEmpty()) {
       logger.info(
@@ -117,6 +145,11 @@ public class NormalizedMetricService {
     return new ResourceMetricHistoricalResponseDto(values, timestamps);
   }
 
+  public List<NormalizedMetrics> fetchDownsampledSeries(DownsampledSeriesRequestDto request) {
+    return normalizedMetricsRepository.getDownsampledNormalizedMetrics(
+        request.resourceId(), request.metricName(), request.from(), request.to());
+  }
+
   public List<ResourceMetricsGroupDto> fetchResourceMetrics() {
 
     List<ResourceMetricEntry> distinctResourceMetrics =
@@ -131,7 +164,8 @@ public class NormalizedMetricService {
           .computeIfAbsent(distinctResourceMetric.resourceId(), resourceId -> new ArrayList<>())
           .add(
               new ResourceMetric(
-                  distinctResourceMetric.metricName(), distinctResourceMetric.metricType()));
+                  metricMapper.toDisplayName(distinctResourceMetric.metricName()),
+                  distinctResourceMetric.metricType()));
     }
 
     metricsByResourceId.forEach(

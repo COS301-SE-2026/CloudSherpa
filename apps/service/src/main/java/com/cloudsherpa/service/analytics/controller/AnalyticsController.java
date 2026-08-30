@@ -3,6 +3,7 @@ package com.cloudsherpa.service.analytics.controller;
 import com.cloudsherpa.lib.entities.NormalizedMetrics;
 import com.cloudsherpa.lib.projections.AggregatedMetric;
 import com.cloudsherpa.service.analytics.dto.DownsampledSeriesRequestDto;
+import com.cloudsherpa.service.analytics.dto.MetricDto;
 import com.cloudsherpa.service.analytics.dto.ResourceMetricHistoricalRequestDto;
 import com.cloudsherpa.service.analytics.dto.ResourceMetricHistoricalResponseDto;
 import com.cloudsherpa.service.analytics.dto.ResourceMetricsGroupDto;
@@ -17,8 +18,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import java.math.BigDecimal;
-import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,12 +64,12 @@ public class AnalyticsController {
                         @ArraySchema(schema = @Schema(implementation = AggregatedMetric.class))))
       })
   @GetMapping("/historical")
-  public ResponseEntity<List<AggregatedMetric>> getHistoricalData(
+  public ResponseEntity<List<MetricDto>> getHistoricalData(
       @RequestParam("from") String fromDate,
       @RequestParam("to") String toDate,
       @RequestParam(name = "interval", defaultValue = "daily") String interval) {
     try {
-      List<AggregatedMetric> aggregatedMetrics =
+      List<MetricDto> aggregatedMetrics =
           normalizedMetricService.fetchHistoricalData(fromDate, toDate, interval);
 
       if (aggregatedMetrics.isEmpty()) {
@@ -141,7 +140,7 @@ public class AnalyticsController {
                         @ArraySchema(schema = @Schema(implementation = NormalizedMetrics.class))))
       })
   @PostMapping("/downsampled-historical-series")
-  public List<NormalizedMetrics> postMethodName(
+  public ResponseEntity<List<NormalizedMetrics>> postMethodName(
       @io.swagger.v3.oas.annotations.parameters.RequestBody(
               description = "POST parameters for downsampled historical metric series",
               required = true,
@@ -149,29 +148,14 @@ public class AnalyticsController {
                   @Content(schema = @Schema(implementation = DownsampledSeriesRequestDto.class)))
           @RequestBody
           DownsampledSeriesRequestDto request) {
-    OffsetDateTime start = OffsetDateTime.parse("2026-08-28T00:00:00Z");
 
-    return List.of(
-        new NormalizedMetrics.Builder()
-            .resourceId(UUID.fromString("00000000-0000-0000-0000-000000000001"))
-            .recordedAt(start)
-            .metricType("usage")
-            .metricName("CPUUtilization")
-            .metricValue(BigDecimal.valueOf(42.5))
-            .unit("percent")
-            .periodStart(start)
-            .periodEnd(start.plusMinutes(30))
-            .build(),
-        new NormalizedMetrics.Builder()
-            .resourceId(UUID.fromString("00000000-0000-0000-0000-000000000001"))
-            .recordedAt(start.plusHours(1))
-            .metricType("usage")
-            .metricName("CPUUtilization")
-            .metricValue(BigDecimal.valueOf(57.25))
-            .unit("percent")
-            .periodStart(start.plusMinutes(30))
-            .periodEnd(start.plusHours(1))
-            .build());
+    if (request.from().isAfter(request.to())) {
+      return ResponseEntity.badRequest().build();
+    }
+
+    List<NormalizedMetrics> downsampledSeries =
+        normalizedMetricService.fetchDownsampledSeries(request);
+    return ResponseEntity.ok().body(downsampledSeries);
   }
 
   @Operation(summary = "For each resource return available/recorded metrics")

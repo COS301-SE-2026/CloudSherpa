@@ -64,10 +64,13 @@ public class BillingAnalyticsService {
                 entry ->
                     new BillingForecastValue(
                         entry.getValue(),
-                        entry
-                            .getValue()
-                            .divide(cumalativeForecastValue, 5, RoundingMode.HALF_UP)
-                            .multiply(BigDecimal.valueOf(100)),
+                        // If the total is 0, no charge can form any percentage of the total
+                        !cumalativeForecastValue.equals(BigDecimal.valueOf(0))
+                            ? entry
+                                .getValue()
+                                .divide(cumalativeForecastValue, 5, RoundingMode.HALF_UP)
+                                .multiply(BigDecimal.valueOf(100))
+                            : BigDecimal.valueOf(0),
                         getChargeLabel(entry.getKey()))));
   }
 

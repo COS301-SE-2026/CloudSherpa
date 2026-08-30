@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/atoms/card";
 import { LineChart } from "@/features/dashboard/components/widgetGrid/widgets/charts/LineChart";
 import { GaugeChart } from "@/features/dashboard/components/widgetGrid/widgets/charts/GaugeChart";
-import { MetricType } from "@/features/dashboard/types/metric";
 import { Button } from "@/components/atoms/button";
 import { ChartType, ChartWidgetConfig } from "@/features/dashboard/types/widgets";
 import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
@@ -21,7 +20,7 @@ import { useFetchMetricHistoricalData } from "@/features/dashboard/hooks/useFetc
 
 interface BaseChartProps {
     resourceId: string;
-    metricType: MetricType;
+    metricType: string;
     onDataStatusChange?: (hasData: boolean) => void;
 }
 
@@ -41,7 +40,7 @@ export function ChartWidget({
     preview = false,
     isEditMode = false,
 }: Readonly<WidgetProps>) {
-    const { chartType, displayName, resourceId, metricType, id, metricName } = config;
+    const { chartType, displayName, resourceId, metricName, id } = config;
     const ChartComponent = CHART_COMPONENTS[chartType];
     const [hasNoData, setHasNoData] = useState(false);
     const router = useRouter();
@@ -108,7 +107,7 @@ export function ChartWidget({
             );
         }
 
-        if (!resourceId || !metricType) {
+        if (!resourceId || !metricName) {
             return (
                 <div className="flex flex-col  h-full items-center justify-center gap-2">
                     {isEditMode ? (
@@ -130,7 +129,7 @@ export function ChartWidget({
         return (
             <ChartComponent
                 resourceId={resourceId}
-                metricType={metricType}
+                metricType={metricName}
                 onDataStatusChange={(hasData) => setHasNoData(!hasData)}
             />
         );

@@ -73,7 +73,7 @@ function toMetricType(metricName: string): MetricType {
 }
 
 function metricSeriesKey(metric: Metric): string {
-    return `${metric.resource_id}:${metric.metricType}`;
+    return `${metric.resource_id}:${metric.metricName}`;
 }
 
 function upsertMetric(
@@ -105,6 +105,7 @@ export const useMetricStore = create<MetricStore>((set, get) => ({
 
         const metric: Metric = {
             resource_id: metricDto.resourceId,
+            metricName: metricDto.metricName,
             metricType,
             timestamp: metricDto.periodStart,
             value: metricDto.metricValue,
@@ -176,22 +177,23 @@ export const useMetricStore = create<MetricStore>((set, get) => ({
     getMetricList: () => {
         const { seriesByKey } = get();
 
-        const mapMetricTypes: Record<string, Set<MetricType>> = {};
+        const mapMetricNames: Record<string, Set<string>> = {};
 
-        Object.keys(seriesByKey).forEach((key) => {
-            const resourceId = key.split(":")[0];
+        Object.values(seriesByKey).forEach((series) => {
+            Object.values(series).forEach((metric) => {
+                const resourceId = metric.resource_id;
 
-            if (!mapMetricTypes[resourceId]) {
-                mapMetricTypes[resourceId] = new Set<MetricType>();
-            }
-
-            mapMetricTypes[resourceId].add(key.split(":")[1] as MetricType);
+                if (!mapMetricNames[resourceId]) {
+                    mapMetricNames[resourceId] = new Set<string>();
+                }
+                mapMetricNames[resourceId].add(metric.metricName);
+            });
         });
 
-        const finalArray: Record<string, MetricType[]> = {};
+        const finalArray: Record<string, string[]> = {};
 
-        for (const [key, value] of Object.entries(mapMetricTypes)) {
-            finalArray[key] = Array.from(value);
+        for (const [key, metricNames] of Object.entries(mapMetricNames)) {
+            finalArray[key] = Array.from(metricNames);
         }
 
         return finalArray;

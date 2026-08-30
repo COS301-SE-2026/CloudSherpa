@@ -1,5 +1,6 @@
 import http from 'k6/http';
 import { sleep, check } from 'k6';
+import { loginSetup } from './common/utils/login-setup.js';
 
 const BASE_URL = __ENV.BASE_URL ?? 'http://host.docker.internal:8083';
 
@@ -11,23 +12,8 @@ export const options = {
   duration: '30s',
 };
 
-const credentials = {
-  email: 'nfr-test-user@nfr-test.com',
-  password: 'nfr-test-pass@123!'
-}
-
-const params = {
-    headers: {
-        'Content-Type': 'application/json',
-    },
-};
-
 export function setup() {
-    const res = http.post(`${BASE_URL}/auth/login`, JSON.stringify(credentials), params);
-
-    return {
-        authToken: res.cookies['auth_token'][0].value
-    };
+    return loginSetup();
 }
 
 export default function (data) { // NOSONAR how k6 expects it

@@ -22,6 +22,7 @@ export type MetricType =
 
 export type Metric = {
     resource_id: string;
+    metricName: string;
     metricType: MetricType;
     timestamp: string;
     value: number;
@@ -55,7 +56,7 @@ export type MetricStore = {
     clearStore: () => void;
     getResourceList: () => string[];
     // Maps resource id to its available metrics
-    getMetricList: () => Record<string, MetricType[]>;
+    getMetricList: () => Record<string, string[]>;
 };
 
 export function metricSeriesToArray(series?: MetricSeries): Metric[] {

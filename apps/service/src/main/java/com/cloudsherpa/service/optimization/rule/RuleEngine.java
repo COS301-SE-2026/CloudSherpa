@@ -1,9 +1,11 @@
 package com.cloudsherpa.service.optimization.rule;
 
 import com.cloudsherpa.lib.entities.OptimizationMetricStatistics;
+import com.cloudsherpa.lib.entities.OptimizationRecommendation;
 import com.cloudsherpa.lib.entities.ProviderEnum;
 import com.cloudsherpa.lib.entities.Resource;
 import com.cloudsherpa.lib.repositories.OptimizationMetricStatisticsRepository;
+import com.cloudsherpa.lib.repositories.OptimizationRecommendationRepository;
 import com.cloudsherpa.lib.repositories.ResourceRepository;
 import com.cloudsherpa.service.optimization.rule.model.MetricThresholdCondition;
 import com.cloudsherpa.service.optimization.rule.model.OptimizationRule;
@@ -26,16 +28,19 @@ public class RuleEngine {
   private final ConditionEvaluator conditionEvaluator;
   private final OptimizationMetricStatisticsRepository statisticsRepository;
   private final ResourceRepository resourceRepository;
+  private final OptimizationRecommendationRepository recommendationRepository;
 
   public RuleEngine(
       RuleSet ruleSet,
       ConditionEvaluator conditionEvaluator,
       OptimizationMetricStatisticsRepository statisticsRepository,
-      ResourceRepository resourceRepository) {
+      ResourceRepository resourceRepository,
+      OptimizationRecommendationRepository recommendationRepository) {
     this.ruleSet = ruleSet;
     this.conditionEvaluator = conditionEvaluator;
     this.statisticsRepository = statisticsRepository;
     this.resourceRepository = resourceRepository;
+    this.recommendationRepository = recommendationRepository;
   }
 
   // Delegates to the ruleset
@@ -205,6 +210,13 @@ public class RuleEngine {
     List<RecommendationCandidate> candidates = new ArrayList<>();
 
     for (UUID resourceId : matchingResourceIds) {
+      Optional<OptimizationRecommendation> dismissed =
+          recommendationRepository.findDismissedByResourceIdAndRuleId(resourceId, rule.ruleId());
+
+      if (dismissed.isPresent()) {
+        continue;
+      }
+
       Map<String, Object> evidence = createEvidence(rule, resourceId, statisticsByCondition);
 
       candidates.add(
