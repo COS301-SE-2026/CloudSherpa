@@ -66,6 +66,22 @@ async function configureChartWidgetName(page: Page) {
     return uniqueWidgetName;
 }
 
+async function configureKPIWidgetName(page: Page) {
+    const uniqueWidgetName = `testKPI-${Date.now()}`;
+    await page.getByLabel("kpi display name").fill(uniqueWidgetName);
+    await page.getByRole("button", { name: "Save KPI" }).click();
+    await expect(page.getByText(uniqueWidgetName)).toBeVisible();
+    return uniqueWidgetName;
+}
+
+async function configureChartWidgetName(page: Page) {
+    const uniqueWidgetName = `testChart-${Date.now()}`;
+    await page.getByRole("textbox").fill(uniqueWidgetName);
+    await page.getByRole("button", { name: "Save Chart" }).click();
+    await expect(page.getByText(uniqueWidgetName)).toBeVisible();
+    return uniqueWidgetName;
+}
+
 test.describe("dashboard", () => {
     test.beforeEach(async ({ page }) => {
         await registerAndLoginNewUser(page);
@@ -118,8 +134,20 @@ test.describe("dashboard", () => {
         //create new chart widget
         await createNewChartWidget(page);
         //configure new chart widget
-        await page.getByLabel("configure new widget button").click();
+        await page.getByLabel("chart options button").click();
+        await page.getByRole("menuitem", { name: "Configure Widget" }).click();
         await configureChartWidgetName(page);
+    });
+
+    test("Configure name KPI Widget", async ({ page }) => {
+        //create dash
+        await createNewDashboard(page);
+        //create new chart widget
+        await createNewKPIWidget(page);
+        //configure new chart widget
+        await page.getByLabel("chart options button").click();
+        await page.getByRole("menuitem", { name: "Configure Widget" }).click();
+        await configureKPIWidgetName(page);
     });
 
     test("Configure name Chart Widget v2", async ({ page }) => {
@@ -130,5 +158,13 @@ test.describe("dashboard", () => {
         await page.getByLabel("chart widget").first().click({ button: "right" });
         await page.getByRole("menuitem", { name: "Configure Widget" }).click();
         await configureChartWidgetName(page);
+    });
+
+    test("Delete chart widget", async ({ page }) => {
+        //create dash
+        await createNewDashboard(page);
+        //create new chart widget
+        await createNewChartWidget(page);
+        await deleteChartWidget(page);
     });
 });
