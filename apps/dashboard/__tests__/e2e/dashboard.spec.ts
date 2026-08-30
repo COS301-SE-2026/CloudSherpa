@@ -18,12 +18,9 @@ async function registerAndLoginNewUser(page: Page) {
     await page.getByRole("button", { name: "Sign up" }).click();
 
     //auto logs in
-    await expect(
-        page.getByRole("alert").filter({ hasText: "Successful Registration" })
-    ).toBeVisible();
 
-    await page.waitForURL("**/dashboard", { timeout: 15000 });
-    await expect(page.getByTestId("dashboard")).toBeVisible({ timeout: 15000 });
+    await page.waitForURL(/.*\/dashboard.*/, { timeout: 15000 });
+    await expect(page.getByLabel("User Email")).toHaveText(email);
 
     return { email, password };
 }
@@ -43,6 +40,13 @@ async function createNewChartWidget(page: Page) {
     await page.getByRole("button", { name: "Add Chart" }).click();
     await page.getByRole("button", { name: "Save" }).click();
     await expect(page.getByText("New Chart").first()).toBeVisible();
+}
+
+async function createNewKPIWidget(page: Page) {
+    await page.getByLabel("editbtn").click();
+    await page.getByRole("button", { name: "Add KPI" }).click();
+    await page.getByRole("button", { name: "Save" }).click();
+    await expect(page.getByText("New KPI").first()).toBeVisible();
 }
 
 async function createPreConfiguredChartWidget(page: Page) {
@@ -92,12 +96,20 @@ test.describe("dashboard", () => {
         await expect(page.getByText("New Chart")).not.toBeVisible();
     });
 
-    test("Create Dash & widget", async ({ page }) => {
+    test("Create Dash & chart widget", async ({ page }) => {
         //create dash
         await createNewDashboard(page);
         //create chart widget
         await createNewChartWidget(page);
         await expect(page.getByText("New Chart")).toBeVisible();
+    });
+
+    test("Create Dash & KPI widget", async ({ page }) => {
+        //create dash
+        await createNewDashboard(page);
+        //create KPI widget
+        await createNewKPIWidget(page);
+        await expect(page.getByText("New KPI")).toBeVisible();
     });
 
     test("Configure name Chart Widget", async ({ page }) => {
