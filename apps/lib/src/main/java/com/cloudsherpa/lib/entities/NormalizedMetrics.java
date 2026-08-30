@@ -107,6 +107,10 @@ public class NormalizedMetrics {
     return periodEnd;
   }
 
+  public void setMetricName(String metricName) {
+      this.metricName = metricName;
+  }
+
   public static class Builder {
     private UUID resourceId;
     private OffsetDateTime recordedAt;
