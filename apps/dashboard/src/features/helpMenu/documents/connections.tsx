@@ -75,8 +75,8 @@ const Gcp_INS = creatingIns([
         name: "Add a GCP cloud provider",
         description: "Follow the steps of the wizard to add GCP as a cloud provider",
         details: [
-            "On the Connection Manager page, click on the add button which is located on the top right hand side corner of the page",
-            "Follow the steps of the wizard to add you GCP connection",
+            "On the Connection Manager page, click on the add button which is located on the top right-hand side corner of the page",
+            "Follow the steps of the wizard to add your GCP connection",
         ],
     },
 
@@ -93,8 +93,8 @@ const Gcp_INS = creatingIns([
         name: "Select your services and resources",
         description: "Choose which services and resources you would like CloudSherpa to monitor",
         details: [
-            "Select the services you would and you would then get a list of permissions that you would need to approve of and then proceed to step 3",
-            "You get all of the resources associated with that service and you can choose which ones you would like to monitor",
+            "Select the services that would be monitored by CloudSherpa and you would then get a list of permissions that you would need to grant for your newly created GCP IAM user and then proceed to step 3",
+            "Once all of the resources associated with your selected services have been discovered, you can choose which ones you would like to monitor",
             "The table can be filtered by the names of the resources or you can search for a resource using the toolbar",
         ],
     },
