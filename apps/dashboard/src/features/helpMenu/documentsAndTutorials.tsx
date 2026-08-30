@@ -244,7 +244,7 @@ function DocumentsAndTutorialsSuspense() {
 
     const [isPopUpOpen, setIsPopUpOpen] = useState(false);
 
-    const [selectedProvider, setSelectedProvider] = useState<string | null>(null);
+    const selectedProvider = useRef<string | null>(null);
 
     const searchDocument = useMemo(() => {
         if (!search.trim()) {
@@ -315,7 +315,7 @@ function DocumentsAndTutorialsSuspense() {
     };
 
     const handlingSelectedProvider = (provider: string) => {
-        setSelectedProvider(provider);
+        selectedProvider.current = provider;
         router.push(`/helpMenu/documents/connections?forProviders=${provider}`);
     };
 
