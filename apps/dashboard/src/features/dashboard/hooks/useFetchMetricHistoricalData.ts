@@ -56,11 +56,8 @@ export function useFetchMetricHistoricalData({
 
         request.current = keyForRequest;
 
-        let cancelled = false;
-
         async function fetchHistoricalData() {
             setIsLoading(true);
-
             setForErrors(null);
 
             try {
@@ -78,9 +75,7 @@ export function useFetchMetricHistoricalData({
                     }
                 );
 
-                console.log("Downsampled historical metric response:", response);
-
-                if (cancelled) {
+                if (request.current !== keyForRequest) {
                     return;
                 }
 
@@ -92,7 +87,7 @@ export function useFetchMetricHistoricalData({
                 const metrics: Metric[] = response.map((item) => ({
                     resource_id: item.resourceId,
                     metricType: item.metricType as MetricType,
-                    timestamp: item.recordedAt || item.periodStart,
+                    timestamp: item.periodStart,
                     value: item.metricValue || 0,
                     metricName: item.metricName,
                     unit: item.unit,
@@ -103,7 +98,7 @@ export function useFetchMetricHistoricalData({
 
                 setMetricSeries(resourceId, metricName, metrics);
             } catch (error) {
-                if (cancelled) {
+                if (request.current !== keyForRequest) {
                     return;
                 }
 
@@ -113,17 +108,13 @@ export function useFetchMetricHistoricalData({
 
                 setMetricSeries(resourceId, metricName, []);
             } finally {
-                if (!cancelled) {
+                if (request.current === keyForRequest) {
                     setIsLoading(false);
                 }
             }
         }
 
         void fetchHistoricalData();
-
-        return () => {
-            cancelled = true;
-        };
     }, [resourceId, fromMs, toMs, metricName, setMetricSeries]);
 
     return { isLoading, forErrors };
