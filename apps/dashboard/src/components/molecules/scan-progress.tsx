@@ -5,7 +5,7 @@ interface ScanProgressProps {
     currentScanningService?: string | null;
 }
 
-export function ScanProgress({ progress, currentScanningService }: ScanProgressProps) {
+export function ScanProgress({ progress, currentScanningService }: Readonly<ScanProgressProps>) {
     return (
         <div className="space-y-2 w-full pt-4">
             <div className="flex justify-between text-sm text-muted-foreground font-medium">
