@@ -4,11 +4,9 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/atoms/car
 import { useState } from "react";
 import { getRecommendationDictionary } from "@/features/optimization/utils/recommendationDictionary";
 import { Button } from "@/components/atoms/button";
-import RecommendationCardHero from "@/features/optimization/components/recCardHero";
 import { useRecStore } from "@/features/optimization/stores/useRecStore";
 import { Badge } from "@/components/atoms/badge";
 import { toast } from "sonner";
-import { formatEvidenceText } from "@/features/optimization/utils/formatEvidence";
 
 interface RecommendationCardProps {
     recommendation: Recommendation;
@@ -16,12 +14,6 @@ interface RecommendationCardProps {
 
 export default function RecommendationCard({ recommendation }: Readonly<RecommendationCardProps>) {
     const [open, setOpen] = useState(false);
-
-    const evidence = Object.entries(recommendation.evidence || {}).find(
-        ([key]) => key !== "completenessRatio"
-    );
-
-    const evidenceText = evidence ? formatEvidenceText(evidence[0], evidence[1]) : "N/A";
 
     const dismissRec = useRecStore((state) => state.dismissRec);
     const applyRec = useRecStore((state) => state.applyRec);
@@ -78,6 +70,58 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
         }
     };
 
+    const parseEvidenceKey = (key: string) => {
+        const parts = key.split("_");
+
+        if (parts.length < 3) return null;
+
+        const timeframe = parts.pop()!;
+        const aggregation = parts.pop()!;
+
+        const metricName = parts.join(" ");
+
+        if (!timeframe.endsWith("d")) return null;
+
+        return { metricName, aggregation, timeframe };
+    };
+
+    const isPercentageMetric = (metricName: string): boolean => {
+        const nameLower = metricName.toLowerCase();
+        return (
+            nameLower.includes("utilization") ||
+            nameLower.includes("percentage") ||
+            nameLower.includes("pressure")
+        );
+    };
+
+    const getEvidenceCards = () => {
+        if (!recommendation?.evidence) return [];
+
+        const cards: Array<{ label: string; value: string; subtitle: string }> = [];
+
+        for (const [key, value] of Object.entries(recommendation.evidence)) {
+            const parsed = parseEvidenceKey(key);
+            if (!parsed) continue;
+
+            const { metricName, aggregation, timeframe } = parsed;
+
+            const formattedValue = typeof value === "number" ? value.toFixed(2) : String(value);
+            const displayValue = isPercentageMetric(metricName)
+                ? `${formattedValue}%`
+                : formattedValue;
+
+            const aggDisplay = aggregation.charAt(0).toUpperCase() + aggregation.slice(1);
+            const label = `${metricName} (${aggDisplay})`;
+
+            const days = timeframe.replace("d", "");
+            const subtitle = `Over the last ${days} day${days === "1" ? "" : "s"}`;
+
+            cards.push({ label, value: displayValue, subtitle });
+        }
+
+        return cards;
+    };
+
     return (
         <Card onClick={() => setOpen(!open)} className="cursor-pointer">
             <CardHeader className="flex flex-row justify-between items-center gap-2">
@@ -95,16 +139,24 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
             </CardHeader>
             {open && (
                 <CardContent className="space-y-4">
-                    {/* hero section */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                        <RecommendationCardHero
-                            value={recommendation.actionType}
-                            className="text-chart-1"
-                        />
-                        <RecommendationCardHero
-                            value={evidenceText}
-                            className="text-chart-4 truncate"
-                        />
+                    <div>
+                        <h3 className="text-sm font-semibold text-muted-foreground mb-3">
+                            Monitored Evidence
+                        </h3>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                            {getEvidenceCards().map((card, index) => (
+                                <div
+                                    key={index}
+                                    className="bg-muted/80 dark:bg-muted/60 rounded-lg p-4"
+                                >
+                                    <p className="text-sm font-bold text-foreground mb-1">
+                                        {card.label}
+                                    </p>
+                                    <p className="text-2xl font-bold mb-1">{card.value}</p>
+                                    <p className="text-xs text-muted-foreground">{card.subtitle}</p>
+                                </div>
+                            ))}
+                        </div>
                     </div>
 
                     {/* explanation */}
