@@ -157,19 +157,13 @@ public class NormalizedMetricService {
     String canonMetricName =
         metricMapper.toCanonicalName(provider.toString(), request.metricName());
 
-    logger.info("Received request {}", request);
-    logger.info("canonMetricName {}", canonMetricName);
-
     List<NormalizedMetrics> response =
         normalizedMetricsRepository.getDownsampledNormalizedMetrics(
             request.resourceId(), canonMetricName, request.from(), request.to());
 
     response.forEach(
-        metric -> {
-          metric.setMetricName(metricMapper.toDisplayName(metric.getMetricName()));
-        });
+        metric -> metric.setMetricName(metricMapper.toDisplayName(metric.getMetricName())));
 
-    logger.info("{}", response.size());
     return normalizedMetricsRepository.getDownsampledNormalizedMetrics(
         request.resourceId(), canonMetricName, request.from(), request.to());
   }
