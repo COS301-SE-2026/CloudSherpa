@@ -34,8 +34,8 @@ export default function UsageToolbar() {
         setAccount,
         resourceId,
         setResource,
-        metricType,
-        setMetricType,
+        metricName,
+        setMetricName,
         accounts,
         resources,
         isFetching,
@@ -102,8 +102,8 @@ export default function UsageToolbar() {
                 value: metric,
                 label: metric.toUpperCase(),
             }))}
-            value={metricType}
-            onSelect={(val) => setMetricType(val as MetricType)}
+            value={metricName}
+            onSelect={(val) => setMetricName(val)}
             placeholder={"Select Metric..."}
             disabled={!resourceId || isFetching}
             widthVariant={width}
