@@ -3,7 +3,7 @@ import { timeMs } from "@/lib/timeUtils";
 
 type TimeValuePoint = [number, number];
 
-function toBrowserTimezoneTimestamp(isoString: string): number {
+export function toBrowserTimezoneTimestamp(isoString: string): number {
     const timestamp = new Date(isoString).getTime();
     const timezoneOffsetMs = new Date(timestamp).getTimezoneOffset() * timeMs.minuteMs;
     return timestamp - timezoneOffsetMs;

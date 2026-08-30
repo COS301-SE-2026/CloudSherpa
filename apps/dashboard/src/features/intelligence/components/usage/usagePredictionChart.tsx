@@ -4,7 +4,10 @@ import { useMemo, useRef } from "react";
 import ReactECharts from "echarts-for-react";
 import { AlertCircleIcon, RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
 import type { CallbackDataParams } from "echarts/types/dist/shared";
-import { formatChartData } from "@/features/intelligence/hooks/formatChartData";
+import {
+    formatChartData,
+    toBrowserTimezoneTimestamp,
+} from "@/features/intelligence/hooks/formatChartData";
 import { useChartTheme } from "@/features/dashboard/hooks/useChartTheme";
 import { useUsageIntelligenceConfigStore } from "@/features/intelligence/stores/useUsageIntelligenceConfigStore";
 import { useUsageIntelligenceStore } from "@/features/intelligence/stores/useUsageIntelligenceStore";
@@ -62,7 +65,7 @@ export default function UsagePredictionChart({
         if (usageForecast && usageForecast.horizonTimestamps.length > 0) {
             const lastForecastIndex = usageForecast.horizonTimestamps.length - 1;
             const lastForecastIso = usageForecast.horizonTimestamps[lastForecastIndex];
-            maxTime = new Date(lastForecastIso).getTime();
+            maxTime = toBrowserTimezoneTimestamp(lastForecastIso);
         } else {
             maxTime = now + timeMs.dayMs;
         }
