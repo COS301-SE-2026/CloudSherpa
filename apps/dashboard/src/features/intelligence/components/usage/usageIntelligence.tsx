@@ -48,9 +48,9 @@ function generateMockForecast(days: number): UsageForecastData {
 export default function UsageIntelligence() {
     useFetchMetrics();
     const resourceId = useUsageIntelligenceConfigStore((state) => state.resourceId);
-    const metricType = useUsageIntelligenceConfigStore((state) => state.metricType);
+    const metricName = useUsageIntelligenceConfigStore((state) => state.metricName);
 
-    const currentUnit = getMetricUnit(metricType);
+    // const currentUnit = getMetricUnit(metricType);
 
     const setUsageForecast = useUsageIntelligenceStore((state) => state.setUsageForecast);
 
@@ -59,8 +59,8 @@ export default function UsageIntelligence() {
 
     //data
     const usageForecast = useUsageIntelligenceStore((state) => {
-        if (!resourceId || !metricType) return null;
-        return state.forecasts[resourceId]?.[metricType] ?? null;
+        if (!resourceId || !metricName) return null;
+        return state.forecasts[resourceId]?.[metricName] ?? null;
     });
 
     const { historicalUsageSeries, historicalUsageError, isHistoricalUsageLoading } =
@@ -86,7 +86,7 @@ export default function UsageIntelligence() {
 
         // Within this scope, typescript knows these are non null
         const selectedResourceId = resourceId;
-        const selectedMetricType = metricType;
+        const selectedMetricType = metricName;
 
         async function loadForecast() {
             const forecastData = await requestUsageForecast(selectedResourceId, selectedMetricType);
@@ -98,7 +98,7 @@ export default function UsageIntelligence() {
         }
 
         void loadForecast();
-    }, [resourceId, metricType, requestUsageForecast, setUsageForecast]);
+    }, [resourceId, metricName, requestUsageForecast, setUsageForecast]);
 
     // Loading state
     const loading: boolean = isUsageForecastResponseLoading || isHistoricalUsageLoading;
@@ -122,7 +122,7 @@ export default function UsageIntelligence() {
     }
 
     const renderChart = () => {
-        if (resourceId && metricType) {
+        if (resourceId && metricName) {
             return (
                 <UsagePredictionChart
                     historicalUsageSeries={historicalUsageSeries}
@@ -162,7 +162,7 @@ export default function UsageIntelligence() {
                 <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                     <SummaryCard
                         title="Max Usage"
-                        unit={currentUnit}
+                        // unit={currentUnit}
                         Icon={TrendingUp}
                         pastUsage={pastSummary.max}
                         predictedUsage={forecastSummary.max}
@@ -172,7 +172,7 @@ export default function UsageIntelligence() {
                     />
                     <SummaryCard
                         title="Min Usage"
-                        unit={currentUnit}
+                        // unit={currentUnit}
                         Icon={TrendingDown}
                         pastUsage={pastSummary.min}
                         predictedUsage={forecastSummary.min}
@@ -182,7 +182,7 @@ export default function UsageIntelligence() {
                     />
                     <SummaryCard
                         title="Average Usage"
-                        unit={currentUnit}
+                        // unit={currentUnit}
                         Icon={Minus}
                         pastUsage={pastSummary.avg}
                         predictedUsage={forecastSummary.avg}
