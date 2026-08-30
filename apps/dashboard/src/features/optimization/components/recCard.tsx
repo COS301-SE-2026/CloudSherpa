@@ -50,21 +50,48 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
         }
     };
 
-    const confidence =
-        recommendation.evidence?.completenessRatio !== undefined
-            ? `${(Number(recommendation.evidence.completenessRatio) * 100).toFixed(0)}%`
-            : "N/A";
+    const getStatusBadgeClass = () => {
+        switch (recommendation.status) {
+            case "ACTIVE":
+                return "bg-green-600 text-white";
+            case "APPLIED":
+                return "bg-blue-600 text-white";
+            case "DISMISSED":
+                return "bg-red-600 text-white";
+            default:
+                return "variant-secondary";
+        }
+    };
+
+    const getActionTextColor = () => {
+        switch (recommendation.actionType) {
+            case "TERMINATE":
+                return "text-red-600";
+            case "MODERNIZE":
+                return "text-blue-600";
+            case "DOWNSIZE":
+                return "text-orange-600";
+            case "SUSPEND":
+                return "text-yellow-600";
+            default:
+                return "";
+        }
+    };
 
     return (
-        <Card onClick={() => setOpen(!open)}>
-            <CardHeader className="flex flex-row justify-between">
-                <CardTitle>
-                    {recommendation.resourceDisplayName ?? recommendation.resourceId}
-                </CardTitle>
-                <div className="flex flex-col md:flex-row gap-2">
-                    <Badge>{recommendation.actionType}</Badge>
-                    <Badge variant="secondary">{recommendation.status}</Badge>
+        <Card onClick={() => setOpen(!open)} className="cursor-pointer">
+            <CardHeader className="flex flex-row justify-between items-center gap-2">
+                <div className="flex flex-row items-center gap-2">
+                    <span className={`font-bold text-lg ${getActionTextColor()}`}>
+                        {recommendation.actionType}
+                    </span>
+                    <CardTitle className="text-lg">
+                        {recommendation.resourceDisplayName ?? recommendation.resourceId}
+                    </CardTitle>
                 </div>
+                <Badge className={`text-sm px-3 py-1 ${getStatusBadgeClass()}`}>
+                    {recommendation.status}
+                </Badge>
             </CardHeader>
             {open && (
                 <CardContent className="space-y-4">
