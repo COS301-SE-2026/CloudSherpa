@@ -12,16 +12,7 @@ import RecommendationCard from "@/features/optimization/components/recCard";
 import { useState, useMemo } from "react";
 import { X, Search } from "lucide-react";
 import { Input } from "@/components/atoms/input";
-import Dropdown from "@/components/molecules/dropdown";
 import { Tabs, TabsList, TabsTrigger } from "@/components/atoms/tabs";
-
-const ACTIONS = [
-    { value: "ALL", label: "All Actions" },
-    { value: "TERMINATE", label: "Terminate" },
-    { value: "DOWNSIZE", label: "Downsize" },
-    { value: "MODERNIZE", label: "Modernize" },
-    { value: "SUSPEND", label: "Suspend" },
-];
 
 interface RecDrawer {
     group: RecommendationGroup;
@@ -31,16 +22,18 @@ interface RecDrawer {
 
 export default function RecDrawer({ group, isOpen, setIsOpen }: Readonly<RecDrawer>) {
     const [searchQuery, setSearchQuery] = useState("");
-    const [actionFilter, setActionFilter] = useState("ALL");
-    const [statusTab, setStatusTab] = useState<"active" | "dismissed">("active");
+    const [statusTab, setStatusTab] = useState<"active" | "applied" | "dismissed">("active");
 
     const filteredRecommendations = useMemo(() => {
-        let filtered = group.recommendations.filter((rec) =>
-            statusTab === "dismissed" ? rec.status === "DISMISSED" : rec.status !== "DISMISSED"
-        );
-        if (actionFilter && actionFilter !== "ALL") {
-            filtered = filtered.filter((rec) => rec.actionType === actionFilter);
-        }
+        let filtered = group.recommendations.filter((rec) => {
+            if (statusTab === "dismissed") {
+                return rec.status === "DISMISSED";
+            } else if (statusTab === "applied") {
+                return rec.status === "APPLIED";
+            } else {
+                return rec.status === "ACTIVE";
+            }
+        });
 
         if (searchQuery.trim()) {
             const lowerCaseQuery = searchQuery.toLowerCase();
@@ -55,9 +48,10 @@ export default function RecDrawer({ group, isOpen, setIsOpen }: Readonly<RecDraw
         }
 
         return filtered;
-    }, [searchQuery, actionFilter, group.recommendations, statusTab]);
+    }, [searchQuery, group.recommendations, statusTab]);
 
-    const activeCount = group.recommendations.filter((rec) => rec.status !== "DISMISSED").length;
+    const activeCount = group.recommendations.filter((rec) => rec.status === "ACTIVE").length;
+    const appliedCount = group.recommendations.filter((rec) => rec.status === "APPLIED").length;
     const dismissedCount = group.recommendations.filter((rec) => rec.status === "DISMISSED").length;
 
     return (
@@ -87,9 +81,26 @@ export default function RecDrawer({ group, isOpen, setIsOpen }: Readonly<RecDraw
 
                 <div className="h-full w-full p-4 overflow-y-auto space-y-4">
                     {/* filters */}
-                    <div className="flex flex-row w-full justify-between items-center gap-2 pt-2">
-                        {/* search, uses relative and absolute to layer icon on input */}
-                        <div className="relative w-full">
+                    <div className="flex flex-row w-full justify-between items-center gap-4 pt-2">
+                        <Tabs
+                            value={statusTab}
+                            onValueChange={(value) =>
+                                setStatusTab(value as "active" | "applied" | "dismissed")
+                            }
+                        >
+                            <TabsList className="h-auto p-1">
+                                <TabsTrigger value="active" className="text-sm">
+                                    Active ({activeCount})
+                                </TabsTrigger>
+                                <TabsTrigger value="applied" className="text-sm">
+                                    Applied ({appliedCount})
+                                </TabsTrigger>
+                                <TabsTrigger value="dismissed" className="text-sm">
+                                    Dismissed ({dismissedCount})
+                                </TabsTrigger>
+                            </TabsList>
+                        </Tabs>
+                        <div className="relative w-full max-w-xs ml-auto">
                             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                             <Input
                                 type="text"
@@ -99,28 +110,6 @@ export default function RecDrawer({ group, isOpen, setIsOpen }: Readonly<RecDraw
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
                         </div>
-                        {/* filter by action */}
-                        <Dropdown
-                            options={ACTIONS}
-                            value={actionFilter}
-                            onSelect={setActionFilter}
-                            disableSearch
-                            widthVariant="large"
-                            placeholder="Action..."
-                        />
-                        <Tabs
-                            value={statusTab}
-                            onValueChange={(value) => setStatusTab(value as "active" | "dismissed")}
-                        >
-                            <TabsList className="h-auto p-1">
-                                <TabsTrigger value="active" className="text-sm">
-                                    Active ({activeCount})
-                                </TabsTrigger>
-                                <TabsTrigger value="dismissed" className="text-sm">
-                                    Dismissed ({dismissedCount})
-                                </TabsTrigger>
-                            </TabsList>
-                        </Tabs>
                     </div>
 
                     {/* map recommendations to individual cards */}
