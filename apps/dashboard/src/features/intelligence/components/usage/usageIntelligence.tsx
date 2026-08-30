@@ -82,7 +82,7 @@ export default function UsageIntelligence() {
     }, [usageForecast]);
 
     useEffect(() => {
-        if (!resourceId || !metricType) return;
+        if (!resourceId || !metricName) return;
 
         // Within this scope, typescript knows these are non null
         const selectedResourceId = resourceId;

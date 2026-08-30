@@ -33,15 +33,15 @@ export default function UsagePredictionChart({
 
     //config
     const resourceId = useUsageIntelligenceConfigStore((state) => state.resourceId);
-    const metricType = useUsageIntelligenceConfigStore((state) => state.metricType);
+    const metricName = useUsageIntelligenceConfigStore((state) => state.metricName);
     const pastTimeWindowPreset = useUsageIntelligenceConfigStore(
         (state) => state.pastTimeWindowPreset
     );
 
     //data
     const usageForecast = useUsageIntelligenceStore((state) => {
-        if (!resourceId || !metricType) return null;
-        return state.forecasts[resourceId]?.[metricType] ?? null;
+        if (!resourceId || !metricName) return null;
+        return state.forecasts[resourceId]?.[metricName] ?? null;
     });
 
     const {
@@ -129,7 +129,7 @@ export default function UsagePredictionChart({
         });
     };
 
-    if (!resourceId || !metricType) return null;
+    if (!resourceId || !metricName) return null;
 
     const option = {
         tooltip: {
