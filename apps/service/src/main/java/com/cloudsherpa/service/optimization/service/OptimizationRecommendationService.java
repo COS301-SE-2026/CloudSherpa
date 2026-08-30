@@ -16,6 +16,8 @@ import org.springframework.stereotype.Service;
 public class OptimizationRecommendationService {
 
   private final OptimizationRecommendationRepository recommendationRepository;
+  private static final String ERROR = "error";
+  private static final String RECOMMENDATION_NOT_FOUND = "Recommendation not found";
 
   public OptimizationRecommendationService(
       OptimizationRecommendationRepository recommendationRepository) {
@@ -25,7 +27,8 @@ public class OptimizationRecommendationService {
   // Query all recommendations from database
   public List<Map<String, Object>> getRecommendations() {
 
-    List<OptimizationRecommendation> recommendations = recommendationRepository.findAll();
+    List<OptimizationRecommendation> recommendations =
+        recommendationRepository.findAllExcludingSuperseded();
 
     List<Map<String, Object>> resultList = new ArrayList<>(recommendations.size());
 
@@ -42,7 +45,7 @@ public class OptimizationRecommendationService {
         recommendationRepository.findById(recommendationId).orElse(null);
 
     if (recommendation == null) {
-      return Map.of("error", "Recommendation not found");
+      return Map.of(ERROR, RECOMMENDATION_NOT_FOUND);
     }
 
     return toMap(recommendation);
@@ -142,14 +145,34 @@ public class OptimizationRecommendationService {
         recommendationRepository.findById(recommendationId).orElse(null);
 
     if (recommendation == null) {
-      return Map.of("error", "Recommendation not found");
+      return Map.of(ERROR, RECOMMENDATION_NOT_FOUND);
     }
 
-    recommendation.setStatus(newStatus);
-    recommendation.setUpdatedAt(OffsetDateTime.now(ZoneOffset.UTC));
+    OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
 
-    recommendationRepository.save(recommendation);
+    recommendation.setStatus(newStatus);
+    recommendation.setUpdatedAt(now);
+
+    recommendation = recommendationRepository.save(recommendation);
 
     return toMap(recommendation);
+  }
+
+  public Map<String, Object> reEnableRecommendation(UUID recommendationId) {
+    OptimizationRecommendation recommendation =
+        recommendationRepository.findById(recommendationId).orElse(null);
+
+    if (recommendation == null) {
+      return Map.of(ERROR, RECOMMENDATION_NOT_FOUND);
+    }
+
+    if (!recommendation.getStatus().equals(OptimizationStatusEnum.DISMISSED)) {
+      return Map.of(ERROR, "Only dismissed recommendations can be re-enabled");
+    }
+
+    // Delete the dismissed recommendation entirely
+    recommendationRepository.deleteById(recommendationId);
+
+    return Map.of("message", "Recommendation re-enabled successfully");
   }
 }
