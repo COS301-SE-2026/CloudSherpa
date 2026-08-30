@@ -3,7 +3,6 @@ package com.cloudsherpa.ingestion.provider.permissions;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import org.springframework.stereotype.Component;
@@ -27,7 +26,7 @@ public abstract class PermissionsRegistry {
     second.forEach(
         (service, permissions) ->
             result.merge(
-                service.toLowerCase(Locale.ROOT),
+                service,
                 new HashSet<>(permissions),
                 (existing, incoming) -> {
                   existing.addAll(incoming);
