@@ -1,6 +1,7 @@
 package com.cloudsherpa.service.intelligence.service.usage;
 
 import com.cloudsherpa.lib.dtos.TimestampedNumericDataPoint;
+import com.cloudsherpa.lib.entities.ProviderEnum;
 import com.cloudsherpa.lib.repositories.NormalizedMetricsRepository;
 import com.cloudsherpa.service.intelligence.dto.IntelligenceForecastRequestDto;
 import com.cloudsherpa.service.intelligence.dto.IntelligenceForecastResponseDto;
@@ -10,6 +11,8 @@ import com.cloudsherpa.service.intelligence.dto.SanatizedSeries;
 import com.cloudsherpa.service.intelligence.exceptions.InsufficientContextAvailable;
 import com.cloudsherpa.service.intelligence.service.ForecastingService;
 import com.cloudsherpa.service.intelligence.service.Sampler;
+import com.cloudsherpa.service.metrics.MetricDisplayNameMapper;
+import com.cloudsherpa.service.metrics.ResourceProviderResolver;
 import java.util.List;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -20,13 +23,19 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 public class UsageForecastingService extends ForecastingService {
   private final NormalizedMetricsRepository normalizedMetricsRepository;
+  private final ResourceProviderResolver resourceProviderResolver;
+  private final MetricDisplayNameMapper metricDisplayNameMapper;
 
   public UsageForecastingService(
       NormalizedMetricsRepository normalizedMetricsRepository,
+      ResourceProviderResolver resourceProviderResolver,
+      MetricDisplayNameMapper metricDisplayNameMapper,
       Sampler sampler,
       RestClient restClient) {
     super(restClient, sampler);
     this.normalizedMetricsRepository = normalizedMetricsRepository;
+    this.resourceProviderResolver = resourceProviderResolver;
+    this.metricDisplayNameMapper = metricDisplayNameMapper;
   }
 
   public ResourceUsageForecastResponseDto forecastUsage(
@@ -52,9 +61,15 @@ public class UsageForecastingService extends ForecastingService {
 
   private List<TimestampedNumericDataPoint> getUsageSeries(
       ResourceUsageForecastRequestDto resourceUsageForecastRequestDto) {
+    ProviderEnum provider =
+        resourceProviderResolver.resolveProvider(resourceUsageForecastRequestDto.resourceId());
+    String canonicalMetricName =
+        metricDisplayNameMapper.toCanonicalName(
+            provider.toString(), resourceUsageForecastRequestDto.metricType());
+
     return normalizedMetricsRepository.getTimestampedMetricValues(
         resourceUsageForecastRequestDto.resourceId(),
-        resourceUsageForecastRequestDto.metricType(),
+        canonicalMetricName,
         PageRequest.of(0, CONTEXT_LENGTH));
   }
 

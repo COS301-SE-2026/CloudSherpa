@@ -1,13 +1,13 @@
 package com.cloudsherpa.lib.repositories;
 
 import com.cloudsherpa.lib.entities.CloudAccount;
+import com.cloudsherpa.lib.entities.ProviderEnum;
 import com.cloudsherpa.lib.entities.Resource;
-
+import com.cloudsherpa.lib.projections.ResourceNames;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
-import com.cloudsherpa.lib.projections.ResourceNames;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -30,8 +30,10 @@ public interface ResourceRepository extends JpaRepository<Resource, UUID> {
       String resourceType,
       String resourceIdentifier,
       String region);
+
   // Find a resource by its account, type, and identifier type
-  List<Resource> findByAccountIdAndResourceTypeAndResourceIdentifierType(UUID accountId, String resourceType, String resourceIdentifierType);
+  List<Resource> findByAccountIdAndResourceTypeAndResourceIdentifierType(
+      UUID accountId, String resourceType, String resourceIdentifierType);
 
   // Find the number of resources with a specific accountId
   long countByAccountId(UUID accountId);
@@ -39,16 +41,6 @@ public interface ResourceRepository extends JpaRepository<Resource, UUID> {
   @Query("select r.id as id, r.resourceType as resourceName from Resource r")
   List<ResourceNames> findResourceNames();
 
-  @Query(
-      value = 
-      """
-          SELECT CAST(cc.provider AS text)
-          FROM resource r
-          JOIN public.cloud_account ca ON ca.account_id = r.account_id
-          JOIN public.cloud_connection cc ON cc.connection_id = ca.connection_id
-          WHERE r.resource_id = :resourceId
-      """,
-      nativeQuery = true
-  )
-  String findProviderByResourceId(@Param("resourceId") UUID resourceId);
+  @Query("select r.account.connection.provider from Resource r where r.id = :resourceId")
+  ProviderEnum findProviderByResourceId(@Param("resourceId") UUID resourceId);
 }

@@ -3,6 +3,7 @@ package com.cloudsherpa.service.analytics.service;
 import com.cloudsherpa.lib.dtos.ResourceMetricEntry;
 import com.cloudsherpa.lib.dtos.TimestampedNumericDataPoint;
 import com.cloudsherpa.lib.entities.NormalizedMetrics;
+import com.cloudsherpa.lib.entities.ProviderEnum;
 import com.cloudsherpa.lib.projections.AggregatedMetric;
 import com.cloudsherpa.lib.projections.ResourceNames;
 import com.cloudsherpa.lib.repositories.NormalizedMetricsRepository;
@@ -13,6 +14,7 @@ import com.cloudsherpa.service.analytics.dto.ResourceMetricHistoricalResponseDto
 import com.cloudsherpa.service.analytics.dto.ResourceMetricsGroupDto;
 import com.cloudsherpa.service.analytics.model.ResourceMetric;
 import com.cloudsherpa.service.metrics.MetricDisplayNameMapper;
+import com.cloudsherpa.service.metrics.ResourceProviderResolver;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -35,16 +37,19 @@ public class NormalizedMetricService {
   private final NormalizedMetricsRepository normalizedMetricsRepository;
   private final ResourceRepository resourceRepository;
   private final MetricDisplayNameMapper metricMapper;
+  private final ResourceProviderResolver resourceProviderResolver;
 
   private final Logger logger = LoggerFactory.getLogger(NormalizedMetricService.class);
 
   NormalizedMetricService(
       NormalizedMetricsRepository normalizedMetricsRepository,
       ResourceRepository resourceRepository,
-      MetricDisplayNameMapper metricMapper) {
+      MetricDisplayNameMapper metricMapper,
+      ResourceProviderResolver resourceProviderResolver) {
     this.normalizedMetricsRepository = normalizedMetricsRepository;
     this.resourceRepository = resourceRepository;
     this.metricMapper = metricMapper;
+    this.resourceProviderResolver = resourceProviderResolver;
   }
 
   public List<MetricDto> fetchHistoricalData(String from, String to, String interval) {
@@ -119,10 +124,9 @@ public class NormalizedMetricService {
     ZoneOffset offset = from.getOffset();
     Instant fromInstant = from.toInstant();
 
-    // get providr
-    String provider = resourceRepository.findProviderByResourceId(resourceId);
+    ProviderEnum provider = resourceProviderResolver.resolveProvider(resourceId);
 
-    String canonMetricName = metricMapper.toCanonicalName(provider, metricType);
+    String canonMetricName = metricMapper.toCanonicalName(provider.toString(), metricType);
 
     List<TimestampedNumericDataPoint> fetchedResourceMetrics =
         normalizedMetricsRepository.getTimestampedMetricValuesAfterDate(
@@ -130,7 +134,10 @@ public class NormalizedMetricService {
 
     if (fetchedResourceMetrics.isEmpty()) {
       logger.info(
-          "Lookup failed for resource {}, metric {} and data {}", resourceId, metricType, from);
+          "Lookup failed for resource {}, metric {} and data {}",
+          resourceId,
+          canonMetricName,
+          from);
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No resource metrics found");
     }
 
