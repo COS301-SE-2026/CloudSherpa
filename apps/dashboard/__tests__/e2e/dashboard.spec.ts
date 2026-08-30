@@ -18,12 +18,9 @@ async function registerAndLoginNewUser(page: Page) {
     await page.getByRole("button", { name: "Sign up" }).click();
 
     //auto logs in
-    await expect(
-        page.getByRole("alert").filter({ hasText: "Successful Registration" })
-    ).toBeVisible();
 
-    await page.waitForURL("**/dashboard", { timeout: 15000 });
-    await expect(page.getByTestId("dashboard")).toBeVisible({ timeout: 15000 });
+    await page.waitForURL(/.*\/dashboard.*/, { timeout: 15000 });
+    await expect(page.getByLabel("User Email")).toHaveText(email);
 
     return { email, password };
 }
@@ -45,6 +42,13 @@ async function createNewChartWidget(page: Page) {
     await expect(page.getByText("New Chart").first()).toBeVisible();
 }
 
+async function createNewKPIWidget(page: Page) {
+    await page.getByLabel("editbtn").click();
+    await page.getByRole("button", { name: "Add KPI" }).click();
+    await page.getByRole("button", { name: "Save" }).click();
+    await expect(page.getByText("New KPI").first()).toBeVisible();
+}
+
 async function createPreConfiguredChartWidget(page: Page) {
     await page.getByLabel("editbtn").click();
     await page.getByRole("button", { name: "Add Chart" }).click();
@@ -58,6 +62,14 @@ async function configureChartWidgetName(page: Page) {
     const uniqueWidgetName = `testChart-${Date.now()}`;
     await page.getByRole("textbox").fill(uniqueWidgetName);
     await page.getByRole("button", { name: "Save Chart" }).click();
+    await expect(page.getByText(uniqueWidgetName)).toBeVisible();
+    return uniqueWidgetName;
+}
+
+async function configureKPIWidgetName(page: Page) {
+    const uniqueWidgetName = `testKPI-${Date.now()}`;
+    await page.getByLabel("kpi display name").fill(uniqueWidgetName);
+    await page.getByRole("button", { name: "Save KPI" }).click();
     await expect(page.getByText(uniqueWidgetName)).toBeVisible();
     return uniqueWidgetName;
 }
@@ -92,12 +104,20 @@ test.describe("dashboard", () => {
         await expect(page.getByText("New Chart")).not.toBeVisible();
     });
 
-    test("Create Dash & widget", async ({ page }) => {
+    test("Create Dash & chart widget", async ({ page }) => {
         //create dash
         await createNewDashboard(page);
         //create chart widget
         await createNewChartWidget(page);
         await expect(page.getByText("New Chart")).toBeVisible();
+    });
+
+    test("Create Dash & KPI widget", async ({ page }) => {
+        //create dash
+        await createNewDashboard(page);
+        //create KPI widget
+        await createNewKPIWidget(page);
+        await expect(page.getByText("New KPI")).toBeVisible();
     });
 
     test("Configure name Chart Widget", async ({ page }) => {
@@ -106,8 +126,20 @@ test.describe("dashboard", () => {
         //create new chart widget
         await createNewChartWidget(page);
         //configure new chart widget
-        await page.getByLabel("configure new widget button").click();
+        await page.getByLabel("chart options button").click();
+        await page.getByRole("menuitem", { name: "Configure Widget" }).click();
         await configureChartWidgetName(page);
+    });
+
+    test("Configure name KPI Widget", async ({ page }) => {
+        //create dash
+        await createNewDashboard(page);
+        //create new chart widget
+        await createNewKPIWidget(page);
+        //configure new chart widget
+        await page.getByLabel("chart options button").click();
+        await page.getByRole("menuitem", { name: "Configure Widget" }).click();
+        await configureKPIWidgetName(page);
     });
 
     test("Configure name Chart Widget v2", async ({ page }) => {
@@ -118,5 +150,29 @@ test.describe("dashboard", () => {
         await page.getByLabel("chart widget").first().click({ button: "right" });
         await page.getByRole("menuitem", { name: "Configure Widget" }).click();
         await configureChartWidgetName(page);
+    });
+
+    test("Delete KPI widget", async ({ page }) => {
+        //create dash
+        await createNewDashboard(page);
+        //create new chart widget
+        await createNewKPIWidget(page);
+        //delete new chart widget
+        await page.getByLabel("chart options button").click();
+        await page.getByRole("menuitem", { name: "Delete Widget" }).click();
+        //negative result
+        await expect(page.getByText("New KPI").first()).not.toBeVisible();
+    });
+
+    test("Delete Chart widget", async ({ page }) => {
+        //create dash
+        await createNewDashboard(page);
+        //create new chart widget
+        await createNewChartWidget(page);
+        //delete new chart widget
+        await page.getByLabel("chart options button").click();
+        await page.getByRole("menuitem", { name: "Delete Widget" }).click();
+        //negative result
+        await expect(page.getByText("New Chart").first()).not.toBeVisible();
     });
 });

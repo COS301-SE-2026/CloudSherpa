@@ -219,7 +219,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarFooter>
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <div className="px-2 py-1.5 text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
+                        <div
+                            aria-label={"User Email"}
+                            className="px-2 py-1.5 text-xs text-muted-foreground group-data-[collapsible=icon]:hidden"
+                        >
                             {authContext?.isAuthReady
                                 ? authContext.user?.email || "Not logged in"
                                 : "Loading..."}

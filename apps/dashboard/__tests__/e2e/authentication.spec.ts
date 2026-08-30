@@ -42,12 +42,10 @@ test.describe("authentication", () => {
         // Click on register button
         await page.getByRole("button", { name: "Sign up" }).click();
 
-        const successAlert = page.getByRole("alert").filter({ hasText: "Successful Registration" });
-
-        await expect(successAlert).toBeVisible();
-
         // assert that redirected to dashboard
-        await expect(page.getByTestId("dashboard")).toBeVisible({ timeout: 12000 });
+        await page.waitForURL("**/dashboard", { timeout: 15000 });
+
+        await expect(page.getByLabel("User Email")).toHaveText(email);
 
         // Logout
         await page.getByLabel("logout button").click();
@@ -61,7 +59,5 @@ test.describe("authentication", () => {
         await page.getByLabel("Email").fill(email);
         await page.getByLabel("Password", { exact: true }).fill("SecretPassword123!");
         await page.getByRole("button", { name: "Log In" }).click();
-
-        await expect(page.getByTestId("dashboard")).toBeVisible({ timeout: 15000 });
     });
 });

@@ -137,7 +137,7 @@ function DashboardContent() {
                 </div>
             )}
 
-            <main className="flex-1 overflow-x-hidden m-3 flex flex-col" data-testid="dashboard">
+            <main className="flex-1 overflow-x-hidden m-3 flex flex-col">
                 {renderMainContent()}
             </main>
         </>
@@ -156,7 +156,7 @@ export default function DashboardPage() {
                 </div>
             }
         >
-            <DashboardContent />
+            <DashboardContent data-testid="dashboard" />
         </Suspense>
     );
 }
