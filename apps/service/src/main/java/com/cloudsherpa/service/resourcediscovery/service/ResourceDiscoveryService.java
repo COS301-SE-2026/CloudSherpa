@@ -33,4 +33,9 @@ public class ResourceDiscoveryService {
 
     return ingestionClient.generateGcpPermissions(services);
   }
+
+  public List<String> generateAzurePermissions(List<String> services) {
+
+    return ingestionClient.generateAzurePermissions(services);
+  }
 }
