@@ -6,8 +6,7 @@ import { CloudProviderEnum } from "@/features/dashboard/types/provider";
 //Suspend = recommend power schedule (ie. siwtch off at night)
 export type RecommendedAction = "TERMINATE" | "MODERNIZE" | "DOWNSIZE" | "SUSPEND";
 
-export type RecommendationStatus =
-    "ACTIVE" | "ACKNOWLEDGED" | "DISMISSED" | "APPLIED" | "SUSPENDED" | "EXPIRED";
+export type RecommendationStatus = "ACTIVE" | "DISMISSED" | "APPLIED" | "SUSPENDED" | "EXPIRED";
 
 export type Recommendation = {
     recommendationId: string;
@@ -33,7 +32,6 @@ export type RecommendationGroup = {
 export type RecommendationSummary = {
     total: number;
     active: number;
-    acknowledged: number;
     dismissed: number;
     applied: number;
     byActionType: Partial<Record<RecommendedAction, number>>;

@@ -6,10 +6,10 @@ import {
 } from "@/features/optimization/types/recommendations";
 import {
     getOptimizationRecommendations,
-    acknowledgeRecommendation,
     dismissRecommendation,
     applyRecommendation,
     getRecommendationSummary,
+    reEnableRecommendation,
 } from "@/lib/fetch/api-optimization";
 import { getAwsAccountConnections, getAwsAccountResources } from "@/lib/fetch/cloud-account-api";
 
@@ -19,9 +19,9 @@ interface RecStore {
     isLoading: boolean;
     failedLoading: boolean;
     failedLoadingMessage: string;
+    reEnableRec: (recommendationId: string) => Promise<void>;
     fetchRecGroups: () => Promise<void>;
     fetchSummary: () => Promise<void>;
-    acknowledgeRec: (recommendationId: string) => Promise<void>;
     dismissRec: (recommendationId: string) => Promise<void>;
     applyRec: (recommendationId: string) => Promise<void>;
 }
@@ -118,19 +118,11 @@ export const useRecStore = create<RecStore>((set, get) => ({
         }
     },
 
-    acknowledgeRec: async (recommendationId: string) => {
-        try {
-            await acknowledgeRecommendation(recommendationId);
-            await get().fetchRecGroups();
-        } catch (error) {
-            console.error("Failed to acknowledge recommendation:", error);
-        }
-    },
-
     dismissRec: async (recommendationId: string) => {
         try {
             await dismissRecommendation(recommendationId);
             await get().fetchRecGroups();
+            await get().fetchSummary();
         } catch (error) {
             console.error("Failed to dismiss recommendation:", error);
         }
@@ -140,8 +132,19 @@ export const useRecStore = create<RecStore>((set, get) => ({
         try {
             await applyRecommendation(recommendationId);
             await get().fetchRecGroups();
+            await get().fetchSummary();
         } catch (error) {
             console.error("Failed to apply recommendation:", error);
+        }
+    },
+
+    reEnableRec: async (recommendationId: string) => {
+        try {
+            await reEnableRecommendation(recommendationId);
+            await get().fetchRecGroups();
+            await get().fetchSummary();
+        } catch (error) {
+            console.error("Failed to re-enable recommendation:", error);
         }
     },
 }));
