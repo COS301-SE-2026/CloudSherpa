@@ -4,12 +4,11 @@ import { useEffect, useState } from "react";
 import { useUsageIntelligenceConfigStore } from "../stores/useUsageIntelligenceConfigStore";
 import { HistoricalUsageSeriesDto } from "../types/dtos";
 import apiClient from "@/lib/fetch/api-client";
-import { AWS_METRIC_TYPE_BY_NAME_INVERSE } from "@/features/dashboard/stores/metric-store";
 import { timeMs } from "@/lib/timeUtils";
 
 export function useUsageHistoricalData() {
     const resourceId = useUsageIntelligenceConfigStore((state) => state.resourceId);
-    const metricType = useUsageIntelligenceConfigStore((state) => state.metricType);
+    const metricName = useUsageIntelligenceConfigStore((state) => state.metricName);
 
     const [historicalUsageSeries, setHistoricalUsageSeries] =
         useState<HistoricalUsageSeriesDto | null>(null);
@@ -18,7 +17,7 @@ export function useUsageHistoricalData() {
 
     useEffect(() => {
         async function fetchHistoricalUsageData() {
-            if (!resourceId || !metricType) {
+            if (!resourceId || !metricName) {
                 return;
             }
 
@@ -26,7 +25,6 @@ export function useUsageHistoricalData() {
             setHistoricalUsageError(null);
 
             try {
-                const awsMetricName = AWS_METRIC_TYPE_BY_NAME_INVERSE[metricType];
                 const historicalWindowStartMs = Date.now() - timeMs.dayMs * 30;
 
                 const response: HistoricalUsageSeriesDto = await apiClient(
@@ -35,7 +33,7 @@ export function useUsageHistoricalData() {
                         method: "POST",
                         body: JSON.stringify({
                             resourceId: resourceId,
-                            metricType: awsMetricName,
+                            metricType: metricName,
                             fromDate: new Date(historicalWindowStartMs),
                         }),
                     }
@@ -55,7 +53,7 @@ export function useUsageHistoricalData() {
         }
 
         void fetchHistoricalUsageData();
-    }, [resourceId, metricType]);
+    }, [resourceId, metricName]);
 
     return { historicalUsageSeries, historicalUsageError, isHistoricalUsageLoading };
 }

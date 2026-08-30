@@ -68,6 +68,13 @@ export default function Recommendations() {
     useEffect(() => {
         fetchRecGroups();
         fetchSummary();
+
+        const interval = setInterval(() => {
+            fetchRecGroups();
+            fetchSummary();
+        }, 10800000); // every 3 hours
+
+        return () => clearInterval(interval);
     }, [fetchRecGroups, fetchSummary]);
 
     if (isLoading) {
@@ -90,9 +97,9 @@ export default function Recommendations() {
                 {/* recommendation summaries */}
                 {recErrorState && <RecommendationErrorAlert recError={recErrorMessage} />}
                 {summary && (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-2">
+                    <div className="grid grid-cols-4 gap-3 mb-2">
                         <RecommendationCardHero
-                            value={`Total ${summary.total}`}
+                            value={`Total ${summary.active + summary.applied + summary.dismissed}`}
                             className="text-card-foreground"
                         />
                         <RecommendationCardHero
@@ -102,10 +109,6 @@ export default function Recommendations() {
                         <RecommendationCardHero
                             value={`Applied ${summary.applied}`}
                             className="text-primary"
-                        />
-                        <RecommendationCardHero
-                            value={`Acknowledged ${summary.acknowledged}`}
-                            className="text-warning"
                         />
                         <RecommendationCardHero
                             value={`Dismissed ${summary.dismissed}`}

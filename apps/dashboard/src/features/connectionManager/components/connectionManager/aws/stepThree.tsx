@@ -9,17 +9,13 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/atoms/tooltip";
-import { ResourceDetail } from "@/lib/fetch/cloud-resource-api";
-import {
-    AwsCredentialsDto,
-    PersistAwsConnectionRequest,
-    ResourceSelectionDto,
-    createAwsConnection,
-} from "@/lib/fetch/aws-connection-api";
+import { PersistAwsConnectionRequest, createAwsConnection } from "@/lib/fetch/aws-connection-api";
 import { useRouter } from "next/navigation";
 import { Label } from "@/components/atoms/label";
 import { Slider } from "@/components/atoms/slider";
 import { StepThree } from "@/features/connectionManager/components/connectionManager/wizardSetup/stepThree";
+import { AwsCredentialsDto } from "@/lib/fetch/dto/cloud-credentials";
+import { ResourceDetail, ResourceSelectionDto } from "@/lib/fetch/dto/cloud-resource";
 
 interface PropsForStepThree {
     displayName: string;

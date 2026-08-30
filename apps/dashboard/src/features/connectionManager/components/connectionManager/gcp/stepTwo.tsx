@@ -2,21 +2,27 @@
 
 import React, { useState } from "react";
 import { StepTwo } from "@/features/connectionManager/components/connectionManager/wizardSetup/stepTwo";
-import { Button } from "@/components/atoms/button";
-import { Progress } from "@/components/atoms/progress";
 import {
     getCloudServices,
     generateGcpPermissionsPolicy,
     getCloudResources,
-    ResourceDetail,
 } from "@/lib/fetch/cloud-resource-api";
-import { GcpCredentialsDto } from "@/lib/fetch/gcp-connection-api";
 import { GcpBillingForm } from "./billingForm";
 import {
     GcpBillingConfig,
     type GcpBillingConfigSafeParseType,
     type GcpBillingConfigType,
 } from "./validTypes";
+import { GcpCredentialsDto } from "@/lib/fetch/dto/cloud-credentials";
+import { ResourceDetail } from "@/lib/fetch/dto/cloud-resource";
+import { ServicesList } from "@/components/molecules/services-list";
+import { PermissionsList } from "@/components/molecules/permissions-list";
+import { ScanProgress } from "@/components/molecules/scan-progress";
+
+export interface ServiceOption {
+    id: string;
+    name: string;
+}
 
 interface StepTwoPropsForGcp {
     displayName: string;
@@ -37,7 +43,7 @@ export default function StepTwoGcp({
     onNext,
     onBack,
 }: Readonly<StepTwoPropsForGcp>) {
-    const [servicesAvailable, setServicesAvailable] = useState<string[]>([]);
+    const [servicesAvailable, setServicesAvailable] = useState<ServiceOption[]>([]);
     const [selectedServices, setSelectedServices] = useState<string[]>([]);
     const [permissions, setPermissions] = useState<string[]>([]);
     const [forLoading, setForLoading] = useState(false);
@@ -77,8 +83,12 @@ export default function StepTwoGcp({
                 setErrors("");
 
                 const services = await getCloudServices("gcp");
-
-                setServicesAvailable(services);
+                setServicesAvailable(
+                    services.map((service) => ({
+                        id: service,
+                        name: service,
+                    }))
+                );
             } catch {
                 setErrors("Failed to load supported GCP services");
             } finally {
@@ -147,7 +157,7 @@ export default function StepTwoGcp({
         if (selectedServices.length == servicesAvailable.length) {
             setSelectedServices([]);
         } else {
-            setSelectedServices(servicesAvailable.map((services) => services));
+            setSelectedServices(servicesAvailable.map((services) => services.id));
         }
     };
 
@@ -181,83 +191,18 @@ export default function StepTwoGcp({
                     setOptedInToBilling(checked);
                 }}
             ></GcpBillingForm>
-            <section>
-                <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-                    <h3 className="text-foreground text-sm font-semibold uppercase tracking-wider opacity-80">
-                        {" "}
-                        Services we offer{" "}
-                    </h3>
+            <ServicesList
+                servicesAvailable={servicesAvailable}
+                selectedServices={selectedServices}
+                onServiceToggle={checkingService}
+                onSelectAll={handlingSelectedAll}
+                heading="Services we offer"
+            />
 
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={handlingSelectedAll}
-                        className="text-primary hover:text-accent text-sm transition-colors px-0"
-                    >
-                        {selectedServices.length === servicesAvailable.length
-                            ? "Deselect All"
-                            : "Select All"}
-                    </Button>
-                </div>
-
-                <div className="space-y-3">
-                    {servicesAvailable.map((service) => (
-                        <label
-                            key={service}
-                            className="flex items-center gap-3 w-full p-4 bg-background rounded-lg border border-border hover:border-primary/40 transition-all cursor-pointer focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2"
-                        >
-                            <input
-                                type="checkbox"
-                                checked={selectedServices.includes(service)}
-                                onChange={() => checkingService(service)}
-                                className="w-4 h-4 rounded border-border bg-background text-primary focus:ring-2 focus:ring-primary"
-                            />
-
-                            <span className="text-foreground font-medium"> {service} </span>
-                        </label>
-                    ))}
-                </div>
-            </section>
-
-            <section>
-                <h3 className="text-foreground text-sm font-semibold uppercase tracking-wider opacity-80 mb-4">
-                    {" "}
-                    Permissions{" "}
-                </h3>
-
-                <div className="rounded-lg border border-border bg-background p-4 space-y-3">
-                    {permissions.length === 0 ? (
-                        <p className="text-sm text-muted-foreground/70">
-                            {" "}
-                            Select a service to view the permissions{" "}
-                        </p>
-                    ) : (
-                        permissions.map((permissions) => (
-                            <div
-                                key={permissions}
-                                className="rounded-md bg-card px-4 py-3 text-sm text-foreground"
-                            >
-                                {" "}
-                                - {permissions}{" "}
-                            </div>
-                        ))
-                    )}
-                </div>
-            </section>
+            <PermissionsList permissions={permissions} />
 
             {forLoading && (
-                <div className="space-y-2 w-full pt-4">
-                    <div className="flex justify-between text-sm text-muted-foreground font-medium">
-                        <span>
-                            {currentScanningService
-                                ? `Scanning ${currentScanningService.toUpperCase()}...`
-                                : "Preparing scan..."}
-                        </span>
-                        <span>{Math.round(progress)}%</span>
-                    </div>
-                    <Progress value={progress} className="w-full h-2" />
-                </div>
+                <ScanProgress progress={progress} currentScanningService={currentScanningService} />
             )}
         </StepTwo>
     );

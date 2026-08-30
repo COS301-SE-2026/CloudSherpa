@@ -42,14 +42,18 @@ public class ChartResource {
   @Column(name = "metric_type", length = 50)
   private String metricType;
 
+  @Column(name = "metric_name", length = 100)
+  private String metricName;
+
   protected ChartResource() {
   }
 
-  public ChartResource(UUID id, UUID widgetChartId,ProviderEnum provider, UUID accountId,  UUID resourceId, String metricType) {
+  public ChartResource(UUID id, UUID widgetChartId, ProviderEnum provider, UUID accountId, UUID resourceId,
+      String metricType) {
     this.id = id;
     this.widgetChartId = widgetChartId;
-    this.provider = provider; 
-    this.accountId = accountId; 
+    this.provider = provider;
+    this.accountId = accountId;
     this.resourceId = resourceId;
     this.metricType = metricType;
   }
@@ -71,19 +75,19 @@ public class ChartResource {
   }
 
   public ProviderEnum getProvider() {
-    return provider; 
+    return provider;
   }
 
   public void setProvider(ProviderEnum provider) {
-    this.provider = provider; 
+    this.provider = provider;
   }
 
   public UUID getAccountId() {
-    return accountId; 
+    return accountId;
   }
 
   public void setAccountId(UUID accountId) {
-    this.accountId = accountId; 
+    this.accountId = accountId;
   }
 
   public UUID getResourceId() {
@@ -100,5 +104,13 @@ public class ChartResource {
 
   public void setMetricType(String metricType) {
     this.metricType = metricType;
+  }
+
+  public String getMetricName() {
+    return metricName;
+  }
+  
+  public void setMetricName(String metricName) {
+    this.metricName = metricName;
   }
 }

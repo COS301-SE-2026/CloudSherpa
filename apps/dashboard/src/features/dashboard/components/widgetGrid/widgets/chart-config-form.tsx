@@ -34,8 +34,10 @@ export function ChartConfigFormInner({ ChartId }: Readonly<ChartConfigFormProps>
                   provider: null,
                   accountId: null,
                   resourceId: null,
+                  metricName: "",
                   metricType: null,
               };
+
     const [config, setConfig] = useState<ChartWidgetConfig>(resolvedWidgetConfig);
 
     const router = useRouter();

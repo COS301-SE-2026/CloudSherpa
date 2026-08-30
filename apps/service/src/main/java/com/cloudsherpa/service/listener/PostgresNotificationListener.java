@@ -1,7 +1,8 @@
 package com.cloudsherpa.service.listener;
 
+import com.cloudsherpa.service.listener.dto.MetricStreamEventDto;
+import com.cloudsherpa.service.metrics.MetricDisplayNameMapper;
 import com.cloudsherpa.service.sse.SseService;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -38,19 +39,24 @@ public class PostgresNotificationListener implements SmartLifecycle {
   private PGConnection pgConnection;
 
   // Jackson tool to parse raw JSON strings into Java objects
-  private final ObjectMapper objectMapper = new ObjectMapper();
-
+  private final ObjectMapper objectMapper;
   private final SseService sseService;
-
+  private final MetricDisplayNameMapper metricDisplayNameMapper;
   private final ActiveListeners activeListeners;
 
   private volatile boolean running;
 
   private static final Logger logger = LoggerFactory.getLogger(PostgresNotificationListener.class);
 
-  PostgresNotificationListener(SseService sseService, ActiveListeners activeListeners) {
+  PostgresNotificationListener(
+      SseService sseService,
+      ActiveListeners activeListeners,
+      ObjectMapper objectMapper,
+      MetricDisplayNameMapper metricDisplayNameMapper) {
     this.sseService = sseService;
     this.activeListeners = activeListeners;
+    this.objectMapper = objectMapper;
+    this.metricDisplayNameMapper = metricDisplayNameMapper;
   }
 
   // Creates a long-lived connection and registers the LISTEN channel.
@@ -146,9 +152,11 @@ public class PostgresNotificationListener implements SmartLifecycle {
   private void processMetricForAnalytics(String payload, UUID userId) {
     try {
       // Parse the raw string back into a JSON object
-      JsonNode event = objectMapper.readTree(payload);
+      MetricStreamEventDto event =
+          objectMapper
+              .readValue(payload, MetricStreamEventDto.class)
+              .withDisplayNameMappedMetric(metricDisplayNameMapper);
 
-      // This is where we would call intelligence engine to do its thing
       sseService.broadcast(userId, "metric", event);
     } catch (Exception e) {
       logger.warn("Failed to parse metric payload: {}", payload, e);

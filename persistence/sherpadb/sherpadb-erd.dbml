@@ -139,6 +139,7 @@ Table chart_resource {
   account_id uuid
   resource_id uuid
   metric_type varchar(50)
+  metric_name varchar(100)
 }
 
 // ==========================================

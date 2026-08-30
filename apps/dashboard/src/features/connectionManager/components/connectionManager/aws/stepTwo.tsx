@@ -1,16 +1,17 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import {
-    CloudCredentials,
-    ResourceDetail,
     AwsPolicy,
     getCloudServices,
     generateAwsPermissionsPolicy,
     getCloudResources,
 } from "@/lib/fetch/cloud-resource-api";
 import { AwsBillingForm } from "./billingForm";
-import { Progress } from "@/components/atoms/progress";
 import { StepTwo } from "@/features/connectionManager/components/connectionManager/wizardSetup/stepTwo";
+import { CloudCredentials } from "@/lib/fetch/dto/cloud-credentials";
+import { ResourceDetail } from "@/lib/fetch/dto/cloud-resource";
+import { ServicesList } from "@/components/molecules/services-list";
+import { ScanProgress } from "@/components/molecules/scan-progress";
 
 export interface BillingConfig {
     prefix: string;
@@ -232,58 +233,21 @@ export default function StepTwoAws({ credentials, onNext, onBack }: Readonly<Pro
                 }}
             />
 
-            <section className="rounded-lg border border-border bg-background p-4">
-                <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-                    <h3 className="text-foreground text-sm font-semibold uppercase tracking-wider opacity-80">
-                        Services for Usage Monitoring & Resource Discovery
-                    </h3>
-
-                    <div className="flex items-center gap-3">
-                        <button
-                            type="button"
-                            onClick={forHandlingAllSelected}
-                            className="text-primary hover:text-accent text-sm transition-colors"
-                        >
-                            {servicesSelected.length === availableServices.length
-                                ? "Deselect All"
-                                : "Select All"}
-                        </button>
-                    </div>
-                </div>
-
+            <div className="rounded-lg border border-border bg-background p-4">
                 <div className="mb-4 rounded-md border border-amber-300/60 bg-amber-50 p-3 text-sm text-amber-900">
                     Billing ingestion is account-wide and not limited by selected services. Select
                     services to discover resources and monitor usage metrics alongside billing
                     trends.
                 </div>
 
-                <div className="space-y-3">
-                    {availableServices.map((service) => (
-                        <button
-                            type="button"
-                            key={service.id}
-                            onClick={() => toggleService(service.id)}
-                            className="flex items-start gap-3 p-4 bg-background rounded-lg border border-border hover:border-primary/40 transition-all cursor-pointer w-full"
-                        >
-                            <input
-                                type="checkbox"
-                                checked={servicesSelected.includes(service.id)}
-                                onChange={() => toggleService(service.id)}
-                                className="mt-0.5 w-4 h-4 rounded border-border bg-background text-primary focus:ring-ring focus:ring-2"
-                            />
-
-                            <div className="flex-1">
-                                <div className="flex items-center gap-2">
-                                    <span className="text-foreground font-medium">
-                                        {service.name}
-                                    </span>
-                                </div>
-                            </div>
-                        </button>
-                    ))}
-                </div>
-            </section>
-
+                <ServicesList
+                    servicesAvailable={availableServices}
+                    selectedServices={servicesSelected}
+                    onServiceToggle={toggleService}
+                    onSelectAll={forHandlingAllSelected}
+                    heading="Services for Usage Monitoring & Resource Discovery"
+                />
+            </div>
             <div className="pt-4">
                 <h3 className="text-foreground text-sm font-semibold uppercase tracking-wider opacity-60 mb-3">
                     IAM Permissions for Discovery + Billing Export Access
@@ -315,17 +279,7 @@ export default function StepTwoAws({ credentials, onNext, onBack }: Readonly<Pro
             </div>
 
             {loading && (
-                <div className="space-y-2 w-full pt-4">
-                    <div className="flex justify-between text-sm text-muted-foreground font-medium">
-                        <span>
-                            {currentScanningService
-                                ? `Scanning ${currentScanningService.toUpperCase()}...`
-                                : "Preparing scan..."}
-                        </span>
-                        <span>{Math.round(progress)}%</span>
-                    </div>
-                    <Progress value={progress} className="w-full h-2" />
-                </div>
+                <ScanProgress progress={progress} currentScanningService={currentScanningService} />
             )}
         </StepTwo>
     );

@@ -44,7 +44,8 @@ export default function RecommendationGroupCard({ group }: Readonly<Recommendati
                                 <div className="flex flex-row pl-2 gap-2">
                                     <Badge>{provider}</Badge>
                                     <Badge variant="secondary">
-                                        {recommendationsCount} recommendations
+                                        {recommendationsCount} Recommendation
+                                        {recommendationsCount !== 1 ? "s" : ""}
                                     </Badge>
                                 </div>
                             </div>

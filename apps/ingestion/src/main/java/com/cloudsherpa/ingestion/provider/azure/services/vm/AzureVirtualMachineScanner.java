@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -50,5 +51,10 @@ public class AzureVirtualMachineScanner implements AzureResourceScanner {
     tags.properties().forEach(entry -> result.put(entry.getKey(), entry.getValue().asText()));
 
     return result;
+  }
+
+  @Override
+  public Set<String> getPermissionsRequired() {
+    return Set.of();
   }
 }

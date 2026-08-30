@@ -4,9 +4,9 @@ import { useState } from "react";
 import StepOneGcp from "./stepOne";
 import StepTwoGcp from "./stepTwo";
 import StepThreeGcp from "./stepThree";
-import { ResourceDetail } from "@/lib/fetch/cloud-resource-api";
-import { GcpCredentialsDto } from "@/lib/fetch/gcp-connection-api";
 import type { GcpBillingConfigType } from "./validTypes";
+import { GcpCredentialsDto } from "@/lib/fetch/dto/cloud-credentials";
+import { ResourceDetail } from "@/lib/fetch/dto/cloud-resource";
 
 interface WizardData {
     credentials: GcpCredentialsDto | null;

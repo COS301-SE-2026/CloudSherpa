@@ -1,5 +1,4 @@
 "use client";
-import { MetricType } from "@/features/dashboard/types/metric";
 import type {
     DefaultLabelFormatterCallbackParams,
     EChartsOption,
@@ -13,7 +12,7 @@ import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
 
 type LineChartProps = {
     resourceId: string;
-    metricType: MetricType;
+    metricType: string;
     onDataStatusChange?: (isEmpty: boolean) => void;
 };
 

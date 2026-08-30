@@ -4,6 +4,7 @@ public record CloudCredentialsDto(
     String accessKeyId,
     String secretAccessKey,
     String awsRegion,
+    String subscriptionId,
     String tenantId,
     String clientId,
     String clientSecret,

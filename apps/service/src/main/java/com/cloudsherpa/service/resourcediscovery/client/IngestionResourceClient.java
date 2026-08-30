@@ -63,4 +63,14 @@ public class IngestionResourceClient {
         .retrieve()
         .body(new ParameterizedTypeReference<List<String>>() {});
   }
+
+  public List<String> generateAzurePermissions(List<String> services) {
+
+    return restClient
+        .post()
+        .uri("/api/cloud-resources/azure/permissions")
+        .body(services)
+        .retrieve()
+        .body(new ParameterizedTypeReference<List<String>>() {});
+  }
 }

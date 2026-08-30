@@ -1,9 +1,5 @@
-import {
-    AccountType,
-    ResourceStatus,
-    type CloudAccount,
-    type CloudResource,
-} from "@/lib/fetch/aws-connection-api";
+import { CloudAccount, AccountType } from "@/lib/fetch/dto/cloud-account";
+import { CloudResource, ResourceStatus } from "@/lib/fetch/dto/cloud-resource";
 import type { BillingSummaryDto, CostBreakdownItem } from "../types/dtos";
 
 export const MOCK_ACCOUNTS: CloudAccount[] = [

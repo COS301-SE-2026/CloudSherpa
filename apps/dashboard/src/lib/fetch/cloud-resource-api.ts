@@ -1,28 +1,10 @@
 import apiClient from "./api-client";
-
-export interface CloudCredentials {
-    accessKeyId?: string;
-    secretAccessKey?: string;
-    awsRegion?: string;
-    tenantId?: string;
-    clientId?: string;
-    clientSecret?: string;
-    projectId?: string;
-    serviceAccountJson?: string;
-}
+import { CloudCredentials } from "./dto/cloud-credentials";
+import { ResourceDetail } from "./dto/cloud-resource";
 
 export interface ResourceDiscoveryRequest {
     services: string[];
     credentials: CloudCredentials;
-}
-
-export interface ResourceDetail {
-    resourceId: string;
-    name: string;
-    resourceType: string;
-    serviceCategory: string;
-    region: string;
-    tags: Record<string, string>;
 }
 
 export interface AwsPolicy {
@@ -78,6 +60,16 @@ export async function generateAwsPermissionsPolicy(services: string[]): Promise<
  */
 export async function generateGcpPermissionsPolicy(services: string[]): Promise<string[]> {
     return apiClient<string[]>("/api/cloud-resources/gcp/permissions", {
+        method: "POST",
+        body: JSON.stringify(services),
+    });
+}
+
+/**
+ * Generate a least-privilege Azure permission set for a set of selected services.
+ */
+export async function generateAzurePermissionsPolicy(services: string[]): Promise<string[]> {
+    return apiClient<string[]>("/api/cloud-resources/azure/permissions", {
         method: "POST",
         body: JSON.stringify(services),
     });

@@ -29,6 +29,7 @@
 ![Website](https://img.shields.io/website?url=https%3A%2F%2Fcloudsherpa.gjjcs.org%2Fhi%2F&label=cloudsherpa%20site)
 [![CloudSherpa service coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fsherpa-coverage.gjjcs.org%2Fbadges%2Fservice)](https://sherpa-coverage.gjjcs.org/badges/service)
 [![CloudSherpa ingestion coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fsherpa-coverage.gjjcs.org%2Fbadges%2Fingestion)](https://sherpa-coverage.gjjcs.org/badges/ingestion)
+[![CloudSherpa ingestion coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fsherpa-coverage.gjjcs.org%2Fbadges%2Fintelligence)](https://sherpa-coverage.gjjcs.org/badges/intelligence)
 
 </div>
 </div>

@@ -3,7 +3,6 @@ package com.cloudsherpa.ingestion.provider.scanner;
 import com.cloudsherpa.ingestion.connector.CloudCredentials;
 import com.cloudsherpa.ingestion.models.ResourceDetail;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -49,7 +48,6 @@ public class ResourceDiscoveryService {
     return scanners.values().stream()
         .collect(
             Collectors.toMap(
-                scanner -> scanner.getServiceName().toUpperCase(Locale.ROOT),
-                ResourceScanner::getPermissionsRequired));
+                ResourceScanner::getServiceName, ResourceScanner::getPermissionsRequired));
   }
 }

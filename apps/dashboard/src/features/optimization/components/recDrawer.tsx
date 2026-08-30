@@ -9,19 +9,11 @@ import {
 import { Button } from "@/components/atoms/button";
 import { RecommendationGroup } from "@/features/optimization/types/recommendations";
 import RecommendationCard from "@/features/optimization/components/recCard";
-import { useState, useMemo } from "react";
-import { X, Search, Eye, EyeOff } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
+import { X, Search } from "lucide-react";
 import { Input } from "@/components/atoms/input";
-import Dropdown from "@/components/molecules/dropdown";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/atoms/tooltip";
-
-const ACTIONS = [
-    { value: "ALL", label: "All Actions" },
-    { value: "TERMINATE", label: "Terminate" },
-    { value: "DOWNSIZE", label: "Downsize" },
-    { value: "MODERNIZE", label: "Modernize" },
-    { value: "SUSPEND", label: "Suspend" },
-];
+import { Tabs, TabsList, TabsTrigger } from "@/components/atoms/tabs";
+import { useRecStore } from "@/features/optimization/stores/useRecStore";
 
 interface RecDrawer {
     group: RecommendationGroup;
@@ -31,16 +23,30 @@ interface RecDrawer {
 
 export default function RecDrawer({ group, isOpen, setIsOpen }: Readonly<RecDrawer>) {
     const [searchQuery, setSearchQuery] = useState("");
-    const [actionFilter, setActionFilter] = useState("ALL");
-    const [showHidden, setShowHidden] = useState(false);
+    const [statusTab, setStatusTab] = useState<"active" | "applied" | "dismissed">("active");
+
+    const fetchRecGroups = useRecStore((state) => state.fetchRecGroups);
+
+    useEffect(() => {
+        if (!isOpen) return;
+
+        const interval = setInterval(() => {
+            fetchRecGroups();
+        }, 10800000); // every 3 hours
+
+        return () => clearInterval(interval);
+    }, [isOpen, fetchRecGroups]);
 
     const filteredRecommendations = useMemo(() => {
-        let filtered = group.recommendations.filter((rec) =>
-            showHidden ? rec.status === "DISMISSED" : rec.status !== "DISMISSED"
-        );
-        if (actionFilter && actionFilter !== "ALL") {
-            filtered = filtered.filter((rec) => rec.actionType === actionFilter);
-        }
+        let filtered = group.recommendations.filter((rec) => {
+            if (statusTab === "dismissed") {
+                return rec.status === "DISMISSED";
+            } else if (statusTab === "applied") {
+                return rec.status === "APPLIED";
+            } else {
+                return rec.status === "ACTIVE";
+            }
+        });
 
         if (searchQuery.trim()) {
             const lowerCaseQuery = searchQuery.toLowerCase();
@@ -55,7 +61,11 @@ export default function RecDrawer({ group, isOpen, setIsOpen }: Readonly<RecDraw
         }
 
         return filtered;
-    }, [searchQuery, actionFilter, group.recommendations, showHidden]);
+    }, [searchQuery, group.recommendations, statusTab]);
+
+    const activeCount = group.recommendations.filter((rec) => rec.status === "ACTIVE").length;
+    const appliedCount = group.recommendations.filter((rec) => rec.status === "APPLIED").length;
+    const dismissedCount = group.recommendations.filter((rec) => rec.status === "DISMISSED").length;
 
     return (
         <Drawer direction="right" dismissible={true} open={isOpen} onOpenChange={setIsOpen}>
@@ -84,9 +94,26 @@ export default function RecDrawer({ group, isOpen, setIsOpen }: Readonly<RecDraw
 
                 <div className="h-full w-full p-4 overflow-y-auto space-y-4">
                     {/* filters */}
-                    <div className="flex flex-row w-full justify-between items-center gap-2 pt-2">
-                        {/* search, uses relative and absolute to layer icon on input */}
-                        <div className="relative w-full">
+                    <div className="flex flex-row w-full justify-between items-center gap-4 pt-2">
+                        <Tabs
+                            value={statusTab}
+                            onValueChange={(value) =>
+                                setStatusTab(value as "active" | "applied" | "dismissed")
+                            }
+                        >
+                            <TabsList className="h-auto p-1">
+                                <TabsTrigger value="active" className="text-sm">
+                                    Active ({activeCount})
+                                </TabsTrigger>
+                                <TabsTrigger value="applied" className="text-sm">
+                                    Applied ({appliedCount})
+                                </TabsTrigger>
+                                <TabsTrigger value="dismissed" className="text-sm">
+                                    Dismissed ({dismissedCount})
+                                </TabsTrigger>
+                            </TabsList>
+                        </Tabs>
+                        <div className="relative w-full max-w-xs ml-auto">
                             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                             <Input
                                 type="text"
@@ -96,39 +123,12 @@ export default function RecDrawer({ group, isOpen, setIsOpen }: Readonly<RecDraw
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
                         </div>
-                        {/* filter by action */}
-                        <Dropdown
-                            options={ACTIONS}
-                            value={actionFilter}
-                            onSelect={setActionFilter}
-                            disableSearch
-                            widthVariant="large"
-                            placeholder="Action..."
-                        />
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button
-                                    type="button"
-                                    variant="secondary"
-                                    size="icon"
-                                    className="shrink-0"
-                                    onClick={() => setShowHidden(!showHidden)}
-                                >
-                                    {showHidden ? (
-                                        <Eye className="h-4 w-4" />
-                                    ) : (
-                                        <EyeOff className="h-4 w-4" />
-                                    )}
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>Show dismissed recommendations</TooltipContent>
-                        </Tooltip>
                     </div>
 
                     {/* map recommendations to individual cards */}
                     {filteredRecommendations.length > 0 ? (
                         filteredRecommendations.map((rec) => (
-                            <RecommendationCard recommendation={rec} key={rec.resourceId} />
+                            <RecommendationCard recommendation={rec} key={rec.recommendationId} />
                         ))
                     ) : (
                         <div className="flex justify-center p-8 text-muted-foreground text-sm">

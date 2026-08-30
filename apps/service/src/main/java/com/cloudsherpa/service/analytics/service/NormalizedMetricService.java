@@ -3,14 +3,18 @@ package com.cloudsherpa.service.analytics.service;
 import com.cloudsherpa.lib.dtos.ResourceMetricEntry;
 import com.cloudsherpa.lib.dtos.TimestampedNumericDataPoint;
 import com.cloudsherpa.lib.entities.NormalizedMetrics;
+import com.cloudsherpa.lib.entities.ProviderEnum;
 import com.cloudsherpa.lib.projections.AggregatedMetric;
 import com.cloudsherpa.lib.projections.ResourceNames;
 import com.cloudsherpa.lib.repositories.NormalizedMetricsRepository;
 import com.cloudsherpa.lib.repositories.ResourceRepository;
 import com.cloudsherpa.service.analytics.dto.DownsampledSeriesRequestDto;
+import com.cloudsherpa.service.analytics.dto.MetricDto;
 import com.cloudsherpa.service.analytics.dto.ResourceMetricHistoricalResponseDto;
 import com.cloudsherpa.service.analytics.dto.ResourceMetricsGroupDto;
 import com.cloudsherpa.service.analytics.model.ResourceMetric;
+import com.cloudsherpa.service.metrics.MetricDisplayNameMapper;
+import com.cloudsherpa.service.metrics.ResourceProviderResolver;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -32,17 +36,23 @@ import org.springframework.web.server.ResponseStatusException;
 public class NormalizedMetricService {
   private final NormalizedMetricsRepository normalizedMetricsRepository;
   private final ResourceRepository resourceRepository;
+  private final MetricDisplayNameMapper metricMapper;
+  private final ResourceProviderResolver resourceProviderResolver;
 
   private final Logger logger = LoggerFactory.getLogger(NormalizedMetricService.class);
 
   NormalizedMetricService(
       NormalizedMetricsRepository normalizedMetricsRepository,
-      ResourceRepository resourceRepository) {
+      ResourceRepository resourceRepository,
+      MetricDisplayNameMapper metricMapper,
+      ResourceProviderResolver resourceProviderResolver) {
     this.normalizedMetricsRepository = normalizedMetricsRepository;
     this.resourceRepository = resourceRepository;
+    this.metricMapper = metricMapper;
+    this.resourceProviderResolver = resourceProviderResolver;
   }
 
-  public List<AggregatedMetric> fetchHistoricalData(String from, String to, String interval) {
+  public List<MetricDto> fetchHistoricalData(String from, String to, String interval) {
     OffsetDateTime parsedFromDate;
     OffsetDateTime parsedToDate;
     String normalizedInterval = interval.toLowerCase(Locale.ROOT);
@@ -77,8 +87,23 @@ public class NormalizedMetricService {
             HttpStatus.BAD_REQUEST, "Invalid interval. Supported values: daily, weekly, monthly");
     }
 
-    return normalizedMetricsRepository.findAggregatedMetricsByPeriod(
-        parsedFromDate, parsedToDate, bucketWidth);
+    List<AggregatedMetric> rawMetrics =
+        normalizedMetricsRepository.findAggregatedMetricsByPeriod(
+            parsedFromDate, parsedToDate, bucketWidth);
+
+    return rawMetrics.stream()
+        .map(
+            m ->
+                new MetricDto(
+                    m.getResourceId(),
+                    m.getMetricType(),
+                    metricMapper.toDisplayName(m.getMetricName()),
+                    m.getMetricValue(),
+                    m.getUnit(),
+                    m.getPeriodStart().atOffset(ZoneOffset.UTC),
+                    m.getPeriodEnd().atOffset(ZoneOffset.UTC),
+                    m.getSampleCount()))
+        .toList();
   }
 
   public Map<String, String> fetchResourceNames() {
@@ -98,13 +123,21 @@ public class NormalizedMetricService {
 
     ZoneOffset offset = from.getOffset();
     Instant fromInstant = from.toInstant();
+
+    ProviderEnum provider = resourceProviderResolver.resolveProvider(resourceId);
+
+    String canonMetricName = metricMapper.toCanonicalName(provider.toString(), metricType);
+
     List<TimestampedNumericDataPoint> fetchedResourceMetrics =
         normalizedMetricsRepository.getTimestampedMetricValuesAfterDate(
-            resourceId, metricType, fromInstant);
+            resourceId, canonMetricName, fromInstant);
 
     if (fetchedResourceMetrics.isEmpty()) {
       logger.info(
-          "Lookup failed for resource {}, metric {} and data {}", resourceId, metricType, from);
+          "Lookup failed for resource {}, metric {} and data {}",
+          resourceId,
+          canonMetricName,
+          from);
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No resource metrics found");
     }
 
@@ -120,8 +153,18 @@ public class NormalizedMetricService {
   }
 
   public List<NormalizedMetrics> fetchDownsampledSeries(DownsampledSeriesRequestDto request) {
-    return normalizedMetricsRepository.getDownsampledNormalizedMetrics(
-        request.resourceId(), request.metricName(), request.from(), request.to());
+    ProviderEnum provider = resourceRepository.findProviderByResourceId(request.resourceId());
+    String canonMetricName =
+        metricMapper.toCanonicalName(provider.toString(), request.metricName());
+
+    List<NormalizedMetrics> response =
+        normalizedMetricsRepository.getDownsampledNormalizedMetrics(
+            request.resourceId(), canonMetricName, request.from(), request.to());
+
+    response.forEach(
+        metric -> metric.setMetricName(metricMapper.toDisplayName(metric.getMetricName())));
+
+    return response;
   }
 
   public List<ResourceMetricsGroupDto> fetchResourceMetrics() {
@@ -138,7 +181,8 @@ public class NormalizedMetricService {
           .computeIfAbsent(distinctResourceMetric.resourceId(), resourceId -> new ArrayList<>())
           .add(
               new ResourceMetric(
-                  distinctResourceMetric.metricName(), distinctResourceMetric.metricType()));
+                  metricMapper.toDisplayName(distinctResourceMetric.metricName()),
+                  distinctResourceMetric.metricType()));
     }
 
     metricsByResourceId.forEach(
