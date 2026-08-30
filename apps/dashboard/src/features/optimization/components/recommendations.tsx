@@ -104,10 +104,6 @@ export default function Recommendations() {
                             className="text-primary"
                         />
                         <RecommendationCardHero
-                            value={`Acknowledged ${summary.acknowledged}`}
-                            className="text-warning"
-                        />
-                        <RecommendationCardHero
                             value={`Dismissed ${summary.dismissed}`}
                             className="text-destructive"
                         />

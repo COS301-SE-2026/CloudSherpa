@@ -7,7 +7,6 @@ import {
 import { getAwsAccountConnections, getAwsAccountResources } from "@/lib/fetch/aws-connection-api";
 import {
     getOptimizationRecommendations,
-    acknowledgeRecommendation,
     dismissRecommendation,
     applyRecommendation,
     getRecommendationSummary,
@@ -21,7 +20,6 @@ interface RecStore {
     failedLoadingMessage: string;
     fetchRecGroups: () => Promise<void>;
     fetchSummary: () => Promise<void>;
-    acknowledgeRec: (recommendationId: string) => Promise<void>;
     dismissRec: (recommendationId: string) => Promise<void>;
     applyRec: (recommendationId: string) => Promise<void>;
 }
@@ -115,15 +113,6 @@ export const useRecStore = create<RecStore>((set, get) => ({
                 failedLoading: true,
                 failedLoadingMessage: "Failed to fetch recommendations",
             });
-        }
-    },
-
-    acknowledgeRec: async (recommendationId: string) => {
-        try {
-            await acknowledgeRecommendation(recommendationId);
-            await get().fetchRecGroups();
-        } catch (error) {
-            console.error("Failed to acknowledge recommendation:", error);
         }
     },
 

@@ -32,23 +32,6 @@ export const getRecommendationSummary = async (): Promise<RecommendationSummary>
     }
 };
 
-export const acknowledgeRecommendation = async (
-    recommendationId: string
-): Promise<Recommendation> => {
-    try {
-        const data = await apiClient<Recommendation>(
-            `/optimization/recommendations/${recommendationId}/acknowledge`,
-            {
-                method: "POST",
-            }
-        );
-        return data as Recommendation;
-    } catch (error) {
-        console.error("Failed to flag recommendation as acknowledged:", error);
-        throw error;
-    }
-};
-
 export const dismissRecommendation = async (recommendationId: string): Promise<Recommendation> => {
     try {
         const data = await apiClient<Recommendation>(

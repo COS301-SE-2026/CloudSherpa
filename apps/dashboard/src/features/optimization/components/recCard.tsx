@@ -23,21 +23,8 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
 
     const evidenceText = evidence ? formatEvidenceText(evidence[0], evidence[1]) : "N/A";
 
-    const acknowledgeRec = useRecStore((state) => state.acknowledgeRec);
     const dismissRec = useRecStore((state) => state.dismissRec);
     const applyRec = useRecStore((state) => state.applyRec);
-
-    const handleAcknowledge = async (e: React.MouseEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        try {
-            await acknowledgeRec(recommendation.recommendationId);
-            toast.success(`Successfully acknowledged recommendation.`);
-        } catch {
-            toast.error(`Failed to acknowledge recommendation.`);
-            return;
-        }
-    };
 
     const handleDismiss = async (e: React.MouseEvent) => {
         e.preventDefault();
@@ -99,9 +86,6 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
                     <div className="flex flex-row gap-4 justify-end items-center">
                         <Button type="button" onClick={handleApply}>
                             Apply
-                        </Button>
-                        <Button type="button" variant={"secondary"} onClick={handleAcknowledge}>
-                            Acknowledge
                         </Button>
                         <Button type="button" variant={"destructive"} onClick={handleDismiss}>
                             Dismiss
