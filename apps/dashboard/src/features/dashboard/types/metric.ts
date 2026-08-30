@@ -26,16 +26,32 @@ export type Metric = {
     metricType: MetricType;
     timestamp: string;
     value: number;
+
+    unit?: string;
+    currency?: string;
+    periodStart?: string;
+    periodEnd?: string;
 };
 
 // Maps timestamp: record
 export type MetricSeries = Record<string, Metric>;
+
+export interface AvailableMetric {
+    resourceId: string;
+
+    metrics: { metricName: string; metricType: string }[];
+}
 
 export type MetricStore = {
     seriesByKey: Record<string, MetricSeries>;
 
     addMetric: (metric: Metric) => void;
     addMetricFromDto: (metricDto: MetricDTO) => void;
+
+    initializeMetricSeries: (availableMetrics: AvailableMetric[]) => void;
+
+    setMetricSeries: (resourceId: string, metricName: string, metrics: Metric[]) => void;
+
     clearStore: () => void;
     getResourceList: () => string[];
     // Maps resource id to its available metrics

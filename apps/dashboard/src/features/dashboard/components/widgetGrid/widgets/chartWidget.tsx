@@ -16,6 +16,7 @@ import {
     TooltipTrigger,
 } from "@/components/atoms/tooltip";
 import { useRecStore } from "@/features/optimization/stores/useRecStore";
+import { useFetchMetricHistoricalData } from "@/features/dashboard/hooks/useFetchMetricHistoricalData";
 
 interface BaseChartProps {
     resourceId: string;
@@ -47,6 +48,16 @@ export function ChartWidget({
     // watch widget content while expanding
     const contentRef = useRef<HTMLDivElement>(null);
     const [isLayoutReady, setIsLayoutReady] = useState(false);
+
+    const fromMs = useDashboardStore((state) => state.fromMs);
+    const toMs = useDashboardStore((state) => state.toMs);
+
+    useFetchMetricHistoricalData({
+        resourceId: resourceId ?? "",
+        fromMs: fromMs,
+        toMs: toMs,
+        metricName: metricName ?? undefined,
+    });
 
     useEffect(() => {
         if (!contentRef.current) return; //check content present

@@ -153,8 +153,19 @@ public class NormalizedMetricService {
   }
 
   public List<NormalizedMetrics> fetchDownsampledSeries(DownsampledSeriesRequestDto request) {
+    ProviderEnum provider = resourceRepository.findProviderByResourceId(request.resourceId());
+    String canonMetricName =
+        metricMapper.toCanonicalName(provider.toString(), request.metricName());
+
+    List<NormalizedMetrics> response =
+        normalizedMetricsRepository.getDownsampledNormalizedMetrics(
+            request.resourceId(), canonMetricName, request.from(), request.to());
+
+    response.forEach(
+        metric -> metric.setMetricName(metricMapper.toDisplayName(metric.getMetricName())));
+
     return normalizedMetricsRepository.getDownsampledNormalizedMetrics(
-        request.resourceId(), request.metricName(), request.from(), request.to());
+        request.resourceId(), canonMetricName, request.from(), request.to());
   }
 
   public List<ResourceMetricsGroupDto> fetchResourceMetrics() {

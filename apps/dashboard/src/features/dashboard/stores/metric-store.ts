@@ -116,6 +116,46 @@ export const useMetricStore = create<MetricStore>((set, get) => ({
         }));
     },
 
+    initializeMetricSeries: (availableMetrics) => {
+        set((state) => {
+            const seriesByKey = {
+                ...state.seriesByKey,
+            };
+
+            for (const resource of availableMetrics) {
+                if (!resource.resourceId) {
+                    continue;
+                }
+
+                for (const metric of resource.metrics) {
+                    if (!metric.metricType || metric.metricType === "string") {
+                        continue;
+                    }
+
+                    const key = `${resource.resourceId}:${metric.metricName}`;
+
+                    if (!seriesByKey[key]) {
+                        seriesByKey[key] = {};
+                    }
+                }
+            }
+            return { seriesByKey };
+        });
+    },
+
+    setMetricSeries: (resourceId, metricName, metrics) => {
+        const key = `${resourceId}:${metricName}`;
+
+        const series = Object.fromEntries(metrics.map((metric) => [metric.timestamp, metric]));
+
+        set((state) => ({
+            seriesByKey: {
+                ...state.seriesByKey,
+                [key]: series,
+            },
+        }));
+    },
+
     clearStore: () => {
         set(() => ({
             seriesByKey: {},
@@ -133,18 +173,15 @@ export const useMetricStore = create<MetricStore>((set, get) => ({
 
     getMetricList: () => {
         const { seriesByKey } = get();
-
         const mapMetricNames: Record<string, Set<string>> = {};
 
-        Object.values(seriesByKey).forEach((series) => {
-            Object.values(series).forEach((metric) => {
-                const resourceId = metric.resource_id;
+        Object.keys(seriesByKey).forEach((key) => {
+            const [resourceId, metricName] = key.split(":");
 
-                if (!mapMetricNames[resourceId]) {
-                    mapMetricNames[resourceId] = new Set<string>();
-                }
-                mapMetricNames[resourceId].add(metric.metricName);
-            });
+            if (!mapMetricNames[resourceId]) {
+                mapMetricNames[resourceId] = new Set<string>();
+            }
+            mapMetricNames[resourceId].add(metricName);
         });
 
         const finalArray: Record<string, string[]> = {};
