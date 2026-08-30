@@ -19,6 +19,7 @@ export interface ChartWidgetDTO extends BaseWidgetDTO {
     accountId: string | null;
     resourceId: string | null;
     metricType: string | null;
+    metricName: string | null;
 }
 
 export interface KpiWidgetDto extends BaseWidgetDTO {
@@ -61,6 +62,7 @@ export interface ChartWidgetConfigUpdateDTO {
     accountId: string | null;
     resourceId: string | null;
     metricType: string | null;
+    metricName: string | null;
 }
 
 export interface KpiWidgetConfigUpdateDTO {

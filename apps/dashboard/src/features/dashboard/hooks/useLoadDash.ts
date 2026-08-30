@@ -50,6 +50,7 @@ export function processFetchedDashboards(fetchedData: DashboardDTO[]) {
                     accountId: w.accountId,
                     resourceId: w.resourceId,
                     metricType: w.metricType as MetricType | null,
+                    metricName: w.metricName,
                 });
             } else if (w.widgetType === "KPI") {
                 configsArray.push({
