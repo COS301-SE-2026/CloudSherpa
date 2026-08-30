@@ -2,7 +2,6 @@
 import { Recommendation } from "@/features/optimization/types/recommendations";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/atoms/card";
 import { useState } from "react";
-import { getRecommendationDictionary } from "@/features/optimization/utils/recommendationDictionary";
 import { Button } from "@/components/atoms/button";
 import { useRecStore } from "@/features/optimization/stores/useRecStore";
 import { Badge } from "@/components/atoms/badge";
@@ -196,11 +195,7 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
                             ))}
                         </div>
                     </div>
-
-                    {/* explanation */}
-                    {getRecommendationDictionary(recommendation)}
-
-                    <div className="flex flex-row gap-4 justify-end items-center">
+                    <div className="flex flex-row gap-4 justify-start items-center">
                         {renderActionButtons()}
                     </div>
                 </CardContent>
