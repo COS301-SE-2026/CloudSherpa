@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.cloudsherpa.lib.dtos.TimestampedNumericDataPoint;
+import com.cloudsherpa.lib.entities.ProviderEnum;
 import com.cloudsherpa.lib.repositories.NormalizedMetricsRepository;
 import com.cloudsherpa.service.intelligence.dto.IntelligenceForecastRequestDto;
 import com.cloudsherpa.service.intelligence.dto.IntelligenceForecastResponseDto;
@@ -17,6 +18,8 @@ import com.cloudsherpa.service.intelligence.dto.SanatizedSeries;
 import com.cloudsherpa.service.intelligence.exceptions.InsufficientContextAvailable;
 import com.cloudsherpa.service.intelligence.service.Sampler;
 import com.cloudsherpa.service.intelligence.service.usage.UsageForecastingService;
+import com.cloudsherpa.service.metrics.MetricDisplayNameMapper;
+import com.cloudsherpa.service.metrics.ResourceProviderResolver;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -56,6 +59,10 @@ class UsageForecastingServiceTest {
 
   @Mock RestClient.ResponseSpec responseSpec;
 
+  @Mock ResourceProviderResolver resourceResolver;
+
+  @Mock MetricDisplayNameMapper displayNameMapper;
+
   private ResourceUsageForecastRequestDto validRequest;
 
   @InjectMocks private UsageForecastingService usageForecastingService;
@@ -72,6 +79,8 @@ class UsageForecastingServiceTest {
     when(normalizedMetricsRepository.getTimestampedMetricValues(
             RESOURCE_ID, METRIC_TYPE, PageRequest.of(0, CONTEXT_LENGTH)))
         .thenReturn(List.of());
+
+    mockResourceMetricMapping();
 
     // Act & Assert
     assertThrows(
@@ -93,6 +102,7 @@ class UsageForecastingServiceTest {
             RESOURCE_ID, METRIC_TYPE, PageRequest.of(0, CONTEXT_LENGTH)))
         .thenReturn(usageSeries);
     when(sampler.sample(usageSeries, true)).thenReturn(new SanatizedSeries(usageSeries, 86_400));
+    mockResourceMetricMapping();
 
     // Act & Assert
     assertThrows(
@@ -118,6 +128,7 @@ class UsageForecastingServiceTest {
             RESOURCE_ID, METRIC_TYPE, PageRequest.of(0, CONTEXT_LENGTH)))
         .thenReturn(usageSeries);
     when(sampler.sample(usageSeries, true)).thenReturn(new SanatizedSeries(usageSeries, 86_400));
+    mockResourceMetricMapping();
 
     // Act and Assert
     ResponseStatusException responseStatusException =
@@ -150,6 +161,7 @@ class UsageForecastingServiceTest {
         .thenReturn(usageSeries);
 
     when(sampler.sample(usageSeries, true)).thenReturn(new SanatizedSeries(usageSeries, 86_400));
+    mockResourceMetricMapping();
 
     mockForecastingServiceResponse(forecastResponse);
 
@@ -175,6 +187,7 @@ class UsageForecastingServiceTest {
             RESOURCE_ID, METRIC_TYPE, PageRequest.of(0, CONTEXT_LENGTH)))
         .thenReturn(usageSeries);
     when(sampler.sample(usageSeries, true)).thenReturn(new SanatizedSeries(usageSeries, 86_400));
+    mockResourceMetricMapping();
 
     // Act & Assert
     assertThrows(
@@ -210,6 +223,7 @@ class UsageForecastingServiceTest {
         .thenReturn(usageSeries);
     when(sampler.sample(usageSeries, true)).thenReturn(new SanatizedSeries(usageSeries, 86_400));
     mockForecastingServiceResponse(forecastResponse);
+    mockResourceMetricMapping();
 
     // Act
     ResourceUsageForecastResponseDto response = usageForecastingService.forecastUsage(validRequest);
@@ -219,6 +233,12 @@ class UsageForecastingServiceTest {
     assertEquals(forecast, response.predictedValues());
     assertEquals(q1, response.q1Values());
     assertEquals(q3, response.q3Values());
+  }
+
+  private void mockResourceMetricMapping() {
+    when(resourceResolver.resolveProvider(RESOURCE_ID)).thenReturn(ProviderEnum.AWS);
+    when(displayNameMapper.toCanonicalName(ProviderEnum.AWS.toString(), METRIC_TYPE))
+        .thenReturn(METRIC_TYPE);
   }
 
   private void mockForecastingServiceResponse(IntelligenceForecastResponseDto response) {
