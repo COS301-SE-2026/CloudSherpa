@@ -8,15 +8,12 @@ import {
     formattingSecond,
     useIngestionPeriod,
 } from "@/features/connectionManager/components/connectionManager/wizardSetup/stepThree";
-import {
-    createGcpConnection,
-    GcpCredentialsDto,
-    PersistGcpConnectionRequest,
-    ResourceSelectionDto,
-} from "@/lib/fetch/gcp-connection-api";
-import { ResourceDetail } from "@/lib/fetch/cloud-resource-api";
+import { createGcpConnection, PersistGcpConnectionRequest } from "@/lib/fetch/gcp-connection-api";
 import { useRouter } from "next/navigation";
 import { GcpBillingConfigType } from "./validTypes";
+import { ResourceSelectionDto } from "@/lib/fetch/azure-connection-api";
+import { GcpCredentialsDto } from "@/lib/fetch/dto/cloud-credentials";
+import { ResourceDetail } from "@/lib/fetch/dto/cloud-resource";
 /*
 - should have tanstack table for resources, as elect & deselect all for it
 - should also have pagination
@@ -39,7 +36,6 @@ export default function StepThreeGcp({
     billingConfig,
     onComplete,
     onBack,
-    ingestionPeriod,
 }: Readonly<StepThreePropsForGcp>) {
     const [forSaving, setForSaving] = useState(false);
 

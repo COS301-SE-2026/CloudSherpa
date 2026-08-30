@@ -13,15 +13,14 @@ import {
     TooltipTrigger,
 } from "@/components/atoms/tooltip";
 import { useParams, useRouter } from "next/navigation";
-
 import {
-    CloudAccountDetails,
-    CloudResource,
-    ResourceStatus,
     getAwsAccount,
     getAwsAccountResources,
     updateAwsAccountName,
-} from "@/lib/fetch/aws-connection-api";
+} from "@/lib/fetch/cloud-account-api";
+import { CloudAccountDetails } from "@/lib/fetch/dto/cloud-account";
+import { CloudResource, ResourceStatus } from "@/lib/fetch/dto/cloud-resource";
+
 /*
 - the user should be able to veiw details about a particular connectio here
 - they should also be able to see the resources assoc with this connection (the ones that are active)

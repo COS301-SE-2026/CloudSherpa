@@ -1,17 +1,14 @@
 import { create } from "zustand";
 import {
-    getAwsAccountConnections,
-    getAwsAccountResources,
-    CloudAccount,
-    CloudResource,
-} from "@/lib/fetch/aws-connection-api";
-import {
     MOCK_ACCOUNTS,
     MOCK_RESOURCES,
     getMockBillingData,
     mockApiResponse,
 } from "@/features/intelligence/mock/billingMockData";
 import { BillingForecastDto, BillingSummaryDto, CostBreakdownItem } from "../types/dtos";
+import { getAwsAccountConnections, getAwsAccountResources } from "@/lib/fetch/cloud-account-api";
+import { CloudAccount } from "@/lib/fetch/dto/cloud-account";
+import { CloudResource } from "@/lib/fetch/dto/cloud-resource";
 
 const USE_MOCK = true;
 

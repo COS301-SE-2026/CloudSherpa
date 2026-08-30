@@ -1,8 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import {
-    CloudCredentials,
-    ResourceDetail,
     AwsPolicy,
     getCloudServices,
     generateAwsPermissionsPolicy,
@@ -11,6 +9,8 @@ import {
 import { AwsBillingForm } from "./billingForm";
 import { Progress } from "@/components/atoms/progress";
 import { StepTwo } from "@/features/connectionManager/components/connectionManager/wizardSetup/stepTwo";
+import { CloudCredentials } from "@/lib/fetch/dto/cloud-credentials";
+import { ResourceDetail } from "@/lib/fetch/dto/cloud-resource";
 
 export interface BillingConfig {
     prefix: string;

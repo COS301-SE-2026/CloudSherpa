@@ -4,7 +4,6 @@ import {
     RecommendationGroup,
     RecommendationSummary,
 } from "@/features/optimization/types/recommendations";
-import { getAwsAccountConnections, getAwsAccountResources } from "@/lib/fetch/aws-connection-api";
 import {
     getOptimizationRecommendations,
     acknowledgeRecommendation,
@@ -12,6 +11,7 @@ import {
     applyRecommendation,
     getRecommendationSummary,
 } from "@/lib/fetch/api-optimization";
+import { getAwsAccountConnections, getAwsAccountResources } from "@/lib/fetch/cloud-account-api";
 
 interface RecStore {
     recommendationGroups: RecommendationGroup[];
