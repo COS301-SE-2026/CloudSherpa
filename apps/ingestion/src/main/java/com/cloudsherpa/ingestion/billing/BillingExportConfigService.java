@@ -1,19 +1,53 @@
 package com.cloudsherpa.ingestion.billing;
 
+import com.cloudsherpa.lib.entities.AwsBillingExportConfig;
 import com.cloudsherpa.lib.entities.BillingExportConfig;
+import com.cloudsherpa.lib.entities.GcpBillingExportConfig;
+import com.cloudsherpa.lib.repositories.AwsBillingExportConfigRepository;
 import com.cloudsherpa.lib.repositories.BillingExportConfigRepository;
+import com.cloudsherpa.lib.repositories.GcpBillingExportConfigRepository;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 @Service
 public class BillingExportConfigService {
   private final BillingExportConfigRepository billingExportConfigRepository;
+  private final AwsBillingExportConfigRepository awsBillingExportConfigRepository;
+  private final GcpBillingExportConfigRepository gcpBillingExportConfigRepository;
 
-  public BillingExportConfigService(BillingExportConfigRepository billingExportConfigRepository) {
+  public BillingExportConfigService(
+      BillingExportConfigRepository billingExportConfigRepository,
+      AwsBillingExportConfigRepository awsBillingExportConfigRepository,
+      GcpBillingExportConfigRepository gcpBillingExportConfigRepository) {
     this.billingExportConfigRepository = billingExportConfigRepository;
+    this.awsBillingExportConfigRepository = awsBillingExportConfigRepository;
+    this.gcpBillingExportConfigRepository = gcpBillingExportConfigRepository;
   }
 
-  public BillingExportConfig getAccountBillingExportConfig(UUID accountId) {
-    return billingExportConfigRepository.findById(accountId).orElseThrow();
+  public BillingExportConfig getBillingExportConfig(UUID configId) {
+    return billingExportConfigRepository.findById(configId).orElseThrow();
+  }
+
+  public AwsBillingExportConfig getAccountAwsBillingExportConfig(UUID configId) {
+    BillingExportConfig config = billingExportConfigRepository.findById(configId).orElseThrow();
+    return awsBillingExportConfigRepository.findById(config.getId()).orElseThrow();
+  }
+
+  public GcpBillingExportConfig getGcpBillingExportConfig(UUID configId) {
+    BillingExportConfig config = getBillingExportConfig(configId);
+    return gcpBillingExportConfigRepository.findById(config.getId()).orElseThrow();
+  }
+
+  // Allow dev runs to save configs to repos idempotently
+  public void saveBillingExport(BillingExportConfig billingExport) {
+    if (billingExportConfigRepository.findById(billingExport.getId()).isEmpty()) {
+      billingExportConfigRepository.save(billingExport);
+    }
+  }
+
+  public void saveGcpBillingExport(GcpBillingExportConfig gcpBillingExportConfig) {
+    if (gcpBillingExportConfigRepository.findById(gcpBillingExportConfig.getConfigId()).isEmpty()) {
+      gcpBillingExportConfigRepository.save(gcpBillingExportConfig);
+    }
   }
 }

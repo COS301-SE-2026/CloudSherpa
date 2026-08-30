@@ -9,6 +9,7 @@ import com.cloudsherpa.ingestion.connector.ServiceScope;
 import com.cloudsherpa.ingestion.models.IngestionRequestEvent;
 import com.cloudsherpa.ingestion.models.UsageRecordModel;
 import com.cloudsherpa.ingestion.provider.gcp.factory.GcpClientFactory;
+import com.cloudsherpa.ingestion.provider.monitoring.CloudMonitoringMetricProvider;
 import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.monitoring.v3.MetricServiceClient;
@@ -42,7 +43,11 @@ public class GcpCloudMonitoringMetricProvider implements CloudMonitoringMetricPr
   }
 
   private MetricFilter buildFilter(
-      String resourceLabel, String resourceType, Metric metric, String resourceId) {
+      String resourceLabel,
+      String resourceType,
+      Metric metric,
+      String resourceId,
+      String resourceRegion) {
 
     StringBuilder filter = new StringBuilder();
 
@@ -57,7 +62,8 @@ public class GcpCloudMonitoringMetricProvider implements CloudMonitoringMetricPr
 
     filter.append("AND metric.type=\"").append(metric.getName()).append("\"");
 
-    return new MetricFilter(resourceType, resourceId, resourceLabel, filter.toString(), metric);
+    return new MetricFilter(
+        resourceType, resourceId, resourceLabel, filter.toString(), metric, resourceRegion);
   }
 
   private List<MetricFilter> processServiceScope(ServiceScope scope) {
@@ -74,7 +80,12 @@ public class GcpCloudMonitoringMetricProvider implements CloudMonitoringMetricPr
       String instanceValue = instanceDetail.getIdentifier();
       for (Metric metric : scope.getMetrics()) {
         MetricFilter filter =
-            buildFilter(instance.getIdentifierName(), scope.getName(), metric, instanceValue);
+            buildFilter(
+                instance.getIdentifierName(),
+                scope.getName(),
+                metric,
+                instanceValue,
+                instanceDetail.getRegion());
         filters.add(filter);
       }
     }
@@ -103,7 +114,8 @@ public class GcpCloudMonitoringMetricProvider implements CloudMonitoringMetricPr
       Metric metric,
       String resourceId,
       String serviceType,
-      String resourceType) {
+      String resourceType,
+      String region) {
     List<UsageRecordModel> results = new ArrayList<>();
 
     for (Point point : series.getPointsList()) {
@@ -114,6 +126,7 @@ public class GcpCloudMonitoringMetricProvider implements CloudMonitoringMetricPr
       usage.setResourceType(resourceType);
       usage.setResourceId(resourceId);
       usage.setUnit(metric.getUnit());
+      usage.setRegion(region);
       usage.setTimestamp(Instant.ofEpochSecond(point.getInterval().getEndTime().getSeconds()));
       usage.setIngestionTimestamp(Instant.now());
       usage.setPeriodEnd(Instant.ofEpochSecond(point.getInterval().getEndTime().getSeconds()));
@@ -140,7 +153,6 @@ public class GcpCloudMonitoringMetricProvider implements CloudMonitoringMetricPr
     try {
       client = buildClient(request.getCredentials());
     } catch (IOException e) {
-      e.printStackTrace();
       throw new IllegalArgumentException(
           "Invalid account credentials provided for GCP usage metric ingestion");
     }
@@ -187,10 +199,13 @@ public class GcpCloudMonitoringMetricProvider implements CloudMonitoringMetricPr
                           metricFilter.metrics(),
                           metricFilter.resourceId(),
                           metricFilter.serviceType(),
-                          metricFilter.resourceType())));
+                          metricFilter.resourceType(),
+                          metricFilter.region())));
     }
+    client.close();
     for (UsageRecordModel result : results) {
-      result.setProjectId(accountScope.getProjectId());
+      result.setAccountId(accountScope.getAccountId());
+      result.setProjectId(accountScope.getAccountId());
       result.setIngestionId(ingestionId);
       result.setProvider("GCP");
       result.setSource("GCPMonitoringService");
@@ -201,5 +216,10 @@ public class GcpCloudMonitoringMetricProvider implements CloudMonitoringMetricPr
   }
 
   public record MetricFilter(
-      String serviceType, String resourceId, String resourceType, String filter, Metric metrics) {}
+      String serviceType,
+      String resourceId,
+      String resourceType,
+      String filter,
+      Metric metrics,
+      String region) {}
 }

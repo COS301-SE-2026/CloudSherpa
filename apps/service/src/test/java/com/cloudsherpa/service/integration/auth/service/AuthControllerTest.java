@@ -17,7 +17,9 @@ import org.testcontainers.utility.DockerImageName;
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = {
       "AES_ENCRYPTION_KEY=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
-      "INGESTION_BASE_URL=http://localhost:8081"
+      "INGESTION_BASE_URL=http://localhost:8081",
+      "intelligence-api-key=123",
+      "ingestion-api-key=abc123"
     })
 // @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class AuthControllerTest {
@@ -25,7 +27,7 @@ class AuthControllerTest {
   @Container @ServiceConnection
   static PostgreSQLContainer timescaledb =
       new PostgreSQLContainer(
-              DockerImageName.parse("timescale/timescaledb:2.16.1-pg16")
+              DockerImageName.parse("timescale/timescaledb-ha:pg16-ts2.29")
                   .asCompatibleSubstituteFor("postgres"))
           .withInitScript("sherpadb-schema.sql");
 

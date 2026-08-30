@@ -5,6 +5,7 @@ import { useAuthContext } from "../providers/AuthContext";
 import { useRouter } from "next/navigation";
 import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
 import { useResourceNameStore } from "@/features/dashboard/stores/resource-store";
+import { useUsageIntelligenceConfigStore } from "@/features/intelligence/stores/useUsageIntelligenceConfigStore";
 
 export function useLogout() {
     const authContext = useAuthContext();
@@ -12,12 +13,16 @@ export function useLogout() {
     const resetDashboardStore = useDashboardStore((state) => state.actions.reset);
     const resetWindowStore = useDashboardStore((state) => state.clear);
     const resetResourceStore = useResourceNameStore((state) => state.reset);
+    const resetUsageIntelligenceConfigStore = useUsageIntelligenceConfigStore(
+        (state) => state.reset
+    );
     const [logoutError, setLogoutError] = useState(false);
 
     function clearStores() {
         resetDashboardStore();
         resetWindowStore();
         resetResourceStore();
+        resetUsageIntelligenceConfigStore();
     }
 
     async function logout() {

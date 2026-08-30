@@ -1,9 +1,12 @@
 package com.cloudsherpa.service.resourcediscovery.dto;
 
 public record CloudCredentialsDto(
-    String accessKey,
-    String secretKey,
+    String accessKeyId,
+    String secretAccessKey,
     String awsRegion,
+    String subscriptionId,
     String tenantId,
     String clientId,
-    String clientSecret) {}
+    String clientSecret,
+    String projectId,
+    String serviceAccountJson) {}

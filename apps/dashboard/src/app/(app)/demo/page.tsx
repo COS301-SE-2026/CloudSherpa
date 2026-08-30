@@ -13,16 +13,22 @@ const MOCK_CHART_WIDGETS: WidgetConfig[] = [
         widgetType: "CHART",
         chartType: "line_chart",
         displayName: "Server CPU Load (Mock)",
+        provider: "AWS",
+        accountId: "stuff",
         resourceId: "demo-server-01",
         metricType: "cpu",
+        metricName: "CPU UTILIZATION",
     },
     {
         id: "mock-widget-2",
         widgetType: "CHART",
         chartType: "gauge_chart",
         displayName: "Memory Utilization (Mock)",
+        provider: "AWS",
+        accountId: "stuff",
         resourceId: "demo-server-01",
         metricType: "memory",
+        metricName: "MEMORY",
     },
 ];
 
@@ -59,6 +65,7 @@ export default function DemoPage() {
                     value: value,
                     resource_id: "demo-server-01",
                     metricType: "cpu",
+                    metricName: "CPU UTILIZATION",
                 };
 
                 return acc;
@@ -73,6 +80,7 @@ export default function DemoPage() {
                 value: 72.5,
                 resource_id: "demo-server-01",
                 metricType: "memory",
+                metricName: "MEMORY",
             },
         };
 

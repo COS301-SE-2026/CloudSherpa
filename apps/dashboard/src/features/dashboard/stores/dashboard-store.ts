@@ -16,6 +16,8 @@ import { TimeWindowPreset } from "../types/timewindow";
 import { setDashboardPresetTimeWindow } from "../utils/setDashboardTimeWindow";
 import { persist } from "zustand/middleware";
 import { getPresetRange } from "../components/toolbar/timePeriodSelector";
+import { timeMs } from "@/lib/timeUtils";
+import { toast } from "sonner";
 
 const tickIntervalMs = 60_000;
 
@@ -23,7 +25,7 @@ function getDefaultWindow() {
     const toMs = Date.now();
 
     return {
-        fromMs: toMs - 7 * 24 * 60 * 60 * 1000,
+        fromMs: toMs - 7 * timeMs.dayMs,
         toMs,
         selectedPreset: "T_7_DAYS" as TimeWindowPreset,
     };
@@ -38,7 +40,7 @@ interface DashboardActions {
     removeDashboard: (id: string) => void;
     addWidget: (layout: LayoutItem, widget: WidgetConfig) => void;
     getWidget: (id: string) => WidgetConfig | undefined;
-    updateChartWidgetConfig: (widget: ChartWidgetConfig) => void;
+    updateChartWidgetConfig: (widget: ChartWidgetConfig) => Promise<void>;
     updateKpiWidgetConfig: (widget: KpiWidgetConfig) => void;
     removeWidget: (layoutId: string, widgetId: string) => void;
     updateLayouts: (newLayouts: LayoutItem[]) => void;
@@ -47,6 +49,8 @@ interface DashboardActions {
         layouts: LayoutItem[],
         widgets: WidgetConfig[]
     ) => void;
+    getDashboardNameByID: (id: string) => string | undefined;
+    getWidgetNameById: (id: string) => string | undefined;
     reset: () => void;
 }
 
@@ -127,6 +131,7 @@ const createDashboardSlice: StateCreator<DashboardStore, [], [], DashboardSlice>
         clearSnapshot: () => set({ snapshot: null }),
 
         setActiveDashboard: (id) => set({ activeDashboardId: id }),
+
         addDashboard: (dashboard) =>
             set((state) => ({
                 dashboards: {
@@ -135,7 +140,9 @@ const createDashboardSlice: StateCreator<DashboardStore, [], [], DashboardSlice>
                 },
                 activeDashboardId: dashboard.id,
             })),
+
         removeDashboard: async (id) => {
+            const dashboardName = get().actions.getDashboardNameByID(id) ?? "No name";
             try {
                 await deleteDashboard(id);
                 set((state) => {
@@ -147,8 +154,10 @@ const createDashboardSlice: StateCreator<DashboardStore, [], [], DashboardSlice>
                             state.activeDashboardId === id ? null : state.activeDashboardId,
                     };
                 });
+                toast.success(`Successfully deleted ${dashboardName} dashboard.`);
             } catch (e) {
                 console.error("Failed to delete dashboard:", e);
+                toast.error(`Successfully deleted ${dashboardName} dashboard.`);
             }
         },
         addWidget: (layout, widget) =>
@@ -177,14 +186,18 @@ const createDashboardSlice: StateCreator<DashboardStore, [], [], DashboardSlice>
                 };
             }),
         updateChartWidgetConfig: async (widget) => {
+            const widgetName = get().actions.getWidgetNameById(widget.id) ?? "No name";
             try {
                 await updateChartWidgetConfig(widget.id, {
                     id: widget.id,
                     widgetType: "CHART",
                     chartType: widget.chartType,
                     displayName: widget.displayName,
+                    provider: widget.provider,
+                    accountId: widget.accountId,
                     resourceId: widget.resourceId,
                     metricType: widget.metricType as string,
+                    metricName: widget.metricName as string,
                 });
 
                 set((state) => ({
@@ -193,12 +206,15 @@ const createDashboardSlice: StateCreator<DashboardStore, [], [], DashboardSlice>
                         [widget.id]: widget,
                     },
                 }));
+                toast.success(`Successfully updated ${widgetName} widget configuration.`);
             } catch (error) {
                 console.error("Failed to persist widget config:", error);
+                toast.error(`Failed to update ${widgetName} widget configuration.`);
                 throw error;
             }
         },
         updateKpiWidgetConfig: async (widget) => {
+            const widgetName = get().actions.getWidgetNameById(widget.id) ?? "No name";
             try {
                 await updateKpiWidgetConfig(widget.id, {
                     id: widget.id,
@@ -214,12 +230,15 @@ const createDashboardSlice: StateCreator<DashboardStore, [], [], DashboardSlice>
                         [widget.id]: widget,
                     },
                 }));
+                toast.success(`Successfully updated ${widgetName} widget configuration.`);
             } catch (error) {
                 console.log("Failed to persist kpi widget config: ", error);
+                toast.error(`Failed to update ${widgetName} widget configuration.`);
                 throw error;
             }
         },
         removeWidget: async (layoutId, widgetId) => {
+            const widgetName = get().actions.getWidgetNameById(widgetId) ?? "No name";
             try {
                 await deleteWidget(widgetId);
                 set((state) => {
@@ -245,8 +264,10 @@ const createDashboardSlice: StateCreator<DashboardStore, [], [], DashboardSlice>
                         dashboards: newDashboards,
                     };
                 });
+                toast.success(`Successfully deleted ${widgetName} widget.`);
             } catch (error) {
                 console.error("Failed to remove widget");
+                toast.error(`Failed to delete ${widgetName} widget.`);
                 throw error;
             }
         },
@@ -310,6 +331,14 @@ const createDashboardSlice: StateCreator<DashboardStore, [], [], DashboardSlice>
             const currentWidgets = get().widgets;
 
             return currentWidgets[id];
+        },
+
+        getDashboardNameByID: (id) => {
+            return get().dashboards[id]?.displayName ?? undefined;
+        },
+
+        getWidgetNameById: (id) => {
+            return get().widgets[id]?.displayName ?? undefined;
         },
 
         reset: () => {

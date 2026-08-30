@@ -2,13 +2,12 @@
 import type { EChartsOption } from "echarts";
 import { useMemo, useEffect } from "react";
 import { useChartTheme } from "@/features/dashboard/hooks/useChartTheme";
-import { MetricType } from "@/features/dashboard/types/metric";
 import { useChartData } from "@/features/dashboard/hooks/useChartData";
 import { BaseChart } from "@/features/dashboard/components/widgetGrid/widgets/charts/baseChart";
 
 type GaugeChartProps = {
     resourceId: string;
-    metricType: MetricType;
+    metricType: string;
     onDataStatusChange?: (isEmpty: boolean) => void;
 };
 

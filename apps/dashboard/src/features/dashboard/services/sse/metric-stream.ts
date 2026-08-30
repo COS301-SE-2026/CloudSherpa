@@ -4,11 +4,11 @@ import { MetricDTO } from "@/features/dashboard/types/dtos/metrics/MetricDto";
 import { Metric, MetricType } from "@/features/dashboard/types/metric";
 
 const MOCK_RESOURCE_ID = "mock-ec2-1";
-const MOCK_RESOURCES: { id: string; metricType: MetricType }[] = [
-    { id: MOCK_RESOURCE_ID, metricType: "cpu" },
-    { id: MOCK_RESOURCE_ID, metricType: "memory" },
-    { id: MOCK_RESOURCE_ID, metricType: "disk" },
-    { id: MOCK_RESOURCE_ID, metricType: "anon" },
+const MOCK_RESOURCES: { id: string; metricType: MetricType; metricName: string }[] = [
+    { id: MOCK_RESOURCE_ID, metricType: "cpu", metricName: "CPUUTILIZATION" },
+    { id: MOCK_RESOURCE_ID, metricType: "memory", metricName: "MEMORYUSAGE" },
+    { id: MOCK_RESOURCE_ID, metricType: "disk", metricName: "DISKREADBYTES" },
+    { id: MOCK_RESOURCE_ID, metricType: "anon", metricName: "AnonymousMetric" },
 ];
 
 const MOCK_VALUES: Partial<Record<MetricType, number[]>> = {
@@ -62,6 +62,7 @@ function createMockMetrics(): Metric[] {
         metricValues.forEach((value, index) => {
             metrics.push({
                 resource_id: resource.id,
+                metricName: resource.metricName,
                 metricType: resource.metricType,
                 timestamp: new Date(
                     now - (metricValues.length - 1 - index) * MOCK_INTERVAL_MS
@@ -89,7 +90,6 @@ export function useMetricStream() {
         const eventSource = new EventSource(sseUrl, { withCredentials: true });
 
         eventSource.onopen = () => {
-            console.log("SSE connected");
             setError(null);
         };
 

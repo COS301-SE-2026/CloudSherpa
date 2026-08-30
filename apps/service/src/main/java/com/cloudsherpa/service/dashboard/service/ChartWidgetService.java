@@ -1,6 +1,7 @@
 package com.cloudsherpa.service.dashboard.service;
 
 import com.cloudsherpa.lib.entities.ChartResource;
+import com.cloudsherpa.lib.entities.ProviderEnum;
 import com.cloudsherpa.lib.entities.Widget;
 import com.cloudsherpa.lib.entities.WidgetChart;
 import com.cloudsherpa.lib.repositories.ChartResourceRepository;
@@ -36,6 +37,8 @@ public class ChartWidgetService {
         new ChartResource(
             chartResourceId,
             widgetChartId,
+            chartWidgetDto.provider(),
+            chartWidgetDto.accountId(),
             chartWidgetDto.resourceId(),
             chartWidgetDto.metricType());
 
@@ -55,7 +58,10 @@ public class ChartWidgetService {
     }
 
     ChartResource resource = resources.get(0);
+    resource.setProvider(updateChartWidgetDto.provider());
+    resource.setAccountId(updateChartWidgetDto.accountId());
     resource.setMetricType(updateChartWidgetDto.metricType());
+    resource.setMetricName(updateChartWidgetDto.metricName());
     resource.setResourceId(updateChartWidgetDto.resourceId());
 
     widgetChartRepository.save(widgetChart);
@@ -64,15 +70,21 @@ public class ChartWidgetService {
 
   public ChartWidgetDTO mapToChartWidgetDTO(Widget widget) {
 
+    ProviderEnum provider = null;
+    UUID accountId = null;
     UUID resourceId = null;
     String metricType = null;
+    String metricName = null;
     WidgetChart chart = getWidgetChartByWidgetId(widget.getId());
 
     List<ChartResource> resources = chartResourceRepository.findByWidgetChartId(chart.getId());
 
     if (!resources.isEmpty()) {
+      provider = resources.get(0).getProvider();
+      accountId = resources.get(0).getAccountId();
       resourceId = resources.get(0).getResourceId();
       metricType = resources.get(0).getMetricType();
+      metricName = resources.get(0).getMetricName();
     }
 
     return new ChartWidgetDTO(
@@ -84,8 +96,11 @@ public class ChartWidgetService {
         widget.getWidth(),
         widget.getHeight(),
         chart.getChartType(),
+        provider,
+        accountId,
         resourceId,
-        metricType);
+        metricType,
+        metricName);
   }
 
   private WidgetChart getWidgetChartByWidgetId(UUID widgetId) {

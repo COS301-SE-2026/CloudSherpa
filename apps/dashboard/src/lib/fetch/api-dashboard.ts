@@ -15,8 +15,11 @@ export interface BaseWidgetDTO {
 export interface ChartWidgetDTO extends BaseWidgetDTO {
     widgetType: "CHART";
     chartType: ChartType;
+    provider: string | null;
+    accountId: string | null;
     resourceId: string | null;
     metricType: string | null;
+    metricName: string | null;
 }
 
 export interface KpiWidgetDto extends BaseWidgetDTO {
@@ -55,8 +58,11 @@ export interface ChartWidgetConfigUpdateDTO {
     widgetType: "CHART";
     chartType: ChartType;
     displayName: string | null;
+    provider: string | null;
+    accountId: string | null;
     resourceId: string | null;
     metricType: string | null;
+    metricName: string | null;
 }
 
 export interface KpiWidgetConfigUpdateDTO {
@@ -68,9 +74,15 @@ export interface KpiWidgetConfigUpdateDTO {
 }
 
 export async function fetchDashboards(): Promise<DashboardDTO[]> {
-    return await apiClient<DashboardDTO[]>("/dashboards", {
-        method: "GET",
-    });
+    try {
+        const data = await apiClient<DashboardDTO[]>("/dashboards", {
+            method: "GET",
+        });
+        return data;
+    } catch (error) {
+        console.error("Failed to fetch dashboards:", error);
+        throw error;
+    }
 }
 export async function createDashboard(payload: DashboardCreateDTO): Promise<DashboardDTO> {
     return await apiClient<DashboardDTO>("/dashboards", {

@@ -10,24 +10,27 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.cloudsherpa.lib.entities.AccountTypeEnum;
+import com.cloudsherpa.lib.entities.AwsBillingExportConfig;
+import com.cloudsherpa.lib.entities.BillingExportConfig;
 import com.cloudsherpa.lib.entities.CloudAccount;
 import com.cloudsherpa.lib.entities.CloudConnection;
 import com.cloudsherpa.lib.entities.CloudCredential;
 import com.cloudsherpa.lib.entities.ProviderEnum;
 import com.cloudsherpa.lib.entities.Resource;
 import com.cloudsherpa.lib.entities.StatusEnum;
+import com.cloudsherpa.lib.repositories.AwsBillingExportConfigRepository;
 import com.cloudsherpa.lib.repositories.BillingExportConfigRepository;
 import com.cloudsherpa.lib.repositories.CloudAccountRepository;
 import com.cloudsherpa.lib.repositories.CloudConnectionRepository;
 import com.cloudsherpa.lib.repositories.CloudCredentialRepository;
 import com.cloudsherpa.lib.repositories.ResourceRepository;
 import com.cloudsherpa.service.analytics.service.ResourceRegistryService;
-import com.cloudsherpa.service.persistconnection.aws.dto.AwsCredentialsDto;
-import com.cloudsherpa.service.persistconnection.aws.dto.BillingConfigDto;
-import com.cloudsherpa.service.persistconnection.aws.dto.PersistAwsConnectionRequest;
-import com.cloudsherpa.service.persistconnection.aws.dto.ResourceSelectionDto;
-import com.cloudsherpa.service.persistconnection.aws.service.AwsConnectionPersistenceService;
-import com.cloudsherpa.service.persistconnection.aws.service.CredentialEncryptionService;
+import com.cloudsherpa.service.persistconnection.dto.ResourceSelectionDto;
+import com.cloudsherpa.service.persistconnection.provider.aws.dto.AwsCredentialsDto;
+import com.cloudsherpa.service.persistconnection.provider.aws.dto.BillingConfigDto;
+import com.cloudsherpa.service.persistconnection.provider.aws.dto.PersistAwsConnectionRequest;
+import com.cloudsherpa.service.persistconnection.provider.aws.service.AwsConnectionPersistenceService;
+import com.cloudsherpa.service.persistconnection.service.CredentialEncryptionService;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -57,6 +60,8 @@ class AwsConnectionPersistenceServiceTest {
   @Mock private ResourceRepository resourceRepository;
 
   @Mock private BillingExportConfigRepository billingExportConfigRepository;
+
+  @Mock private AwsBillingExportConfigRepository awsBillingExportConfigRepository;
 
   @Mock private ResourceRegistryService resourceRegistryService;
 
@@ -153,12 +158,21 @@ class AwsConnectionPersistenceServiceTest {
     when(encryptionService.encrypt(any())).thenReturn("encrypted-json");
   }
 
+  private void mockBillingConfigSave() {
+    when(billingExportConfigRepository.save(any(BillingExportConfig.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+
+    when(awsBillingExportConfigRepository.save(any(AwsBillingExportConfig.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+  }
+
   @Test
   void shouldCreateNewConnectionWhenNoneExists() {
 
     mockNewConnection();
     mockAccountSave();
     mockEncryption();
+    mockBillingConfigSave();
 
     service.persistConnection(request);
 
@@ -179,6 +193,7 @@ class AwsConnectionPersistenceServiceTest {
     mockExistingConnection();
     mockAccountSave();
     mockEncryption();
+    mockBillingConfigSave();
 
     service.persistConnection(request);
 
@@ -193,6 +208,7 @@ class AwsConnectionPersistenceServiceTest {
     mockExistingConnection();
     mockAccountEchoSave();
     mockEncryption();
+    mockBillingConfigSave();
 
     service.persistConnection(request);
 
@@ -212,6 +228,7 @@ class AwsConnectionPersistenceServiceTest {
     mockExistingConnection();
     mockAccountSave();
     mockEncryption();
+    mockBillingConfigSave();
 
     service.persistConnection(request);
 
@@ -237,6 +254,7 @@ class AwsConnectionPersistenceServiceTest {
     mockExistingConnection();
     mockAccountSave();
     mockEncryption();
+    mockBillingConfigSave();
 
     service.persistConnection(request);
 
@@ -280,6 +298,7 @@ class AwsConnectionPersistenceServiceTest {
 
     mockAccountSave();
     mockEncryption();
+    mockBillingConfigSave();
 
     service.persistConnection(emptyRequest);
 
@@ -310,6 +329,7 @@ class AwsConnectionPersistenceServiceTest {
 
     mockAccountSave();
     mockEncryption();
+    mockBillingConfigSave();
 
     service.persistConnection(requestWithNullTags);
 
@@ -340,6 +360,7 @@ class AwsConnectionPersistenceServiceTest {
 
     mockAccountEchoSave();
     mockEncryption();
+    mockBillingConfigSave();
 
     service.persistConnection(request);
 
@@ -409,6 +430,7 @@ class AwsConnectionPersistenceServiceTest {
     mockExistingConnection();
     mockAccountSave();
     mockEncryption();
+    mockBillingConfigSave();
 
     service.persistConnection(request);
 
@@ -428,6 +450,7 @@ class AwsConnectionPersistenceServiceTest {
     mockNewConnection();
     mockAccountSave();
     mockEncryption();
+    mockBillingConfigSave();
 
     service.persistConnection(request);
 
@@ -459,6 +482,7 @@ class AwsConnectionPersistenceServiceTest {
     mockExistingConnection();
     mockAccountSave();
     mockEncryption();
+    mockBillingConfigSave();
 
     service.persistConnection(request);
 

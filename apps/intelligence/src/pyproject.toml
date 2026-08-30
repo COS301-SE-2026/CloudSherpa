@@ -1,0 +1,10 @@
+[tool.fastapi]
+entrypoint = "main:app"
+
+[tool.pytest.ini_options]
+addopts = "--cov=. --cov-report=xml --cov-report=term-missing"
+
+[tool.coverage.run]
+omit = [
+    "tests/*",
+]

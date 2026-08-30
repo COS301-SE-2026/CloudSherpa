@@ -7,6 +7,7 @@ import com.cloudsherpa.ingestion.connector.Metric;
 import com.cloudsherpa.ingestion.connector.ServiceScope;
 import com.cloudsherpa.ingestion.models.IngestionRequestEvent;
 import com.cloudsherpa.ingestion.models.UsageRecordModel;
+import com.cloudsherpa.ingestion.provider.monitoring.CloudMonitoringMetricProvider;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -25,7 +26,7 @@ import software.amazon.awssdk.services.cloudwatch.model.GetMetricStatisticsReque
 import software.amazon.awssdk.services.cloudwatch.model.Statistic;
 
 @Component
-public class AwsCloudWatchMetricProvider implements CloudWatchMetricProvider {
+public class AwsCloudWatchMetricProvider implements CloudMonitoringMetricProvider {
   private final CloudWatchClient defaultClient =
       CloudWatchClient.builder()
           .credentialsProvider(DefaultCredentialsProvider.create())
@@ -145,7 +146,8 @@ public class AwsCloudWatchMetricProvider implements CloudWatchMetricProvider {
 
     AwsBasicCredentials credentials =
         AwsBasicCredentials.create(
-            request.getCredentials().getAccessKey(), request.getCredentials().getSecretKey());
+            request.getCredentials().getAccessKeyId(),
+            request.getCredentials().getSecretAccessKey());
 
     return CloudWatchClient.builder()
         .credentialsProvider(StaticCredentialsProvider.create(credentials))

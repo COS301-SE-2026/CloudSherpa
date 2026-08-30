@@ -5,6 +5,7 @@ import com.cloudsherpa.ingestion.models.ResourceDetail;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
@@ -41,5 +42,12 @@ public class ResourceDiscoveryService {
         .filter(key -> key.provider().equals(provider))
         .map(ScannerKey::serviceName)
         .toList();
+  }
+
+  public Map<String, Set<String>> getPermissionsRegistry() {
+    return scanners.values().stream()
+        .collect(
+            Collectors.toMap(
+                ResourceScanner::getServiceName, ResourceScanner::getPermissionsRequired));
   }
 }

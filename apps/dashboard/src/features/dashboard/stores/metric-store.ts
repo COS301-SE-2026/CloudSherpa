@@ -33,7 +33,7 @@ type AwsMetricName =
     | "NetworkOut"
     | "NumberOfObjects";
 
-const AWS_METRIC_TYPE_BY_NAME: Record<AwsMetricName, MetricType> = {
+export const AWS_METRIC_TYPE_BY_NAME: Record<AwsMetricName, MetricType> = {
     BucketSizeBytes: "storage-used",
     Duration: "duration",
     WriteThrottleEvents: "throttles",
@@ -57,12 +57,23 @@ const AWS_METRIC_TYPE_BY_NAME: Record<AwsMetricName, MetricType> = {
     NumberOfObjects: "object-count",
 };
 
+// Inverse helper for reverse metric lookup
+type Invert<T extends Record<PropertyKey, PropertyKey>> = {
+    [K in keyof T as T[K]]: K;
+};
+
+const invertRecord = <T extends Record<PropertyKey, PropertyKey>>(obj: T): Invert<T> => {
+    return Object.fromEntries(Object.entries(obj).map(([key, value]) => [value, key])) as Invert<T>;
+};
+
+export const AWS_METRIC_TYPE_BY_NAME_INVERSE = invertRecord(AWS_METRIC_TYPE_BY_NAME);
+
 function toMetricType(metricName: string): MetricType {
     return AWS_METRIC_TYPE_BY_NAME[metricName as AwsMetricName] ?? "anon";
 }
 
 function metricSeriesKey(metric: Metric): string {
-    return `${metric.resource_id}:${metric.metricType}`;
+    return `${metric.resource_id}:${metric.metricName}`;
 }
 
 function upsertMetric(
@@ -94,6 +105,7 @@ export const useMetricStore = create<MetricStore>((set, get) => ({
 
         const metric: Metric = {
             resource_id: metricDto.resourceId,
+            metricName: metricDto.metricName,
             metricType,
             timestamp: metricDto.periodStart,
             value: metricDto.metricValue,
@@ -101,6 +113,46 @@ export const useMetricStore = create<MetricStore>((set, get) => ({
 
         set((state) => ({
             seriesByKey: upsertMetric(state.seriesByKey, metric),
+        }));
+    },
+
+    initializeMetricSeries: (availableMetrics) => {
+        set((state) => {
+            const seriesByKey = {
+                ...state.seriesByKey,
+            };
+
+            for (const resource of availableMetrics) {
+                if (!resource.resourceId) {
+                    continue;
+                }
+
+                for (const metric of resource.metrics) {
+                    if (!metric.metricType || metric.metricType === "string") {
+                        continue;
+                    }
+
+                    const key = `${resource.resourceId}:${metric.metricName}`;
+
+                    if (!seriesByKey[key]) {
+                        seriesByKey[key] = {};
+                    }
+                }
+            }
+            return { seriesByKey };
+        });
+    },
+
+    setMetricSeries: (resourceId, metricName, metrics) => {
+        const key = `${resourceId}:${metricName}`;
+
+        const series = Object.fromEntries(metrics.map((metric) => [metric.timestamp, metric]));
+
+        set((state) => ({
+            seriesByKey: {
+                ...state.seriesByKey,
+                [key]: series,
+            },
         }));
     },
 
@@ -121,23 +173,21 @@ export const useMetricStore = create<MetricStore>((set, get) => ({
 
     getMetricList: () => {
         const { seriesByKey } = get();
-
-        const mapMetricTypes: Record<string, Set<MetricType>> = {};
+        const mapMetricNames: Record<string, Set<string>> = {};
 
         Object.keys(seriesByKey).forEach((key) => {
-            const resourceId = key.split(":")[0];
+            const [resourceId, metricName] = key.split(":");
 
-            if (!mapMetricTypes[resourceId]) {
-                mapMetricTypes[resourceId] = new Set<MetricType>();
+            if (!mapMetricNames[resourceId]) {
+                mapMetricNames[resourceId] = new Set<string>();
             }
-
-            mapMetricTypes[resourceId].add(key.split(":")[1] as MetricType);
+            mapMetricNames[resourceId].add(metricName);
         });
 
-        const finalArray: Record<string, MetricType[]> = {};
+        const finalArray: Record<string, string[]> = {};
 
-        for (const [key, value] of Object.entries(mapMetricTypes)) {
-            finalArray[key] = Array.from(value);
+        for (const [key, metricNames] of Object.entries(mapMetricNames)) {
+            finalArray[key] = Array.from(metricNames);
         }
 
         return finalArray;

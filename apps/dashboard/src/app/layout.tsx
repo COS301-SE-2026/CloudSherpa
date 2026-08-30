@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/components/atoms/themeProvider";
 import "./globals.css";
 import { AuthProvider } from "@/features/authentication/providers/AuthContext";
 import { cn } from "@/lib/utils";
+import { Toaster } from "@/components/atoms/sonner";
 
 const geistSans = Geist({
     subsets: ["latin"],
@@ -41,6 +42,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                 <AuthProvider>
                     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
                         {children}
+                        <Toaster />
                     </ThemeProvider>
                 </AuthProvider>
             </body>

@@ -94,4 +94,44 @@ public class ResourceDiscoveryController {
 
     return service.generateAwsPermissions(services);
   }
+
+  @Operation(
+      summary = "Generate GCP permissions list",
+      description =
+          "Generates a least-privilege GCP permissions list for the selected GCP services")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Permissions list successfully generated",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = List.class)))
+      })
+  @PostMapping("/gcp/permissions")
+  public List<String> generateGcpPermissions(@RequestBody List<String> services) {
+
+    return service.generateGcpPermissions(services);
+  }
+
+  @Operation(
+      summary = "Generate Azure permissions list",
+      description =
+          "Generates a least-privilege Azure permissions list for the selected Azure services")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Permissions list successfully generated",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = List.class)))
+      })
+  @PostMapping("/azure/permissions")
+  public List<String> generateAzurePermissions(@RequestBody List<String> services) {
+
+    return service.generateAzurePermissions(services);
+  }
 }

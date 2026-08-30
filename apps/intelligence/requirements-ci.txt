@@ -1,0 +1,6 @@
+# CI requirement omits heavy ML libraries
+fastapi[standard]==0.141.1
+numpy==2.1.0
+pytest==9.1.1
+pytest-cov==7.1.0
+ruff==0.16.1

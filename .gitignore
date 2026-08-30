@@ -76,3 +76,14 @@ __pycache__
 
 # style dictionairy tokens
 apps/dashboard/app/tokens.css
+
+.idea
+__pycache__
+.pytest_cache
+.coverage
+coverage.xml
+.scannerwork
+.ruff_cache
+.scannerwork
+
+nfr-tests/report.html

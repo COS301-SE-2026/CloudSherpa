@@ -64,6 +64,10 @@ export function useAuthInputValidation() {
         }
     }, []);
 
+    const onLoginPasswordChange = useCallback((value: string) => {
+        setPassword(value);
+    }, []);
+
     return {
         email,
         password,
@@ -71,5 +75,6 @@ export function useAuthInputValidation() {
         passwordError,
         validateEmail,
         validatePassword,
+        onLoginPasswordChange,
     };
 }

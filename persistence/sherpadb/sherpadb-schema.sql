@@ -5,6 +5,7 @@ CREATE SCHEMA IF NOT EXISTS public;
 
 CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
+CREATE EXTENSION IF NOT EXISTS timescaledb_toolkit;
 
 CREATE TYPE public.provider_enum AS ENUM ('AWS', 'AZURE', 'GCP');
 CREATE TYPE public.status_enum AS ENUM ('active', 'disabled');
@@ -30,7 +31,22 @@ CREATE TYPE public.execution_status_enum AS ENUM ('pending', 'processing', 'comp
 CREATE TYPE PUBLIC.chart_type_enum AS ENUM ('gauge_chart', 'line_chart');
 -- Differentiates actual compute usage from other types.
 -- Maps to CUR: line_item_line_item_type
-CREATE TYPE public.charge_type_enum AS ENUM ('Usage', 'Other'); 
+CREATE TYPE public.charge_type_enum AS ENUM ('Usage', 'Other', 'Credit'); 
+CREATE TYPE public.optimization_status_enum AS ENUM (
+  'DRAFT',
+  'ACTIVE',
+  'ACKNOWLEDGED',
+  'DISMISSED',
+  'APPLIED',
+  'SUPERSEDED',
+  'EXPIRED'
+);
+
+CREATE TYPE public.optimization_action_type_enum AS ENUM (
+  'DOWNSIZE',
+  'TERMINATE',
+  'SUSPEND'
+);
 
 -- ----------------------------------------------------------------
 -- PUBLIC TABLES 
@@ -41,6 +57,18 @@ CREATE TABLE IF NOT EXISTS public.users (
   username varchar(100) NOT NULL,
   password_hash varchar(255) NOT NULL,
   created_at timestamptz DEFAULT NOW()
+);
+
+CREATE TABLE public.processing_watermark (
+  watermark_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL REFERENCES public.users(user_id) ON DELETE CASCADE,
+  pipeline_name varchar(255) NOT NULL,
+  last_processed_period timestamptz,
+  last_successful_run timestamptz,
+  updated_at timestamptz DEFAULT NOW(),
+
+  CONSTRAINT uq_processing_watermark_user_pipeline
+    UNIQUE (user_id, pipeline_name)
 );
 
 CREATE TABLE IF NOT EXISTS public.preferences (
@@ -72,7 +100,7 @@ CREATE TABLE IF NOT EXISTS public.cloud_account (
   last_billing_ingestion timestamptz DEFAULT NOW(),
   next_billing_ingestion timestamptz DEFAULT NOW()
 );
-CREATE TABLE public.offered_metric (
+CREATE TABLE IF NOT EXISTS public.offered_metric (
     offered_metric_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
 
     provider public.provider_enum NOT NULL,
@@ -118,11 +146,21 @@ CREATE TABLE IF NOT EXISTS public.cloud_credential (
 CREATE TABLE IF NOT EXISTS public.billing_export_config (
   config_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   account_id uuid REFERENCES public.cloud_account(account_id) ON DELETE CASCADE,
-  bucket_name varchar(255) NOT NULL,
-  bucket_region varchar(255) NOT NULL,
-  export_prefix varchar(255), 
-  export_name varchar(255) NOT NULL,
   created_at timestamptz DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS public.aws_billing_export_config (
+  config_id uuid PRIMARY KEY REFERENCES public.billing_export_config(config_id) ON DELETE CASCADE,
+  bucket_name varchar(63) NOT NULL,
+  bucket_region varchar(50) NOT NULL,
+  export_prefix varchar(256), 
+  export_name varchar(128) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS public.gcp_billing_export_config (
+  config_id uuid PRIMARY KEY REFERENCES public.billing_export_config(config_id) ON DELETE CASCADE,
+  dataset_id varchar(1024) NOT NULL,
+  billing_account_id char(20) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS public.billing_export_execution (
@@ -229,6 +267,146 @@ VALUES
 ('AWS', 'AWS/Redshift', 'WriteIOPS', 'ClusterIdentifier', NULL, 'Write IOPS')
 
 ON CONFLICT DO NOTHING;
+
+DO $$
+DECLARE
+    -- GCP service types
+    c_gcp_gce_service CONSTANT varchar(255) := 'gce_instance';
+    c_gcp_gke_service CONSTANT varchar(255) := 'gke_cluster';
+    c_gcp_cloud_function_service CONSTANT varchar(255) := 'cloud_function';
+    c_gcp_cloud_run_service CONSTANT varchar(255) := 'cloud_run_service';
+    c_gcp_gcs_service CONSTANT varchar(255) := 'gcs_bucket';
+
+    -- GCP identifier fields
+    c_gcp_instance_id CONSTANT varchar(100) := 'instance_id';
+    c_gcp_cluster_name CONSTANT varchar(100) := 'cluster_name';
+    c_gcp_function_name CONSTANT varchar(100) := 'function_name';
+    c_gcp_service_name CONSTANT varchar(100) := 'service_name';
+    c_gcp_bucket_name CONSTANT varchar(100) := 'bucket_name';
+
+    -- GCP metrics
+    c_gcp_network_bytes_received CONSTANT varchar(255) := 'Network bytes received';
+    c_gcp_network_bytes_sent CONSTANT varchar(255) := 'Network bytes sent';
+
+    -- GCP units
+    c_gcp_percent_unit CONSTANT varchar(50) := '10^2.%';
+    c_gcp_count_unit CONSTANT varchar(50) := 'Count';
+    c_gcp_bytes_unit CONSTANT varchar(50) := 'By';
+    c_gcp_seconds_unit CONSTANT varchar(50) := 's';
+    c_gcp_milliseconds_unit CONSTANT varchar(50) := 'ms';
+
+    -- Azure name
+    c_azure_provider_enum CONSTANT public.provider_enum := 'AZURE';
+
+    -- Azure metrics
+    c_azure_network_bytes_received CONSTANT varchar(255) := 'Network bytes received';
+    c_azure_network_bytes_sent CONSTANT varchar(255) := 'Network bytes sent';
+
+    -- Azure identifier fields
+    c_azure_resource_id CONSTANT varchar(100) := 'resource_id';
+
+    -- Azure service types
+    c_azure_virtual_machine_service CONSTANT varchar(255) := 'Microsoft.Compute/virtualMachines';
+BEGIN
+
+    INSERT INTO public.offered_metric (
+        provider,
+        service_type,
+        metric_name,
+        identifier_field,
+        expected_unit,
+        description
+    )
+    VALUES
+    -- GCP Compute Engine (VM Instances)
+('GCP', c_gcp_gce_service, 'compute.googleapis.com/instance/cpu/utilization',
+ c_gcp_instance_id, c_gcp_percent_unit, 'CPU utilization'),
+('GCP', c_gcp_gce_service, 'compute.googleapis.com/instance/cpu/reserved_cores',
+ c_gcp_instance_id, c_gcp_count_unit, 'Reserved CPU cores'),
+('GCP', c_gcp_gce_service, 'compute.googleapis.com/instance/network/received_bytes_count',
+ c_gcp_instance_id, c_gcp_bytes_unit, c_gcp_network_bytes_received),
+('GCP', c_gcp_gce_service, 'compute.googleapis.com/instance/network/sent_bytes_count',
+ c_gcp_instance_id, c_gcp_bytes_unit, c_gcp_network_bytes_sent),
+('GCP', c_gcp_gce_service, 'compute.googleapis.com/instance/disk/read_bytes_count',
+ c_gcp_instance_id, c_gcp_bytes_unit, 'Disk bytes read'),
+('GCP', c_gcp_gce_service, 'compute.googleapis.com/instance/disk/write_bytes_count',
+ c_gcp_instance_id, c_gcp_bytes_unit, 'Disk bytes written'),
+('GCP', c_gcp_gce_service, 'compute.googleapis.com/instance/disk/read_ops_count',
+ c_gcp_instance_id, c_gcp_count_unit, 'Disk read operations'),
+('GCP', c_gcp_gce_service, 'compute.googleapis.com/instance/disk/write_ops_count',
+ c_gcp_instance_id, c_gcp_count_unit, 'Disk write operations'),
+
+-- GKE (Clusters)
+('GCP', c_gcp_gke_service, 'kubernetes.io/node/cpu/core_usage_time',
+ c_gcp_cluster_name, c_gcp_seconds_unit, 'CPU usage time'),
+('GCP', c_gcp_gke_service, 'kubernetes.io/node/memory/used_bytes',
+ c_gcp_cluster_name, c_gcp_bytes_unit, 'Memory used'),
+('GCP', c_gcp_gke_service, 'kubernetes.io/node/network/received_bytes_count',
+ c_gcp_cluster_name, c_gcp_bytes_unit, c_gcp_network_bytes_received),
+('GCP', c_gcp_gke_service, 'kubernetes.io/node/network/sent_bytes_count',
+ c_gcp_cluster_name, c_gcp_bytes_unit, c_gcp_network_bytes_sent),
+('GCP', c_gcp_gke_service, 'kubernetes.io/pod/restart_count',
+ c_gcp_cluster_name, c_gcp_count_unit, 'Pod restart count'),
+
+-- Cloud Functions
+('GCP', c_gcp_cloud_function_service,
+ 'cloudfunctions.googleapis.com/function/execution_count',
+ c_gcp_function_name, c_gcp_count_unit, 'Function executions'),
+('GCP', c_gcp_cloud_function_service,
+ 'cloudfunctions.googleapis.com/function/execution_times',
+ c_gcp_function_name, c_gcp_milliseconds_unit, 'Execution time'),
+('GCP', c_gcp_cloud_function_service,
+ 'cloudfunctions.googleapis.com/function/user_memory_bytes',
+ c_gcp_function_name, c_gcp_bytes_unit, 'Memory usage'),
+('GCP', c_gcp_cloud_function_service,
+ 'cloudfunctions.googleapis.com/function/active_instances',
+ c_gcp_function_name, c_gcp_count_unit, 'Active instances'),
+
+-- Cloud Run
+('GCP', c_gcp_cloud_run_service,
+ 'run.googleapis.com/request_count',
+ c_gcp_service_name, c_gcp_count_unit, 'HTTP requests'),
+('GCP', c_gcp_cloud_run_service,
+ 'run.googleapis.com/request_latencies',
+ c_gcp_service_name, c_gcp_milliseconds_unit, 'Request latency'),
+('GCP', c_gcp_cloud_run_service,
+ 'run.googleapis.com/container/cpu/utilizations',
+ c_gcp_service_name, c_gcp_percent_unit, 'CPU utilization'),
+('GCP', c_gcp_cloud_run_service,
+ 'run.googleapis.com/container/memory/utilizations',
+ c_gcp_service_name, c_gcp_percent_unit, 'Memory utilization'),
+('GCP', c_gcp_cloud_run_service,
+ 'run.googleapis.com/container/instance_count',
+ c_gcp_service_name, c_gcp_count_unit, 'Running instances'),
+
+-- Cloud Storage
+('GCP', c_gcp_gcs_service,
+ 'storage.googleapis.com/storage/total_bytes',
+ c_gcp_bucket_name, c_gcp_bytes_unit, 'Stored bytes'),
+('GCP', c_gcp_gcs_service,
+ 'storage.googleapis.com/api/request_count',
+ c_gcp_bucket_name, c_gcp_count_unit, 'API requests'),
+('GCP', c_gcp_gcs_service,
+ 'storage.googleapis.com/network/received_bytes_count',
+ c_gcp_bucket_name, c_gcp_bytes_unit, 'Bytes uploaded'),
+('GCP', c_gcp_gcs_service,
+ 'storage.googleapis.com/network/sent_bytes_count',
+ c_gcp_bucket_name, c_gcp_bytes_unit, 'Bytes downloaded'),
+
+ -- Azure Virtual Machines
+(c_azure_provider_enum, c_azure_virtual_machine_service, 'Percentage CPU', c_azure_resource_id, NULL, 'CPU utilization'),
+(c_azure_provider_enum, c_azure_virtual_machine_service, 'Network In Total', c_azure_resource_id, NULL, c_azure_network_bytes_received),
+(c_azure_provider_enum, c_azure_virtual_machine_service, 'Network Out Total', c_azure_resource_id, NULL, c_azure_network_bytes_sent),
+(c_azure_provider_enum, c_azure_virtual_machine_service, 'Disk Read Bytes', c_azure_resource_id, NULL, 'Disk bytes read'),
+(c_azure_provider_enum, c_azure_virtual_machine_service, 'Disk Write Bytes', c_azure_resource_id, NULL, 'Disk bytes written'),
+(c_azure_provider_enum, c_azure_virtual_machine_service, 'Disk Read Operations/Sec', c_azure_resource_id, NULL, 'Disk read IOPS'),
+(c_azure_provider_enum, c_azure_virtual_machine_service, 'Disk Write Operations/Sec', c_azure_resource_id, NULL, 'Disk write IOPS'),
+(c_azure_provider_enum, c_azure_virtual_machine_service, 'OS Disk Latency', c_azure_resource_id, NULL, 'OS disk latency'),
+(c_azure_provider_enum, c_azure_virtual_machine_service, 'Inbound Flows', c_azure_resource_id, NULL, 'Inbound network flows'),
+(c_azure_provider_enum, c_azure_virtual_machine_service, 'Outbound Flows', c_azure_resource_id, NULL, 'Outbound network flows')
+    ON CONFLICT DO NOTHING;
+END $$;
+
 -- This sits in the public schema so it only has to be written once, but it is 
 -- smart enough to broadcast on a specific tenant's channel dynamically.
 CREATE TABLE IF NOT EXISTS public.kpi_charges (
@@ -246,8 +424,11 @@ CREATE TABLE IF NOT EXISTS public.widget_chart (
 CREATE TABLE IF NOT EXISTS public.chart_resource (
   chart_resource_id uuid PRIMARY KEY,
   widget_chart_id uuid REFERENCES public.widget_chart(chart_id) ON DELETE CASCADE,
+  provider public.provider_enum,
+  account_id uuid,
   resource_id uuid, 
-  metric_type varchar(50)
+  metric_type varchar(50),
+  metric_name varchar(100)
 );
 
 -- ----------------------------------------------------------------
@@ -438,6 +619,49 @@ BEGIN
         ON %1$I.normalized_costs (service_name, usage_start_time DESC);
     $sql$, schema_name);
 
+    -- --------------------------------------------------------------------------
+    -- Optimization Tables
+    -- --------------------------------------------------------------------------
+
+    EXECUTE format($sql$
+        CREATE TABLE IF NOT EXISTS %I.optimization_metric_statistics (
+            statistics_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+            resource_id uuid NOT NULL REFERENCES %I.resource(resource_id) ON DELETE CASCADE,
+            provider public.provider_enum NOT NULL,
+            metric_name varchar(255) NOT NULL,
+            window_num_days integer NOT NULL,
+
+            minimum_value numeric,
+            maximum_value numeric,
+            average_value numeric,
+            median_value numeric,
+            p95_value numeric,
+            p99_value numeric,
+            standard_deviation numeric,
+            spike_count integer DEFAULT 0,
+            peak_duration_seconds integer DEFAULT 0,
+            completeness_ratio numeric,
+
+            window_start timestamptz NOT NULL,
+            window_end timestamptz NOT NULL,
+            calculated_at timestamptz DEFAULT NOW()
+        );
+    $sql$, schema_name, schema_name);
+
+    EXECUTE format($sql$
+        CREATE TABLE IF NOT EXISTS %I.optimization_recommendation (
+            recommendation_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+            resource_id uuid NOT NULL REFERENCES %I.resource(resource_id) ON DELETE CASCADE,
+            provider public.provider_enum NOT NULL,
+            rule_id varchar(255) NOT NULL,
+            action_type public.optimization_action_type_enum NOT NULL,
+            status public.optimization_status_enum NOT NULL DEFAULT 'DRAFT',
+            evidence jsonb DEFAULT '{}'::jsonb,
+            created_at timestamptz DEFAULT NOW(),
+            updated_at timestamptz DEFAULT NOW(),
+            expires_at timestamptz
+        );
+    $sql$, schema_name, schema_name);
 END;
 $$ LANGUAGE plpgsql;
 
@@ -468,6 +692,13 @@ DECLARE
   demo_other_charge_type public.charge_type_enum := 'Other';
   demo_completed_status public.execution_status_enum := 'completed';
   demo_billing_account text := '564907680089';
+  demo_gcp_connection_id uuid := 'c0000000-0000-0000-0000-000000000002';
+  demo_gcp_account_id uuid := 'a0000000-0000-0000-0000-000000000002';
+  demo_gcp_provider public.provider_enum := 'GCP';
+  demo_gcp_account_type public.account_type_enum := 'gcp_project';
+  demo_gcp_instance text := 'gce_instance';
+  demo_gcp_instancd_id text := 'instance_id';
+  demo_gcp_region text := 'us-central1';
 BEGIN
   INSERT INTO public.users (user_id, email, username, password_hash, created_at)
   VALUES (
@@ -500,4 +731,35 @@ BEGIN
     'Test Account'
   )
   ON CONFLICT (account_id) DO NOTHING;
+
+  INSERT INTO public.cloud_connection (connection_id, user_id, provider, status)
+  VALUES (
+    demo_gcp_connection_id,
+    demo_user_id,
+    demo_gcp_provider,
+    demo_status
+  )
+  ON CONFLICT (connection_id) DO NOTHING;
+
+  INSERT INTO public.cloud_account (account_id, connection_id, account_type, ingestion_period, display_name)
+  VALUES (
+    demo_gcp_account_id,
+    demo_gcp_connection_id,
+    demo_gcp_account_type,
+    demo_ingestion_period,
+    'Test GCP Project'
+  )
+  ON CONFLICT (account_id) DO NOTHING;
+
+  INSERT INTO tenant_5ebe4340_c5ec_4833_ad93_06abf4609f03.resource (
+  resource_id, account_id, resource_type, resource_name, 
+  resource_identifier, resource_identifier_type, region, status, created_at, last_updated
+  ) VALUES
+  ('d0000000-0000-0000-0000-000000000001', demo_gcp_account_id, demo_gcp_instance, 'mock-gce-instance-1', 
+  'instance-1', demo_gcp_instancd_id , demo_gcp_region, demo_status, now(), now()),
+  ('d0000000-0000-0000-0000-000000000002', demo_gcp_account_id, demo_gcp_instance, 'mock-gce-instance-2', 
+  'instance-2', demo_gcp_instancd_id, demo_gcp_region, demo_status, now(), now()),
+  ('d0000000-0000-0000-0000-000000000003', demo_gcp_account_id, 'cloud_run_revision', 'mock-cloud-run-1', 
+  'email-processor-0001', 'revision_id', demo_gcp_region , demo_status, now(), now())
+  ON CONFLICT DO NOTHING;
 END $$;

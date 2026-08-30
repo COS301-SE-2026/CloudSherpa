@@ -3,10 +3,11 @@ package com.cloudsherpa.ingestion.connector;
 public class CloudCredentials {
 
   // AWS
-  private String accessKey;
-  private String secretKey;
+  private String accessKeyId;
+  private String secretAccessKey;
 
   // Azure
+  private String subscriptionId;
   private String tenantId;
   private String clientId;
   private String clientSecret;
@@ -15,20 +16,28 @@ public class CloudCredentials {
   private String projectId;
   private String serviceAccountJson;
 
-  public String getAccessKey() {
-    return accessKey;
+  public String getAccessKeyId() {
+    return accessKeyId;
   }
 
-  public void setAccessKey(String accessKey) {
-    this.accessKey = accessKey;
+  public void setAccessKeyId(String accessKeyId) {
+    this.accessKeyId = accessKeyId;
   }
 
-  public String getSecretKey() {
-    return secretKey;
+  public String getSecretAccessKey() {
+    return secretAccessKey;
   }
 
-  public void setSecretKey(String secretKey) {
-    this.secretKey = secretKey;
+  public void setSecretAccessKey(String secretAccessKey) {
+    this.secretAccessKey = secretAccessKey;
+  }
+
+  public String getSubscriptionId() {
+    return subscriptionId;
+  }
+
+  public void setSubscriptionId(String subscriptionId) {
+    this.subscriptionId = subscriptionId;
   }
 
   public String getTenantId() {

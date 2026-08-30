@@ -10,7 +10,8 @@ import com.cloudsherpa.ingestion.models.IngestionRequestEvent;
 import com.cloudsherpa.ingestion.models.IngestionResult;
 import com.cloudsherpa.ingestion.models.UsageRecordModel;
 import com.cloudsherpa.ingestion.normalization.model.NormalizedMetric;
-import com.cloudsherpa.ingestion.normalization.normalizers.AwsNormalizer;
+import com.cloudsherpa.ingestion.normalization.normalizers.Normalizer;
+import com.cloudsherpa.ingestion.normalization.normalizers.NormalizerFactory;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -24,17 +25,17 @@ import org.springframework.stereotype.Service;
 public class CloudUsageService {
   private final CloudConnectorFactory factory;
   private final SherpaDbPersistenceService sherpaDbPersistenceService;
-  private final AwsNormalizer normalizer;
+  private final NormalizerFactory normalizerFactory;
 
   Logger logger = Logger.getLogger(getClass().getName());
 
   public CloudUsageService(
       CloudConnectorFactory factory,
       SherpaDbPersistenceService sherpaDbPersistenceService,
-      AwsNormalizer normalizer) {
+      NormalizerFactory normalizerFactory) {
     this.factory = factory;
     this.sherpaDbPersistenceService = sherpaDbPersistenceService;
-    this.normalizer = normalizer;
+    this.normalizerFactory = normalizerFactory;
   }
 
   public IngestionResult ingest(IngestionRequestEvent request) {
@@ -46,11 +47,12 @@ public class CloudUsageService {
     for (AccountScope scope : request.getScopes()) {
 
       CloudConnector connector = factory.getConnector(scope.getProvider());
+      Normalizer normalizer = normalizerFactory.getNormalizer(scope.getProvider());
 
       if (request.isIncludeUsage() && connector instanceof UsageCapable usageCapable) {
         List<UsageRecordModel> usageRecords = usageCapable.fetchUsage(scope, request);
         usageResults.addAll(usageRecords);
-        normalizeAndPersistUsage(usageRecords, userId);
+        normalizeAndPersistUsage(usageRecords, userId, normalizer);
       }
 
       if (request.isIncludeBilling() && connector instanceof BillingCapable billingCapable) {
@@ -72,9 +74,10 @@ public class CloudUsageService {
       CloudConnector connector = factory.getConnector(scope.getProvider());
 
       if (request.isIncludeUsage() && connector instanceof UsageCapable usageCapable) {
+        Normalizer normalizer = normalizerFactory.getNormalizer(scope.getProvider());
         List<UsageRecordModel> usageRecords = usageCapable.fetchMockUsage(scope, request);
         usageResults.addAll(usageRecords);
-        normalizeAndPersistUsage(usageRecords, userId);
+        normalizeAndPersistUsage(usageRecords, userId, normalizer);
       }
 
       if (request.isIncludeBilling() && connector instanceof BillingCapable billingCapable) {
@@ -92,16 +95,18 @@ public class CloudUsageService {
 
     for (AccountScope scope : request.getScopes()) {
       if (request.isIncludeUsage()) {
+        Normalizer normalizer = normalizerFactory.getNormalizer(scope.getProvider());
         List<UsageRecordModel> usageRecords = buildMockUsage(scope, request);
         usageResults.addAll(usageRecords);
-        normalizeAndPersistUsage(usageRecords, userId);
+        normalizeAndPersistUsage(usageRecords, userId, normalizer);
       }
     }
 
     return new IngestionResult(usageResults, billingResults);
   }
 
-  private void normalizeAndPersistUsage(List<UsageRecordModel> usageRecords, UUID userId) {
+  private void normalizeAndPersistUsage(
+      List<UsageRecordModel> usageRecords, UUID userId, Normalizer normalizer) {
     if (usageRecords == null || usageRecords.isEmpty()) {
       return;
     }

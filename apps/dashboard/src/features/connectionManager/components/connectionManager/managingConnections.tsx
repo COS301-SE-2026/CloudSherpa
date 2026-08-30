@@ -7,7 +7,7 @@
 */
 
 import { useEffect, useState } from "react";
-import { Trash2, ArrowLeft, SlidersHorizontal, Search, MoreVertical } from "lucide-react";
+import { Trash2, ArrowLeft, Search, MoreVertical, Eye, Pencil, X } from "lucide-react";
 import { Card, CardContent } from "@/components/atoms/card";
 import { Button } from "@/components/atoms/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/atoms/tabs";
@@ -20,13 +20,6 @@ import {
     DropdownMenuTrigger,
 } from "@/components/atoms/dropdown-menu";
 
-import { Eye, Pencil } from "lucide-react";
-import {
-    CloudAccount,
-    getAwsAccountConnections,
-    getAwsAccountResourceCount,
-    deleteAwsAccount,
-} from "@/lib/fetch/aws-connection-api";
 import { useRouter } from "next/navigation";
 import {
     AlertDialog,
@@ -39,6 +32,14 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/atoms/alert-dialog";
+import { Spinner } from "@/components/atoms/spinner";
+import { toast } from "sonner";
+import {
+    deleteAwsAccount,
+    getAwsAccountConnections,
+    getAwsAccountResourceCount,
+} from "@/lib/fetch/cloud-account-api";
+import { CloudAccount } from "@/lib/fetch/dto/cloud-account";
 
 type Providers = "All" | "AWS" | "Azure" | "GCP";
 interface Connections {
@@ -80,7 +81,10 @@ const badges = (provider: Exclude<Providers, "All">) => {
 export default function ManagingConnections() {
     const [connections, setConnections] = useState<Connections[]>([]);
     const [activeFilter, setActiveFilter] = useState<Providers>("All");
+    const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
+
+    const [search, setSearch] = useState("");
 
     const handleViewDetails = (connectionId: string) => {
         router.push(`/manageConnections/${connectionId}`);
@@ -96,13 +100,29 @@ export default function ManagingConnections() {
                   (filteredConnections) => filteredConnections.provider === activeFilter
               );
 
+    const searchFilter =
+        search.trim() === ""
+            ? filtered
+            : filtered.filter((connections) => {
+                  const forQueries = search.toLowerCase().trim();
+
+                  return (
+                      connections.name.toLowerCase().includes(forQueries) ||
+                      connections.provider.toLowerCase().includes(forQueries) ||
+                      connections.detail.toLowerCase().includes(forQueries)
+                  );
+              });
+
     const handleDeletion = async (id: string) => {
         try {
             await deleteAwsAccount(id);
             await loadConnections();
         } catch (error) {
             console.error("Failed to delete account", error);
+            toast.error(`Failed to delete connection.`);
+            return;
         }
+        toast.success(`Successfully deleted connection`);
     };
 
     function formatIngestionPeriod(seconds: number): string {
@@ -126,6 +146,8 @@ export default function ManagingConnections() {
     }
     async function loadConnections() {
         try {
+            setIsLoading(true);
+
             const accounts: CloudAccount[] = await getAwsAccountConnections();
 
             const uiConnections: Connections[] = await Promise.all(
@@ -144,8 +166,10 @@ export default function ManagingConnections() {
             );
 
             setConnections(uiConnections);
+            setIsLoading(false);
         } catch (error) {
             console.error("Failed to load AWS connections", error);
+            setIsLoading(false);
         }
     }
 
@@ -157,200 +181,240 @@ export default function ManagingConnections() {
         router.push(`/addConnection/aws`); // just aws for now
     };
 
-    return (
-        <div data-theme="dark" className="min-h-screen bg-background text-foreground p-8">
-            {/* this si for the heading */}
-            <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => router.back()}
-                        className="text-muted-foreground hover:text-foreground h-8 w-8"
-                    >
-                        {" "}
-                        <ArrowLeft size={18} />{" "}
-                    </Button>
+    if (isLoading) {
+        return (
+            <div data-theme="dark" className="min-h-screen bg-background text-foreground p-8">
+                <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => router.back()}
+                            className="text-muted-foreground hover:text-foreground h-8 w-8"
+                        >
+                            <ArrowLeft size={18} />
+                        </Button>
 
-                    <h1 className="text-3xl font-semibold text-foreground"> Connection Manager </h1>
+                        <h1 className="text-3xl font-semibold text-foreground">
+                            {" "}
+                            Connection Manager{" "}
+                        </h1>
+                    </div>
                 </div>
-
-                <Button
-                    onClick={handleAdd}
-                    className="text-sm px-3 py-1.5 h-auto bg-primary hover:bg-primary/90"
-                >
-                    {" "}
-                    + add
-                </Button>
-            </div>
-
-            {/* this is for the provider tabs */}
-            <div className="flex items-center justify-between mb-6">
-                <Tabs
-                    value={activeFilter || undefined}
-                    onValueChange={(value) => setActiveFilter(value as Providers)}
-                    className="mb-4"
-                >
-                    <TabsList className="self-start inline-flex gap-1 h-auto p-1 bg-muted rounded-lg w-fit">
-                        {(["All", "AWS", "Azure", "GCP"] as Providers[]).map((providers) => {
-                            const isActive = activeFilter === providers;
-
-                            const styling = providerTabs[providers];
-
-                            return (
-                                <TabsTrigger
-                                    key={providers}
-                                    value={providers}
-                                    className={`flex-none text-xs px-2.5 py-0.5 h-auto rounded-[var(--radius-sm)] font-medium transition-all bg-transparent ${isActive ? styling.active : styling.inactive}`}
-                                >
-                                    {" "}
-                                    {providers}
-                                </TabsTrigger>
-                            );
-                        })}
-                    </TabsList>
-                </Tabs>
-
-                {/* these are for the icons on the tiles of the conn */}
-                <div className="flex items-center gap-2">
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-muted-foreground hover:text-foreground h-8 w-8"
-                    >
-                        {" "}
-                        <Search size={16} />{" "}
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-muted-foreground hover:text-foreground h-8 w-8"
-                    >
-                        {" "}
-                        <SlidersHorizontal size={16} />{" "}
-                    </Button>
+                <div className="w-full h-full flex items-center justify-center mb-6">
+                    <Spinner className="w-10 h-10" />
                 </div>
             </div>
+        );
+    } else {
+        return (
+            <div data-theme="dark" className="min-h-screen bg-background text-foreground p-8">
+                {/* this si for the heading */}
+                <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => router.back()}
+                            className="text-muted-foreground hover:text-foreground h-8 w-8"
+                        >
+                            {" "}
+                            <ArrowLeft size={18} />{" "}
+                        </Button>
 
-            {/* this is for the list of conn */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-                {filtered.map((connection) => (
-                    <Card key={connection.id} className="border-border">
-                        <CardContent className="p-4">
-                            <div className="flex items-center justify-between mb-3">
-                                <span
-                                    className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${badges(connection.provider)}`}
-                                >
-                                    {" "}
-                                    {connection.provider}{" "}
-                                </span>
+                        <h1 className="text-3xl font-semibold text-foreground">
+                            {" "}
+                            Connection Manager{" "}
+                        </h1>
+                    </div>
 
-                                <div className="flex items-center gap-1">
-                                    <AlertDialog>
-                                        <AlertDialogTrigger asChild>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="h-6 w-6 text-muted-foreground hover:text-destructive transition-colors"
-                                            >
-                                                <Trash2 size={13} />
-                                            </Button>
-                                        </AlertDialogTrigger>
+                    <Button
+                        onClick={handleAdd}
+                        className="text-sm px-3 py-1.5 h-auto bg-primary hover:bg-primary/90"
+                    >
+                        {" "}
+                        + add
+                    </Button>
+                </div>
 
-                                        <AlertDialogContent>
-                                            <AlertDialogHeader>
-                                                <AlertDialogTitle>
-                                                    Delete connection?
-                                                </AlertDialogTitle>
+                {/* this is for the provider tabs */}
+                <div className="flex items-center gap-4 mb-6">
+                    <Tabs
+                        value={activeFilter || undefined}
+                        onValueChange={(value) => setActiveFilter(value as Providers)}
+                    >
+                        <TabsList className="self-start inline-flex gap-1 h-auto p-1 bg-muted rounded-lg w-fit">
+                            {(["All", "AWS", "Azure", "GCP"] as Providers[]).map((providers) => {
+                                const isActive = activeFilter === providers;
 
-                                                <AlertDialogDescription>
-                                                    This will permanently delete the connection
-                                                    <strong> &quot;{connection.name}&quot;</strong>.
-                                                    This action cannot be undone.
-                                                </AlertDialogDescription>
-                                            </AlertDialogHeader>
+                                const styling = providerTabs[providers];
 
-                                            <AlertDialogFooter>
-                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-
-                                                <AlertDialogAction
-                                                    onClick={() => handleDeletion(connection.id)}
-                                                    className="bg-destructive hover:bg-destructive/90"
-                                                >
-                                                    Delete
-                                                </AlertDialogAction>
-                                            </AlertDialogFooter>
-                                        </AlertDialogContent>
-                                    </AlertDialog>
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="h-6 w-6 text-muted-foreground hover:text-foreground transition-colors"
-                                            >
-                                                <MoreVertical size={13} />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-
-                                        <DropdownMenuContent align="end" className="w-52">
-                                            <DropdownMenuItem
-                                                onClick={() => handleViewDetails(connection.id)}
-                                                className="cursor-pointer"
-                                            >
-                                                <Eye className="mr-2 h-4 w-4" />
-                                                View Details
-                                            </DropdownMenuItem>
-
-                                            <DropdownMenuItem
-                                                onClick={() => handleEditResources(connection.id)}
-                                                className="cursor-pointer"
-                                            >
-                                                <Pencil className="mr-2 h-4 w-4" />
-                                                Edit Resources
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>{" "}
-                                </div>
-                            </div>
-
-                            <p className="text-sm font-medium text-foreground mb-0.5">
-                                {" "}
-                                {connection.name}{" "}
-                            </p>
-
-                            <p className="text-xs text-muted-foreground mb-4">
-                                {" "}
-                                {connection.detail}{" "}
-                            </p>
-
-                            <div className="flex flex-col gap-3 pt-3">
-                                <Separator className="bg-border" />
-
-                                <div className="flex items-center justify-between">
-                                    <span className="text-xs text-muted-foreground">
+                                return (
+                                    <TabsTrigger
+                                        key={providers}
+                                        value={providers}
+                                        className={`flex-none text-xs px-2.5 py-0.5 h-auto rounded-[var(--radius-sm)] font-medium transition-all bg-transparent ${isActive ? styling.active : styling.inactive}`}
+                                    >
                                         {" "}
-                                        {connection.resource} resource
-                                        {connection.resource !== 1 ? "s" : ""}
+                                        {providers}
+                                    </TabsTrigger>
+                                );
+                            })}
+                        </TabsList>
+                    </Tabs>
+
+                    {/* these are for the icons on the tiles of the conn */}
+                    <div className="relative flex-1 max-w-xs">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+
+                        <input
+                            type="text"
+                            placeholder="Search connections..."
+                            value={search}
+                            onChange={(forChanges) => setSearch(forChanges.target.value)}
+                            className="w-full h-9 pl-9 pr-3 rounded-md border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                        />
+
+                        {search && (
+                            <button
+                                type="button"
+                                onClick={() => setSearch("")}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
+                            >
+                                {" "}
+                                <X size={14} />{" "}
+                            </button>
+                        )}
+                    </div>
+                </div>
+
+                {/* this is for the list of conn */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                    {searchFilter.map((connection) => (
+                        <Card key={connection.id} className="border-border">
+                            <CardContent className="p-4">
+                                <div className="flex items-center justify-between mb-3">
+                                    <span
+                                        className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${badges(connection.provider)}`}
+                                    >
+                                        {" "}
+                                        {connection.provider}{" "}
                                     </span>
 
-                                    {connection.resource === 0 ? (
-                                        <Badge variant="secondary" className="text-xs px-2 py-0.5">
-                                            {" "}
-                                            inactive{" "}
-                                        </Badge>
-                                    ) : (
-                                        <Badge className="bg-success/20 text-success border-success/20 hover:bg-success/30 text-xs px-2 py-0.5">
-                                            {" "}
-                                            active{" "}
-                                        </Badge>
-                                    )}
+                                    <div className="flex items-center gap-1">
+                                        <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-6 w-6 text-muted-foreground hover:text-destructive transition-colors"
+                                                >
+                                                    <Trash2 size={13} />
+                                                </Button>
+                                            </AlertDialogTrigger>
+
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle>
+                                                        Delete connection?
+                                                    </AlertDialogTitle>
+
+                                                    <AlertDialogDescription>
+                                                        This will permanently delete the connection{" "}
+                                                        <strong>{connection.name};</strong>. This
+                                                        action cannot be undone.
+                                                    </AlertDialogDescription>
+                                                </AlertDialogHeader>
+
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+
+                                                    <AlertDialogAction
+                                                        onClick={() =>
+                                                            handleDeletion(connection.id)
+                                                        }
+                                                        className="bg-destructive hover:bg-destructive/90"
+                                                    >
+                                                        Delete
+                                                    </AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-6 w-6 text-muted-foreground hover:text-foreground transition-colors"
+                                                >
+                                                    <MoreVertical size={13} />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+
+                                            <DropdownMenuContent align="end" className="w-52">
+                                                <DropdownMenuItem
+                                                    onClick={() => handleViewDetails(connection.id)}
+                                                    className="cursor-pointer"
+                                                >
+                                                    <Eye className="mr-2 h-4 w-4" />
+                                                    View Details
+                                                </DropdownMenuItem>
+
+                                                <DropdownMenuItem
+                                                    onClick={() =>
+                                                        handleEditResources(connection.id)
+                                                    }
+                                                    className="cursor-pointer"
+                                                >
+                                                    <Pencil className="mr-2 h-4 w-4" />
+                                                    Edit Resources
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>{" "}
+                                    </div>
                                 </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                ))}
+
+                                <p className="text-sm font-medium text-foreground mb-0.5">
+                                    {" "}
+                                    {connection.name}{" "}
+                                </p>
+
+                                <p className="text-xs text-muted-foreground mb-4">
+                                    {" "}
+                                    {connection.detail}{" "}
+                                </p>
+
+                                <div className="flex flex-col gap-3 pt-3">
+                                    <Separator className="bg-border" />
+
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-xs text-muted-foreground">
+                                            {" "}
+                                            {connection.resource} resource
+                                            {connection.resource !== 1 ? "s" : ""}
+                                        </span>
+
+                                        {connection.resource === 0 ? (
+                                            <Badge
+                                                variant="secondary"
+                                                className="text-xs px-2 py-0.5"
+                                            >
+                                                {" "}
+                                                inactive{" "}
+                                            </Badge>
+                                        ) : (
+                                            <Badge className="bg-success/20 text-success border-success/20 hover:bg-success/30 text-xs px-2 py-0.5">
+                                                {" "}
+                                                active{" "}
+                                            </Badge>
+                                        )}
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    ))}
+                </div>
             </div>
-        </div>
-    );
+        );
+    }
 }

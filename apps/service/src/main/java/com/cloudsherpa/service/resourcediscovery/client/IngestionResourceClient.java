@@ -13,9 +13,15 @@ public class IngestionResourceClient {
 
   private final RestClient restClient;
 
-  public IngestionResourceClient(@Value("${INGESTION_BASE_URL}") String ingestionBaseUrl) {
+  public IngestionResourceClient(
+      @Value("${INGESTION_BASE_URL}") String ingestionBaseUrl,
+      @Value("${ingestion-api-key}") String ingestionApiKey) {
 
-    this.restClient = RestClient.builder().baseUrl(ingestionBaseUrl).build();
+    this.restClient =
+        RestClient.builder()
+            .baseUrl(ingestionBaseUrl)
+            .defaultHeader("X-API-KEY", ingestionApiKey)
+            .build();
   }
 
   public List<String> getServices(String provider) {
@@ -46,5 +52,25 @@ public class IngestionResourceClient {
         .body(services)
         .retrieve()
         .body(String.class);
+  }
+
+  public List<String> generateGcpPermissions(List<String> services) {
+
+    return restClient
+        .post()
+        .uri("/api/cloud-resources/gcp/permissions")
+        .body(services)
+        .retrieve()
+        .body(new ParameterizedTypeReference<List<String>>() {});
+  }
+
+  public List<String> generateAzurePermissions(List<String> services) {
+
+    return restClient
+        .post()
+        .uri("/api/cloud-resources/azure/permissions")
+        .body(services)
+        .retrieve()
+        .body(new ParameterizedTypeReference<List<String>>() {});
   }
 }

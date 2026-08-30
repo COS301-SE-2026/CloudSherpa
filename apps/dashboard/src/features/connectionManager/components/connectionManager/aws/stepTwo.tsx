@@ -1,0 +1,286 @@
+"use client";
+import React, { useState, useEffect } from "react";
+import {
+    AwsPolicy,
+    getCloudServices,
+    generateAwsPermissionsPolicy,
+    getCloudResources,
+} from "@/lib/fetch/cloud-resource-api";
+import { AwsBillingForm } from "./billingForm";
+import { StepTwo } from "@/features/connectionManager/components/connectionManager/wizardSetup/stepTwo";
+import { CloudCredentials } from "@/lib/fetch/dto/cloud-credentials";
+import { ResourceDetail } from "@/lib/fetch/dto/cloud-resource";
+import { ServicesList } from "@/components/molecules/services-list";
+import { ScanProgress } from "@/components/molecules/scan-progress";
+
+export interface BillingConfig {
+    prefix: string;
+    bucketName: string;
+    bucketRegion: string;
+    exportName: string;
+}
+
+interface PropsForStepTwo {
+    credentials: CloudCredentials | null;
+    onNext: (
+        selectedServices: string[],
+        resources: ResourceDetail[],
+        billingConfig: BillingConfig
+    ) => void;
+    onBack: () => void;
+}
+
+export default function StepTwoAws({ credentials, onNext, onBack }: Readonly<PropsForStepTwo>) {
+    const [availableServices, setAvailableServices] = useState<{ id: string; name: string }[]>([]);
+    const [servicesSelected, setServicesSelected] = useState<string[]>([]);
+    const [permissions, setPermissions] = useState<AwsPolicy | null>(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+    const [prefix, setPrefix] = useState("");
+    const [bucketName, setBucketName] = useState("");
+    const [bucketRegion, setBucketRegion] = useState("");
+    const [exportName, setExportName] = useState("");
+    const [savedBillingConfig, setSavedBillingConfig] = useState<BillingConfig | null>(null);
+    const [optedInToBilling, setOptedInToBilling] = useState(false);
+
+    //f progress bar
+    const [progress, setProgress] = useState(0);
+    const [currentScanningService, setCurrentScanningService] = useState("");
+
+    const toggleService = (serviceId: string) => {
+        setServicesSelected((prev) =>
+            prev.includes(serviceId) ? prev.filter((id) => id !== serviceId) : [...prev, serviceId]
+        );
+    };
+
+    useEffect(() => {
+        const loadServices = async () => {
+            const services = await getCloudServices("aws");
+
+            setAvailableServices(
+                services.map((s) => ({
+                    id: s,
+                    name: s.toUpperCase(),
+                }))
+            );
+        };
+
+        loadServices();
+    }, []);
+
+    useEffect(() => {
+        const fetchPermissions = async () => {
+            if (servicesSelected.length === 0) {
+                setPermissions(null);
+                return;
+            }
+
+            const result = await generateAwsPermissionsPolicy(servicesSelected);
+            setPermissions(result);
+        };
+
+        fetchPermissions();
+    }, [servicesSelected]);
+
+    const getExtendedPermissions = (): AwsPolicy | null => {
+        const baseStatements = permissions?.Statement ?? [];
+        const version = permissions?.Version ?? "2012-10-17";
+
+        if (!savedBillingConfig && baseStatements.length === 0) {
+            return null;
+        }
+
+        const targetBucket = (savedBillingConfig?.bucketName ?? "").trim() || "bucket-name";
+        const cleanPrefix = (savedBillingConfig?.prefix ?? "").trim().replace(/^\/+|\/+$/g, "");
+        const exportPath = cleanPrefix ? `${cleanPrefix}/*` : "*";
+
+        const billingStatements = savedBillingConfig
+            ? [
+                  {
+                      Sid: "AllowBucketListing",
+                      Effect: "Allow",
+                      Action: ["s3:ListBucket"],
+                      Resource: [`arn:aws:s3:::${targetBucket}`],
+                  },
+                  {
+                      Sid: "AllowExportGetObject",
+                      Effect: "Allow",
+                      Action: ["s3:GetObject"],
+                      Resource: [`arn:aws:s3:::${targetBucket}/${exportPath}`],
+                  },
+              ]
+            : [];
+
+        return {
+            Version: version,
+            Statement: [...baseStatements, ...billingStatements],
+        };
+    };
+
+    const displayPermissions = getExtendedPermissions();
+
+    const handleSaveBillingConfig = () => {
+        if (!prefix || !bucketName || !bucketRegion || !exportName) {
+            setError("Please fill out all billing configuration fields before saving.");
+            return;
+        }
+
+        setSavedBillingConfig({
+            prefix: prefix.trim(),
+            bucketName: bucketName.trim(),
+            bucketRegion: bucketRegion,
+            exportName: exportName.trim(),
+        });
+        setError("");
+    };
+
+    const handleSubmit = async (forHandlingSubmit: React.FormEvent<HTMLFormElement>) => {
+        forHandlingSubmit.preventDefault();
+
+        if (optedInToBilling) {
+            if (!prefix || !bucketName || !bucketRegion || !exportName) {
+                setError("Please fill out all billing configuration fields.");
+                return;
+            }
+        }
+
+        try {
+            setLoading(true);
+            setError("");
+            setProgress(0);
+            setCurrentScanningService("");
+
+            let discoveredResources: ResourceDetail[] = [];
+            for (let i = 0; i < servicesSelected.length; i++) {
+                const currentService = servicesSelected[i];
+
+                // Update UI text
+                setCurrentScanningService(currentService);
+
+                const resources = await getCloudResources(
+                    "aws",
+                    {
+                        accessKeyId: credentials?.accessKeyId,
+                        secretAccessKey: credentials?.secretAccessKey,
+                        awsRegion: credentials?.awsRegion,
+                    },
+                    [currentService]
+                );
+
+                discoveredResources = [...discoveredResources, ...resources];
+
+                setProgress(((i + 1) / servicesSelected.length) * 100);
+            }
+
+            if (discoveredResources.length === 0) {
+                setError("No resources were discovered.");
+                return;
+            }
+
+            onNext(servicesSelected, discoveredResources, {
+                prefix,
+                bucketName,
+                bucketRegion,
+                exportName,
+            });
+        } catch (err) {
+            console.error(err);
+
+            setError("Failed to discover resources. Check credentials and permissions.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const forHandlingAllSelected = () => {
+        if (servicesSelected.length === availableServices.length) {
+            setServicesSelected([]);
+        } else {
+            setServicesSelected(availableServices.map((s) => s.id));
+        }
+    };
+
+    return (
+        <StepTwo
+            heading="Configure Billing & Services"
+            description="Configure billing export and select services for resource discovery."
+            onSubmit={handleSubmit}
+            onBack={onBack}
+            forLoading={loading}
+            forErrors={error}
+        >
+            <AwsBillingForm
+                bucketName={bucketName}
+                setBucketName={setBucketName}
+                exportName={exportName}
+                setExportName={setExportName}
+                prefix={prefix}
+                setPrefix={setPrefix}
+                bucketRegion={bucketRegion}
+                setBucketRegion={setBucketRegion}
+                handleSaveBillingConfig={handleSaveBillingConfig}
+                savedBillingConfig={savedBillingConfig ?? undefined}
+                optedInToBilling={optedInToBilling}
+                handleOptedInToBillingChange={(checked) => {
+                    setOptedInToBilling(checked);
+
+                    if (!checked) {
+                        setExportName("");
+                        setPrefix("");
+                        setBucketName("");
+                        setBucketRegion("");
+                    }
+                }}
+            />
+
+            <div className="rounded-lg border border-border bg-background p-4">
+                <div className="mb-4 rounded-md border border-amber-300/60 bg-amber-50 p-3 text-sm text-amber-900">
+                    Billing ingestion is account-wide and not limited by selected services. Select
+                    services to discover resources and monitor usage metrics alongside billing
+                    trends.
+                </div>
+
+                <ServicesList
+                    servicesAvailable={availableServices}
+                    selectedServices={servicesSelected}
+                    onServiceToggle={toggleService}
+                    onSelectAll={forHandlingAllSelected}
+                    heading="Services for Usage Monitoring & Resource Discovery"
+                />
+            </div>
+            <div className="pt-4">
+                <h3 className="text-foreground text-sm font-semibold uppercase tracking-wider opacity-60 mb-3">
+                    IAM Permissions for Discovery + Billing Export Access
+                </h3>
+
+                <div className="bg-background rounded-lg p-4 border border-border">
+                    <p className="text-foreground text-sm mb-3">
+                        Add this IAM policy to your user. It includes selected-service discovery
+                        permissions and billing export S3 read access.
+                    </p>
+                    <pre className="bg-card p-4 rounded-lg overflow-x-auto text-xs font-mono text-foreground whitespace-pre-wrap">
+                        {displayPermissions ? JSON.stringify(displayPermissions, null, 2) : "{}"}
+                    </pre>
+
+                    <button
+                        type="button"
+                        onClick={() => {
+                            navigator.clipboard.writeText(
+                                displayPermissions
+                                    ? JSON.stringify(displayPermissions, null, 2)
+                                    : "{}"
+                            );
+                        }}
+                        className="mt-3 text-primary hover:text-accent text-sm transition-colors"
+                    >
+                        Copy to clipboard
+                    </button>
+                </div>
+            </div>
+
+            {loading && (
+                <ScanProgress progress={progress} currentScanningService={currentScanningService} />
+            )}
+        </StepTwo>
+    );
+}

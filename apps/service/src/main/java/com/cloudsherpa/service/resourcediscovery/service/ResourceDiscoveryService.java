@@ -28,4 +28,14 @@ public class ResourceDiscoveryService {
 
     return ingestionClient.generateAwsPermissions(services);
   }
+
+  public List<String> generateGcpPermissions(List<String> services) {
+
+    return ingestionClient.generateGcpPermissions(services);
+  }
+
+  public List<String> generateAzurePermissions(List<String> services) {
+
+    return ingestionClient.generateAzurePermissions(services);
+  }
 }
