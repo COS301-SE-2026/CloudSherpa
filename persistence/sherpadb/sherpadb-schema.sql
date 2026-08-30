@@ -398,7 +398,8 @@ CREATE TABLE IF NOT EXISTS public.chart_resource (
   provider public.provider_enum,
   account_id uuid,
   resource_id uuid, 
-  metric_type varchar(50)
+  metric_type varchar(50),
+  metric_name varchar(100)
 );
 
 -- ----------------------------------------------------------------

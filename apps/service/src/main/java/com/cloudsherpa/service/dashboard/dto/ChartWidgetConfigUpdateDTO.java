@@ -13,5 +13,6 @@ public record ChartWidgetConfigUpdateDTO(
     ProviderEnum provider,
     UUID accountId,
     UUID resourceId,
-    String metricType)
+    String metricType,
+    String metricName)
     implements WidgetConfigUpdateDTO {}
