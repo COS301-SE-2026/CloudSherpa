@@ -164,8 +164,7 @@ public class NormalizedMetricService {
     response.forEach(
         metric -> metric.setMetricName(metricMapper.toDisplayName(metric.getMetricName())));
 
-    return normalizedMetricsRepository.getDownsampledNormalizedMetrics(
-        request.resourceId(), canonMetricName, request.from(), request.to());
+    return response;
   }
 
   public List<ResourceMetricsGroupDto> fetchResourceMetrics() {

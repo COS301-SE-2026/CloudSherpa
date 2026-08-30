@@ -9,10 +9,17 @@ const now = new Date().toISOString();
 const thirtyDaysBack = new Date(Date.now() - 30*  86_400_000).toISOString();
 
 export const options = {
-  vus: 5,
-  duration: '30s',
-};
+  stages: [
+    { duration: '1m', target: 20 }, 
+    { duration: '3m', target: 20 },
+    { duration: '1m', target: 0 },
+  ],
 
+  thresholds: {
+    http_req_duration: ['p(95)<200'],
+    http_req_failed: ['rate<0.01']   
+  }
+};
 
 const queryObjects = [
   {
@@ -76,7 +83,10 @@ export default function (data) { // NOSONAR how k6 expects it
   );
 
   responses.forEach((response) => {
-    check(response, { "status is 200": (response) => response.status === 200 })
+    check(response, { 
+      "status is 200": (response) => response.status === 200,
+      "datapoints returned": (response) => Object.keys(JSON.parse(response.body)).length > 0
+    })
   })
 
   sleep(1);
