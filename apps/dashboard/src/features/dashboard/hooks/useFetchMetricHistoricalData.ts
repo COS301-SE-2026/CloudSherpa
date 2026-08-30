@@ -78,6 +78,8 @@ export function useFetchMetricHistoricalData({
                     }
                 );
 
+                console.log("Downsampled historical metric response:", response);
+
                 if (cancelled) {
                     return;
                 }
