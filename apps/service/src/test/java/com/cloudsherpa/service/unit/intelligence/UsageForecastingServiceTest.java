@@ -174,6 +174,42 @@ class UsageForecastingServiceTest {
   }
 
   @Test
+  void shouldCallRepositoryAggregateQueryWhenProviderGCP() {
+    List<TimestampedNumericDataPoint> usageSeries =
+        List.of(
+            new TimestampedNumericDataPoint(
+                BigDecimal.valueOf(10), Instant.parse("2026-08-01T00:00:00Z")),
+            new TimestampedNumericDataPoint(
+                BigDecimal.valueOf(12), Instant.parse("2026-08-02T00:00:00Z")),
+            new TimestampedNumericDataPoint(
+                BigDecimal.valueOf(14), Instant.parse("2026-08-03T00:00:00Z")));
+
+    IntelligenceForecastResponseDto forecastResponse =
+        new IntelligenceForecastResponseDto(
+            List.of(BigDecimal.valueOf(20)),
+            List.of(LocalDateTime.parse("2026-08-04T00:00:00")),
+            List.of(BigDecimal.valueOf(18)),
+            List.of(BigDecimal.valueOf(22)));
+
+    when(normalizedMetricsRepository.getAggregatedTimestampedMetricValuesAfterDate(
+            RESOURCE_ID, METRIC_TYPE, PageRequest.of(0, CONTEXT_LENGTH)))
+        .thenReturn(usageSeries);
+
+    when(sampler.sample(usageSeries, true)).thenReturn(new SanatizedSeries(usageSeries, 86_400));
+    mockGcpMetricMapping();
+
+    mockForecastingServiceResponse(forecastResponse);
+
+    // Act
+    usageForecastingService.forecastUsage(validRequest);
+
+    // Assert
+    verify(normalizedMetricsRepository)
+        .getAggregatedTimestampedMetricValuesAfterDate(
+            RESOURCE_ID, METRIC_TYPE, PageRequest.of(0, CONTEXT_LENGTH));
+  }
+
+  @Test
   void shouldNotCallForecastingServiceWhenHistoricalContextIsInsufficient() {
     // Arrange
     List<TimestampedNumericDataPoint> usageSeries =
@@ -279,6 +315,12 @@ class UsageForecastingServiceTest {
   private void mockResourceMetricMapping() {
     when(resourceResolver.resolveProvider(RESOURCE_ID)).thenReturn(ProviderEnum.AWS);
     when(displayNameMapper.toCanonicalName(ProviderEnum.AWS.toString(), METRIC_TYPE))
+        .thenReturn(METRIC_TYPE);
+  }
+
+  private void mockGcpMetricMapping() {
+    when(resourceResolver.resolveProvider(RESOURCE_ID)).thenReturn(ProviderEnum.GCP);
+    when(displayNameMapper.toCanonicalName(ProviderEnum.GCP.toString(), METRIC_TYPE))
         .thenReturn(METRIC_TYPE);
   }
 
