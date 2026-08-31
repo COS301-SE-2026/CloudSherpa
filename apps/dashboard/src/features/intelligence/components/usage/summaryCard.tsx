@@ -34,8 +34,8 @@ export function getMetricUnit(metricType: MetricType | null): string {
 interface SummaryCardProps {
     title: string;
     // unit: string;
-    pastUsage: number;
-    predictedUsage: number;
+    pastUsage: number | null;
+    predictedUsage: number | null;
     description: string;
     tooltip: string;
     Icon?: LucideIcon;
@@ -60,7 +60,7 @@ export default function SummaryCard({
                     {usageError?.item == "usage" || usageError?.item == "both" ? (
                         "—"
                     ) : (
-                        <>{pastUsage.toLocaleString()}</>
+                        <>{pastUsage?.toLocaleString()}</>
                     )}
                 </span>
                 <Separator orientation="vertical" />
@@ -68,14 +68,14 @@ export default function SummaryCard({
                     {usageError?.item == "forecast" || usageError?.item == "both" ? (
                         "—"
                     ) : (
-                        <>{predictedUsage.toLocaleString()}</>
+                        <>{predictedUsage?.toLocaleString()}</>
                     )}
                 </span>
             </div>
         </>
     );
 
-    if (!pastUsage || !predictedUsage) {
+    if (pastUsage == null || predictedUsage == null) {
         return <Card className="h-45 border-2 border-dashed"></Card>;
     } else {
         return (
