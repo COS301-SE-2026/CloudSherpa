@@ -22,8 +22,18 @@ interface RecDrawer {
 }
 
 export default function RecDrawer({ group, isOpen, setIsOpen }: Readonly<RecDrawer>) {
-    const [searchQuery, setSearchQuery] = useState("");
     const [statusTab, setStatusTab] = useState<"active" | "applied" | "dismissed">("active");
+    const focusedResourceId = useRecStore((state) => state.focusedResourceId);
+
+    const [searchQuery, setSearchQuery] = useState(() => {
+        if (focusedResourceId) {
+            const targetRec = group.recommendations.find((r) => r.resourceId === focusedResourceId);
+            if (targetRec) {
+                return targetRec.resourceDisplayName ?? targetRec.resourceId;
+            }
+        }
+        return "";
+    });
 
     const fetchRecGroups = useRecStore((state) => state.fetchRecGroups);
 
@@ -67,8 +77,34 @@ export default function RecDrawer({ group, isOpen, setIsOpen }: Readonly<RecDraw
     const appliedCount = group.recommendations.filter((rec) => rec.status === "APPLIED").length;
     const dismissedCount = group.recommendations.filter((rec) => rec.status === "DISMISSED").length;
 
+    const clearFocusedRecommendation = useRecStore((state) => state.clearFocusedRecommendation);
+
+    const [prevFocusedId, setPrevFocusedId] = useState(focusedResourceId);
+
+    if (isOpen && focusedResourceId && focusedResourceId !== prevFocusedId) {
+        setPrevFocusedId(focusedResourceId);
+        const targetRec = group.recommendations.find((r) => r.resourceId === focusedResourceId);
+        if (targetRec) {
+            setSearchQuery(targetRec.resourceDisplayName ?? targetRec.resourceId);
+        }
+    }
+
+    useEffect(() => {
+        if (!isOpen) {
+            clearFocusedRecommendation();
+        }
+    }, [isOpen, clearFocusedRecommendation]);
+
     return (
-        <Drawer direction="right" dismissible={true} open={isOpen} onOpenChange={setIsOpen}>
+        <Drawer
+            direction="right"
+            dismissible={true}
+            open={isOpen}
+            onOpenChange={(open) => {
+                setIsOpen(open);
+                if (!open) clearFocusedRecommendation();
+            }}
+        >
             {/* drawer width could be volatile so will keep an eye on it */}
             <DrawerContent className="w-[90vw]! sm:w-[80vw]! lg:w-[60vw]! sm:max-w-[1600px]! p-4">
                 <DrawerHeader className="flex flex-col">

@@ -11,6 +11,7 @@ import { useDashboardStore, DashboardStore } from "@/features/dashboard/stores/d
 import { useMetricStream } from "@/features/dashboard/services/sse/metric-stream";
 import { useLoadDashboardData } from "@/features/dashboard/hooks/useLoadDash";
 import { toast } from "sonner";
+import { useRecStore } from "@/features/optimization/stores/useRecStore";
 
 function DashboardContent() {
     const { error: streamError } = useMetricStream();
@@ -23,6 +24,9 @@ function DashboardContent() {
     const dashboards = useDashboardStore((state: DashboardStore) => state.dashboards);
     const activeDashboardId = useDashboardStore((state: DashboardStore) => state.activeDashboardId);
     const layoutsMap = useDashboardStore((state: DashboardStore) => state.layouts);
+
+    const fetchRecGroups = useRecStore((state) => state.fetchRecGroups);
+    const fetchSummary = useRecStore((state) => state.fetchSummary);
 
     const { updateLayouts, setActiveDashboard } = useDashboardStore(
         (state: DashboardStore) => state.actions
@@ -56,6 +60,11 @@ function DashboardContent() {
     const router = useRouter();
     const pathname = usePathname();
     const authToastHandled = useRef(false);
+
+    useEffect(() => {
+        fetchRecGroups();
+        fetchSummary();
+    }, []);
 
     useEffect(() => {
         // checks if where user is coming from
