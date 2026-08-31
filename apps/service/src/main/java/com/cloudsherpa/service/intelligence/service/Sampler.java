@@ -134,7 +134,6 @@ public class Sampler {
     List<TimestampedNumericDataPoint> sanitizedSeries = new ArrayList<>();
     boolean brokeEarly = false;
     for (int i = 0; i < original.size() - 1; i++) {
-
       // Safe to add current since difference between current and previous checked in previous
       // iteration
       sanitizedSeries.add(
@@ -145,6 +144,8 @@ public class Sampler {
 
       long durationBetweenCurrentAndNext = Duration.between(current, next).toSeconds();
 
+      logger.info("Duration between current and next: {}", durationBetweenCurrentAndNext);
+
       if (durationBetweenCurrentAndNext > periodicity
           || durationBetweenCurrentAndNext % periodicity != 0
           || (durationBetweenCurrentAndNext != periodicity && !padWithZeros)) {
@@ -153,7 +154,6 @@ public class Sampler {
         brokeEarly = true;
         break;
       }
-
       while (Duration.between(current, next).toSeconds() != periodicity
           && sanitizedSeries.size() < 8092) {
         TimestampedNumericDataPoint addPoint =
