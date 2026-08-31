@@ -95,6 +95,17 @@ const Gcp_INS = creatingIns([
     },
 ]);
 
+const Azure_INS = creatingIns([
+    {name : "Navigate to Connection Manager",
+     description : "Access the Connection Manager from your dashboard",
+     details : [
+        "From your dashboard, locate the sidebar on the left",
+        "Click on the Connection Manager",
+        "You will be redirected to the Connection Manager page where you can view and configure your cloud connections",
+     ],
+    },
+]);
+
 export default function Connection() {
     
 
