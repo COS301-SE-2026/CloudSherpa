@@ -8,8 +8,8 @@ import { creatingIns } from "@/features/helpMenu/documents/createInstructions";
 - this page give users all the info on how to add, remove and manage their conn
 */
 
-export default function Connection() {
-    const INS = creatingIns([
+//removed from inside func
+const Aws_INS = creatingIns([
         {
             name: "Navigate to Connection Manager",
             description: "Access the Connection Manager from your dashboard",
@@ -58,6 +58,9 @@ export default function Connection() {
             ],
         },
     ]);
+
+export default function Connection() {
+    
 
     return (
         <HelpCenter
