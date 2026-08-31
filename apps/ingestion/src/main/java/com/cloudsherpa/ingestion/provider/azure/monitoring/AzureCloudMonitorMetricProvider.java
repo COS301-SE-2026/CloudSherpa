@@ -301,7 +301,7 @@ public class AzureCloudMonitorMetricProvider implements CloudMonitoringMetricPro
             : "AZURE");
 
     usage.setAccountId(queryContext.accountScope().getAccountId());
-    usage.setSubscriptionId(queryContext.accountScope().getSubscriptionId());
+    usage.setSubscriptionId(queryContext.accountScope().getAccountId());
     usage.setServiceName(recordContext.serviceScope().getName());
     usage.setMetricName(metricResult.getMetricName());
     usage.setResourceId(recordContext.resource().resourceId());
@@ -317,7 +317,7 @@ public class AzureCloudMonitorMetricProvider implements CloudMonitoringMetricPro
     usage.setSource("AzureMonitor");
     usage.setPeriodStart(timestamp);
     usage.setPeriodEnd(timestamp.plusSeconds(queryContext.period()));
-
+    System.out.println("metric: " + usage.getMetricName() + " value " + usage.getValue());
     return usage;
   }
 
@@ -464,8 +464,8 @@ public class AzureCloudMonitorMetricProvider implements CloudMonitoringMetricPro
 
     validateCredentials(request);
 
-    if (accountScope.getSubscriptionId() == null || accountScope.getSubscriptionId().isBlank()) {
-      throw new IllegalArgumentException("Azure subscriptionId is required");
+    if (accountScope.getAccountId() == null || accountScope.getAccountId().isBlank()) {
+      throw new IllegalArgumentException("AccountId is required");
     }
 
     if (request.getFrom() == null || request.getTo() == null) {
@@ -486,6 +486,10 @@ public class AzureCloudMonitorMetricProvider implements CloudMonitoringMetricPro
     if (request.getCredentials() == null) {
       throw new IllegalArgumentException(
           "Azure credentials are required for Azure metric ingestion");
+    }
+
+    if (isBlank(request.getCredentials().getSubscriptionId())) {
+      throw new IllegalArgumentException("Azure subscriptionId is required");
     }
 
     if (isBlank(request.getCredentials().getTenantId())) {
