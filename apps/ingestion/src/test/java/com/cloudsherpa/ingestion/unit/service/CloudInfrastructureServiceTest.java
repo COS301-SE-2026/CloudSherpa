@@ -1,5 +1,6 @@
 package com.cloudsherpa.ingestion.unit.service;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -131,6 +132,57 @@ class CloudInfrastructureServiceTest {
     assertTrue(exception.getMessage().contains("does not belong to connection"));
     verify(resourceRepo, never())
         .findByAccountIdAndResourceTypeAndResourceIdentifierAndRegion(any(), any(), any(), any());
+  }
+
+  @Test
+  void ensureInfrastructureShouldThrowWhenResourceNotFound() {
+    UUID userId = UUID.randomUUID();
+    UUID connectionId = UUID.randomUUID();
+    UUID accountId = UUID.randomUUID();
+
+    UsageRecordModel r =
+        buildMockUsageRecord("AWS", accountId.toString(), "EC2", "i-123", "us-east-1");
+
+    CloudConnection mockConnection = buildMockConnection(connectionId);
+    CloudAccount mockAccount = buildMockAccount(accountId, connectionId);
+
+    when(connectionRepo.findByUserIdAndProvider(userId, ProviderEnum.AWS))
+        .thenReturn(List.of(mockConnection));
+    when(accountRepo.findById(accountId)).thenReturn(Optional.of(mockAccount));
+
+    when(resourceRepo.findByAccountIdAndResourceTypeAndResourceIdentifierAndRegion(
+            accountId, "EC2", "i-123", "us-east-1"))
+        .thenReturn(Optional.empty());
+
+    IllegalStateException exception =
+        assertThrows(IllegalStateException.class, () -> service.ensureInfrastructure(r, userId));
+
+    assertTrue(exception.getMessage().contains("Resource not found for account="));
+  }
+
+  @Test
+  void ensureInfrastructureShouldHandleProvidersWithWhitespaceAndVaryingCases() {
+    UUID userId = UUID.randomUUID();
+    UUID connectionId = UUID.randomUUID();
+    UUID accountId = UUID.randomUUID();
+
+    UsageRecordModel r =
+        buildMockUsageRecord("  aWs ", accountId.toString(), "EC2", "i-123", "us-east-1");
+
+    CloudConnection mockConnection = buildMockConnection(connectionId);
+    CloudAccount mockAccount = buildMockAccount(accountId, connectionId);
+    Resource mockResource = mock(Resource.class);
+
+    when(connectionRepo.findByUserIdAndProvider(userId, ProviderEnum.AWS))
+        .thenReturn(List.of(mockConnection));
+    when(accountRepo.findById(accountId)).thenReturn(Optional.of(mockAccount));
+    when(resourceRepo.findByAccountIdAndResourceTypeAndResourceIdentifierAndRegion(
+            any(), any(), any(), any()))
+        .thenReturn(Optional.of(mockResource));
+
+    assertDoesNotThrow(() -> service.ensureInfrastructure(r, userId));
+
+    verify(connectionRepo, times(1)).findByUserIdAndProvider(userId, ProviderEnum.AWS);
   }
 
   private UsageRecordModel buildMockUsageRecord(
