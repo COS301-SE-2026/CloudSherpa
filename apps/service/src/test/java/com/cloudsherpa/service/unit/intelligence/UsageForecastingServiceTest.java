@@ -115,14 +115,7 @@ class UsageForecastingServiceTest {
     // Arrange
     mockForecastingServiceResponse(null);
 
-    List<TimestampedNumericDataPoint> usageSeries =
-        List.of(
-            new TimestampedNumericDataPoint(
-                BigDecimal.valueOf(10), Instant.parse("2026-08-01T00:00:00Z")),
-            new TimestampedNumericDataPoint(
-                BigDecimal.valueOf(12), Instant.parse("2026-08-02T00:00:00Z")),
-            new TimestampedNumericDataPoint(
-                BigDecimal.valueOf(14), Instant.parse("2026-08-03T00:00:00Z")));
+    List<TimestampedNumericDataPoint> usageSeries = getValidUsageSeries();
 
     when(normalizedMetricsRepository.getTimestampedMetricValues(
             RESOURCE_ID, METRIC_TYPE, PageRequest.of(0, CONTEXT_LENGTH)))
@@ -140,21 +133,9 @@ class UsageForecastingServiceTest {
 
   @Test
   void shouldCallRepositoryWithContextLimitAndRequestedResourceMetric() {
-    List<TimestampedNumericDataPoint> usageSeries =
-        List.of(
-            new TimestampedNumericDataPoint(
-                BigDecimal.valueOf(10), Instant.parse("2026-08-01T00:00:00Z")),
-            new TimestampedNumericDataPoint(
-                BigDecimal.valueOf(12), Instant.parse("2026-08-02T00:00:00Z")),
-            new TimestampedNumericDataPoint(
-                BigDecimal.valueOf(14), Instant.parse("2026-08-03T00:00:00Z")));
+    List<TimestampedNumericDataPoint> usageSeries = getValidUsageSeries();
 
-    IntelligenceForecastResponseDto forecastResponse =
-        new IntelligenceForecastResponseDto(
-            List.of(BigDecimal.valueOf(20)),
-            List.of(LocalDateTime.parse("2026-08-04T00:00:00")),
-            List.of(BigDecimal.valueOf(18)),
-            List.of(BigDecimal.valueOf(22)));
+    IntelligenceForecastResponseDto forecastResponse = getValidForecastResponse();
 
     when(normalizedMetricsRepository.getTimestampedMetricValues(
             RESOURCE_ID, METRIC_TYPE, PageRequest.of(0, CONTEXT_LENGTH)))
@@ -175,21 +156,9 @@ class UsageForecastingServiceTest {
 
   @Test
   void shouldCallRepositoryAggregateQueryWhenProviderGCP() {
-    List<TimestampedNumericDataPoint> usageSeries =
-        List.of(
-            new TimestampedNumericDataPoint(
-                BigDecimal.valueOf(10), Instant.parse("2026-08-01T00:00:00Z")),
-            new TimestampedNumericDataPoint(
-                BigDecimal.valueOf(12), Instant.parse("2026-08-02T00:00:00Z")),
-            new TimestampedNumericDataPoint(
-                BigDecimal.valueOf(14), Instant.parse("2026-08-03T00:00:00Z")));
+    List<TimestampedNumericDataPoint> usageSeries = getValidUsageSeries();
 
-    IntelligenceForecastResponseDto forecastResponse =
-        new IntelligenceForecastResponseDto(
-            List.of(BigDecimal.valueOf(20)),
-            List.of(LocalDateTime.parse("2026-08-04T00:00:00")),
-            List.of(BigDecimal.valueOf(18)),
-            List.of(BigDecimal.valueOf(22)));
+    IntelligenceForecastResponseDto forecastResponse = getValidForecastResponse();
 
     when(normalizedMetricsRepository.getAggregatedTimestampedMetricValuesAfterDate(
             RESOURCE_ID, METRIC_TYPE, PageRequest.of(0, CONTEXT_LENGTH)))
@@ -235,14 +204,7 @@ class UsageForecastingServiceTest {
   @Test
   void shouldMapIntelligenceForecastResponseFieldsToUsageResponse() {
     // Arrange
-    List<TimestampedNumericDataPoint> usageSeries =
-        List.of(
-            new TimestampedNumericDataPoint(
-                BigDecimal.valueOf(10), Instant.parse("2026-08-01T00:00:00Z")),
-            new TimestampedNumericDataPoint(
-                BigDecimal.valueOf(12), Instant.parse("2026-08-02T00:00:00Z")),
-            new TimestampedNumericDataPoint(
-                BigDecimal.valueOf(14), Instant.parse("2026-08-03T00:00:00Z")));
+    List<TimestampedNumericDataPoint> usageSeries = getValidUsageSeries();
 
     List<LocalDateTime> timestamps =
         List.of(
@@ -252,7 +214,7 @@ class UsageForecastingServiceTest {
     List<BigDecimal> q3 = List.of(BigDecimal.valueOf(22), BigDecimal.valueOf(23));
 
     IntelligenceForecastResponseDto forecastResponse =
-        new IntelligenceForecastResponseDto(forecast, timestamps, q1, q3);
+        getForecastResponse(forecast, timestamps, q1, q3);
 
     when(normalizedMetricsRepository.getTimestampedMetricValues(
             RESOURCE_ID, METRIC_TYPE, PageRequest.of(0, CONTEXT_LENGTH)))
@@ -274,14 +236,7 @@ class UsageForecastingServiceTest {
   @Test
   void shouldCapForecastAtZero() {
     // Arrange
-    List<TimestampedNumericDataPoint> usageSeries =
-        List.of(
-            new TimestampedNumericDataPoint(
-                BigDecimal.valueOf(10), Instant.parse("2026-08-01T00:00:00Z")),
-            new TimestampedNumericDataPoint(
-                BigDecimal.valueOf(12), Instant.parse("2026-08-02T00:00:00Z")),
-            new TimestampedNumericDataPoint(
-                BigDecimal.valueOf(14), Instant.parse("2026-08-03T00:00:00Z")));
+    List<TimestampedNumericDataPoint> usageSeries = getValidUsageSeries();
 
     List<LocalDateTime> timestamps =
         List.of(
@@ -291,7 +246,7 @@ class UsageForecastingServiceTest {
     List<BigDecimal> q3 = List.of(BigDecimal.valueOf(22), BigDecimal.valueOf(23));
 
     IntelligenceForecastResponseDto forecastResponse =
-        new IntelligenceForecastResponseDto(forecast, timestamps, q1, q3);
+        getForecastResponse(forecast, timestamps, q1, q3);
 
     when(normalizedMetricsRepository.getTimestampedMetricValues(
             RESOURCE_ID, METRIC_TYPE, PageRequest.of(0, CONTEXT_LENGTH)))
@@ -322,6 +277,32 @@ class UsageForecastingServiceTest {
     when(resourceResolver.resolveProvider(RESOURCE_ID)).thenReturn(ProviderEnum.GCP);
     when(displayNameMapper.toCanonicalName(ProviderEnum.GCP.toString(), METRIC_TYPE))
         .thenReturn(METRIC_TYPE);
+  }
+
+  private List<TimestampedNumericDataPoint> getValidUsageSeries() {
+    return List.of(
+        new TimestampedNumericDataPoint(
+            BigDecimal.valueOf(10), Instant.parse("2026-08-01T00:00:00Z")),
+        new TimestampedNumericDataPoint(
+            BigDecimal.valueOf(12), Instant.parse("2026-08-02T00:00:00Z")),
+        new TimestampedNumericDataPoint(
+            BigDecimal.valueOf(14), Instant.parse("2026-08-03T00:00:00Z")));
+  }
+
+  private IntelligenceForecastResponseDto getValidForecastResponse() {
+    return getForecastResponse(
+        List.of(BigDecimal.valueOf(20)),
+        List.of(LocalDateTime.parse("2026-08-04T00:00:00")),
+        List.of(BigDecimal.valueOf(18)),
+        List.of(BigDecimal.valueOf(22)));
+  }
+
+  private IntelligenceForecastResponseDto getForecastResponse(
+      List<BigDecimal> forecast,
+      List<LocalDateTime> timestamps,
+      List<BigDecimal> q1,
+      List<BigDecimal> q3) {
+    return new IntelligenceForecastResponseDto(forecast, timestamps, q1, q3);
   }
 
   private void mockForecastingServiceResponse(IntelligenceForecastResponseDto response) {
