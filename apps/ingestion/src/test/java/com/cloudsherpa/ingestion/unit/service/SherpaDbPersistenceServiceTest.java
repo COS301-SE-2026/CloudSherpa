@@ -1,0 +1,58 @@
+package com.cloudsherpa.ingestion.unit.service;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+import com.cloudsherpa.ingestion.models.UsageRecordModel;
+import com.cloudsherpa.ingestion.normalization.model.NormalizedMetric;
+import com.cloudsherpa.ingestion.service.CloudInfrastructureService;
+import com.cloudsherpa.ingestion.service.SherpaDbPersistenceService;
+import com.cloudsherpa.lib.entities.NormalizedCosts;
+import com.cloudsherpa.lib.entities.NormalizedMetrics;
+import com.cloudsherpa.lib.repositories.NormalizedCostsRepository;
+import com.cloudsherpa.lib.repositories.NormalizedMetricsRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
+class SherpaDbPersistenceServiceTest {
+
+  @Mock private NormalizedMetricsRepository metricsRepo;
+  @Mock private NormalizedCostsRepository normalizedCostsRepository;
+  @Mock private CloudInfrastructureService infrastructureService;
+
+  @Mock private EntityManager entityManager;
+  @Mock private Query nativeQuery;
+
+  @InjectMocks private SherpaDbPersistenceService service;
+
+  @Captor private ArgumentCaptor<NormalizedMetrics> metricsCaptor;
+
+  @Test
+  void recordMetricShouldThrowWhenUserIdIsNull() {
+    NormalizedMetric metric = mock(NormalizedMetric.class);
+    UsageRecordModel r = mock(UsageRecordModel.class);
+
+    IllegalArgumentException exception =
+        assertThrows(IllegalArgumentException.class, () -> service.recordMetric(metric, r, null));
+
+    assertEquals("userId is required", exception.getMessage());
+  }
+
+  @Test
+  void recordCostShouldThrowWhenUserIdIsNull() {
+    NormalizedCosts costs = mock(NormalizedCosts.class);
+
+    IllegalArgumentException exception =
+        assertThrows(IllegalArgumentException.class, () -> service.recordCost(costs, null));
+
+    assertEquals("userId is required", exception.getMessage());
+  }
+}
