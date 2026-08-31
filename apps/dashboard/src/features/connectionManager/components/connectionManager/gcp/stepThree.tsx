@@ -77,7 +77,6 @@ export default function StepThreeGcp({
         event.preventDefault();
 
         setForSaving(true);
-        setErrors(null);
 
         try {
             const request: PersistGcpConnectionRequest = {
@@ -103,8 +102,7 @@ export default function StepThreeGcp({
             router.push("/manageConnections");
             toast.success(`Succesfully created ${displayName} GCP connection`);
         } catch (err) {
-            setErrors(err instanceof Error ? err.message : "Unable to create GCP connection.");
-            toast.error(`Failed to create GCP connection`);
+            toast.error(err instanceof Error ? err.message : "Unable to create GCP connection.");
         } finally {
             setForSaving(false);
         }
@@ -117,7 +115,6 @@ export default function StepThreeGcp({
             onSubmit={handleSubmit}
             onBack={onBack || (() => {})}
             forSaving={forSaving}
-            forErrors={errors}
         >
             <ResourceTable
                 data={tableResources}

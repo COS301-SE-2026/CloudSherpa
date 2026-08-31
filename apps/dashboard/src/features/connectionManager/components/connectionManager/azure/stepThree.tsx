@@ -35,8 +35,6 @@ export default function StepThreeAzure({
 }: Readonly<StepThreePropsForAzure>) {
     const [forSaving, setForSaving] = useState(false);
 
-    const [errors, setErrors] = useState<string | null>(null);
-
     const [filter, setFilter] = useState("");
 
     const router = useRouter();
@@ -72,7 +70,6 @@ export default function StepThreeAzure({
         event.preventDefault();
 
         setForSaving(true);
-        setErrors(null);
 
         try {
             const request: PersistAzureConnectionRequest = {
@@ -97,7 +94,7 @@ export default function StepThreeAzure({
             router.push("/manageConnections");
             toast.success(`Succesfully created ${displayName} Azure connection`);
         } catch (err) {
-            setErrors(err instanceof Error ? err.message : "Unable to create Azure connection.");
+            toast.error(err instanceof Error ? err.message : "Unable to create Azure connection.");
         } finally {
             setForSaving(false);
         }
@@ -110,7 +107,6 @@ export default function StepThreeAzure({
             onSubmit={handlingSubmit}
             onBack={onBack || (() => {})}
             forSaving={forSaving}
-            forErrors={errors}
         >
             <ResourceTable
                 data={tableResources}
