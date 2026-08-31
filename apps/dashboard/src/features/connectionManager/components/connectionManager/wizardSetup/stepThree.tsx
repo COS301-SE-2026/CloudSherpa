@@ -240,7 +240,9 @@ function ResourceCells({ getValue }: Readonly<CellContext<ResourceSelectionDto, 
 }
 
 function SecondaryCells({ getValue }: Readonly<CellContext<ResourceSelectionDto, string>>) {
-    return <span className="text-xs text-muted-foreground"> {getValue()} </span>;
+    return (
+        <Truncation tagsAndName={getValue()} className="text-xs text-muted-foreground w-[80px]" />
+    );
 }
 
 function TagCells({
