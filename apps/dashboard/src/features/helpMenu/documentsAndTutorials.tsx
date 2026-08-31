@@ -102,6 +102,69 @@ const DOCUMENTS: Documents[] = [
 
 type FilterForTutorials = (typeof TUTFILTERS)[number];
 
+const PopUp = ({
+    isOpen, onClose, onSelectProvider,
+} : {isOpen : boolean; onClose : () => void; onSelectProvider : (provider : string) => void;
+}) => {
+    if(!isOpen){
+        return null;
+    }
+
+    return(
+        <Dialog open = {isOpen} onOpenChange = {onClose}>
+            <DialogContent className = "max-w-md">
+                <DialogHeader className = "test-center pb-2">
+                    <div className = "flex justify-center mb-4">
+                        <div className = "p-3 bg-primary-100 dark:bg-primary-900/30 rounded-full"> <Plug size = {28} className = "text-primary"/> </div>
+                    </div>
+
+                    <DialogTitle className = "text-2xl font-bold test-foreground"> Connect a Cloud Provider </DialogTitle>
+
+                    <p className = "text-muted-foreground mt-2 text-sm"> Choose which cloud provider you would like to connect to CloudSherpa </p>
+                </DialogHeader>
+
+                <div className = "space-y-3 py-2">
+                    <Button type = "button" variant = "outline" onClick = {() => {onSelectProvider("aws"); onClose();}}
+                            className = "w-full flex items-center justify-between px-4 py-6 h-auto hover:border-primary hover:bg-muted/50 group">
+
+                            <span className = "flex items-center gap-3">
+                                <span className = "text-left">
+                                    <span className = "font-semibold text-foreground block"> AWS </span>
+
+                                    <span className = "text-sm text-muted-foreground block"> Amazon Web Services </span>
+                                </span>
+                            </span>
+                    </Button>
+
+                    <Button type = "button" variant = "outline" onClick = {() => {onSelectProvider("gcp"); onClose();}}
+                            className = "w-full flex items-center justify-between px-4 py-6 h-auto hover:border-primary hover:bg-muted/50 group">
+
+                            <span className = "flex items-center gap-3">
+                                <span className = "text-left">
+                                    <span className = "font-semibold text-foreground block"> GCP </span>
+
+                                    <span className = "text-sm text-muted-foreground block"> Google Cloud Platform </span>
+                                </span>
+                            </span>
+                    </Button>
+
+                    <Button type = "button" variant = "outline" onClick = {() => {onSelectProvider("azure"); onClose();}}
+                            className = "w-full flex items-center justify-between px-4 py-6 h-auto hover:border-primary hover:bg-muted/50 group">
+
+                            <span className = "flex items-center gap-3">
+                                <span className = "text-left">
+                                    <span className = "font-semibold text-foreground block"> AZURE </span>
+
+                                    <span className = "text-sm text-muted-foreground block"> Microsoft Azure </span>
+                                </span>
+                            </span>
+                    </Button>
+                </div>
+            </DialogContent>
+        </Dialog>
+    )
+}
+
 function DocumentsAndTutorialsSuspense() {
     const router = useRouter();
 
