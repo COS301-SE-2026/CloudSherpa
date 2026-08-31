@@ -73,7 +73,7 @@ export default function ChartFormConnection({
                         }}
                         disableSearch={true}
                         widthVariant="full"
-                        placeholder="select provider..."
+                        placeholder="Select provider..."
                     />
                 </div>
                 <div className="grid gap-2">
@@ -93,7 +93,7 @@ export default function ChartFormConnection({
                             });
                         }}
                         widthVariant="full"
-                        placeholder="select connection..."
+                        placeholder="Select connection..."
                         emptyMessage="No connections found"
                     />
                 </div>
