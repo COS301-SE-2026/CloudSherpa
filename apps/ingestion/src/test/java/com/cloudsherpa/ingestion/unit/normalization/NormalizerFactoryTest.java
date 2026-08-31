@@ -15,6 +15,7 @@ class NormalizerFactoryTest {
   private Map<String, Normalizer> normalizerMap;
   private NormalizerFactory factory;
   private Normalizer awsNormalizer;
+  private Normalizer gcpNormalizer;
 
   @BeforeEach
   void setUp() {
@@ -22,16 +23,25 @@ class NormalizerFactoryTest {
     awsNormalizer = mock(Normalizer.class);
 
     normalizerMap.put("awsNormalizer", awsNormalizer);
+    normalizerMap.put("gcpNormalizer", gcpNormalizer);
 
     factory = new NormalizerFactory(normalizerMap);
   }
 
   @Test
-  void getNormalizerShouldReturnCorrectNormalizerForValidProvider() {
+  void getNormalizerShouldReturnCorrectNormalizerForValidAwsProvider() {
     Normalizer result = factory.getNormalizer("AWS");
 
     assertNotNull(result);
     assertEquals(awsNormalizer, result);
+  }
+
+  @Test
+  void getNormalizerShouldReturnCorrectNormalizerForValidGcpProvider() {
+    Normalizer result = factory.getNormalizer("GCP");
+
+    assertNotNull(result);
+    assertEquals(gcpNormalizer, result);
   }
 
   @Test
@@ -48,5 +58,13 @@ class NormalizerFactoryTest {
         assertThrows(IllegalArgumentException.class, () -> factory.getNormalizer(null));
 
     assertEquals("No provider specified", exception.getMessage());
+  }
+
+  @Test
+  void getNormalizerShouldThrowWhenNormalizerNotFound() {
+    IllegalArgumentException exception =
+        assertThrows(IllegalArgumentException.class, () -> factory.getNormalizer("Test"));
+
+    assertEquals("No normalizer found for provider: Test", exception.getMessage());
   }
 }
