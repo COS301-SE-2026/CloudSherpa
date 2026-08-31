@@ -39,7 +39,7 @@ import {
     getAwsAccountConnections,
     getAwsAccountResourceCount,
 } from "@/lib/fetch/cloud-account-api";
-import { CloudAccount } from "@/lib/fetch/dto/cloud-account";
+import { CloudAccount, AccountType } from "@/lib/fetch/dto/cloud-account";
 
 type Providers = "All" | "AWS" | "Azure" | "GCP";
 interface Connections {
@@ -77,6 +77,17 @@ const providerTabs: Record<Providers, { active: string; inactive: string }> = {
 const badges = (provider: Exclude<Providers, "All">) => {
     return providerTabs[provider].active;
 };
+
+function mappingForAccountTypeToProvider(accountType : AccountType) : Exclude<Providers, "All">{
+    switch(accountType){
+        case AccountType.AZURE_SUBSCRIPTION:
+            return "Azure";
+        case AccountType.GCP_PROJECT:
+            return "GCP";
+        case AccountType.AWS_ACCOUNT:
+            return "AWS";
+    }
+}
 
 export default function ManagingConnections() {
     const [connections, setConnections] = useState<Connections[]>([]);
