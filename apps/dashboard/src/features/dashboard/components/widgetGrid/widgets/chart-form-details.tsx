@@ -56,7 +56,7 @@ export default function ChartFormDetails({
                             });
                         }}
                         widthVariant="full"
-                        placeholder="Select chart..."
+                        placeholder="Select Chart"
                     />
                 </div>
             </FieldGroup>
