@@ -36,6 +36,7 @@ export function useRegistration() {
 
             setRegistrationFailure(false);
             setRegistrationSuccess(true);
+            setIsLoading(false);
 
             router.push("/dashboard?new_account=true");
         } catch (error) {
@@ -48,8 +49,6 @@ export function useRegistration() {
 
             setRegistrationFailure(true);
             setRegistrationSuccess(false);
-        } finally {
-            setIsLoading(false);
         }
     }
 
