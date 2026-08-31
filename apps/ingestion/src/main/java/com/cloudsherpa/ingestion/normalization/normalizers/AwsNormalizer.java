@@ -5,13 +5,11 @@ import com.cloudsherpa.ingestion.normalization.model.NormalizedMetric;
 import com.cloudsherpa.lib.entities.Resource;
 import com.cloudsherpa.lib.repositories.ResourceRepository;
 import java.util.UUID;
-import java.util.logging.Logger;
 import org.springframework.stereotype.Component;
 
 @Component
 public class AwsNormalizer implements Normalizer {
   private final ResourceRepository resourceRepository;
-  Logger logger = Logger.getLogger(getClass().getName());
 
   public AwsNormalizer(ResourceRepository resourceRepository) {
     this.resourceRepository = resourceRepository;
@@ -19,11 +17,8 @@ public class AwsNormalizer implements Normalizer {
 
   public NormalizedMetric normalize(UsageRecordModel r) {
     if (r == null) {
-      logger.info("==== USAGE RECORD IS NULL ====");
       return null;
     }
-
-    logger.info("==== NORMALIZE ====");
 
     UUID resourceTableIdent =
         resourceRepository
