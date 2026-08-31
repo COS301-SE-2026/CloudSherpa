@@ -139,7 +139,9 @@ export default function BillingForecastChart({
                         <TooltipTrigger>
                             <Info className="h-4 w-4" strokeWidth={1.75} />
                         </TooltipTrigger>
-                        <TooltipContent>...</TooltipContent>
+                        <TooltipContent>
+                            Visual representation of the cost breakdown of the charges
+                        </TooltipContent>
                     </Tooltip>
                 </CardTitle>
             </CardHeader>

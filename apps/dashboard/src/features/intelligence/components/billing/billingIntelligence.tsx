@@ -170,7 +170,7 @@ export default function BillingIntelligence() {
 
                 <CostBreakdownList
                     name="Individual Charge Cost Breakdown"
-                    description={`Projected Charges for ${pastTimeWindowDays} Day Window`}
+                    description={`Projected Charges for ${forecastTimeWindowDays} Day Window`}
                     eachEntry={forBreakdown}
                     search={breakdownSearch}
                     onSearchChange={setBreakdownSearch}
