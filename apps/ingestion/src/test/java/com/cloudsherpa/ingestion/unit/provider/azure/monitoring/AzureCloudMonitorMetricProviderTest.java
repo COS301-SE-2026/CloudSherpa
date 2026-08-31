@@ -26,6 +26,7 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
@@ -513,6 +514,279 @@ class AzureCloudMonitorMetricProviderTest {
           .queryResourcesWithResponse(
               anyList(), anyList(), anyString(), any(MetricsQueryResourcesOptions.class), any());
     }
+  }
+
+  // Metric batching
+
+  @Test
+  void collectMetrics_shouldUseOneRequestFor20Metrics() {
+    AccountScope scope = validScope();
+
+    List<Metric> metrics = new ArrayList<>();
+
+    for (int i = 0; i < 20; i++) {
+      Metric metric = new Metric();
+
+      metric.setName("Metric-" + i);
+      metrics.add(metric);
+    }
+
+    scope.getServiceScopes().get(0).setMetrics(metrics);
+
+    IngestionRequestEvent request = validRequest();
+
+    MetricsClient client = mock(MetricsClient.class);
+
+    MetricsQueryResourcesResult result = mock(MetricsQueryResourcesResult.class);
+
+    Response<MetricsQueryResourcesResult> response = mock(Response.class);
+
+    when(response.getValue()).thenReturn(result);
+    when(result.getMetricsQueryResults()).thenReturn(List.of());
+
+    when(client.queryResourcesWithResponse(
+            anyList(), anyList(), anyString(), any(MetricsQueryResourcesOptions.class), any()))
+        .thenReturn(response);
+
+    try (MockedStatic<AzureClientFactory> factory = mockStatic(AzureClientFactory.class)) {
+
+      factory
+          .when(() -> AzureClientFactory.createMetricsClient(any(), eq("westeurope")))
+          .thenReturn(client);
+
+      provider.collectMetrics(scope, request);
+
+      verify(client, times(1))
+          .queryResourcesWithResponse(
+              anyList(), anyList(), anyString(), any(MetricsQueryResourcesOptions.class), any());
+    }
+  }
+
+  @Test
+  void collectMetrics_shouldBatchMoreThan20Metrics() {
+    AccountScope scope = validScope();
+
+    List<Metric> metrics = new ArrayList<>();
+
+    for (int i = 0; i < 21; i++) {
+      Metric metric = new Metric();
+
+      metric.setName("Metric-" + i);
+      metrics.add(metric);
+    }
+
+    scope.getServiceScopes().get(0).setMetrics(metrics);
+
+    IngestionRequestEvent request = validRequest();
+
+    MetricsClient client = mock(MetricsClient.class);
+
+    MetricsQueryResourcesResult result = mock(MetricsQueryResourcesResult.class);
+
+    Response<MetricsQueryResourcesResult> response = mock(Response.class);
+
+    when(response.getValue()).thenReturn(result);
+    when(result.getMetricsQueryResults()).thenReturn(List.of());
+
+    when(client.queryResourcesWithResponse(
+            anyList(), anyList(), anyString(), any(MetricsQueryResourcesOptions.class), any()))
+        .thenReturn(response);
+
+    try (MockedStatic<AzureClientFactory> factory = mockStatic(AzureClientFactory.class)) {
+
+      factory
+          .when(() -> AzureClientFactory.createMetricsClient(any(), eq("westeurope")))
+          .thenReturn(client);
+
+      provider.collectMetrics(scope, request);
+
+      verify(client, times(2))
+          .queryResourcesWithResponse(
+              anyList(), anyList(), anyString(), any(MetricsQueryResourcesOptions.class), any());
+    }
+  }
+
+  // Invalid requests
+
+  @Test
+  void collectMetrics_shouldIgnoreInstancesWithoutIdentifier() {
+    AccountScope scope = validScope();
+
+    Instance invalid = new Instance();
+
+    invalid.setIdentifier(null);
+    invalid.setRegion("westeurope");
+
+    InstanceScope instanceScope = new InstanceScope();
+
+    instanceScope.setInstances(List.of(invalid));
+
+    scope.getServiceScopes().get(0).setInstances(List.of(instanceScope));
+
+    IngestionRequestEvent request = validRequest();
+
+    List<UsageRecordModel> result = provider.collectMetrics(scope, request);
+
+    assertTrue(result.isEmpty());
+  }
+
+  @Test
+  void collectMetrics_shouldIgnoreBlankInstanceIdentifier() {
+    AccountScope scope = validScope();
+
+    Instance invalid = new Instance();
+
+    invalid.setIdentifier(" ");
+    invalid.setRegion("westeurope");
+
+    InstanceScope instanceScope = new InstanceScope();
+
+    instanceScope.setInstances(List.of(invalid));
+
+    scope.getServiceScopes().get(0).setInstances(List.of(instanceScope));
+
+    IngestionRequestEvent request = validRequest();
+
+    List<UsageRecordModel> result = provider.collectMetrics(scope, request);
+
+    assertTrue(result.isEmpty());
+  }
+
+  @Test
+  void collectMetrics_shouldThrowWhenRegionMissing() {
+    AccountScope scope = validScope();
+
+    scope.getServiceScopes().get(0).getInstances().get(0).getInstances().get(0).setRegion(" ");
+
+    IngestionRequestEvent request = validRequest();
+
+    IllegalArgumentException ex =
+        assertThrows(IllegalArgumentException.class, () -> provider.collectMetrics(scope, request));
+
+    assertTrue(ex.getMessage().contains("Azure resource is missing its region"));
+  }
+
+  // Null/empty service or instance scope, or empty metric lists
+
+  @Test
+  void collectMetrics_shouldSkipNullServiceScope() {
+    AccountScope scope = validScope();
+
+    scope.setServiceScopes(Collections.singletonList(null));
+
+    IngestionRequestEvent request = validRequest();
+
+    List<UsageRecordModel> result = provider.collectMetrics(scope, request);
+
+    assertTrue(result.isEmpty());
+  }
+
+  @Test
+  void collectMetrics_shouldSkipServiceWithoutInstances() {
+    AccountScope scope = validScope();
+
+    scope.getServiceScopes().get(0).setInstances(List.of());
+
+    IngestionRequestEvent request = validRequest();
+
+    List<UsageRecordModel> result = provider.collectMetrics(scope, request);
+
+    assertTrue(result.isEmpty());
+  }
+
+  @Test
+  void collectMetrics_shouldSkipServiceWithNullInstances() {
+    AccountScope scope = validScope();
+
+    scope.getServiceScopes().get(0).setInstances(null);
+
+    IngestionRequestEvent request = validRequest();
+
+    List<UsageRecordModel> result = provider.collectMetrics(scope, request);
+
+    assertTrue(result.isEmpty());
+  }
+
+  @Test
+  void collectMetrics_shouldSkipServiceWithoutMetrics() {
+    AccountScope scope = validScope();
+
+    scope.getServiceScopes().get(0).setMetrics(List.of());
+
+    IngestionRequestEvent request = validRequest();
+
+    List<UsageRecordModel> result = provider.collectMetrics(scope, request);
+
+    assertTrue(result.isEmpty());
+  }
+
+  @Test
+  void collectMetrics_shouldSkipServiceWithNullMetrics() {
+    AccountScope scope = validScope();
+
+    scope.getServiceScopes().get(0).setMetrics(null);
+
+    IngestionRequestEvent request = validRequest();
+
+    List<UsageRecordModel> result = provider.collectMetrics(scope, request);
+
+    assertTrue(result.isEmpty());
+  }
+
+  @Test
+  void collectMetrics_shouldSkipServiceWithBlankName() {
+    AccountScope scope = validScope();
+
+    scope.getServiceScopes().get(0).setName(" ");
+
+    IngestionRequestEvent request = validRequest();
+
+    List<UsageRecordModel> result = provider.collectMetrics(scope, request);
+
+    assertTrue(result.isEmpty());
+  }
+
+  @Test
+  void collectMetrics_shouldSkipServiceWithNullName() {
+    AccountScope scope = validScope();
+
+    scope.getServiceScopes().get(0).setName(null);
+
+    IngestionRequestEvent request = validRequest();
+
+    List<UsageRecordModel> result = provider.collectMetrics(scope, request);
+
+    assertTrue(result.isEmpty());
+  }
+
+  @Test
+  void collectMetrics_shouldIgnoreNullInstanceScope() {
+    AccountScope scope = validScope();
+
+    scope.getServiceScopes().get(0).setInstances(Collections.singletonList(null));
+
+    IngestionRequestEvent request = validRequest();
+
+    List<UsageRecordModel> result = provider.collectMetrics(scope, request);
+
+    assertTrue(result.isEmpty());
+  }
+
+  @Test
+  void collectMetrics_shouldIgnoreInstanceScopeWithNullInstances() {
+    AccountScope scope = validScope();
+
+    InstanceScope instanceScope = new InstanceScope();
+
+    instanceScope.setInstances(null);
+
+    scope.getServiceScopes().get(0).setInstances(List.of(instanceScope));
+
+    IngestionRequestEvent request = validRequest();
+
+    List<UsageRecordModel> result = provider.collectMetrics(scope, request);
+
+    assertTrue(result.isEmpty());
   }
 
   // Helper functions
