@@ -35,7 +35,7 @@ public class BillingForecastingService extends ForecastingService {
 
   // Threshold to account for billing latency in reports, i.e. most recent report does not contain
   // all up to date charges
-  private static final int OLD_CHARGE_CUTOFF_DAYS = 7;
+  private static final int OLD_CHARGE_CUTOFF_DAYS = 60;
 
   public BillingForecastingService(
       NormalizedCostsRepository normalizedCostsRepository,
@@ -133,33 +133,34 @@ public class BillingForecastingService extends ForecastingService {
     Duration timeBetweenLatestIngestion =
         Duration.between(chargeSeries.getLast().timestamp(), mostRecentBillingIngestionDate);
 
-    if (timeBetweenLatestIngestion.toDays() < OLD_CHARGE_CUTOFF_DAYS) {
-      SanatizedSeries sanatizedSeries = sampler.sample(chargeSeries, false);
-
-      Duration timeBetweenLatestIngestionAndRequest =
-          Duration.between(mostRecentBillingIngestionDate, timeOfRequest);
-
-      if (sanatizedSeries.periodicity() == 0) {
-        return null;
-      }
-
-      int calculatedForecastSteps =
-          calculateForecastSteps(
-              timeBetweenLatestIngestion,
-              timeBetweenLatestIngestionAndRequest,
-              forecastSteps,
-              sanatizedSeries.periodicity());
-
-      return new SanitizedChargeSeries(
-          sanatizedSeries.timestampedNumericDataPoints(),
-          sanatizedSeries.periodicity(),
-          calculatedForecastSteps);
-    } else {
+    if (timeBetweenLatestIngestion.toDays() > OLD_CHARGE_CUTOFF_DAYS) {
       logger.info(
           "Charge {} was last ingested before the defined threshold and is thus not forecasted",
           chargeId);
       return null;
     }
+
+    SanatizedSeries sanatizedSeries =
+        sampler.sample(chargeSeries, true, mostRecentBillingIngestionDate.minusSeconds(86_400));
+
+    Duration timeBetweenLatestIngestionAndRequest =
+        Duration.between(mostRecentBillingIngestionDate, timeOfRequest);
+
+    if (sanatizedSeries.periodicity() == 0) {
+      return null;
+    }
+
+    int calculatedForecastSteps =
+        calculateForecastSteps(
+            timeBetweenLatestIngestion,
+            timeBetweenLatestIngestionAndRequest,
+            forecastSteps,
+            sanatizedSeries.periodicity());
+
+    return new SanitizedChargeSeries(
+        sanatizedSeries.timestampedNumericDataPoints(),
+        sanatizedSeries.periodicity(),
+        calculatedForecastSteps);
   }
 
   private int calculateForecastSteps(

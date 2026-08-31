@@ -9,9 +9,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -21,12 +19,13 @@ public class Sampler {
 
   private final Logger logger = LoggerFactory.getLogger(Sampler.class);
 
-  private Set<Long> candidates = new HashSet<>();
-  private boolean padWithZeros;
-
   public SanatizedSeries sample(List<TimestampedNumericDataPoint> original, boolean padWithZeros) {
+    return sample(original, padWithZeros, Instant.now());
+  }
+
+  public SanatizedSeries sample(
+      List<TimestampedNumericDataPoint> original, boolean padWithZeros, Instant padToInstant) {
     logger.info("Starting sample with {} original points", original.size());
-    this.padWithZeros = padWithZeros;
 
     if (original.size() < 2) {
       return new SanatizedSeries(List.of(), 0);
@@ -41,7 +40,7 @@ public class Sampler {
               timestampedNumericDataPoint.timestamp().truncatedTo(ChronoUnit.SECONDS)));
     }
 
-    // Sorting results in negative periodicity, but necessary for the correct cutoff point
+    // Keep newest-first behavior so irregular data still cuts off older segments as before.
     processing.sort(Comparator.comparing(TimestampedNumericDataPoint::timestamp).reversed());
 
     List<Long> differences = getDifferences(processing);
@@ -50,19 +49,20 @@ public class Sampler {
 
     if (padWithZeros) {
 
-      Instant now = Instant.now();
-
       Duration durationBetweenTimeOfRequestAndLastIngestedDataPoint =
-          Duration.between(processing.getFirst().timestamp(), now);
+          Duration.between(processing.getFirst().timestamp(), padToInstant);
       // cause pad with zero side effect if last ingested data point >= than 1 hour
       if (durationBetweenTimeOfRequestAndLastIngestedDataPoint.toHours() >= 1) {
+        long paddingPeriodicity = Math.abs(periodicity);
         long secondsToAdd =
-            durationBetweenTimeOfRequestAndLastIngestedDataPoint.toSeconds() / periodicity;
+            durationBetweenTimeOfRequestAndLastIngestedDataPoint.toSeconds() / paddingPeriodicity;
         Instant newInstant =
-            processing.getFirst().timestamp().plusSeconds(secondsToAdd * periodicity);
-        TimestampedNumericDataPoint newDataPoint =
-            new TimestampedNumericDataPoint(BigDecimal.valueOf(0), newInstant);
-        processing.addFirst(newDataPoint);
+            processing.getFirst().timestamp().plusSeconds(secondsToAdd * paddingPeriodicity);
+        if (newInstant.isAfter(processing.getFirst().timestamp())) {
+          TimestampedNumericDataPoint newDataPoint =
+              new TimestampedNumericDataPoint(BigDecimal.valueOf(0), newInstant);
+          processing.addFirst(newDataPoint);
+        }
       }
     }
 
@@ -72,7 +72,8 @@ public class Sampler {
         differences.size(),
         clusteredDifferences.size());
 
-    List<TimestampedNumericDataPoint> sanatizedSeries = santizeSeries(processing, periodicity);
+    List<TimestampedNumericDataPoint> sanatizedSeries =
+        santizeSeries(processing, periodicity, padWithZeros);
     logger.info("Finished sample with {} processed points", processing.size());
     return new SanatizedSeries(sanatizedSeries, periodicity);
   }
@@ -84,7 +85,6 @@ public class Sampler {
           Duration.between(original.get(i).timestamp(), original.get(i + 1).timestamp())
               .toSeconds();
       differences.add(difference);
-      candidates.add(difference);
     }
     return differences;
   }
@@ -130,11 +130,10 @@ public class Sampler {
   }
 
   private List<TimestampedNumericDataPoint> santizeSeries(
-      List<TimestampedNumericDataPoint> original, long periodicity) {
+      List<TimestampedNumericDataPoint> original, long periodicity, boolean padWithZeros) {
     List<TimestampedNumericDataPoint> sanitizedSeries = new ArrayList<>();
     boolean brokeEarly = false;
     for (int i = 0; i < original.size() - 1; i++) {
-
       // Safe to add current since difference between current and previous checked in previous
       // iteration
       sanitizedSeries.add(
@@ -153,7 +152,6 @@ public class Sampler {
         brokeEarly = true;
         break;
       }
-
       while (Duration.between(current, next).toSeconds() != periodicity
           && sanitizedSeries.size() < 8092) {
         TimestampedNumericDataPoint addPoint =
