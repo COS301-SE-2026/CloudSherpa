@@ -19,6 +19,9 @@ public class Sampler {
 
   private final Logger logger = LoggerFactory.getLogger(Sampler.class);
 
+  private record CandidateDifferenceProperties(
+      boolean duplicateTimestamp, boolean invalidatesSeries) {}
+
   public SanatizedSeries sample(List<TimestampedNumericDataPoint> original, boolean padWithZeros) {
     return sample(original, padWithZeros, Instant.now());
   }
@@ -40,7 +43,6 @@ public class Sampler {
               timestampedNumericDataPoint.timestamp().truncatedTo(ChronoUnit.SECONDS)));
     }
 
-    // Keep newest-first behavior so irregular data still cuts off older segments as before.
     processing.sort(Comparator.comparing(TimestampedNumericDataPoint::timestamp).reversed());
 
     List<Long> differences = getDifferences(processing);
@@ -63,18 +65,15 @@ public class Sampler {
               new TimestampedNumericDataPoint(BigDecimal.valueOf(0), newInstant);
           processing.addFirst(newDataPoint);
         }
+
+        logger.info(
+            "Add a recent timestamp to a series with the most recent timestamp greater than one hour after {}",
+            padToInstant);
       }
     }
 
-    logger.info(
-        "Sample selected periodicity {} seconds from {} differences and {} clusters",
-        periodicity,
-        differences.size(),
-        clusteredDifferences.size());
-
     List<TimestampedNumericDataPoint> sanatizedSeries =
         santizeSeries(processing, periodicity, padWithZeros);
-    logger.info("Finished sample with {} processed points", processing.size());
     return new SanatizedSeries(sanatizedSeries, periodicity);
   }
 
@@ -133,32 +132,33 @@ public class Sampler {
       List<TimestampedNumericDataPoint> original, long periodicity, boolean padWithZeros) {
     List<TimestampedNumericDataPoint> sanitizedSeries = new ArrayList<>();
     boolean brokeEarly = false;
+    int numberOfPads = 0;
     for (int i = 0; i < original.size() - 1; i++) {
-      // Safe to add current since difference between current and previous checked in previous
-      // iteration
-      sanitizedSeries.add(
-          new TimestampedNumericDataPoint(original.get(i).value(), original.get(i).timestamp()));
 
       Instant current = original.get(i).timestamp();
       Instant next = original.get(i + 1).timestamp();
 
-      long durationBetweenCurrentAndNext = Duration.between(current, next).toSeconds();
+      CandidateDifferenceProperties differenceProperties =
+          calculateCandidateDifferenceProperties(current, next, periodicity, padWithZeros);
 
-      if (durationBetweenCurrentAndNext > periodicity
-          || durationBetweenCurrentAndNext % periodicity != 0
-          || (durationBetweenCurrentAndNext != periodicity && !padWithZeros)) {
-        // periodicity at which data published changed, unrecoverable at this stage, going to work
-        // with what was obtained up until this point
-        brokeEarly = true;
-        break;
-      }
-      while (Duration.between(current, next).toSeconds() != periodicity
-          && sanitizedSeries.size() < 8092) {
-        TimestampedNumericDataPoint addPoint =
-            new TimestampedNumericDataPoint(
-                BigDecimal.valueOf(0), current.plusSeconds(periodicity));
-        sanitizedSeries.addLast(addPoint);
-        current = addPoint.timestamp();
+      if (!differenceProperties.duplicateTimestamp) {
+        sanitizedSeries.add(
+            new TimestampedNumericDataPoint(original.get(i).value(), original.get(i).timestamp()));
+
+        if (differenceProperties.invalidatesSeries) {
+          brokeEarly = true;
+          break;
+        }
+
+        while (Duration.between(current, next).toSeconds() != periodicity
+            && sanitizedSeries.size() < 8092) {
+          TimestampedNumericDataPoint addPoint =
+              new TimestampedNumericDataPoint(
+                  BigDecimal.valueOf(0), current.plusSeconds(periodicity));
+          sanitizedSeries.addLast(addPoint);
+          current = addPoint.timestamp();
+          numberOfPads++;
+        }
       }
     }
 
@@ -170,21 +170,37 @@ public class Sampler {
 
     sanitizedSeries.sort(Comparator.comparing(TimestampedNumericDataPoint::timestamp));
 
-    if (sanitizedSeries.size() > 8092) {
-      int sizeBeforeTrim = original.size();
-      sanitizedSeries.subList(8091, sanitizedSeries.size()).clear();
+    if (numberOfPads > 0) {
       logger.info(
-          "Padded {} missing points and trimmed series from {} to {} points",
-          sanitizedSeries.size(),
-          sizeBeforeTrim,
-          sanitizedSeries.size());
-    } else {
-      logger.info(
-          "Padded {} missing points. Series now has {} points",
-          sanitizedSeries.size(),
+          "Padded {} regular gaps.\nOriginal size: {}\nSize after padding {}",
+          numberOfPads,
+          original.size(),
           sanitizedSeries.size());
     }
 
+    if (sanitizedSeries.size() > 8092) {
+      int sizeBeforeTrim = original.size();
+      sanitizedSeries.subList(8091, sanitizedSeries.size()).clear();
+      logger.info("Trimmed series from {} to {} points", sizeBeforeTrim, sanitizedSeries.size());
+    }
+
     return sanitizedSeries;
+  }
+
+  private CandidateDifferenceProperties calculateCandidateDifferenceProperties(
+      Instant current, Instant next, long periodicity, boolean padWithZeros) {
+    long durationBetweenCurrentAndNext = Duration.between(current, next).toSeconds();
+
+    if (current.compareTo(next) == 0) {
+      return new CandidateDifferenceProperties(true, false);
+    }
+
+    if (next.isAfter(current)
+        || durationBetweenCurrentAndNext % periodicity != 0
+        || (durationBetweenCurrentAndNext != periodicity && !padWithZeros)) {
+      return new CandidateDifferenceProperties(false, true);
+    }
+
+    return new CandidateDifferenceProperties(false, false);
   }
 }
