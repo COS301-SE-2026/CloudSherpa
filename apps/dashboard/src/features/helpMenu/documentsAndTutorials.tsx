@@ -160,10 +160,15 @@ const PopUp = ({
                             </span>
                     </Button>
                 </div>
+
+                <div className = "mt-2 pt-4 border-t border-border">
+                    <Button type = "button" variant = "ghost" onClick = {onClose} className = "w-full text-sm text-muted-foreground hover:text-foreground"> Cancel </Button>
+                </div>
+
             </DialogContent>
         </Dialog>
-    )
-}
+    );
+};
 
 function DocumentsAndTutorialsSuspense() {
     const router = useRouter();
