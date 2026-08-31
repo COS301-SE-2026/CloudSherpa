@@ -21,6 +21,7 @@ class NormalizerFactoryTest {
   void setUp() {
     normalizerMap = new HashMap<>();
     awsNormalizer = mock(Normalizer.class);
+    gcpNormalizer = mock(Normalizer.class);
 
     normalizerMap.put("awsNormalizer", awsNormalizer);
     normalizerMap.put("gcpNormalizer", gcpNormalizer);
