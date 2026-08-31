@@ -30,8 +30,8 @@ export function useLogin() {
                 }
             } else {
                 setLoginFailure(true);
-
                 setLoginSuccess(false);
+                setIsLoading(false);
             }
         } catch (error) {
             if (error instanceof Error) {
@@ -44,8 +44,6 @@ export function useLogin() {
 
             setLoginFailure(true);
             setLoginSuccess(false);
-        } finally {
-            setIsLoading(false);
         }
     }
 
