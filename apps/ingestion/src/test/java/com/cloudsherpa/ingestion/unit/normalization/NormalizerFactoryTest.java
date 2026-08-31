@@ -41,4 +41,12 @@ class NormalizerFactoryTest {
     assertNotNull(result);
     assertEquals(awsNormalizer, result);
   }
+
+  @Test
+  void getNormalizerShouldThrowWhenProviderIsNull() {
+    IllegalArgumentException exception =
+        assertThrows(IllegalArgumentException.class, () -> factory.getNormalizer(null));
+
+    assertEquals("No provider specified", exception.getMessage());
+  }
 }
