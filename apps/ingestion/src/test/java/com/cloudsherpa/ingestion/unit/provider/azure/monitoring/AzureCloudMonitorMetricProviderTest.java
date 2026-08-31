@@ -1234,6 +1234,107 @@ class AzureCloudMonitorMetricProviderTest {
     }
   }
 
+  // Metric value extraction from ranging azure return types
+
+  @Test
+  void collectMetrics_shouldUseAverageValue() {
+    List<UsageRecordModel> usages =
+        collectSingleMetricWithValueSetup(
+            value -> {
+              when(value.getAverage()).thenReturn(10.0);
+            });
+
+    assertEquals(1, usages.size());
+    assertEquals(10.0, usages.get(0).getValue());
+  }
+
+  @Test
+  void collectMetrics_shouldFallbackToTotalWhenAverageMissing() {
+    List<UsageRecordModel> usages =
+        collectSingleMetricWithValueSetup(
+            value -> {
+              when(value.getAverage()).thenReturn(null);
+
+              when(value.getTotal()).thenReturn(20.0);
+            });
+
+    assertEquals(1, usages.size());
+    assertEquals(20.0, usages.get(0).getValue());
+  }
+
+  @Test
+  void collectMetrics_shouldFallbackToMaximumWhenAverageAndTotalMissing() {
+    List<UsageRecordModel> usages =
+        collectSingleMetricWithValueSetup(
+            value -> {
+              when(value.getAverage()).thenReturn(null);
+
+              when(value.getTotal()).thenReturn(null);
+
+              when(value.getMaximum()).thenReturn(30.0);
+            });
+
+    assertEquals(1, usages.size());
+    assertEquals(30.0, usages.get(0).getValue());
+  }
+
+  @Test
+  void collectMetrics_shouldFallbackToMinimumWhenPreviousValuesMissing() {
+    List<UsageRecordModel> usages =
+        collectSingleMetricWithValueSetup(
+            value -> {
+              when(value.getAverage()).thenReturn(null);
+
+              when(value.getTotal()).thenReturn(null);
+
+              when(value.getMaximum()).thenReturn(null);
+
+              when(value.getMinimum()).thenReturn(40.0);
+            });
+
+    assertEquals(1, usages.size());
+    assertEquals(40.0, usages.get(0).getValue());
+  }
+
+  @Test
+  void collectMetrics_shouldFallbackToCountWhenOtherValuesMissing() {
+    List<UsageRecordModel> usages =
+        collectSingleMetricWithValueSetup(
+            value -> {
+              when(value.getAverage()).thenReturn(null);
+
+              when(value.getTotal()).thenReturn(null);
+
+              when(value.getMaximum()).thenReturn(null);
+
+              when(value.getMinimum()).thenReturn(null);
+
+              when(value.getCount()).thenReturn(50.0);
+            });
+
+    assertEquals(1, usages.size());
+    assertEquals(50.0, usages.get(0).getValue());
+  }
+
+  @Test
+  void collectMetrics_shouldIgnoreMetricValueWhenAllValuesMissing() {
+    List<UsageRecordModel> usages =
+        collectSingleMetricWithValueSetup(
+            value -> {
+              when(value.getAverage()).thenReturn(null);
+
+              when(value.getTotal()).thenReturn(null);
+
+              when(value.getMaximum()).thenReturn(null);
+
+              when(value.getMinimum()).thenReturn(null);
+
+              when(value.getCount()).thenReturn(null);
+            });
+
+    assertTrue(usages.isEmpty());
+  }
+
   // Helper functions
 
   private List<UsageRecordModel> collectSingleMetricWithValueSetup(
