@@ -336,6 +336,72 @@ class AzureCloudMonitorMetricProviderTest {
     }
   }
 
+  // Region grouping
+
+  @Test
+  void collectMetrics_shouldCreateSeparateClientPerRegion() {
+    AccountScope scope = validScope();
+
+    Instance first = scope.getServiceScopes().get(0).getInstances().get(0).getInstances().get(0);
+
+    Instance second = new Instance();
+
+    second.setIdentifier(
+        "/subscriptions/sub/resourceGroups/rg/"
+            + "providers/Microsoft.Compute/"
+            + "virtualMachines/vm-02");
+
+    second.setRegion("eastus");
+
+    InstanceScope instanceScope = new InstanceScope();
+
+    instanceScope.setInstances(List.of(first, second));
+
+    scope.getServiceScopes().get(0).setInstances(List.of(instanceScope));
+
+    IngestionRequestEvent request = validRequest();
+
+    MetricsClient west = mock(MetricsClient.class);
+
+    MetricsClient east = mock(MetricsClient.class);
+
+    MetricsQueryResourcesResult result = mock(MetricsQueryResourcesResult.class);
+
+    Response<MetricsQueryResourcesResult> response = mock(Response.class);
+
+    when(response.getValue()).thenReturn(result);
+    when(result.getMetricsQueryResults()).thenReturn(List.of());
+
+    when(west.queryResourcesWithResponse(
+            anyList(), anyList(), anyString(), any(MetricsQueryResourcesOptions.class), any()))
+        .thenReturn(response);
+
+    when(east.queryResourcesWithResponse(
+            anyList(), anyList(), anyString(), any(MetricsQueryResourcesOptions.class), any()))
+        .thenReturn(response);
+
+    try (MockedStatic<AzureClientFactory> factory = mockStatic(AzureClientFactory.class)) {
+
+      factory
+          .when(() -> AzureClientFactory.createMetricsClient(any(), eq("westeurope")))
+          .thenReturn(west);
+
+      factory
+          .when(() -> AzureClientFactory.createMetricsClient(any(), eq("eastus")))
+          .thenReturn(east);
+
+      provider.collectMetrics(scope, request);
+
+      verify(west, times(1))
+          .queryResourcesWithResponse(
+              anyList(), anyList(), anyString(), any(MetricsQueryResourcesOptions.class), any());
+
+      verify(east, times(1))
+          .queryResourcesWithResponse(
+              anyList(), anyList(), anyString(), any(MetricsQueryResourcesOptions.class), any());
+    }
+  }
+
   // Helper functions
 
   private List<UsageRecordModel> collectSingleMetricWithValueSetup(
