@@ -3,6 +3,8 @@
 import { Plug } from "lucide-react";
 import HelpCenter from "@/features/helpMenu/documents/documentsPage";
 import { creatingIns } from "@/features/helpMenu/documents/createInstructions";
+import {useSearchParams} from "next/navigation";
+import {Suspense} from "react";
 
 /*
 - this page give users all the info on how to add, remove and manage their conn
@@ -106,16 +108,62 @@ const Azure_INS = creatingIns([
     },
 ]);
 
-export default function Connection() {
-    
+function ContentForConnections(){
+    const searchParams = useSearchParams();
+
+    const forProviders = searchParams.get("forProviders");
+
+    const getInstructions = () => {
+        switch(forProviders){
+            case "aws" :
+                return{
+                    instructions : Aws_INS,
+                    name : "Connection your AWS cloud provider",
+                    description : "Follow these steps to connect your AWS account",
+                };
+            
+            case "gcp" :
+                return{
+                    instructions : Gcp_INS,
+                    name : "Connection your GCPcloud provider",
+                    description : "Follow these steps to connect your GCP account",
+                };
+
+            case "aws" :
+                return{
+                    instructions : Aws_INS,
+                    name : "Connection your Azure cloud provider",
+                    description : "Follow these steps to connect your Azure account",
+                };
+            
+            default : 
+            return{
+                instructions : Aws_INS,
+                name : "Connecting your AWS cloud provider",
+                description : "Follow these five steps to connect your AWS account",
+            };
+        }
+    };
+
+    const {instructions, name, description} = getInstructions();
 
     return (
         <HelpCenter
-            name="Connecting your AWS cloud provider"
-            description="Follow these five steps to connect your AWS account"
+            name={name}
+            description={description}
             breadcrumb="Connections"
             icon={Plug}
-            instructions={INS}
+            instructions={instructions}
         />
+    );
+}
+
+export default function Connection() {
+    return (
+        <Suspense fallback = {<div className = "flex items-center justify min-h-screen"> Loading... </div>}>
+
+            <ContentForConnections/>
+
+        </Suspense>
     );
 }
