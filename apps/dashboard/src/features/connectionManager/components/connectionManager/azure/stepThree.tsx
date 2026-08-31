@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import {
     StepThree,
     ResourceTable,
@@ -15,6 +15,7 @@ import {
     PersistAzureConnectionRequest,
 } from "@/lib/fetch/azure-connection-api";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface StepThreePropsForAzure {
     displayName: string;
@@ -94,6 +95,7 @@ export default function StepThreeAzure({
 
             onComplete(forIngestionPeriod);
             router.push("/manageConnections");
+            toast.success(`Succesfully created ${displayName} Azure connection`);
         } catch (err) {
             setErrors(err instanceof Error ? err.message : "Unable to create Azure connection.");
         } finally {

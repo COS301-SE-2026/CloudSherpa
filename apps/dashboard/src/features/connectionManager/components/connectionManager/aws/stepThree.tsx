@@ -16,6 +16,7 @@ import { Slider } from "@/components/atoms/slider";
 import { StepThree } from "@/features/connectionManager/components/connectionManager/wizardSetup/stepThree";
 import { AwsCredentialsDto } from "@/lib/fetch/dto/cloud-credentials";
 import { ResourceDetail, ResourceSelectionDto } from "@/lib/fetch/dto/cloud-resource";
+import { toast } from "sonner";
 
 interface PropsForStepThree {
     displayName: string;
@@ -201,6 +202,7 @@ export default function StepThreeAws({
 
             onComplete(period);
             router.push("/manageConnections");
+            toast.success(`Succesfully created ${displayName} AWS connection`);
         } catch (err) {
             setError(err instanceof Error ? err.message : "Unable to create AWS connection.");
         } finally {

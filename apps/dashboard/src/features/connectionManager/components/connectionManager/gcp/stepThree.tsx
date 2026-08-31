@@ -14,6 +14,7 @@ import { GcpBillingConfigType } from "./validTypes";
 import { ResourceSelectionDto } from "@/lib/fetch/azure-connection-api";
 import { GcpCredentialsDto } from "@/lib/fetch/dto/cloud-credentials";
 import { ResourceDetail } from "@/lib/fetch/dto/cloud-resource";
+import { toast } from "sonner";
 /*
 - should have tanstack table for resources, as elect & deselect all for it
 - should also have pagination
@@ -100,8 +101,10 @@ export default function StepThreeGcp({
 
             onComplete(forIngestionPeriod);
             router.push("/manageConnections");
+            toast.success(`Succesfully created ${displayName} GCP connection`);
         } catch (err) {
             setErrors(err instanceof Error ? err.message : "Unable to create GCP connection.");
+            toast.error(`Failed to create GCP connection`);
         } finally {
             setForSaving(false);
         }
