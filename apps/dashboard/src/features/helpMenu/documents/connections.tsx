@@ -122,21 +122,21 @@ function ContentForConnections() {
             case "aws":
                 return {
                     instructions: Aws_INS,
-                    name: "Connection your AWS cloud provider",
+                    name: "Connecting your AWS cloud provider",
                     description: "Follow these steps to connect your AWS account",
                 };
 
             case "gcp":
                 return {
                     instructions: Gcp_INS,
-                    name: "Connection your GCPcloud provider",
+                    name: "Connecting your GCP cloud provider",
                     description: "Follow these steps to connect your GCP account",
                 };
 
             case "azure":
                 return {
                     instructions: Azure_INS,
-                    name: "Connection your Azure cloud provider",
+                    name: "Connecting your Azure cloud provider",
                     description: "Follow these steps to connect your Azure account",
                 };
 
