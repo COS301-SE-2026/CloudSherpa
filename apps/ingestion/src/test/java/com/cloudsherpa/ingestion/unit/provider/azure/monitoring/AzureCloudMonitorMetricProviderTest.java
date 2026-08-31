@@ -221,6 +221,121 @@ class AzureCloudMonitorMetricProviderTest {
     assertEquals("Metric period must be > 0", ex.getMessage());
   }
 
+  // Metric collection tests
+
+  @Test
+  void collectMetrics_shouldMapAzureResponseIntoUsageRecord() {
+    AccountScope scope = validScope();
+    IngestionRequestEvent request = validRequest();
+
+    MetricsClient client = mock(MetricsClient.class);
+
+    MetricsQueryResourcesResult result = mock(MetricsQueryResourcesResult.class);
+
+    Response<MetricsQueryResourcesResult> response = mock(Response.class);
+
+    MetricsQueryResult resourceResult = mock(MetricsQueryResult.class);
+
+    MetricResult metricResult = mock(MetricResult.class);
+
+    TimeSeriesElement series = mock(TimeSeriesElement.class);
+
+    MetricValue value = mock(MetricValue.class);
+
+    OffsetDateTime timestamp = OffsetDateTime.of(2026, 1, 1, 12, 0, 0, 0, ZoneOffset.UTC);
+
+    when(response.getValue()).thenReturn(result);
+
+    when(value.getTimeStamp()).thenReturn(timestamp);
+    when(value.getAverage()).thenReturn(73.5);
+
+    when(series.getValues()).thenReturn(List.of(value));
+
+    when(series.getMetadata()).thenReturn(Map.of("VMName", "vm-01", "Environment", "dev"));
+
+    when(metricResult.getMetricName()).thenReturn("Percentage CPU");
+
+    when(metricResult.getTimeSeries()).thenReturn(List.of(series));
+
+    when(metricResult.getResourceType()).thenReturn("Microsoft.Compute/virtualMachines");
+
+    /*
+     * Deliberately leave Azure's unit null.
+     *
+     * The unit fallback behaviour is intentional and is
+     * explicitly not tested here. Azure ingestion returns a unit
+     * and therefore no fallback unit is necessary. GCP does not return this
+     * unit and the fallback in the request is intended for GCP only
+     */
+    when(metricResult.getUnit()).thenReturn(null);
+
+    when(resourceResult.getResourceId())
+        .thenReturn(
+            "/subscriptions/sub/resourceGroups/rg/"
+                + "providers/Microsoft.Compute/"
+                + "virtualMachines/vm-01");
+
+    when(resourceResult.getMetrics()).thenReturn(List.of(metricResult));
+
+    when(result.getMetricsQueryResults()).thenReturn(List.of(resourceResult));
+
+    when(client.queryResourcesWithResponse(
+            anyList(), anyList(), anyString(), any(MetricsQueryResourcesOptions.class), any()))
+        .thenReturn(response);
+
+    try (MockedStatic<AzureClientFactory> factory = mockStatic(AzureClientFactory.class)) {
+
+      factory
+          .when(
+              () ->
+                  AzureClientFactory.createMetricsClient(
+                      any(CloudCredentials.class), eq("westeurope")))
+          .thenReturn(client);
+
+      List<UsageRecordModel> usages = provider.collectMetrics(scope, request);
+
+      assertEquals(1, usages.size());
+
+      UsageRecordModel usage = usages.get(0);
+
+      assertEquals("AZURE", usage.getProvider());
+      assertEquals("subscription-123", usage.getAccountId());
+      assertEquals("subscription-123", usage.getSubscriptionId());
+
+      assertEquals("Microsoft.Compute/virtualMachines", usage.getServiceName());
+
+      assertEquals("Percentage CPU", usage.getMetricName());
+
+      assertEquals(
+          "/subscriptions/sub/resourceGroups/rg/"
+              + "providers/Microsoft.Compute/"
+              + "virtualMachines/vm-01",
+          usage.getResourceId());
+
+      assertEquals("Microsoft.Compute/virtualMachines", usage.getResourceType());
+
+      assertEquals("westeurope", usage.getRegion());
+
+      assertNull(usage.getUnit());
+
+      assertEquals(73.5, usage.getValue());
+
+      assertEquals(timestamp.toInstant(), usage.getTimestamp());
+
+      assertEquals(timestamp.toInstant(), usage.getPeriodStart());
+
+      assertEquals(timestamp.toInstant().plusSeconds(300), usage.getPeriodEnd());
+
+      assertEquals("AzureMonitor", usage.getSource());
+
+      assertEquals(Map.of("VMName", "vm-01", "Environment", "dev"), usage.getDimensions());
+
+      assertNotNull(usage.getRecordId());
+      assertNotNull(usage.getIngestionId());
+      assertNotNull(usage.getIngestionTimestamp());
+    }
+  }
+
   // Helper functions
 
   private List<UsageRecordModel> collectSingleMetricWithValueSetup(
