@@ -23,7 +23,7 @@ class GcpNormalizerTest {
     ingestionRecord.setResourceId("g");
     ingestionRecord.setProjectId(UUID.randomUUID().toString());
     ingestionRecord.setMetricName("CPUUtilization");
-    ingestionRecord.setValue(75.0);
+    ingestionRecord.setValue(0.75);
     ingestionRecord.setTimestamp(Instant.now());
 
     NormalizedMetric result = normalizer.normalize(ingestionRecord);
@@ -44,5 +44,20 @@ class GcpNormalizerTest {
     ingestionRecord.setProjectId(UUID.randomUUID().toString());
     ingestionRecord.setResourceId("a");
     assertDoesNotThrow(() -> normalizer.normalize(ingestionRecord));
+  }
+
+  @Test
+  void normalizeShouldHandlePercentMetric() {
+    UsageRecordModel ingestionRecord = new UsageRecordModel();
+    ingestionRecord.setUnit("Percent");
+    ingestionRecord.setProvider("GCP");
+    ingestionRecord.setResourceId("g");
+    ingestionRecord.setProjectId(UUID.randomUUID().toString());
+    ingestionRecord.setMetricName("CPUUtilization");
+    ingestionRecord.setValue(0.5);
+    ingestionRecord.setTimestamp(Instant.now());
+
+    NormalizedMetric result = normalizer.normalize(ingestionRecord);
+    assertEquals(50, result.getMetricValue());
   }
 }
