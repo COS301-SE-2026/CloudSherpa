@@ -192,6 +192,10 @@ function DocumentsAndTutorialsSuspense() {
     //htmliframeelement rep an html iframe ele & provides type safety
     const youtubeIframe = useRef<HTMLIFrameElement>(null);
 
+    const [isPopUpOpen, setIsPopUpOpen] = useState(false);
+
+    const selectedProvider = useRef<string | null>(null);
+
     const searchDocument = useMemo(() => {
         if (!search.trim()) {
             return DOCUMENTS;
@@ -244,8 +248,48 @@ function DocumentsAndTutorialsSuspense() {
         setVideoSelected(null);
     };
 
+    const handlingCategoryClick = (category : BrowseCategory) => {
+        if(category.id === "connections"){
+            setIsPopUpOpen(true);
+        }else if(category.href){
+            router.push(category.href);
+        }
+    };
+
+    const handlingCategoryKey = (clicked : React.KeyboardEvent, category : BrowseCategory) => {
+        if(clicked.key === "Enter" || clicked.key === " "){
+            clicked.preventDefault();
+
+            handlingCategoryClick(category);
+        }
+    };
+
+    const handlingSelectedProvider = (provider : string) => {
+        selectedProvider.current = provider;
+
+        router.push(`/helpMenu/documents/connections?forProviders=${provider}`);
+    };
+
+    const handlingDocumentsClicked = (documents : Documents) => {
+        if(documents.category === "Connections"){
+            setIsPopUpOpen(true);
+        }else{
+            router.push(documents.href);
+        }
+    };
+
+    const handlingDocumentKey = (clicked : React.KeyboardEvent, documents : Documents) => {
+        if(clicked.key === "Enter" || clicked.key === " "){
+            clicked.preventDefault();
+
+            handlingDocumentsClicked(documents);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-background">
+            <PopUp isOpen = {isPopUpOpen} onClose = {() => setIsPopUpOpen(false)} onSelectProvider = {handlingSelectedProvider}/>
+
             {/* this is for the video dialog (youtube iframe) */}
             <Dialog open={videoDialogOpen} onOpenChange={handlingVideoClose}>
                 <DialogContent className="max-w-3xl p-0 overflow-hidden bg-background">
@@ -410,20 +454,9 @@ function DocumentsAndTutorialsSuspense() {
                                         role="button"
                                         tabIndex={0}
 
-                                        onClick={() => {
-                                            if (forCategories.href) {
-                                                router.push(forCategories.href);
-                                            }
-                                        }}
+                                        onClick={() => handlingCategoryClick(forCategories)}
 
-                                        onKeyDown={(change) => {
-                                            if (
-                                                (change.key === "Enter" || change.key === " ") &&
-                                                forCategories.href
-                                            ) {
-                                                router.push(forCategories.href);
-                                            }
-                                        }}
+                                        onKeyDown={(change) => handlingCategoryKey(change, forCategories)}
 
                                         className="cursor-pointer border-border bg-muted/40 transition-colors hover:border-primary/50"
                                     >
@@ -468,16 +501,9 @@ function DocumentsAndTutorialsSuspense() {
                                             role="button"
                                             tabIndex={0}
 
-                                            onClick={() => router.push(docs.href)}
+                                            onClick={() => handlingDocumentsClicked(docs)}
 
-                                            onKeyDown={(keyPress) => {
-                                                if (
-                                                    keyPress.key === "Enter" ||
-                                                    keyPress.key === " "
-                                                ) {
-                                                    router.push(docs.href);
-                                                }
-                                            }}
+                                            onKeyDown={(keyPress) => handlingDocumentKey(keyPress, docs)}
 
                                             className="cursor-pointer gap-0 overflow-hidden border-border bg-muted/40 p-0 transition-color hover:border-primary/50"
                                         >
@@ -487,7 +513,7 @@ function DocumentsAndTutorialsSuspense() {
 
                                                 onClick={(clicked) => {
                                                     clicked.stopPropagation();
-                                                    router.push(docs.href);
+                                                    handlingDocumentsClicked(docs);
                                                 }}
                                             >
                                                 <span className="min-w-0">
