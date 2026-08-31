@@ -129,7 +129,7 @@ function ContentForConnections(){
                     description : "Follow these steps to connect your GCP account",
                 };
 
-            case "aws" :
+            case "azure" :
                 return{
                     instructions : Aws_INS,
                     name : "Connection your Azure cloud provider",

@@ -134,6 +134,8 @@ const PopUp = ({
                                     <span className = "text-sm text-muted-foreground block"> Amazon Web Services </span>
                                 </span>
                             </span>
+
+                            <ArrowRight className = "h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors"/>
                     </Button>
 
                     <Button type = "button" variant = "outline" onClick = {() => {onSelectProvider("gcp"); onClose();}}
@@ -146,6 +148,8 @@ const PopUp = ({
                                     <span className = "text-sm text-muted-foreground block"> Google Cloud Platform </span>
                                 </span>
                             </span>
+
+                            <ArrowRight className = "h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors"/>
                     </Button>
 
                     <Button type = "button" variant = "outline" onClick = {() => {onSelectProvider("azure"); onClose();}}
@@ -158,6 +162,8 @@ const PopUp = ({
                                     <span className = "text-sm text-muted-foreground block"> Microsoft Azure </span>
                                 </span>
                             </span>
+
+                            <ArrowRight className = "h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors"/>
                     </Button>
                 </div>
 
