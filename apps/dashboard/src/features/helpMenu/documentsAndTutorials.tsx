@@ -12,6 +12,9 @@ import {
     ArrowRight,
     Play,
     X,
+    Cloud,
+    Server,
+    Database,
 } from "lucide-react";
 import {
     Breadcrumb,
@@ -148,6 +151,14 @@ const PopUp = ({
                         className="w-full flex items-center justify-between px-4 py-6 h-auto hover:border-primary hover:bg-muted/50 group"
                     >
                         <span className="flex items-center gap-3">
+                            <div className="w-8 h-8 flex items-center justify-center rounded-md bg-muted/50">
+                                {" "}
+                                <Cloud
+                                    size={20}
+                                    strokeWidth={1.75}
+                                    className="text-foreground"
+                                />{" "}
+                            </div>
                             <span className="text-left">
                                 <span className="font-semibold text-foreground block"> AWS </span>
 
@@ -171,6 +182,14 @@ const PopUp = ({
                         className="w-full flex items-center justify-between px-4 py-6 h-auto hover:border-primary hover:bg-muted/50 group"
                     >
                         <span className="flex items-center gap-3">
+                            <div className="w-8 h-8 flex items-center justify-center rounded-md bg-muted/50">
+                                {" "}
+                                <Server
+                                    size={20}
+                                    strokeWidth={1.75}
+                                    className="text-foreground"
+                                />{" "}
+                            </div>
                             <span className="text-left">
                                 <span className="font-semibold text-foreground block"> GCP </span>
 
@@ -194,8 +213,16 @@ const PopUp = ({
                         className="w-full flex items-center justify-between px-4 py-6 h-auto hover:border-primary hover:bg-muted/50 group"
                     >
                         <span className="flex items-center gap-3">
+                            <div className="w-8 h-8 flex items-center justify-center rounded-md bg-muted/50 group">
+                                {" "}
+                                <Database
+                                    size={20}
+                                    strokeWidth={1.75}
+                                    className="text-foreground"
+                                />{" "}
+                            </div>
                             <span className="text-left">
-                                <span className="font-semibold text-foreground block"> AZURE </span>
+                                <span className="font-semibold text-foreground block"> Azure </span>
 
                                 <span className="text-sm text-muted-foreground block">
                                     {" "}
