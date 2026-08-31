@@ -2,6 +2,8 @@ package com.cloudsherpa.ingestion.unit.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -66,6 +68,69 @@ class CloudInfrastructureServiceTest {
     verify(resourceRepo, times(1))
         .findByAccountIdAndResourceTypeAndResourceIdentifierAndRegion(
             any(), anyString(), anyString(), anyString());
+  }
+
+  @Test
+  void ensureInfrastructureShouldThrowWhenConnectionNotFound() {
+    UUID userId = UUID.randomUUID();
+    UsageRecordModel r =
+        buildMockUsageRecord("AWS", UUID.randomUUID().toString(), "EC2", "i-123", "us-east-1");
+
+    when(connectionRepo.findByUserIdAndProvider(userId, ProviderEnum.AWS)).thenReturn(List.of());
+
+    IllegalStateException exception =
+        assertThrows(IllegalStateException.class, () -> service.ensureInfrastructure(r, userId));
+
+    assertTrue(exception.getMessage().contains("Cloud connection not found for user"));
+    verify(accountRepo, never()).findById(any());
+  }
+
+  @Test
+  void ensureInfrastructureShouldThrowWhenAccountNotFound() {
+    UUID userId = UUID.randomUUID();
+    UUID connectionId = UUID.randomUUID();
+    UUID accountId = UUID.randomUUID();
+
+    UsageRecordModel r =
+        buildMockUsageRecord("AWS", accountId.toString(), "EC2", "i-123", "us-east-1");
+    CloudConnection mockConnection = buildMockConnection(connectionId);
+
+    when(connectionRepo.findByUserIdAndProvider(userId, ProviderEnum.AWS))
+        .thenReturn(List.of(mockConnection));
+
+    when(accountRepo.findById(accountId)).thenReturn(Optional.empty());
+
+    IllegalStateException exception =
+        assertThrows(IllegalStateException.class, () -> service.ensureInfrastructure(r, userId));
+
+    assertTrue(exception.getMessage().contains("Cloud account not found"));
+    verify(resourceRepo, never())
+        .findByAccountIdAndResourceTypeAndResourceIdentifierAndRegion(any(), any(), any(), any());
+  }
+
+  @Test
+  void ensureInfrastructureShouldThrowWhenAccountConnectionIdMismatches() {
+    UUID userId = UUID.randomUUID();
+    UUID connectionId = UUID.randomUUID();
+    UUID mismatchedConnectionId = UUID.randomUUID();
+    UUID accountId = UUID.randomUUID();
+
+    UsageRecordModel r =
+        buildMockUsageRecord("AWS", accountId.toString(), "EC2", "i-123", "us-east-1");
+    CloudConnection mockConnection = buildMockConnection(connectionId);
+
+    CloudAccount mockAccount = buildMockAccount(accountId, mismatchedConnectionId);
+
+    when(connectionRepo.findByUserIdAndProvider(userId, ProviderEnum.AWS))
+        .thenReturn(List.of(mockConnection));
+    when(accountRepo.findById(accountId)).thenReturn(Optional.of(mockAccount));
+
+    IllegalStateException exception =
+        assertThrows(IllegalStateException.class, () -> service.ensureInfrastructure(r, userId));
+
+    assertTrue(exception.getMessage().contains("does not belong to connection"));
+    verify(resourceRepo, never())
+        .findByAccountIdAndResourceTypeAndResourceIdentifierAndRegion(any(), any(), any(), any());
   }
 
   private UsageRecordModel buildMockUsageRecord(
