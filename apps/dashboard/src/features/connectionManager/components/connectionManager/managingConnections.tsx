@@ -169,7 +169,7 @@ export default function ManagingConnections() {
                         id: account.id,
                         name: account.displayName,
                         detail: `Ingestion every ${formatIngestionPeriod(Number(account.ingestionPeriod))}`,
-                        provider: mappingForAccountTypeToProvider(account.accountType),
+                        provider: "AWS",
                         resource: resourceCount,
                         status: resourceCount > 0 ? "active" : "inactive",
                     };
@@ -179,7 +179,7 @@ export default function ManagingConnections() {
             setConnections(uiConnections);
             setIsLoading(false);
         } catch (error) {
-            console.error("Failed to load connections", error);
+            console.error("Failed to load AWS connections", error);
             setIsLoading(false);
         }
     }
