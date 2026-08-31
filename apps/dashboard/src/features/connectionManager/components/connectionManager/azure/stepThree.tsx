@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import {
     StepThree,
     ResourceTable,
@@ -15,6 +15,7 @@ import {
     PersistAzureConnectionRequest,
 } from "@/lib/fetch/azure-connection-api";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface StepThreePropsForAzure {
     displayName: string;
@@ -33,8 +34,6 @@ export default function StepThreeAzure({
     onBack,
 }: Readonly<StepThreePropsForAzure>) {
     const [forSaving, setForSaving] = useState(false);
-
-    const [errors, setErrors] = useState<string | null>(null);
 
     const [filter, setFilter] = useState("");
 
@@ -71,7 +70,6 @@ export default function StepThreeAzure({
         event.preventDefault();
 
         setForSaving(true);
-        setErrors(null);
 
         try {
             const request: PersistAzureConnectionRequest = {
@@ -94,8 +92,9 @@ export default function StepThreeAzure({
 
             onComplete(forIngestionPeriod);
             router.push("/manageConnections");
+            toast.success(`Succesfully created ${displayName} Azure connection`);
         } catch (err) {
-            setErrors(err instanceof Error ? err.message : "Unable to create Azure connection.");
+            toast.error(err instanceof Error ? err.message : "Unable to create Azure connection.");
         } finally {
             setForSaving(false);
         }
@@ -108,7 +107,6 @@ export default function StepThreeAzure({
             onSubmit={handlingSubmit}
             onBack={onBack || (() => {})}
             forSaving={forSaving}
-            forErrors={errors}
         >
             <ResourceTable
                 data={tableResources}

@@ -44,7 +44,6 @@ export interface PropsForStepThree {
     onSubmit: (event: React.SubmitEvent<HTMLFormElement>) => void;
     onBack: () => void;
     forSaving: boolean;
-    forErrors: string | null;
     children: ReactNode;
 }
 
@@ -501,7 +500,6 @@ export function StepThree({
     onSubmit,
     onBack,
     forSaving,
-    forErrors,
     children,
 }: Readonly<PropsForStepThree>) {
     return (
@@ -532,12 +530,6 @@ export function StepThree({
                     <form onSubmit={onSubmit} className="space-y-8">
                         {" "}
                         {children}
-                        {forErrors && (
-                            <div className="rounded-md border border-red-500 bg-red-50 p-3 text-sm text-red-700">
-                                {" "}
-                                {forErrors}{" "}
-                            </div>
-                        )}
                         <div className="flex justify-between pt-6">
                             <Button
                                 type="button"
