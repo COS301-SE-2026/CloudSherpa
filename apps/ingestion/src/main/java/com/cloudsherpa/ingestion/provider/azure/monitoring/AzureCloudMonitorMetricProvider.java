@@ -317,7 +317,6 @@ public class AzureCloudMonitorMetricProvider implements CloudMonitoringMetricPro
     usage.setSource("AzureMonitor");
     usage.setPeriodStart(timestamp);
     usage.setPeriodEnd(timestamp.plusSeconds(queryContext.period()));
-    System.out.println("metric: " + usage.getMetricName() + " value " + usage.getValue());
     return usage;
   }
 
