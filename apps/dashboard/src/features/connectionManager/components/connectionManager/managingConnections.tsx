@@ -98,14 +98,14 @@ const badges = (provider: Exclude<Providers, "All">) => {
     return providerTabs[provider].active;
 };
 
-function mappingAccountTypeToProvider(accountType : AccountType) : Exclude<Providers, "All">{
-    switch(accountType){
+function mappingAccountTypeToProvider(accountType: AccountType): Exclude<Providers, "All"> {
+    switch (accountType) {
         case AccountType.AZURE_SUBSCRIPTION:
             return "Azure";
         case AccountType.GCP_PROJECT:
             return "GCP";
         case AccountType.AWS_ACCOUNT:
-        default :
+        default:
             return "AWS";
     }
 }
