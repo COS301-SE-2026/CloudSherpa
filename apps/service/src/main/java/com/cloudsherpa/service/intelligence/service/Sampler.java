@@ -144,8 +144,6 @@ public class Sampler {
 
       long durationBetweenCurrentAndNext = Duration.between(current, next).toSeconds();
 
-      logger.info("Duration between current and next: {}", durationBetweenCurrentAndNext);
-
       if (durationBetweenCurrentAndNext > periodicity
           || durationBetweenCurrentAndNext % periodicity != 0
           || (durationBetweenCurrentAndNext != periodicity && !padWithZeros)) {

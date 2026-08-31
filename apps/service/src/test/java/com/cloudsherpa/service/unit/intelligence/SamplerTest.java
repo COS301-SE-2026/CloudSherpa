@@ -11,12 +11,9 @@ import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.slf4j.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
 class SamplerTest {
-
-  Logger logger = LoggerFactory.getLogger(SamplerTest.class);
 
   @Autowired Sampler sampler;
 
