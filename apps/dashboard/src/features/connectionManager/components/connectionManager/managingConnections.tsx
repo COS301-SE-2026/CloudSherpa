@@ -171,7 +171,7 @@ export default function ManagingConnections() {
                         id: account.id,
                         name: account.displayName,
                         detail: `Ingestion every ${formatIngestionPeriod(Number(account.ingestionPeriod))}`,
-                        provider: "AWS",
+                        provider: mappingAccountTypeToProvider(account.accountType),
                         resource: resourceCount,
                         status: resourceCount > 0 ? "active" : "inactive",
                     };
