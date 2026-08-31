@@ -19,6 +19,9 @@ public class Sampler {
 
   private final Logger logger = LoggerFactory.getLogger(Sampler.class);
 
+  private record CandidateDifferenceProperties(
+      boolean duplicateTimestamp, boolean invalidatesSeries) {}
+
   public SanatizedSeries sample(List<TimestampedNumericDataPoint> original, boolean padWithZeros) {
     return sample(original, padWithZeros, Instant.now());
   }
@@ -40,7 +43,8 @@ public class Sampler {
               timestampedNumericDataPoint.timestamp().truncatedTo(ChronoUnit.SECONDS)));
     }
 
-    // Keep newest-first behavior so irregular data still cuts off older segments as before.
+    // Keep newest-first behavior so irregular data still cuts off older segments as
+    // before.
     processing.sort(Comparator.comparing(TimestampedNumericDataPoint::timestamp).reversed());
 
     List<Long> differences = getDifferences(processing);
@@ -134,31 +138,30 @@ public class Sampler {
     List<TimestampedNumericDataPoint> sanitizedSeries = new ArrayList<>();
     boolean brokeEarly = false;
     for (int i = 0; i < original.size() - 1; i++) {
-      // Safe to add current since difference between current and previous checked in previous
-      // iteration
-      sanitizedSeries.add(
-          new TimestampedNumericDataPoint(original.get(i).value(), original.get(i).timestamp()));
 
       Instant current = original.get(i).timestamp();
       Instant next = original.get(i + 1).timestamp();
 
-      long durationBetweenCurrentAndNext = Duration.between(current, next).toSeconds();
+      CandidateDifferenceProperties differenceProperties =
+          calculateCandidateDifferenceProperties(current, next, periodicity, padWithZeros);
 
-      if (durationBetweenCurrentAndNext > periodicity
-          || durationBetweenCurrentAndNext % periodicity != 0
-          || (durationBetweenCurrentAndNext != periodicity && !padWithZeros)) {
-        // periodicity at which data published changed, unrecoverable at this stage, going to work
-        // with what was obtained up until this point
-        brokeEarly = true;
-        break;
-      }
-      while (Duration.between(current, next).toSeconds() != periodicity
-          && sanitizedSeries.size() < 8092) {
-        TimestampedNumericDataPoint addPoint =
-            new TimestampedNumericDataPoint(
-                BigDecimal.valueOf(0), current.plusSeconds(periodicity));
-        sanitizedSeries.addLast(addPoint);
-        current = addPoint.timestamp();
+      if (!differenceProperties.duplicateTimestamp) {
+        sanitizedSeries.add(
+            new TimestampedNumericDataPoint(original.get(i).value(), original.get(i).timestamp()));
+
+        if (differenceProperties.invalidatesSeries) {
+          brokeEarly = true;
+          break;
+        }
+
+        while (Duration.between(current, next).toSeconds() != periodicity
+            && sanitizedSeries.size() < 8092) {
+          TimestampedNumericDataPoint addPoint =
+              new TimestampedNumericDataPoint(
+                  BigDecimal.valueOf(0), current.plusSeconds(periodicity));
+          sanitizedSeries.addLast(addPoint);
+          current = addPoint.timestamp();
+        }
       }
     }
 
@@ -186,5 +189,22 @@ public class Sampler {
     }
 
     return sanitizedSeries;
+  }
+
+  private CandidateDifferenceProperties calculateCandidateDifferenceProperties(
+      Instant current, Instant next, long periodicity, boolean padWithZeros) {
+    long durationBetweenCurrentAndNext = Duration.between(current, next).toSeconds();
+
+    if (current.compareTo(next) == 0) {
+      return new CandidateDifferenceProperties(true, false);
+    }
+
+    if (next.isAfter(current)
+        || durationBetweenCurrentAndNext % periodicity != 0
+        || (durationBetweenCurrentAndNext != periodicity && !padWithZeros)) {
+      return new CandidateDifferenceProperties(false, true);
+    }
+
+    return new CandidateDifferenceProperties(false, false);
   }
 }
