@@ -12,11 +12,12 @@ interface RecommendationCardProps {
 }
 
 export default function RecommendationCard({ recommendation }: Readonly<RecommendationCardProps>) {
-    const [open, setOpen] = useState(false);
-
     const dismissRec = useRecStore((state) => state.dismissRec);
     const applyRec = useRecStore((state) => state.applyRec);
     const reEnableRec = useRecStore((state) => state.reEnableRec);
+    const focusedResourceId = useRecStore((state) => state.focusedResourceId);
+
+    const [open, setOpen] = useState(recommendation.resourceId === focusedResourceId);
 
     const handleDismiss = async (e: React.MouseEvent) => {
         e.preventDefault();

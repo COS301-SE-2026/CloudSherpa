@@ -52,6 +52,9 @@ export function ChartWidget({
     const fromMs = useDashboardStore((state) => state.fromMs);
     const toMs = useDashboardStore((state) => state.toMs);
 
+    const setFocusedRecommendation = useRecStore((state) => state.setFocusedRecommendation);
+    const recommendationGroups = useRecStore((state) => state.recommendationGroups);
+
     useFetchMetricHistoricalData({
         resourceId: resourceId ?? "",
         fromMs: fromMs,
@@ -89,13 +92,25 @@ export function ChartWidget({
 
     const removeWidget = useDashboardStore((state) => state.actions.removeWidget);
 
-    const hasRecommendation = useRecStore((state) =>
+    const hasActiveRecommendation = useRecStore((state) =>
         state.recommendationGroups.some((group) =>
             group.recommendations.some(
                 (rec) => rec.resourceId === resourceId && rec.status === "ACTIVE"
             )
         )
     );
+
+    const handleClickRecommendation = () => {
+        const group = recommendationGroups.find((g) =>
+            g.recommendations.some((rec) => rec.resourceId === resourceId)
+        );
+
+        if (group?.accountId && resourceId) {
+            setFocusedRecommendation(group.accountId, resourceId);
+        }
+
+        router.push("/recommendations");
+    };
 
     const renderChartContent = () => {
         if (!ChartComponent) {
@@ -166,13 +181,17 @@ export function ChartWidget({
                                 </Tooltip>
                             </TooltipProvider>
                         )}
-                        {hasRecommendation && !hasNoData && (
+                        {hasActiveRecommendation && !hasNoData && (
                             <TooltipProvider delayDuration={100}>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
-                                        <div className="flex items-center">
-                                            <Sparkles className="h-5 w-5 text-primary cursor-help" />
-                                        </div>
+                                        <button
+                                            type="button"
+                                            className="cursor-pointer flex items-center"
+                                            onClick={() => handleClickRecommendation()}
+                                        >
+                                            <Sparkles className="h-5 w-5 text-primary cursor-pointer" />
+                                        </button>
                                     </TooltipTrigger>
                                     <TooltipContent
                                         side="bottom"
