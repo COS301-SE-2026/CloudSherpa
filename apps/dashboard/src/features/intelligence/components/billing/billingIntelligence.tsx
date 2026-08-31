@@ -50,6 +50,13 @@ export default function BillingIntelligence() {
     const currency = getCurrencySymbol(forSummary?.currency ?? "USD");
     const loading = isLoading || billingForecastLoading;
 
+    const primaryDriverCost = forBreakdown.find(
+        (item) => item.chargeId === forSummary?.primaryCostDriverId
+    )?.cost;
+    const highestAccelerationCost = forBreakdown.find(
+        (item) => item.chargeId === forSummary?.highestCostAccelerationId
+    )?.cost;
+
     if (!selected) {
         return (
             <div className="h-full w-full p-6 flex flex-col gap-4">
@@ -102,6 +109,7 @@ export default function BillingIntelligence() {
                             : "No data available"
                     }
                     valueClassName="text-primary"
+                    tooltip={`Cumulative billed amount over the past ${pastTimeWindowDays} days`}
                 />
 
                 <BillingSummaryCard
@@ -115,6 +123,7 @@ export default function BillingIntelligence() {
                         forSummary ? `${forecastTimeWindowDays} day forecast` : "No data available"
                     }
                     valueClassName="text-(--chart-4)"
+                    tooltip={`Total estimated cost for the upcoming ${forecastTimeWindowDays} days`}
                 />
             </section>
 
@@ -127,6 +136,7 @@ export default function BillingIntelligence() {
                     }
                     icon={TrendingUp}
                     valueClassName="text-primary"
+                    tooltip={`Percentage difference between the past ${pastTimeWindowDays} days of spending and the projected ${forecastTimeWindowDays} days`}
                 />
 
                 <BillingStatisticsCard
@@ -134,28 +144,39 @@ export default function BillingIntelligence() {
                     value={forSummary ? `${currency}${forSummary.dailyBurnRate.toFixed(2)}` : "-"}
                     description={forSummary ? "Projected daily spend" : "No data available"}
                     valueClassName="text-primary"
+                    tooltip={`Estimated average daily cost over the next ${forecastTimeWindowDays} days`}
                 />
 
                 <BillingStatisticsCard
                     name="Primary cost driver"
-                    value={forSummary?.primaryCostDriverLabel || "-"}
+                    value={
+                        primaryDriverCost !== undefined
+                            ? `${currency}${primaryDriverCost.toFixed(2)}`
+                            : "-"
+                    }
                     description={
                         forSummary
-                            ? `Charge: ${forSummary.primaryCostDriverId}`
+                            ? `Charge: ${forSummary.primaryCostDriverLabel}`
                             : "No data available"
                     }
                     valueClassName="text-(--chart-4)"
+                    tooltip={`The specific charge expected to be the most expensive over the next ${forecastTimeWindowDays} days`}
                 />
 
                 <BillingStatisticsCard
                     name="Highest Cost Acceleration"
-                    value={forSummary?.highestCostAccelerationLabel || "-"}
+                    value={
+                        highestAccelerationCost !== undefined
+                            ? `${currency}${highestAccelerationCost.toFixed(2)}`
+                            : "-"
+                    }
                     description={
                         forSummary
-                            ? `Charge: ${forSummary.highestCostAccelerationId}`
+                            ? `Charge: ${forSummary?.highestCostAccelerationLabel || "-"}`
                             : "No data available"
                     }
                     valueClassName="text-(--chart-4)"
+                    tooltip={`The charge expected to increase in cost the fastest over the next ${forecastTimeWindowDays} days`}
                 />
             </section>
 
