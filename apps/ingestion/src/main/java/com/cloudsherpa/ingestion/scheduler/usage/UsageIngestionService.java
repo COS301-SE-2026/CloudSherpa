@@ -143,7 +143,6 @@ public class UsageIngestionService {
       accountScopes.add(accountScope);
       request.setScopes(accountScopes);
       CloudCredentials credentials = mapper.readValue(decryptedCredential, CloudCredentials.class);
-
       request.setCredentials(credentials);
       tenantSchemaService.usePublicSchema();
       client.ingest(request);
