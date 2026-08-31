@@ -89,13 +89,17 @@ export function ChartWidget({
 
     const removeWidget = useDashboardStore((state) => state.actions.removeWidget);
 
-    const hasRecommendation = useRecStore((state) =>
+    const hasActiveRecommendation = useRecStore((state) =>
         state.recommendationGroups.some((group) =>
             group.recommendations.some(
                 (rec) => rec.resourceId === resourceId && rec.status === "ACTIVE"
             )
         )
     );
+
+    const handleClickRecommendation = () => {
+        router.push(`/recommendations`);
+    };
 
     const renderChartContent = () => {
         if (!ChartComponent) {
@@ -166,13 +170,13 @@ export function ChartWidget({
                                 </Tooltip>
                             </TooltipProvider>
                         )}
-                        {hasRecommendation && !hasNoData && (
+                        {hasActiveRecommendation && !hasNoData && (
                             <TooltipProvider delayDuration={100}>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
-                                        <div className="flex items-center">
+                                        <button className="cursor flex items-center">
                                             <Sparkles className="h-5 w-5 text-primary cursor-help" />
-                                        </div>
+                                        </button>
                                     </TooltipTrigger>
                                     <TooltipContent
                                         side="bottom"

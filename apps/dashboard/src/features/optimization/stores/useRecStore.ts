@@ -19,11 +19,15 @@ interface RecStore {
     isLoading: boolean;
     failedLoading: boolean;
     failedLoadingMessage: string;
+    focusedAccountId: string | null;
+    focusedResourceId: string | null;
     reEnableRec: (recommendationId: string) => Promise<void>;
     fetchRecGroups: () => Promise<void>;
     fetchSummary: () => Promise<void>;
     dismissRec: (recommendationId: string) => Promise<void>;
     applyRec: (recommendationId: string) => Promise<void>;
+    setFocusedRecommendation: (accountId: string, resourceId: string) => void;
+    clearFocusedRecommendation: () => void;
 }
 
 export const useRecStore = create<RecStore>((set, get) => ({
@@ -32,6 +36,13 @@ export const useRecStore = create<RecStore>((set, get) => ({
     isLoading: true,
     failedLoading: false,
     failedLoadingMessage: "",
+    focusedAccountId: null,
+    focusedResourceId: null,
+
+    setFocusedRecommendation: (accountId, resourceId) =>
+        set({ focusedAccountId: accountId, focusedResourceId: resourceId }),
+
+    clearFocusedRecommendation: () => set({ focusedAccountId: null, focusedResourceId: null }),
 
     fetchSummary: async () => {
         try {
