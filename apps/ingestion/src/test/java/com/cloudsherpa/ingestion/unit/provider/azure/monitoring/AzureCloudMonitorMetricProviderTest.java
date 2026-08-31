@@ -25,6 +25,7 @@ import com.cloudsherpa.ingestion.provider.azure.monitoring.AzureCloudMonitorMetr
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
@@ -397,6 +398,118 @@ class AzureCloudMonitorMetricProviderTest {
               anyList(), anyList(), anyString(), any(MetricsQueryResourcesOptions.class), any());
 
       verify(east, times(1))
+          .queryResourcesWithResponse(
+              anyList(), anyList(), anyString(), any(MetricsQueryResourcesOptions.class), any());
+    }
+  }
+
+  // Resource batching tests
+
+  @Test
+  void collectMetrics_shouldUseOneRequestForExactly50Resources() {
+    AccountScope scope = validScope();
+
+    List<Instance> instances = new ArrayList<>();
+
+    for (int i = 0; i < 50; i++) {
+      Instance instance = new Instance();
+
+      instance.setIdentifier(
+          "/subscriptions/sub/resourceGroups/rg/"
+              + "providers/Microsoft.Compute/"
+              + "virtualMachines/vm-"
+              + i);
+
+      instance.setRegion("westeurope");
+
+      instances.add(instance);
+    }
+
+    InstanceScope instanceScope = new InstanceScope();
+
+    instanceScope.setInstances(instances);
+
+    scope.getServiceScopes().get(0).setInstances(List.of(instanceScope));
+
+    IngestionRequestEvent request = validRequest();
+
+    MetricsClient client = mock(MetricsClient.class);
+
+    MetricsQueryResourcesResult result = mock(MetricsQueryResourcesResult.class);
+
+    Response<MetricsQueryResourcesResult> response = mock(Response.class);
+
+    when(response.getValue()).thenReturn(result);
+    when(result.getMetricsQueryResults()).thenReturn(List.of());
+
+    when(client.queryResourcesWithResponse(
+            anyList(), anyList(), anyString(), any(MetricsQueryResourcesOptions.class), any()))
+        .thenReturn(response);
+
+    try (MockedStatic<AzureClientFactory> factory = mockStatic(AzureClientFactory.class)) {
+
+      factory
+          .when(() -> AzureClientFactory.createMetricsClient(any(), eq("westeurope")))
+          .thenReturn(client);
+
+      provider.collectMetrics(scope, request);
+
+      verify(client, times(1))
+          .queryResourcesWithResponse(
+              anyList(), anyList(), anyString(), any(MetricsQueryResourcesOptions.class), any());
+    }
+  }
+
+  @Test
+  void collectMetrics_shouldBatchMoreThan50Resources() {
+    AccountScope scope = validScope();
+
+    List<Instance> instances = new ArrayList<>();
+
+    for (int i = 0; i < 51; i++) {
+      Instance instance = new Instance();
+
+      instance.setIdentifier(
+          "/subscriptions/sub/resourceGroups/rg/"
+              + "providers/Microsoft.Compute/"
+              + "virtualMachines/vm-"
+              + i);
+
+      instance.setRegion("westeurope");
+
+      instances.add(instance);
+    }
+
+    InstanceScope instanceScope = new InstanceScope();
+
+    instanceScope.setInstances(instances);
+
+    scope.getServiceScopes().get(0).setInstances(List.of(instanceScope));
+
+    IngestionRequestEvent request = validRequest();
+
+    MetricsClient client = mock(MetricsClient.class);
+
+    MetricsQueryResourcesResult result = mock(MetricsQueryResourcesResult.class);
+
+    Response<MetricsQueryResourcesResult> response = mock(Response.class);
+
+    when(response.getValue()).thenReturn(result);
+    when(result.getMetricsQueryResults()).thenReturn(List.of());
+
+    when(client.queryResourcesWithResponse(
+            anyList(), anyList(), anyString(), any(MetricsQueryResourcesOptions.class), any()))
+        .thenReturn(response);
+
+    try (MockedStatic<AzureClientFactory> factory = mockStatic(AzureClientFactory.class)) {
+
+      factory
+          .when(() -> AzureClientFactory.createMetricsClient(any(), eq("westeurope")))
+          .thenReturn(client);
+
+      provider.collectMetrics(scope, request);
+
+      verify(client, times(2))
           .queryResourcesWithResponse(
               anyList(), anyList(), anyString(), any(MetricsQueryResourcesOptions.class), any());
     }
