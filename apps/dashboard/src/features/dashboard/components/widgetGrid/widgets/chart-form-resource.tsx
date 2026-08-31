@@ -64,7 +64,7 @@ export default function ChartFormResource({
                             });
                         }}
                         widthVariant="full"
-                        placeholder="select resource..."
+                        placeholder="Select Resource"
                         emptyMessage="No resources found"
                     />
                 </div>
@@ -84,7 +84,7 @@ export default function ChartFormResource({
                         }}
                         disabled={!configuration.resourceId}
                         widthVariant="full"
-                        placeholder="select metric..."
+                        placeholder="Select Metric"
                         emptyMessage="No metrics found"
                     />
                 </div>

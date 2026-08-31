@@ -123,15 +123,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
                             <SidebarMenuItem>
-                                <SidebarMenuButton asChild tooltip="Google Cloud Platform">
+                                <SidebarMenuButton asChild tooltip="Add GCP connection">
                                     <Link href="/addConnection/gcp">
                                         <Network />
-                                        <span>Google Cloud Platform</span>
+                                        <span>GCP</span>
                                     </Link>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
                             <SidebarMenuItem>
-                                <SidebarMenuButton asChild tooltip="Azure">
+                                <SidebarMenuButton asChild tooltip="Add Azure connection">
                                     <Link href="/addConnection/azure">
                                         <Network />
                                         <span>Azure</span>
@@ -219,7 +219,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarFooter>
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <div className="px-2 py-1.5 text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
+                        <div
+                            aria-label={"User Email"}
+                            className="px-2 py-1.5 text-xs text-muted-foreground group-data-[collapsible=icon]:hidden"
+                        >
                             {authContext?.isAuthReady
                                 ? authContext.user?.email || "Not logged in"
                                 : "Loading..."}

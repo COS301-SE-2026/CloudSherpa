@@ -33,6 +33,7 @@ export function KpiFormDetails({ title, onTitleChange }: KpiFormDetailsProps) {
                         onChange={(e) => {
                             onTitleChange(e.target.value);
                         }}
+                        aria-label={"kpi display name"}
                     ></Input>
                 </Field>
             </FieldGroup>
