@@ -67,6 +67,13 @@ public class UsageForecastingService extends ForecastingService {
         metricDisplayNameMapper.toCanonicalName(
             provider.toString(), resourceUsageForecastRequestDto.metricType());
 
+    if (provider.toString().equals("GCP")) {
+      return normalizedMetricsRepository.getAggregatedTimestampedMetricValuesAfterDate(
+          resourceUsageForecastRequestDto.resourceId(),
+          canonicalMetricName,
+          PageRequest.of(0, CONTEXT_LENGTH));
+    }
+
     return normalizedMetricsRepository.getTimestampedMetricValues(
         resourceUsageForecastRequestDto.resourceId(),
         canonicalMetricName,
