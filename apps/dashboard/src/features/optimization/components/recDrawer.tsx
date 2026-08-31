@@ -79,16 +79,6 @@ export default function RecDrawer({ group, isOpen, setIsOpen }: Readonly<RecDraw
 
     const clearFocusedRecommendation = useRecStore((state) => state.clearFocusedRecommendation);
 
-    const [prevFocusedId, setPrevFocusedId] = useState(focusedResourceId);
-
-    if (isOpen && focusedResourceId && focusedResourceId !== prevFocusedId) {
-        setPrevFocusedId(focusedResourceId);
-        const targetRec = group.recommendations.find((r) => r.resourceId === focusedResourceId);
-        if (targetRec) {
-            setSearchQuery(targetRec.resourceDisplayName ?? targetRec.resourceId);
-        }
-    }
-
     useEffect(() => {
         if (!isOpen) {
             clearFocusedRecommendation();

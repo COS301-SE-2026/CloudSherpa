@@ -34,15 +34,6 @@ export default function RecommendationGroupCard({ group }: Readonly<Recommendati
 
     const handleOpenDrawer = () => setIsDrawerOpen(true);
 
-    const [prevFocusedId, setPrevFocusedId] = useState(focusedAccountId);
-
-    if (focusedAccountId !== prevFocusedId) {
-        setPrevFocusedId(focusedAccountId);
-        if (focusedAccountId === group.accountId) {
-            setIsDrawerOpen(true);
-        }
-    }
-
     return (
         <ContextMenu>
             <ContextMenuTrigger>

@@ -19,15 +19,6 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
 
     const [open, setOpen] = useState(recommendation.resourceId === focusedResourceId);
 
-    const [prevFocusedId, setPrevFocusedId] = useState(focusedResourceId);
-
-    if (focusedResourceId !== prevFocusedId) {
-        setPrevFocusedId(focusedResourceId);
-        if (focusedResourceId === recommendation.resourceId) {
-            setOpen(true);
-        }
-    }
-
     const handleDismiss = async (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
