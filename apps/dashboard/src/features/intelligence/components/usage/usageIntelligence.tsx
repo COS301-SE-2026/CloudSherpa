@@ -68,7 +68,7 @@ export default function UsageIntelligence() {
 
     const pastSummary = useMemo(() => {
         if (!historicalUsageSeries?.values?.length) {
-            return { min: 0, max: 0, avg: 0 };
+            return { min: null, max: null, avg: null };
         }
         const values = historicalUsageSeries.values;
         return getArraySummary(values);
@@ -76,7 +76,7 @@ export default function UsageIntelligence() {
 
     const forecastSummary = useMemo(() => {
         if (!usageForecast?.predictedValues) {
-            return { min: 0, max: 0, avg: 0 };
+            return { min: null, max: null, avg: null };
         }
         return getArraySummary(usageForecast.predictedValues);
     }, [usageForecast]);

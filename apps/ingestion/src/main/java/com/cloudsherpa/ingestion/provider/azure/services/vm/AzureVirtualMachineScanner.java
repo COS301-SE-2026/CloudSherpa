@@ -35,8 +35,8 @@ public class AzureVirtualMachineScanner implements AzureResourceScanner {
     return new ResourceDetail(
         resourceId,
         ResourceDetail.resolveName(resourceId, name, tags),
+        "resource_id",
         "Microsoft.Compute/virtualMachines",
-        getServiceName(),
         location,
         tags);
   }

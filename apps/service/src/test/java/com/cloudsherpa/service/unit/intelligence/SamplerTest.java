@@ -7,6 +7,7 @@ import com.cloudsherpa.service.intelligence.dto.SanatizedSeries;
 import com.cloudsherpa.service.intelligence.service.Sampler;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,7 +29,7 @@ class SamplerTest {
     // "insert" any zeros into the timeseries
 
     // arrange
-    List<TimestampedNumericDataPoint> validTimeSeries = getValidTimeseries();
+    List<TimestampedNumericDataPoint> validTimeSeries = getValidTimeSeries();
 
     // act
     SanatizedSeries sampledSeries =
@@ -105,18 +106,40 @@ class SamplerTest {
     assertEquals(expected, actual.timestampedNumericDataPoints());
   }
 
-  private List<TimestampedNumericDataPoint> getValidTimeseries() {
-    return Arrays.asList(
-        new TimestampedNumericDataPoint(BigDecimal.valueOf(1), Instant.ofEpochMilli(0)),
-        new TimestampedNumericDataPoint(BigDecimal.valueOf(2), Instant.ofEpochMilli(1_000)),
-        new TimestampedNumericDataPoint(BigDecimal.valueOf(0), Instant.ofEpochMilli(2_000)),
-        new TimestampedNumericDataPoint(BigDecimal.valueOf(4), Instant.ofEpochMilli(3_000)),
-        new TimestampedNumericDataPoint(BigDecimal.valueOf(5), Instant.ofEpochMilli(4_000)),
-        new TimestampedNumericDataPoint(BigDecimal.valueOf(6), Instant.ofEpochMilli(5_000)),
-        new TimestampedNumericDataPoint(BigDecimal.valueOf(0), Instant.ofEpochMilli(6_000)),
-        new TimestampedNumericDataPoint(BigDecimal.valueOf(8), Instant.ofEpochMilli(7_000)),
-        new TimestampedNumericDataPoint(BigDecimal.valueOf(9), Instant.ofEpochMilli(8_000)),
-        new TimestampedNumericDataPoint(BigDecimal.valueOf(10), Instant.ofEpochMilli(9_000)));
+  @Test
+  void samplerShouldHandleDuplicateDataPoints() {
+    // arrange
+    // This TimestampedNumericDataPoint already exists in the series returned by getValidTimeSeries,
+    // if this
+    // tests fails/passes for a reason that is not obvious, ensure that this object still exists in
+    // that list
+    List<TimestampedNumericDataPoint> duplicateSeries = getValidTimeSeries();
+    duplicateSeries.add(
+        new TimestampedNumericDataPoint(BigDecimal.valueOf(6), Instant.ofEpochMilli(5_000)));
+
+    List<TimestampedNumericDataPoint> expected = getValidTimeSeries();
+
+    // act
+    SanatizedSeries actual = sampler.sample(duplicateSeries, true, Instant.ofEpochMilli(9_000));
+
+    // assert
+    assertEquals(expected.size(), actual.timestampedNumericDataPoints().size());
+    assertEquals(expected, actual.timestampedNumericDataPoints());
+  }
+
+  private List<TimestampedNumericDataPoint> getValidTimeSeries() {
+    return new ArrayList<>(
+        List.of(
+            new TimestampedNumericDataPoint(BigDecimal.valueOf(1), Instant.ofEpochMilli(0)),
+            new TimestampedNumericDataPoint(BigDecimal.valueOf(2), Instant.ofEpochMilli(1_000)),
+            new TimestampedNumericDataPoint(BigDecimal.valueOf(3), Instant.ofEpochMilli(2_000)),
+            new TimestampedNumericDataPoint(BigDecimal.valueOf(4), Instant.ofEpochMilli(3_000)),
+            new TimestampedNumericDataPoint(BigDecimal.valueOf(5), Instant.ofEpochMilli(4_000)),
+            new TimestampedNumericDataPoint(BigDecimal.valueOf(6), Instant.ofEpochMilli(5_000)),
+            new TimestampedNumericDataPoint(BigDecimal.valueOf(7), Instant.ofEpochMilli(6_000)),
+            new TimestampedNumericDataPoint(BigDecimal.valueOf(8), Instant.ofEpochMilli(7_000)),
+            new TimestampedNumericDataPoint(BigDecimal.valueOf(9), Instant.ofEpochMilli(8_000)),
+            new TimestampedNumericDataPoint(BigDecimal.valueOf(10), Instant.ofEpochMilli(9_000))));
   }
 
   private List<TimestampedNumericDataPoint> getTimeseriesWithGaps() {

@@ -16,6 +16,7 @@ import { Slider } from "@/components/atoms/slider";
 import { StepThree } from "@/features/connectionManager/components/connectionManager/wizardSetup/stepThree";
 import { AwsCredentialsDto } from "@/lib/fetch/dto/cloud-credentials";
 import { ResourceDetail, ResourceSelectionDto } from "@/lib/fetch/dto/cloud-resource";
+import { toast } from "sonner";
 
 interface PropsForStepThree {
     displayName: string;
@@ -156,7 +157,6 @@ export default function StepThreeAws({
 
     const recommendedPeriod = selectedResources.length * 5 * 20;
     const [saving, setSaving] = useState(false);
-    const [error, setError] = useState<string | null>(null);
     const [period, setPeriod] = useState<string>(ingestionPeriod || String(recommendedPeriod));
 
     const [prevSelectedCount, setPrevSelectedCount] = useState(selectedResources.length);
@@ -172,7 +172,6 @@ export default function StepThreeAws({
         event.preventDefault();
 
         setSaving(true);
-        setError(null);
 
         try {
             const request: PersistAwsConnectionRequest = {
@@ -201,8 +200,9 @@ export default function StepThreeAws({
 
             onComplete(period);
             router.push("/manageConnections");
+            toast.success(`Succesfully created ${displayName} AWS connection`);
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Unable to create AWS connection.");
+            toast.error(err instanceof Error ? err.message : "Unable to create AWS connection.");
         } finally {
             setSaving(false);
         }
@@ -247,7 +247,6 @@ export default function StepThreeAws({
             onSubmit={handleSubmit}
             onBack={onBack}
             forSaving={saving}
-            forErrors={error}
         >
             <div className="min-h-50">
                 <div className="space-y-8">
