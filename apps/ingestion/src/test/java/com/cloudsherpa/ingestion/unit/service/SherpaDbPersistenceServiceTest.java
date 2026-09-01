@@ -12,10 +12,15 @@ import com.cloudsherpa.lib.entities.CurrencyEnum;
 import com.cloudsherpa.lib.entities.NormalizedCosts;
 import com.cloudsherpa.lib.entities.NormalizedMetrics;
 import com.cloudsherpa.lib.entities.ProviderEnum;
+import com.cloudsherpa.lib.entities.Resource;
 import com.cloudsherpa.lib.repositories.NormalizedCostsRepository;
 import com.cloudsherpa.lib.repositories.NormalizedMetricsRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -97,5 +102,55 @@ class SherpaDbPersistenceServiceTest {
 
     verify(normalizedCostsRepository)
         .upsert(mockCosts, "GCP", mockCosts.getChargeType().toString(), "USD");
+  }
+
+  @Test
+  void recordMetricShouldMapFieldsAndSaveEntity() {
+    UUID userId = UUID.randomUUID();
+    String expectedSchema = "tenant_" + userId.toString().replace("-", "_");
+
+    when(entityManager.createNativeQuery(anyString())).thenReturn(nativeQuery);
+
+    UsageRecordModel r = mock(UsageRecordModel.class);
+    Resource mockResource = mock(Resource.class);
+    UUID resourceId = UUID.randomUUID();
+
+    when(mockResource.getId()).thenReturn(resourceId);
+
+    when(infrastructureService.ensureInfrastructure(r, userId)).thenReturn(mockResource);
+
+    long startMillis = Instant.parse("2026-08-01T10:00:00Z").toEpochMilli();
+    long endMillis = Instant.parse("2026-08-01T11:00:00Z").toEpochMilli();
+
+    NormalizedMetric metric = mock(NormalizedMetric.class);
+
+    when(metric.getPeriodStart()).thenReturn(startMillis);
+    when(metric.getPeriodEnd()).thenReturn(endMillis);
+    when(metric.getMetricType()).thenReturn("CPU");
+    when(metric.getMetricName()).thenReturn("cpu_utilization");
+    when(metric.getMetricValue()).thenReturn(75.5);
+    when(metric.getUnit()).thenReturn("Percent");
+    when(metric.getCurrency()).thenReturn("USD");
+
+    service.recordMetric(metric, r, userId);
+
+    verify(entityManager).createNativeQuery("SET search_path TO " + expectedSchema + ", public");
+
+    verify(metricsRepo).save(metricsCaptor.capture());
+
+    NormalizedMetrics savedEntity = metricsCaptor.getValue();
+
+    assertEquals(resourceId, savedEntity.getResourceId());
+    assertEquals("cpu", savedEntity.getMetricType());
+    assertEquals("cpu_utilization", savedEntity.getMetricName());
+    assertEquals(BigDecimal.valueOf(75.5), savedEntity.getMetricValue());
+    assertEquals("Percent", savedEntity.getUnit());
+
+    assertEquals(
+        OffsetDateTime.ofInstant(Instant.ofEpochMilli(startMillis), ZoneOffset.UTC),
+        savedEntity.getPeriodStart());
+    assertEquals(
+        OffsetDateTime.ofInstant(Instant.ofEpochMilli(endMillis), ZoneOffset.UTC),
+        savedEntity.getPeriodEnd());
   }
 }
