@@ -2,11 +2,16 @@
 
 import React, { useState, useMemo, useCallback } from "react";
 import { PersistAwsConnectionRequest, createAwsConnection } from "@/lib/fetch/aws-connection-api";
-import { StepThree, ResourceTable, useIngestionPeriod, IngestionSlider } from "@/features/connectionManager/components/connectionManager/wizardSetup/stepThree";
+import {
+    StepThree,
+    ResourceTable,
+    useIngestionPeriod,
+    IngestionSlider,
+} from "@/features/connectionManager/components/connectionManager/wizardSetup/stepThree";
 import { AwsCredentialsDto } from "@/lib/fetch/dto/cloud-credentials";
 import { ResourceDetail, ResourceSelectionDto } from "@/lib/fetch/dto/cloud-resource";
 import { toast } from "sonner";
-import {useRouter} from "next/navigation";
+import { useRouter } from "next/navigation";
 
 interface PropsForStepThree {
     displayName: string;
@@ -38,31 +43,41 @@ export default function StepThreeAws({
 
     const [filterValue, setFilterValue] = useState("");
 
-    const initialResourceSelections : ResourceSelectionDto[] = useMemo(() => {
-        return resources.map((resource) : ResourceSelectionDto => ({
-            resourceId : resource.resourceId,
-            serviceType : resource.serviceCategory,
-            resourceType : resource.resourceType,
-            resourceName : resource.name,
-            region : resource.region,
-            tags : resource.tags,
-            active : true,
+    const initialResourceSelections: ResourceSelectionDto[] = useMemo(() => {
+        return resources.map((resource): ResourceSelectionDto => ({
+            resourceId: resource.resourceId,
+            serviceType: resource.serviceCategory,
+            resourceType: resource.resourceType,
+            resourceName: resource.name,
+            region: resource.region,
+            tags: resource.tags,
+            active: true,
         }));
     }, [resources]);
 
-    const [resourceData, setResourceData] = useState<ResourceSelectionDto[]>(initialResourceSelections);
+    const [resourceData, setResourceData] =
+        useState<ResourceSelectionDto[]>(initialResourceSelections);
 
-    const {activeCount, recIngestionPeriod} = useIngestionPeriod(resourceData);
+    const { activeCount, recIngestionPeriod } = useIngestionPeriod(resourceData);
 
     const [ingestionPeriodState, setIngestionPeriodState] = useState(() => {
-        const initialPeriod = ingestionPeriod ? Number.parseInt(ingestionPeriod) : recIngestionPeriod;
+        const initialPeriod = ingestionPeriod
+            ? Number.parseInt(ingestionPeriod)
+            : recIngestionPeriod;
 
         return initialPeriod > 0 ? initialPeriod : 60;
     });
 
-    const handlingResourceDataChange = useCallback((newData : ResourceSelectionDto[] | ((previous : ResourceSelectionDto[]) => ResourceSelectionDto[])) => {
-        setResourceData(newData);
-    }, []);
+    const handlingResourceDataChange = useCallback(
+        (
+            newData:
+                | ResourceSelectionDto[]
+                | ((previous: ResourceSelectionDto[]) => ResourceSelectionDto[])
+        ) => {
+            setResourceData(newData);
+        },
+        []
+    );
 
     const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -127,11 +142,22 @@ export default function StepThreeAws({
             forSaving={saving}
         >
             <div className="min-h-50">
-                <ResourceTable data = {resourceData} onDataChange = {handlingResourceDataChange} onFilterChange = {setFilterValue} filterValue = {filterValue} pageSize = {8}/>
+                <ResourceTable
+                    data={resourceData}
+                    onDataChange={handlingResourceDataChange}
+                    onFilterChange={setFilterValue}
+                    filterValue={filterValue}
+                    pageSize={8}
+                />
             </div>
 
-            <IngestionSlider ingestionPeriod = {ingestionPeriodState} setIngestionPeriod = {setIngestionPeriodState} activeCount = {activeCount} recIngestionPeriod = {recIngestionPeriod} formatSeconds = {formatSeconds}/>
-            
+            <IngestionSlider
+                ingestionPeriod={ingestionPeriodState}
+                setIngestionPeriod={setIngestionPeriodState}
+                activeCount={activeCount}
+                recIngestionPeriod={recIngestionPeriod}
+                formatSeconds={formatSeconds}
+            />
         </StepThree>
     );
 }
