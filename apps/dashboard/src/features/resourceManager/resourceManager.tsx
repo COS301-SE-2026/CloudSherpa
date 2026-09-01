@@ -122,15 +122,18 @@ function ResourceCells({ getValue }: Readonly<CellContext<Resource, string>>) {
 }
 
 function SecondaryCells({ getValue }: Readonly<CellContext<Resource, string>>) {
-    return(
+    return (
         <Tooltip>
             <TooltipTrigger asChild>
-                <span className = "block max-w-50 truncate text-xs text-muted-foreground"> {getValue()} </span>
+                <span className="block max-w-50 truncate text-xs text-muted-foreground">
+                    {" "}
+                    {getValue()}{" "}
+                </span>
             </TooltipTrigger>
 
             <TooltipContent> {getValue()} </TooltipContent>
         </Tooltip>
-    )
+    );
 }
 
 function TagCells({ getValue }: Readonly<CellContext<Resource, string[]>>) {
