@@ -56,6 +56,14 @@ public class MetricDisplayNameMapper {
   public static final String API_REQUESTS = "API requests";
   public static final String BYTES_UPLOADED = "Bytes uploaded";
   public static final String BYTES_DOWNLOADED = "Bytes downloaded";
+  public static final String BLOB_COUNT = "Blob Count";
+  public static final String HTTP_SUCCESS_2XX = "HTTP Success 2xx";
+  public static final String HTTP_ERROR_5XX = "HTTP Error 5xx";
+  public static final String ALLOCATED_STORAGE = "Allocated Storage";
+  public static final String DEADLOCKS = "Deadlocks";
+  public static final String DTU_CONSUMPTION = "DTU Consumption";
+  public static final String INGRESS = "Ingress";
+  public static final String EGRESS = "Egress";
 
   private static final Map<String, String> AWS_DISPLAY_NAMES =
       Map.ofEntries(
@@ -124,9 +132,39 @@ public class MetricDisplayNameMapper {
           Map.entry("storage.googleapis.com/network/received_bytes_count", BYTES_UPLOADED),
           Map.entry("storage.googleapis.com/network/sent_bytes_count", BYTES_DOWNLOADED));
 
+  private static final Map<String, String> AZURE_DISPLAY_NAMES =
+      Map.ofEntries(
+          Map.entry("Percentage CPU", CPU_UTILIZATION),
+          Map.entry("Network In Total", NETWORK_IN),
+          Map.entry("Network Out Total", NETWORK_OUT),
+          Map.entry("OS Disk Read Bytes/sec", DISK_READ_BYTES),
+          Map.entry("OS Disk Write Bytes/sec", DISK_WRITE_BYTES),
+          Map.entry(DISK_READ_BYTES, DISK_READ_BYTES),
+          Map.entry(DISK_WRITE_BYTES, DISK_WRITE_BYTES),
+          Map.entry("Disk Read Operations/Sec", READ_IOPS),
+          Map.entry("Disk Write Operations/Sec", WRITE_IOPS),
+          Map.entry("cpu_percent", CPU_UTILIZATION),
+          Map.entry("allocated_data_storage", ALLOCATED_STORAGE),
+          Map.entry("connection_successful", DATABASE_CONNECTIONS),
+          Map.entry("deadlock", DEADLOCKS),
+          Map.entry("dtu_consumption_percent", DTU_CONSUMPTION),
+          Map.entry("BlobCapacity", STORED_BYTES),
+          Map.entry("BlobCount", BLOB_COUNT),
+          Map.entry("Availability", HEALTH_STATUS),
+          Map.entry(INGRESS, INGRESS),
+          Map.entry(EGRESS, EGRESS),
+          Map.entry("Requests", HTTP_REQUESTS),
+          Map.entry("Http2xx", HTTP_SUCCESS_2XX),
+          Map.entry("Http5xx", HTTP_ERROR_5XX),
+          Map.entry("HttpResponseTime", REQUEST_LATENCY),
+          Map.entry("MemoryWorkingSet", MEMORY_USED));
+
   public String toDisplayName(String canonicalName) {
     if (AWS_DISPLAY_NAMES.containsKey(canonicalName)) {
       return AWS_DISPLAY_NAMES.get(canonicalName);
+    }
+    if (AZURE_DISPLAY_NAMES.containsKey(canonicalName)) {
+      return AZURE_DISPLAY_NAMES.get(canonicalName);
     }
     return GCP_DISPLAY_NAMES.getOrDefault(canonicalName, canonicalName);
   }
@@ -139,10 +177,16 @@ public class MetricDisplayNameMapper {
       GCP_DISPLAY_NAMES.entrySet().stream()
           .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey, (e, r) -> e));
 
+  private static final Map<String, String> AZURE_CANONICAL_NAMES =
+      AZURE_DISPLAY_NAMES.entrySet().stream()
+          .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey, (e, r) -> e));
+
   // New provider-aware reverse lookup
   public String toCanonicalName(String provider, String displayName) {
     if ("AWS".equalsIgnoreCase(provider)) {
       return AWS_CANONICAL_NAMES.getOrDefault(displayName, displayName);
+    } else if ("AZURE".equalsIgnoreCase(provider)) {
+      return AZURE_CANONICAL_NAMES.getOrDefault(displayName, displayName);
     } else if ("GCP".equalsIgnoreCase(provider)) {
       return GCP_CANONICAL_NAMES.getOrDefault(displayName, displayName);
     }

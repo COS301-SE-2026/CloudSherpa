@@ -41,6 +41,26 @@ import {
 } from "@/lib/fetch/cloud-account-api";
 import { CloudAccount } from "@/lib/fetch/dto/cloud-account";
 
+function formatIngestionPeriod(seconds: number): string {
+    const days = Math.floor(seconds / 86400);
+    seconds %= 86400;
+
+    const hours = Math.floor(seconds / 3600);
+    seconds %= 3600;
+
+    const minutes = Math.floor(seconds / 60);
+    seconds %= 60;
+
+    const parts: string[] = [];
+
+    if (days) parts.push(`${days} day${days === 1 ? "" : "s"}`);
+    if (hours) parts.push(`${hours} hour${hours === 1 ? "" : "s"}`);
+    if (minutes) parts.push(`${minutes} minute${minutes === 1 ? "" : "s"}`);
+    if (seconds) parts.push(`${seconds} second${seconds === 1 ? "" : "s"}`);
+
+    return parts.join(" ");
+}
+
 type Providers = "All" | "AWS" | "Azure" | "GCP";
 interface Connections {
     id: string;
@@ -125,25 +145,6 @@ export default function ManagingConnections() {
         toast.success(`Successfully deleted connection`);
     };
 
-    function formatIngestionPeriod(seconds: number): string {
-        const days = Math.floor(seconds / 86400);
-        seconds %= 86400;
-
-        const hours = Math.floor(seconds / 3600);
-        seconds %= 3600;
-
-        const minutes = Math.floor(seconds / 60);
-        seconds %= 60;
-
-        const parts: string[] = [];
-
-        if (days) parts.push(`${days} day${days === 1 ? "" : "s"}`);
-        if (hours) parts.push(`${hours} hour${hours === 1 ? "" : "s"}`);
-        if (minutes) parts.push(`${minutes} minute${minutes === 1 ? "" : "s"}`);
-        if (seconds) parts.push(`${seconds} second${seconds === 1 ? "" : "s"}`);
-
-        return parts.join(" ");
-    }
     async function loadConnections() {
         try {
             setIsLoading(true);
@@ -177,29 +178,11 @@ export default function ManagingConnections() {
         loadConnections();
     }, []);
 
-    const handleAdd = () => {
-        router.push(`/addConnection/aws`); // just aws for now
-    };
-
     if (isLoading) {
         return (
             <div data-theme="dark" className="min-h-screen bg-background text-foreground p-8">
                 <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-3">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => router.back()}
-                            className="text-muted-foreground hover:text-foreground h-8 w-8"
-                        >
-                            <ArrowLeft size={18} />
-                        </Button>
-
-                        <h1 className="text-3xl font-semibold text-foreground">
-                            {" "}
-                            Connection Manager{" "}
-                        </h1>
-                    </div>
+                    <h1 className="text-3xl font-semibold text-foreground"> Connection Manager </h1>
                 </div>
                 <div className="w-full h-full flex items-center justify-center mb-6">
                     <Spinner className="w-10 h-10" />
@@ -212,33 +195,46 @@ export default function ManagingConnections() {
                 {/* this si for the heading */}
                 <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-3">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => router.back()}
-                            className="text-muted-foreground hover:text-foreground h-8 w-8"
-                        >
-                            {" "}
-                            <ArrowLeft size={18} />{" "}
-                        </Button>
-
                         <h1 className="text-3xl font-semibold text-foreground">
                             {" "}
                             Connection Manager{" "}
                         </h1>
                     </div>
 
-                    <Button
-                        onClick={handleAdd}
-                        className="text-sm px-3 py-1.5 h-auto bg-primary hover:bg-primary/90"
-                    >
-                        {" "}
-                        + add
-                    </Button>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button className="text-sm px-3 py-1.5 h-auto bg-primary hover:bg-primary/90">
+                                + add
+                            </Button>
+                        </DropdownMenuTrigger>
+
+                        <DropdownMenuContent align="end" className="w-40">
+                            <DropdownMenuItem
+                                onClick={() => router.push("/addConnection/aws")}
+                                className="cursor-pointer font-medium"
+                            >
+                                AWS Connection
+                            </DropdownMenuItem>
+
+                            <DropdownMenuItem
+                                onClick={() => router.push("/addConnection/azure")}
+                                className="cursor-pointer font-medium"
+                            >
+                                Azure Connection
+                            </DropdownMenuItem>
+
+                            <DropdownMenuItem
+                                onClick={() => router.push("/addConnection/gcp")}
+                                className="cursor-pointer font-medium"
+                            >
+                                GCP Connection
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
 
                 {/* this is for the provider tabs */}
-                <div className="flex items-center gap-4 mb-6">
+                <div className="w-full flex flex-col sm:flex-row  sm:items-center gap-4 mb-6">
                     <Tabs
                         value={activeFilter || undefined}
                         onValueChange={(value) => setActiveFilter(value as Providers)}
@@ -264,7 +260,7 @@ export default function ManagingConnections() {
                     </Tabs>
 
                     {/* these are for the icons on the tiles of the conn */}
-                    <div className="relative flex-1 max-w-xs">
+                    <div className="w-full relative flex-1 sm:max-w-xs">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
 
                         <input

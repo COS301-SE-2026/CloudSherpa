@@ -62,6 +62,16 @@ public interface NormalizedMetricsRepository extends JpaRepository<NormalizedMet
   List<TimestampedNumericDataPoint> getTimestampedMetricValuesAfterDate(@Param("resourceId") UUID resourceId,
       @Param("metricName") String metricName, @Param("from") Instant from);
 
+    @Query(value = """
+      SELECT
+        AVG(nm.metric_value) AS value,
+        time_bucket('10 minutes', period_start) AS timestamp
+        FROM normalized_metrics nm WHERE nm.resource_id = :resourceId AND nm.metric_name = :metricName
+        GROUP BY timestamp
+        ORDER BY timestamp ASC;
+      """, nativeQuery = true)
+    List<TimestampedNumericDataPoint> getAggregatedTimestampedMetricValuesAfterDate(@Param("resourceId") UUID resourceId,
+      @Param("metricName") String metricName, Pageable pageable);
   @Query(value = """
       SELECT
           nm.resource_id AS resourceId,
@@ -110,4 +120,6 @@ public interface NormalizedMetricsRepository extends JpaRepository<NormalizedMet
         nativeQuery = true
   )
   List<ResourceMetricEntry> findDistinctResourceMetrics();
+
+
 }
