@@ -6,6 +6,7 @@ import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -21,6 +22,7 @@ public class BillingAnalyticsService {
   private final NormalizedCostsRepository normalizedCostsRepository;
 
   private static final Integer DAY_IN_SECONDS = 86400;
+  private static final int SIX_HOUR_PERIODS_PER_DAY = 4;
 
   public BillingAnalyticsService(NormalizedCostsRepository normalizedCostsRepository) {
     this.normalizedCostsRepository = normalizedCostsRepository;
@@ -138,9 +140,26 @@ public class BillingAnalyticsService {
         chargeSeries.entrySet().stream()
             .collect(
                 Collectors.toMap(
-                    Map.Entry::getKey, entry -> highestSeriesCostAcceleration(entry.getValue())));
+                    Map.Entry::getKey,
+                    entry -> highestSeriesCostAcceleration(dailyTotals(entry.getValue()))));
 
     return getMaxChargeValue(chargeHighestCostAccelerations);
+  }
+
+  private List<BigDecimal> dailyTotals(List<BigDecimal> series) {
+    List<BigDecimal> dailyTotals = new ArrayList<>();
+
+    for (int i = 0; i < series.size(); i += SIX_HOUR_PERIODS_PER_DAY) {
+      BigDecimal dailyTotal = BigDecimal.ZERO;
+
+      for (int j = i; j < Math.min(i + SIX_HOUR_PERIODS_PER_DAY, series.size()); j++) {
+        dailyTotal = dailyTotal.add(series.get(j));
+      }
+
+      dailyTotals.add(dailyTotal);
+    }
+
+    return dailyTotals;
   }
 
   private BigDecimal highestSeriesCostAcceleration(List<BigDecimal> series) {

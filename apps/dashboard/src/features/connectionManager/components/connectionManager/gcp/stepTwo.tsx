@@ -113,7 +113,11 @@ export default function StepTwoGcp({
 
         const validatedBillingConfig: GcpBillingConfigSafeParseType | null = validateBillingInput();
 
-        if (validatedBillingConfig != null && !validatedBillingConfig.success) {
+        if (
+            optedInToBilling == true &&
+            validatedBillingConfig != null &&
+            !validatedBillingConfig.success
+        ) {
             setErrors("Please enter a valid billing configuration");
             return;
         }
