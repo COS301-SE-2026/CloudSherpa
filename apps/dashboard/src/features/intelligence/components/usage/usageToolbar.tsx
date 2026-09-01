@@ -15,9 +15,14 @@ import { Settings2 } from "lucide-react";
 import { SidebarTrigger } from "@/components/atoms/sidebar";
 import { presets } from "@/lib/timeUtils";
 import { TimeWindowPreset } from "@/features/dashboard/types/timewindow";
+import { AccountType } from "@/lib/fetch/dto/cloud-account";
 
 //mock
-const PROVIDERS = ["AWS", "GCP", "Azure"];
+const PROVIDERS = [
+    { label: "AWS", value: AccountType.AWS_ACCOUNT },
+    { label: "GCP", value: AccountType.GCP_PROJECT },
+    { label: "Azure", value: AccountType.AZURE_SUBSCRIPTION },
+];
 
 type DropdownWidth = "small" | "medium" | "large" | "full";
 
@@ -49,9 +54,9 @@ export default function UsageToolbar() {
 
     const renderProviderDropdown = (width: DropdownWidth) => (
         <Dropdown
-            options={PROVIDERS.map((p) => ({ value: p, label: p }))}
+            options={PROVIDERS.map((p) => ({ value: p.value, label: p.label }))}
             value={provider}
-            onSelect={(val) => setProvider(val)}
+            onSelect={(val) => setProvider(val as AccountType)}
             placeholder="Select Provider..."
             disableSearch={true}
             widthVariant={width}

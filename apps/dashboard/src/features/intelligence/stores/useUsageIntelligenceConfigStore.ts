@@ -3,11 +3,11 @@ import { MetricType } from "@/features/dashboard/types/metric";
 import { persist } from "zustand/middleware";
 import { TimeWindowPreset } from "@/features/dashboard/types/timewindow";
 import { getAwsAccountConnections, getAwsAccountResources } from "@/lib/fetch/cloud-account-api";
-import { CloudAccount } from "@/lib/fetch/dto/cloud-account";
+import { AccountType, CloudAccount } from "@/lib/fetch/dto/cloud-account";
 import { CloudResource } from "@/lib/fetch/dto/cloud-resource";
 
 interface UsageIntelligenceConfigStore {
-    provider: string | null;
+    provider: AccountType | null;
     accountId: string | null;
     resourceId: string | null;
     metricName: string | null;
@@ -20,12 +20,12 @@ interface UsageIntelligenceConfigStore {
     resources: CloudResource[];
     isFetching: boolean;
 
-    setProvider: (provider: string) => void;
+    setProvider: (provider: AccountType) => void;
     setAccount: (accountId: string, displayName: string) => void;
     setResource: (resourceId: string, displayName: string) => void;
     setMetricName: (metricName: string) => void;
     setTimeWindows: (past: TimeWindowPreset) => void;
-    fetchAccounts: (provider: string) => Promise<void>;
+    fetchAccounts: (provider: AccountType) => Promise<void>;
     fetchResources: (accountId: string) => Promise<void>;
     reset: () => void;
 }
@@ -84,11 +84,13 @@ export const useUsageIntelligenceConfigStore = create<UsageIntelligenceConfigSto
                 }),
 
             fetchAccounts: async (provider) => {
-                if (provider !== "AWS") return;
                 set({ isFetching: true });
                 try {
-                    const accounts = await getAwsAccountConnections();
-                    set({ accounts, isFetching: false });
+                    const resAccounts = await getAwsAccountConnections();
+                    const filterredAccounts = resAccounts.filter(
+                        (account) => account.accountType === provider
+                    );
+                    set({ accounts: filterredAccounts, isFetching: false });
                 } catch (error) {
                     console.error("Failed to fetch accounts:", error);
                     set({ isFetching: false });
