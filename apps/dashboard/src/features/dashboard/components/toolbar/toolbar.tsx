@@ -41,16 +41,39 @@ export default function Toolbar({
     onDateRangeChange,
 }: Readonly<ToolbarProps>) {
     return (
-        <header className="h-16 flex flex-row items-center justify-between px-6 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
-            <div className="flex flex-row gap-2">
-                <DashboardSelector
-                    dashboards={dashboards}
-                    selectedId={selectedDashboardId}
-                    onSelect={onDashboardChange}
-                    onCreate={onCreateDashboard}
-                    onDelete={onDeleteDashboard}
-                />
+        <header className=" flex  flex-col items-center group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 pt-3">
+            <div className="h-16 w-full flex flex-row items-center justify-between  px-6">
+                <div className="flex flex-row gap-2">
+                    <DashboardSelector
+                        dashboards={dashboards}
+                        selectedId={selectedDashboardId}
+                        onSelect={onDashboardChange}
+                        onCreate={onCreateDashboard}
+                        onDelete={onDeleteDashboard}
+                    />
 
+                    {hasActiveDashboard && (
+                        <div className="hidden sm:block">
+                            <EditButton
+                                isEditMode={isEditMode}
+                                handleStartEditing={handleStartEditing}
+                                handleSaveEdit={handleSaveEdit}
+                                handleCancelEdit={handleCancelEdit}
+                                handleAddWidget={handleAddWidget}
+                                handleAddKpi={handleAddKpi}
+                            />
+                        </div>
+                    )}
+                </div>
+
+                {hasActiveDashboard && (
+                    <div className="flex flex-row items-center gap-2">
+                        <TimePeriodSelector date={dateRange} onDateChange={onDateRangeChange} />
+                        <HelpMenu />
+                    </div>
+                )}
+            </div>
+            <div className="w-full flex flex-row items-center justify-start  px-6 sm:hidden">
                 {hasActiveDashboard && (
                     <EditButton
                         isEditMode={isEditMode}
@@ -62,13 +85,6 @@ export default function Toolbar({
                     />
                 )}
             </div>
-
-            {hasActiveDashboard && (
-                <div className="flex flex-row items-center gap-2">
-                    <TimePeriodSelector date={dateRange} onDateChange={onDateRangeChange} />
-                    <HelpMenu />
-                </div>
-            )}
         </header>
     );
 }

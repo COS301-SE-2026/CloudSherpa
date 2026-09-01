@@ -27,7 +27,6 @@ export default function EditButton({
             <Button
                 aria-label="editbtn"
                 variant="outline"
-                size={isEditMode ? "sm" : "icon"}
                 onClick={isEditMode ? handleCancelEdit : handleStartEditing}
                 className={cn(
                     "bg-card border-border text-foreground hover:text-foreground hover:bg-primary transition-all duration-200",
@@ -35,7 +34,14 @@ export default function EditButton({
                         "bg-destructive/10 border-destructive text-destructive hover:bg-destructive/20 hover:text-destructive hover:border-destructive order-3 md:order-1"
                 )}
             >
-                {isEditMode ? "Cancel" : <Pencil className="h-4 w-4" />}
+                {isEditMode ? (
+                    "Cancel"
+                ) : (
+                    <>
+                        <Pencil className="h-4 w-4" />
+                        <span className="sm:hidden text-base">Edit</span>
+                    </>
+                )}
             </Button>
 
             {isEditMode && (
