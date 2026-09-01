@@ -58,13 +58,13 @@ END;
 $$;
 
 -- Creates the fixed AWS resources used by the NFR historical metric seed.
-CREATE OR REPLACE FUNCTION seed_normalized_metrics()
+CREATE OR REPLACE FUNCTION seed_normalized_metrics(p_tenant_schema text, p_account_id uuid, p_num_seed integer)
 RETURNS integer
 LANGUAGE plpgsql AS
 $$
 DECLARE
-    tenant_schema text := 'tenant_a1b6ebb6_2b13_41c2_b4ce_bc6c563ea246';
-    aws_account_id uuid := '06f744fd-76e5-4845-9780-ced666c26ffe';
+    -- p_tenant_schema text := 'tenant_a1b6ebb6_2b13_41c2_b4ce_bc6c563ea246';
+    -- p_account_id uuid := '06f744fd-76e5-4845-9780-ced666c26ffe';
     resource_id_01 uuid := '10000000-0000-0000-0000-000000000001';
     resource_id_02 uuid := '10000000-0000-0000-0000-000000000002';
     resource_id_03 uuid := '10000000-0000-0000-0000-000000000003';
@@ -102,89 +102,89 @@ DECLARE
     total_rows_seeded integer := 0;
 BEGIN
     PERFORM seed_resource(
-        tenant_schema, resource_id_01, aws_account_id,
+        p_tenant_schema, resource_id_01, p_account_id,
         'AWS/EC2', 'nfr-ec2-01', 'i-nfr000001', 'InstanceId', 'us-east-1', 'active'
     );
     PERFORM seed_resource(
-        tenant_schema, resource_id_02, aws_account_id,
+        p_tenant_schema, resource_id_02, p_account_id,
         'AWS/EC2', 'nfr-ec2-02', 'i-nfr000002', 'InstanceId', 'us-east-1', 'active'
     );
     PERFORM seed_resource(
-        tenant_schema, resource_id_03, aws_account_id,
+        p_tenant_schema, resource_id_03, p_account_id,
         'AWS/EC2', 'nfr-ec2-03', 'i-nfr000003', 'InstanceId', 'us-east-1', 'active'
     );
     PERFORM seed_resource(
-        tenant_schema, resource_id_04, aws_account_id,
+        p_tenant_schema, resource_id_04, p_account_id,
         'AWS/EC2', 'nfr-ec2-04', 'i-nfr000004', 'InstanceId', 'us-east-1', 'active'
     );
     PERFORM seed_resource(
-        tenant_schema, resource_id_05, aws_account_id,
+        p_tenant_schema, resource_id_05, p_account_id,
         'AWS/EC2', 'nfr-ec2-05', 'i-nfr000005', 'InstanceId', 'us-east-1', 'active'
     );
     PERFORM seed_resource(
-        tenant_schema, resource_id_06, aws_account_id,
+        p_tenant_schema, resource_id_06, p_account_id,
         'AWS/RDS', 'nfr-rds-01', 'nfr-rds-01', 'DBInstanceIdentifier', 'us-east-1', 'active'
     );
     PERFORM seed_resource(
-        tenant_schema, resource_id_07, aws_account_id,
+        p_tenant_schema, resource_id_07, p_account_id,
         'AWS/RDS', 'nfr-rds-02', 'nfr-rds-02', 'DBInstanceIdentifier', 'us-east-1', 'active'
     );
     PERFORM seed_resource(
-        tenant_schema, resource_id_08, aws_account_id,
+        p_tenant_schema, resource_id_08, p_account_id,
         'AWS/Lambda', 'nfr-lambda-01', 'nfr-lambda-01', 'FunctionName', 'us-east-1', 'active'
     );
     PERFORM seed_resource(
-        tenant_schema, resource_id_09, aws_account_id,
+        p_tenant_schema, resource_id_09, p_account_id,
         'AWS/ECS', 'nfr-ecs-cluster-01', 'nfr-ecs-cluster-01', 'ClusterName', 'us-east-1', 'active'
     );
     PERFORM seed_resource(
-        tenant_schema, resource_id_10, aws_account_id,
+        p_tenant_schema, resource_id_10, p_account_id,
         'AWS/ElastiCache', 'nfr-cache-01', 'nfr-cache-01', 'CacheClusterId', 'us-east-1', 'active'
     );
 
     RAISE NOTICE 'Resource Seeded, continuing to seed metrics';
 
     to_timestamp := NOW();
-    metric_series_datapoints := 10000;
-
+    metric_series_datapoints := p_num_seed;
+    
     total_rows_seeded := total_rows_seeded + seed_metric_series(
-        tenant_schema, resource_id_01, metric_type_01, metric_name_01,
+        p_tenant_schema, resource_id_01, metric_type_01, metric_name_01,
         to_timestamp, metric_series_datapoints
     );
     total_rows_seeded := total_rows_seeded + seed_metric_series(
-        tenant_schema, resource_id_02, metric_type_02, metric_name_02,
+        p_tenant_schema, resource_id_02, metric_type_02, metric_name_02,
         to_timestamp, metric_series_datapoints
     );
     total_rows_seeded := total_rows_seeded + seed_metric_series(
-        tenant_schema, resource_id_03, metric_type_03, metric_name_03,
+        p_tenant_schema, resource_id_03, metric_type_03, metric_name_03,
         to_timestamp, metric_series_datapoints
     );
     total_rows_seeded := total_rows_seeded + seed_metric_series(
-        tenant_schema, resource_id_04, metric_type_04, metric_name_04,
+        p_tenant_schema, resource_id_04, metric_type_04, metric_name_04,
         to_timestamp, metric_series_datapoints
     );
     total_rows_seeded := total_rows_seeded + seed_metric_series(
-        tenant_schema, resource_id_05, metric_type_05, metric_name_05,
+        p_tenant_schema, resource_id_05, metric_type_05, metric_name_05,
         to_timestamp, metric_series_datapoints
     );
     total_rows_seeded := total_rows_seeded + seed_metric_series(
-        tenant_schema, resource_id_06, metric_type_06, metric_name_06,
+        p_tenant_schema, resource_id_06, metric_type_06, metric_name_06,
         to_timestamp, metric_series_datapoints
     );
     total_rows_seeded := total_rows_seeded + seed_metric_series(
-        tenant_schema, resource_id_07, metric_type_07, metric_name_07,
+        p_tenant_schema, resource_id_07, metric_type_07, metric_name_07,
         to_timestamp, metric_series_datapoints
     );
     total_rows_seeded := total_rows_seeded + seed_metric_series(
-        tenant_schema, resource_id_08, metric_type_08, metric_name_08,
+        p_tenant_schema, resource_id_08, metric_type_08, metric_name_08,
         to_timestamp, metric_series_datapoints
     );
     total_rows_seeded := total_rows_seeded + seed_metric_series(
-        tenant_schema, resource_id_09, metric_type_09, metric_name_09,
+        p_tenant_schema, resource_id_09, metric_type_09, metric_name_09,
         to_timestamp, metric_series_datapoints
     );
     total_rows_seeded := total_rows_seeded + seed_metric_series(
-        tenant_schema, resource_id_10, metric_type_10, metric_name_10,
+        p_tenant_schema, resource_id_10, metric_type_10, metric_name_10,
         to_timestamp, metric_series_datapoints
     );
 
