@@ -1,6 +1,7 @@
 package com.cloudsherpa.ingestion.unit.service;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 import com.cloudsherpa.ingestion.models.UsageRecordModel;
@@ -22,6 +23,7 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -29,6 +31,7 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class SherpaDbPersistenceServiceTest {
@@ -41,6 +44,11 @@ class SherpaDbPersistenceServiceTest {
   @Mock private Query nativeQuery;
 
   @InjectMocks private SherpaDbPersistenceService service;
+
+  @BeforeEach
+  void setUp() {
+    ReflectionTestUtils.setField(service, "entityManager", entityManager);
+  }
 
   @Captor private ArgumentCaptor<NormalizedMetrics> metricsCaptor;
 
@@ -152,5 +160,33 @@ class SherpaDbPersistenceServiceTest {
     assertEquals(
         OffsetDateTime.ofInstant(Instant.ofEpochMilli(endMillis), ZoneOffset.UTC),
         savedEntity.getPeriodEnd());
+  }
+
+  @Test
+  void recordMetricShouldHandleDefaultValuesForMissingFields() {
+    UUID userId = UUID.randomUUID();
+
+    when(entityManager.createNativeQuery(anyString())).thenReturn(nativeQuery);
+
+    UsageRecordModel r = mock(UsageRecordModel.class);
+    Resource mockResource = mock(Resource.class);
+
+    when(infrastructureService.ensureInfrastructure(r, userId)).thenReturn(mockResource);
+
+    NormalizedMetric metric = mock(NormalizedMetric.class);
+
+    when(metric.getPeriodStart()).thenReturn(0L);
+    when(metric.getPeriodEnd()).thenReturn(0L);
+    when(metric.getMetricType()).thenReturn(null);
+    when(metric.getMetricValue()).thenReturn(10.0);
+
+    service.recordMetric(metric, r, userId);
+
+    verify(metricsRepo).save(metricsCaptor.capture());
+    NormalizedMetrics savedEntity = metricsCaptor.getValue();
+
+    assertNull(savedEntity.getPeriodStart());
+    assertNull(savedEntity.getPeriodEnd());
+    assertEquals("usage", savedEntity.getMetricType());
   }
 }
