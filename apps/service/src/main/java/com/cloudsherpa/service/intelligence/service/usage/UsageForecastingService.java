@@ -13,6 +13,7 @@ import com.cloudsherpa.service.intelligence.service.ForecastingService;
 import com.cloudsherpa.service.intelligence.service.Sampler;
 import com.cloudsherpa.service.metrics.MetricDisplayNameMapper;
 import com.cloudsherpa.service.metrics.ResourceProviderResolver;
+import java.math.BigDecimal;
 import java.util.List;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -52,9 +53,14 @@ public class UsageForecastingService extends ForecastingService {
           HttpStatus.BAD_GATEWAY, "Forecasting service returned empty response");
     }
 
+    List<BigDecimal> cappedForecastValues =
+        intelligenceForecastResponseDto.forecast().stream()
+            .map(value -> value.max(BigDecimal.ZERO))
+            .toList();
+
     return new ResourceUsageForecastResponseDto(
         intelligenceForecastResponseDto.timestamps(),
-        intelligenceForecastResponseDto.forecast(),
+        cappedForecastValues,
         intelligenceForecastResponseDto.q1(),
         intelligenceForecastResponseDto.q3());
   }
@@ -66,6 +72,13 @@ public class UsageForecastingService extends ForecastingService {
     String canonicalMetricName =
         metricDisplayNameMapper.toCanonicalName(
             provider.toString(), resourceUsageForecastRequestDto.metricType());
+
+    if (provider.toString().equals("GCP")) {
+      return normalizedMetricsRepository.getAggregatedTimestampedMetricValuesAfterDate(
+          resourceUsageForecastRequestDto.resourceId(),
+          canonicalMetricName,
+          PageRequest.of(0, CONTEXT_LENGTH));
+    }
 
     return normalizedMetricsRepository.getTimestampedMetricValues(
         resourceUsageForecastRequestDto.resourceId(),
