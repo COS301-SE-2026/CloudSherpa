@@ -3,7 +3,7 @@
 import React, { ReactNode, useState, useMemo, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/atoms/card";
 import { Button } from "@/components/atoms/button";
-import { Search, ChevronLeft, ChevronRight, ArrowUpDown } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, ArrowUpDown, TriangleAlertIcon } from "lucide-react";
 import { Input } from "@/components/atoms/input";
 import { Badge } from "@/components/atoms/badge";
 import { Switch } from "@/components/atoms/switch";
@@ -37,6 +37,7 @@ import {
 import { Slider } from "@/components/atoms/slider";
 import { Label } from "@/components/atoms/label";
 import { ResourceSelectionDto } from "@/lib/fetch/azure-connection-api";
+import { Alert, AlertDescription, AlertTitle } from "@/components/atoms/alert";
 
 export interface PropsForStepThree {
     heading: string;
@@ -118,58 +119,42 @@ export function IngestionSlider({
     formatSeconds,
 }: Readonly<PropsForIngestionSlider>) {
     return (
-        <div className="space-y-2 pt-4 border-t border-border">
-            <div className="flex items-center gap-2">
-                <Label htmlFor="ingestionPeriod" className="text-foreground text-sm font-medium">
-                    {" "}
-                    Ingestion interval (seconds){" "}
-                </Label>
+        <div className="space-y-4 pt-4 border-t border-border">
+            <h3 className="text-foreground text-sm font-semibold uppercase tracking-wider opacity-80">
+                Ingestion Interval
+            </h3>
 
-                <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <button
-                                type="button"
-                                className="flex items-center justify-center w-5 h-5 rounded-full text-xs text-muted-foreground hover:text-foreground border border-border"
-                            >
-                                {" "}
-                                ?{" "}
-                            </button>
-                        </TooltipTrigger>
+            <Alert className="w-full border-warning bg-warning/40">
+                <TriangleAlertIcon className="text-warning-foreground" />
+                <AlertTitle className="text-warning-foreground">Recommended Interval</AlertTitle>
+                <AlertDescription className="text-warning-foreground">
+                    The recommended ingestion interval is {formatSeconds(recIngestionPeriod)}. A
+                    lower interval may incur costs due to API free-tier limits. This interval
+                    controls how frequently dashboard time-series data is updated.
+                </AlertDescription>
+            </Alert>
 
-                        <TooltipContent>
-                            <p>
-                                {" "}
-                                Recommended ingestion interval: {recIngestionPeriod} seconds based
-                                on {activeCount} selected resource. Setting the interval to a lower
-                                value could incur costs due to API free tier limits. The ingestion
-                                interval determines the frequency of dashboard timeseries updates.
-                            </p>
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
-            </div>
+            <div className="space-y-2">
+                <div className="flex flex-col items-end justify-center gap-2">
+                    <span className="text-sm font-medium">{formatSeconds(ingestionPeriod)}</span>
 
-            <div className="flex flex-col gap-2 justify-center items-end">
-                <span className="text-sm font-medium"> {formatSeconds(ingestionPeriod)} </span>
+                    <Slider
+                        value={[Number(ingestionPeriod)]}
+                        onValueChange={(changeValue) => setIngestionPeriod(changeValue[0])}
+                        min={60}
+                        max={720}
+                        step={1}
+                        className={
+                            Number(ingestionPeriod) < recIngestionPeriod
+                                ? "[&>span>span]:bg-warning [&_[role=slider]]:border-warning"
+                                : ""
+                        }
+                    />
 
-                <Slider
-                    value={[Number(ingestionPeriod)]}
-                    onValueChange={(changeValue) => setIngestionPeriod(changeValue[0])}
-                    min={60}
-                    max={720}
-                    step={1}
-                    className={
-                        Number(ingestionPeriod) < recIngestionPeriod
-                            ? "[&>span>span]:bg-warning [&_[role=slider]]:border-warning"
-                            : ""
-                    }
-                />
-
-                <p className="text-sm text-muted-foreground/70">
-                    {" "}
-                    Recommended: {formatSeconds(recIngestionPeriod)}{" "}
-                </p>
+                    <p className="text-sm text-muted-foreground/70">
+                        Recommended: {formatSeconds(recIngestionPeriod)}
+                    </p>
+                </div>
             </div>
         </div>
     );
