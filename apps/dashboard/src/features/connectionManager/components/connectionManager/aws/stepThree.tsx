@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import { PersistAwsConnectionRequest, createAwsConnection } from "@/lib/fetch/aws-connection-api";
 import { StepThree, ResourceTable, useIngestionPeriod, IngestionSlider } from "@/features/connectionManager/components/connectionManager/wizardSetup/stepThree";
 import { AwsCredentialsDto } from "@/lib/fetch/dto/cloud-credentials";
@@ -54,23 +54,15 @@ export default function StepThreeAws({
 
     const {activeCount, recIngestionPeriod} = useIngestionPeriod(resourceData);
 
-    const initialPeriod = ingestionPeriod ? Number.parseInt(ingestionPeriod) : recIngestionPeriod;
+    const [ingestionPeriodState, setIngestionPeriodState] = useState(() => {
+        const initialPeriod = ingestionPeriod ? Number.parseInt(ingestionPeriod) : recIngestionPeriod;
 
-    const [ingestionPeriodState, setIngestionPeriodState] = useState<number>(initialPeriod);
+        return initialPeriod > 0 ? initialPeriod : 60;
+    });
 
-    const prevActiveCount = React.useRef(activeCount);
-
-    React.useEffect(() => {
-        if(activeCount !== prevActiveCount.current){
-            prevActiveCount.current = activeCount;
-
-            if(activeCount>0){
-                setIngestionPeriodState(recIngestionPeriod);
-            }else{
-                setIngestionPeriodState(60);
-            }
-        }
-    }, [activeCount, recIngestionPeriod]);
+    const handlingResourceDataChange = useCallback((newData : ResourceSelectionDto[] | ((previous : ResourceSelectionDto[]) => ResourceSelectionDto[])) => {
+        setResourceData(newData);
+    }, []);
 
     const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -135,7 +127,7 @@ export default function StepThreeAws({
             forSaving={saving}
         >
             <div className="min-h-50">
-                <ResourceTable data = {resourceData} onDataChange = {setResourceData} onFilterChange = {setFilterValue} filterValue = {filterValue} pageSize = {8}/>
+                <ResourceTable data = {resourceData} onDataChange = {handlingResourceDataChange} onFilterChange = {setFilterValue} filterValue = {filterValue} pageSize = {8}/>
             </div>
 
             <IngestionSlider ingestionPeriod = {ingestionPeriodState} setIngestionPeriod = {setIngestionPeriodState} activeCount = {activeCount} recIngestionPeriod = {recIngestionPeriod} formatSeconds = {formatSeconds}/>
