@@ -278,6 +278,7 @@ export default function StepThreeAws({
 
                 <div className="space-y-2">
                     <div className="flex flex-col items-end justify-center gap-2">
+                        <span className="text-sm font-medium">{formatSeconds(period)}</span>
                         <Slider
                             value={[Number(period)]}
                             onValueChange={(vals) => setPeriod(String(vals[0]))}
