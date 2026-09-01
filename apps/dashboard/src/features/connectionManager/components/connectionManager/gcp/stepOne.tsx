@@ -44,7 +44,7 @@ export default function StepOneGcp({ onNext }: Readonly<StepOnePropsForGcp>) {
         setAccountKey(forFile);
     };
 
-    const handlingDroppingFile = (dropFile: React.DragEvent<HTMLButtonElement>) => {
+    const handlingDroppingFile = (dropFile: React.DragEvent<HTMLDivElement>) => {
         dropFile.preventDefault();
         setDraggingFile(false);
 
@@ -114,8 +114,9 @@ export default function StepOneGcp({ onNext }: Readonly<StepOnePropsForGcp>) {
             <div className="space-y-2">
                 <Label className="text-foreground text-sm font-medium"> Service account key </Label>
 
-                <button
-                    type="button"
+                <div
+                    role="button"
+                    tabIndex={0}
 
                     onDragOver={(dragging) => {
                         dragging.preventDefault();
@@ -180,7 +181,7 @@ export default function StepOneGcp({ onNext }: Readonly<StepOnePropsForGcp>) {
                             </p>
                         </>
                     )}
-                </button>
+                </div>
 
                 {errors && <p className="text-sm text-destructive"> {errors} </p>}
             </div>
