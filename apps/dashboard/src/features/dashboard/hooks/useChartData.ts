@@ -2,9 +2,9 @@
 import { useMemo } from "react";
 import { useMetricStore } from "@/features/dashboard/stores/metric-store";
 import { Metric, metricSeriesToArray } from "@/features/dashboard/types/metric";
-import { timeMs, timestampIsoStringToTime } from "@/lib/timeUtils";
+import { timestampIsoStringToTime } from "@/lib/timeUtils";
 
-const GAP_THRESHOLD_MILLISECONDS = timeMs.minuteMs * 5;
+import { sanitizeDisplaySeries } from "@/lib/displayUtils";
 
 export function useChartData(resourceId: string, metricName: string) {
     const series = useMetricStore((state) => state.seriesByKey[`${resourceId}:${metricName}`]);
@@ -12,7 +12,11 @@ export function useChartData(resourceId: string, metricName: string) {
     return useMemo(() => {
         const values = metricSeriesToArray(series);
 
-        const timeSeriesData = sanitizeDisplaySeries(values);
+        const timeSeriesData = sanitizeDisplaySeries<Metric>(
+            values,
+            (point) => timestampIsoStringToTime(point.timestamp),
+            (samplePoint) => buildPadMetric(samplePoint)
+        );
 
         const latestPoint = values.length > 0 ? values.at(-1) : null;
 
@@ -28,42 +32,12 @@ export function useChartData(resourceId: string, metricName: string) {
     }, [series]);
 }
 
-function sanitizeDisplaySeries(dirtyValues: Metric[]): Metric[] {
-    const sanatizedSeries: Metric[] = [];
-
-    for (let i = 0; i < dirtyValues.length - 1; i++) {
-        const current = dirtyValues[i];
-        const next = dirtyValues[i + 1];
-
-        sanatizedSeries.push(current);
-
-        if (
-            timestampIsoStringToTime(next.timestamp) - timestampIsoStringToTime(current.timestamp) >
-            GAP_THRESHOLD_MILLISECONDS
-        ) {
-            sanatizedSeries.push(
-                buildPadMetric(current, timestampIsoStringToTime(current.timestamp) + 1)
-            );
-        }
-    }
-
-    const lastMetric = dirtyValues.at(-1);
-
-    if (lastMetric !== undefined) {
-        sanatizedSeries.push(lastMetric);
-    }
-
-    console.log(sanatizedSeries);
-
-    return sanatizedSeries;
-}
-
-function buildPadMetric(seriesSampledMetric: Metric, nullPadTimestamp: number): Metric {
+function buildPadMetric(previous: Metric): Metric {
     return {
-        resource_id: seriesSampledMetric.resource_id,
-        metricName: seriesSampledMetric.metricName,
-        metricType: seriesSampledMetric.metricType,
+        resource_id: previous.resource_id,
+        metricName: previous.metricName,
+        metricType: previous.metricType,
         value: null,
-        timestamp: new Date(nullPadTimestamp).toISOString(),
+        timestamp: new Date(timestampIsoStringToTime(previous.timestamp) + 1).toISOString(),
     };
 }

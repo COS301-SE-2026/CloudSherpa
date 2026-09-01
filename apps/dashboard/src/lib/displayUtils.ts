@@ -1,6 +1,6 @@
 import { timeMs } from "./timeUtils";
 
-const GAP_THRESHOLD_MILLISECONDS = timeMs.minuteMs * 5;
+const GAP_THRESHOLD_MILLISECONDS = timeMs.minuteMs * 30;
 
 export function sanitizeDisplaySeries<T>(
     dirtyValues: T[],
@@ -25,8 +25,6 @@ export function sanitizeDisplaySeries<T>(
     if (lastMetric !== undefined) {
         sanatizedSeries.push(lastMetric);
     }
-
-    console.log(sanatizedSeries);
 
     return sanatizedSeries;
 }
