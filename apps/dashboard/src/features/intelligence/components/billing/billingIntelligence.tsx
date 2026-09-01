@@ -167,7 +167,7 @@ export default function BillingIntelligence() {
                     name="Highest Cost Acceleration"
                     value={
                         highestAccelerationCost !== undefined
-                            ? `${currency}${(highestAccelerationCost / (forecastTimeWindowDays || 1)).toFixed(2)}/day\u00B2`
+                            ? `${currency}${forSummary?.accelerationrate}/day\u00B2`
                             : "-"
                     }
                     description={
