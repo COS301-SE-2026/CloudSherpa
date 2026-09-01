@@ -232,7 +232,6 @@ const createDashboardSlice: StateCreator<DashboardStore, [], [], DashboardSlice>
                 }));
                 toast.success(`Successfully updated ${widgetName} widget configuration.`);
             } catch (error) {
-                console.log("Failed to persist kpi widget config: ", error);
                 toast.error(`Failed to update ${widgetName} widget configuration.`);
                 throw error;
             }

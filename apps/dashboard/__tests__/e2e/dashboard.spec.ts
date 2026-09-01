@@ -36,21 +36,21 @@ async function createNewDashboard(page: Page) {
 }
 
 async function createNewChartWidget(page: Page) {
-    await page.getByLabel("editbtn").click();
+    await page.getByLabel("editbtn").first().click();
     await page.getByRole("button", { name: "Add Chart" }).click();
     await page.getByRole("button", { name: "Save" }).click();
     await expect(page.getByText("New Chart").first()).toBeVisible();
 }
 
 async function createNewKPIWidget(page: Page) {
-    await page.getByLabel("editbtn").click();
+    await page.getByLabel("editbtn").first().click();
     await page.getByRole("button", { name: "Add KPI" }).click();
     await page.getByRole("button", { name: "Save" }).click();
     await expect(page.getByText("New KPI").first()).toBeVisible();
 }
 
 async function createPreConfiguredChartWidget(page: Page) {
-    await page.getByLabel("editbtn").click();
+    await page.getByLabel("editbtn").first().click();
     await page.getByRole("button", { name: "Add Chart" }).click();
     await page.getByRole("button", { name: "Save" }).click();
     await expect(page.getByText("New Chart").first()).toBeVisible();
@@ -97,10 +97,10 @@ test.describe("dashboard", () => {
         //create dash
         await createNewDashboard(page);
         //create chart widget
-        await page.getByLabel("editbtn").click();
+        await page.getByLabel("editbtn").first().click();
         await page.getByRole("button", { name: "Add Chart" }).click();
         await expect(page.getByText("New Chart")).toBeVisible();
-        await page.getByLabel("editbtn").click();
+        await page.getByLabel("editbtn").first().click();
         await expect(page.getByText("New Chart")).not.toBeVisible();
     });
 
