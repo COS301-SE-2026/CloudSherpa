@@ -125,14 +125,16 @@ export function KpiConfigForm({ kpiId }: KpiConfigFormProps) {
                     <CardHeader>
                         <CardTitle>Preview</CardTitle>
                     </CardHeader>
-                    <CardContent className="flex flex-col">
-                        {getWidgetError ? (
-                            <span className="text-base flex wrap">
-                                Something went wrong, please refresh the page
-                            </span>
-                        ) : (
-                            <KPIWidget config={config} preview />
-                        )}
+                    <CardContent className="h-full flex flex-col justify-start gap-4 ">
+                        <div>
+                            {getWidgetError ? (
+                                <span className="text-base flex wrap">
+                                    Something went wrong, please refresh the page
+                                </span>
+                            ) : (
+                                <KPIWidget config={config} preview />
+                            )}
+                        </div>
 
                         <KpiConfigSummary
                             numResources={config.chargeIds.length ?? 0}
