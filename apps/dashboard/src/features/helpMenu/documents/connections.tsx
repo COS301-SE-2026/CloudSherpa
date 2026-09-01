@@ -110,6 +110,34 @@ const Azure_INS = creatingIns([
             "You will be redirected to the Connection Manager page where you can view and configure your cloud connections",
         ],
     },
+
+    {
+        name: "Add an Azure cloud provider",
+        description: "Follow the steps of the wizard to add Azure as a cloud provider",
+        details: [
+            "On the Connection Manager page, click on the add button which is located on the top right-hand side corner of the page",
+            "Follow the steps of the wizard to add your Azure connection",
+        ],
+    },
+
+    {
+        name: "Enter your credentials",
+        description: "Provide your credentials for Azure",
+        details: [
+            "Add an account name which you can refer to when looking for a particular connection",
+            "Enter your Subscription ID, Tenant ID, Client ID and your Client Secret",
+        ],
+    },
+
+    {
+        name: "Select your services and resources",
+        description: "Choose which services and resources you would like CloudSherpa to monitor",
+        details: [
+            "Select the services that would be monitored by CloudSherpa and you would then get a list of permissions that you would need to grant and then proceed to step 3",
+            "Once all of the resources associated with your selected services have been discovered, you can choose which ones you would like to monitor",
+            "The table can be filtered by the names of the resources or you can search for a resource using the toolbar",
+        ],
+    },
 ]);
 
 function ContentForConnections() {
