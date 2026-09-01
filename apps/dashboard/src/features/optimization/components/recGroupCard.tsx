@@ -17,18 +17,22 @@ import {
 import { EllipsisVertical, Eye } from "lucide-react";
 import { Button } from "@/components/atoms/button";
 import { useState } from "react";
+import { useRecStore } from "@/features/optimization/stores/useRecStore";
 
 interface RecommendationGroupCardProps {
     group: RecommendationGroup;
 }
 
 export default function RecommendationGroupCard({ group }: Readonly<RecommendationGroupCardProps>) {
-    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-    const handleOpenDrawer = () => setIsDrawerOpen(true);
-
     const recommendationsCount = group.recommendations.length;
 
     const provider = recommendationsCount > 0 ? group.recommendations[0].provider : "Unknown";
+
+    const focusedAccountId = useRecStore((state) => state.focusedAccountId);
+
+    const [isDrawerOpen, setIsDrawerOpen] = useState(focusedAccountId === group.accountId);
+
+    const handleOpenDrawer = () => setIsDrawerOpen(true);
 
     return (
         <ContextMenu>

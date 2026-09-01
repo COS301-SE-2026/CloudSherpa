@@ -73,7 +73,7 @@ export default function StepTwoAzure({
         loadServices();
     }, []);
 
-    const handlingSubmit = async (forHandlingSubmit: React.FormEvent<HTMLFormElement>) => {
+    const handlingSubmit = async (forHandlingSubmit: React.SubmitEvent<HTMLFormElement>) => {
         forHandlingSubmit.preventDefault();
         try {
             setForLoading(true);

@@ -3,12 +3,6 @@
 import React, { useState } from "react";
 import { Checkbox } from "@/components/atoms/checkbox";
 import { Badge } from "@/components/atoms/badge";
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-} from "@/components/atoms/tooltip";
 import { PersistAwsConnectionRequest, createAwsConnection } from "@/lib/fetch/aws-connection-api";
 import { useRouter } from "next/navigation";
 import { Label } from "@/components/atoms/label";
@@ -17,6 +11,8 @@ import { StepThree } from "@/features/connectionManager/components/connectionMan
 import { AwsCredentialsDto } from "@/lib/fetch/dto/cloud-credentials";
 import { ResourceDetail, ResourceSelectionDto } from "@/lib/fetch/dto/cloud-resource";
 import { toast } from "sonner";
+import { Alert, AlertDescription, AlertTitle } from "@/components/atoms/alert";
+import { TriangleAlertIcon } from "lucide-react";
 
 interface PropsForStepThree {
     displayName: string;
@@ -263,68 +259,42 @@ export default function StepThreeAws({
                     )}
                 </div>
             </div>
-            <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                    <Label
-                        htmlFor="ingestionPeriod"
-                        className="text-foreground text-sm font-medium"
-                    >
-                        Ingestion interval (seconds)
-                    </Label>
+            <div className="space-y-4">
+                <h3 className="text-foreground text-sm font-semibold uppercase tracking-wider opacity-80">
+                    Ingestion Interval
+                </h3>
 
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <button
-                                    type="button"
-                                    className="
-                                        flex
-                                        items-center
-                                        justify-center
-                                        w-5
-                                        h-5
-                                        rounded-full
-                                        text-xs
-                                        text-muted-foreground
-                                        hover:text-foreground
-                                        border
-                                        border-border
-                                        "
-                                >
-                                    ?
-                                </button>
-                            </TooltipTrigger>
+                <Alert className="w-full border-warning bg-warning/40">
+                    <TriangleAlertIcon className="text-warning-foreground" />
+                    <AlertTitle className="text-warning-foreground">
+                        Recommended Interval
+                    </AlertTitle>
+                    <AlertDescription className="space-y-0 text-warning-foreground">
+                        The recommended ingestion interval is {formatSeconds(recommendedPeriod)}. A
+                        lower interval may incur costs due to API free-tier limits. This interval
+                        controls how frequently dashboard time-series data is updated.
+                    </AlertDescription>
+                </Alert>
 
-                            <TooltipContent>
-                                <p>
-                                    Recommended ingestion interval: {recommendedPeriod} seconds
-                                    based on {selectedResources.length} selected resources. Setting
-                                    the interval to a lower value could incur costs due to
-                                    CloudWatch API free tier limits. The ingestion interval
-                                    determines the frequency of dashboard timeseries updates.
-                                </p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-                </div>
-                <div className="flex flex-col gap-2 justify-center items-end ">
-                    {/* the span is meant for a visual indicator of the value of the slider */}
-                    <span>{formatSeconds(period)}</span>
-                    <Slider
-                        value={[Number(period)]}
-                        onValueChange={(vals) => setPeriod(String(vals[0]))}
-                        min={60}
-                        max={720}
-                        className={
-                            Number(period) < recommendedPeriod
-                                ? "[&>span>span]:bg-warning [&_[role=slider]]:border-warning"
-                                : ""
-                        }
-                    />
+                <div className="space-y-2">
+                    <div className="flex flex-col items-end justify-center gap-2">
+                        <span className="text-sm font-medium">{formatSeconds(period)}</span>
+                        <Slider
+                            value={[Number(period)]}
+                            onValueChange={(vals) => setPeriod(String(vals[0]))}
+                            min={60}
+                            max={720}
+                            className={
+                                Number(period) < recommendedPeriod
+                                    ? "[&>span>span]:bg-warning [&_[role=slider]]:border-warning"
+                                    : ""
+                            }
+                        />
 
-                    <p className="text-xs text-muted-foreground/70 ">
-                        Recommended: {formatSeconds(recommendedPeriod)}
-                    </p>
+                        <p className="text-xs text-muted-foreground/70">
+                            Recommended: {formatSeconds(recommendedPeriod)}
+                        </p>
+                    </div>
                 </div>
             </div>
         </StepThree>

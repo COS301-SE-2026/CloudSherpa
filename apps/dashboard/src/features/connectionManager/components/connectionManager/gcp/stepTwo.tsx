@@ -113,7 +113,11 @@ export default function StepTwoGcp({
 
         const validatedBillingConfig: GcpBillingConfigSafeParseType | null = validateBillingInput();
 
-        if (validatedBillingConfig != null && !validatedBillingConfig.success) {
+        if (
+            optedInToBilling == true &&
+            validatedBillingConfig != null &&
+            !validatedBillingConfig.success
+        ) {
             setErrors("Please enter a valid billing configuration");
             return;
         }
@@ -161,11 +165,12 @@ export default function StepTwoGcp({
         }
     };
 
-    function validateBillingInput(): GcpBillingConfigSafeParseType | null {
-        if (!optedInToBilling) {
-            return null;
-        }
+    const handleOptInToBillingChange = (checked: boolean) => {
+        checkingService("bigquery");
+        setOptedInToBilling(checked);
+    };
 
+    function validateBillingInput(): GcpBillingConfigSafeParseType | null {
         return GcpBillingConfig.safeParse({
             billingId: billingId,
             dataset: billingDataset,
@@ -187,9 +192,7 @@ export default function StepTwoGcp({
                 setBillingId={setBillingId}
                 setBillingDataset={setBillingDataset}
                 billingDataset={billingDataset}
-                handleOptedInToBillingChange={(checked) => {
-                    setOptedInToBilling(checked);
-                }}
+                handleOptedInToBillingChange={handleOptInToBillingChange}
             ></GcpBillingForm>
             <ServicesList
                 servicesAvailable={servicesAvailable}

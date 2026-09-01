@@ -1,5 +1,5 @@
 "use client";
-import SummaryCard, { getMetricUnit } from "@/features/intelligence/components/usage/summaryCard";
+import SummaryCard from "@/features/intelligence/components/usage/summaryCard";
 import UsageToolbar from "@/features/intelligence/components/usage/usageToolbar";
 import UsagePredictionChart from "@/features/intelligence/components/usage/usagePredictionChart";
 import { useUsageIntelligenceConfigStore } from "@/features/intelligence/stores/useUsageIntelligenceConfigStore";
