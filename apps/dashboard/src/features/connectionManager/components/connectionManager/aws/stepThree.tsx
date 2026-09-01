@@ -1,11 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import { PersistAwsConnectionRequest, createAwsConnection } from "@/lib/fetch/aws-connection-api";
 import { StepThree } from "@/features/connectionManager/components/connectionManager/wizardSetup/stepThree";
 import { AwsCredentialsDto } from "@/lib/fetch/dto/cloud-credentials";
 import { ResourceDetail, ResourceSelectionDto } from "@/lib/fetch/dto/cloud-resource";
 import { toast } from "sonner";
+import {useRouter} from "next/navigation";
+import {useIngestionPeriod, IngestionSlider} from "@/features/connectionManager/components/connectionManager/wizardSetup/stepThree";
 
 interface PropsForStepThree {
     displayName: string;
@@ -34,6 +36,28 @@ export default function StepThreeAws({
     const router = useRouter();
 
     const [saving, setSaving] = useState(false);
+
+    const [filterValue, setFilterValue] = useState("");
+
+    const initialResourceSelections : ResourceSelectionDto[] = useMemo(() => {
+        return resources.map((resource) : ResourceSelectionDto => ({
+            resourceId : resource.resourceId,
+            serviceType : resource.serviceCategory,
+            resourceType : resource.resourceType,
+            resourceName : resource.name,
+            region : resource.region,
+            tags : resource.tags,
+            active : true,
+        }));
+    }, [resources]);
+
+    const [resourceData, setResourceData] = useState<ResourceSelectionDto[]>(initialResourceSelections);
+
+    const {activeCount, recIngestionPeriod} = useIngestionPeriod(resourceData);
+
+    const initialPeriod = ingestionPeriod ? parseInt(ingestionPeriod) : recIngestionPeriod;
+
+    const [ingestionPeriodState, setIngestionPeriodState] = useState<number>(initalPeriod);
 
     const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
         event.preventDefault();
