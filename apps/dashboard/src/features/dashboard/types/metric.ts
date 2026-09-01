@@ -25,7 +25,7 @@ export type Metric = {
     metricName: string;
     metricType: MetricType;
     timestamp: string;
-    value: number;
+    value: number | null;
 
     unit?: string;
     currency?: string;

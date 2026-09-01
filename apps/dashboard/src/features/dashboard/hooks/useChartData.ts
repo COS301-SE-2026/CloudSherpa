@@ -1,7 +1,10 @@
 // src/features/dashboard/hooks/useChartData.ts
 import { useMemo } from "react";
 import { useMetricStore } from "@/features/dashboard/stores/metric-store";
-import { metricSeriesToArray } from "@/features/dashboard/types/metric";
+import { Metric, metricSeriesToArray } from "@/features/dashboard/types/metric";
+import { timestampIsoStringToTime } from "@/lib/timeUtils";
+
+import { sanitizeDisplaySeries } from "@/lib/displayUtils";
 
 export function useChartData(resourceId: string, metricName: string) {
     const series = useMetricStore((state) => state.seriesByKey[`${resourceId}:${metricName}`]);
@@ -9,7 +12,11 @@ export function useChartData(resourceId: string, metricName: string) {
     return useMemo(() => {
         const values = metricSeriesToArray(series);
 
-        const timeSeriesData = values;
+        const timeSeriesData = sanitizeDisplaySeries<Metric>(
+            values,
+            (point) => timestampIsoStringToTime(point.timestamp),
+            (samplePoint) => buildPadMetric(samplePoint)
+        );
 
         const latestPoint = values.length > 0 ? values.at(-1) : null;
 
@@ -23,4 +30,14 @@ export function useChartData(resourceId: string, metricName: string) {
             hasData,
         };
     }, [series]);
+}
+
+function buildPadMetric(previous: Metric): Metric {
+    return {
+        resource_id: previous.resource_id,
+        metricName: previous.metricName,
+        metricType: previous.metricType,
+        value: null,
+        timestamp: new Date(timestampIsoStringToTime(previous.timestamp) + 1).toISOString(),
+    };
 }

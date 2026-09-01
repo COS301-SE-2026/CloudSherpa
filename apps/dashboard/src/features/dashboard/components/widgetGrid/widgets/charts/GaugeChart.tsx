@@ -70,7 +70,7 @@ export function GaugeChart({
                         fontFamily: "sans-serif",
                         formatter: (value: number) => `${Math.round(value)}%`,
                     },
-                    data: [{ value: Number(currentValue.toFixed(1)) }],
+                    data: [{ value: Number(currentValue?.toFixed(1) ?? 0) }],
                 },
             ],
         };
