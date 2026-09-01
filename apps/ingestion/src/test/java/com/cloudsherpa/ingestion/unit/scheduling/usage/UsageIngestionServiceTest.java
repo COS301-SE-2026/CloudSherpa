@@ -21,6 +21,7 @@ import com.cloudsherpa.lib.repositories.CloudAccountRepository;
 import com.cloudsherpa.lib.repositories.CloudCredentialRepository;
 import com.cloudsherpa.lib.repositories.OfferedMetricRepository;
 import com.cloudsherpa.lib.repositories.ResourceRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -68,6 +69,28 @@ class UsageIngestionServiceTest {
 
     account = mock(CloudAccount.class);
     credential = mock(CloudCredential.class);
+  }
+
+  private void setupAccountExists() {
+    when(cloudAccountRepository.findById(accountId)).thenReturn(Optional.of(account));
+  }
+
+  private void setupCredentials() throws Exception {
+    CloudConnection connection = mockConnection();
+
+    when(account.getConnection()).thenReturn(connection);
+
+    when(cloudCredentialRepository.findByAccountId(accountId)).thenReturn(List.of(credential));
+
+    when(credential.getCredentialValue()).thenReturn("encrypted-credentials");
+
+    when(encryptionService.decrypt("encrypted-credentials"))
+        .thenReturn(
+            "{\"accessKey\":\"key\",\"secretKey\":\"secret\",\"awsRegion\":\"eu-north-1\"}");
+
+    CloudCredentials credentials = mock(CloudCredentials.class);
+
+    when(mapper.readValue(anyString(), eq(CloudCredentials.class))).thenReturn(credentials);
   }
 
   private void setupSuccessfulIngestion() throws Exception {
@@ -364,5 +387,103 @@ class UsageIngestionServiceTest {
     when(resource.getStatus()).thenReturn(StatusEnum.active);
 
     return resource;
+  }
+
+  @Test
+  void ingest_whenCredentialMappingFails_shouldThrowIllegalStateException() throws Exception {
+
+    setupAccountExists();
+
+    CloudConnection connection = mockConnection();
+
+    when(account.getId()).thenReturn(accountId);
+    when(account.getConnection()).thenReturn(connection);
+
+    when(account.getLastUsageIngestion())
+        .thenReturn(OffsetDateTime.now(ZoneOffset.UTC).minusMinutes(5));
+
+    when(cloudCredentialRepository.findByAccountId(accountId)).thenReturn(List.of(credential));
+
+    when(credential.getCredentialValue()).thenReturn("encrypted-credentials");
+
+    when(encryptionService.decrypt("encrypted-credentials"))
+        .thenReturn(
+            "{\"accessKey\":\"key\",\"secretKey\":\"secret\",\"awsRegion\":\"eu-north-1\"}");
+
+    when(resourceRepository.findByAccountId(accountId)).thenReturn(List.of());
+
+    when(mapper.readValue(anyString(), eq(CloudCredentials.class)))
+        .thenThrow(new JsonProcessingException("Invalid stored credentials") {});
+
+    IllegalStateException exception =
+        assertThrows(IllegalStateException.class, () -> service.ingest(accountId));
+
+    assertEquals(
+        "Stored credentials for account " + accountId + " are invalid", exception.getMessage());
+
+    verify(mapper).readValue(anyString(), eq(CloudCredentials.class));
+
+    verify(client, never()).ingest(any(IngestionRequestEvent.class));
+
+    verify(cloudAccountRepository, never()).save(account);
+  }
+
+  // NFR tests: upon cloud provider failure, do not skip failed period, retry same
+  // period to ensure no loss of metrics
+  @Test
+  void ingest_whenCloudProviderFails_shouldNotAdvanceIngestionCheckpoint() throws Exception {
+
+    setupAccountExists();
+    setupCredentials();
+
+    when(account.getLastUsageIngestion())
+        .thenReturn(OffsetDateTime.now(ZoneOffset.UTC).minusMinutes(5));
+
+    when(resourceRepository.findByAccountId(accountId)).thenReturn(List.of());
+
+    doThrow(new RuntimeException("AWS CloudWatch unavailable"))
+        .when(client)
+        .ingest(any(IngestionRequestEvent.class));
+
+    assertThrows(RuntimeException.class, () -> service.ingest(accountId));
+
+    verify(client).ingest(any(IngestionRequestEvent.class));
+
+    verify(account, never()).setLastUsageIngestion(any());
+
+    verify(account, never()).setNextUsageIngestion(any());
+
+    verify(cloudAccountRepository, never()).save(account);
+  }
+
+  @Test
+  void ingest_afterCloudProviderFailure_shouldRetrySameIngestionPeriod() throws Exception {
+
+    setupSuccessfulIngestion();
+
+    doThrow(new RuntimeException("AWS CloudWatch outage"))
+        .doNothing()
+        .when(client)
+        .ingest(any(IngestionRequestEvent.class));
+
+    assertThrows(RuntimeException.class, () -> service.ingest(accountId));
+
+    service.ingest(accountId);
+
+    ArgumentCaptor<IngestionRequestEvent> captor =
+        ArgumentCaptor.forClass(IngestionRequestEvent.class);
+
+    verify(client, times(2)).ingest(captor.capture());
+
+    List<IngestionRequestEvent> requests = captor.getAllValues();
+
+    assertEquals(2, requests.size());
+
+    IngestionRequestEvent firstRequest = requests.get(0);
+    IngestionRequestEvent retryRequest = requests.get(1);
+
+    assertEquals(firstRequest.getFrom(), retryRequest.getFrom());
+
+    assertEquals(firstRequest.getTo(), retryRequest.getTo());
   }
 }
