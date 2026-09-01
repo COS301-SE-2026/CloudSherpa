@@ -77,9 +77,9 @@ public interface NormalizedCostsRepository extends JpaRepository<NormalizedCosts
     @Query(value = """
             SELECT
                 SUM(nc.cost_amount) AS value,
-                DATE_TRUNC('day', nc.usage_start_time) AS timestamp
+                time_bucket('6 hour', nc.usage_start_time) AS timestamp
             FROM normalized_costs nc WHERE nc.charge_id = :chargeId
-            GROUP BY nc.charge_id, DATE_TRUNC('day', nc.usage_start_time)
+            GROUP BY timestamp
             ORDER BY timestamp ASC
             """, nativeQuery = true)
     List<TimestampedNumericDataPoint> getTimestampedBillingValues(@Param("chargeId") String chargeId,
