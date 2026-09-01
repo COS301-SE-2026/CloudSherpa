@@ -1,7 +1,8 @@
+import { sanitizeDisplaySeries } from "@/lib/displayUtils";
 import { HistoricalUsageSeriesDto, UsageForecastData } from "../types/dtos";
 import { timeMs } from "@/lib/timeUtils";
 
-type TimeValuePoint = [number, number];
+type TimeValuePoint = [number, number | null];
 
 export function toBrowserTimezoneTimestamp(isoString: string): number {
     const timestamp = new Date(isoString).getTime();
@@ -13,7 +14,7 @@ export function formatChartData(
     historicalUsageSeries: HistoricalUsageSeriesDto | null,
     usageForecast: UsageForecastData | null
 ) {
-    const historicalUsagePoints: TimeValuePoint[] = [];
+    let historicalUsagePoints: TimeValuePoint[] = [];
 
     if (historicalUsageSeries) {
         const pointCount = Math.min(
@@ -28,6 +29,12 @@ export function formatChartData(
 
             historicalUsagePoints.push([timestamp, value]);
         }
+
+        historicalUsagePoints = sanitizeDisplaySeries<TimeValuePoint>(
+            historicalUsagePoints,
+            (point) => point[0],
+            (currentPoint) => [currentPoint[0], null]
+        );
     }
 
     const lowerConfidenceBoundPoints: TimeValuePoint[] = [];

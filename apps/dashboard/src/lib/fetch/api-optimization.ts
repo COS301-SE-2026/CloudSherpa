@@ -9,7 +9,6 @@ export const getOptimizationRecommendations = async (): Promise<Recommendation[]
         const data = await apiClient<Recommendation[]>("/optimization/recommendations", {
             method: "GET",
         });
-        console.log(data);
         return data;
     } catch (error) {
         console.error("Failed to fetch recommendations:", error);
