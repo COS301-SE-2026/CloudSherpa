@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useCallback } from "react";
 import { PersistAwsConnectionRequest, createAwsConnection } from "@/lib/fetch/aws-connection-api";
-import { StepThree } from "@/features/connectionManager/components/connectionManager/wizardSetup/stepThree";
+import { StepThree, ResourceTable } from "@/features/connectionManager/components/connectionManager/wizardSetup/stepThree";
 import { AwsCredentialsDto } from "@/lib/fetch/dto/cloud-credentials";
 import { ResourceDetail, ResourceSelectionDto } from "@/lib/fetch/dto/cloud-resource";
 import { toast } from "sonner";
@@ -136,9 +136,10 @@ export default function StepThreeAws({
             forSaving={saving}
         >
             <div className="min-h-50">
-        
+                <ResourceTable data = {resourceData} onDataChange = {setResourceData} onFilterChange = {setFilterValue} filterValue = {filterValue} pageSize = {8}/>
             </div>
 
+            <IngestionSlider ingestionPeriod = {ingestionPeriodState} setIngestionPeriod = {setIngestionPeriodState} activeCount = {activeCount} recIngestionPeriod = {recIngestionPeriod} formatSeconds = {formatSeconds}/>
             
         </StepThree>
     );
