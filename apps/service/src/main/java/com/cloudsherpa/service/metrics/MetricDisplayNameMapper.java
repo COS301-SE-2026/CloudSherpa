@@ -64,6 +64,12 @@ public class MetricDisplayNameMapper {
   public static final String DTU_CONSUMPTION = "DTU Consumption";
   public static final String INGRESS = "Ingress";
   public static final String EGRESS = "Egress";
+  public static final String RECEIVED_BYTES_COUNT = "Received Bytes Count";
+  public static final String SEND_BYTES_COUNT = "Send Bytes Count";
+  public static final String CONTAINER_CPU_UTILIZATIONS = "Container CPU Utilizations";
+  public static final String CPU_PERCENT = "CPU Percent";
+  public static final String OS_DISK_WRITE_BYTES = "OS Disk Write Bytes";
+  public static final String OS_DISK_READ_BYTES = "OS Disk Read Bytes";
 
   private static final Map<String, String> AWS_DISPLAY_NAMES =
       Map.ofEntries(
@@ -114,8 +120,8 @@ public class MetricDisplayNameMapper {
           Map.entry("compute.googleapis.com/instance/disk/write_ops_count", WRITE_IOPS),
           Map.entry("kubernetes.io/node/cpu/core_usage_time", CPU_USAGE_TIME),
           Map.entry("kubernetes.io/node/memory/used_bytes", MEMORY_USED),
-          Map.entry("kubernetes.io/node/network/received_bytes_count", NETWORK_IN),
-          Map.entry("kubernetes.io/node/network/sent_bytes_count", NETWORK_OUT),
+          Map.entry("kubernetes.io/node/network/received_bytes_count", RECEIVED_BYTES_COUNT),
+          Map.entry("kubernetes.io/node/network/sent_bytes_count", SEND_BYTES_COUNT),
           Map.entry("kubernetes.io/pod/restart_count", POD_RESTART_COUNT),
           Map.entry("cloudfunctions.googleapis.com/function/execution_count", FUNCTION_EXECUTIONS),
           Map.entry(
@@ -124,7 +130,7 @@ public class MetricDisplayNameMapper {
           Map.entry("cloudfunctions.googleapis.com/function/active_instances", ACTIVE_INSTANCES),
           Map.entry("run.googleapis.com/request_count", HTTP_REQUESTS),
           Map.entry("run.googleapis.com/request_latencies", REQUEST_LATENCY),
-          Map.entry("run.googleapis.com/container/cpu/utilizations", CPU_UTILIZATION),
+          Map.entry("run.googleapis.com/container/cpu/utilizations", CONTAINER_CPU_UTILIZATIONS),
           Map.entry("run.googleapis.com/container/memory/utilizations", MEMORY_UTILIZATION),
           Map.entry("run.googleapis.com/container/instance_count", RUNNING_INSTANCES),
           Map.entry("storage.googleapis.com/storage/total_bytes", STORED_BYTES),
@@ -137,13 +143,13 @@ public class MetricDisplayNameMapper {
           Map.entry("Percentage CPU", CPU_UTILIZATION),
           Map.entry("Network In Total", NETWORK_IN),
           Map.entry("Network Out Total", NETWORK_OUT),
-          Map.entry("OS Disk Read Bytes/sec", DISK_READ_BYTES),
-          Map.entry("OS Disk Write Bytes/sec", DISK_WRITE_BYTES),
+          Map.entry("OS Disk Read Bytes/sec", OS_DISK_READ_BYTES),
+          Map.entry("OS Disk Write Bytes/sec", OS_DISK_WRITE_BYTES),
           Map.entry(DISK_READ_BYTES, DISK_READ_BYTES),
           Map.entry(DISK_WRITE_BYTES, DISK_WRITE_BYTES),
           Map.entry("Disk Read Operations/Sec", READ_IOPS),
           Map.entry("Disk Write Operations/Sec", WRITE_IOPS),
-          Map.entry("cpu_percent", CPU_UTILIZATION),
+          Map.entry("cpu_percent", CPU_PERCENT),
           Map.entry("allocated_data_storage", ALLOCATED_STORAGE),
           Map.entry("connection_successful", DATABASE_CONNECTIONS),
           Map.entry("deadlock", DEADLOCKS),
