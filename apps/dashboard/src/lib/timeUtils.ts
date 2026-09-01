@@ -30,3 +30,7 @@ export const durationByPreset: Record<TimeWindowPreset, number> = {
     T_30_DAYS: 30 * timeMs.dayMs,
     custom: 0,
 };
+
+export function timestampIsoStringToTime(isoTimestamp: string) {
+    return new Date(isoTimestamp).getTime();
+}
