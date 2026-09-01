@@ -57,7 +57,21 @@ export default function StepThreeAws({
 
     const initialPeriod = ingestionPeriod ? parseInt(ingestionPeriod) : recIngestionPeriod;
 
-    const [ingestionPeriodState, setIngestionPeriodState] = useState<number>(initalPeriod);
+    const [ingestionPeriodState, setIngestionPeriodState] = useState<number>(initialPeriod);
+
+    const prevActiveCount = React.useRef(activeCount);
+
+    React.useEffect(() => {
+        if(activeCount !== prevActiveCount.current){
+            prevActiveCount.current = activeCount;
+
+            if(activeCount>0){
+                setIngestionPeriodState(recIngestionPeriod);
+            }else{
+                setIngestionPeriodState(60);
+            }
+        }
+    }, [activeCount, recIngestionPeriod]);
 
     const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -68,17 +82,9 @@ export default function StepThreeAws({
             const request: PersistAwsConnectionRequest = {
                 userId: "",
                 displayName,
-                ingestionPeriod: period,
+                ingestionPeriod: String(ingestionPeriodState),
                 credentials,
-                resources: resources.map((resource): ResourceSelectionDto => ({
-                    resourceId: resource.resourceId,
-                    serviceType: resource.serviceCategory,
-                    resourceType: resource.resourceType,
-                    resourceName: resource.name,
-                    region: resource.region,
-                    tags: resource.tags,
-                    active: selectedResources.includes(resource.resourceId),
-                })),
+                resources: resourceData,
                 billingConfig: {
                     bucketName: billingConfig.bucketName,
                     bucketRegion: billingConfig.bucketRegion,
@@ -89,7 +95,7 @@ export default function StepThreeAws({
 
             await createAwsConnection(request);
 
-            onComplete(period);
+            onComplete(String(ingestionPeriodState));
             router.push("/manageConnections");
             toast.success(`Succesfully created ${displayName} AWS connection`);
         } catch (err) {
