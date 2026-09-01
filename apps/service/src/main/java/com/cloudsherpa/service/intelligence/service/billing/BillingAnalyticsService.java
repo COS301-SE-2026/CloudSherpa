@@ -7,6 +7,7 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -136,12 +137,15 @@ public class BillingAnalyticsService {
   }
 
   private String highestCostAcceleration(Map<String, List<BigDecimal>> chargeSeries) {
-    Map<String, BigDecimal> chargeHighestCostAccelerations =
-        chargeSeries.entrySet().stream()
-            .collect(
-                Collectors.toMap(
-                    Map.Entry::getKey,
-                    entry -> highestSeriesCostAcceleration(dailyTotals(entry.getValue()))));
+    Map<String, BigDecimal> chargeHighestCostAccelerations = new HashMap<>();
+
+    for (Map.Entry<String, List<BigDecimal>> entry : chargeSeries.entrySet()) {
+      BigDecimal acceleration = highestSeriesCostAcceleration(dailyTotals(entry.getValue()));
+
+      if (acceleration != null) {
+        chargeHighestCostAccelerations.put(entry.getKey(), acceleration);
+      }
+    }
 
     return getMaxChargeValue(chargeHighestCostAccelerations);
   }
