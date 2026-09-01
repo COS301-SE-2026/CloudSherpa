@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, CardHeader, CardTitle } from "@/components/atoms/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/atoms/card";
 import { KpiWidgetConfig } from "../../types/widgets";
 import { useFetchKpiValue } from "./config/hooks/useFetchKpiValue";
 import { Spinner } from "@/components/atoms/spinner";
@@ -103,9 +103,9 @@ export function KPIWidget({ config, preview = false, isEditMode = false }: Reado
             onDelete={() => removeWidget(id, id)}
         >
             <Card
-                className={`flex flex-col gap-4 p-6 h-full w-full justify-between ${preview ? "bg-muted/40 h-50" : ""}`}
+                className={`flex flex-col gap-4 h-full w-full justify-between ${preview ? "bg-muted/40 h-50" : ""}`}
             >
-                <CardHeader className="flex flex-row items-center justify-between p-0">
+                <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle>{config.displayName}</CardTitle>
 
                     {!preview && !showSaveBeforeConfigure && (
@@ -116,8 +116,7 @@ export function KPIWidget({ config, preview = false, isEditMode = false }: Reado
                         />
                     )}
                 </CardHeader>
-
-                {renderKpiContent()}
+                <CardContent>{renderKpiContent()}</CardContent>
             </Card>
         </WidgetMenu>
     );
