@@ -7,12 +7,16 @@ import com.cloudsherpa.ingestion.models.UsageRecordModel;
 import com.cloudsherpa.ingestion.normalization.model.NormalizedMetric;
 import com.cloudsherpa.ingestion.service.CloudInfrastructureService;
 import com.cloudsherpa.ingestion.service.SherpaDbPersistenceService;
+import com.cloudsherpa.lib.entities.ChargeTypeEnum;
+import com.cloudsherpa.lib.entities.CurrencyEnum;
 import com.cloudsherpa.lib.entities.NormalizedCosts;
 import com.cloudsherpa.lib.entities.NormalizedMetrics;
+import com.cloudsherpa.lib.entities.ProviderEnum;
 import com.cloudsherpa.lib.repositories.NormalizedCostsRepository;
 import com.cloudsherpa.lib.repositories.NormalizedMetricsRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -54,5 +58,44 @@ class SherpaDbPersistenceServiceTest {
         assertThrows(IllegalArgumentException.class, () -> service.recordCost(costs, null));
 
     assertEquals("userId is required", exception.getMessage());
+  }
+
+  @Test
+  void recordCostShouldUpsertWithCorrectSchemaAndExplicitCurrency() {
+    UUID userId = UUID.randomUUID();
+    String expectedSchema = "tenant_" + userId.toString().replace("-", "_");
+
+    when(entityManager.createNativeQuery(anyString())).thenReturn(nativeQuery);
+
+    NormalizedCosts mockCosts = mock(NormalizedCosts.class);
+
+    when(mockCosts.getCurrency()).thenReturn(CurrencyEnum.ZAR);
+    when(mockCosts.getProvider()).thenReturn(ProviderEnum.AWS);
+    when(mockCosts.getChargeType()).thenReturn(ChargeTypeEnum.Usage);
+
+    service.recordCost(mockCosts, userId);
+
+    verify(entityManager).createNativeQuery("SET search_path TO " + expectedSchema + ", public");
+    verify(nativeQuery).executeUpdate();
+    verify(normalizedCostsRepository)
+        .upsert(mockCosts, "AWS", mockCosts.getChargeType().toString(), "ZAR");
+  }
+
+  @Test
+  void recordCostShouldDefaultToUsdWhenCurrencyIsNull() {
+    UUID userId = UUID.randomUUID();
+
+    when(entityManager.createNativeQuery(anyString())).thenReturn(nativeQuery);
+
+    NormalizedCosts mockCosts = mock(NormalizedCosts.class);
+
+    when(mockCosts.getCurrency()).thenReturn(null);
+    when(mockCosts.getProvider()).thenReturn(ProviderEnum.GCP);
+    when(mockCosts.getChargeType()).thenReturn(ChargeTypeEnum.Usage);
+
+    service.recordCost(mockCosts, userId);
+
+    verify(normalizedCostsRepository)
+        .upsert(mockCosts, "GCP", mockCosts.getChargeType().toString(), "USD");
   }
 }
