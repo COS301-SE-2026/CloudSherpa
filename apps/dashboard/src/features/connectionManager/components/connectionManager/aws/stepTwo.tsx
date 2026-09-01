@@ -91,7 +91,7 @@ export default function StepTwoAws({ credentials, onNext, onBack }: Readonly<Pro
         }
 
         const targetBucket = (savedBillingConfig?.bucketName ?? "").trim() || "bucket-name";
-        const cleanPrefix = (savedBillingConfig?.prefix ?? "").trim().replace(/^\/+|\/+$/g, "");
+        const cleanPrefix = (savedBillingConfig?.prefix ?? "").trim().replaceAll(/^\/+|\/+$/g, "");
         const exportPath = cleanPrefix ? `${cleanPrefix}/*` : "*";
 
         const billingStatements = savedBillingConfig
@@ -134,7 +134,7 @@ export default function StepTwoAws({ credentials, onNext, onBack }: Readonly<Pro
         setError("");
     };
 
-    const handleSubmit = async (forHandlingSubmit: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (forHandlingSubmit: React.SubmitEvent<HTMLFormElement>) => {
         forHandlingSubmit.preventDefault();
 
         if (optedInToBilling) {

@@ -36,6 +36,7 @@ public class BillingForecastingService extends ForecastingService {
   // Threshold to account for billing latency in reports, i.e. most recent report does not contain
   // all up to date charges
   private static final int OLD_CHARGE_CUTOFF_DAYS = 60;
+  private static final long DAY_IN_SECONDS = 86_400;
 
   public BillingForecastingService(
       NormalizedCostsRepository normalizedCostsRepository,
@@ -141,7 +142,8 @@ public class BillingForecastingService extends ForecastingService {
     }
 
     SanatizedSeries sanatizedSeries =
-        sampler.sample(chargeSeries, true, mostRecentBillingIngestionDate.minusSeconds(86_400));
+        sampler.sample(
+            chargeSeries, true, mostRecentBillingIngestionDate.minusSeconds(DAY_IN_SECONDS));
 
     Duration timeBetweenLatestIngestionAndRequest =
         Duration.between(mostRecentBillingIngestionDate, timeOfRequest);
@@ -170,7 +172,7 @@ public class BillingForecastingService extends ForecastingService {
       long periodicity) {
     return Math.abs(
         Math.toIntExact(
-            (86_400 * forecastSteps
+            (DAY_IN_SECONDS * forecastSteps
                     + (timeBetweenLatestIngestion.toSeconds()
                         + Math.max(timeBetweenLatestIngestionAndRequest.toSeconds(), 0)))
                 / periodicity));
