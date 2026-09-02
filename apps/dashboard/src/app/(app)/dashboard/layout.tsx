@@ -83,7 +83,6 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
         }
 
         setDashboardToDelete(null);
-        toast.success("Dashboard deleted");
     }, [dashboardToDelete, removeDashboard, activeDashboardId, dashboardsMap, router]);
 
     const handleDashboardChange = useCallback(
@@ -108,10 +107,8 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
             router.push(`?id=${newId}`);
             try {
                 await createDashboard({ id: newId, displayName: name });
-                toast.success(`Successfully created ${name} dashboard.`);
             } catch (error) {
                 console.error("Failed to persist new dashboard", error);
-                toast.error(`Failed to create ${name} dashboard.`);
             }
         },
         [addDashboard, router]
