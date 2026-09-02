@@ -3,7 +3,6 @@ package com.cloudsherpa.service.intelligence.service.billing;
 import com.cloudsherpa.service.intelligence.dto.BillingForecastIndividualChargesRequestDto;
 import com.cloudsherpa.service.intelligence.dto.BillingForecastRequest;
 import com.cloudsherpa.service.intelligence.dto.BillingForecastResponseDto;
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 import org.springframework.cache.annotation.Cacheable;
@@ -56,6 +55,6 @@ public class BillingIntelligenceService {
         analyticsResult.dailyBurnRate(),
         analyticsResult.highestCostDriver(),
         analyticsResult.highestCostAcceleration(),
-        BigDecimal.valueOf(5));
+        analyticsResult.accelerationRate());
   }
 }

@@ -9,4 +9,5 @@ public record BillingAnalyticsResult(
     BigDecimal pastVariance,
     BigDecimal dailyBurnRate,
     String highestCostDriver,
-    String highestCostAcceleration) {}
+    String highestCostAcceleration,
+    BigDecimal accelerationRate) {}
