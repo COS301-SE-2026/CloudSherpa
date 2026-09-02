@@ -1,6 +1,8 @@
 package com.cloudsherpa.ingestion.billing.provider.gcp.bigquery;
 
 import com.cloudsherpa.ingestion.billing.BillingIngestionServiceInterface;
+import com.cloudsherpa.ingestion.billing.provider.gcp.bigquery.exceptions.DatasetNotFoundException;
+import com.cloudsherpa.ingestion.billing.provider.gcp.bigquery.exceptions.TableNotFoundException;
 import com.cloudsherpa.ingestion.billing.provider.gcp.bigquery.pipeline.GcpBillingContext;
 import com.cloudsherpa.ingestion.billing.provider.gcp.bigquery.pipeline.GcpBillingIngestionStep;
 import java.util.List;
@@ -27,8 +29,8 @@ public class GcpBillingIngestionService implements BillingIngestionServiceInterf
       for (GcpBillingIngestionStep gcpBillingIngestionStep : gcpBillingIngestionSteps) {
         gcpBillingIngestionStep.execute(context);
       }
-    } catch (IllegalStateException e) {
-      logger.error("GCP billing ingestion failed for user {} and config {}", userId, configId, e);
+    } catch (DatasetNotFoundException | TableNotFoundException e) {
+      logger.error("GCP billing config {} is invalid for user {}", configId, userId, e);
     }
   }
 }
