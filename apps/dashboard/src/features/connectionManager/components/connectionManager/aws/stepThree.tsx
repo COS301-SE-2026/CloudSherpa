@@ -1,18 +1,17 @@
 "use client";
 
-import React, { useState } from "react";
-import { Checkbox } from "@/components/atoms/checkbox";
-import { Badge } from "@/components/atoms/badge";
+import React, { useState, useMemo, useCallback } from "react";
 import { PersistAwsConnectionRequest, createAwsConnection } from "@/lib/fetch/aws-connection-api";
-import { useRouter } from "next/navigation";
-import { Label } from "@/components/atoms/label";
-import { Slider } from "@/components/atoms/slider";
-import { StepThree } from "@/features/connectionManager/components/connectionManager/wizardSetup/stepThree";
+import {
+    StepThree,
+    ResourceTable,
+    useIngestionPeriod,
+    IngestionSlider,
+} from "@/features/connectionManager/components/connectionManager/wizardSetup/stepThree";
 import { AwsCredentialsDto } from "@/lib/fetch/dto/cloud-credentials";
 import { ResourceDetail, ResourceSelectionDto } from "@/lib/fetch/dto/cloud-resource";
 import { toast } from "sonner";
-import { Alert, AlertDescription, AlertTitle } from "@/components/atoms/alert";
-import { TriangleAlertIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface PropsForStepThree {
     displayName: string;
@@ -29,114 +28,6 @@ interface PropsForStepThree {
     onBack: () => void;
 }
 
-interface ResourceTagsProps {
-    tags: Record<string, string>;
-}
-
-interface ResourceRowProps {
-    resource: ResourceDetail;
-    selected: boolean;
-    onToggle: (resourceId: string, checked: boolean) => void;
-}
-
-interface ResourceCategoryProps {
-    serviceCategory: string;
-    resources: ResourceDetail[];
-    selectedResources: string[];
-    onToggle: (resourceId: string, checked: boolean) => void;
-}
-
-function groupResourcesByCategory(resources: ResourceDetail[]): Record<string, ResourceDetail[]> {
-    return resources.reduce(
-        (groups, resource) => {
-            const category = resource.serviceCategory;
-
-            if (!groups[category]) {
-                groups[category] = [];
-            }
-
-            groups[category].push(resource);
-
-            return groups;
-        },
-        {} as Record<string, ResourceDetail[]>
-    );
-}
-
-function ResourceTags({ tags }: Readonly<ResourceTagsProps>) {
-    return (
-        <div className="flex flex-wrap justify-end gap-2 max-w-md">
-            {Object.entries(tags).map(([key, value]) => (
-                <Badge key={`${key}-${value}`} variant="secondary">
-                    {key}: {value}
-                </Badge>
-            ))}
-        </div>
-    );
-}
-
-function ResourceRow({ resource, selected, onToggle }: Readonly<ResourceRowProps>) {
-    return (
-        <div
-            className="
-        flex
-        items-start
-        justify-between
-        gap-4
-        p-4
-        bg-background
-        rounded-lg
-        border
-        border-border
-        hover:border-primary/40
-        transition-all
-        cursor-pointer
-      "
-        >
-            <div className="flex items-start gap-3">
-                <Checkbox
-                    checked={selected}
-                    onCheckedChange={(checked) => onToggle(resource.resourceId, Boolean(checked))}
-                />
-
-                <div>
-                    <div className="font-medium text-foreground">
-                        {resource.name}
-
-                        <span className="ml-2 text-muted-foreground">({resource.resourceId})</span>
-                    </div>
-                </div>
-            </div>
-
-            <ResourceTags tags={resource.tags} />
-        </div>
-    );
-}
-
-function ResourceCategory({
-    serviceCategory,
-    resources,
-    selectedResources,
-    onToggle,
-}: Readonly<ResourceCategoryProps>) {
-    return (
-        <div>
-            <h3 className="text-lg font-semibold text-foreground mb-4">{serviceCategory}</h3>
-
-            <div className="space-y-3">
-                {resources.map((resource) => (
-                    <ResourceRow
-                        key={resource.resourceId}
-                        resource={resource}
-                        selected={selectedResources.includes(resource.resourceId)}
-                        onToggle={onToggle}
-                    />
-                ))}
-            </div>
-        </div>
-    );
-}
-
 export default function StepThreeAws({
     displayName,
     ingestionPeriod,
@@ -146,23 +37,47 @@ export default function StepThreeAws({
     onComplete,
     onBack,
 }: Readonly<PropsForStepThree>) {
-    const [selectedResources, setSelectedResources] = useState<string[]>(
-        resources.map((resource) => resource.resourceId)
-    );
     const router = useRouter();
 
-    const recommendedPeriod = selectedResources.length * 5 * 20;
     const [saving, setSaving] = useState(false);
-    const [period, setPeriod] = useState<string>(ingestionPeriod || String(recommendedPeriod));
 
-    const [prevSelectedCount, setPrevSelectedCount] = useState(selectedResources.length);
+    const [filterValue, setFilterValue] = useState("");
 
-    if (selectedResources.length !== prevSelectedCount) {
-        setPrevSelectedCount(selectedResources.length);
-        setPeriod(selectedResources.length > 0 ? String(recommendedPeriod) : "60");
-    }
+    const initialResourceSelections: ResourceSelectionDto[] = useMemo(() => {
+        return resources.map((resource): ResourceSelectionDto => ({
+            resourceId: resource.resourceId,
+            serviceType: resource.serviceCategory,
+            resourceType: resource.resourceType,
+            resourceName: resource.name,
+            region: resource.region,
+            tags: resource.tags,
+            active: true,
+        }));
+    }, [resources]);
 
-    const groupedResources = groupResourcesByCategory(resources);
+    const [resourceData, setResourceData] =
+        useState<ResourceSelectionDto[]>(initialResourceSelections);
+
+    const { activeCount, recIngestionPeriod } = useIngestionPeriod(resourceData);
+
+    const [ingestionPeriodState, setIngestionPeriodState] = useState(() => {
+        const initialPeriod = ingestionPeriod
+            ? Number.parseInt(ingestionPeriod)
+            : recIngestionPeriod;
+
+        return initialPeriod > 0 ? initialPeriod : 60;
+    });
+
+    const handlingResourceDataChange = useCallback(
+        (
+            newData:
+                | ResourceSelectionDto[]
+                | ((previous: ResourceSelectionDto[]) => ResourceSelectionDto[])
+        ) => {
+            setResourceData(newData);
+        },
+        []
+    );
 
     const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -173,17 +88,9 @@ export default function StepThreeAws({
             const request: PersistAwsConnectionRequest = {
                 userId: "",
                 displayName,
-                ingestionPeriod: period,
+                ingestionPeriod: String(ingestionPeriodState),
                 credentials,
-                resources: resources.map((resource): ResourceSelectionDto => ({
-                    resourceId: resource.resourceId,
-                    serviceType: resource.serviceCategory,
-                    resourceType: resource.resourceType,
-                    resourceName: resource.name,
-                    region: resource.region,
-                    tags: resource.tags,
-                    active: selectedResources.includes(resource.resourceId),
-                })),
+                resources: resourceData,
                 billingConfig: {
                     bucketName: billingConfig.bucketName,
                     bucketRegion: billingConfig.bucketRegion,
@@ -194,7 +101,7 @@ export default function StepThreeAws({
 
             await createAwsConnection(request);
 
-            onComplete(period);
+            onComplete(String(ingestionPeriodState));
             router.push("/manageConnections");
             toast.success(`Succesfully created ${displayName} AWS connection`);
         } catch (err) {
@@ -202,16 +109,6 @@ export default function StepThreeAws({
         } finally {
             setSaving(false);
         }
-    };
-
-    const handleResourceToggle = (resourceId: string, checked: boolean) => {
-        setSelectedResources((previous) => {
-            if (checked) {
-                return previous.includes(resourceId) ? previous : [...previous, resourceId];
-            }
-
-            return previous.filter((id) => id !== resourceId);
-        });
     };
 
     const formatSeconds = (totalSeconds: string | number) => {
@@ -245,58 +142,22 @@ export default function StepThreeAws({
             forSaving={saving}
         >
             <div className="min-h-50">
-                <div className="space-y-8">
-                    {Object.entries(groupedResources).map(
-                        ([serviceCategory, categoryResources]) => (
-                            <ResourceCategory
-                                key={serviceCategory}
-                                serviceCategory={serviceCategory}
-                                resources={categoryResources}
-                                selectedResources={selectedResources}
-                                onToggle={handleResourceToggle}
-                            />
-                        )
-                    )}
-                </div>
+                <ResourceTable
+                    data={resourceData}
+                    onDataChange={handlingResourceDataChange}
+                    onFilterChange={setFilterValue}
+                    filterValue={filterValue}
+                    pageSize={8}
+                />
             </div>
-            <div className="space-y-4">
-                <h3 className="text-foreground text-sm font-semibold uppercase tracking-wider opacity-80">
-                    Ingestion Interval
-                </h3>
 
-                <Alert className="w-full border-warning bg-warning/40">
-                    <TriangleAlertIcon className="text-warning-foreground" />
-                    <AlertTitle className="text-warning-foreground">
-                        Recommended Interval
-                    </AlertTitle>
-                    <AlertDescription className="space-y-0 text-warning-foreground">
-                        The recommended ingestion interval is {formatSeconds(recommendedPeriod)}. A
-                        lower interval may incur costs due to API free-tier limits. This interval
-                        controls how frequently dashboard time-series data is updated.
-                    </AlertDescription>
-                </Alert>
-
-                <div className="space-y-2">
-                    <div className="flex flex-col items-end justify-center gap-2">
-                        <span className="text-sm font-medium">{formatSeconds(period)}</span>
-                        <Slider
-                            value={[Number(period)]}
-                            onValueChange={(vals) => setPeriod(String(vals[0]))}
-                            min={60}
-                            max={720}
-                            className={
-                                Number(period) < recommendedPeriod
-                                    ? "[&>span>span]:bg-warning [&_[role=slider]]:border-warning"
-                                    : ""
-                            }
-                        />
-
-                        <p className="text-xs text-muted-foreground/70">
-                            Recommended: {formatSeconds(recommendedPeriod)}
-                        </p>
-                    </div>
-                </div>
-            </div>
+            <IngestionSlider
+                ingestionPeriod={ingestionPeriodState}
+                setIngestionPeriod={setIngestionPeriodState}
+                activeCount={activeCount}
+                recIngestionPeriod={recIngestionPeriod}
+                formatSeconds={formatSeconds}
+            />
         </StepThree>
     );
 }

@@ -43,7 +43,11 @@ export default function CostBreakdownList({
                             <Info className="h-4 w-4" strokeWidth={1.75} />{" "}
                         </TooltipTrigger>
 
-                        <TooltipContent> ... </TooltipContent>
+                        <TooltipContent>
+                            {" "}
+                            Cost breakdown of each predicted charge over the selected future time
+                            period{" "}
+                        </TooltipContent>
                     </Tooltip>
                 </CardTitle>
 

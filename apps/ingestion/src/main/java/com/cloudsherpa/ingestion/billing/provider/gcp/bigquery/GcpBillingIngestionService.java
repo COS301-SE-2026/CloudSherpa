@@ -1,15 +1,20 @@
 package com.cloudsherpa.ingestion.billing.provider.gcp.bigquery;
 
 import com.cloudsherpa.ingestion.billing.BillingIngestionServiceInterface;
+import com.cloudsherpa.ingestion.billing.provider.gcp.bigquery.exceptions.DatasetNotFoundException;
+import com.cloudsherpa.ingestion.billing.provider.gcp.bigquery.exceptions.TableNotFoundException;
 import com.cloudsherpa.ingestion.billing.provider.gcp.bigquery.pipeline.GcpBillingContext;
 import com.cloudsherpa.ingestion.billing.provider.gcp.bigquery.pipeline.GcpBillingIngestionStep;
 import java.util.List;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class GcpBillingIngestionService implements BillingIngestionServiceInterface {
 
+  private final Logger logger = LoggerFactory.getLogger(GcpBillingIngestionService.class);
   private final List<GcpBillingIngestionStep> gcpBillingIngestionSteps;
 
   public GcpBillingIngestionService(List<GcpBillingIngestionStep> gcpBillingIngestionSteps) {
@@ -20,8 +25,12 @@ public class GcpBillingIngestionService implements BillingIngestionServiceInterf
     GcpBillingContext context =
         new GcpBillingContext(UUID.fromString(userId), UUID.fromString(configId));
 
-    for (GcpBillingIngestionStep gcpBillingIngestionStep : gcpBillingIngestionSteps) {
-      gcpBillingIngestionStep.execute(context);
+    try {
+      for (GcpBillingIngestionStep gcpBillingIngestionStep : gcpBillingIngestionSteps) {
+        gcpBillingIngestionStep.execute(context);
+      }
+    } catch (DatasetNotFoundException | TableNotFoundException e) {
+      logger.error("GCP billing config {} is invalid for user {}", configId, userId, e);
     }
   }
 }

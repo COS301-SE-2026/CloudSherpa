@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,8 +65,6 @@ public class GcpBigQueryNormalizer
 
   @Override
   public String getCostId(GcpBigQueryBillingRecord gcpBillingRecord) {
-    FieldValueList valueList = gcpBillingRecord.fieldValueList();
-
     StringBuilder gcpCostId = new StringBuilder();
 
     gcpCostId
@@ -73,11 +72,11 @@ public class GcpBigQueryNormalizer
         .append("%%%")
         .append(billingId)
         .append("%%%")
-        .append(valueList.get("project_id").getStringValue())
+        .append(getFieldValueStringValueSafe(gcpBillingRecord, "project_id"))
         .append("%%%")
-        .append(valueList.get("service_id").getStringValue())
+        .append(getFieldValueStringValueSafe(gcpBillingRecord, "service_id"))
         .append("%%%")
-        .append(valueList.get("sku_id").getStringValue())
+        .append(getFieldValueStringValueSafe(gcpBillingRecord, "sku_id"))
         .append("%%%")
         .append(getResourceId(gcpBillingRecord))
         .append("%%%")
@@ -93,14 +92,13 @@ public class GcpBigQueryNormalizer
 
   @Override
   public OffsetDateTime getUsageStartTime(GcpBigQueryBillingRecord gcpBillingRecord) {
-    FieldValueList valueList = gcpBillingRecord.fieldValueList();
-    return getTimestamp(valueList.get("usage_start_time").getTimestampValue());
+    return getTimestamp(
+        getFieldValueSafe(gcpBillingRecord, "usage_start_time").getTimestampValue());
   }
 
   @Override
   public OffsetDateTime getUsageEndTime(GcpBigQueryBillingRecord gcpBillingRecord) {
-    FieldValueList valueList = gcpBillingRecord.fieldValueList();
-    return getTimestamp(valueList.get("usage_end_time").getTimestampValue());
+    return getTimestamp(getFieldValueSafe(gcpBillingRecord, "usage_end_time").getTimestampValue());
   }
 
   @Override
@@ -111,13 +109,13 @@ public class GcpBigQueryNormalizer
 
   @Override
   public String getResourceId(GcpBigQueryBillingRecord gcpBillingRecord) {
-    FieldValueList valueList = gcpBillingRecord.fieldValueList();
+    FieldValue resourceName = getFieldValueSafe(gcpBillingRecord, "resource_name");
 
-    if (valueList.get("resource_name").isNull()) {
+    if (resourceName.isNull()) {
       return "NoResourceId";
     }
 
-    return valueList.get("resource_name").getStringValue();
+    return getFieldValueStringValueSafe(gcpBillingRecord, "resource_name");
   }
 
   @Override
@@ -151,24 +149,22 @@ public class GcpBigQueryNormalizer
 
   @Override
   public String getServiceName(GcpBigQueryBillingRecord gcpBillingRecord) {
-    FieldValueList valueList = gcpBillingRecord.fieldValueList();
-    return valueList.get("service_description").getStringValue()
+    return getFieldValueStringValueSafe(gcpBillingRecord, "service_description")
         + " "
-        + valueList.get("sku_description").getStringValue();
+        + getFieldValueStringValueSafe(gcpBillingRecord, "sku_description");
   }
 
   @Override
   public BigDecimal getCostAmount(GcpBigQueryBillingRecord gcpBillingRecord) {
-    FieldValueList valueList = gcpBillingRecord.fieldValueList();
     CreditProcessingState creditProcessingState = gcpBillingRecord.creditProcessingState();
 
     if (!shouldEmitCreditRecord(creditProcessingState)) {
-      return valueList.get("cost").getNumericValue();
+      return getFieldValueNumericValueSafe(gcpBillingRecord, "cost");
     }
 
     BigDecimal costAmount = BigDecimal.ZERO;
 
-    for (FieldValue creditValue : valueList.get("credits").getRepeatedValue()) {
+    for (FieldValue creditValue : getFieldValueRepeatedValueSafe(gcpBillingRecord, "credits")) {
       // Refer to query (GcpBillingQueryStep), credit amount will always be the first element of the
       // struct hence we can index by 0
       BigDecimal creditAmount = creditValue.getRecordValue().get(0).getNumericValue();
@@ -198,5 +194,49 @@ public class GcpBigQueryNormalizer
 
   private boolean shouldEmitCreditRecord(CreditProcessingState state) {
     return state.getHasCredits() && !state.getProcessed();
+  }
+
+  private FieldValue getFieldValueSafe(GcpBigQueryBillingRecord gcpBillingRecord, String field) {
+    FieldValueList valueList = gcpBillingRecord.fieldValueList();
+
+    try {
+      return valueList.get(field);
+    } catch (IllegalArgumentException e) {
+      throw new NormalizationException(field, "Export record does not contain field");
+    }
+  }
+
+  private String getFieldValueStringValueSafe(GcpBigQueryBillingRecord gcpRecord, String field) {
+    FieldValue fieldValue = getFieldValueSafe(gcpRecord, field);
+
+    try {
+      return fieldValue.getStringValue();
+    } catch (NullPointerException e) {
+      throw new NormalizationException(field, "Field value is null");
+    }
+  }
+
+  private BigDecimal getFieldValueNumericValueSafe(
+      GcpBigQueryBillingRecord gcpBillingRecord, String field) {
+    FieldValue fieldValue = getFieldValueSafe(gcpBillingRecord, field);
+
+    try {
+      return fieldValue.getNumericValue();
+    } catch (NumberFormatException e) {
+      throw new NormalizationException(field, "Value could not be converted to BigDecimal");
+    } catch (NullPointerException e) {
+      throw new NormalizationException(field, "Field value is null");
+    }
+  }
+
+  List<FieldValue> getFieldValueRepeatedValueSafe(
+      GcpBigQueryBillingRecord gcpBillingRecord, String field) {
+    FieldValue fieldValue = getFieldValueSafe(gcpBillingRecord, field);
+
+    try {
+      return fieldValue.getRepeatedValue();
+    } catch (NullPointerException e) {
+      throw new NormalizationException(field, "Field value is null");
+    }
   }
 }
