@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import Toolbar from "@/features/dashboard/components/toolbar/toolbar";
 import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
 import { useMetricStore } from "@/features/dashboard/stores/metric-store";
@@ -14,6 +14,16 @@ import {
 } from "@/features/dashboard/components/toolbar/toolbarProvider";
 import { DateRange } from "react-day-picker";
 import { toast } from "sonner";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/atoms/alert-dialog";
 
 // The layout ID and widget IDs are shared, i.e. layout id ===  widget_id, hence only one UUID is generated
 function generateSharedId() {
@@ -25,6 +35,8 @@ function generateSharedId() {
 function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode }>) {
     const router = useRouter();
     const { isEditMode, setIsEditMode } = useToolbar();
+
+    const [dashboardToDelete, setDashboardToDelete] = useState<string | null>(null);
 
     const activeDashboardId = useDashboardStore((state) => state.activeDashboardId);
     const hasActiveDashboard = Boolean(activeDashboardId);
@@ -49,6 +61,30 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
         id: d.id,
         displayName: d.displayName,
     }));
+
+    const handleDeleteRequest = useCallback((id: string) => {
+        setDashboardToDelete(id);
+    }, []);
+
+    const confirmDeleteDashboard = useCallback(async () => {
+        if (!dashboardToDelete) return;
+
+        const id = dashboardToDelete;
+        removeDashboard(id);
+
+        if (activeDashboardId === id) {
+            const remainingIds = Object.keys(dashboardsMap).filter((dId) => dId !== id);
+
+            if (remainingIds.length > 0) {
+                router.push(`?id=${remainingIds[0]}`);
+            } else {
+                router.push(`/dashboard`);
+            }
+        }
+
+        setDashboardToDelete(null);
+        toast.success("Dashboard deleted");
+    }, [dashboardToDelete, removeDashboard, activeDashboardId, dashboardsMap, router]);
 
     const handleDashboardChange = useCallback(
         (id: string) => {
@@ -79,23 +115,6 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
             }
         },
         [addDashboard, router]
-    );
-
-    const handleDeleteDashboard = useCallback(
-        async (id: string) => {
-            removeDashboard(id);
-
-            if (activeDashboardId === id) {
-                const remainingIds = Object.keys(dashboardsMap).filter((dId) => dId !== id);
-
-                if (remainingIds.length > 0) {
-                    router.push(`?id=${remainingIds[0]}`);
-                } else {
-                    router.push(`/dashboard`);
-                }
-            }
-        },
-        [removeDashboard, activeDashboardId, dashboardsMap, router]
     );
 
     const handleDateRangeChange = useCallback(
@@ -233,6 +252,31 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
 
     return (
         <div className="flex flex-col flex-1 h-full w-full">
+            <AlertDialog
+                open={!!dashboardToDelete}
+                onOpenChange={(open) => !open && setDashboardToDelete(null)}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This will permanently delete this dashboard and all of its widgets. This
+                            action cannot be undone.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel onClick={() => setDashboardToDelete(null)}>
+                            Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={confirmDeleteDashboard}
+                            className="bg-red-600 hover:bg-red-700 text-white"
+                        >
+                            Delete Dashboard
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
             <Toolbar
                 dashboards={dashboardStubs}
                 isEditMode={isEditMode}
@@ -247,7 +291,7 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
                 handleStartEditing={handleStartEditing}
                 handleSaveEdit={handleSaveEdit}
                 handleCancelEdit={handleCancelEdit}
-                onDeleteDashboard={handleDeleteDashboard}
+                onDeleteDashboard={handleDeleteRequest}
             />
             <div className="flex-1 overflow-y-auto overflow-x-hidden flex flex-col relative">
                 {children}
