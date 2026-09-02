@@ -1,10 +1,10 @@
 package com.cloudsherpa.ingestion.nfr;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 
 import com.cloudsherpa.ingestion.billing.provider.gcp.bigquery.GcpBillingIngestionService;
-import com.cloudsherpa.ingestion.billing.provider.gcp.bigquery.normalization.GcpBigQueryNormalizationService;
 import com.cloudsherpa.ingestion.billing.provider.gcp.bigquery.pipeline.GcpBillingContext;
 import com.cloudsherpa.ingestion.billing.provider.gcp.bigquery.pipeline.GcpBillingQueryStep;
 import com.cloudsherpa.ingestion.billing.provider.gcp.bigquery.pipeline.GcpBilllingDiscoveryStep;
@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
@@ -36,7 +38,8 @@ import org.testcontainers.utility.MountableFile;
     })
 class BillingRecordIngestionTest {
 
-  @Autowired GcpBigQueryNormalizationService normalizationServie;
+  private static final Logger logger = LoggerFactory.getLogger(BillingRecordIngestionTest.class);
+
   @Autowired GcpBillingIngestionService ingestionService;
   @MockitoBean GcpBilllingDiscoveryStep discoveryStep;
   @MockitoBean GcpBillingQueryStep queryStep;
@@ -59,14 +62,28 @@ class BillingRecordIngestionTest {
   }
 
   @Test
-  void smoke() {
+  void gcpRecordsPerSecondShouldBeMoreThanOneThousand() {
     // Arrange
-    List<FieldValueList> gcpBillingRecords = generateFieldValueList(10);
+    List<FieldValueList> gcpBillingRecords = generateFieldValueList(10000);
 
     mockSuccessfulQuery(gcpBillingRecords);
 
+    long start = System.nanoTime();
+
     ingestionService.execute(
         "a1b6ebb6-2b13-41c2-b4ce-bc6c563ea246", "bce4f71d-7b9d-4ab3-a99c-5d3f7511c388");
+
+    long duration = System.nanoTime() - start;
+    double elapsedSeconds = duration / Math.pow(10, 9);
+
+    double recordsPerSecond = 10000 / elapsedSeconds;
+    logger.info(
+        "\nDuration: {}s\nRecords processed: {}\nRecords per second: {}",
+        elapsedSeconds,
+        10000,
+        recordsPerSecond);
+
+    assertTrue(recordsPerSecond > 1000);
   }
 
   private List<FieldValueList> generateFieldValueList(Integer numRecords) {
@@ -79,13 +96,13 @@ class BillingRecordIngestionTest {
       String timestampStart = Long.toString(start + i) + ".000000";
       String timestampEnd = Long.toString(start + i + 1) + ".000000";
 
-      fieldValueList.addLast(
-          GcpFieldValueListTestUtil.rowWithNullResourceName(timestampStart, timestampEnd));
+      fieldValueList.addLast(GcpFieldValueListTestUtil.validUsageRow(timestampStart, timestampEnd));
     }
 
     return fieldValueList;
   }
 
+  // Mock only third party dependencied (GCP billing export query mocked)
   private void mockSuccessfulDiscovery() {
     doAnswer(
             invocation -> {

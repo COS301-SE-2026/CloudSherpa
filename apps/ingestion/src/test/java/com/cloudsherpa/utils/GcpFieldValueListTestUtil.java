@@ -77,6 +77,8 @@ public final class GcpFieldValueListTestUtil {
         billingExportFields());
   }
 
+  // TableResult reapplies its schema to each row, so the schema field count must match the row
+  // size.
   public static TableResult tableResult(List<FieldValueList> rows) {
     return TableResult.newBuilder()
         .setSchema(Schema.of(billingExportFields()))
