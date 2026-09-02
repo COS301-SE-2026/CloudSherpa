@@ -26,10 +26,15 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
 public class GcpCloudMonitoringMetricProvider implements CloudMonitoringMetricProvider {
+  private static final Logger logger =
+      LoggerFactory.getLogger(GcpCloudMonitoringMetricProvider.class);
+
   private MetricServiceClient buildClient(CloudCredentials credentials) throws IOException {
 
     GoogleCredentials googleCredentials = GcpClientFactory.credentials(credentials);
@@ -187,21 +192,40 @@ public class GcpCloudMonitoringMetricProvider implements CloudMonitoringMetricPr
               .setAggregation(aggregation)
               .setView(ListTimeSeriesRequest.TimeSeriesView.FULL)
               .build();
+      logger.info(
+          "GCP querying metric={} resource={} from={} to={} filter={}",
+          metricFilter.metrics().getName(),
+          metricFilter.resourceId(),
+          request.getFrom(),
+          request.getTo(),
+          metricFilter.filter());
+      Iterable<TimeSeries> timeSeries = client.listTimeSeries(metricRequest).iterateAll();
+      List<TimeSeries> seriesList = new ArrayList<>();
 
-      client
-          .listTimeSeries(metricRequest)
-          .iterateAll()
-          .forEach(
-              series ->
-                  results.addAll(
-                      processSeries(
-                          series,
-                          metricFilter.metrics(),
-                          metricFilter.resourceId(),
-                          metricFilter.serviceType(),
-                          metricFilter.resourceType(),
-                          metricFilter.region())));
+      for (TimeSeries oneSeries : timeSeries) {
+        seriesList.add(oneSeries);
+      }
+
+      int pointCount = seriesList.stream().mapToInt(TimeSeries::getPointsCount).sum();
+
+      logger.info(
+          "GCP query completed metric={} series={} points={}",
+          metricFilter.metrics().getName(),
+          seriesList.size(),
+          pointCount);
+
+      timeSeries.forEach(
+          series ->
+              results.addAll(
+                  processSeries(
+                      series,
+                      metricFilter.metrics(),
+                      metricFilter.resourceId(),
+                      metricFilter.serviceType(),
+                      metricFilter.resourceType(),
+                      metricFilter.region())));
     }
+
     client.close();
     for (UsageRecordModel result : results) {
       result.setAccountId(accountScope.getAccountId());
