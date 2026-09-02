@@ -186,7 +186,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     <SidebarGroupContent>
                         <SidebarMenu>
                             <SidebarMenuItem>
-                                <SidebarMenuButton asChild tooltip="AWS">
+                                <SidebarMenuButton asChild tooltip="Recommendations">
                                     <Link href="/recommendations">
                                         <Network />
                                         <span>Recommendations</span>
