@@ -94,11 +94,31 @@ const TUTS = [
     //add connection - https://youtu.be/zIrfipSx_1s
     [
         "connections3",
-        "Multiple connections",
+        "Adding an AWS connection",
         "Add multiple connection instances and manage them",
         "Connections",
         "0:53",
         "zIrfipSx_1s",
+    ],
+
+    //gcp connection - https://youtu.be/CywPZOkA7ao
+    [
+        "connections4",
+        "Adding a GCP connection",
+        "Add a GCP connection, configure and manage its resources",
+        "Connections",
+        "1:11",
+        "CywPZOkA7ao",
+    ],
+
+    //azure connection - https://youtu.be/_JhdKb_6rwU
+    [
+        "connections5",
+        "Adding an Azure connection",
+        "Add an Azure connection, configure and manage its resources",
+        "Connections",
+        "0:57",
+        "_JhdKb_6rwU",
     ],
 
     //config kpi - https://youtu.be/NQRHgKiymqE
