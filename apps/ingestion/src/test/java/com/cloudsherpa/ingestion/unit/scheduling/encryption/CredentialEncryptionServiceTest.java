@@ -83,4 +83,34 @@ class CredentialEncryptionServiceTest {
   void decrypt_shouldRejectInvalidBase64() {
     assertThrows(IllegalStateException.class, () -> service.decrypt("not-valid-base64!"));
   }
+
+  @Test
+  void init_shouldRejectKeyThatIsNot256Bits() throws Exception {
+    CredentialEncryptionService credentialEncryptionService = new CredentialEncryptionService();
+
+    Field keyField = CredentialEncryptionService.class.getDeclaredField("base64Key");
+
+    keyField.setAccessible(true);
+
+    keyField.set(credentialEncryptionService, Base64.getEncoder().encodeToString(new byte[16]));
+
+    assertThrows(IllegalStateException.class, credentialEncryptionService::init);
+  }
+
+  @Test
+  void init_shouldAccept256BitKey() throws Exception {
+    CredentialEncryptionService credentialEncryptionService = new CredentialEncryptionService();
+
+    byte[] key = new byte[32];
+
+    new SecureRandom().nextBytes(key);
+
+    Field keyField = CredentialEncryptionService.class.getDeclaredField("base64Key");
+
+    keyField.setAccessible(true);
+
+    keyField.set(credentialEncryptionService, Base64.getEncoder().encodeToString(key));
+
+    assertDoesNotThrow(credentialEncryptionService::init);
+  }
 }
