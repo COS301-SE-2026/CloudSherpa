@@ -11,7 +11,7 @@ export function KpiConfigSummary({ numResources, aggregationWindowDays }: KpiCon
             <CardHeader className="flex flex-row justify-start">
                 <CardTitle className="text-lg font-bold">Configuration Summary</CardTitle>
             </CardHeader>
-            <CardContent className="grid grid-cols-2">
+            <CardContent className="grid grid-cols-3">
                 <div className="flex flex-col gap-6">
                     <p className="text-muted-foreground">Resources</p>
                     <p className="text-muted-foreground">Time Period</p>
