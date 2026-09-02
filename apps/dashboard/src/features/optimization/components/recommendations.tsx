@@ -3,7 +3,7 @@ import { useEffect, useState, useMemo } from "react";
 import RecommendationGroupCard from "@/features/optimization/components/recGroupCard";
 import { useRecStore } from "@/features/optimization/stores/useRecStore";
 import { Input } from "@/components/atoms/input";
-import { Search, ArrowUpDown } from "lucide-react";
+import { Search, ArrowUpDown, X } from "lucide-react";
 import { Tabs, TabsTrigger, TabsList } from "@/components/atoms/tabs";
 import RecommendationCardHero from "@/features/optimization/components/recCardHero";
 import { Button } from "@/components/atoms/button";
@@ -64,6 +64,10 @@ export default function Recommendations() {
             }
         });
     }, [searchQuery, filter, recommendationGroups, sortOrder]);
+
+    const clearSearch = () => {
+        setSearchQuery("");
+    };
 
     useEffect(() => {
         fetchRecGroups();
@@ -134,7 +138,7 @@ export default function Recommendations() {
                         </TabsList>
                     </Tabs>
                     <div className="flex flex-row justify-end items-center gap-2">
-                        <div className="relative">
+                        <div className="relative w-full">
                             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                             <Input
                                 type="text"
@@ -143,6 +147,18 @@ export default function Recommendations() {
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
+                            {searchQuery && (
+                                <div className="absolute right-1 top-1/2 -translate-y-1/2 z-10">
+                                    <Button
+                                        aria-label="clear search"
+                                        variant="ghost"
+                                        onClick={() => clearSearch()}
+                                        className="h-7 w-7 p-1 text-muted-foreground hover:text-foreground transition-colors"
+                                    >
+                                        <X size={14} className="text-muted-foreground" />
+                                    </Button>
+                                </div>
+                            )}
                         </div>
                         {/* sort highest to lowest */}
                         <Button

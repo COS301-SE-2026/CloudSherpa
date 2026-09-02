@@ -198,7 +198,7 @@ export const useBillingIntelligenceStore = create<BillingIntelligenceStore>((set
                 responseData.billingForecastSeries[responseData.highestCostAcceleration]
                     .chargeLabel,
             currency: "USD",
-            accelerationrate: 0,
+            accelerationRate: responseData.accelerationRate,
         };
 
         const costBreakdownItems = Object.entries(responseData.billingForecastSeries);

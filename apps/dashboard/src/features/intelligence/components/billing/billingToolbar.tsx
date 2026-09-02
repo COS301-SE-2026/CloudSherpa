@@ -68,7 +68,7 @@ export default function BillingToolbar() {
                                 setAccount(accountSelected.id, accountSelected.displayName);
                             }
                         }}
-                        placeholder={isFetching && provider ? "Loading accounts" : "Select Account"}
+                        placeholder={isFetching && provider ? "Loading accounts" : "Select account"}
                         disabled={!provider || isFetching}
                         widthVariant="medium"
                     />
@@ -90,7 +90,7 @@ export default function BillingToolbar() {
                         }}
 
                         placeholder={
-                            isFetching && accountId ? "Loading resources" : "Select Resource"
+                            isFetching && accountId ? "Loading resources" : "Select resource"
                         }
                         disabled={!accountId || isFetching}
                         widthVariant="medium"

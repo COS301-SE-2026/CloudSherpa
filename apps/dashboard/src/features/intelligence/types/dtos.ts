@@ -27,7 +27,7 @@ export interface BillingForecastDto {
     dailyBurnRate: number;
     highestCostDriver: string;
     highestCostAcceleration: string;
-    accelerationrate: number;
+    accelerationRate: number;
 }
 
 export interface BillingSummaryDto {
@@ -42,7 +42,7 @@ export interface BillingSummaryDto {
     highestCostAccelerationId: string;
     highestCostAccelerationLabel: string;
     currency: CurrencyEnum;
-    accelerationrate: number;
+    accelerationRate: number;
 }
 
 export interface CostBreakdownItem {

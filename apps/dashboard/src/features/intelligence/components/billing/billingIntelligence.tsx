@@ -99,9 +99,9 @@ export default function BillingIntelligence() {
 
             <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <BillingSummaryCard
-                    name={`cumulative billing for last ${forecastTimeWindowDays} days`}
+                    name={`Cumulative billing for last ${forecastTimeWindowDays} days`}
                     value={
-                        forSummary ? `${currency}${forSummary.cumulativeBilling.toFixed(2)}` : "-"
+                        forSummary ? `${currency}${forSummary.cumulativeBilling.toFixed(4)}` : "-"
                     }
                     description={
                         forSummary
@@ -113,10 +113,10 @@ export default function BillingIntelligence() {
                 />
 
                 <BillingSummaryCard
-                    name={`projected horizon cost (${forecastTimeWindowDays} days)`}
+                    name={`Projected horizon cost (${forecastTimeWindowDays} days)`}
                     value={
                         forSummary
-                            ? `${currency}${forSummary.projectedHorizonCost.toFixed(2)}`
+                            ? `${currency}${forSummary.projectedHorizonCost.toFixed(4)}`
                             : "-"
                     }
                     description={
@@ -129,7 +129,7 @@ export default function BillingIntelligence() {
 
             <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <BillingStatisticsCard
-                    name="forecast vs past variance"
+                    name="Forecast vs past variance"
                     value={forSummary ? `${forSummary.forecastVariance.toFixed(2)}%` : "-"}
                     description={
                         forSummary ? "Difference in past and projected spend" : "No data available"
@@ -140,8 +140,8 @@ export default function BillingIntelligence() {
                 />
 
                 <BillingStatisticsCard
-                    name="daily burn rate"
-                    value={forSummary ? `${currency}${forSummary.dailyBurnRate.toFixed(2)}` : "-"}
+                    name="Daily burn rate"
+                    value={forSummary ? `${currency}${forSummary.dailyBurnRate.toFixed(4)}` : "-"}
                     description={forSummary ? "Projected daily spend" : "No data available"}
                     valueClassName="text-primary"
                     tooltip={`Estimated average daily cost over the next ${forecastTimeWindowDays} days`}
@@ -151,7 +151,7 @@ export default function BillingIntelligence() {
                     name="Primary cost driver"
                     value={
                         primaryDriverCost !== undefined
-                            ? `${currency}${primaryDriverCost.toFixed(2)}`
+                            ? `${currency}${primaryDriverCost.toFixed(4)}`
                             : "-"
                     }
                     description={
@@ -164,10 +164,10 @@ export default function BillingIntelligence() {
                 />
 
                 <BillingStatisticsCard
-                    name="Highest Cost Acceleration"
+                    name="Highest cost acceleration"
                     value={
                         highestAccelerationCost !== undefined
-                            ? `${currency}${forSummary?.accelerationrate}/day\u00B2`
+                            ? `${currency}${forSummary?.accelerationRate.toFixed(4)}/day\u00B2`
                             : "-"
                     }
                     description={
@@ -182,7 +182,7 @@ export default function BillingIntelligence() {
 
             <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <BillingForecastChart
-                    name={`cumulative billing forecast for ${forecastTimeWindowDays} days`}
+                    name={`Cumulative billing forecast for ${forecastTimeWindowDays} days`}
                     data={forBreakdown.map((breakdown) => ({
                         label: breakdown.label,
                         percent: breakdown.percentage,
@@ -190,8 +190,8 @@ export default function BillingIntelligence() {
                 />
 
                 <CostBreakdownList
-                    name="Individual Charge Cost Breakdown"
-                    description={`Projected Charges for ${forecastTimeWindowDays} Day Window`}
+                    name="Individual charge cost breakdown"
+                    description={`Projected charges for ${forecastTimeWindowDays} day window`}
                     eachEntry={forBreakdown}
                     search={breakdownSearch}
                     onSearchChange={setBreakdownSearch}

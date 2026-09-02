@@ -7,6 +7,9 @@ import { useAuthContext } from "@/features/authentication/providers/AuthContext"
 import { updateUserTheme } from "@/lib/fetch/api-preferences";
 import { useLogout } from "@/features/authentication/hooks/useLogout";
 import Image from "next/image";
+import { Badge } from "@/components/atoms/badge";
+import { useRecStore } from "@/features/optimization/stores/useRecStore";
+import { useEffect } from "react";
 
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/atoms/tooltip";
 
@@ -45,6 +48,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             }
         }
     };
+
+    //recomendatio badge logic
+    const fetchSummary = useRecStore((state) => state.fetchSummary);
+
+    useEffect(() => {
+        const getRecommendationSummary = async () => {
+            await fetchSummary;
+        };
+        getRecommendationSummary();
+    }, []);
+
+    const summary = useRecStore((state) => state.summary);
 
     React.useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -186,10 +201,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     <SidebarGroupContent>
                         <SidebarMenu>
                             <SidebarMenuItem>
-                                <SidebarMenuButton asChild tooltip="AWS">
+                                <SidebarMenuButton asChild tooltip="Recommendations">
                                     <Link href="/recommendations">
-                                        <Network />
-                                        <span>Recommendations</span>
+                                        <div className="flex flex-row gap-2">
+                                            <Network />
+                                            <span>Recommendations</span>
+                                        </div>
+                                        {summary && <Badge>{`${summary.active} active`}</Badge>}
                                     </Link>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
