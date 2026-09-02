@@ -135,7 +135,7 @@ export default function UsageToolbar() {
                     {renderResourceDropdown("large")}
                     {renderMetricDropdown("medium")}
                 </div>
-                <div className="flex flex-row gap-2">{renderTimeWindowDropdown("medium")}</div>
+                <div className="flex flex-row gap-2">{renderTimeWindowDropdown("small")}</div>
             </div>
 
             <div className="flex lg:hidden flex-row items-center justify-end w-full">
