@@ -54,6 +54,7 @@ public class BillingIntelligenceService {
         analyticsResult.pastVariance(),
         analyticsResult.dailyBurnRate(),
         analyticsResult.highestCostDriver(),
-        analyticsResult.highestCostAcceleration());
+        analyticsResult.highestCostAcceleration(),
+        analyticsResult.accelerationRate());
   }
 }

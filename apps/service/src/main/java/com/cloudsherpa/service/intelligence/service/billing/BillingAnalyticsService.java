@@ -29,6 +29,8 @@ public class BillingAnalyticsService {
     this.normalizedCostsRepository = normalizedCostsRepository;
   }
 
+  private record HighestCostAcceleration(String chargeId, BigDecimal value) {}
+
   public BillingAnalyticsResult process(
       BillingForecastResult billingForecastResult, Integer historicalDays) {
 
@@ -38,7 +40,7 @@ public class BillingAnalyticsService {
         variance(cumalativeHistorical, billingForecastResult.cumalativeForecastResult());
     String highestCostDriver =
         primaryCostDriver(billingForecastResult.individualChargeForecastResults());
-    String highestCostAcceleration =
+    HighestCostAcceleration highestCostAcceleration =
         highestCostAcceleration(billingForecastResult.individualChargeSeries());
 
     Map<String, BillingForecastValue> billingForecastSeries =
@@ -55,7 +57,8 @@ public class BillingAnalyticsService {
             .divide(
                 BigDecimal.valueOf(billingForecastResult.forecastSteps()), 4, RoundingMode.HALF_UP),
         highestCostDriver,
-        highestCostAcceleration);
+        highestCostAcceleration.chargeId(),
+        highestCostAcceleration.value());
   }
 
   private Map<String, BillingForecastValue> buildBillingForecastSeries(
@@ -136,18 +139,23 @@ public class BillingAnalyticsService {
     return getMaxChargeValue(chargeSeries);
   }
 
-  private String highestCostAcceleration(Map<String, List<BigDecimal>> chargeSeries) {
+  private HighestCostAcceleration highestCostAcceleration(
+      Map<String, List<BigDecimal>> chargeSeries) {
     Map<String, BigDecimal> chargeHighestCostAccelerations = new HashMap<>();
+
+    BigDecimal maxAcceleration = BigDecimal.ZERO;
 
     for (Map.Entry<String, List<BigDecimal>> entry : chargeSeries.entrySet()) {
       BigDecimal acceleration = highestSeriesCostAcceleration(dailyTotals(entry.getValue()));
 
       if (acceleration != null) {
         chargeHighestCostAccelerations.put(entry.getKey(), acceleration);
+        maxAcceleration = maxAcceleration.max(acceleration);
       }
     }
 
-    return getMaxChargeValue(chargeHighestCostAccelerations);
+    return new HighestCostAcceleration(
+        getMaxChargeValue(chargeHighestCostAccelerations), maxAcceleration);
   }
 
   private List<BigDecimal> dailyTotals(List<BigDecimal> series) {

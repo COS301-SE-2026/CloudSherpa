@@ -56,7 +56,7 @@ export const MOCK_BILLING_SUMMARY: BillingSummaryDto = {
     highestCostAccelerationId: "id-cost-acc",
     highestCostAccelerationLabel: "cost-acc-label",
     currency: "ZAR",
-    accelerationrate: 0,
+    accelerationRate: 0,
 };
 
 export const MOCK_COST_BREAKDOWN: CostBreakdownItem[] = [

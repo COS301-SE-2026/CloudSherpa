@@ -13,4 +13,5 @@ public record BillingForecastResponseDto(
     BigDecimal pastVariance,
     BigDecimal dailyBurnRate,
     String highestCostDriver,
-    String highestCostAcceleration) {}
+    String highestCostAcceleration,
+    BigDecimal accelerationRate) {}
