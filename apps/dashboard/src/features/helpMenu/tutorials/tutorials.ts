@@ -3,7 +3,13 @@ export interface Tutorials {
     id: string;
     name: string;
     description: string;
-    category: "Getting Started" | "Connections" | "Resources" | "Billing" | "Recommendations" | "Forecasting";
+    category:
+        | "Getting Started"
+        | "Connections"
+        | "Resources"
+        | "Billing"
+        | "Recommendations"
+        | "Forecasting";
     lengthOfVideo: string;
     videoLink: string;
     thumbNail: string;
