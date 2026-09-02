@@ -165,7 +165,31 @@ class UsageForecastingServiceTest {
         .thenReturn(usageSeries);
 
     when(sampler.sample(usageSeries, true)).thenReturn(new SanatizedSeries(usageSeries, 86_400));
-    mockGcpMetricMapping();
+    mockProviderMetricMapping(ProviderEnum.GCP);
+
+    mockForecastingServiceResponse(forecastResponse);
+
+    // Act
+    usageForecastingService.forecastUsage(validRequest);
+
+    // Assert
+    verify(normalizedMetricsRepository)
+        .getAggregatedTimestampedMetricValuesAfterDate(
+            RESOURCE_ID, METRIC_TYPE, PageRequest.of(0, CONTEXT_LENGTH));
+  }
+
+  @Test
+  void shouldCallRepositoryAggregateQueryWhenProviderAzure() {
+    List<TimestampedNumericDataPoint> usageSeries = getValidUsageSeries();
+
+    IntelligenceForecastResponseDto forecastResponse = getValidForecastResponse();
+
+    when(normalizedMetricsRepository.getAggregatedTimestampedMetricValuesAfterDate(
+            RESOURCE_ID, METRIC_TYPE, PageRequest.of(0, CONTEXT_LENGTH)))
+        .thenReturn(usageSeries);
+
+    when(sampler.sample(usageSeries, true)).thenReturn(new SanatizedSeries(usageSeries, 86_400));
+    mockProviderMetricMapping(ProviderEnum.AZURE);
 
     mockForecastingServiceResponse(forecastResponse);
 
@@ -273,9 +297,9 @@ class UsageForecastingServiceTest {
         .thenReturn(METRIC_TYPE);
   }
 
-  private void mockGcpMetricMapping() {
-    when(resourceResolver.resolveProvider(RESOURCE_ID)).thenReturn(ProviderEnum.GCP);
-    when(displayNameMapper.toCanonicalName(ProviderEnum.GCP.toString(), METRIC_TYPE))
+  private void mockProviderMetricMapping(ProviderEnum provider) {
+    when(resourceResolver.resolveProvider(RESOURCE_ID)).thenReturn(provider);
+    when(displayNameMapper.toCanonicalName(provider.toString(), METRIC_TYPE))
         .thenReturn(METRIC_TYPE);
   }
 
