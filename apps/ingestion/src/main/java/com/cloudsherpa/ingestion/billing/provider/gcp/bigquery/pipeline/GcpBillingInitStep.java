@@ -141,6 +141,7 @@ public class GcpBillingInitStep implements GcpBillingIngestionStep {
 
     try {
       String json = Files.readString(Path.of(devServiceAccountPath));
+
       CloudCredentials gcpCloudCredentials = new CloudCredentials();
       gcpCloudCredentials.setServiceAccountJson(json);
       gcpCloudCredentials.setProjectId(devProjectId);

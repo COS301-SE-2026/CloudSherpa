@@ -1,17 +1,24 @@
 package com.cloudsherpa.ingestion.nfr;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+
+import com.cloudsherpa.ingestion.billing.provider.gcp.bigquery.GcpBillingIngestionService;
 import com.cloudsherpa.ingestion.billing.provider.gcp.bigquery.normalization.GcpBigQueryNormalizationService;
 import com.cloudsherpa.ingestion.billing.provider.gcp.bigquery.pipeline.GcpBillingContext;
+import com.cloudsherpa.ingestion.billing.provider.gcp.bigquery.pipeline.GcpBillingQueryStep;
+import com.cloudsherpa.ingestion.billing.provider.gcp.bigquery.pipeline.GcpBilllingDiscoveryStep;
 import com.cloudsherpa.utils.GcpFieldValueListTestUtil;
 import com.google.cloud.bigquery.FieldValueList;
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
@@ -30,8 +37,9 @@ import org.testcontainers.utility.MountableFile;
 class BillingRecordIngestionTest {
 
   @Autowired GcpBigQueryNormalizationService normalizationServie;
-
-  @Mock GcpBillingContext context;
+  @Autowired GcpBillingIngestionService ingestionService;
+  @MockitoBean GcpBilllingDiscoveryStep discoveryStep;
+  @MockitoBean GcpBillingQueryStep queryStep;
 
   @Container @ServiceConnection
   static PostgreSQLContainer timescaledb =
@@ -45,15 +53,20 @@ class BillingRecordIngestionTest {
               MountableFile.forClasspathResource("nfr-user.sql"),
               "/docker-entrypoint-initdb.d/02_nfr_user.sql");
 
+  @BeforeEach()
+  void setUp() {
+    mockSuccessfulDiscovery();
+  }
+
   @Test
   void smoke() {
     // Arrange
     List<FieldValueList> gcpBillingRecords = generateFieldValueList(10);
 
-    // when(context.getBillingConfig().billingAccountId()).thenReturn("ABC");
-    // when(context.getTableResult().getValues()).thenReturn(gcpBillingRecords);
+    mockSuccessfulQuery(gcpBillingRecords);
 
-    // normalizationServie.normalize(context);
+    ingestionService.execute(
+        "a1b6ebb6-2b13-41c2-b4ce-bc6c563ea246", "bce4f71d-7b9d-4ab3-a99c-5d3f7511c388");
   }
 
   private List<FieldValueList> generateFieldValueList(Integer numRecords) {
@@ -71,5 +84,31 @@ class BillingRecordIngestionTest {
     }
 
     return fieldValueList;
+  }
+
+  private void mockSuccessfulDiscovery() {
+    doAnswer(
+            invocation -> {
+              GcpBillingContext context = invocation.getArgument(0);
+              context.setBillingExportTableIdentifier(
+                  "gcp_billing_export_resource_v1_000000_000000_000000");
+              context.setFullyQualifiedExportTableIdentifier(
+                  "nfr-project.nfr-dataset.gcp_billing_export_resource_v1_000000_000000_000000");
+              return null;
+            })
+        .when(discoveryStep)
+        .execute(any(GcpBillingContext.class));
+  }
+
+  private void mockSuccessfulQuery(List<FieldValueList> list) {
+    doAnswer(
+            invocation -> {
+              GcpBillingContext context = invocation.getArgument(0);
+              context.setTableResult(GcpFieldValueListTestUtil.tableResult(list));
+
+              return null;
+            })
+        .when(queryStep)
+        .execute(any(GcpBillingContext.class));
   }
 }
