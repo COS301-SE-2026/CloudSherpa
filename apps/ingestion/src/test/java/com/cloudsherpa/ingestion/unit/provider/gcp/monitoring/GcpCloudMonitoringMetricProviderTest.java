@@ -26,6 +26,7 @@ import com.google.monitoring.v3.TypedValue;
 import com.google.protobuf.util.Timestamps;
 import java.text.ParseException;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -226,6 +227,111 @@ class GcpCloudMonitoringMetricProviderTest {
 
     assertEquals(1, results.size());
     assertEquals(0.0, results.get(0).getValue());
+  }
+
+  @Test
+  void collectMetrics_whenMultiplePointsReturnedPerTimeseries_shouldCreateOneRecordPerPoint()
+      throws Exception {
+
+    Point first = createDoublePoint(10.0, "2026-09-02T12:01:00Z", "2026-09-02T12:00:00Z");
+
+    Point second = createDoublePoint(20.0, "2026-09-02T12:02:00Z", "2026-09-02T12:01:00Z");
+
+    Point third = createDoublePoint(30.0, "2026-09-02T12:03:00Z", "2026-09-02T12:02:00Z");
+
+    TimeSeries series = createTimeSeries("instance-123", "us-central1-a", first, second, third);
+
+    configureClient(series);
+
+    List<UsageRecordModel> results = provider.collectMetrics(accountScope, request);
+
+    assertEquals(3, results.size());
+
+    assertEquals(10.0, results.get(0).getValue());
+    assertEquals(20.0, results.get(1).getValue());
+    assertEquals(30.0, results.get(2).getValue());
+  }
+
+  @Test
+  void collectMetrics_whenMultipleSeriesReturned_shouldProcessAllSeries() throws Exception {
+
+    TimeSeries first =
+        createTimeSeries(
+            "instance-123",
+            "us-central1-a",
+            createDoublePoint(10.0, "2026-09-02T12:01:00Z", "2026-09-02T12:00:00Z"));
+
+    TimeSeries second =
+        createTimeSeries(
+            "instance-123",
+            "us-central1-a",
+            createDoublePoint(20.0, "2026-09-02T12:02:00Z", "2026-09-02T12:01:00Z"));
+
+    configureClient(first, second);
+
+    List<UsageRecordModel> results = provider.collectMetrics(accountScope, request);
+
+    assertEquals(2, results.size());
+
+    assertEquals(10.0, results.get(0).getValue());
+    assertEquals(20.0, results.get(1).getValue());
+  }
+
+  @Test
+  void collectMetrics_whenNoTimeSeriesReturned_shouldReturnEmptyList() throws Exception {
+
+    configureClient();
+
+    List<UsageRecordModel> results = provider.collectMetrics(accountScope, request);
+
+    assertNotNull(results);
+    assertTrue(results.isEmpty());
+
+    verify(client).listTimeSeries(any(ListTimeSeriesRequest.class));
+  }
+
+  @Test
+  void collectMetrics_whenNoServiceScopesInRequest_shouldReturnEmptyList() throws Exception {
+
+    when(accountScope.getServiceScopes()).thenReturn(Collections.emptyList());
+
+    List<UsageRecordModel> results = provider.collectMetrics(accountScope, request);
+
+    assertNotNull(results);
+    assertTrue(results.isEmpty());
+  }
+
+  @Test
+  void collectMetrics_whenServiceScopeHasNoInstances_shouldReturnEmptyList() throws Exception {
+
+    when(serviceScope.getInstances()).thenReturn(Collections.emptyList());
+
+    List<UsageRecordModel> results = provider.collectMetrics(accountScope, request);
+
+    assertNotNull(results);
+    assertTrue(results.isEmpty());
+  }
+
+  @Test
+  void collectMetrics_whenInstanceScopeHasNoInstances_shouldReturnEmptyList() throws Exception {
+
+    when(instanceScope.getInstances()).thenReturn(Collections.emptyList());
+
+    List<UsageRecordModel> results = provider.collectMetrics(accountScope, request);
+
+    assertNotNull(results);
+    assertTrue(results.isEmpty());
+  }
+
+  @Test
+  void collectMetrics_whenServiceScopeHasNoMetrics_shouldReturnEmptyList() throws Exception {
+
+    when(serviceScope.getMetrics()).thenReturn(Collections.emptyList());
+
+    List<UsageRecordModel> results = provider.collectMetrics(accountScope, request);
+
+    assertNotNull(results);
+    assertTrue(results.isEmpty());
   }
 
   /**
