@@ -3,7 +3,7 @@
 import { Button } from "@/components/atoms/button";
 import { Card, CardContent, CardTitle, CardHeader } from "@/components/atoms/card";
 import { FieldSeparator } from "@/components/atoms/field";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { KpiFormDetails } from "./kpi-form-details";
 import { KpiFormTimePeriod } from "./kpi-form-time-period";
 import { KPIWidget } from "../../kpi-widget";
