@@ -25,6 +25,7 @@ import com.google.monitoring.v3.TimeInterval;
 import com.google.monitoring.v3.TimeSeries;
 import com.google.monitoring.v3.TypedValue;
 import com.google.protobuf.util.Timestamps;
+import java.io.IOException;
 import java.text.ParseException;
 import java.time.Instant;
 import java.util.Collections;
@@ -618,6 +619,214 @@ class GcpCloudMonitoringMetricProviderTest {
     provider.collectMetrics(accountScope, request);
 
     verify(client).close();
+  }
+
+  @Test
+  void collectMetrics_whenCredentialsFactoryThrowsIOException_shouldThrowIllegalArgumentException()
+      throws Exception {
+
+    gcpClientFactory
+        .when(() -> GcpClientFactory.credentials(credentials))
+        .thenThrow(new IOException("invalid credentials"));
+
+    IllegalArgumentException exception =
+        assertThrows(
+            IllegalArgumentException.class, () -> provider.collectMetrics(accountScope, request));
+
+    assertEquals(
+        "Invalid account credentials provided for GCP usage metric ingestion",
+        exception.getMessage());
+
+    verifyNoInteractions(client);
+  }
+
+  @Test
+  void
+      collectMetrics_whenMetricServiceClientCreationThrowsIOException_shouldThrowIllegalArgumentException()
+          throws Exception {
+
+    metricServiceClientStatic
+        .when(() -> MetricServiceClient.create(any(MetricServiceSettings.class)))
+        .thenThrow(new IOException("invalid credentials"));
+
+    IllegalArgumentException exception =
+        assertThrows(
+            IllegalArgumentException.class, () -> provider.collectMetrics(accountScope, request));
+
+    assertEquals(
+        "Invalid account credentials provided for GCP usage metric ingestion",
+        exception.getMessage());
+  }
+
+  @Test
+  void collectMetrics_shouldCallGcpCredentialsFactoryWithRequestCredentials() throws Exception {
+
+    configureClient();
+
+    provider.collectMetrics(accountScope, request);
+
+    gcpClientFactory.verify(() -> GcpClientFactory.credentials(credentials));
+  }
+
+  @Test
+  void collectMetrics_shouldCreateOneRequestPerMetric() throws Exception {
+
+    Metric metricOne = mock(Metric.class);
+    Metric metricTwo = mock(Metric.class);
+
+    when(metricOne.getName()).thenReturn("metric.one");
+
+    when(metricOne.getUnit()).thenReturn("unit");
+
+    when(metricTwo.getName()).thenReturn("metric.two");
+
+    when(metricTwo.getUnit()).thenReturn("unit");
+
+    when(serviceScope.getMetrics()).thenReturn(List.of(metricOne, metricTwo));
+
+    configureClient();
+
+    provider.collectMetrics(accountScope, request);
+
+    verify(client, times(2)).listTimeSeries(any(ListTimeSeriesRequest.class));
+  }
+
+  @Test
+  void collectMetrics_shouldCreateOneRequestPerInstance() throws Exception {
+
+    Instance instanceOne = mock(Instance.class);
+    Instance instanceTwo = mock(Instance.class);
+
+    when(instanceOne.getIdentifier()).thenReturn("instance-one");
+
+    when(instanceOne.getRegion()).thenReturn("us-central1-a");
+
+    when(instanceTwo.getIdentifier()).thenReturn("instance-two");
+
+    when(instanceTwo.getRegion()).thenReturn("us-central1-b");
+
+    when(instanceScope.getInstances()).thenReturn(List.of(instanceOne, instanceTwo));
+
+    configureClient();
+
+    provider.collectMetrics(accountScope, request);
+
+    verify(client, times(2)).listTimeSeries(any(ListTimeSeriesRequest.class));
+  }
+
+  @Test
+  void collectMetrics_shouldBuildFilterUsingInstanceIdentifierName() throws Exception {
+
+    when(instanceScope.getIdentifierName()).thenReturn("resource_id");
+
+    when(instance.getIdentifier()).thenReturn("resource-456");
+
+    when(serviceScope.getName()).thenReturn("custom_resource");
+
+    when(metric.getName()).thenReturn("custom.metric");
+
+    configureClient();
+
+    provider.collectMetrics(accountScope, request);
+
+    ArgumentCaptor<ListTimeSeriesRequest> captor =
+        ArgumentCaptor.forClass(ListTimeSeriesRequest.class);
+
+    verify(client).listTimeSeries(captor.capture());
+
+    assertEquals(
+        "resource.type=\"custom_resource\" "
+            + "AND resource.labels.\"resource_id\"=\"resource-456\" "
+            + "AND metric.type=\"custom.metric\"",
+        captor.getValue().getFilter());
+  }
+
+  @Test
+  void collectMetrics_whenMultipleServices_shouldProcessAllServices() throws Exception {
+
+    ServiceScope secondServiceScope = mock(ServiceScope.class);
+
+    InstanceScope secondInstanceScope = mock(InstanceScope.class);
+
+    Instance secondInstance = mock(Instance.class);
+
+    Metric secondMetric = mock(Metric.class);
+
+    when(secondServiceScope.getName()).thenReturn("another_resource");
+
+    when(secondServiceScope.getInstances()).thenReturn(List.of(secondInstanceScope));
+
+    when(secondServiceScope.getMetrics()).thenReturn(List.of(secondMetric));
+
+    when(secondInstanceScope.getIdentifierName()).thenReturn("resource_id");
+
+    when(secondInstanceScope.getInstances()).thenReturn(List.of(secondInstance));
+
+    when(secondInstance.getIdentifier()).thenReturn("resource-456");
+
+    when(secondInstance.getRegion()).thenReturn("europe-west1-b");
+
+    when(secondMetric.getName()).thenReturn("another.metric");
+
+    when(secondMetric.getUnit()).thenReturn("1");
+
+    when(accountScope.getServiceScopes()).thenReturn(List.of(serviceScope, secondServiceScope));
+
+    configureClient();
+
+    provider.collectMetrics(accountScope, request);
+
+    // One metric in the 1st service + one metric in the 2nd service
+    verify(client, times(2)).listTimeSeries(any(ListTimeSeriesRequest.class));
+  }
+
+  @Test
+  void collectMetrics_whenMultipleReturnedSeries_shouldPreserveAllPoints() throws Exception {
+
+    TimeSeries firstSeries =
+        createTimeSeries(
+            "instance-123",
+            "us-central1-a",
+            createDoublePoint(10.0, "2026-09-02T12:01:00Z", "2026-09-02T12:00:00Z"),
+            createDoublePoint(20.0, "2026-09-02T12:02:00Z", "2026-09-02T12:01:00Z"));
+
+    TimeSeries secondSeries =
+        createTimeSeries(
+            "instance-123",
+            "us-central1-a",
+            createDoublePoint(30.0, "2026-09-02T12:03:00Z", "2026-09-02T12:02:00Z"),
+            createDoublePoint(40.0, "2026-09-02T12:04:00Z", "2026-09-02T12:03:00Z"));
+
+    configureClient(firstSeries, secondSeries);
+
+    List<UsageRecordModel> results = provider.collectMetrics(accountScope, request);
+
+    assertEquals(4, results.size());
+
+    assertEquals(10.0, results.get(0).getValue());
+    assertEquals(20.0, results.get(1).getValue());
+    assertEquals(30.0, results.get(2).getValue());
+    assertEquals(40.0, results.get(3).getValue());
+  }
+
+  @Test
+  void collectMetrics_shouldSetPeriodStartAndEndFromPointInterval() throws Exception {
+
+    Point point = createDoublePoint(99.9, "2026-09-02T12:04:00Z", "2026-09-02T12:03:00Z");
+
+    configureClient(createTimeSeries("instance-123", "us-central1-a", point));
+
+    List<UsageRecordModel> results = provider.collectMetrics(accountScope, request);
+
+    assertEquals(1, results.size());
+
+    UsageRecordModel result = results.get(0);
+
+    assertEquals(Instant.parse("2026-09-02T12:03:00Z"), result.getPeriodStart());
+
+    assertEquals(Instant.parse("2026-09-02T12:04:00Z"), result.getPeriodEnd());
+
+    assertEquals(Instant.parse("2026-09-02T12:04:00Z"), result.getTimestamp());
   }
 
   /**
