@@ -3,7 +3,7 @@ export interface Tutorials {
     id: string;
     name: string;
     description: string;
-    category: "Getting Started" | "Connections" | "Resources" | "Billing";
+    category: "Getting Started" | "Connections" | "Resources" | "Billing" | "Recommendations" | "Forecasting";
     lengthOfVideo: string;
     videoLink: string;
     thumbNail: string;
@@ -129,6 +129,36 @@ const TUTS = [
         "Billing",
         "0:39",
         "NQRHgKiymqE",
+    ],
+
+    //recommendations - https://youtu.be/ivMxbPg3OmY
+    [
+        "recommendations",
+        "Recommendations",
+        "Navigating through recommendations for optimization",
+        "Recommendations",
+        "1:12",
+        "ivMxbPg3OmY",
+    ],
+
+    //usage - https://youtu.be/UaqoLT9Wb7A
+    [
+        "forecasting",
+        "Usage forecasting",
+        "Navigating about your usage forecasting",
+        "Forecasting",
+        "1:11",
+        "UaqoLT9Wb7A",
+    ],
+
+    //billing - https://youtu.be/ivMxbPg3OmY
+    [
+        "forecasting2",
+        "Billing forecasting",
+        "Navigating about your billing forecasting",
+        "Forecasting",
+        "1:09",
+        "ivMxbPg3OmY",
     ],
 ];
 
