@@ -33,7 +33,7 @@ public class GcpBigQueryNormalizationService {
       GcpBigQueryBillingRecord gcpBigQueryBillingRecord =
           new GcpBigQueryBillingRecord(fieldValueList, new CreditProcessingState());
 
-      if (!fieldValueList.get("credits").getRecordValue().isEmpty()) {
+      if (!fieldValueList.get("credits").getRepeatedValue().isEmpty()) {
         gcpBigQueryBillingRecord.creditProcessingState().setHasCredits(true);
       }
 
