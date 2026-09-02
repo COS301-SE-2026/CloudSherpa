@@ -93,6 +93,7 @@ export default function RecDrawer({ group, isOpen, setIsOpen }: Readonly<RecDraw
                 if (!open) {
                     clearFocusedRecommendation();
                     setSearchQuery("");
+                    setStatusTab("active");
                 }
             }}
         >
