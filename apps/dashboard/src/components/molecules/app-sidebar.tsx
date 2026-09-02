@@ -9,7 +9,6 @@ import { useLogout } from "@/features/authentication/hooks/useLogout";
 import Image from "next/image";
 import { Badge } from "@/components/atoms/badge";
 import { useRecStore } from "@/features/optimization/stores/useRecStore";
-import { RecommendationSummary } from "@/features/optimization/types/recommendations";
 import { useEffect } from "react";
 
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/atoms/tooltip";
