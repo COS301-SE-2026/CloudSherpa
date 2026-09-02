@@ -59,7 +59,7 @@ class GcpCloudMonitoringMetricProviderTest {
   private final Instant to = Instant.parse("2026-09-02T12:05:00Z");
 
   @BeforeEach
-  void setUp() throws Exception {
+  void setUp() {
     provider = new GcpCloudMonitoringMetricProvider();
 
     client = mock(MetricServiceClient.class);
@@ -281,7 +281,7 @@ class GcpCloudMonitoringMetricProviderTest {
   }
 
   @Test
-  void collectMetrics_whenNoTimeSeriesReturned_shouldReturnEmptyList() throws Exception {
+  void collectMetrics_whenNoTimeSeriesReturned_shouldReturnEmptyList() {
 
     configureClient();
 
@@ -294,7 +294,7 @@ class GcpCloudMonitoringMetricProviderTest {
   }
 
   @Test
-  void collectMetrics_whenNoServiceScopesInRequest_shouldReturnEmptyList() throws Exception {
+  void collectMetrics_whenNoServiceScopesInRequest_shouldReturnEmptyList() {
 
     when(accountScope.getServiceScopes()).thenReturn(Collections.emptyList());
 
@@ -305,7 +305,7 @@ class GcpCloudMonitoringMetricProviderTest {
   }
 
   @Test
-  void collectMetrics_whenServiceScopeHasNoInstances_shouldReturnEmptyList() throws Exception {
+  void collectMetrics_whenServiceScopeHasNoInstances_shouldReturnEmptyList() {
 
     when(serviceScope.getInstances()).thenReturn(Collections.emptyList());
 
@@ -316,7 +316,7 @@ class GcpCloudMonitoringMetricProviderTest {
   }
 
   @Test
-  void collectMetrics_whenInstanceScopeHasNoInstances_shouldReturnEmptyList() throws Exception {
+  void collectMetrics_whenInstanceScopeHasNoInstances_shouldReturnEmptyList() {
 
     when(instanceScope.getInstances()).thenReturn(Collections.emptyList());
 
@@ -327,7 +327,7 @@ class GcpCloudMonitoringMetricProviderTest {
   }
 
   @Test
-  void collectMetrics_whenServiceScopeHasNoMetrics_shouldReturnEmptyList() throws Exception {
+  void collectMetrics_whenServiceScopeHasNoMetrics_shouldReturnEmptyList() {
 
     when(serviceScope.getMetrics()).thenReturn(Collections.emptyList());
 
@@ -338,8 +338,7 @@ class GcpCloudMonitoringMetricProviderTest {
   }
 
   @Test
-  void collectMetrics_whenMultipleInstancesAndMetrics_shouldCreateCorrectNumberOfRequests()
-      throws Exception {
+  void collectMetrics_whenMultipleInstancesAndMetrics_shouldCreateCorrectNumberOfRequests() {
 
     Instance instanceOne = mock(Instance.class);
     Instance instanceTwo = mock(Instance.class);
@@ -381,7 +380,7 @@ class GcpCloudMonitoringMetricProviderTest {
   }
 
   @Test
-  void collectMetrics_shouldBuildCorrectProjectNameAndFilter() throws Exception {
+  void collectMetrics_shouldBuildCorrectProjectNameAndFilter() {
 
     configureClient();
 
@@ -404,7 +403,7 @@ class GcpCloudMonitoringMetricProviderTest {
   }
 
   @Test
-  void collectMetrics_shouldUseFullTimeSeriesView() throws Exception {
+  void collectMetrics_shouldUseFullTimeSeriesView() {
 
     configureClient();
 
@@ -419,7 +418,7 @@ class GcpCloudMonitoringMetricProviderTest {
   }
 
   @Test
-  void collectMetrics_shouldBuildCorrectTimeInterval() throws Exception {
+  void collectMetrics_shouldBuildCorrectTimeInterval() {
 
     configureClient();
 
@@ -438,7 +437,7 @@ class GcpCloudMonitoringMetricProviderTest {
   }
 
   @Test
-  void collectMetrics_shouldBuildCorrectAggregation() throws Exception {
+  void collectMetrics_shouldBuildCorrectAggregation() {
 
     configureClient();
 
@@ -457,7 +456,7 @@ class GcpCloudMonitoringMetricProviderTest {
   }
 
   @Test
-  void collectMetrics_shouldUseConfiguredPeriod() throws Exception {
+  void collectMetrics_shouldUseConfiguredPeriod() {
 
     when(request.getPeriod()).thenReturn(300);
 
@@ -474,7 +473,7 @@ class GcpCloudMonitoringMetricProviderTest {
   }
 
   @Test
-  void collectMetrics_shouldUseConfiguredProjectId() throws Exception {
+  void collectMetrics_shouldUseConfiguredProjectId() {
 
     when(credentials.getProjectId()).thenReturn("different-project");
 
@@ -612,7 +611,7 @@ class GcpCloudMonitoringMetricProviderTest {
   }
 
   @Test
-  void collectMetrics_shouldCloseClient() throws Exception {
+  void collectMetrics_shouldCloseClient() {
 
     configureClient();
 
@@ -622,8 +621,8 @@ class GcpCloudMonitoringMetricProviderTest {
   }
 
   @Test
-  void collectMetrics_whenCredentialsFactoryThrowsIOException_shouldThrowIllegalArgumentException()
-      throws Exception {
+  void
+      collectMetrics_whenCredentialsFactoryThrowsIOException_shouldThrowIllegalArgumentException() {
 
     gcpClientFactory
         .when(() -> GcpClientFactory.credentials(credentials))
@@ -642,8 +641,7 @@ class GcpCloudMonitoringMetricProviderTest {
 
   @Test
   void
-      collectMetrics_whenMetricServiceClientCreationThrowsIOException_shouldThrowIllegalArgumentException()
-          throws Exception {
+      collectMetrics_whenMetricServiceClientCreationThrowsIOException_shouldThrowIllegalArgumentException() {
 
     metricServiceClientStatic
         .when(() -> MetricServiceClient.create(any(MetricServiceSettings.class)))
@@ -659,7 +657,7 @@ class GcpCloudMonitoringMetricProviderTest {
   }
 
   @Test
-  void collectMetrics_shouldCallGcpCredentialsFactoryWithRequestCredentials() throws Exception {
+  void collectMetrics_shouldCallGcpCredentialsFactoryWithRequestCredentials() {
 
     configureClient();
 
@@ -669,7 +667,7 @@ class GcpCloudMonitoringMetricProviderTest {
   }
 
   @Test
-  void collectMetrics_shouldCreateOneRequestPerMetric() throws Exception {
+  void collectMetrics_shouldCreateOneRequestPerMetric() {
 
     Metric metricOne = mock(Metric.class);
     Metric metricTwo = mock(Metric.class);
@@ -692,7 +690,7 @@ class GcpCloudMonitoringMetricProviderTest {
   }
 
   @Test
-  void collectMetrics_shouldCreateOneRequestPerInstance() throws Exception {
+  void collectMetrics_shouldCreateOneRequestPerInstance() {
 
     Instance instanceOne = mock(Instance.class);
     Instance instanceTwo = mock(Instance.class);
@@ -715,7 +713,7 @@ class GcpCloudMonitoringMetricProviderTest {
   }
 
   @Test
-  void collectMetrics_shouldBuildFilterUsingInstanceIdentifierName() throws Exception {
+  void collectMetrics_shouldBuildFilterUsingInstanceIdentifierName() {
 
     when(instanceScope.getIdentifierName()).thenReturn("resource_id");
 
@@ -742,7 +740,7 @@ class GcpCloudMonitoringMetricProviderTest {
   }
 
   @Test
-  void collectMetrics_whenMultipleServices_shouldProcessAllServices() throws Exception {
+  void collectMetrics_whenMultipleServices_shouldProcessAllServices() {
 
     ServiceScope secondServiceScope = mock(ServiceScope.class);
 
