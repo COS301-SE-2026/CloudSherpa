@@ -1,11 +1,13 @@
 package com.cloudsherpa.ingestion.nfr;
 
 import com.cloudsherpa.ingestion.billing.provider.gcp.bigquery.normalization.GcpBigQueryNormalizationService;
+import com.cloudsherpa.ingestion.billing.provider.gcp.bigquery.pipeline.GcpBillingContext;
+import com.cloudsherpa.utils.GcpFieldValueListTestUtil;
 import com.google.cloud.bigquery.FieldValueList;
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
@@ -29,7 +31,7 @@ class BillingRecordIngestionTest {
 
   @Autowired GcpBigQueryNormalizationService normalizationServie;
 
-  List<FieldValueList> gcpBillingRecords;
+  @Mock GcpBillingContext context;
 
   @Container @ServiceConnection
   static PostgreSQLContainer timescaledb =
@@ -43,16 +45,31 @@ class BillingRecordIngestionTest {
               MountableFile.forClasspathResource("nfr-user.sql"),
               "/docker-entrypoint-initdb.d/02_nfr_user.sql");
 
-  @BeforeEach
-  void setUp() {}
-
   @Test
-  void smoke() {}
+  void smoke() {
+    // Arrange
+    List<FieldValueList> gcpBillingRecords = generateFieldValueList(10);
+
+    // when(context.getBillingConfig().billingAccountId()).thenReturn("ABC");
+    // when(context.getTableResult().getValues()).thenReturn(gcpBillingRecords);
+
+    // normalizationServie.normalize(context);
+  }
 
   private List<FieldValueList> generateFieldValueList(Integer numRecords) {
 
     List<FieldValueList> fieldValueList = new ArrayList<>();
 
-    for (int i = 0; i < numRecords; i++) {}
+    long start = 1786442400;
+
+    for (int i = 0; i < numRecords; i++) {
+      String timestampStart = Long.toString(start + i) + ".000000";
+      String timestampEnd = Long.toString(start + i + 1) + ".000000";
+
+      fieldValueList.addLast(
+          GcpFieldValueListTestUtil.rowWithNullResourceName(timestampStart, timestampEnd));
+    }
+
+    return fieldValueList;
   }
 }

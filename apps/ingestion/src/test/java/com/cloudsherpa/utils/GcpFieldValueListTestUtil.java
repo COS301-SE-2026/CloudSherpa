@@ -30,6 +30,10 @@ public final class GcpFieldValueListTestUtil {
   }
 
   public static FieldValueList validUsageRow() {
+    return validUsageRow("1786442400.000000", "1786446000.000000");
+  }
+
+  public static FieldValueList validUsageRow(String timestampUsageStart, String timestampUsageEnd) {
     return FieldValueList.of(
         List.of(
             primitive("project-1"),
@@ -41,8 +45,8 @@ public final class GcpFieldValueListTestUtil {
             primitive("Compute Engine"),
             primitive("N1 Predefined Instance Core"),
             numeric("12.34"),
-            timestamp("1786442400.000000"),
-            timestamp("1786446000.000000"),
+            timestamp(timestampUsageStart),
+            timestamp(timestampUsageEnd),
             FieldValue.of(REPEATED, List.of())),
         Field.of("project_id", StandardSQLTypeName.STRING),
         Field.of("service_id", StandardSQLTypeName.STRING),
@@ -64,6 +68,11 @@ public final class GcpFieldValueListTestUtil {
   }
 
   public static FieldValueList rowWithNullResourceName() {
+    return rowWithNullResourceName("1786442400.000000", "1786446000.000000");
+  }
+
+  public static FieldValueList rowWithNullResourceName(
+      String timestampUsageStart, String timestampUsageEnd) {
     return FieldValueList.of(
         List.of(
             primitive("project-1"),
@@ -75,8 +84,8 @@ public final class GcpFieldValueListTestUtil {
             primitive("Compute Engine"),
             primitive("N1 Predefined Instance Core"),
             numeric("12.34"),
-            timestamp("1786442400.000000"),
-            timestamp("1786446000.000000"),
+            timestamp(timestampUsageStart),
+            timestamp(timestampUsageEnd),
             FieldValue.of(REPEATED, List.of())),
         Field.of("project_id", StandardSQLTypeName.STRING),
         Field.of("service_id", StandardSQLTypeName.STRING),
