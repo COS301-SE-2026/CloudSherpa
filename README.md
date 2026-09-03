@@ -52,6 +52,8 @@
 
 [CloudSherpa Project](https://github.com/orgs/COS301-SE-2026/projects/39)
 
+[Status of CloudSherpa Deployment](https://cloudsherpa-monitoring.gjjcs.org/status/cloudsherpa)
+
 [Design System](https://cloudsherpa.gjjcs.org/designsystem)
 
 ## Running the Project
