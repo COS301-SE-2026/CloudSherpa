@@ -35,58 +35,60 @@ export default function RecommendationGroupCard({ group }: Readonly<Recommendati
     const handleOpenDrawer = () => setIsDrawerOpen(true);
 
     return (
-        <ContextMenu>
-            <ContextMenuTrigger>
-                <Card
-                    className="flex flex-col justify-between cursor-pointer hover:bg-muted/50"
-                    onClick={handleOpenDrawer}
-                >
-                    <CardHeader className="flex flex-row justify-start items-start gap-2">
-                        <div className="w-full flex flex-row justify-between items-center gap-2">
-                            <div className="flex flex-row justify-start items-center gap-2">
-                                <CardTitle>{group.displayName} </CardTitle>
-                                <div className="flex flex-row pl-2 gap-2">
-                                    <Badge>{provider}</Badge>
-                                    <Badge variant="secondary">
-                                        {recommendationsCount} Recommendation
-                                        {recommendationsCount !== 1 ? "s" : ""}
-                                    </Badge>
+        <>
+            <ContextMenu>
+                <ContextMenuTrigger>
+                    <Card
+                        className="flex flex-col justify-between cursor-pointer hover:bg-muted/50"
+                        onClick={handleOpenDrawer}
+                    >
+                        <CardHeader className="flex flex-row justify-start items-start gap-2">
+                            <div className="w-full flex flex-row justify-between items-center gap-2">
+                                <div className="flex flex-row justify-start items-center gap-2">
+                                    <CardTitle>{group.displayName} </CardTitle>
+                                    <div className="flex flex-row pl-2 gap-2">
+                                        <Badge>{provider}</Badge>
+                                        <Badge variant="secondary">
+                                            {recommendationsCount} Recommendation
+                                            {recommendationsCount !== 1 ? "s" : ""}
+                                        </Badge>
+                                    </div>
                                 </div>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-8 w-8"
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
+                                            <EllipsisVertical className="h-4 w-4" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="w-fit">
+                                        <DropdownMenuItem
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleOpenDrawer();
+                                            }}
+                                        >
+                                            <Eye className="mr-2 h-4 w-4" />
+                                            View Recommendations
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
                             </div>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-8 w-8"
-                                        onClick={(e) => e.stopPropagation()}
-                                    >
-                                        <EllipsisVertical className="h-4 w-4" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="w-fit">
-                                    <DropdownMenuItem
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleOpenDrawer();
-                                        }}
-                                    >
-                                        <Eye className="mr-2 h-4 w-4" />
-                                        View Recommendations
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </div>
-                    </CardHeader>
-                    <RecDrawer group={group} isOpen={isDrawerOpen} setIsOpen={setIsDrawerOpen} />
-                </Card>
-            </ContextMenuTrigger>
-            <ContextMenuContent>
-                <ContextMenuItem onClick={handleOpenDrawer}>
-                    <Eye className="mr-2 h-4 w-4" />
-                    View Recommendations
-                </ContextMenuItem>
-            </ContextMenuContent>
-        </ContextMenu>
+                        </CardHeader>
+                    </Card>
+                </ContextMenuTrigger>
+                <ContextMenuContent>
+                    <ContextMenuItem onClick={handleOpenDrawer}>
+                        <Eye className="mr-2 h-4 w-4" />
+                        View Recommendations
+                    </ContextMenuItem>
+                </ContextMenuContent>
+            </ContextMenu>
+            <RecDrawer group={group} isOpen={isDrawerOpen} setIsOpen={setIsDrawerOpen} />
+        </>
     );
 }

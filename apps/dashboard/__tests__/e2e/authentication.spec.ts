@@ -45,7 +45,7 @@ test.describe("authentication", () => {
         // assert that redirected to dashboard
         await page.waitForURL("**/dashboard", { timeout: 15000 });
 
-        await expect(page.getByLabel("User Email")).toHaveText(email);
+        await expect(page.getByText(email)).toBeVisible();
 
         // Logout
         await page.getByLabel("logout button").click();

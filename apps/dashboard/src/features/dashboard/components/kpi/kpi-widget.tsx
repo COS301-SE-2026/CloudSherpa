@@ -103,7 +103,7 @@ export function KPIWidget({ config, preview = false, isEditMode = false }: Reado
             onDelete={() => removeWidget(id, id)}
         >
             <Card
-                className={`flex flex-col gap-4 h-full w-full justify-between ${preview ? "bg-muted/40 h-50" : ""}`}
+                className={`flex flex-col gap-4 h-full w-full${preview ? "bg-muted/40 h-50" : ""}`}
             >
                 <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle>{config.displayName}</CardTitle>
@@ -116,7 +116,9 @@ export function KPIWidget({ config, preview = false, isEditMode = false }: Reado
                         />
                     )}
                 </CardHeader>
-                <CardContent>{renderKpiContent()}</CardContent>
+                <CardContent className="h-full flex flex-col justify-between">
+                    {renderKpiContent()}
+                </CardContent>
             </Card>
         </WidgetMenu>
     );

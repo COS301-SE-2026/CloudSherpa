@@ -140,7 +140,8 @@ public class IntelligenceForecastingController {
               BigDecimal.ZERO,
               BigDecimal.valueOf(42.5),
               mockChargeId,
-              mockChargeId);
+              mockChargeId,
+              BigDecimal.valueOf(5));
 
       return ResponseEntity.status(HttpStatus.OK).body(mockResponse);
     } else {

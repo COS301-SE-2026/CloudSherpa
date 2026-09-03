@@ -55,7 +55,7 @@ export default function UsageToolbar() {
             options={PROVIDERS.map((p) => ({ value: p.value, label: p.label }))}
             value={provider}
             onSelect={(val) => setProvider(val as AccountType)}
-            placeholder="Select Provider..."
+            placeholder="Provider..."
             disableSearch={true}
             widthVariant={width}
         />
@@ -130,7 +130,7 @@ export default function UsageToolbar() {
         <header className=" h-16 flex flex-row items-center justify-between">
             <div className="hidden lg:flex flex-row items-center justify-between w-full">
                 <div className="flex flex-row gap-2">
-                    {renderProviderDropdown("medium")}
+                    {renderProviderDropdown("small")}
                     {renderAccountDropdown("large")}
                     {renderResourceDropdown("large")}
                     {renderMetricDropdown("medium")}

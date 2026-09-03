@@ -119,6 +119,7 @@ class BillingForecastCacheTest {
         BigDecimal.valueOf(12.50),
         BigDecimal.valueOf(1.42),
         "charge-id-01",
-        "charge-id-01");
+        "charge-id-01",
+        BigDecimal.valueOf(5));
   }
 }

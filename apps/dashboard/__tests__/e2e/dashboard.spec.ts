@@ -20,7 +20,7 @@ async function registerAndLoginNewUser(page: Page) {
     //auto logs in
 
     await page.waitForURL(/.*\/dashboard.*/, { timeout: 15000 });
-    await expect(page.getByLabel("User Email")).toHaveText(email);
+    await expect(page.getByText(email)).toBeVisible();
 
     return { email, password };
 }
@@ -49,15 +49,6 @@ async function createNewKPIWidget(page: Page) {
     await expect(page.getByText("New KPI").first()).toBeVisible();
 }
 
-async function createPreConfiguredChartWidget(page: Page) {
-    await page.getByLabel("editbtn").first().click();
-    await page.getByRole("button", { name: "Add Chart" }).click();
-    await page.getByRole("button", { name: "Save" }).click();
-    await expect(page.getByText("New Chart").first()).toBeVisible();
-    await page.getByLabel("configure new widget button").click();
-    await configureChartWidgetName(page);
-}
-
 async function configureChartWidgetName(page: Page) {
     const uniqueWidgetName = `testChart-${Date.now()}`;
     await page.getByRole("textbox").fill(uniqueWidgetName);
@@ -68,7 +59,7 @@ async function configureChartWidgetName(page: Page) {
 
 async function configureKPIWidgetName(page: Page) {
     const uniqueWidgetName = `testKPI-${Date.now()}`;
-    await page.getByLabel("kpi display name").fill(uniqueWidgetName);
+    await page.getByPlaceholder("Card Title").fill(uniqueWidgetName);
     await page.getByRole("button", { name: "Save KPI" }).click();
     await expect(page.getByText(uniqueWidgetName)).toBeVisible();
     return uniqueWidgetName;
@@ -161,7 +152,7 @@ test.describe("dashboard", () => {
         await page.getByLabel("chart options button").click();
         await page.getByRole("menuitem", { name: "Delete Widget" }).click();
         //negative result
-        await expect(page.getByText("New KPI").first()).not.toBeVisible();
+        await expect(page.getByText("deleted").first()).toBeVisible();
     });
 
     test("Delete Chart widget", async ({ page }) => {
@@ -173,6 +164,6 @@ test.describe("dashboard", () => {
         await page.getByLabel("chart options button").click();
         await page.getByRole("menuitem", { name: "Delete Widget" }).click();
         //negative result
-        await expect(page.getByText("New Chart").first()).not.toBeVisible();
+        await expect(page.getByText("deleted").first()).toBeVisible();
     });
 });

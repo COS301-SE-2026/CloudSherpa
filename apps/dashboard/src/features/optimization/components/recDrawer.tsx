@@ -79,11 +79,9 @@ export default function RecDrawer({ group, isOpen, setIsOpen }: Readonly<RecDraw
 
     const clearFocusedRecommendation = useRecStore((state) => state.clearFocusedRecommendation);
 
-    useEffect(() => {
-        if (!isOpen) {
-            clearFocusedRecommendation();
-        }
-    }, [isOpen, clearFocusedRecommendation]);
+    const clearSearch = () => {
+        setSearchQuery("");
+    };
 
     return (
         <Drawer
@@ -92,7 +90,11 @@ export default function RecDrawer({ group, isOpen, setIsOpen }: Readonly<RecDraw
             open={isOpen}
             onOpenChange={(open) => {
                 setIsOpen(open);
-                if (!open) clearFocusedRecommendation();
+                if (!open) {
+                    clearFocusedRecommendation();
+                    setSearchQuery("");
+                    setStatusTab("active");
+                }
             }}
         >
             {/* drawer width could be volatile so will keep an eye on it */}
@@ -139,7 +141,7 @@ export default function RecDrawer({ group, isOpen, setIsOpen }: Readonly<RecDraw
                                 </TabsTrigger>
                             </TabsList>
                         </Tabs>
-                        <div className="relative w-full max-w-xs ml-auto">
+                        <div className="relative w-full max-w-xs ml-auto flex flex-row items-center">
                             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                             <Input
                                 type="text"
@@ -148,6 +150,18 @@ export default function RecDrawer({ group, isOpen, setIsOpen }: Readonly<RecDraw
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
+                            {searchQuery && (
+                                <div className="absolute right-1 top-1/2 -translate-y-1/2 z-10">
+                                    <Button
+                                        aria-label="clear search"
+                                        variant="ghost"
+                                        onClick={() => clearSearch()}
+                                        className="h-7 w-7 p-1 text-muted-foreground hover:text-foreground transition-colors"
+                                    >
+                                        <X size={14} className="text-muted-foreground" />
+                                    </Button>
+                                </div>
+                            )}
                         </div>
                     </div>
 
