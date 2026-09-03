@@ -18,6 +18,7 @@ public class ChargeIdNormalizer {
   private static final Map<String, String> skuChargeNameMap =
       Map.ofEntries(
           entry("1DF5-1F98-1DD1", "%%%BigQuery Analysis"),
+          entry("C69E-33FA-4F90", "%%%BigQuery Analysis"),
           entry("34CF-7D88-5D40", "%%%Compute Engine Storage PD Snapshot in US"));
 
   public String normalizeChargeId(FieldValueList valueList) {
