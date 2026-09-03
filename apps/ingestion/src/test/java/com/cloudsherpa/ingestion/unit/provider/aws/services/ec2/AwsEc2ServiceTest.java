@@ -111,7 +111,6 @@ class AwsEc2ServiceTest {
     RegionalInstance regionalInstance =
         new RegionalInstance(instance, software.amazon.awssdk.regions.Region.US_EAST_1);
 
-    // Stub the method through the discovery executor
     when(discoveryExecutor.execute(anyList(), any())).thenReturn(List.of(regionalInstance));
 
     List<ResourceDetail> result = service.getAllEc2InstancesWithTags(credentials);
