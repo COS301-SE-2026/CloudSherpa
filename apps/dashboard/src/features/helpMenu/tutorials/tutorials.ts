@@ -15,8 +15,8 @@ export interface Tutorials {
     thumbNail: string;
 }
 
-//structure is id, name, description, category, duration, youtubeid
-const TUTS = [
+//this now groups all the tutorials by category
+const GETTING_STARTED_TUTS = [
     //logging in -
     {
         id: "gettingStarted",
@@ -66,7 +66,9 @@ const TUTS = [
         durationOfVideo: "0:35",
         youtubeId: "5cbma4cMZjo",
     },
+];
 
+const RESOURCES_TUTS = [
     //editing resources - https://youtu.be/Zh2nBeNTG8g
     {
         id: "resources",
@@ -76,7 +78,9 @@ const TUTS = [
         durationOfVideo: "0:24",
         youtubeId: "Zh2nBeNTG8g",
     },
+];
 
+const CONNECTIONS_TUTS = [
     //deleting connections - https://youtu.be/UbWKtwcsVuI
     {
         id: "connections",
@@ -126,7 +130,9 @@ const TUTS = [
         durationOfVideo: "0:57",
         youtubeId: "_JhdKb_6rwU",
     },
+];
 
+const BILLING_TUTS = [
     //config kpi - https://youtu.be/NQRHgKiymqE
     {
         id: "billing",
@@ -136,7 +142,9 @@ const TUTS = [
         durationOfVideo: "0:39",
         youtubeId: "NQRHgKiymqE",
     },
+];
 
+const RECOMMENDATIONS_TUTS = [
     //recommendations - https://youtu.be/ivMxbPg3OmY
     {
         id: "recommendations",
@@ -146,7 +154,9 @@ const TUTS = [
         durationOfVideo: "1:12",
         youtubeId: "ivMxbPg3OmY",
     },
+];
 
+const FORECASTING_TUTS = [
     //usage - https://youtu.be/UaqoLT9Wb7A
     {
         id: "forecasting",
@@ -168,27 +178,47 @@ const TUTS = [
     },
 ];
 
-export const TUTORIALS: Tutorials[] = TUTS.map((tutorial) => ({
+//added a helper function to format all the tutorials
+const forFormattingTutorials = (tutorials : typeof GETTING_STARTED_TUTS, category : Tutorials["category"]) : Tutorials[] => {
+    return tutorials.map((tutorial) => ({
     id: tutorial.id,
     name: tutorial.name,
     description: tutorial.description,
-    category: tutorial.category as Tutorials["category"],
+    category: category,
     lengthOfVideo: tutorial.durationOfVideo,
     videoLink: `https://www.youtube.com/embed/${tutorial.youtubeId}`,
 
     //maxresdefault is used by youtibe to serve the highest res version of a thumbnail (1280x720)
     thumbNail: `https://img.youtube.com/vi/${tutorial.youtubeId}/maxresdefault.jpg`,
-}));
+    }));
+};
+
+//formats the tutorial groupds
+export const GETTING_STARTED = forFormattingTutorials(GETTING_STARTED_TUTS, "Getting Started");
+
+export const RESOURCES = forFormattingTutorials(RESOURCES_TUTS, "Resources");
+
+export const CONNECTIONS = forFormattingTutorials(CONNECTIONS_TUTS, "Connections");
+
+export const BILLING = forFormattingTutorials(BILLING_TUTS, "Billing");
+
+export const RECOMMENDATIONS = forFormattingTutorials(RECOMMENDATIONS_TUTS, "Recommendations");
+
+export const FORECASTING = forFormattingTutorials(FORECASTING_TUTS, "Forecasting");
+
+export const ALL_TUTORIALS = [
+    ...GETTING_STARTED, ...CONNECTIONS, ...RESOURCES, ...BILLING, ...RECOMMENDATIONS, ...FORECASTING,
+];
 
 export const TUTFILTERS = [
     "All",
-    ...new Set(TUTORIALS.map((forTutorials) => forTutorials.category)),
+    ...new Set(ALL_TUTORIALS.map((forTutorials) => forTutorials.category)),
 ];
 
-export const filterTutorialsByCategory = (category: string) => {
+export const filterTutorialsByCategory = (category: string) : Tutorials[] => {
     if (category === "All") {
-        return TUTORIALS;
+        return ALL_TUTORIALS;
     }
 
-    return TUTORIALS.filter((forTutorials) => forTutorials.category === category);
+    return ALL_TUTORIALS.filter((forTutorials) => forTutorials.category === category);
 };
