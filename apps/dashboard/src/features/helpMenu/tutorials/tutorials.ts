@@ -179,17 +179,20 @@ const FORECASTING_TUTS = [
 ];
 
 //added a helper function to format all the tutorials
-const forFormattingTutorials = (tutorials : typeof GETTING_STARTED_TUTS, category : Tutorials["category"]) : Tutorials[] => {
+const forFormattingTutorials = (
+    tutorials: typeof GETTING_STARTED_TUTS,
+    category: Tutorials["category"]
+): Tutorials[] => {
     return tutorials.map((tutorial) => ({
-    id: tutorial.id,
-    name: tutorial.name,
-    description: tutorial.description,
-    category: category,
-    lengthOfVideo: tutorial.durationOfVideo,
-    videoLink: `https://www.youtube.com/embed/${tutorial.youtubeId}`,
+        id: tutorial.id,
+        name: tutorial.name,
+        description: tutorial.description,
+        category: category,
+        lengthOfVideo: tutorial.durationOfVideo,
+        videoLink: `https://www.youtube.com/embed/${tutorial.youtubeId}`,
 
-    //maxresdefault is used by youtibe to serve the highest res version of a thumbnail (1280x720)
-    thumbNail: `https://img.youtube.com/vi/${tutorial.youtubeId}/maxresdefault.jpg`,
+        //maxresdefault is used by youtibe to serve the highest res version of a thumbnail (1280x720)
+        thumbNail: `https://img.youtube.com/vi/${tutorial.youtubeId}/maxresdefault.jpg`,
     }));
 };
 
@@ -207,7 +210,12 @@ export const RECOMMENDATIONS = forFormattingTutorials(RECOMMENDATIONS_TUTS, "Rec
 export const FORECASTING = forFormattingTutorials(FORECASTING_TUTS, "Forecasting");
 
 export const ALL_TUTORIALS = [
-    ...GETTING_STARTED, ...CONNECTIONS, ...RESOURCES, ...BILLING, ...RECOMMENDATIONS, ...FORECASTING,
+    ...GETTING_STARTED,
+    ...CONNECTIONS,
+    ...RESOURCES,
+    ...BILLING,
+    ...RECOMMENDATIONS,
+    ...FORECASTING,
 ];
 
 export const TUTFILTERS = [
@@ -215,7 +223,7 @@ export const TUTFILTERS = [
     ...new Set(ALL_TUTORIALS.map((forTutorials) => forTutorials.category)),
 ];
 
-export const filterTutorialsByCategory = (category: string) : Tutorials[] => {
+export const filterTutorialsByCategory = (category: string): Tutorials[] => {
     if (category === "All") {
         return ALL_TUTORIALS;
     }
