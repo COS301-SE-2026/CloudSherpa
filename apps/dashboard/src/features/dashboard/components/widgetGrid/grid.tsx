@@ -20,6 +20,7 @@ export default function Grid({ isEditMode, onLayoutChange, layouts }: Readonly<G
     const gridRef = useRef<HTMLDivElement>(null);
     const gridStackInstance = useRef<GridStack | null>(null);
     const onLayoutChangeRef = useRef(onLayoutChange);
+    const isInternalUpdate = useRef(false);
 
     const isEditModeRef = useRef(isEditMode);
 
@@ -52,6 +53,7 @@ export default function Grid({ isEditMode, onLayoutChange, layouts }: Readonly<G
 
             gridStackInstance.current.on("change", () => {
                 if (gridStackInstance.current && isEditModeRef.current) {
+                    isInternalUpdate.current = true;
                     const fullLayout = gridStackInstance.current.save(
                         false,
                         false,
@@ -91,6 +93,11 @@ export default function Grid({ isEditMode, onLayoutChange, layouts }: Readonly<G
 
     useEffect(() => {
         if (!gridStackInstance.current) return;
+
+        if (isInternalUpdate.current) {
+            isInternalUpdate.current = false;
+            return;
+        }
 
         //batchupdate prevent multiple re-layouts during synchronization
         gridStackInstance.current.batchUpdate();
@@ -153,7 +160,7 @@ export default function Grid({ isEditMode, onLayoutChange, layouts }: Readonly<G
         //compact on change or load
         gridStackInstance.current.compact(); //.compact optimizes grid layout by reclaiming spaces, helps remove on page load layout inconsistencies
         gridStackInstance.current.batchUpdate(false);
-    }, [layouts, isEditMode]);
+    }, [layouts]);
 
     //lock layouts outside edit mode
     useEffect(() => {
