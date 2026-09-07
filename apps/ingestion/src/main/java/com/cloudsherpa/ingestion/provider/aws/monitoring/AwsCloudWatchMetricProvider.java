@@ -8,7 +8,6 @@ import com.cloudsherpa.ingestion.connector.ServiceScope;
 import com.cloudsherpa.ingestion.models.IngestionRequestEvent;
 import com.cloudsherpa.ingestion.models.UsageRecordModel;
 import com.cloudsherpa.ingestion.provider.monitoring.CloudMonitoringMetricProvider;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +26,8 @@ import software.amazon.awssdk.services.cloudwatch.model.Statistic;
 
 @Component
 public class AwsCloudWatchMetricProvider implements CloudMonitoringMetricProvider {
+  private record TimeWindow(Instant from, Instant to) {}
+
   private final CloudWatchClient defaultClient =
       CloudWatchClient.builder()
           .credentialsProvider(DefaultCredentialsProvider.create())
@@ -36,22 +37,21 @@ public class AwsCloudWatchMetricProvider implements CloudMonitoringMetricProvide
   public List<UsageRecordModel> collectMetrics(
       AccountScope accountScope, IngestionRequestEvent request) {
     UUID ingestionID = UUID.randomUUID();
-    int period =
-        request
-            .getPeriod(); // contract: ensure that the request does not return over 1000 datapoints
-    // ((to-from)/period)
-    validatePeriod(request, period);
+    int period = request.getPeriod();
+    List<TimeWindow> timeWindows =
+        createTimeWindows(request.getFrom(), request.getTo(), period); // create time windows
+    // of under 1440
+    // datapoints, AWS API
+    // limit
     CloudWatchClient client = defaultClient;
 
     List<UsageRecordModel> result = new ArrayList<>();
     for (ServiceScope serviceScope :
-        accountScope.getServiceScopes()) { // these are for services such as EC2, RDS
-      // etc.
+        accountScope.getServiceScopes()) { // for services such as EC2, RDS etc.
 
       for (InstanceScope instance :
           serviceScope.getInstances()) { // instances within a service with a name and
-        // value
-        // list e.g. i-23xxxxxxx
+        // value list e.g. i-23xxxxxxx
         for (Instance instanceValue : instance.getInstances()) { // the specific instance
           Dimension dimension =
               Dimension.builder()
@@ -64,18 +64,7 @@ public class AwsCloudWatchMetricProvider implements CloudMonitoringMetricProvide
 
           for (Metric metric :
               serviceScope.getMetrics()) { // the metrics requested, e.g. CPUUtilisation,
-            // NetworkIn,
-            // NetworkOut etc.
-            GetMetricStatisticsRequest req =
-                GetMetricStatisticsRequest.builder()
-                    .namespace(serviceScope.getName())
-                    .metricName(metric.getName())
-                    .startTime(request.getFrom())
-                    .endTime(request.getTo())
-                    .period(period)
-                    .dimensions(dimension)
-                    .statistics(Statistic.AVERAGE)
-                    .build();
+            // NetworkIn, NetworkOut etc.
 
             AwsMetricRequestContext context =
                 new AwsMetricRequestContext(
@@ -87,7 +76,21 @@ public class AwsCloudWatchMetricProvider implements CloudMonitoringMetricProvide
                     period,
                     ingestionID);
 
-            result.addAll(buildRequestResult(client, req, context));
+            for (TimeWindow window :
+                timeWindows) { // ensures requests to AWS are under 1440 datapoint limit
+              GetMetricStatisticsRequest req =
+                  GetMetricStatisticsRequest.builder()
+                      .namespace(serviceScope.getName())
+                      .metricName(metric.getName())
+                      .startTime(window.from())
+                      .endTime(window.to())
+                      .period(period)
+                      .dimensions(dimension)
+                      .statistics(Statistic.AVERAGE)
+                      .build();
+
+              result.addAll(buildRequestResult(client, req, context));
+            }
           }
         }
       }
@@ -155,13 +158,37 @@ public class AwsCloudWatchMetricProvider implements CloudMonitoringMetricProvide
         .build();
   }
 
-  private void validatePeriod(IngestionRequestEvent request, int period) {
+  private List<TimeWindow> createTimeWindows(Instant from, Instant to, int period) {
+
     if (period <= 0) {
       throw new IllegalArgumentException("Period must be > 0");
     }
 
-    if (Duration.between(request.getFrom(), request.getTo()).getSeconds() / period > 1440) {
-      throw new IllegalArgumentException("AWS will not return over 1440 datapoints per metric");
+    if (from == null || to == null) {
+      throw new IllegalArgumentException("From and to must not be null");
     }
+
+    if (!to.isAfter(from)) {
+      throw new IllegalArgumentException("To must be after from");
+    }
+
+    long maxWindowSeconds = (long) period * 1440;
+
+    List<TimeWindow> windows = new ArrayList<>();
+
+    Instant windowStart = from;
+
+    while (windowStart.isBefore(to)) {
+      Instant windowEnd = windowStart.plusSeconds(maxWindowSeconds);
+
+      if (windowEnd.isAfter(to)) {
+        windowEnd = to;
+      }
+
+      windows.add(new TimeWindow(windowStart, windowEnd));
+      windowStart = windowEnd;
+    }
+
+    return windows;
   }
 }
