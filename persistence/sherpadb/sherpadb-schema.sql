@@ -163,6 +163,13 @@ CREATE TABLE IF NOT EXISTS public.gcp_billing_export_config (
   billing_account_id char(20) NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS public.azure_billing_export_config (
+  config_id uuid PRIMARY KEY REFERENCES public.billing_export_config(config_id) ON DELETE CASCADE,
+  storage_account_name varchar(24) NOT NULL CONSTRAINT storage_account_name_length_check CHECK (length(storage_account_name) >= 3), -- must be between 3 and 24 characters long https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/resource-name-rules#microsoftstorage
+  storage_container varchar(63) NOT NULL CONSTRAINT storage_container_length_check CHECK ((length(storage_contaner) >= 3)), -- must be between 3 and 63 characters long https://learn.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata
+  billing_export_directory varchar(255) NOT NULL -- https://learn.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-shares--directories--files--and-metadata#directory-and-file-names
+);
+
 CREATE TABLE IF NOT EXISTS public.billing_export_execution (
   execution_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   config_id uuid REFERENCES public.billing_export_config(config_id) ON DELETE CASCADE,
