@@ -6,6 +6,9 @@ import { GridStack, GridItemHTMLElement, GridStackWidget, GridStackNode } from "
 import { LayoutItem } from "@/features/dashboard/types/widgets";
 import { WidgetWrapper } from "@/features/dashboard/components/widgetGrid/widgets/widgetWrapper";
 
+const MIN_WIDGET_W = 3;
+const MIN_WIDGET_H = 3;
+
 interface GridProps {
     isEditMode: boolean;
     dashboardId: string;
@@ -56,7 +59,26 @@ export default function Grid({ isEditMode, onLayoutChange, layouts }: Readonly<G
                             (w as LayoutItem).id = String(node.id || "");
                         }
                     ) as LayoutItem[];
-                    onLayoutChangeRef.current(fullLayout);
+
+                    const repaired = fullLayout.map((l) => {
+                        const needsRepair =
+                            !Number.isFinite(l.w) || !Number.isFinite(l.h) || l.w <= 0 || l.h <= 0;
+                        if (needsRepair) {
+                            console.warn(
+                                `Layout node ${l.id} missing/invalid w or h, defaulting to min size`,
+                                l
+                            );
+                        }
+                        return {
+                            ...l,
+                            w: Number.isFinite(l.w) && l.w > 0 ? l.w : MIN_WIDGET_W,
+                            h: Number.isFinite(l.h) && l.h > 0 ? l.h : MIN_WIDGET_H,
+                            x: Number.isFinite(l.x) ? l.x : 0,
+                            y: Number.isFinite(l.y) ? l.y : 0,
+                        };
+                    });
+
+                    onLayoutChangeRef.current(repaired);
                 }
             });
         }
@@ -99,6 +121,8 @@ export default function Grid({ isEditMode, onLayoutChange, layouts }: Readonly<G
                         y: layoutItem.y,
                         w: layoutItem.w,
                         h: layoutItem.h,
+                        minW: MIN_WIDGET_W,
+                        minH: MIN_WIDGET_H,
                         autoPosition: layoutItem.autoPosition,
                     });
                 }
@@ -109,7 +133,11 @@ export default function Grid({ isEditMode, onLayoutChange, layouts }: Readonly<G
                 ) as GridItemHTMLElement;
                 if (el && !el.gridstackNode) {
                     // Only make widget if it's not already one
-                    gridStackInstance.current?.makeWidget(el, layoutItem);
+                    gridStackInstance.current?.makeWidget(el, {
+                        ...layoutItem,
+                        minW: MIN_WIDGET_W,
+                        minH: MIN_WIDGET_H,
+                    });
                 }
             }
         });
