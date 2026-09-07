@@ -169,7 +169,7 @@ public class UsageIngestionService {
    */
   private Instant getIngestionEndTime(Instant databaseIngestionStartTime) {
     Instant proposedEndTime = Instant.now().truncatedTo(ChronoUnit.MINUTES);
-    Instant maximumEndTime = databaseIngestionStartTime.plusSeconds(SECONDS_IN_DAY);
+    Instant maximumEndTime = databaseIngestionStartTime.plusSeconds(SECONDS_IN_DAY * 2);
     if (maximumEndTime.isBefore(proposedEndTime)) {
       return maximumEndTime;
     } else {
