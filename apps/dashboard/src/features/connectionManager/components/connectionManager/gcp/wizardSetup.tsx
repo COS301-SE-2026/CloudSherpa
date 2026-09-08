@@ -7,6 +7,7 @@ import StepThreeGcp from "./stepThree";
 import type { GcpBillingConfigType } from "./validTypes";
 import { GcpCredentialsDto } from "@/lib/fetch/dto/cloud-credentials";
 import { ResourceDetail } from "@/lib/fetch/dto/cloud-resource";
+import {HelpButton} from "../helpButton";
 
 interface WizardData {
     credentials: GcpCredentialsDto | null;
@@ -98,6 +99,8 @@ export default function WizardSetupGcp() {
                     onBack={handleBack}
                 />
             )}
+
+            <HelpButton provider = "gcp"/>
         </>
     );
 }
