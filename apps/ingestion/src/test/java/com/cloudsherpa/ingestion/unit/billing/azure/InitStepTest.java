@@ -1,6 +1,7 @@
 package com.cloudsherpa.ingestion.unit.billing.azure;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 import com.cloudsherpa.ingestion.billing.BillingExportConfigService;
@@ -13,6 +14,7 @@ import com.cloudsherpa.lib.entities.CloudCredential;
 import com.cloudsherpa.lib.repositories.CloudCredentialRepository;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -53,7 +55,6 @@ class InitStepTest {
     mockValidSetExportConfig();
 
     AzureBillingContext validContext = validBillingContext();
-
     initStep.execute(validContext);
 
     assertEquals("teststorageaccount", validContext.getExportConfig().getStorageAccountName());
@@ -65,6 +66,43 @@ class InitStepTest {
     assertEquals("test-billing-export", validContext.getExportConfig().getBillingExportName());
   }
 
+  @Test
+  void shouldThrowWhenExportConfigNotFound() {
+    AzureBillingContext validContext = validBillingContext();
+
+    when(billingExportConfigService.getBillingExportConfig(validContext.getConfigId()))
+        .thenThrow(new NoSuchElementException());
+
+    assertThrows(IllegalStateException.class, () -> initStep.execute(validContext));
+  }
+
+  @Test
+  void shouldThrowWhenAzureExportConfigNotFound() {
+    mockValidSetCredentials();
+    AzureBillingContext validContext = validBillingContext();
+
+    when(billingExportConfigService.getAzureBillingExportConfig(validContext.getConfigId()))
+        .thenThrow(new NoSuchElementException());
+
+    assertThrows(IllegalStateException.class, () -> initStep.execute(validContext));
+  }
+
+  @Test
+  void shouldThrowWhenCredentialsNotFound() {
+    mockMissingCredentials();
+    AzureBillingContext validContext = validBillingContext();
+
+    assertThrows(IllegalStateException.class, () -> initStep.execute(validContext));
+  }
+
+  @Test
+  void shouldThrowWhenCredentialsInvalidJson() {
+    mockInvalidCredentials();
+    AzureBillingContext validContext = validBillingContext();
+
+    assertThrows(IllegalStateException.class, () -> initStep.execute(validContext));
+  }
+
   private AzureBillingContext validBillingContext() {
     return new AzureBillingContext(
         UUID.fromString("00000000-0000-0000-0000-000000000004"),
@@ -73,22 +111,10 @@ class InitStepTest {
 
   private void mockValidSetCredentials() {
     BillingExportConfig validConfig = getValidBillingExportConfig();
-
     when(billingExportConfigService.getBillingExportConfig(validConfig.getId()))
         .thenReturn(validConfig);
 
-    List<CloudCredential> validCredentialsRepo =
-        List.of(
-            new CloudCredential(
-                UUID.fromString("00000000-0000-0000-0000-000000000003"),
-                validConfig.getAccountId(),
-                "AZURE",
-                "SERVICE_PRINCIPAL",
-                "encrypted-test-credentials",
-                OffsetDateTime.parse("2026-01-01T10:00:00Z")));
-
-    when(cloudCredentialRepository.findByAccountIdAndProvider(validConfig.getAccountId(), "AZURE"))
-        .thenReturn(validCredentialsRepo);
+    mockValidCredentialRepoLookup(validConfig.getAccountId());
 
     String decryptedCredentialsJson =
         """
@@ -100,14 +126,60 @@ class InitStepTest {
       }
       """;
 
-    when(credentialEncryptionService.decrypt("encrypted-test-credentials"))
-        .thenReturn(decryptedCredentialsJson);
+    mockDecryptedCredentials("encrypted-test-credentials", decryptedCredentialsJson);
+  }
+
+  private void mockMissingCredentials() {
+    BillingExportConfig validConfig = getValidBillingExportConfig();
+    when(billingExportConfigService.getBillingExportConfig(validConfig.getId()))
+        .thenReturn(validConfig);
+
+    when(cloudCredentialRepository.findByAccountIdAndProvider(validConfig.getAccountId(), "AZURE"))
+        .thenReturn(List.of());
+  }
+
+  private void mockInvalidCredentials() {
+    BillingExportConfig validConfig = getValidBillingExportConfig();
+    when(billingExportConfigService.getBillingExportConfig(validConfig.getId()))
+        .thenReturn(validConfig);
+
+    mockValidCredentialRepoLookup(validConfig.getAccountId());
+
+    String decryptedCredentialsJson =
+        """
+      {
+        "subscriptionId": "00000000-0000-0000-0000-000000000010",
+        "tenantId": "00000000-0000-0000-0000-000000000011",
+        "clientId": "00000000-0000-0000-0000-000000000012"
+
+      """;
+
+    mockDecryptedCredentials("encrypted-test-credentials", decryptedCredentialsJson);
   }
 
   private void mockValidSetExportConfig() {
     AzureBillingExportConfig validExportConfig = getValidAzureBillingExportConfig();
     when(billingExportConfigService.getAzureBillingExportConfig(validExportConfig.getConfigId()))
         .thenReturn(validExportConfig);
+  }
+
+  private void mockDecryptedCredentials(String encryptedText, String decryptedCredentialsJson) {
+    when(credentialEncryptionService.decrypt(encryptedText)).thenReturn(decryptedCredentialsJson);
+  }
+
+  private void mockValidCredentialRepoLookup(UUID accountId) {
+    List<CloudCredential> validCredentialsRepo =
+        List.of(
+            new CloudCredential(
+                UUID.fromString("00000000-0000-0000-0000-000000000003"),
+                accountId,
+                "AZURE",
+                "SERVICE_PRINCIPAL",
+                "encrypted-test-credentials",
+                OffsetDateTime.parse("2026-01-01T10:00:00Z")));
+
+    when(cloudCredentialRepository.findByAccountIdAndProvider(accountId, "AZURE"))
+        .thenReturn(validCredentialsRepo);
   }
 
   private BillingExportConfig getValidBillingExportConfig() {

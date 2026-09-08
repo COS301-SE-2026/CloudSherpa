@@ -63,7 +63,7 @@ public class InitStep implements BillingIngestionPipelineStep<AzureBillingContex
       CloudCredential credential = repoCloudCredentials.get(0);
       String decrypted = encryptionService.decrypt(credential.getCredentialValue());
       context.setCredentials(objectMapper.readValue(decrypted, CloudCredentials.class));
-    } catch (JsonProcessingException e) {
+    } catch (JsonProcessingException | NoSuchElementException e) {
       throw new IllegalStateException(e);
     }
   }
@@ -77,7 +77,7 @@ public class InitStep implements BillingIngestionPipelineStep<AzureBillingContex
           "Azure Billing Export Config with Config ID {} does not exist for user {}",
           context.getConfigId(),
           context.getUserId());
-      throw e;
+      throw new IllegalStateException(e);
     }
   }
 }
