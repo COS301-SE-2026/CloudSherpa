@@ -298,7 +298,7 @@ const PopupForTroubleshooting = ({
                             className = "w-full flex items-center justify-between px-4 py-6 h-auto hover:border-destructive/50 hover:bg-destructive/5 group">
 
                         <span className = "flex items-center gap-3">
-                            <div className = "w-8 h-8 flex items-center justify-center rounded-md bg-muted/50"> <Cloud size = {20} strokeWidth = {1.75} className = "text-foreground"/> </div>
+                            <div className = "w-8 h-8 flex items-center justify-center rounded-md bg-muted/50"> <Server size = {20} strokeWidth = {1.75} className = "text-foreground"/> </div>
 
                             <span className = "text-left">
                                 <span className = "font-semibold text-foreground block"> GCP </span> 
@@ -312,7 +312,7 @@ const PopupForTroubleshooting = ({
                             className = "w-full flex items-center justify-between px-4 py-6 h-auto hover:border-destructive/50 hover:bg-destructive/5 group">
 
                         <span className = "flex items-center gap-3">
-                            <div className = "w-8 h-8 flex items-center justify-center rounded-md bg-muted/50"> <Cloud size = {20} strokeWidth = {1.75} className = "text-foreground"/> </div>
+                            <div className = "w-8 h-8 flex items-center justify-center rounded-md bg-muted/50"> <Database size = {20} strokeWidth = {1.75} className = "text-foreground"/> </div>
 
                             <span className = "text-left">
                                 <span className = "font-semibold text-foreground block"> Azure </span> 
@@ -355,6 +355,8 @@ function DocumentsAndTutorialsSuspense() {
     const youtubeIframe = useRef<HTMLIFrameElement>(null);
 
     const [isPopUpOpen, setIsPopUpOpen] = useState(false);
+
+    const [isPopupOpenForTroubleshooting, setIsPopupOpenForTroubleshooting] = useState(false);
 
     const selectedProvider = useRef<string | null>(null);
 
@@ -413,7 +415,9 @@ function DocumentsAndTutorialsSuspense() {
     const handlingCategoryClick = (category: BrowseCategory) => {
         if (category.id === "connections") {
             setIsPopUpOpen(true);
-        } else if (category.href) {
+        } else if (category.id === "troubleshooting") {
+            setIsPopupOpenForTroubleshooting(true);
+        } else if (category.href){
             router.push(category.href);
         }
     };
@@ -430,6 +434,12 @@ function DocumentsAndTutorialsSuspense() {
         selectedProvider.current = provider;
 
         router.push(`/helpMenu/documents/connections?forProviders=${provider}`);
+    };
+
+    const handlingTroubleshooting = (provider : string) => {
+        selectedProvider.current = provider;
+
+        router.push(`/helpMenu/documents/troubleshooting?forProviders=${provider}`);
     };
 
     const handlingDocumentsClicked = (documents: Documents) => {
@@ -455,6 +465,8 @@ function DocumentsAndTutorialsSuspense() {
                 onClose={() => setIsPopUpOpen(false)}
                 onSelectProvider={handlingSelectedProvider}
             />
+
+            <PopupForTroubleshooting isOpen = {isPopupOpenForTroubleshooting} onClose = {() => setIsPopupOpenForTroubleshooting(false)} onSelectProvider = {handlingTroubleshooting}/>
 
             {/* this is for the video dialog (youtube iframe) */}
             <Dialog open={videoDialogOpen} onOpenChange={handlingVideoClose}>
