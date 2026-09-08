@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 public class RuleCatalog {
 
   private static final List<String> COMPUTE_RESOURCE_TYPES =
-      List.of("AWS/EC2", "gce_instance", "AZURE/VM");
+      List.of("AWS/EC2", "gce_instance", "Microsoft.Compute/virtualMachines");
 
   public List<OptimizationRule> getAllRules() {
     return List.of(
@@ -24,29 +24,7 @@ public class RuleCatalog {
         computeDownsizeMemoryRule());
   }
 
-  // Recommends downsizing compute instances whose P95 CPU utilization stayed below 10% over the
-  // last 4 days.
-  // P95 filters out temporary spikes, capturing only sustained low usage patterns.
-  private OptimizationRule computeDownsizeRule() {
-    MetricThresholdCondition lowCpu =
-        new MetricThresholdCondition(
-            MetricDisplayNameMapper.CPU_UTILIZATION,
-            4,
-            StatField.P95,
-            ComparisonOperator.LESS_THAN,
-            new BigDecimal(10));
-
-    return new OptimizationRule(
-        "COMPUTE-DOWNSIZE",
-        true,
-        OptimizationActionTypeEnum.DOWNSIZE,
-        null,
-        COMPUTE_RESOURCE_TYPES,
-        List.of(lowCpu),
-        true,
-        null);
-  }
-
+  // ! ---------------------------------------- TERMINATE ----------------------------------------
   // Recommends terminating compute instances that are completely idle: near-zero CPU and near-zero
   // network activity over 4 days.
   // Requires BOTH conditions to be met to avoid false positives.
@@ -80,6 +58,59 @@ public class RuleCatalog {
         null);
   }
 
+  // ! ---------------------------------------- TERMINATE ----------------------------------------
+
+  // # ---------------------------------------- DOWNSIZE ----------------------------------------
+  // Recommends downsizing compute instances whose P95 CPU utilization stayed below 10% over the
+  // last 4 days.
+  // P95 filters out temporary spikes, capturing only sustained low usage patterns.
+  private OptimizationRule computeDownsizeRule() {
+    MetricThresholdCondition lowCpu =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.CPU_UTILIZATION,
+            4,
+            StatField.P95,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(10));
+
+    return new OptimizationRule(
+        "COMPUTE-DOWNSIZE",
+        true,
+        OptimizationActionTypeEnum.DOWNSIZE,
+        null,
+        COMPUTE_RESOURCE_TYPES,
+        List.of(lowCpu),
+        true,
+        null);
+  }
+
+  // Recommends downsizing compute instances whose P95 memory utilization stayed below 20% over the
+  // last 4 days.
+  // This complements CPU-based downsize rules by catching instances that may have ample CPU but
+  // waste memory allocation.
+  private OptimizationRule computeDownsizeMemoryRule() {
+    MetricThresholdCondition lowMemory =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.MEMORY_UTILIZATION,
+            4,
+            StatField.P95,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(20));
+
+    return new OptimizationRule(
+        "COMPUTE-DOWNSIZE-MEMORY",
+        true,
+        OptimizationActionTypeEnum.DOWNSIZE,
+        null,
+        COMPUTE_RESOURCE_TYPES,
+        List.of(lowMemory),
+        true,
+        null);
+  }
+
+  // # ---------------------------------------- DOWNSIZE ----------------------------------------
+
+  // ? ---------------------------------------- SUSPEND ----------------------------------------
   // Recommends suspending compute instances with low CPU and network over 4 days.
   // More conservative than terminate.
   // SUSPEND allows the instance to be stopped/started rather than permanently removed.
@@ -111,28 +142,5 @@ public class RuleCatalog {
         true,
         null);
   }
-
-  // Recommends downsizing compute instances whose P95 memory utilization stayed below 20% over the
-  // last 4 days.
-  // This complements CPU-based downsize rules by catching instances that may have ample CPU but
-  // waste memory allocation.
-  private OptimizationRule computeDownsizeMemoryRule() {
-    MetricThresholdCondition lowMemory =
-        new MetricThresholdCondition(
-            MetricDisplayNameMapper.MEMORY_UTILIZATION,
-            4,
-            StatField.P95,
-            ComparisonOperator.LESS_THAN,
-            new BigDecimal(20));
-
-    return new OptimizationRule(
-        "COMPUTE-DOWNSIZE-MEMORY",
-        true,
-        OptimizationActionTypeEnum.DOWNSIZE,
-        null,
-        COMPUTE_RESOURCE_TYPES,
-        List.of(lowMemory),
-        true,
-        null);
-  }
+  // ? ---------------------------------------- SUSPEND ----------------------------------------
 }
