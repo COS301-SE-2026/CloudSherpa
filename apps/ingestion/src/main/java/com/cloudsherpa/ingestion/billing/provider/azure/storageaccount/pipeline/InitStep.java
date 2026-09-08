@@ -33,11 +33,13 @@ public class InitStep implements BillingIngestionPipelineStep<AzureBillingContex
   }
 
   public void execute(AzureBillingContext context) {
+    // Delay initializing the BillingExport until after when the manifests are discovered. Manifest
+    // data is
+    // required to construct the export id and prevent old exports from being re-ingested
+
     // Load config + credentials from DB + populate context
     setCredentials(context);
     setExportConfig(context);
-
-    // Delay initializing the BillingExport until after when the manifests are discovered
   }
 
   private void setCredentials(AzureBillingContext context) {
