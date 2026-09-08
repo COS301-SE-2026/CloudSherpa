@@ -147,6 +147,48 @@ private OptimizationRule computeDownsizeRule() {
 
 `RuleEngine` loads statistics matching each condition's metric/window, filters by provider and resource type, then intersects the matching resource sets across all conditions in a rule (a resource must satisfy every condition to produce a candidate.)
 
+## Rule Catalog
+
+The following rules are currently implemented in `RuleCatalog`, grouped by action type.
+
+### TERMINATE
+
+**`COMPUTE-TERMINATE-IDLE`**
+Recommends terminating compute instances that are completely idle: near-zero CPU and near-zero network activity over 4 days. Requires both conditions to be met to avoid false positives. Uses `MAXIMUM` stat to catch instances that never even briefly spike in usage. Termination is the most aggressive action, reserved for resources clearly no longer needed.
+
+| Metric | Window | Stat | Condition |
+|---|---|---|---|
+| CPU Utilization | 4d | MAXIMUM | < 5 |
+| Network In | 4d | MAXIMUM | < 1000 |
+
+### DOWNSIZE
+
+**`COMPUTE-DOWNSIZE`**
+Recommends downsizing compute instances whose P95 CPU utilization stayed below 10% over the last 4 days. P95 filters out temporary spikes, capturing only sustained low usage patterns.
+
+| Metric | Window | Stat | Condition |
+|---|---|---|---|
+| CPU Utilization | 4d | P95 | < 10 |
+
+**`COMPUTE-DOWNSIZE-MEMORY`**
+Recommends downsizing compute instances whose P95 memory utilization stayed below 20% over the last 4 days. Complements the CPU-based downsize rule by catching instances that may have ample CPU but waste memory allocation. Not currently triggered for Azure resources, since Azure VM memory utilization has no canonical metric mapping yet.
+
+| Metric | Window | Stat | Condition |
+|---|---|---|---|
+| Memory Utilization | 4d | P95 | < 20 |
+
+### SUSPEND
+
+**`COMPUTE-SUSPEND-IDLE`**
+Recommends suspending compute instances with low CPU and network over 4 days. More conservative than terminate. Suspend allows the instance to be stopped/started rather than permanently removed.
+
+| Metric | Window | Stat | Condition |
+|---|---|---|---|
+| CPU Utilization | 4d | P95 | < 15 |
+| Network In | 4d | MAXIMUM | < 2000 |
+
+All rules above apply to listed resource types in `RuleCatalog`, with no provider restriction (`providers: null`).
+
 ## Rule Validation
 
 Before a rule is activated in the engine, `RuleValidator` checks it structurally: `ruleId` is non-blank, `actionType` is present, at least one `metricThresholdConditions` entry exists and each condition has valid fields, `providers` contains no null entries and `resourceTypes` contains no blank entries. Rules that fail validation are excluded from `RuleSet.loadActiveRules` and never evaluated by the worker.
