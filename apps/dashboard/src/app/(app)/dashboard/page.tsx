@@ -64,7 +64,7 @@ function DashboardContent() {
     useEffect(() => {
         fetchRecGroups();
         fetchSummary();
-    }, []);
+    });
 
     useEffect(() => {
         // checks if where user is coming from

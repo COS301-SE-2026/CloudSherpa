@@ -62,17 +62,12 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
     useImperativeHandle(ref, () => ({
         compactAndGetLayout: () => {
             if (!gridStackInstance.current) return null;
-
-            // Mark as internal so the [layouts] reconcile effect doesn't
-            // re-fight this once the caller pushes the result into the store.
             isInternalUpdate.current = true;
 
             gridStackInstance.current.batchUpdate();
             gridStackInstance.current.compact();
             gridStackInstance.current.batchUpdate(false);
 
-            // Read the true post-compact state directly from the engine,
-            // rather than trusting the store or waiting on the "change" event.
             const fullLayout = gridStackInstance.current.save(
                 false,
                 false,
@@ -221,7 +216,7 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
             gridStackInstance.current?.removeWidget(node.el!, false, false);
         });
         //compact on change or load
-        gridStackInstance.current.compact(); //.compact optimizes grid layout by reclaiming spaces, helps remove on page load layout inconsistencies
+        gridStackInstance.current.compact();
         gridStackInstance.current.batchUpdate(false);
     }, [layouts]);
 
