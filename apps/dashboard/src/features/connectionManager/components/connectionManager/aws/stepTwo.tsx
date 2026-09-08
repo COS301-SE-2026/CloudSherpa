@@ -208,6 +208,7 @@ export default function StepTwoAws({ credentials, onNext, onBack }: Readonly<Pro
             onBack={onBack}
             forLoading={loading}
             forErrors={error}
+            cloudProvider = "aws"
         >
             <AwsBillingForm
                 bucketName={bucketName}

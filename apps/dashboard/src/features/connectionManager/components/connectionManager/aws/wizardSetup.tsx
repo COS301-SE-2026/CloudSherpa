@@ -4,6 +4,7 @@ import StepOneAws from "./stepOne";
 import StepTwoAws from "./stepTwo";
 import StepThreeAws from "./stepThree";
 import { ResourceDetail } from "@/lib/fetch/dto/cloud-resource";
+import {HelpButton} from "../helpButton";
 
 interface BillingConfig {
     prefix: string;
@@ -114,6 +115,8 @@ export default function WizardSetup() {
                     onBack={handleBack}
                 />
             )}
+
+            <HelpButton provider = "aws"/>
         </>
     );
 }
