@@ -5,7 +5,7 @@ import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useToolbar } from "@/features/dashboard/components/toolbar/toolbarProvider";
 
 import { Spinner } from "@/components/atoms/spinner";
-import Grid from "@/features/dashboard/components/widgetGrid/grid";
+import { gridApiRef, Grid } from "@/features/dashboard/components/widgetGrid/grid";
 import { LayoutItem } from "@/features/dashboard/types/widgets";
 import { useDashboardStore, DashboardStore } from "@/features/dashboard/stores/dashboard-store";
 import { useMetricStream } from "@/features/dashboard/services/sse/metric-stream";
@@ -113,6 +113,7 @@ function DashboardContent() {
         if (activeDashboard) {
             return (
                 <Grid
+                    ref={gridApiRef}
                     isEditMode={isEditMode}
                     dashboardId={activeDashboardId || ""}
                     onLayoutChange={handleLayoutChange}

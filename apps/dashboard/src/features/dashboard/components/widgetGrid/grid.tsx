@@ -1,5 +1,13 @@
 "use client";
-import React, { useLayoutEffect, useRef, useEffect } from "react";
+import React, {
+    useLayoutEffect,
+    useRef,
+    useEffect,
+    forwardRef,
+    useImperativeHandle,
+    createRef,
+    RefObject,
+} from "react";
 import "gridstack/dist/gridstack.min.css";
 import { GridStack, GridItemHTMLElement, GridStackWidget, GridStackNode } from "gridstack";
 
@@ -16,13 +24,66 @@ interface GridProps {
     layouts: LayoutItem[];
 }
 
-export default function Grid({ isEditMode, onLayoutChange, layouts }: Readonly<GridProps>) {
+export interface GridHandle {
+    compactAndGetLayout: () => LayoutItem[] | null;
+}
+
+export const gridApiRef: RefObject<GridHandle | null> = createRef();
+
+export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
+    { isEditMode, onLayoutChange, layouts },
+    ref
+) {
     const gridRef = useRef<HTMLDivElement>(null);
     const gridStackInstance = useRef<GridStack | null>(null);
     const onLayoutChangeRef = useRef(onLayoutChange);
     const isInternalUpdate = useRef(false);
-
     const isEditModeRef = useRef(isEditMode);
+
+    const repairLayout = (fullLayout: LayoutItem[]): LayoutItem[] =>
+        fullLayout.map((l) => {
+            const needsRepair =
+                !Number.isFinite(l.w) || !Number.isFinite(l.h) || l.w <= 0 || l.h <= 0;
+            if (needsRepair) {
+                console.warn(
+                    `Layout node ${l.id} missing/invalid w or h, defaulting to min size`,
+                    l
+                );
+            }
+            return {
+                ...l,
+                w: Number.isFinite(l.w) && l.w > 0 ? l.w : MIN_WIDGET_W,
+                h: Number.isFinite(l.h) && l.h > 0 ? l.h : MIN_WIDGET_H,
+                x: Number.isFinite(l.x) ? l.x : 0,
+                y: Number.isFinite(l.y) ? l.y : 0,
+            };
+        });
+
+    useImperativeHandle(ref, () => ({
+        compactAndGetLayout: () => {
+            if (!gridStackInstance.current) return null;
+
+            // Mark as internal so the [layouts] reconcile effect doesn't
+            // re-fight this once the caller pushes the result into the store.
+            isInternalUpdate.current = true;
+
+            gridStackInstance.current.batchUpdate();
+            gridStackInstance.current.compact();
+            gridStackInstance.current.batchUpdate(false);
+
+            // Read the true post-compact state directly from the engine,
+            // rather than trusting the store or waiting on the "change" event.
+            const fullLayout = gridStackInstance.current.save(
+                false,
+                false,
+                (node, w: GridStackWidget) => {
+                    (w as LayoutItem).id = String(node.id || "");
+                }
+            ) as LayoutItem[];
+
+            return repairLayout(fullLayout);
+        },
+    }));
 
     useEffect(() => {
         isEditModeRef.current = isEditMode;
@@ -184,4 +245,4 @@ export default function Grid({ isEditMode, onLayoutChange, layouts }: Readonly<G
             </div>
         </div>
     );
-}
+});

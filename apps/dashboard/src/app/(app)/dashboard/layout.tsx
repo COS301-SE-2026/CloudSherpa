@@ -7,6 +7,7 @@ import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
 import { useMetricStore } from "@/features/dashboard/stores/metric-store";
 import { KpiWidgetConfig, LayoutItem, WidgetConfig } from "@/features/dashboard/types/widgets";
 import { createDashboard, updateDashboardLayout, createWidget } from "@/lib/fetch/api-dashboard";
+import { gridApiRef } from "@/features/dashboard/components/widgetGrid/grid";
 
 import {
     ToolbarProvider,
@@ -129,9 +130,20 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
     }, [activeDashboardId, setIsEditMode, createSnapshot]);
 
     const handleSaveEdit = useCallback(async () => {
+        if (!activeDashboardId) {
+            clearSnapshot();
+            setIsEditMode(false);
+            return;
+        }
+
+        const compacted = gridApiRef.current?.compactAndGetLayout();
+
+        if (compacted) {
+            useDashboardStore.getState().actions.updateLayouts(compacted);
+        }
+
         clearSnapshot();
         setIsEditMode(false);
-        if (!activeDashboardId) return;
         const currentLayouts = useDashboardStore.getState().layouts;
         const activeDashboard = useDashboardStore.getState().dashboards[activeDashboardId];
         const layoutPayload = activeDashboard.layoutItemIds.map((id) => {
