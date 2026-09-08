@@ -17,6 +17,21 @@ import { WidgetWrapper } from "@/features/dashboard/components/widgetGrid/widget
 const MIN_WIDGET_W = 3;
 const MIN_WIDGET_H = 3;
 
+const repairLayout = (fullLayout: LayoutItem[]): LayoutItem[] =>
+    fullLayout.map((l) => {
+        const needsRepair = !Number.isFinite(l.w) || !Number.isFinite(l.h) || l.w <= 0 || l.h <= 0;
+        if (needsRepair) {
+            console.warn(`Layout node ${l.id} missing/invalid w or h, defaulting to min size`, l);
+        }
+        return {
+            ...l,
+            w: Number.isFinite(l.w) && l.w > 0 ? l.w : MIN_WIDGET_W,
+            h: Number.isFinite(l.h) && l.h > 0 ? l.h : MIN_WIDGET_H,
+            x: Number.isFinite(l.x) ? l.x : 0,
+            y: Number.isFinite(l.y) ? l.y : 0,
+        };
+    });
+
 interface GridProps {
     isEditMode: boolean;
     dashboardId: string;
@@ -39,25 +54,6 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
     const onLayoutChangeRef = useRef(onLayoutChange);
     const isInternalUpdate = useRef(false);
     const isEditModeRef = useRef(isEditMode);
-
-    const repairLayout = (fullLayout: LayoutItem[]): LayoutItem[] =>
-        fullLayout.map((l) => {
-            const needsRepair =
-                !Number.isFinite(l.w) || !Number.isFinite(l.h) || l.w <= 0 || l.h <= 0;
-            if (needsRepair) {
-                console.warn(
-                    `Layout node ${l.id} missing/invalid w or h, defaulting to min size`,
-                    l
-                );
-            }
-            return {
-                ...l,
-                w: Number.isFinite(l.w) && l.w > 0 ? l.w : MIN_WIDGET_W,
-                h: Number.isFinite(l.h) && l.h > 0 ? l.h : MIN_WIDGET_H,
-                x: Number.isFinite(l.x) ? l.x : 0,
-                y: Number.isFinite(l.y) ? l.y : 0,
-            };
-        });
 
     useImperativeHandle(ref, () => ({
         compactAndGetLayout: () => {
@@ -120,23 +116,7 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
                         }
                     ) as LayoutItem[];
 
-                    const repaired = fullLayout.map((l) => {
-                        const needsRepair =
-                            !Number.isFinite(l.w) || !Number.isFinite(l.h) || l.w <= 0 || l.h <= 0;
-                        if (needsRepair) {
-                            console.warn(
-                                `Layout node ${l.id} missing/invalid w or h, defaulting to min size`,
-                                l
-                            );
-                        }
-                        return {
-                            ...l,
-                            w: Number.isFinite(l.w) && l.w > 0 ? l.w : MIN_WIDGET_W,
-                            h: Number.isFinite(l.h) && l.h > 0 ? l.h : MIN_WIDGET_H,
-                            x: Number.isFinite(l.x) ? l.x : 0,
-                            y: Number.isFinite(l.y) ? l.y : 0,
-                        };
-                    });
+                    const repaired = repairLayout(fullLayout);
 
                     onLayoutChangeRef.current(repaired);
                 }
@@ -157,7 +137,7 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
             return;
         }
 
-        //batchupdate prevent multiple re-layouts during synchronization
+        //batchupdate prevent multiple relayouts during sync
         gridStackInstance.current.batchUpdate();
 
         const currentGridNodes = new Map<string, GridStackNode>();
@@ -168,18 +148,18 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
             }
         });
 
-        // Add/Update widgets based on the layouts prop
+        // add/update widgets based on layouts prop
         layouts.forEach((layoutItem) => {
             const existingNode = currentGridNodes.get(layoutItem.id);
 
             if (existingNode) {
-                // Update existing widget's layout if properties differ
+                // update existing widget layout if properties diff
                 if (
                     existingNode.x !== layoutItem.x ||
                     existingNode.y !== layoutItem.y ||
                     existingNode.w !== layoutItem.w ||
                     existingNode.h !== layoutItem.h ||
-                    existingNode.autoPosition !== layoutItem.autoPosition // Also check autoPosition
+                    existingNode.autoPosition !== layoutItem.autoPosition
                 ) {
                     gridStackInstance.current?.update(existingNode.el!, {
                         x: layoutItem.x,
@@ -192,12 +172,12 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
                     });
                 }
             } else {
-                // This is a new widget in the layouts prop, make it a GridStack widget
+                //new widget to gridstack widget
                 const el = gridRef.current?.querySelector(
                     `[gs-id="${layoutItem.id}"]`
                 ) as GridItemHTMLElement;
                 if (el && !el.gridstackNode) {
-                    // Only make widget if it's not already one
+                    // only make widget if not already
                     gridStackInstance.current?.makeWidget(el, {
                         ...layoutItem,
                         minW: MIN_WIDGET_W,
@@ -207,7 +187,7 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
             }
         });
 
-        // sync with gristack state with layouts prop
+        //sycn gristack with layout props
         const layoutIdsInProps = new Set(layouts.map((l) => l.id));
         const nodesToRemove = gridStackInstance.current.engine.nodes.filter(
             (n) => n.id && !layoutIdsInProps.has(n.id)
@@ -220,7 +200,7 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
         gridStackInstance.current.batchUpdate(false);
     }, [layouts]);
 
-    //lock layouts outside edit mode
+    //lock layouts outside edit
     useEffect(() => {
         if (gridStackInstance.current) {
             gridStackInstance.current.setStatic(!isEditMode);
