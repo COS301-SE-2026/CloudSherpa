@@ -139,9 +139,7 @@ private OptimizationRule computeDownsizeRule() {
       OptimizationActionTypeEnum.DOWNSIZE,
       null,
       COMPUTE_RESOURCE_TYPES,
-      List.of(lowCpu),
-      true,
-      null);
+      List.of(lowCpu));
 }
 ```
 

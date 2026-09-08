@@ -48,9 +48,7 @@ public class RuleCatalog {
         OptimizationActionTypeEnum.TERMINATE,
         null,
         COMPUTE_RESOURCE_TYPES,
-        List.of(idleCpu, idleNetworkIn),
-        true,
-        null);
+        List.of(idleCpu, idleNetworkIn));
   }
 
   // ! ---------------------------------------- TERMINATE ----------------------------------------
@@ -71,9 +69,7 @@ public class RuleCatalog {
         OptimizationActionTypeEnum.DOWNSIZE,
         null,
         COMPUTE_RESOURCE_TYPES,
-        List.of(lowCpu),
-        true,
-        null);
+        List.of(lowCpu));
   }
 
   private OptimizationRule computeDownsizeMemoryRule() {
@@ -91,9 +87,7 @@ public class RuleCatalog {
         OptimizationActionTypeEnum.DOWNSIZE,
         null,
         COMPUTE_RESOURCE_TYPES,
-        List.of(lowMemory),
-        true,
-        null);
+        List.of(lowMemory));
   }
 
   // # ---------------------------------------- DOWNSIZE ----------------------------------------
@@ -122,9 +116,7 @@ public class RuleCatalog {
         OptimizationActionTypeEnum.SUSPEND,
         null,
         COMPUTE_RESOURCE_TYPES,
-        List.of(lowCpu, lowNetworkIn),
-        true,
-        null);
+        List.of(lowCpu, lowNetworkIn));
   }
   // ? ---------------------------------------- SUSPEND ----------------------------------------
 }
