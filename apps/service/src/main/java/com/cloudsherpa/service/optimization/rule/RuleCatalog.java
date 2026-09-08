@@ -13,7 +13,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class RuleCatalog {
 
-  private static final List<String> COMPUTE_RESOURCE_TYPES = List.of("AWS/EC2", "gce_instance");
+  private static final List<String> COMPUTE_RESOURCE_TYPES =
+      List.of("AWS/EC2", "gce_instance", "AZURE/VM");
 
   public List<OptimizationRule> getAllRules() {
     return List.of(
