@@ -147,7 +147,7 @@ function DashboardContent() {
                 </div>
             )}
 
-            <main className="flex-1 overflow-x-hidden m-3 flex flex-col">
+            <main className="flex-1 overflow-x-hidden m-3 flex flex-col min-h-0">
                 {renderMainContent()}
             </main>
         </>

@@ -260,7 +260,7 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
     }, [addWidget, getMetricList, setIsEditMode, isEditMode, createSnapshot, activeDashboardId]);
 
     return (
-        <div className="flex flex-col flex-1 h-full w-full">
+        <div className="flex flex-col flex-1 h-full w-full min-h-0">
             <AlertDialog
                 open={!!dashboardToDelete}
                 onOpenChange={(open) => !open && setDashboardToDelete(null)}
@@ -302,7 +302,7 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
                 handleCancelEdit={handleCancelEdit}
                 onDeleteDashboard={handleDeleteRequest}
             />
-            <div className="flex-1 overflow-y-auto overflow-x-hidden flex flex-col relative">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden flex flex-col relative min-h-0">
                 {children}
             </div>
         </div>
