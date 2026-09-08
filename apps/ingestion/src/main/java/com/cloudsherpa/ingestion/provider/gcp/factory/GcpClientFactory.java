@@ -8,6 +8,8 @@ import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.compute.v1.InstancesClient;
 import com.google.cloud.compute.v1.InstancesSettings;
+import com.google.cloud.container.v1.ClusterManagerClient;
+import com.google.cloud.container.v1.ClusterManagerSettings;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -44,5 +46,18 @@ public final class GcpClientFactory {
         .setProjectId(googleCredentials.getProjectId())
         .build()
         .getService();
+  }
+
+  public static ClusterManagerClient createClusterManagerClient(CloudCredentials credentials)
+      throws IOException {
+
+    GoogleCredentials googleCredentials = credentials(credentials);
+
+    ClusterManagerSettings settings =
+        ClusterManagerSettings.newBuilder()
+            .setCredentialsProvider(FixedCredentialsProvider.create(googleCredentials))
+            .build();
+
+    return ClusterManagerClient.create(settings);
   }
 }
