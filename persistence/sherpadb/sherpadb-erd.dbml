@@ -83,6 +83,13 @@ Table gcp_billing_export_config {
   billing_account_id char(20)
 }
 
+Table azure_billing_export_config {
+  config_id uuid [pk, ref: - billing_export_config.config_id]
+  storage_account_name varchar(24)
+  storage_container varchar(63)
+  billing_export_directory char(255)
+}
+
 Table billing_export_execution {
   execution_id uuid [pk]
   config_id uuid [ref: > billing_export_config.config_id]

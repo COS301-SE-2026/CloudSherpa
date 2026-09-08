@@ -1,10 +1,11 @@
 {
-  "version": "2.0.0",
+  "version": "3.0.0",
   "darkMode": true,
   "gridEnabling": false,
   "currentViewName": null,
   "defaultView": {
     "detailLevel": "All",
+    "relationshipMode": "All",
     "tablePositions": [
       {
         "name": "users",
@@ -143,6 +144,12 @@
         "schemaName": "public",
         "x": 2523.4677086885163,
         "y": 59.578691186518654
+      },
+      {
+        "name": "azure_billing_export_config",
+        "schemaName": "public",
+        "x": 2524.5595055635163,
+        "y": 267.77442729933125
       }
     ],
     "tableGroupCollapseStates": [],
