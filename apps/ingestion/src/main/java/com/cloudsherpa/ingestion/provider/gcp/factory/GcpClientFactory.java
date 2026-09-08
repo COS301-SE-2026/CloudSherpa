@@ -10,6 +10,8 @@ import com.google.cloud.compute.v1.InstancesClient;
 import com.google.cloud.compute.v1.InstancesSettings;
 import com.google.cloud.container.v1.ClusterManagerClient;
 import com.google.cloud.container.v1.ClusterManagerSettings;
+import com.google.cloud.functions.v2.FunctionServiceClient;
+import com.google.cloud.functions.v2.FunctionServiceSettings;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -59,5 +61,17 @@ public final class GcpClientFactory {
             .build();
 
     return ClusterManagerClient.create(settings);
+  }
+
+  public static FunctionServiceClient createFunctionsClient(CloudCredentials credentials)
+      throws IOException {
+    GoogleCredentials googleCredentials = credentials(credentials);
+
+    FunctionServiceSettings settings =
+        FunctionServiceSettings.newBuilder()
+            .setCredentialsProvider(FixedCredentialsProvider.create(googleCredentials))
+            .build();
+
+    return FunctionServiceClient.create(settings);
   }
 }
