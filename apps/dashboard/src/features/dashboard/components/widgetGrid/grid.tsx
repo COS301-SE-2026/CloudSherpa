@@ -1,5 +1,5 @@
 "use client";
-import React, {
+import {
     useLayoutEffect,
     useRef,
     useEffect,
@@ -102,6 +102,8 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
                     handle: ".drag-handle",
                     staticGrid: !isEditModeRef.current, //lock grid not in edit mode
                     float: false,
+                    animate: false, //better performance
+                    minRow: 3,
                     resizable: { handles: "se" }, // part of library handles widget resizing from "south-east"/bottom-right corner
 
                     columnOpts: {
