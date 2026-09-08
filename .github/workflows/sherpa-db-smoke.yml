@@ -1,0 +1,42 @@
+name: sherpa-db Initialization Smoke Test
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+    branches:
+      - dev
+      - main
+    paths:
+      - persistence/sherpadb/sherpadb-schema.sql
+      - .github/workflows/sherpa-db-smoke.yml
+
+jobs:
+  sherpa-db-smoke:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: timescale/timescaledb-ha:pg16-ts2.29
+        env:
+          POSTGRES_USER: smoke_user
+          POSTGRES_PASSWORD: smoke_pass
+          POSTGRES_DB: sherpadb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U smoke_user -d sherpadb"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # Version 5.1.0
+
+      - name: Check schema init successful
+        env:
+            PGPASSWORD: smoke_pass
+        run: psql -h localhost -U smoke_user -d sherpadb -v ON_ERROR_STOP=1 -f persistence/sherpadb/sherpadb-schema.sql
