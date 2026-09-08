@@ -166,8 +166,8 @@ CREATE TABLE IF NOT EXISTS public.gcp_billing_export_config (
 CREATE TABLE IF NOT EXISTS public.azure_billing_export_config (
   config_id uuid PRIMARY KEY REFERENCES public.billing_export_config(config_id) ON DELETE CASCADE,
   storage_account_name varchar(24) NOT NULL CONSTRAINT storage_account_name_length_check CHECK (length(storage_account_name) >= 3), -- must be between 3 and 24 characters long https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/resource-name-rules#microsoftstorage
-  storage_container varchar(63) NOT NULL CONSTRAINT storage_container_length_check CHECK ((length(storage_contaner) >= 3)), -- must be between 3 and 63 characters long https://learn.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata
-  billing_export_directory varchar(255) NOT NULL -- https://learn.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-shares--directories--files--and-metadata#directory-and-file-names
+  storage_container varchar(63) NOT NULL CONSTRAINT storage_container_length_check CHECK ((length(storage_container) >= 3)), -- must be between 3 and 63 characters long https://learn.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata
+  billing_export_directory varchar(255) NOT NULL, -- https://learn.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-shares--directories--files--and-metadata#directory-and-file-names
   export_name text NOT NULL -- was unable to determine naming restrictions, hence liberal with size, NOTE the assumption is thatN th this is the full export name not export prefix
 );
 
