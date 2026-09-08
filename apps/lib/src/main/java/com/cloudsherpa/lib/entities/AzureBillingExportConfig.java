@@ -29,18 +29,23 @@ public class AzureBillingExportConfig {
     @Column(name = "billing_export_directory", length = 255, nullable = false)
     private String billingExportDirectory;
 
+    @Column(name = "export_name", nullable = false)
+    private String billingExportName;
+
     protected AzureBillingExportConfig() {}
 
     public AzureBillingExportConfig(
         UUID configId,
         String storageAccountName,
         String storageContainer,
-        String billingExportDirectory
+        String billingExportDirectory,
+        String billingExportName
     ) {
         this.configId = configId;
         this.storageAccountName = storageAccountName;
         this.storageContainer = storageContainer;
         this.billingExportDirectory = billingExportDirectory;
+        this.billingExportName = billingExportName;
     }
 
     public UUID getConfigId() {
@@ -81,5 +86,13 @@ public class AzureBillingExportConfig {
 
     public void setBillingExportDirectory(String billingExportDirectory) {
         this.billingExportDirectory = billingExportDirectory;
+    }
+
+    public String getBillingExportName() {
+        return billingExportName;
+    }
+
+    public void setBillingExportName(String billingExportName) {
+        this.billingExportName = billingExportName;
     }
 }
