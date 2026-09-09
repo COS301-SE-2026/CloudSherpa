@@ -27,7 +27,8 @@ export default function ChartFormDetails({
                 <FieldLegend className="mb-0">Chart Details</FieldLegend>
             </div>
             <FieldDescription>
-                Choose the title that will appear on the dashboard card.
+                Choose the widget title that will appear on the widget as well as the chart type and
+                colour.
             </FieldDescription>
             <FieldGroup>
                 <div className="grid gap-2">
@@ -58,6 +59,9 @@ export default function ChartFormDetails({
                         widthVariant="full"
                         placeholder="Select Chart"
                     />
+                </div>
+                <div className="flex flex-col gap-2">
+                    <Label>Chart Colour</Label>
                 </div>
             </FieldGroup>
         </FieldSet>
