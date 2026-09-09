@@ -22,7 +22,6 @@ export function GaugeChart({
 
     useEffect(() => {
         onDataStatusChange?.(hasData);
-        console.log("this is working");
     }, [hasData, onDataStatusChange]);
 
     const options: EChartsOption = useMemo(() => {

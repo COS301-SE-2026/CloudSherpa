@@ -19,10 +19,6 @@ const MIN_WIDGET_H = 3;
 
 const repairLayout = (fullLayout: LayoutItem[]): LayoutItem[] =>
     fullLayout.map((l) => {
-        const needsRepair = !Number.isFinite(l.w) || !Number.isFinite(l.h) || l.w <= 0 || l.h <= 0;
-        if (needsRepair) {
-            console.warn(`Layout node ${l.id} missing/invalid w or h, defaulting to min size`, l);
-        }
         return {
             ...l,
             w: Number.isFinite(l.w) && l.w > 0 ? l.w : MIN_WIDGET_W,
