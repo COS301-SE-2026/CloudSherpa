@@ -1,6 +1,6 @@
 "use client";
 
-import { HelpCircle, X } from "lucide-react";
+import { HelpCircle } from "lucide-react";
 import { Button } from "@/components/atoms/button";
 import { useRouter } from "next/navigation";
 import {
