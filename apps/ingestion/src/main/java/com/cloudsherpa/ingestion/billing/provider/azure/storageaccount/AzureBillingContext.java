@@ -3,6 +3,7 @@ package com.cloudsherpa.ingestion.billing.provider.azure.storageaccount;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClient;
 import com.azure.storage.blob.models.BlobItem;
+import com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.model.AzureManifest;
 import com.cloudsherpa.ingestion.connector.CloudCredentials;
 import com.cloudsherpa.lib.entities.AzureBillingExportConfig;
 import java.util.List;
@@ -17,6 +18,7 @@ public class AzureBillingContext {
   private UUID userId;
   private UUID configId;
   private List<BlobItem> manifestBlobItems;
+  private List<AzureManifest> manifests;
 
   public AzureBillingContext(UUID userId, UUID configId) {
     this.userId = userId;
@@ -69,5 +71,13 @@ public class AzureBillingContext {
 
   public void setBlobContainerClient(BlobContainerClient blobContainerClient) {
     this.blobContainerClient = blobContainerClient;
+  }
+
+  public List<AzureManifest> getManifests() {
+    return manifests;
+  }
+
+  public void setManifests(List<AzureManifest> manifests) {
+    this.manifests = manifests;
   }
 }
