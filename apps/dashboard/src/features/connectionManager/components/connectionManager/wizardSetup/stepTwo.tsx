@@ -94,7 +94,7 @@ export function StepTwo({
                             <Button
                                 type="submit"
                                 disabled={forLoading}
-                                className="bg-primary hover:bg-accent hover:text-accent-foreground text-primary-foreground px-6 py-2 rounded-md transition-all duration-200 font-medium"
+                                className="bg-primary hover:bg-accent hover:text-accent-foreground text-primary-foreground px-6 py-2 rounded-md transition-all duration-200 font-medium ml-auto"
                             >
                                 {" "}
                                 Next{" "}
