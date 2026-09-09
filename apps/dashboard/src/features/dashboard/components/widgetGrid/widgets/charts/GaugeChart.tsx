@@ -20,7 +20,7 @@ export function GaugeChart({
     chartColour,
 }: Readonly<GaugeChartProps>) {
     const { hasData } = useChartData(resourceId, metricType);
-    const { themeName, tokens, getColour } = useChartTheme();
+    const { themeName, tokens, activeColour, isLightMode } = useChartTheme(chartColour);
     const { currentValue } = useChartData(resourceId, metricType);
 
     useEffect(() => {
@@ -28,9 +28,7 @@ export function GaugeChart({
     }, [hasData, onDataStatusChange]);
 
     const options: EChartsOption = useMemo(() => {
-        const activeColour = getColour(chartColour);
-        const textColor = tokens["foreground"] || "auto";
-        const isLightMode = themeName === "cloudSherpaLight";
+        const textColor = tokens["foreground" as keyof typeof tokens] || "auto";
         return {
             series: [
                 {
@@ -76,7 +74,7 @@ export function GaugeChart({
                 },
             ],
         };
-    }, [currentValue, tokens, themeName, chartColour, getColour]);
+    }, [currentValue, tokens, themeName, activeColour, isLightMode]);
 
     return <BaseChart option={options} theme={themeName} />;
 }

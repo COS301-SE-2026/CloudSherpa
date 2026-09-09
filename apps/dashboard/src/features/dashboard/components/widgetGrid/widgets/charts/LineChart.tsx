@@ -35,7 +35,7 @@ export function LineChart({
     chartColour,
 }: Readonly<LineChartProps>) {
     const { timeSeriesData, hasData } = useChartData(resourceId, metricType);
-    const { themeName, tokens, getColour } = useChartTheme();
+    const { themeName, tokens, activeColour } = useChartTheme(chartColour);
     const fromMs = useDashboardStore((state) => state.fromMs);
     const toMs = useDashboardStore((state) => state.toMs);
 
@@ -44,7 +44,6 @@ export function LineChart({
     }, [hasData, onDataStatusChange]);
 
     const options: EChartsOption = useMemo(() => {
-        const activeColour = getColour(chartColour);
         return {
             color: [activeColour],
             tooltip: {
@@ -124,7 +123,7 @@ export function LineChart({
                 },
             ],
         };
-    }, [timeSeriesData, tokens, fromMs, toMs, chartColour, getColour]);
+    }, [timeSeriesData, tokens, fromMs, toMs, activeColour]);
 
     return <BaseChart option={options} theme={themeName} />;
 }
