@@ -10,6 +10,4 @@ public record OptimizationRule(
     OptimizationActionTypeEnum actionType,
     List<ProviderEnum> providers,
     List<String> resourceTypes,
-    List<MetricThresholdCondition> metricThresholdConditions,
-    boolean requireNotProtected,
-    String requiredSupportedAction) {}
+    List<MetricThresholdCondition> metricThresholdConditions) {}

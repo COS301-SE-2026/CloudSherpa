@@ -1,10 +1,32 @@
 "use client";
-import React, { useLayoutEffect, useRef, useEffect } from "react";
+import {
+    useLayoutEffect,
+    useRef,
+    useEffect,
+    forwardRef,
+    useImperativeHandle,
+    createRef,
+    RefObject,
+} from "react";
 import "gridstack/dist/gridstack.min.css";
 import { GridStack, GridItemHTMLElement, GridStackWidget, GridStackNode } from "gridstack";
 
 import { LayoutItem } from "@/features/dashboard/types/widgets";
 import { WidgetWrapper } from "@/features/dashboard/components/widgetGrid/widgets/widgetWrapper";
+
+const MIN_WIDGET_W = 3;
+const MIN_WIDGET_H = 3;
+
+const repairLayout = (fullLayout: LayoutItem[]): LayoutItem[] =>
+    fullLayout.map((l) => {
+        return {
+            ...l,
+            w: Number.isFinite(l.w) && l.w > 0 ? l.w : MIN_WIDGET_W,
+            h: Number.isFinite(l.h) && l.h > 0 ? l.h : MIN_WIDGET_H,
+            x: Number.isFinite(l.x) ? l.x : 0,
+            y: Number.isFinite(l.y) ? l.y : 0,
+        };
+    });
 
 interface GridProps {
     isEditMode: boolean;
@@ -13,12 +35,42 @@ interface GridProps {
     layouts: LayoutItem[];
 }
 
-export default function Grid({ isEditMode, onLayoutChange, layouts }: Readonly<GridProps>) {
+export interface GridHandle {
+    compactAndGetLayout: () => LayoutItem[] | null;
+}
+
+export const gridApiRef: RefObject<GridHandle | null> = createRef();
+
+export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
+    { isEditMode, onLayoutChange, layouts },
+    ref
+) {
     const gridRef = useRef<HTMLDivElement>(null);
     const gridStackInstance = useRef<GridStack | null>(null);
     const onLayoutChangeRef = useRef(onLayoutChange);
-
+    const isInternalUpdate = useRef(false);
     const isEditModeRef = useRef(isEditMode);
+
+    useImperativeHandle(ref, () => ({
+        compactAndGetLayout: () => {
+            if (!gridStackInstance.current) return null;
+            isInternalUpdate.current = true;
+
+            gridStackInstance.current.batchUpdate();
+            gridStackInstance.current.compact();
+            gridStackInstance.current.batchUpdate(false);
+
+            const fullLayout = gridStackInstance.current.save(
+                false,
+                false,
+                (node, w: GridStackWidget) => {
+                    (w as LayoutItem).id = String(node.id || "");
+                }
+            ) as LayoutItem[];
+
+            return repairLayout(fullLayout);
+        },
+    }));
 
     useEffect(() => {
         isEditModeRef.current = isEditMode;
@@ -37,6 +89,8 @@ export default function Grid({ isEditMode, onLayoutChange, layouts }: Readonly<G
                     handle: ".drag-handle",
                     staticGrid: !isEditModeRef.current, //lock grid not in edit mode
                     float: false,
+                    animate: false, //better performance
+                    minRow: 3,
                     resizable: { handles: "se" }, // part of library handles widget resizing from "south-east"/bottom-right corner
 
                     columnOpts: {
@@ -49,6 +103,7 @@ export default function Grid({ isEditMode, onLayoutChange, layouts }: Readonly<G
 
             gridStackInstance.current.on("change", () => {
                 if (gridStackInstance.current && isEditModeRef.current) {
+                    isInternalUpdate.current = true;
                     const fullLayout = gridStackInstance.current.save(
                         false,
                         false,
@@ -56,7 +111,10 @@ export default function Grid({ isEditMode, onLayoutChange, layouts }: Readonly<G
                             (w as LayoutItem).id = String(node.id || "");
                         }
                     ) as LayoutItem[];
-                    onLayoutChangeRef.current(fullLayout);
+
+                    const repaired = repairLayout(fullLayout);
+
+                    onLayoutChangeRef.current(repaired);
                 }
             });
         }
@@ -70,7 +128,12 @@ export default function Grid({ isEditMode, onLayoutChange, layouts }: Readonly<G
     useEffect(() => {
         if (!gridStackInstance.current) return;
 
-        //batchupdate prevent multiple re-layouts during synchronization
+        if (isInternalUpdate.current) {
+            isInternalUpdate.current = false;
+            return;
+        }
+
+        //batchupdate prevent multiple relayouts during sync
         gridStackInstance.current.batchUpdate();
 
         const currentGridNodes = new Map<string, GridStackNode>();
@@ -81,40 +144,46 @@ export default function Grid({ isEditMode, onLayoutChange, layouts }: Readonly<G
             }
         });
 
-        // Add/Update widgets based on the layouts prop
+        // add/update widgets based on layouts prop
         layouts.forEach((layoutItem) => {
             const existingNode = currentGridNodes.get(layoutItem.id);
 
             if (existingNode) {
-                // Update existing widget's layout if properties differ
+                // update existing widget layout if properties diff
                 if (
                     existingNode.x !== layoutItem.x ||
                     existingNode.y !== layoutItem.y ||
                     existingNode.w !== layoutItem.w ||
                     existingNode.h !== layoutItem.h ||
-                    existingNode.autoPosition !== layoutItem.autoPosition // Also check autoPosition
+                    existingNode.autoPosition !== layoutItem.autoPosition
                 ) {
                     gridStackInstance.current?.update(existingNode.el!, {
                         x: layoutItem.x,
                         y: layoutItem.y,
                         w: layoutItem.w,
                         h: layoutItem.h,
+                        minW: MIN_WIDGET_W,
+                        minH: MIN_WIDGET_H,
                         autoPosition: layoutItem.autoPosition,
                     });
                 }
             } else {
-                // This is a new widget in the layouts prop, make it a GridStack widget
+                //new widget to gridstack widget
                 const el = gridRef.current?.querySelector(
                     `[gs-id="${layoutItem.id}"]`
                 ) as GridItemHTMLElement;
                 if (el && !el.gridstackNode) {
-                    // Only make widget if it's not already one
-                    gridStackInstance.current?.makeWidget(el, layoutItem);
+                    // only make widget if not already
+                    gridStackInstance.current?.makeWidget(el, {
+                        ...layoutItem,
+                        minW: MIN_WIDGET_W,
+                        minH: MIN_WIDGET_H,
+                    });
                 }
             }
         });
 
-        // sync with gristack state with layouts prop
+        //sycn gristack with layout props
         const layoutIdsInProps = new Set(layouts.map((l) => l.id));
         const nodesToRemove = gridStackInstance.current.engine.nodes.filter(
             (n) => n.id && !layoutIdsInProps.has(n.id)
@@ -123,11 +192,11 @@ export default function Grid({ isEditMode, onLayoutChange, layouts }: Readonly<G
             gridStackInstance.current?.removeWidget(node.el!, false, false);
         });
         //compact on change or load
-        gridStackInstance.current.compact(); //.compact optimizes grid layout by reclaiming spaces, helps remove on page load layout inconsistencies
+        gridStackInstance.current.compact();
         gridStackInstance.current.batchUpdate(false);
-    }, [layouts, isEditMode]);
+    }, [layouts]);
 
-    //lock layouts outside edit mode
+    //lock layouts outside edit
     useEffect(() => {
         if (gridStackInstance.current) {
             gridStackInstance.current.setStatic(!isEditMode);
@@ -141,7 +210,7 @@ export default function Grid({ isEditMode, onLayoutChange, layouts }: Readonly<G
     }, [isEditMode]);
 
     return (
-        <div className="bg-background h-full min-h-0">
+        <div className="bg-background flex-1 min-h-full pb-40">
             <div ref={gridRef} className="grid-stack">
                 {layouts.map((l) => (
                     <WidgetWrapper key={l.id} layout={l} isEditMode={isEditMode} />
@@ -149,4 +218,4 @@ export default function Grid({ isEditMode, onLayoutChange, layouts }: Readonly<G
             </div>
         </div>
     );
-}
+});

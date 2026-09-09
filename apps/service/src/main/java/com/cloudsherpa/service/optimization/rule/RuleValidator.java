@@ -17,7 +17,6 @@ public class RuleValidator {
     validateMetricThresholdConditions(rule, errors);
     validateProviders(rule, errors);
     validateResourceTypes(rule, errors);
-    validateRequiredSupportedAction(rule, errors);
 
     return errors;
   }
@@ -66,12 +65,6 @@ public class RuleValidator {
 
     if (hasBlankEntry) {
       errors.add("resourceTypes must not contain blank entries");
-    }
-  }
-
-  private void validateRequiredSupportedAction(OptimizationRule rule, List<String> errors) {
-    if (rule.requiredSupportedAction() != null && rule.requiredSupportedAction().isBlank()) {
-      errors.add("requiredSupportedAction must not be blank when present");
     }
   }
 

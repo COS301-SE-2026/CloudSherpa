@@ -21,6 +21,8 @@ export const WidgetWrapper = ({ layout, isEditMode }: WidgetWrapperProps) => {
         "gs-y": y,
         "gs-w": w,
         "gs-h": h,
+        "gs-min-w": 3,
+        "gs-min-h": 3,
         "data-widget-id": id,
         ...(autoPosition ? { "gs-auto-position": "true" } : {}),
     };
