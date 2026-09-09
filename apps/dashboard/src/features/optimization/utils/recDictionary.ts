@@ -80,7 +80,7 @@ export function getReasoning(recommendation: Recommendation): string {
     }
 
     // fallback future rules
-    const evidenceSentences = Object.entries(evidence)
+    const evidenceFallbackSentence = Object.entries(evidence)
         .map(([key, value]) => {
             const parsed = parseEvidenceKey(key);
             if (!parsed) return "";
@@ -93,7 +93,7 @@ export function getReasoning(recommendation: Recommendation): string {
         })
         .filter(Boolean);
 
-    const joinedEvidence = evidenceSentences.join(" and ");
+    const joinedEvidence = evidenceFallbackSentence.join(" and ");
 
     switch (actionType) {
         case "TERMINATE":

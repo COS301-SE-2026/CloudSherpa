@@ -93,8 +93,6 @@ export const useRecStore = create<RecStore>((set, get) => ({
 
             const groupedMap: Record<string, Recommendation[]> = {};
 
-            console.log(fetchedRecommendations);
-
             fetchedRecommendations.forEach((rec) => {
                 const accountId = resourceToAccountMap[rec.resourceId] || "unassigned";
 
