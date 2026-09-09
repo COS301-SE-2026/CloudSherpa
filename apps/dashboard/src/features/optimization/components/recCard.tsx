@@ -6,7 +6,7 @@ import { Button } from "@/components/atoms/button";
 import { useRecStore } from "@/features/optimization/stores/useRecStore";
 import { Badge } from "@/components/atoms/badge";
 import { toast } from "sonner";
-import { getReasoning } from "@/features/optimization/utils/recDictionary";
+import RecommendationReasoning from "@/features/optimization/utils/recDictionary";
 
 interface RecommendationCardProps {
     recommendation: Recommendation;
@@ -59,11 +59,11 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
     const getStatusBadgeClass = () => {
         switch (recommendation.status) {
             case "ACTIVE":
-                return "bg-green-600 text-white";
+                return "bg-success text-success-foreground";
             case "APPLIED":
-                return "bg-blue-600 text-white";
+                return "bg-primary text-primary-foreground";
             case "DISMISSED":
-                return "bg-red-600 text-white";
+                return "bg-destructive text-destructive-foreground";
             default:
                 return "variant-secondary";
         }
@@ -72,11 +72,11 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
     const getActionTextColor = () => {
         switch (recommendation.actionType) {
             case "TERMINATE":
-                return "text-red-600";
+                return "text-destructive";
             case "MODERNIZE":
-                return "text-blue-600";
+                return "text-primary";
             case "DOWNSIZE":
-                return "text-orange-600";
+                return "text-warning";
             case "SUSPEND":
                 return "text-yellow-600";
             default:
@@ -199,18 +199,22 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
                                         key={card.label}
                                         className="bg-muted/80 dark:bg-muted/60 rounded-lg p-4"
                                     >
-                                        <p className="text-sm font-bold text-foreground mb-1">
+                                        <p className="text-base font-bold text-foreground mb-1">
                                             {card.label}
                                         </p>
                                         <p className="text-2xl font-bold mb-1">{card.value}</p>
-                                        <p className="text-xs text-muted-foreground">
+                                        <p className="text-sm text-muted-foreground">
                                             {card.subtitle}
                                         </p>
                                     </div>
                                 ))}
                             </div>
                         </div>
-                        <div className="text-muted-foreground">{getReasoning(recommendation)}</div>
+                        <div>
+                            <p className="text-base text-foreground leading-relaxed">
+                                <RecommendationReasoning recommendation={recommendation} />
+                            </p>
+                        </div>
                     </CardContent>
                     <CardFooter className="flex flex-row justify-start gap-4">
                         {renderActionButtons()}
