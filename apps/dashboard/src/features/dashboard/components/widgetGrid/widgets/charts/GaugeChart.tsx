@@ -4,20 +4,23 @@ import { useMemo, useEffect } from "react";
 import { useChartTheme } from "@/features/dashboard/hooks/useChartTheme";
 import { useChartData } from "@/features/dashboard/hooks/useChartData";
 import { BaseChart } from "@/features/dashboard/components/widgetGrid/widgets/charts/baseChart";
+import { ChartColour } from "@/features/dashboard/types/widgets";
 
 type GaugeChartProps = {
     resourceId: string;
     metricType: string;
     onDataStatusChange?: (isEmpty: boolean) => void;
+    chartColour?: ChartColour;
 };
 
 export function GaugeChart({
     resourceId,
     metricType,
     onDataStatusChange,
+    chartColour,
 }: Readonly<GaugeChartProps>) {
     const { hasData } = useChartData(resourceId, metricType);
-    const { themeName, tokens } = useChartTheme();
+    const { themeName, tokens, getColour } = useChartTheme();
     const { currentValue } = useChartData(resourceId, metricType);
 
     useEffect(() => {
@@ -25,7 +28,7 @@ export function GaugeChart({
     }, [hasData, onDataStatusChange]);
 
     const options: EChartsOption = useMemo(() => {
-        const primaryColor = tokens["chart-1"] || tokens["primary"] || "#327dcd";
+        const activeColour = getColour(chartColour);
         const textColor = tokens["foreground"] || "auto";
         const isLightMode = themeName === "cloudSherpaLight";
         return {
@@ -43,8 +46,8 @@ export function GaugeChart({
                         width: 15,
                         roundCap: true,
                         itemStyle: {
-                            color: primaryColor,
-                            shadowColor: isLightMode ? "transparent" : primaryColor,
+                            color: activeColour,
+                            shadowColor: isLightMode ? "transparent" : activeColour,
                             shadowBlur: isLightMode ? 0 : 4,
                         },
                     },
@@ -73,7 +76,7 @@ export function GaugeChart({
                 },
             ],
         };
-    }, [currentValue, tokens, themeName]);
+    }, [currentValue, tokens, themeName, chartColour, getColour]);
 
     return <BaseChart option={options} theme={themeName} />;
 }
