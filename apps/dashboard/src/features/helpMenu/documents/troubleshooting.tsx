@@ -16,6 +16,16 @@ const Aws_Troubleshooting_INS = creatingIns([
         "Bucket region - Users must know the AWS region where their chosen S3 bucket is located. This is a property of the S3 bucket and this can be found in the S3 console or via the AWS CLI.", 
      ],
     },
+
+    {name : "Service account issues",
+     description : "Troubleshoot AWS resource discovery",
+     details : [
+        "Check the specific error message - Look for the policy type and ARN mentioned in the error. This is the fastest way to identify the source of a denial",
+        "Verify IAM policy permissions - Ensure the principal (user/role) has the correct identity-based permissions",
+        "Test your policies - use the IAM policy simulator to test a principal's permissions against specific services and actions.",
+        "Check the timing - If you are not seeing a newly created resource or a recent tag, wait a few minutes and try again. For cross-region searches, has replication latency (up to 36 hours for initial setup).",
+     ],
+    },
 ]);
 
 const Gcp_Troubleshooting_INS = creatingIns([
