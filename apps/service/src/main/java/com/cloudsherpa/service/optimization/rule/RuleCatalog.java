@@ -22,7 +22,9 @@ public class RuleCatalog {
         computeTerminateIdleRule(),
         computeSuspendIdleRule(),
         computeDownsizeMemoryRule(),
-        computeDownsizeDiskIORule());
+        computeDownsizeDiskIORule(),
+        computeDownsizeNetworkRule(),
+        computeDownsizeStorageTierRule());
   }
 
   // ! ---------------------------------------- TERMINATE ----------------------------------------
@@ -115,6 +117,50 @@ public class RuleCatalog {
         null,
         COMPUTE_RESOURCE_TYPES,
         List.of(lowReadIOPS, lowWriteIOPS));
+  }
+
+  private OptimizationRule computeDownsizeNetworkRule() {
+    MetricThresholdCondition lowNetworkInP95 =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.NETWORK_IN,
+            4,
+            StatField.P95,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(2000));
+
+    MetricThresholdCondition lowNetworkOutP95 =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.NETWORK_OUT,
+            4,
+            StatField.P95,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(2000));
+
+    return new OptimizationRule(
+        "COMPUTE-DOWNSIZE-NETWORK",
+        true,
+        OptimizationActionTypeEnum.DOWNSIZE,
+        null,
+        COMPUTE_RESOURCE_TYPES,
+        List.of(lowNetworkInP95, lowNetworkOutP95));
+  }
+
+  private OptimizationRule computeDownsizeStorageTierRule() {
+    MetricThresholdCondition lowPctDiskUsed30d =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.PERCENTAGE_DISK_SPACE_USED,
+            30,
+            StatField.P95,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(20));
+
+    return new OptimizationRule(
+        "COMPUTE-DOWNSIZE-STORAGE-TIER",
+        true,
+        OptimizationActionTypeEnum.DOWNSIZE,
+        null,
+        COMPUTE_RESOURCE_TYPES,
+        List.of(lowPctDiskUsed30d));
   }
 
   // # ---------------------------------------- DOWNSIZE ----------------------------------------
