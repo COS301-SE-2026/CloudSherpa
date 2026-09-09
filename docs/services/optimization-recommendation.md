@@ -192,7 +192,7 @@ Recommends downsizing compute instances with sustained low network activity. Tri
 | Network Out | 4d | P95 | < 2000 |
 
 **`COMPUTE-DOWNSIZE-STORAGE-TIER`**  
-Recommends downsizing storage allocation or moving to a cheaper storage tier when disk usage is persistently low. Triggers when the P95 Percentage Disk Space Used remains below 20% over the last 30 days.
+Recommends downsizing storage allocation or moving to a cheaper storage tier when disk usage is persistently low. Triggers when the P95 Percentage Disk Space Used remains below 20% over the last 4 days.
 
 | Metric | Window | Stat | Condition |
 |---|---:|---|---|

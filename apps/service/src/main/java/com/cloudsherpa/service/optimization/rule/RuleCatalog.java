@@ -150,7 +150,7 @@ public class RuleCatalog {
     MetricThresholdCondition lowPctDiskUsed30d =
         new MetricThresholdCondition(
             MetricDisplayNameMapper.PERCENTAGE_DISK_SPACE_USED,
-            30,
+            4,
             StatField.P95,
             ComparisonOperator.LESS_THAN,
             new BigDecimal(20));
