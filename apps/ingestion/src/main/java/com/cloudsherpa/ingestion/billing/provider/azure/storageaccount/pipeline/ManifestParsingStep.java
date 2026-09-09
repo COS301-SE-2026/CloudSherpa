@@ -13,7 +13,11 @@ import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
 
+@Component
+@Order(3)
 public class ManifestParsingStep implements BillingIngestionPipelineStep<AzureBillingContext> {
 
   private final Logger logger = LoggerFactory.getLogger(ManifestParsingStep.class);

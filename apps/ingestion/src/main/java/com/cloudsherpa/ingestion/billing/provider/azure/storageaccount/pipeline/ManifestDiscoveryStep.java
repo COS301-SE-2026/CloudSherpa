@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Order(2)
-public class ManifestDiscovery implements BillingIngestionPipelineStep<AzureBillingContext> {
+public class ManifestDiscoveryStep implements BillingIngestionPipelineStep<AzureBillingContext> {
   public void execute(AzureBillingContext context) {
 
     AzureBillingExportConfig exportConfig = context.getExportConfig();
