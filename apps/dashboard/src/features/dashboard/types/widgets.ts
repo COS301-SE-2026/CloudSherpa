@@ -1,6 +1,6 @@
 import { MetricType } from "@/features/dashboard/types/metric";
 
-export type ChartColour = "chart-1" | "chart-2" | "chart-3" | "chart-4" | "chart-5";
+export type ChartColour = "chart_1" | "chart_2" | "chart_3" | "chart_4" | "chart_5";
 
 export type LayoutItem = {
     id: string;

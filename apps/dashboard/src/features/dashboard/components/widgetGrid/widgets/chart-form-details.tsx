@@ -16,7 +16,7 @@ const CHART_TYPE_OPTIONS: { value: ChartType; label: string }[] = [
     { value: "gauge_chart", label: "Gauge Chart" },
 ];
 
-const CHART_COLOURS: ChartColour[] = ["chart-1", "chart-2", "chart-3", "chart-4", "chart-5"];
+const CHART_COLOURS: ChartColour[] = ["chart_1", "chart_2", "chart_3", "chart_4", "chart_5"];
 
 export default function ChartFormDetails({
     configuration,
@@ -78,7 +78,7 @@ export default function ChartFormDetails({
                                         ? "ring-2 ring-primary ring-offset-2 ring-offset-primary-foreground scale-105"
                                         : "border-2 border-transparent hover:scale-110"
                                 }`}
-                                style={{ backgroundColor: `var(--${colour})` }}
+                                style={{ backgroundColor: `var(--${colour.replace("_", "-")})` }}
                             />
                         ))}
                     </div>
