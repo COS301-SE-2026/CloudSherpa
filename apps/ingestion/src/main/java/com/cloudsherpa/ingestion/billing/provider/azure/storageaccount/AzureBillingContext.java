@@ -1,5 +1,6 @@
 package com.cloudsherpa.ingestion.billing.provider.azure.storageaccount;
 
+import com.azure.storage.blob.BlobServiceClient;
 import com.cloudsherpa.ingestion.connector.CloudCredentials;
 import com.cloudsherpa.lib.entities.AzureBillingExportConfig;
 import java.util.UUID;
@@ -8,6 +9,7 @@ public class AzureBillingContext {
 
   private CloudCredentials credentials;
   private AzureBillingExportConfig exportConfig;
+  private BlobServiceClient blobServiceClient;
   private UUID userId;
   private UUID configId;
 
@@ -30,6 +32,14 @@ public class AzureBillingContext {
 
   public void setExportConfig(AzureBillingExportConfig exportConfig) {
     this.exportConfig = exportConfig;
+  }
+
+  public BlobServiceClient getBlobServiceClient() {
+    return blobServiceClient;
+  }
+
+  public void setBlobServiceClient(BlobServiceClient blobServiceClient) {
+    this.blobServiceClient = blobServiceClient;
   }
 
   public UUID getUserId() {
