@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { ThemeProvider as NextThemesProvider, useTheme } from "next-themes";
+import { usePathname } from "next/navigation";
 import { fetchUserTheme } from "@/lib/fetch/api-preferences";
 import { useAuthContext } from "@/features/authentication/providers/AuthContext";
 
@@ -28,8 +29,16 @@ export function ThemeProvider({
     children,
     ...props
 }: Readonly<React.ComponentProps<typeof NextThemesProvider>>) {
+    const pathname = usePathname();
+
+    const forceDarkMode = pathname === "/" || pathname === "/login";
+
     return (
-        <NextThemesProvider disableTransitionOnChange {...props}>
+        <NextThemesProvider
+            disableTransitionOnChange
+            forcedTheme={forceDarkMode ? "dark" : undefined}
+            {...props}
+        >
             <ThemePersistenceEnforcer>{children}</ThemePersistenceEnforcer>
         </NextThemesProvider>
     );

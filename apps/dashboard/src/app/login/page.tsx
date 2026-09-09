@@ -15,7 +15,7 @@ export default function Authentication() {
     }, []);
 
     return (
-        <div className="dark fixed inset-0 overflow-hidden bg-background font-sans">
+        <div className="fixed inset-0 overflow-hidden bg-background font-sans">
             <div className="relative w-full h-full">
                 {/* login container */}
                 {/* if isActive is false react unmounts the component which resets the state so it feels like you are navigating to a fresh page, 
