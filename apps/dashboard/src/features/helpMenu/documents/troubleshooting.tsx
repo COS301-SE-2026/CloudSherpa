@@ -20,7 +20,7 @@ const Aws_Troubleshooting_INS = creatingIns([
 
 const Gcp_Troubleshooting_INS = creatingIns([
     {name : "Billing export issues",
-     description : "Troubleshoot AWS billing export configuration",
+     description : "Troubleshoot GCP billing export configuration",
      details : [
         "Obtain your cloud billing account id. You can find this in the Google cloud console under your billing account details",
         "Create or have ready a BigQuery Dataset id. If you do not have one, create a new dataset in BigQuery in a supported region",
@@ -39,7 +39,17 @@ const Gcp_Troubleshooting_INS = creatingIns([
 ]);
 
 const Azure_Troubleshooting_INS = creatingIns([
-
+    {name : "Service account issues",
+     description : "Troubleshoot Azure resource discovery",
+     details : [
+        "Check the service principals role assignment - navigate to the azure portal -> your subscription/management group -> access control (IAM) -> role assignments",
+        "Confirm that the specific service principal (or the managed identity) your app uses appears in the list and has at least the reader role",
+        "Verify the queries scope - ensure the query and the api call explicitly includes the subscription id(s). The service principal has permissions on.",
+        "If using a management group, ensure the service principal has permissions at that management group level",
+        "Test the query - Use the Azure resource graph explorer in the portal which signed in as the service principal (or using its credentials) to run a test query. This will confirm whether the principal can fetch any resource data at all.",
+        "Confirm credential validity - If using a service principal with a client secret, double check that the credential is valid and has not expired and is being passed correctly in the authentication flow. This prevents silent failures where the token acquisition fails before the query is even attempted.",
+     ],
+    },
 ]);
 
 function ContentForTroubleshooting(){
