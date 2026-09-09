@@ -1,6 +1,7 @@
 package com.cloudsherpa.service.optimization.rule;
 
 import com.cloudsherpa.lib.entities.OptimizationActionTypeEnum;
+import com.cloudsherpa.lib.entities.ProviderEnum;
 import com.cloudsherpa.service.metrics.MetricDisplayNameMapper;
 import com.cloudsherpa.service.optimization.rule.model.ComparisonOperator;
 import com.cloudsherpa.service.optimization.rule.model.MetricThresholdCondition;
@@ -88,7 +89,7 @@ public class RuleCatalog {
         "COMPUTE-DOWNSIZE-MEMORY",
         true,
         OptimizationActionTypeEnum.DOWNSIZE,
-        null,
+        List.of(ProviderEnum.AWS),
         COMPUTE_RESOURCE_TYPES,
         List.of(lowMemory));
   }
@@ -158,7 +159,7 @@ public class RuleCatalog {
         "COMPUTE-DOWNSIZE-STORAGE-TIER",
         true,
         OptimizationActionTypeEnum.DOWNSIZE,
-        null,
+        List.of(ProviderEnum.AWS),
         COMPUTE_RESOURCE_TYPES,
         List.of(lowPctDiskUsed30d));
   }
