@@ -1,5 +1,5 @@
 import Troubleshooting from "@/features/helpMenu/documents/troubleshooting";
 
-export default function Page(){
-    return <Troubleshooting/>;
+export default function Page() {
+    return <Troubleshooting />;
 }

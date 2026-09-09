@@ -1,109 +1,139 @@
 "use client";
 
-import {Wrench} from "lucide-react";
+import { Wrench } from "lucide-react";
 import HelpCenter from "@/features/helpMenu/documents/documentsPage";
-import {creatingIns} from "@/features/helpMenu/documents/createInstructions";
-import {useSearchParams} from "next/navigation";
-import {Suspense} from "react";
+import { creatingIns } from "@/features/helpMenu/documents/createInstructions";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
 const Aws_Troubleshooting_INS = creatingIns([
-    {name : "Billing export issues",
-     description : "Troubleshoot AWS billing export configuration",
-     details : [
-        "S3 bucket name - The user should get it from their own AWS environment. They need to identify existing S3 buckets that they own and have to write permissions for or create one for this purpose. The name must be globally unique",
-        "Export name - The user can create this themselves. It is an identifier for the export they are setting up. The AWS documentation provides rule for valid names, such as using only alphanumeric characters, hyphens and underscores",
-        "Prefix/path - This is a virtual folder inside the S3 bucket. The user defines this themselves to help organize their exported files.",
-        "Bucket region - Users must know the AWS region where their chosen S3 bucket is located. This is a property of the S3 bucket and this can be found in the S3 console or via the AWS CLI.", 
-     ],
+    {
+        name: "Billing export issues",
+        description: "Troubleshoot AWS billing export configuration",
+        details: [
+            "S3 bucket name - The user should get it from their own AWS environment. They need to identify existing S3 buckets that they own and have to write permissions for or create one for this purpose. The name must be globally unique",
+            "Export name - The user can create this themselves. It is an identifier for the export they are setting up. The AWS documentation provides rule for valid names, such as using only alphanumeric characters, hyphens and underscores",
+            "Prefix/path - This is a virtual folder inside the S3 bucket. The user defines this themselves to help organize their exported files.",
+            "Bucket region - Users must know the AWS region where their chosen S3 bucket is located. This is a property of the S3 bucket and this can be found in the S3 console or via the AWS CLI.",
+        ],
     },
 
-    {name : "Service account issues",
-     description : "Troubleshoot AWS resource discovery",
-     details : [
-        "Check the specific error message - Look for the policy type and ARN mentioned in the error. This is the fastest way to identify the source of a denial",
-        "Verify IAM policy permissions - Ensure the principal (user/role) has the correct identity-based permissions",
-        "Test your policies - use the IAM policy simulator to test a principal's permissions against specific services and actions.",
-        "Check the timing - If you are not seeing a newly created resource or a recent tag, wait a few minutes and try again. For cross-region searches, has replication latency (up to 36 hours for initial setup).",
-     ],
+    {
+        name: "Service account issues",
+        description: "Troubleshoot AWS resource discovery",
+        details: [
+            "Check the specific error message - Look for the policy type and ARN mentioned in the error. This is the fastest way to identify the source of a denial",
+            "Verify IAM policy permissions - Ensure the principal (user/role) has the correct identity-based permissions",
+            "Test your policies - use the IAM policy simulator to test a principal's permissions against specific services and actions.",
+            "Check the timing - If you are not seeing a newly created resource or a recent tag, wait a few minutes and try again. For cross-region searches, has replication latency (up to 36 hours for initial setup).",
+        ],
     },
 ]);
 
 const Gcp_Troubleshooting_INS = creatingIns([
-    {name : "Billing export issues",
-     description : "Troubleshoot GCP billing export configuration",
-     details : [
-        "Obtain your cloud billing account id. You can find this in the Google cloud console under your billing account details",
-        "Create or have ready a BigQuery Dataset id. If you do not have one, create a new dataset in BigQuery in a supported region",
-        "Data availability - If you use a multi-region dataset (like US/EU), the initial export will backfill data from the beginning of the previous month. If you use a single region dataset, the export will only contain data from the day you enabled it forward.",
-     ],
+    {
+        name: "Billing export issues",
+        description: "Troubleshoot GCP billing export configuration",
+        details: [
+            "Obtain your cloud billing account id. You can find this in the Google cloud console under your billing account details",
+            "Create or have ready a BigQuery Dataset id. If you do not have one, create a new dataset in BigQuery in a supported region",
+            "Data availability - If you use a multi-region dataset (like US/EU), the initial export will backfill data from the beginning of the previous month. If you use a single region dataset, the export will only contain data from the day you enabled it forward.",
+        ],
     },
 
-    {name : "Service account issues",
-     description : "Troubleshoot GCP resource discovery",
-     details : [
-        "Verify the service accounts IAM roles - in the GCP console, go to the IAM and check which roles are assigned to the specific service account at the organization, folder and project levels",
-        "Confirm minimum required permissions - ensure the service account has at least the browser role or a custom role that includes list permissions",
-        "Test discovery with gcloud - use the gcloud projects list command with the service accounts key file to simulate the discovery and see which projects are returned",
-     ],
+    {
+        name: "Service account issues",
+        description: "Troubleshoot GCP resource discovery",
+        details: [
+            "Verify the service accounts IAM roles - in the GCP console, go to the IAM and check which roles are assigned to the specific service account at the organization, folder and project levels",
+            "Confirm minimum required permissions - ensure the service account has at least the browser role or a custom role that includes list permissions",
+            "Test discovery with gcloud - use the gcloud projects list command with the service accounts key file to simulate the discovery and see which projects are returned",
+        ],
     },
 ]);
 
 const Azure_Troubleshooting_INS = creatingIns([
-    {name : "Service account issues",
-     description : "Troubleshoot Azure resource discovery",
-     details : [
-        "Check the service principals role assignment - navigate to the azure portal -> your subscription/management group -> access control (IAM) -> role assignments",
-        "Confirm that the specific service principal (or the managed identity) your app uses appears in the list and has at least the reader role",
-        "Verify the queries scope - ensure the query and the api call explicitly includes the subscription id(s). The service principal has permissions on.",
-        "If using a management group, ensure the service principal has permissions at that management group level",
-        "Test the query - Use the Azure resource graph explorer in the portal which signed in as the service principal (or using its credentials) to run a test query. This will confirm whether the principal can fetch any resource data at all.",
-        "Confirm credential validity - If using a service principal with a client secret, double check that the credential is valid and has not expired and is being passed correctly in the authentication flow. This prevents silent failures where the token acquisition fails before the query is even attempted.",
-     ],
+    {
+        name: "Service account issues",
+        description: "Troubleshoot Azure resource discovery",
+        details: [
+            "Check the service principals role assignment - navigate to the azure portal -> your subscription/management group -> access control (IAM) -> role assignments",
+            "Confirm that the specific service principal (or the managed identity) your app uses appears in the list and has at least the reader role",
+            "Verify the queries scope - ensure the query and the api call explicitly includes the subscription id(s). The service principal has permissions on.",
+            "If using a management group, ensure the service principal has permissions at that management group level",
+            "Test the query - Use the Azure resource graph explorer in the portal which signed in as the service principal (or using its credentials) to run a test query. This will confirm whether the principal can fetch any resource data at all.",
+            "Confirm credential validity - If using a service principal with a client secret, double check that the credential is valid and has not expired and is being passed correctly in the authentication flow. This prevents silent failures where the token acquisition fails before the query is even attempted.",
+        ],
     },
 ]);
 
-function ContentForTroubleshooting(){
+function ContentForTroubleshooting() {
     const search = useSearchParams();
 
     const forProviders = search.get("forProviders");
 
     const getInstructions = () => {
-        switch(forProviders){
-            case "aws" :
-                return{
-                    instructions : Aws_Troubleshooting_INS, name : "AWS troubleshooting guide",
-                    description : "Troubleshoot common AWS connection, service account and billing issues", icon : Wrench,
+        switch (forProviders) {
+            case "aws":
+                return {
+                    instructions: Aws_Troubleshooting_INS,
+                    name: "AWS troubleshooting guide",
+                    description:
+                        "Troubleshoot common AWS connection, service account and billing issues",
+                    icon: Wrench,
                 };
-            
-            case "gcp" : 
-                return{
-                    instructions : Gcp_Troubleshooting_INS, name : "GCP troubleshooting guide",
-                    description : "Troubleshoot common GCP connection, service account and billing issues", icon : Wrench,
+
+            case "gcp":
+                return {
+                    instructions: Gcp_Troubleshooting_INS,
+                    name: "GCP troubleshooting guide",
+                    description:
+                        "Troubleshoot common GCP connection, service account and billing issues",
+                    icon: Wrench,
                 };
-            
-            case "azure" :
-                return{
-                    instructions : Azure_Troubleshooting_INS, name : "Azure troubleshooting guide",
-                    description : "Troubleshoot common Azure connection, service account and billing issues", icon : Wrench,
+
+            case "azure":
+                return {
+                    instructions: Azure_Troubleshooting_INS,
+                    name: "Azure troubleshooting guide",
+                    description:
+                        "Troubleshoot common Azure connection, service account and billing issues",
+                    icon: Wrench,
                 };
-            
-            default : 
-                return{
-                    instructions : Aws_Troubleshooting_INS, name : "Troubleshooting guide",
-                    description : "Troubleshoot common AWS connection, service account and billing issues", icon : Wrench,
+
+            default:
+                return {
+                    instructions: Aws_Troubleshooting_INS,
+                    name: "Troubleshooting guide",
+                    description:
+                        "Troubleshoot common AWS connection, service account and billing issues",
+                    icon: Wrench,
                 };
         }
     };
 
-    const {instructions,name, description, icon} = getInstructions();
+    const { instructions, name, description, icon } = getInstructions();
 
-    return(
-        <HelpCenter name = {name} description = {description} breadcrumb = "Troubleshooting" icon = {icon} instructions = {instructions}/>
+    return (
+        <HelpCenter
+            name={name}
+            description={description}
+            breadcrumb="Troubleshooting"
+            icon={icon}
+            instructions={instructions}
+        />
     );
 }
 
-export default function Troubleshooting(){
-    return(
-        <Suspense fallback = {<div className = "flex items-center justify-center min-h-screen"> Loading... </div>}> <ContentForTroubleshooting/> </Suspense>
+export default function Troubleshooting() {
+    return (
+        <Suspense
+            fallback={
+                <div className="flex items-center justify-center min-h-screen"> Loading... </div>
+            }
+        >
+            {" "}
+            <ContentForTroubleshooting />{" "}
+        </Suspense>
     );
 }

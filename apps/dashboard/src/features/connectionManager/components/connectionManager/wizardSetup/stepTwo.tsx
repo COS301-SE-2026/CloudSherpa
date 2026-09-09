@@ -3,8 +3,8 @@
 import React, { ReactNode } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/atoms/card";
 import { Button } from "@/components/atoms/button";
-import {Wrench} from "lucide-react";
-import {useRouter} from "next/navigation";
+import { Wrench } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export interface PropsForStepTwo {
     heading: string;
@@ -27,7 +27,6 @@ export function StepTwo({
     children,
     cloudProvider = "aws",
 }: Readonly<PropsForStepTwo>) {
-
     const router = useRouter();
 
     const handlingTroubleshoot = () => {
@@ -69,11 +68,18 @@ export function StepTwo({
                     <form onSubmit={onSubmit} className="space-y-8">
                         {" "}
                         {children}
-
-                        <div className = "flex items-center justify-between pt-4">
-                            <Button type = "button" variant = "link" onClick = {handlingTroubleshoot} className = "text-primary hover:text-primary/80 p-0 h-auto gap-1.5 text-sm font-medium"> <Wrench size = {14} strokeWidth = {1.75}/> Troubleshoot service accounts and billing exports </Button>
+                        <div className="flex items-center justify-between pt-4">
+                            <Button
+                                type="button"
+                                variant="link"
+                                onClick={handlingTroubleshoot}
+                                className="text-primary hover:text-primary/80 p-0 h-auto gap-1.5 text-sm font-medium"
+                            >
+                                {" "}
+                                <Wrench size={14} strokeWidth={1.75} /> Troubleshoot service
+                                accounts and billing exports{" "}
+                            </Button>
                         </div>
-
                         <div className="flex gap-3">
                             <Button
                                 type="button"

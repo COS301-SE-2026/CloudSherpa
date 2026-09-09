@@ -14,7 +14,8 @@ import {
     X,
     Cloud,
     Server,
-    Database, Wrench
+    Database,
+    Wrench,
 } from "lucide-react";
 import {
     Breadcrumb,
@@ -77,11 +78,11 @@ const BROWSECATEGORIES: BrowseCategory[] = [
     },
 
     {
-        id : "troubleshooting",
-        label : "Troubleshooting",
-        description : "Troubleshoot your problems",
-        icon : Wrench,
-    }
+        id: "troubleshooting",
+        label: "Troubleshooting",
+        description: "Troubleshoot your problems",
+        icon: Wrench,
+    },
 ];
 
 interface Documents {
@@ -260,79 +261,149 @@ const PopUp = ({
 
 //added popup for troubleshooting
 const PopupForTroubleshooting = ({
-    isOpen, onClose, onSelectProvider,
-} : {isOpen : boolean; onClose : () => void; onSelectProvider : (provider : string) => void;}) => {
-    if(!isOpen){
+    isOpen,
+    onClose,
+    onSelectProvider,
+}: {
+    isOpen: boolean;
+    onClose: () => void;
+    onSelectProvider: (provider: string) => void;
+}) => {
+    if (!isOpen) {
         return null;
     }
 
-    return(
-        <Dialog open = {isOpen} onOpenChange = {onClose}>
-            <DialogContent className = "max-w-md">
-                <DialogHeader className = "text-center pb-2">
-                    <div className = "flex justify-center mb-4">
-                        <div className = "p-3 bg-muted-foreground/10 dark:bg-muted-foreground/20 rounded-md"> <Wrench size = {28} className = "text-primary"/> </div>
+    return (
+        <Dialog open={isOpen} onOpenChange={onClose}>
+            <DialogContent className="max-w-md">
+                <DialogHeader className="text-center pb-2">
+                    <div className="flex justify-center mb-4">
+                        <div className="p-3 bg-muted-foreground/10 dark:bg-muted-foreground/20 rounded-md">
+                            {" "}
+                            <Wrench size={28} className="text-primary" />{" "}
+                        </div>
                     </div>
 
-                    <DialogTitle className = "text-2xl font-bold text-foreground"> Troubleshoot a Cloud Provider </DialogTitle>
+                    <DialogTitle className="text-2xl font-bold text-foreground">
+                        {" "}
+                        Troubleshoot a Cloud Provider{" "}
+                    </DialogTitle>
 
-                    <p className = "text-muted-foreground mt-2 text-sm"> Choose which cloud provider you would like to troubleshoot </p>
+                    <p className="text-muted-foreground mt-2 text-sm">
+                        {" "}
+                        Choose which cloud provider you would like to troubleshoot{" "}
+                    </p>
                 </DialogHeader>
 
-                <div className = "space-y-3 py-2">
-                    <Button type = "button" variant = "outline" onClick = {() => {onSelectProvider("aws"); onClose();}}
-                            className = "w-full flex items-center justify-between px-4 py-6 h-auto hover:border-destructive/50 hover:bg-destructive/5 group">
+                <div className="space-y-3 py-2">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                            onSelectProvider("aws");
+                            onClose();
+                        }}
+                        className="w-full flex items-center justify-between px-4 py-6 h-auto hover:border-destructive/50 hover:bg-destructive/5 group"
+                    >
+                        <span className="flex items-center gap-3">
+                            <div className="w-8 h-8 flex items-center justify-center rounded-md bg-muted/50">
+                                {" "}
+                                <Cloud
+                                    size={20}
+                                    strokeWidth={1.75}
+                                    className="text-foreground"
+                                />{" "}
+                            </div>
 
-                        <span className = "flex items-center gap-3">
-                            <div className = "w-8 h-8 flex items-center justify-center rounded-md bg-muted/50"> <Cloud size = {20} strokeWidth = {1.75} className = "text-foreground"/> </div>
+                            <span className="text-left">
+                                <span className="font-semibold text-foreground block"> AWS </span>
 
-                            <span className = "text-left">
-                                <span className = "font-semibold text-foreground block"> AWS </span> 
-
-                                <span className = "text-sm text-muted-foreground block"> Amazon Web Services </span>
+                                <span className="text-sm text-muted-foreground block">
+                                    {" "}
+                                    Amazon Web Services{" "}
+                                </span>
                             </span>
                         </span>
 
-                        <ArrowRight className = "h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors"/>
+                        <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                     </Button>
 
-                    <Button type = "button" variant = "outline" onClick = {() => {onSelectProvider("gcp"); onClose();}}
-                            className = "w-full flex items-center justify-between px-4 py-6 h-auto hover:border-destructive/50 hover:bg-destructive/5 group">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                            onSelectProvider("gcp");
+                            onClose();
+                        }}
+                        className="w-full flex items-center justify-between px-4 py-6 h-auto hover:border-destructive/50 hover:bg-destructive/5 group"
+                    >
+                        <span className="flex items-center gap-3">
+                            <div className="w-8 h-8 flex items-center justify-center rounded-md bg-muted/50">
+                                {" "}
+                                <Server
+                                    size={20}
+                                    strokeWidth={1.75}
+                                    className="text-foreground"
+                                />{" "}
+                            </div>
 
-                        <span className = "flex items-center gap-3">
-                            <div className = "w-8 h-8 flex items-center justify-center rounded-md bg-muted/50"> <Server size = {20} strokeWidth = {1.75} className = "text-foreground"/> </div>
+                            <span className="text-left">
+                                <span className="font-semibold text-foreground block"> GCP </span>
 
-                            <span className = "text-left">
-                                <span className = "font-semibold text-foreground block"> GCP </span> 
-
-                                <span className = "text-sm text-muted-foreground block"> Google Cloud Platform </span>
+                                <span className="text-sm text-muted-foreground block">
+                                    {" "}
+                                    Google Cloud Platform{" "}
+                                </span>
                             </span>
                         </span>
 
-                        <ArrowRight className = "h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors"/>
+                        <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                     </Button>
 
-                    <Button type = "button" variant = "outline" onClick = {() => {onSelectProvider("azure"); onClose();}}
-                            className = "w-full flex items-center justify-between px-4 py-6 h-auto hover:border-destructive/50 hover:bg-destructive/5 group">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                            onSelectProvider("azure");
+                            onClose();
+                        }}
+                        className="w-full flex items-center justify-between px-4 py-6 h-auto hover:border-destructive/50 hover:bg-destructive/5 group"
+                    >
+                        <span className="flex items-center gap-3">
+                            <div className="w-8 h-8 flex items-center justify-center rounded-md bg-muted/50">
+                                {" "}
+                                <Database
+                                    size={20}
+                                    strokeWidth={1.75}
+                                    className="text-foreground"
+                                />{" "}
+                            </div>
 
-                        <span className = "flex items-center gap-3">
-                            <div className = "w-8 h-8 flex items-center justify-center rounded-md bg-muted/50"> <Database size = {20} strokeWidth = {1.75} className = "text-foreground"/> </div>
+                            <span className="text-left">
+                                <span className="font-semibold text-foreground block"> Azure </span>
 
-                            <span className = "text-left">
-                                <span className = "font-semibold text-foreground block"> Azure </span> 
-
-                                <span className = "text-sm text-muted-foreground block"> Microsoft Azure </span>
+                                <span className="text-sm text-muted-foreground block">
+                                    {" "}
+                                    Microsoft Azure{" "}
+                                </span>
                             </span>
                         </span>
 
-                        <ArrowRight className = "h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors"/>
+                        <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                     </Button>
                 </div>
 
-                <div className = "mt-2 pt-4 border-t border-border">
-                    <Button type = "button" variant = "ghost" onClick = {onClose} className = "w-full text-sm text-muted-foreground hover:text-foreground"> Cancel </Button>
+                <div className="mt-2 pt-4 border-t border-border">
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={onClose}
+                        className="w-full text-sm text-muted-foreground hover:text-foreground"
+                    >
+                        {" "}
+                        Cancel{" "}
+                    </Button>
                 </div>
-
             </DialogContent>
         </Dialog>
     );
@@ -423,7 +494,7 @@ function DocumentsAndTutorialsSuspense() {
             setIsPopUpOpen(true);
         } else if (category.id === "troubleshooting") {
             setIsPopupOpenForTroubleshooting(true);
-        } else if (category.href){
+        } else if (category.href) {
             router.push(category.href);
         }
     };
@@ -442,7 +513,7 @@ function DocumentsAndTutorialsSuspense() {
         router.push(`/helpMenu/documents/connections?forProviders=${provider}`);
     };
 
-    const handlingTroubleshooting = (provider : string) => {
+    const handlingTroubleshooting = (provider: string) => {
         selectedProvider.current = provider;
 
         router.push(`/helpMenu/documents/troubleshooting?forProviders=${provider}`);
@@ -472,7 +543,11 @@ function DocumentsAndTutorialsSuspense() {
                 onSelectProvider={handlingSelectedProvider}
             />
 
-            <PopupForTroubleshooting isOpen = {isPopupOpenForTroubleshooting} onClose = {() => setIsPopupOpenForTroubleshooting(false)} onSelectProvider = {handlingTroubleshooting}/>
+            <PopupForTroubleshooting
+                isOpen={isPopupOpenForTroubleshooting}
+                onClose={() => setIsPopupOpenForTroubleshooting(false)}
+                onSelectProvider={handlingTroubleshooting}
+            />
 
             {/* this is for the video dialog (youtube iframe) */}
             <Dialog open={videoDialogOpen} onOpenChange={handlingVideoClose}>

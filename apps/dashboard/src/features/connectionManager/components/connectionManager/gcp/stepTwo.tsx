@@ -185,7 +185,7 @@ export default function StepTwoGcp({
             onBack={onBack || (() => {})}
             forLoading={forLoading}
             forErrors={errors}
-            cloudProvider = "gcp"
+            cloudProvider="gcp"
         >
             <GcpBillingForm
                 optedInToBilling={optedInToBilling}
