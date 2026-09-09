@@ -30,7 +30,7 @@ export function StepTwo({
     const router = useRouter();
 
     const handlingTroubleshoot = () => {
-        router.push(`helpMenu/documents/troublshooting?forProviders=${cloudProvider}`);
+        router.push(`/helpMenu/documents/troubleshooting?forProviders=${cloudProvider}`);
     };
 
     return (

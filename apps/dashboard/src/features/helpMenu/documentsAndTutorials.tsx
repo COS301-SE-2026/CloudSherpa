@@ -117,35 +117,45 @@ const PopUp = ({
     isOpen,
     onClose,
     onSelectProvider,
+    title,
+    description,
+    icon: Icon,
+    variant = "connect",
 }: {
     isOpen: boolean;
     onClose: () => void;
     onSelectProvider: (provider: string) => void;
+    title: string;
+    description: string;
+    icon: ComponentType<{ className?: string; size?: number }>;
+    variant?: "connect" | "troubleshoot";
 }) => {
     if (!isOpen) {
         return null;
     }
 
+    const icon = "bg-muted-foreground/10 dark:bg-muted-foreground/20 rounded-md";
+
+    const iconColour = "text-primary";
+
+    const buttonHover = "hover:border-primary hover:bg-muted/50";
+
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="max-w-md">
-                <DialogHeader className="test-center pb-2">
+                <DialogHeader className="text-center pb-2">
                     <div className="flex justify-center mb-4">
-                        <div className="p-3 bg-primary-100 dark:bg-primary-900/30 rounded-full">
+                        <div className={`p-3 ${icon}`}>
                             {" "}
-                            <Plug size={28} className="text-primary" />{" "}
+                            <Icon size={28} className={iconColour} />{" "}
                         </div>
                     </div>
 
-                    <DialogTitle className="text-2xl font-bold test-foreground">
-                        {" "}
-                        Connect a Cloud Provider{" "}
+                    <DialogTitle className="text-2xl font-bold text-foreground">
+                        {title}
                     </DialogTitle>
 
-                    <p className="text-muted-foreground mt-2 text-sm">
-                        {" "}
-                        Choose which cloud provider you would like to connect to CloudSherpa{" "}
-                    </p>
+                    <p className="text-muted-foreground mt-2 text-sm">{description}</p>
                 </DialogHeader>
 
                 <div className="space-y-3 py-2">
@@ -156,7 +166,7 @@ const PopUp = ({
                             onSelectProvider("aws");
                             onClose();
                         }}
-                        className="w-full flex items-center justify-between px-4 py-6 h-auto hover:border-primary hover:bg-muted/50 group"
+                        className={`w-full flex items-center justify-between px-4 py-6 h-auto ${buttonHover} group`}
                     >
                         <span className="flex items-center gap-3">
                             <div className="w-8 h-8 flex items-center justify-center rounded-md bg-muted/50">
@@ -187,7 +197,7 @@ const PopUp = ({
                             onSelectProvider("gcp");
                             onClose();
                         }}
-                        className="w-full flex items-center justify-between px-4 py-6 h-auto hover:border-primary hover:bg-muted/50 group"
+                        className={`w-full flex items-center justify-between px-4 py-6 h-auto ${buttonHover} group`}
                     >
                         <span className="flex items-center gap-3">
                             <div className="w-8 h-8 flex items-center justify-center rounded-md bg-muted/50">
@@ -218,7 +228,7 @@ const PopUp = ({
                             onSelectProvider("azure");
                             onClose();
                         }}
-                        className="w-full flex items-center justify-between px-4 py-6 h-auto hover:border-primary hover:bg-muted/50 group"
+                        className={`w-full flex items-center justify-between px-4 py-6 h-auto ${buttonHover} group`}
                     >
                         <span className="flex items-center gap-3">
                             <div className="w-8 h-8 flex items-center justify-center rounded-md bg-muted/50 group">
@@ -229,156 +239,6 @@ const PopUp = ({
                                     className="text-foreground"
                                 />{" "}
                             </div>
-                            <span className="text-left">
-                                <span className="font-semibold text-foreground block"> Azure </span>
-
-                                <span className="text-sm text-muted-foreground block">
-                                    {" "}
-                                    Microsoft Azure{" "}
-                                </span>
-                            </span>
-                        </span>
-
-                        <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                    </Button>
-                </div>
-
-                <div className="mt-2 pt-4 border-t border-border">
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        onClick={onClose}
-                        className="w-full text-sm text-muted-foreground hover:text-foreground"
-                    >
-                        {" "}
-                        Cancel{" "}
-                    </Button>
-                </div>
-            </DialogContent>
-        </Dialog>
-    );
-};
-
-//added popup for troubleshooting
-const PopupForTroubleshooting = ({
-    isOpen,
-    onClose,
-    onSelectProvider,
-}: {
-    isOpen: boolean;
-    onClose: () => void;
-    onSelectProvider: (provider: string) => void;
-}) => {
-    if (!isOpen) {
-        return null;
-    }
-
-    return (
-        <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-md">
-                <DialogHeader className="text-center pb-2">
-                    <div className="flex justify-center mb-4">
-                        <div className="p-3 bg-muted-foreground/10 dark:bg-muted-foreground/20 rounded-md">
-                            {" "}
-                            <Wrench size={28} className="text-primary" />{" "}
-                        </div>
-                    </div>
-
-                    <DialogTitle className="text-2xl font-bold text-foreground">
-                        {" "}
-                        Troubleshoot a Cloud Provider{" "}
-                    </DialogTitle>
-
-                    <p className="text-muted-foreground mt-2 text-sm">
-                        {" "}
-                        Choose which cloud provider you would like to troubleshoot{" "}
-                    </p>
-                </DialogHeader>
-
-                <div className="space-y-3 py-2">
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => {
-                            onSelectProvider("aws");
-                            onClose();
-                        }}
-                        className="w-full flex items-center justify-between px-4 py-6 h-auto hover:border-destructive/50 hover:bg-destructive/5 group"
-                    >
-                        <span className="flex items-center gap-3">
-                            <div className="w-8 h-8 flex items-center justify-center rounded-md bg-muted/50">
-                                {" "}
-                                <Cloud
-                                    size={20}
-                                    strokeWidth={1.75}
-                                    className="text-foreground"
-                                />{" "}
-                            </div>
-
-                            <span className="text-left">
-                                <span className="font-semibold text-foreground block"> AWS </span>
-
-                                <span className="text-sm text-muted-foreground block">
-                                    {" "}
-                                    Amazon Web Services{" "}
-                                </span>
-                            </span>
-                        </span>
-
-                        <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                    </Button>
-
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => {
-                            onSelectProvider("gcp");
-                            onClose();
-                        }}
-                        className="w-full flex items-center justify-between px-4 py-6 h-auto hover:border-destructive/50 hover:bg-destructive/5 group"
-                    >
-                        <span className="flex items-center gap-3">
-                            <div className="w-8 h-8 flex items-center justify-center rounded-md bg-muted/50">
-                                {" "}
-                                <Server
-                                    size={20}
-                                    strokeWidth={1.75}
-                                    className="text-foreground"
-                                />{" "}
-                            </div>
-
-                            <span className="text-left">
-                                <span className="font-semibold text-foreground block"> GCP </span>
-
-                                <span className="text-sm text-muted-foreground block">
-                                    {" "}
-                                    Google Cloud Platform{" "}
-                                </span>
-                            </span>
-                        </span>
-
-                        <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                    </Button>
-
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => {
-                            onSelectProvider("azure");
-                            onClose();
-                        }}
-                        className="w-full flex items-center justify-between px-4 py-6 h-auto hover:border-destructive/50 hover:bg-destructive/5 group"
-                    >
-                        <span className="flex items-center gap-3">
-                            <div className="w-8 h-8 flex items-center justify-center rounded-md bg-muted/50">
-                                {" "}
-                                <Database
-                                    size={20}
-                                    strokeWidth={1.75}
-                                    className="text-foreground"
-                                />{" "}
-                            </div>
-
                             <span className="text-left">
                                 <span className="font-semibold text-foreground block"> Azure </span>
 
@@ -431,9 +291,10 @@ function DocumentsAndTutorialsSuspense() {
     //htmliframeelement rep an html iframe ele & provides type safety
     const youtubeIframe = useRef<HTMLIFrameElement>(null);
 
-    const [isPopUpOpen, setIsPopUpOpen] = useState(false);
-
-    const [isPopupOpenForTroubleshooting, setIsPopupOpenForTroubleshooting] = useState(false);
+    const [isPopUpOpen, setIsPopUpOpen] = useState<{
+        isOpen: boolean;
+        type: "connect" | "troubleshoot" | null;
+    }>({ isOpen: false, type: null });
 
     const selectedProvider = useRef<string | null>(null);
 
@@ -491,9 +352,9 @@ function DocumentsAndTutorialsSuspense() {
 
     const handlingCategoryClick = (category: BrowseCategory) => {
         if (category.id === "connections") {
-            setIsPopUpOpen(true);
+            setIsPopUpOpen({ isOpen: true, type: "connect" });
         } else if (category.id === "troubleshooting") {
-            setIsPopupOpenForTroubleshooting(true);
+            setIsPopUpOpen({ isOpen: true, type: "troubleshoot" });
         } else if (category.href) {
             router.push(category.href);
         }
@@ -521,7 +382,7 @@ function DocumentsAndTutorialsSuspense() {
 
     const handlingDocumentsClicked = (documents: Documents) => {
         if (documents.category === "Connections") {
-            setIsPopUpOpen(true);
+            setIsPopUpOpen({ isOpen: true, type: "connect" });
         } else {
             router.push(documents.href);
         }
@@ -535,18 +396,35 @@ function DocumentsAndTutorialsSuspense() {
         }
     };
 
+    //adding helper func to det which popup is needed
+    const handlingProviderSelected = (provider: string) => {
+        if (isPopUpOpen.type === "connect") {
+            handlingSelectedProvider(provider);
+        } else if (isPopUpOpen.type === "troubleshoot") {
+            handlingTroubleshooting(provider);
+        }
+
+        setIsPopUpOpen({ isOpen: false, type: null });
+    };
+
     return (
         <div className="min-h-screen bg-background">
             <PopUp
-                isOpen={isPopUpOpen}
-                onClose={() => setIsPopUpOpen(false)}
-                onSelectProvider={handlingSelectedProvider}
-            />
-
-            <PopupForTroubleshooting
-                isOpen={isPopupOpenForTroubleshooting}
-                onClose={() => setIsPopupOpenForTroubleshooting(false)}
-                onSelectProvider={handlingTroubleshooting}
+                isOpen={isPopUpOpen.isOpen}
+                onClose={() => setIsPopUpOpen({ isOpen: false, type: null })}
+                onSelectProvider={handlingProviderSelected}
+                title={
+                    isPopUpOpen.type === "connect"
+                        ? "Connect a Cloud Provider"
+                        : "Troubleshoot a Cloud Provider"
+                }
+                description={
+                    isPopUpOpen.type === "connect"
+                        ? "Choose which cloud provider you would like to connect to CloudSherpa"
+                        : "Choose which cloud provider you would like to troubleshoot"
+                }
+                icon={isPopUpOpen.type === "connect" ? Plug : Wrench}
+                variant={isPopUpOpen.type === "connect" ? "connect" : "troubleshoot"}
             />
 
             {/* this is for the video dialog (youtube iframe) */}
