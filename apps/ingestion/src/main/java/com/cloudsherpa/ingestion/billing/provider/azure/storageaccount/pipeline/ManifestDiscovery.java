@@ -10,12 +10,14 @@ import com.cloudsherpa.ingestion.billing.BillingIngestionPipelineStep;
 import com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.AzureBillingContext;
 import com.cloudsherpa.ingestion.provider.azure.factory.AzureClientFactory;
 import com.cloudsherpa.lib.entities.AzureBillingExportConfig;
+import java.util.ArrayList;
+import java.util.List;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 @Component
 @Order(2)
-public class ManifestIngestion implements BillingIngestionPipelineStep<AzureBillingContext> {
+public class ManifestDiscovery implements BillingIngestionPipelineStep<AzureBillingContext> {
   public void execute(AzureBillingContext context) {
 
     AzureBillingExportConfig exportConfig = context.getExportConfig();
@@ -31,11 +33,20 @@ public class ManifestIngestion implements BillingIngestionPipelineStep<AzureBill
         blobServiceClient.getBlobContainerClient(exportConfig.getStorageContainer());
     ListBlobsOptions listBlobsOptions =
         new ListBlobsOptions().setPrefix(getExportBlobPath(context));
+    context.setBlobContainerClient(blobContainerClient);
 
     // Null timeout leaves timeout unconfigured (i.e. null is intentional)
     try {
-      for (BlobItem blob : blobContainerClient.listBlobs(listBlobsOptions, null)) {}
+      List<BlobItem> manifestBlobItems = new ArrayList<>();
 
+      for (BlobItem blob : blobContainerClient.listBlobs(listBlobsOptions, null)) {
+        String[] splitBlobName = blob.getName().split("/");
+        if (splitBlobName[splitBlobName.length - 1].equals("manifest.json")) {
+          manifestBlobItems.add(blob);
+        }
+      }
+
+      context.setManifestBlobItems(manifestBlobItems);
     } catch (BlobStorageException e) {
       throw new IllegalStateException(
           "Blob listing failed with HTTP status code "
