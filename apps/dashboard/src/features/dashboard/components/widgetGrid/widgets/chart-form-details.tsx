@@ -2,7 +2,7 @@
 import { Input } from "@/components/atoms/input";
 import { Label } from "@/components/atoms/label";
 import { FieldSet, FieldLegend, FieldDescription, FieldGroup } from "@/components/atoms/field";
-import { ChartWidgetConfig, ChartType } from "@/features/dashboard/types/widgets";
+import { ChartWidgetConfig, ChartType, ChartColour } from "@/features/dashboard/types/widgets";
 import { FormCountCircle } from "@/components/atoms/form-count-circle";
 import Dropdown from "@/components/molecules/dropdown";
 
@@ -15,6 +15,8 @@ const CHART_TYPE_OPTIONS: { value: ChartType; label: string }[] = [
     { value: "line_chart", label: "Line Chart" },
     { value: "gauge_chart", label: "Gauge Chart" },
 ];
+
+const CHART_COLOURS: ChartColour[] = ["chart-1", "chart-2", "chart-3", "chart-4", "chart-5"];
 
 export default function ChartFormDetails({
     configuration,
@@ -62,6 +64,24 @@ export default function ChartFormDetails({
                 </div>
                 <div className="flex flex-col gap-2">
                     <Label>Chart Colour</Label>
+                    <div className="flex flex-row gap-3 pt-1">
+                        {CHART_COLOURS.map((colour) => (
+                            <button
+                                key={colour}
+                                type="button"
+                                aria-label={`Select ${colour}`}
+                                onClick={() =>
+                                    setConfiguration({ ...configuration, chartColour: colour })
+                                }
+                                className={`h-8 w-8 rounded-full transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                                    configuration.chartColour === colour
+                                        ? "ring-2 ring-primary ring-offset-2 ring-offset-primary-foreground scale-105"
+                                        : "border-2 border-transparent hover:scale-110"
+                                }`}
+                                style={{ backgroundColor: `var(--${colour})` }}
+                            />
+                        ))}
+                    </div>
                 </div>
             </FieldGroup>
         </FieldSet>
