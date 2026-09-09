@@ -6,6 +6,8 @@ export type LayoutItem = {
     y: number;
     w: number;
     h: number;
+    minW?: number;
+    minH?: number;
     autoPosition?: boolean;
 };
 

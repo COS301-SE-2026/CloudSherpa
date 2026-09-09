@@ -44,6 +44,7 @@ export function LineChart({
         return {
             tooltip: {
                 trigger: "axis",
+                appendTo: () => document.body,
                 formatter: (params: DefaultLabelFormatterCallbackParams) => {
                     const point = Array.isArray(params) ? params[0] : params;
                     const value = point.value?.value;
