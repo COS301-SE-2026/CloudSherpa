@@ -1,11 +1,12 @@
 "use client";
 import { Recommendation } from "@/features/optimization/types/recommendations";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/atoms/card";
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/atoms/card";
 import { useState } from "react";
 import { Button } from "@/components/atoms/button";
 import { useRecStore } from "@/features/optimization/stores/useRecStore";
 import { Badge } from "@/components/atoms/badge";
 import { toast } from "sonner";
+import { getReasoning } from "@/features/optimization/utils/recDictionary";
 
 interface RecommendationCardProps {
     recommendation: Recommendation;
@@ -186,30 +187,35 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
                 </Badge>
             </CardHeader>
             {open && (
-                <CardContent className="space-y-4">
-                    <div>
-                        <h3 className="text-sm font-semibold text-muted-foreground mb-3">
-                            Monitored Evidence
-                        </h3>
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-                            {getEvidenceCards().map((card, index) => (
-                                <div
-                                    key={card.label}
-                                    className="bg-muted/80 dark:bg-muted/60 rounded-lg p-4"
-                                >
-                                    <p className="text-sm font-bold text-foreground mb-1">
-                                        {card.label}
-                                    </p>
-                                    <p className="text-2xl font-bold mb-1">{card.value}</p>
-                                    <p className="text-xs text-muted-foreground">{card.subtitle}</p>
-                                </div>
-                            ))}
+                <div className="h-full w-full space-y-6">
+                    <CardContent className="space-y-4">
+                        <div>
+                            <h3 className="text-sm font-semibold text-muted-foreground mb-3">
+                                Monitored Evidence
+                            </h3>
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                                {getEvidenceCards().map((card) => (
+                                    <div
+                                        key={card.label}
+                                        className="bg-muted/80 dark:bg-muted/60 rounded-lg p-4"
+                                    >
+                                        <p className="text-sm font-bold text-foreground mb-1">
+                                            {card.label}
+                                        </p>
+                                        <p className="text-2xl font-bold mb-1">{card.value}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            {card.subtitle}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
-                    </div>
-                    <div className="flex flex-row gap-4 justify-start items-center">
+                        <div className="text-muted-foreground">{getReasoning(recommendation)}</div>
+                    </CardContent>
+                    <CardFooter className="flex flex-row justify-start gap-4">
                         {renderActionButtons()}
-                    </div>
-                </CardContent>
+                    </CardFooter>
+                </div>
             )}
         </Card>
     );
