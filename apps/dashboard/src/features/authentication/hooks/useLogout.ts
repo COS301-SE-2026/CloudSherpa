@@ -6,8 +6,10 @@ import { useRouter } from "next/navigation";
 import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
 import { useResourceNameStore } from "@/features/dashboard/stores/resource-store";
 import { useUsageIntelligenceConfigStore } from "@/features/intelligence/stores/useUsageIntelligenceConfigStore";
+import { useTheme } from "next-themes";
 
 export function useLogout() {
+    const { setTheme } = useTheme();
     const authContext = useAuthContext();
     const router = useRouter();
     const resetDashboardStore = useDashboardStore((state) => state.actions.reset);
@@ -28,6 +30,7 @@ export function useLogout() {
     async function logout() {
         const logoutStatus = await authContext.logout();
         setLogoutError(!logoutStatus);
+        setTheme("dark");
         router.push("/login");
         clearStores();
     }
