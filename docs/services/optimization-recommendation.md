@@ -18,7 +18,7 @@ flowchart TD
     subgraph Worker [Asynchronous Optimization Worker]
         AGGREGATOR[fa:fa-calculator Statistics Aggregator\nCompresses raw time-series into baselines]
         RULE_ENGINE[fa:fa-gavel Rule Evaluation Engine\nMatches baselines against optimization rules]
-        RESOLVER[fa:fa-filter Conflict Resolver\nApplies hierarchy & safety policies]
+        RESOLVER[fa:fa-filter Conflict Resolver\nApplies hierarchy]
     end
 
     subgraph Output [Output & Delivery]
@@ -49,7 +49,7 @@ This is a scheduled background process responsible for all heavy lifting. Driven
 - **Scheduling & Reading**: It reads the `processing_watermark` table to see where it left off, pulls the last 24 hours of unprocessed normalized metrics from SherpaDB to update the baselines, evaluates the rules, updates the recommendations, and goes back to sleep.
 - **Calculating**: Computes heavy statistical summaries, including percentiles and standard deviations, and saves them to SherpaDB.
 - **Evaluating**: Runs the generated statistics against optimization rules.
-- **Resolving**: Filters out duplicate or mutually exclusive actions, such as choosing "Terminate" over "Downsize", and checks safety policies.
+- **Resolving**: Filters out duplicate or mutually exclusive actions, such as choosing "Terminate" over "Downsize".
 - **Persisting**: Writes the final, resolved recommendation, including the mathematical evidence, to the database.
 
 ### Service Application
@@ -86,7 +86,7 @@ To prevent false positives, such as recommending a server be downsized just beca
 
 Statistics are generally calculated over distinct rolling windows to capture both immediate spikes and long-term trends:
 
-- **4-Day Window (4d)**: For the initial deployment and system demos, the engine uses a 4-day window. This bypasses the typical 14-day new-resource lockout and 30-day baseline requirements. Pre-calculated mock data will be seeded to ensure end-to-end functionality during demos.
+- **4-Day Window (4d)**: For the initial deployment and system demos, the engine uses a 4-day window instead of a longer 30-day baseline requirement.
 - **7-Day Window (7d)**: Used to detect short-term maximums, recent usage spikes, and immediate behavioral changes.
 - **30-Day Window (30d)**: Used to establish reliable, long-term operational baselines.
 
@@ -108,42 +108,88 @@ For every combination of Tenant + Resource + Canonical Metric + Window, the aggr
 
 ## Rule Configuration Format
 
-To keep the system accessible and highly performant, optimization rules are defined using standard SQL queries.
+Rules are defined as plain Java records (`OptimizationRule`) in `RuleCatalog`. Each rule declares its scope and one or more metric threshold conditions to evaluate against the `optimization_metric_statistics` table.
 
-Because the Optimization Worker has already calculated and stored the necessary metrics in the `optimization_metric_statistics` table, a rule is simply a query that joins the target resources with their underlying statistics to find matches.
+An `OptimizationRule` contains:
+
+- **ruleId**: Unique identifier, e.g. `COMPUTE-DOWNSIZE`.
+- **enabled**: Whether the rule is active.
+- **actionType**: The action to recommend (`DOWNSIZE`, `TERMINATE`, or `SUSPEND`).
+- **providers**: Optional list of providers to scope the rule to; `null`/empty means any provider.
+- **resourceTypes**: Optional list of resource types to scope the rule to; `null`/empty means any resource type.
+- **metricThresholdConditions**: One or more `MetricThresholdCondition`s that must **all** be satisfied for a resource to match.
+
+Each `MetricThresholdCondition` specifies a metric name, a statistical window (in days), a `StatField` (e.g. `P95`, `MAXIMUM`), a `ComparisonOperator`, and a threshold value.
 
 **Example Rule Definition (Downsize Underutilized Compute):**
 
-```sql
--- Rule: COMPUTE-DOWNSIZE
--- Action: DOWNSIZE
+```java
+private OptimizationRule computeDownsizeRule() {
+  MetricThresholdCondition lowCpu =
+      new MetricThresholdCondition(
+          MetricDisplayNameMapper.CPU_UTILIZATION,
+          4,
+          StatField.P95,
+          ComparisonOperator.LESS_THAN,
+          new BigDecimal(10));
 
-SELECT
-    r.resource_id,
-    r.provider,
-    r.resource_type,
-    'DOWNSIZE' AS action_type
-FROM
-    resources r
-JOIN
-    optimization_metric_statistics stat_4d
-    ON r.resource_id = stat_4d.resource_id
-    AND stat_4d.window_type = 4
-WHERE
-    -- Target specific resource types across any cloud
-    r.resource_type IN ('compute_instance', 'virtual_machine')
-
-    -- The server rarely exceeded 20% CPU over the last 4 days
-    AND stat_4d.metric_name = 'cpu_percent'
-    AND stat_4d.p95_value < 20
-
-    -- We have enough data points from the last 4 days to trust these numbers
-    AND stat_4d.completeness_ratio >= 0.90;
+  return new OptimizationRule(
+      "COMPUTE-DOWNSIZE",
+      true,
+      OptimizationActionTypeEnum.DOWNSIZE,
+      null,
+      COMPUTE_RESOURCE_TYPES,
+      List.of(lowCpu));
+}
 ```
+
+`RuleEngine` loads statistics matching each condition's metric/window, filters by provider and resource type, then intersects the matching resource sets across all conditions in a rule (a resource must satisfy every condition to produce a candidate.)
+
+## Rule Catalog
+
+The following rules are currently implemented in `RuleCatalog`, grouped by action type.
+
+### TERMINATE
+
+**`COMPUTE-TERMINATE-IDLE`**
+Recommends terminating compute instances that are completely idle: near-zero CPU and near-zero network activity over 4 days. Requires both conditions to be met to avoid false positives. Uses `MAXIMUM` stat to catch instances that never even briefly spike in usage. Termination is the most aggressive action, reserved for resources clearly no longer needed.
+
+| Metric | Window | Stat | Condition |
+|---|---|---|---|
+| CPU Utilization | 4d | MAXIMUM | < 5 |
+| Network In | 4d | MAXIMUM | < 1000 |
+
+### DOWNSIZE
+
+**`COMPUTE-DOWNSIZE`**
+Recommends downsizing compute instances whose P95 CPU utilization stayed below 10% over the last 4 days. P95 filters out temporary spikes, capturing only sustained low usage patterns.
+
+| Metric | Window | Stat | Condition |
+|---|---|---|---|
+| CPU Utilization | 4d | P95 | < 10 |
+
+**`COMPUTE-DOWNSIZE-MEMORY`**
+Recommends downsizing compute instances whose P95 memory utilization stayed below 20% over the last 4 days. Complements the CPU-based downsize rule by catching instances that may have ample CPU but waste memory allocation. Not currently triggered for Azure resources, since Azure VM memory utilization has no canonical metric mapping yet.
+
+| Metric | Window | Stat | Condition |
+|---|---|---|---|
+| Memory Utilization | 4d | P95 | < 20 |
+
+### SUSPEND
+
+**`COMPUTE-SUSPEND-IDLE`**
+Recommends suspending compute instances with low CPU and network over 4 days. More conservative than terminate. Suspend allows the instance to be stopped/started rather than permanently removed.
+
+| Metric | Window | Stat | Condition |
+|---|---|---|---|
+| CPU Utilization | 4d | P95 | < 15 |
+| Network In | 4d | MAXIMUM | < 2000 |
+
+All rules above apply to listed resource types in `RuleCatalog`, with no provider restriction (`providers: null`).
 
 ## Rule Validation
 
-Before a rule is activated in the engine, it is executed via an internal EXPLAIN statement. If PostgreSQL compiles the query successfully without syntax errors or missing column references, the rule is considered structurally valid and safe for the worker to run.
+Before a rule is activated in the engine, `RuleValidator` checks it structurally: `ruleId` is non-blank, `actionType` is present, at least one `metricThresholdConditions` entry exists and each condition has valid fields, `providers` contains no null entries and `resourceTypes` contains no blank entries. Rules that fail validation are excluded from `RuleSet.loadActiveRules` and never evaluated by the worker.
 
 ## Recommendation Candidate Model
 
@@ -154,7 +200,7 @@ The conflict resolver evaluates `DRAFT` rows and promotes the winning row to `AC
 ### A Candidate Contains
 
 - **Target Resource ID**: The UUID of the resource.
-- **Rule ID**: Which specific SQL rule triggered this draft.
+- **Rule ID**: Which specific rule triggered this draft.
 - **Action Type**: The proposed action, such as `TERMINATE`, `DOWNSIZE`, or `SUSPEND`.
 - **Evidence**: The raw JSON payload of the specific metrics that triggered the rule, ensuring the final decision is fully explainable to the user.
 
@@ -169,9 +215,10 @@ To prevent spamming the user with conflicting advice, the Conflict Resolver grou
 The engine ranks actions by operational significance or logical priority:
 
 - **TERMINATE (Weight 100)**: Overrides all other actions. If a resource is completely idle, there is no point in downsizing or modernizing it.
-- **MODERNIZE (Weight 75)**: Overrides downsize. Moving to a newer generation family, such as AWS m5 to m6i, can improve compatibility and operational efficiency.
 - **DOWNSIZE (Weight 50)**: Standard right-sizing.
 - **SUSPEND (Weight 25)**: Recommending a power schedule for environments that cannot be permanently terminated or downsized.
+
+## The Resolution Flow
 
 ## The Resolution Flow
 
@@ -179,33 +226,29 @@ The engine ranks actions by operational significance or logical priority:
 flowchart TD
     CANDIDATES[Recommendation rows with status DRAFT]
 
-    DEDUPE[1. Deduplication\nDrop identical drafts from the same rule]
+    DEDUPE[1. Deduplication\nDrop duplicate drafts from the same rule per resource]
 
-    SAFETY[2. Safety & Policy Checks\nDrop drafts if the resource has a 'Protected' tag]
+    EVIDENCE[2. Evidence Validation\nDrop drafts with empty or missing evidence]
 
-    HIERARCHY[3. Apply Hierarchy\nEvaluate Weights: TERMINATE > MODERNIZE > DOWNSIZE]
+    HIERARCHY[3. Apply Hierarchy\nEvaluate Weights: TERMINATE > DOWNSIZE > SUSPEND]
 
-    PRIORITY[4. Tie-Breaker\nIf weights are equal, use rule priority]
+    FINAL[4. Winning recommendation row with status ACTIVE]
 
-    FINAL[5. Winning recommendation row with status ACTIVE]
-
-    PERSIST[6. Persist recommendation status]
+    PERSIST[5. Persist recommendation status, supersede other candidates for the resource]
 
     CANDIDATES --> DEDUPE
-    DEDUPE --> SAFETY
-    SAFETY --> HIERARCHY
-    HIERARCHY --> PRIORITY
-    PRIORITY --> FINAL
+    DEDUPE --> EVIDENCE
+    EVIDENCE --> HIERARCHY
+    HIERARCHY --> FINAL
     FINAL --> PERSIST
 ```
 
-## Safety Checks and Protected-Resource Policies
+## Safety Checks
 
-To ensure the engine does not recommend destructive actions on critical infrastructure, the Conflict Resolver enforces a strict safety policy before any candidate becomes an `ACTIVE` recommendation.
+The only checks currently enforced before a candidate can win:
 
-- **Tag-Based Protection**: The engine checks the resource's normalized tags for protection flags, such as `sherpa:do-not-optimize=true`. Any draft targeting a protected resource is instantly discarded.
-- **Recent Activity Lockout**: The engine verifies the resource's creation date. Resources provisioned recently, such as under 14 days in production, are ignored to avoid prematurely downsizing instances that are still scaling up.
-- **Data Completeness Gate**: If a resource's `completeness_ratio` is below 0.95, it is considered unsafe to optimize, and the draft is rejected.
+- **Evidence Presence**: A candidate is dropped if it has no evidence payload (`ConflictResolver.validateEvidence`).
+- **Per-Rule Deduplication**: Only one candidate per rule per resource is kept (`ConflictResolver.deduplicateByRule`).
 
 ## Recommendation Lifecycle and Statuses
 
@@ -263,28 +306,6 @@ erDiagram
         jsonb evidence
     }
 
-    OPTIMIZATION_RECOMMENDATION {
-        uuid recommendation_id PK
-        uuid resource_id FK
-        string rule_id
-        string action_type
-        string status
-        jsonb evidence
-    }
-
-    RECOMMENDATION_HISTORY {
-        uuid history_id PK
-        uuid recommendation_id FK
-        uuid resource_id FK
-        string provider
-        string rule_id
-        string action_type
-        optimization_status_enum previous_status
-        optimization_status_enum new_status
-        jsonb evidence
-        timestamp changed_at
-    }
-
     RESOURCES ||--o{ OPTIMIZATION_METRIC_STATISTICS : "has pre-calculated"
     RESOURCES ||--o{ OPTIMIZATION_RECOMMENDATION : "receives"
     OPTIMIZATION_RECOMMENDATION }|--|| RULES : "generated by"
@@ -310,8 +331,7 @@ Endpoints:
   "action_type": "DOWNSIZE",
   "status": "ACTIVE",
   "evidence": {
-    "cpu_percent_p95_4d": 18.4,
-    "completeness_ratio": 0.99
+    "CPU Utilization_p95_4d": 18.4
   }
 }
 ```
