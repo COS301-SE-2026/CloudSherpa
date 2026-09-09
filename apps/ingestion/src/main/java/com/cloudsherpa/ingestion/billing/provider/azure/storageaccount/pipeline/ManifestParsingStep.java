@@ -1,11 +1,12 @@
 package com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.pipeline;
 
-import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.models.BlobItem;
+import com.azure.storage.blob.models.BlobStorageException;
 import com.cloudsherpa.ingestion.billing.BillingIngestionPipelineStep;
 import com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.AzureBillingContext;
 import com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.model.AzureManifest;
+import com.cloudsherpa.ingestion.provider.azure.services.blobstorage.AzureBlobReader;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,8 +25,11 @@ public class ManifestParsingStep implements BillingIngestionPipelineStep<AzureBi
 
   private final ObjectMapper objectMapper;
 
-  public ManifestParsingStep(ObjectMapper objectMapper) {
+  private final AzureBlobReader blobReader;
+
+  public ManifestParsingStep(ObjectMapper objectMapper, AzureBlobReader blobReader) {
     this.objectMapper = objectMapper;
+    this.blobReader = blobReader;
   }
 
   public void execute(AzureBillingContext context) {
@@ -36,17 +40,20 @@ public class ManifestParsingStep implements BillingIngestionPipelineStep<AzureBi
         manifests.add(parseManifest(context.getBlobContainerClient(), item));
       } catch (IOException e) {
         logger.warn("Failed to parse manifest {}, SKIPPING", item.getName(), e);
+      } catch (BlobStorageException e) {
+        logger.error(
+            "A Blob Storage exception occured while trying to parse manifest {}, SKIPPING",
+            item.getName(),
+            e);
       }
     }
 
     context.setManifests(manifests);
   }
 
-  public AzureManifest parseManifest(BlobContainerClient containerClient, BlobItem item)
+  private AzureManifest parseManifest(BlobContainerClient containerClient, BlobItem item)
       throws IOException {
-    BlobClient client = containerClient.getBlobClient(item.getName());
-
-    try (InputStream stream = client.openInputStream()) {
+    try (InputStream stream = blobReader.openStream(containerClient, item.getName())) {
       return objectMapper.readValue(stream, AzureManifest.class);
     }
   }
