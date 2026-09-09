@@ -37,7 +37,7 @@ export default function LoginForm({ onToggle }: Readonly<LoginFormProps>) {
     };
 
     return (
-        <div className="w-full max-w-sm space-y-8 p-4">
+        <div className="dark w-full max-w-sm space-y-8 p-4">
             <div className="text-center">
                 <h2 className="text-3xl font-bold tracking-tight">Sign in</h2>
             </div>

@@ -21,7 +21,7 @@ export function AuthOverlay({ isSignUp, toggle }: Readonly<OverlayProps>) {
         <div
             className={cn(
                 // Hidden on mobile, visible and 50% width on medium screens and larger
-                "hidden md:block absolute top-0 left-1/2 w-1/2 h-full overflow-hidden transition-transform duration-700 ease-in-out z-100",
+                "dark hidden md:block absolute top-0 left-1/2 w-1/2 h-full overflow-hidden transition-transform duration-700 ease-in-out z-100",
                 isSignUp ? "-translate-x-full" : ""
             )}
         >

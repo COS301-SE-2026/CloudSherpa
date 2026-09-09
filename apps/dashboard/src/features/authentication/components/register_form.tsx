@@ -65,7 +65,7 @@ export default function RegisterForm({ onToggle }: Readonly<RegisterFormProps>) 
                 </div>
             )}
 
-            <form className="space-y-6" onSubmit={handleFormSubmit} noValidate>
+            <form className="dark space-y-6" onSubmit={handleFormSubmit} noValidate>
                 <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
                     <Input

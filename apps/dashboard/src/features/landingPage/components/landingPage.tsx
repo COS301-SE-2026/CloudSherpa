@@ -23,7 +23,7 @@ export default function LandingPage() {
     }, []);
 
     return (
-        <div className="relative min-h-screen bg-background text-foreground">
+        <div className=" dark relative min-h-screen bg-background text-foreground">
             <div className="relative z-10">
                 <HeroAndNavBar scrolled={scrolled} />
                 <Problem />
