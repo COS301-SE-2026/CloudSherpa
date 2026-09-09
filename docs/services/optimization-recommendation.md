@@ -175,6 +175,14 @@ Recommends downsizing compute instances whose P95 memory utilization stayed belo
 |---|---|---|---|
 | Memory Utilization | 4d | P95 | < 20 |
 
+**`COMPUTE-DOWNSIZE-DISKIO`**  
+Recommends downsizing compute instances with sustained low disk I/O. Triggers when the P95 read IOPS and P95 write IOPS remain below 100 over the last 4 days.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Read IOPS | 4d | P95 | < 100 |
+| Write IOPS | 4d | P95 | < 100 |
+
 ### SUSPEND
 
 **`COMPUTE-SUSPEND-IDLE`**

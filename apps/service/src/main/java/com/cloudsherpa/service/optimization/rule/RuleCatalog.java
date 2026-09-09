@@ -21,7 +21,8 @@ public class RuleCatalog {
         computeDownsizeRule(),
         computeTerminateIdleRule(),
         computeSuspendIdleRule(),
-        computeDownsizeMemoryRule());
+        computeDownsizeMemoryRule(),
+        computeDownsizeDiskIORule());
   }
 
   // ! ---------------------------------------- TERMINATE ----------------------------------------
@@ -88,6 +89,32 @@ public class RuleCatalog {
         null,
         COMPUTE_RESOURCE_TYPES,
         List.of(lowMemory));
+  }
+
+  private OptimizationRule computeDownsizeDiskIORule() {
+    MetricThresholdCondition lowReadIOPS =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.READ_IOPS,
+            4,
+            StatField.P95,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(100));
+
+    MetricThresholdCondition lowWriteIOPS =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.WRITE_IOPS,
+            4,
+            StatField.P95,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(100));
+
+    return new OptimizationRule(
+        "COMPUTE-DOWNSIZE-DISKIO",
+        true,
+        OptimizationActionTypeEnum.DOWNSIZE,
+        null,
+        COMPUTE_RESOURCE_TYPES,
+        List.of(lowReadIOPS, lowWriteIOPS));
   }
 
   // # ---------------------------------------- DOWNSIZE ----------------------------------------
