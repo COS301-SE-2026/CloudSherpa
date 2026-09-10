@@ -23,8 +23,6 @@ public class RuleCatalog {
         computeTerminateIdleRule(),
         computeSuspendIdleRule(),
         computeDownsizeMemoryRule(),
-        computeDownsizeDiskIORule(),
-        computeDownsizeNetworkRule(),
         computeDownsizeStorageTierRule());
   }
 
@@ -92,58 +90,6 @@ public class RuleCatalog {
         List.of(ProviderEnum.AWS),
         COMPUTE_RESOURCE_TYPES,
         List.of(lowMemory));
-  }
-
-  private OptimizationRule computeDownsizeDiskIORule() {
-    MetricThresholdCondition lowReadIOPS =
-        new MetricThresholdCondition(
-            MetricDisplayNameMapper.READ_IOPS,
-            4,
-            StatField.P95,
-            ComparisonOperator.LESS_THAN,
-            new BigDecimal(100));
-
-    MetricThresholdCondition lowWriteIOPS =
-        new MetricThresholdCondition(
-            MetricDisplayNameMapper.WRITE_IOPS,
-            4,
-            StatField.P95,
-            ComparisonOperator.LESS_THAN,
-            new BigDecimal(100));
-
-    return new OptimizationRule(
-        "COMPUTE-DOWNSIZE-DISKIO",
-        true,
-        OptimizationActionTypeEnum.DOWNSIZE,
-        null,
-        COMPUTE_RESOURCE_TYPES,
-        List.of(lowReadIOPS, lowWriteIOPS));
-  }
-
-  private OptimizationRule computeDownsizeNetworkRule() {
-    MetricThresholdCondition lowNetworkInP95 =
-        new MetricThresholdCondition(
-            MetricDisplayNameMapper.NETWORK_IN,
-            4,
-            StatField.P95,
-            ComparisonOperator.LESS_THAN,
-            new BigDecimal(2000));
-
-    MetricThresholdCondition lowNetworkOutP95 =
-        new MetricThresholdCondition(
-            MetricDisplayNameMapper.NETWORK_OUT,
-            4,
-            StatField.P95,
-            ComparisonOperator.LESS_THAN,
-            new BigDecimal(2000));
-
-    return new OptimizationRule(
-        "COMPUTE-DOWNSIZE-NETWORK",
-        true,
-        OptimizationActionTypeEnum.DOWNSIZE,
-        null,
-        COMPUTE_RESOURCE_TYPES,
-        List.of(lowNetworkInP95, lowNetworkOutP95));
   }
 
   private OptimizationRule computeDownsizeStorageTierRule() {

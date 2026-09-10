@@ -175,22 +175,6 @@ Recommends downsizing compute instances whose P95 memory utilization stayed belo
 |---|---|---|---|
 | Memory Utilization | 4d | P95 | < 20 |
 
-**`COMPUTE-DOWNSIZE-DISKIO`**  
-Recommends downsizing compute instances with sustained low disk I/O. Triggers when the P95 read IOPS and P95 write IOPS remain below 100 over the last 4 days.
-
-| Metric | Window | Stat | Condition |
-|---|---:|---|---|
-| Read IOPS | 4d | P95 | < 100 |
-| Write IOPS | 4d | P95 | < 100 |
-
-**`COMPUTE-DOWNSIZE-NETWORK`**  
-Recommends downsizing compute instances with sustained low network activity. Triggers when the P95 Network In and P95 Network Out remain below 2000 over the last 4 days.
-
-| Metric | Window | Stat | Condition |
-|---|---:|---|---|
-| Network In | 4d | P95 | < 2000 |
-| Network Out | 4d | P95 | < 2000 |
-
 **`COMPUTE-DOWNSIZE-STORAGE-TIER`**  
 Recommends downsizing storage allocation or moving to a cheaper storage tier when disk usage is persistently low. Triggers when the P95 Percentage Disk Space Used remains below 20% over the last 4 days.
 
