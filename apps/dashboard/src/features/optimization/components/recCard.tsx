@@ -109,10 +109,25 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
         );
     };
 
+    const getPeriod = () => {
+        if (!recommendation?.evidence) return "4";
+        const keys = Object.keys(recommendation.evidence);
+        if (keys.length === 0) return "4";
+
+        const parsed = parseEvidenceKey(keys[0]);
+        return parsed ? parsed.timeframe.replace("d", "") : "4";
+    };
+
+    const period = getPeriod();
+
     const getEvidenceCards = () => {
         if (!recommendation?.evidence) return [];
 
-        const cards: Array<{ label: string; value: string; subtitle: string }> = [];
+        const cards: Array<{
+            label: string;
+            value: string;
+            subtitle: string;
+        }> = [];
 
         for (const [key, value] of Object.entries(recommendation.evidence)) {
             const parsed = parseEvidenceKey(key);
@@ -191,22 +206,19 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
                 <div className="h-full w-full space-y-6">
                     <CardContent className="h-full flex flex-col lg:flex-row gap-6">
                         <div className="flex flex-col ">
-                            <h3 className="text-sm font-semibold text-muted-foreground mb-3">
-                                Monitored Evidence
+                            <h3 className="text-sm font-semibold text-muted-foreground mb-2">
+                                Monitored Evidence over {period} day
+                                {period === "1" ? "" : "s"}
                             </h3>
                             <div className="flex flex-col w-70 gap-3">
                                 {getEvidenceCards().map((card) => (
-                                    <div
-                                        key={card.label}
-                                        className="bg-muted/80 dark:bg-muted/60 rounded-lg p-4"
-                                    >
-                                        <p className="text-base font-bold text-foreground mb-1">
-                                            {card.label}
-                                        </p>
-                                        <p className="text-2xl font-bold mb-1">{card.value}</p>
-                                        <p className="text-sm text-muted-foreground">
-                                            {card.subtitle}
-                                        </p>
+                                    <div key={card.label} className="flex flex-col gap-4">
+                                        <div>
+                                            <div className="text-2xl font-bold">{card.value}</div>
+                                            <div className="text-sm font-semibold text-muted-foreground mb-1">
+                                                {card.label}
+                                            </div>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
