@@ -21,7 +21,8 @@ public class RuleCatalog {
         computeDownsizeRule(),
         computeTerminateIdleRule(),
         computeSuspendIdleRule(),
-        computeDownsizeMemoryRule());
+        computeDownsizeMemoryRule(),
+        computeUpscaleCPURule());
   }
 
   // ! ---------------------------------------- TERMINATE ----------------------------------------
@@ -118,5 +119,26 @@ public class RuleCatalog {
         COMPUTE_RESOURCE_TYPES,
         List.of(lowCpu, lowNetworkIn));
   }
+
   // ? ---------------------------------------- SUSPEND ----------------------------------------
+
+  // * ---------------------------------------- UPSCALE ----------------------------------------
+  private OptimizationRule computeUpscaleCPURule() {
+    MetricThresholdCondition highCpu =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.CPU_UTILIZATION,
+            4,
+            StatField.P95,
+            ComparisonOperator.GREATER_THAN,
+            new BigDecimal(85));
+
+    return new OptimizationRule(
+        "COMPUTE-UPSCALE-CPU",
+        true,
+        OptimizationActionTypeEnum.UPSCALE,
+        null,
+        COMPUTE_RESOURCE_TYPES,
+        List.of(highCpu));
+  }
+  // * ---------------------------------------- UPSCALE ----------------------------------------
 }
