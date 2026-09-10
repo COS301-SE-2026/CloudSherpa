@@ -21,7 +21,8 @@ public class RuleCatalog {
         computeDownsizeRule(),
         computeTerminateIdleRule(),
         computeSuspendIdleRule(),
-        computeDownsizeMemoryRule());
+        computeDownsizeMemoryRule(),
+        computeSuspendLowMemoryAndCpuRule());
   }
 
   // ! ---------------------------------------- TERMINATE ----------------------------------------
@@ -117,6 +118,32 @@ public class RuleCatalog {
         null,
         COMPUTE_RESOURCE_TYPES,
         List.of(lowCpu, lowNetworkIn));
+  }
+
+  private OptimizationRule computeSuspendLowMemoryAndCpuRule() {
+    MetricThresholdCondition lowCpuP95 =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.CPU_UTILIZATION,
+            4,
+            StatField.P95,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(15));
+
+    MetricThresholdCondition lowMemoryP95 =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.MEMORY_UTILIZATION,
+            4,
+            StatField.P95,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(25));
+
+    return new OptimizationRule(
+        "COMPUTE-SUSPEND-LOW-CPU-MEMORY",
+        true,
+        OptimizationActionTypeEnum.SUSPEND,
+        null,
+        COMPUTE_RESOURCE_TYPES,
+        List.of(lowCpuP95, lowMemoryP95));
   }
   // ? ---------------------------------------- SUSPEND ----------------------------------------
 }
