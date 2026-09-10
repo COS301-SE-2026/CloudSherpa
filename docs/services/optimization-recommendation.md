@@ -201,6 +201,14 @@ Recommends suspending instances with negligible total network traffic (both dire
 | Network In | 4d | MAXIMUM | < 5000000 |
 | Network Out | 4d | MAXIMUM | < 5000000 |
 
+**`COMPUTE-SUSPEND-LOW-DISK-BYTES`**
+Recommends suspending instances with negligible disk throughput (both directions) over 4 days.
+
+| Metric | Window | Stat | Condition |
+|---|---|---|---|
+| Disk Read Bytes | 4d | MAXIMUM | < 5000000 |
+| Disk Write Bytes | 4d | MAXIMUM | < 5000000 |
+
 
 All rules above apply to listed resource types in `RuleCatalog`, with no provider restriction (`providers: null`).
 

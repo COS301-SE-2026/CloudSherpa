@@ -172,5 +172,31 @@ public class RuleCatalog {
         COMPUTE_RESOURCE_TYPES,
         List.of(lowNetworkIn, lowNetworkOut));
   }
+
+  private OptimizationRule computeSuspendLowDiskBytesRule() {
+    MetricThresholdCondition lowDiskRead =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.DISK_READ_BYTES,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(5000000)); // < 5000000 bytes = 5 MB
+
+    MetricThresholdCondition lowDiskWrite =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.DISK_WRITE_BYTES,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(5000000)); // < 5000000 bytes = 5 MB
+
+    return new OptimizationRule(
+        "COMPUTE-SUSPEND-LOW-DISK-BYTES",
+        true,
+        OptimizationActionTypeEnum.SUSPEND,
+        null,
+        COMPUTE_RESOURCE_TYPES,
+        List.of(lowDiskRead, lowDiskWrite));
+  }
   // ? ---------------------------------------- SUSPEND ----------------------------------------
 }
