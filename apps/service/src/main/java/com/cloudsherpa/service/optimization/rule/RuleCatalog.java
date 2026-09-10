@@ -21,7 +21,8 @@ public class RuleCatalog {
         computeDownsizeRule(),
         computeTerminateIdleRule(),
         computeSuspendIdleRule(),
-        computeDownsizeMemoryRule());
+        computeDownsizeMemoryRule(),
+        computeTerminateNoDiskIoRule());
   }
 
   // ! ---------------------------------------- TERMINATE ----------------------------------------
@@ -49,6 +50,32 @@ public class RuleCatalog {
         null,
         COMPUTE_RESOURCE_TYPES,
         List.of(idleCpu, idleNetworkIn));
+  }
+
+  private OptimizationRule computeTerminateNoDiskIoRule() {
+    MetricThresholdCondition readIo =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.DISK_READ_BYTES,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(1000));
+
+    MetricThresholdCondition writeIo =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.DISK_WRITE_BYTES,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(1000));
+
+    return new OptimizationRule(
+        "COMPUTE-TERMINATE-NO-DISK-IO",
+        true,
+        OptimizationActionTypeEnum.TERMINATE,
+        null,
+        COMPUTE_RESOURCE_TYPES,
+        List.of(readIo, writeIo));
   }
 
   // ! ---------------------------------------- TERMINATE ----------------------------------------

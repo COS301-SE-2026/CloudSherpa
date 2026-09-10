@@ -152,12 +152,19 @@ The following rules are currently implemented in `RuleCatalog`, grouped by actio
 ### TERMINATE
 
 **`COMPUTE-TERMINATE-IDLE`**
-Recommends terminating compute instances that are completely idle: near-zero CPU and near-zero network activity over 4 days. Requires both conditions to be met to avoid false positives. Uses `MAXIMUM` stat to catch instances that never even briefly spike in usage. Termination is the most aggressive action, reserved for resources clearly no longer needed.
+Recommends terminating compute instances that are completely idle: near-zero CPU and near-zero network activity over 4 days. Requires both conditions to be met to avoid false positives.
 
 | Metric | Window | Stat | Condition |
 |---|---|---|---|
 | CPU Utilization | 4d | MAXIMUM | < 5 |
 | Network In | 4d | MAXIMUM | < 1000 |
+
+**`COMPUTE-TERMINATE-NO-DISK-IO`**
+
+| Metric | Window | Stat | Condition |
+|---|---|---|---|
+| Disk Read Bytes | 4d | MAXIMUM | < 1000 |
+| Disk Write Bytes | 4d | MAXIMUM | < 1000 |
 
 ### DOWNSIZE
 
