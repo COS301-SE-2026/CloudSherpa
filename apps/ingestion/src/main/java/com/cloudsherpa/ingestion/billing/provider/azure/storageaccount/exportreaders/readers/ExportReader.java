@@ -1,4 +1,4 @@
-package com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.exportreaders;
+package com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.exportreaders.readers;
 
 import java.io.IOException;
 import java.util.List;

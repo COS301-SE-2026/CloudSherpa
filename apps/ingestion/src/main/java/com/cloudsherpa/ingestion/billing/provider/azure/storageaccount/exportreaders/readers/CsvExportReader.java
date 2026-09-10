@@ -1,12 +1,10 @@
-package com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.exportreaders;
+package com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.exportreaders.readers;
 
+import com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.model.RawBillingRow;
 import java.io.IOException;
 import java.util.List;
-import org.apache.commons.csv.CSVRecord;
-import org.springframework.stereotype.Component;
 
-@Component
-public class CsvExportReader implements ExportReader<CSVRecord> {
+public class CsvExportReader implements ExportReader<RawBillingRow> {
 
   private String blobName;
   private Integer currentRecord;
@@ -17,7 +15,7 @@ public class CsvExportReader implements ExportReader<CSVRecord> {
   }
 
   @Override
-  public List<CSVRecord> readBatch(int maxRows) throws IOException {
+  public List<RawBillingRow> readBatch(int maxRows) throws IOException {
     return List.of();
   }
 
