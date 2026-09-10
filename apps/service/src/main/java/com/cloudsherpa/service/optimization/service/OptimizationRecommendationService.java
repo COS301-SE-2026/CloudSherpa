@@ -74,6 +74,7 @@ public class OptimizationRecommendationService {
     int terminateCount = 0;
     int downsizeCount = 0;
     int suspendCount = 0;
+    int upscaleCount = 0;
 
     for (OptimizationRecommendation rec : allRecommendations) {
 
@@ -97,6 +98,8 @@ public class OptimizationRecommendationService {
         downsizeCount++;
       } else if ("SUSPEND".equals(actionName)) {
         suspendCount++;
+      } else if ("UPSCALE".equals(actionName)) {
+        upscaleCount++;
       }
     }
 
@@ -104,6 +107,7 @@ public class OptimizationRecommendationService {
     actionTypeMap.put("TERMINATE", terminateCount);
     actionTypeMap.put("DOWNSIZE", downsizeCount);
     actionTypeMap.put("SUSPEND", suspendCount);
+    actionTypeMap.put("UPSCALE", upscaleCount);
 
     Map<String, Object> summary = new HashMap<>();
     summary.put("total", allRecommendations.size());

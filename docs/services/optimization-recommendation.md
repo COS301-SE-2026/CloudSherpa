@@ -185,7 +185,16 @@ Recommends suspending compute instances with low CPU and network over 4 days. Mo
 | CPU Utilization | 4d | P95 | < 15 |
 | Network In | 4d | MAXIMUM | < 2000 |
 
-All rules above apply to listed resource types in `RuleCatalog`, with no provider restriction (`providers: null`).
+### UPSCALE
+
+**`COMPUTE-UPSCALE-CPU`**
+Recommends upscaling compute instances whose P95 CPU utilization consistently exceeds 85% over the last 4 days. Sustained high utilization indicates the instance is resource-constrained, risking performance degradation.
+
+| Metric | Window | Stat | Condition |
+|---|---|---|---|
+| CPU Utilization | 4d | P95 | > 85 |
+
+All rules above apply to listed resource types in `RuleCatalog`.
 
 ## Rule Validation
 
