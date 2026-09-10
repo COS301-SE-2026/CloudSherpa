@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Button } from "@/components/atoms/button";
 import { useRecStore } from "@/features/optimization/stores/useRecStore";
 import { Badge } from "@/components/atoms/badge";
+import { Separator } from "@/components/atoms/separator";
 import { toast } from "sonner";
 import RecommendationReasoning from "@/features/optimization/utils/recDictionary";
 
@@ -188,12 +189,12 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
             </CardHeader>
             {open && (
                 <div className="h-full w-full space-y-6">
-                    <CardContent className="space-y-4">
-                        <div>
+                    <CardContent className="h-full flex flex-col lg:flex-row gap-6">
+                        <div className="flex flex-col ">
                             <h3 className="text-sm font-semibold text-muted-foreground mb-3">
                                 Monitored Evidence
                             </h3>
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                            <div className="flex flex-col w-70 gap-3">
                                 {getEvidenceCards().map((card) => (
                                     <div
                                         key={card.label}
@@ -210,15 +211,16 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
                                 ))}
                             </div>
                         </div>
-                        <div>
+                        <Separator orientation="vertical" />
+                        <div className="flex flex-col justify-between">
                             <p className="text-base text-foreground leading-relaxed">
                                 <RecommendationReasoning recommendation={recommendation} />
                             </p>
+                            <div className="flex flex-row justify-start gap-2">
+                                {renderActionButtons()}
+                            </div>
                         </div>
                     </CardContent>
-                    <CardFooter className="flex flex-row justify-start gap-4">
-                        {renderActionButtons()}
-                    </CardFooter>
                 </div>
             )}
         </Card>

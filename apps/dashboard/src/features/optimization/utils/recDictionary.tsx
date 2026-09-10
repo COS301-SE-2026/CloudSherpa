@@ -44,9 +44,8 @@ export default function RecommendationReasoning({
     if (!evidence || Object.keys(evidence).length === 0) {
         return (
             <span>
-                We recommend you{" "}
-                <strong className="text-primary">{actionType.toLowerCase()}</strong> this resource
-                based on current usage policies.
+                We recommend you <strong>{actionType.toLowerCase()}</strong> this resource based on
+                current usage policies.
             </span>
         );
     }
@@ -59,11 +58,10 @@ export default function RecommendationReasoning({
                 return (
                     <span>
                         Consider <strong className="text-warning">downsizing</strong> this compute
-                        instance. Over the last{" "}
-                        <strong className="text-primary">{cpu.days} days</strong> , 95% of the time
-                        your <strong className="text-primary">CPU utilization</strong> stayed below{" "}
-                        <strong className="text-primary">{cpu.formattedValue}</strong>, indicating
-                        the resource is over-provisioned.
+                        instance. Over the last <strong>{cpu.days} days</strong> , 95% of the time
+                        your <strong>CPU utilization</strong> stayed below{" "}
+                        <strong>{cpu.formattedValue}</strong>, indicating the resource is
+                        over-provisioned.
                     </span>
                 );
             }
@@ -76,9 +74,9 @@ export default function RecommendationReasoning({
                     <span>
                         Consider <strong className="text-warning">downsizing</strong> this compute
                         instance. Over the last {memory.days} days, 95% of the time your{" "}
-                        <strong className="text-primary">Memory utilization</strong> stayed below{" "}
-                        <strong className="text-primary">{memory.formattedValue}</strong>,
-                        suggesting excess memory allocation.
+                        <strong>Memory utilization</strong> stayed below{" "}
+                        <strong>{memory.formattedValue}</strong>, suggesting excess memory
+                        allocation.
                     </span>
                 );
             }
@@ -91,21 +89,19 @@ export default function RecommendationReasoning({
 
             return (
                 <span>
-                    This resource appears to be{" "}
-                    <strong className="text-primary">completely idle</strong>. Over the last {days}{" "}
-                    days
+                    This resource appears to be <strong>completely idle</strong>. Over the last{" "}
+                    {days} days
                     {cpu && (
                         <span>
-                            , maximum <strong className="text-primary">CPU utilization</strong> was{" "}
-                            <strong className="text-primary">{cpu.formattedValue}</strong>
+                            , maximum <strong>CPU utilization</strong> was{" "}
+                            <strong>{cpu.formattedValue}</strong>
                         </span>
                     )}
                     {network && (
                         <span>
                             {" "}
-                            {cpu ? "and" : ","} maximum{" "}
-                            <strong className="text-primary">Network In</strong> was{" "}
-                            <strong className="text-primary">{network.formattedValue}</strong>
+                            {cpu ? "and" : ","} maximum <strong>Network In</strong> was{" "}
+                            <strong>{network.formattedValue}</strong>
                         </span>
                     )}
                     .<strong className="text-destructive"> Terminating</strong> it is recommended to
@@ -120,22 +116,19 @@ export default function RecommendationReasoning({
 
             return (
                 <span>
-                    This resource shows{" "}
-                    <strong className="text-primary">minimal active usage</strong>. Over the last{" "}
-                    {days} days
+                    This resource shows <strong>minimal active usage</strong>. Over the last {days}{" "}
+                    days
                     {cpu && (
                         <span>
-                            , 95% of the time your{" "}
-                            <strong className="text-primary">CPU utilization</strong> was only{" "}
-                            <strong className="text-primary">{cpu.formattedValue}</strong>
+                            , 95% of the time your <strong>CPU utilization</strong> was only{" "}
+                            <strong>{cpu.formattedValue}</strong>
                         </span>
                     )}
                     {network && (
                         <span>
                             {" "}
-                            {cpu ? "with" : ","} maximum{" "}
-                            <strong className="text-primary">Network In</strong> at{" "}
-                            <strong className="text-primary">{network.formattedValue}</strong>
+                            {cpu ? "with" : ","} maximum <strong>Network In</strong> at{" "}
+                            <strong>{network.formattedValue}</strong>
                         </span>
                     )}
                     .<strong className="text-yellow-600"> Suspending</strong> it during off-hours is
