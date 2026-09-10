@@ -60,11 +60,11 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
     const getStatusBadgeClass = () => {
         switch (recommendation.status) {
             case "ACTIVE":
-                return "bg-success text-success-foreground";
+                return "bg-success text-white";
             case "APPLIED":
-                return "bg-primary text-primary-foreground";
+                return "bg-primary text-white";
             case "DISMISSED":
-                return "bg-destructive text-destructive-foreground";
+                return "bg-destructive text-white";
             default:
                 return "variant-secondary";
         }
