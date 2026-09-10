@@ -23,7 +23,8 @@ public class RuleCatalog {
         computeSuspendIdleRule(),
         computeDownsizeMemoryRule(),
         computeSuspendLowMemoryAndCpuRule(),
-        computeSuspendLowNetworkRule());
+        computeSuspendLowNetworkRule(),
+        computeSuspendLowDiskBytesRule());
   }
 
   // ! ---------------------------------------- TERMINATE ----------------------------------------
