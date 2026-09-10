@@ -21,7 +21,7 @@ public class ParquetExportReader implements ExportReader<RawBillingRow> {
 
   @Override
   public List<RawBillingRow> readBatch(int maxRows) throws IOException {
-    logger.info("Blob Name {}", blobName);
+    logger.info("Blob Name {} container client {}", blobName, containerClient);
     return List.of();
   }
 

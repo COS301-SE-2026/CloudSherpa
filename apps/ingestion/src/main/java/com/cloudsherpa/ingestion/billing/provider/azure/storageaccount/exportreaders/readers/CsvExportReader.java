@@ -11,6 +11,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 import org.apache.commons.csv.CSVFormat;
@@ -21,11 +23,14 @@ import org.slf4j.LoggerFactory;
 
 public class CsvExportReader implements ExportReader<RawBillingRow> {
 
-  private static final Logger logger = LoggerFactory.getLogger(CsvExportReader.class);
+  private static final Logger logger = // NOSONAR keeping here for dev
+      LoggerFactory.getLogger(CsvExportReader.class);
 
   private final AzureBlobReader blobReader;
 
   private CSVParser parser;
+
+  private final Iterator<CSVRecord> records;
 
   public CsvExportReader(
       BlobContainerClient containerClient, String blobName, AzureBlobReader blobReader) {
@@ -33,6 +38,7 @@ public class CsvExportReader implements ExportReader<RawBillingRow> {
 
     try {
       this.parser = openCsvParser(containerClient, blobName);
+      this.records = parser.iterator();
     } catch (IOException | RuntimeException e) {
       throw new ExportReaderException("Failed to open CSV input stream for blob " + blobName, e);
     }
@@ -40,11 +46,14 @@ public class CsvExportReader implements ExportReader<RawBillingRow> {
 
   @Override
   public List<RawBillingRow> readBatch(int maxRows) throws IOException {
-    for (CSVRecord csvRecord : parser) {
-      logger.info("{}", csvRecord);
+
+    List<RawBillingRow> batch = new ArrayList<>();
+
+    while (batch.size() < maxRows && records.hasNext()) {
+      batch.add(new RawBillingRow("tbd"));
     }
 
-    return List.of();
+    return batch;
   }
 
   @Override
@@ -59,7 +68,9 @@ public class CsvExportReader implements ExportReader<RawBillingRow> {
       GZIPInputStream gzip = new GZIPInputStream((InputStream) resource);
       resource = gzip;
 
-      Reader reader = new BufferedReader(new InputStreamReader(gzip, StandardCharsets.UTF_8));
+      Reader reader =
+          new BufferedReader( // NOSONAR This reader is closed when this.parser.close()
+              new InputStreamReader(gzip, StandardCharsets.UTF_8));
       return CSVFormat.DEFAULT
           .builder()
           .setHeader()
