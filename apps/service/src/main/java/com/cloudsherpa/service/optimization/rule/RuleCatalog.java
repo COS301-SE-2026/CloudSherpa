@@ -22,7 +22,8 @@ public class RuleCatalog {
         computeTerminateIdleRule(),
         computeSuspendIdleRule(),
         computeDownsizeMemoryRule(),
-        computeSuspendLowMemoryAndCpuRule());
+        computeSuspendLowMemoryAndCpuRule(),
+        computeSuspendLowNetworkRule());
   }
 
   // ! ---------------------------------------- TERMINATE ----------------------------------------
@@ -109,7 +110,7 @@ public class RuleCatalog {
             4,
             StatField.MAXIMUM,
             ComparisonOperator.LESS_THAN,
-            new BigDecimal(2000));
+            new BigDecimal(1000000));
 
     return new OptimizationRule(
         "COMPUTE-SUSPEND-IDLE",
@@ -144,6 +145,32 @@ public class RuleCatalog {
         null,
         COMPUTE_RESOURCE_TYPES,
         List.of(lowCpuP95, lowMemoryP95));
+  }
+
+  private OptimizationRule computeSuspendLowNetworkRule() {
+    MetricThresholdCondition lowNetworkIn =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.NETWORK_IN,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(5000000)); // 5 000 000 bytes = 5 MB
+
+    MetricThresholdCondition lowNetworkOut =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.NETWORK_OUT,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(5000000)); // 5 000 000 bytes = 5 MB
+
+    return new OptimizationRule(
+        "COMPUTE-SUSPEND-LOW-NETWORK",
+        true,
+        OptimizationActionTypeEnum.SUSPEND,
+        null,
+        COMPUTE_RESOURCE_TYPES,
+        List.of(lowNetworkIn, lowNetworkOut));
   }
   // ? ---------------------------------------- SUSPEND ----------------------------------------
 }
