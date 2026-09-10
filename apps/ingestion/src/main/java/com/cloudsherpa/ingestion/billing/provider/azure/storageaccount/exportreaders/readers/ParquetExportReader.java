@@ -3,8 +3,12 @@ package com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.exportre
 import com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.model.RawBillingRow;
 import java.io.IOException;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ParquetExportReader implements ExportReader<RawBillingRow> {
+
+  private final Logger logger = LoggerFactory.getLogger(ParquetExportReader.class);
 
   private String blobName;
 
@@ -14,6 +18,7 @@ public class ParquetExportReader implements ExportReader<RawBillingRow> {
 
   @Override
   public List<RawBillingRow> readBatch(int maxRows) throws IOException {
+    logger.info("Blob Name {}", blobName);
     return List.of();
   }
 
