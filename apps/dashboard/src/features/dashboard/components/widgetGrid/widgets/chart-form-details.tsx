@@ -4,7 +4,11 @@ import { Label } from "@/components/atoms/label";
 import { FieldSet, FieldLegend, FieldDescription, FieldGroup } from "@/components/atoms/field";
 import { ChartWidgetConfig, ChartType, ChartColour } from "@/features/dashboard/types/widgets";
 import { FormCountCircle } from "@/components/atoms/form-count-circle";
+import { Button } from "@/components/atoms/button";
+import { ChevronDown } from "lucide-react";
 import Dropdown from "@/components/molecules/dropdown";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/atoms/popover";
+import { cn } from "@/lib/utils";
 
 interface ChartFormDetailsProps {
     configuration: ChartWidgetConfig;
@@ -16,12 +20,22 @@ const CHART_TYPE_OPTIONS: { value: ChartType; label: string }[] = [
     { value: "gauge_chart", label: "Gauge Chart" },
 ];
 
-const CHART_COLOURS: ChartColour[] = ["chart-1", "chart-2", "chart-3", "chart-4", "chart-5"];
+const CHART_COLOURS: { label: string; value: ChartColour }[] = [
+    { label: "Blue", value: "chart-1" },
+    { label: "Purple", value: "chart-2" },
+    { label: "Green", value: "chart-3" },
+    { label: "Orange", value: "chart-4" },
+    { label: "Pink", value: "chart-5" },
+];
 
 export default function ChartFormDetails({
     configuration,
     setConfiguration,
 }: Readonly<ChartFormDetailsProps>) {
+    const currentColour = configuration.chartColour || "chart-1";
+    const currentColourLabel =
+        CHART_COLOURS.find((c) => c.value === currentColour)?.label || "Blue";
+
     return (
         <FieldSet>
             <div className="flex flex-row items-center gap-3">
@@ -64,24 +78,50 @@ export default function ChartFormDetails({
                 </div>
                 <div className="flex flex-col gap-2">
                     <Label>Chart Colour</Label>
-                    <div className="flex flex-row gap-3 pt-1">
-                        {CHART_COLOURS.map((colour) => (
-                            <button
-                                key={colour}
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Button
                                 type="button"
-                                aria-label={`Select ${colour}`}
-                                onClick={() =>
-                                    setConfiguration({ ...configuration, chartColour: colour })
-                                }
-                                className={`h-8 w-8 rounded-full transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
-                                    configuration.chartColour === colour
-                                        ? "ring-2 ring-primary ring-offset-2 ring-offset-primary-foreground scale-105"
-                                        : "border-2 border-transparent hover:scale-110"
-                                }`}
-                                style={{ backgroundColor: `var(--${colour})` }}
-                            />
-                        ))}
-                    </div>
+                                variant="outline"
+                                className="w-fit group justify-between gap-3"
+                            >
+                                <div className="flex items-center gap-2">
+                                    <div
+                                        className="h-4 w-4 rounded-sm border border-border shadow-sm"
+                                        style={{ backgroundColor: `var(--${currentColour})` }}
+                                    />
+                                    <span className="capitalize">{currentColourLabel}</span>
+                                </div>
+                                <ChevronDown className="h-4 w-4 opacity-50 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                            </Button>
+                        </PopoverTrigger>
+
+                        <PopoverContent className="w-max p-2" align="start">
+                            <div className="grid grid-cols-5 gap-2">
+                                {CHART_COLOURS.map((colourObj) => (
+                                    <button
+                                        key={colourObj.value}
+                                        type="button"
+                                        aria-label={`Select ${colourObj.label}`}
+                                        title={colourObj.label}
+                                        onClick={() =>
+                                            setConfiguration({
+                                                ...configuration,
+                                                chartColour: colourObj.value,
+                                            })
+                                        }
+                                        className={cn(
+                                            "h-6 w-6 rounded-sm transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 cursor-pointer",
+                                            currentColour === colourObj.value
+                                                ? "ring-2 ring-primary ring-offset-1 ring-offset-background scale-110 z-10"
+                                                : "border border-border/50 hover:border-foreground hover:scale-110"
+                                        )}
+                                        style={{ backgroundColor: `var(--${colourObj.value})` }}
+                                    />
+                                ))}
+                            </div>
+                        </PopoverContent>
+                    </Popover>
                 </div>
             </FieldGroup>
         </FieldSet>
