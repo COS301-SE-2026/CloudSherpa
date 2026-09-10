@@ -47,7 +47,7 @@ export type BaseWidgetConfig = {
 export type ChartWidgetConfig = BaseWidgetConfig & {
     widgetType: "CHART";
     chartType: ChartType;
-    chartColour?: ChartColour;
+    chartColour: ChartColour;
     provider: string | null;
     accountId: string | null;
     resourceId: string | null;

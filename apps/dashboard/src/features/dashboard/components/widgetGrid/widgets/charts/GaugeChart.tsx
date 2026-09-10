@@ -20,7 +20,9 @@ export function GaugeChart({
     chartColour,
 }: Readonly<GaugeChartProps>) {
     const { hasData } = useChartData(resourceId, metricType);
-    const { themeName, tokens, activeColour, isLightMode } = useChartTheme(chartColour);
+    const { themeName, tokens, activeColour, isLightMode } = useChartTheme(
+        chartColour || "chart_1"
+    );
     const { currentValue } = useChartData(resourceId, metricType);
 
     useEffect(() => {

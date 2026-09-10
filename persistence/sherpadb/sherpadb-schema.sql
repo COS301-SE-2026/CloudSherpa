@@ -29,7 +29,7 @@ CREATE TYPE public.predefined_time_enum AS ENUM (
 CREATE TYPE public.type_enum AS ENUM ('KPI', 'CHART');
 CREATE TYPE public.execution_status_enum AS ENUM ('pending', 'processing', 'completed', 'failed');
 CREATE TYPE PUBLIC.chart_type_enum AS ENUM ('gauge_chart', 'line_chart');
-CREATE TYPE public.chart_colour_enum AS ENUM ('chart-1', 'chart-2', 'chart-3', 'chart-4', 'chart-5');
+CREATE TYPE public.chart_colour_enum AS ENUM ('chart_1', 'chart_2', 'chart_3', 'chart_4', 'chart_5');
 -- Differentiates actual compute usage from other types.
 -- Maps to CUR: line_item_line_item_type
 CREATE TYPE public.charge_type_enum AS ENUM ('Usage', 'Other', 'Credit'); 
