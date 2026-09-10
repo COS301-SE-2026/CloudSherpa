@@ -160,11 +160,20 @@ Recommends terminating compute instances that are completely idle: near-zero CPU
 | Network In | 4d | MAXIMUM | < 1000 |
 
 **`COMPUTE-TERMINATE-NO-DISK-IO`**
+Recommends terminating compute instances that has near-zero disk I/O (both read and write) over 4 days.
 
 | Metric | Window | Stat | Condition |
 |---|---|---|---|
 | Disk Read Bytes | 4d | MAXIMUM | < 1000 |
 | Disk Write Bytes | 4d | MAXIMUM | < 1000 |
+
+**`COMPUTE-TERMINATE-NO-NETWORK`**
+Recommends terminating compute instances with virtually no network activity in either direction over 4 days
+
+| Metric | Window | Stat | Condition |
+|---|---|---|---|
+| DNetwork In | 4d | MAXIMUM | < 1000 |
+| Network Out | 4d | MAXIMUM | < 1000 |
 
 ### DOWNSIZE
 

@@ -22,7 +22,8 @@ public class RuleCatalog {
         computeTerminateIdleRule(),
         computeSuspendIdleRule(),
         computeDownsizeMemoryRule(),
-        computeTerminateNoDiskIoRule());
+        computeTerminateNoDiskIoRule(),
+        computeTerminateNoNetworkRule());
   }
 
   // ! ---------------------------------------- TERMINATE ----------------------------------------
@@ -76,6 +77,32 @@ public class RuleCatalog {
         null,
         COMPUTE_RESOURCE_TYPES,
         List.of(readIo, writeIo));
+  }
+
+  private OptimizationRule computeTerminateNoNetworkRule() {
+    MetricThresholdCondition netIn =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.NETWORK_IN,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(1000));
+
+    MetricThresholdCondition netOut =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.NETWORK_OUT,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(1000));
+
+    return new OptimizationRule(
+        "COMPUTE-TERMINATE-NO-NETWORK",
+        true,
+        OptimizationActionTypeEnum.TERMINATE,
+        null,
+        COMPUTE_RESOURCE_TYPES,
+        List.of(netIn, netOut));
   }
 
   // ! ---------------------------------------- TERMINATE ----------------------------------------
