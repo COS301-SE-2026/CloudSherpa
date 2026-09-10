@@ -1,6 +1,7 @@
 package com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.exportreaders.readers;
 
 import com.azure.storage.blob.BlobContainerClient;
+import com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.exportreaders.exeptions.ExportReaderException;
 import com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.model.RawBillingRow;
 import com.cloudsherpa.ingestion.provider.azure.services.blobstorage.AzureBlobReader;
 import java.io.BufferedReader;
@@ -32,9 +33,8 @@ public class CsvExportReader implements ExportReader<RawBillingRow> {
 
     try {
       this.parser = openCsvParser(containerClient, blobName);
-    } catch (IOException e) {
-      logger.error("Failed to open input stream for blob {}", blobName);
-      // Throw custom exception
+    } catch (IOException | RuntimeException e) {
+      throw new ExportReaderException("Failed to open CSV input stream for blob " + blobName, e);
     }
   }
 
@@ -66,7 +66,7 @@ public class CsvExportReader implements ExportReader<RawBillingRow> {
           .setSkipHeaderRecord(true)
           .build()
           .parse(reader);
-    } catch (RuntimeException | IOException e) {
+    } catch (IOException | RuntimeException e) {
       try {
         resource.close();
       } catch (IOException closeError) {
