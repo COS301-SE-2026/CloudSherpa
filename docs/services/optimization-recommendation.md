@@ -172,8 +172,17 @@ Recommends terminating compute instances with virtually no network activity in e
 
 | Metric | Window | Stat | Condition |
 |---|---|---|---|
-| DNetwork In | 4d | MAXIMUM | < 1000 |
+| Network In | 4d | MAXIMUM | < 1000 |
 | Network Out | 4d | MAXIMUM | < 1000 |
+
+**`COMPUTE-TERMINATE-LOW`**
+Recommends terminating instances that have very low metrics.
+
+| Metric | Window | Stat | Condition |
+|---|---|---|---|
+| CPU Utilization | 4d | MAXIMUM | < 3 |
+| Memory Utilization | 4d | P95 | < 5 |
+| Network In | 4d | MAXIMUM | < 2000
 
 ### DOWNSIZE
 

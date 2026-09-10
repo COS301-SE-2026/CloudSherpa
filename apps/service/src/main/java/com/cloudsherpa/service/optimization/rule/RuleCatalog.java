@@ -23,7 +23,8 @@ public class RuleCatalog {
         computeSuspendIdleRule(),
         computeDownsizeMemoryRule(),
         computeTerminateNoDiskIoRule(),
-        computeTerminateNoNetworkRule());
+        computeTerminateNoNetworkRule(),
+        computeTerminateLowRule());
   }
 
   // ! ---------------------------------------- TERMINATE ----------------------------------------
@@ -103,6 +104,40 @@ public class RuleCatalog {
         null,
         COMPUTE_RESOURCE_TYPES,
         List.of(netIn, netOut));
+  }
+
+  private OptimizationRule computeTerminateLowRule() {
+    MetricThresholdCondition lowCpu =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.CPU_UTILIZATION,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(3));
+
+    MetricThresholdCondition lowMemoryP95 =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.MEMORY_UTILIZATION,
+            4,
+            StatField.P95,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(5));
+
+    MetricThresholdCondition lowNetworkIn =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.NETWORK_IN,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(2000));
+
+    return new OptimizationRule(
+        "COMPUTE-TERMINATE-LOW",
+        true,
+        OptimizationActionTypeEnum.TERMINATE,
+        null,
+        COMPUTE_RESOURCE_TYPES,
+        List.of(lowCpu, lowMemoryP95, lowNetworkIn));
   }
 
   // ! ---------------------------------------- TERMINATE ----------------------------------------
