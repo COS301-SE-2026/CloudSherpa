@@ -36,9 +36,9 @@ const extractMetricDetails = (evidence: Record<string, number>, keyword: string)
 
 export default function RecommendationReasoning({
     recommendation,
-}: {
+}: Readonly<{
     recommendation: Recommendation;
-}) {
+}>) {
     const { ruleId, actionType, evidence } = recommendation;
 
     if (!evidence || Object.keys(evidence).length === 0) {

@@ -1,6 +1,6 @@
 "use client";
 import { Recommendation } from "@/features/optimization/types/recommendations";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/atoms/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/atoms/card";
 import { useState } from "react";
 import { Button } from "@/components/atoms/button";
 import { useRecStore } from "@/features/optimization/stores/useRecStore";
@@ -172,6 +172,9 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
 
         return (
             <>
+                <Button type="button" onClick={handleApply} className="cursor-pointer">
+                    Apply
+                </Button>
                 <Button
                     type="button"
                     variant="destructive"
@@ -179,9 +182,6 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
                     className="cursor-pointer"
                 >
                     Dismiss
-                </Button>
-                <Button type="button" onClick={handleApply} className="cursor-pointer">
-                    Apply
                 </Button>
             </>
         );
@@ -224,7 +224,7 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
                             </div>
                         </div>
                         <Separator orientation="vertical" />
-                        <div className="flex flex-col justify-between">
+                        <div className="flex flex-col justify-between gap-4">
                             <p className="text-base text-foreground leading-relaxed">
                                 <RecommendationReasoning recommendation={recommendation} />
                             </p>
