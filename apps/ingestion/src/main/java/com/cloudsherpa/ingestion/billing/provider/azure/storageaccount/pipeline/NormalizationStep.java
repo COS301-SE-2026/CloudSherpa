@@ -1,5 +1,6 @@
 package com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.pipeline;
 
+import com.azure.storage.blob.BlobContainerClient;
 import com.cloudsherpa.ingestion.billing.BillingIngestionPipelineStep;
 import com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.AzureBillingContext;
 import com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.exportreaders.factories.CsvExportReaderFactory;
@@ -43,13 +44,17 @@ public class NormalizationStep implements BillingIngestionPipelineStep<AzureBill
           };
 
       for (Partition blob : manifest.blobs()) {
-        normalizeBlob(factory, blob.blobName());
+        normalizeBlob(factory, context.getBlobContainerClient(), blob.blobName());
       }
     }
   }
 
-  private void normalizeBlob(ExportReaderFactory<RawBillingRow> readerFactory, String blobName) {
-    try (ExportReader<RawBillingRow> reader = readerFactory.createExportReader(blobName)) {
+  private void normalizeBlob(
+      ExportReaderFactory<RawBillingRow> readerFactory,
+      BlobContainerClient containerClient,
+      String blobName) {
+    try (ExportReader<RawBillingRow> reader =
+        readerFactory.createExportReader(containerClient, blobName)) {
       // tbd
     } catch (IOException e) {
       // tbd
