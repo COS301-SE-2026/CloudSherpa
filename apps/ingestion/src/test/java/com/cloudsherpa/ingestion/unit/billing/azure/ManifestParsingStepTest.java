@@ -9,6 +9,7 @@ import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.models.BlobItem;
 import com.azure.storage.blob.models.BlobStorageException;
 import com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.AzureBillingContext;
+import com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.model.AzureManifest;
 import com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.pipeline.ManifestParsingStep;
 import com.cloudsherpa.ingestion.provider.azure.services.blobstorage.AzureBlobReader;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -17,7 +18,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -47,7 +47,6 @@ class ManifestParsingStepTest {
   }
 
   @Test
-  @Disabled("Skipping until date deserialization is implemented for databind")
   void shouldParseValidManifests() {
     AzureBillingContext context = getValidContext();
     context.setManifestBlobItems(List.of(new BlobItem().setName("manifest.json")));
@@ -98,6 +97,13 @@ class ManifestParsingStepTest {
     step.execute(context);
 
     assertEquals(1, context.getManifests().size());
+    AzureManifest parsedManifest = context.getManifests().get(0);
+    assertEquals(8032, parsedManifest.byteCount());
+    assertEquals(1, parsedManifest.blobCount());
+    assertEquals(36, parsedManifest.dataRowCount());
+    assertEquals(
+        " folder/sample/ 00000000-0000-0000-0000-000000000000/part0.csv",
+        parsedManifest.blobs().get(0).blobName());
   }
 
   @Test
