@@ -9,11 +9,13 @@ import { useChartData } from "@/features/dashboard/hooks/useChartData";
 import { useChartTheme } from "@/features/dashboard/hooks/useChartTheme";
 import { BaseChart } from "./baseChart";
 import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
+import { ChartColour } from "@/features/dashboard/types/widgets";
 
 type LineChartProps = {
     resourceId: string;
     metricType: string;
     onDataStatusChange?: (isEmpty: boolean) => void;
+    chartColour?: ChartColour;
 };
 
 const tooltipTimestampOptions: Intl.DateTimeFormatOptions = {
@@ -30,9 +32,10 @@ export function LineChart({
     resourceId,
     metricType,
     onDataStatusChange,
+    chartColour,
 }: Readonly<LineChartProps>) {
     const { timeSeriesData, hasData } = useChartData(resourceId, metricType);
-    const { themeName, tokens } = useChartTheme();
+    const { themeName, tokens, activeColour } = useChartTheme(chartColour);
     const fromMs = useDashboardStore((state) => state.fromMs);
     const toMs = useDashboardStore((state) => state.toMs);
 
@@ -42,6 +45,7 @@ export function LineChart({
 
     const options: EChartsOption = useMemo(() => {
         return {
+            color: [activeColour],
             tooltip: {
                 trigger: "axis",
                 appendTo: () => document.body,
@@ -98,14 +102,14 @@ export function LineChart({
                     symbolSize: 6,
                     emphasis: {
                         itemStyle: {
-                            color: tokens["chart-1"] || tokens["primary"],
+                            color: activeColour,
                             borderWidth: 2,
                         },
                     },
                 },
             ],
         };
-    }, [timeSeriesData, tokens, fromMs, toMs]);
+    }, [timeSeriesData, tokens, fromMs, toMs, activeColour]);
 
     return <BaseChart option={options} theme={themeName} />;
 }
