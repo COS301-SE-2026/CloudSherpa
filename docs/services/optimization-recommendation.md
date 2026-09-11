@@ -217,7 +217,16 @@ Recommends suspending instances with negligible disk throughput (both directions
 | Disk Write Bytes | 4d | MAXIMUM | < 5000000 |
 
 
-All rules above apply to listed resource types in `RuleCatalog`, with no provider restriction (`providers: null`).
+### UPSCALE
+
+**`COMPUTE-UPSCALE-CPU`**
+Recommends upscaling compute instances whose P95 CPU utilization consistently exceeds 85% over the last 4 days. Sustained high utilization indicates the instance is resource-constrained, risking performance degradation.
+
+| Metric | Window | Stat | Condition |
+|---|---|---|---|
+| CPU Utilization | 4d | P95 | > 85 |
+
+All rules above apply to listed resource types in `RuleCatalog`.
 
 ## Rule Validation
 
