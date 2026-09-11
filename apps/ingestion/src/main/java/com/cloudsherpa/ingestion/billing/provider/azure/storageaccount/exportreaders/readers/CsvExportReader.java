@@ -13,6 +13,7 @@ import java.io.Reader;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -69,10 +70,12 @@ public class CsvExportReader implements ExportReader<RawBillingRow> {
   }
 
   private RawBillingRow readRow(CSVRecord csvRecord) {
-    // non-negiotables, all fields must be present
 
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+
+    // non-negiotables, all fields must be present
     String billingAccountId = csvRecord.get("billingAccountId");
-    LocalDate date = LocalDate.parse(csvRecord.get("date"));
+    LocalDate date = LocalDate.parse(csvRecord.get("date"), formatter);
     String consumedService = csvRecord.get("consumedService");
     String meterCategory = csvRecord.get("meterCategory");
     String meterSubCategory = csvRecord.get("meterSubCategory");
