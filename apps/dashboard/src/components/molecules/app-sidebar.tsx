@@ -207,7 +207,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                             <Network />
                                             <span>Recommendations</span>
                                         </div>
-                                        {summary && <Badge>{`${summary.active} active`}</Badge>}
+                                        {(summary?.active ?? 0) > 0 && (
+                                            <Badge>{`${summary?.active} active`}</Badge>
+                                        )}{" "}
                                     </Link>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
