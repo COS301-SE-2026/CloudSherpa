@@ -14,7 +14,11 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
 
+@Component
+@Order(1)
 public class InitStep implements BillingIngestionPipelineStep<AzureBillingContext> {
 
   private final CloudCredentialRepository cloudCredentialRepository;

@@ -7,6 +7,8 @@ import com.azure.identity.ClientSecretCredentialBuilder;
 import com.azure.monitor.query.metrics.MetricsClient;
 import com.azure.monitor.query.metrics.MetricsClientBuilder;
 import com.azure.resourcemanager.resourcegraph.ResourceGraphManager;
+import com.azure.storage.blob.BlobServiceClient;
+import com.azure.storage.blob.BlobServiceClientBuilder;
 import com.cloudsherpa.ingestion.connector.CloudCredentials;
 import java.util.Locale;
 
@@ -52,5 +54,11 @@ public final class AzureClientFactory {
         .endpoint(toMetricsEndpoint(region))
         .httpLogOptions(new HttpLogOptions().setLogLevel(HttpLogDetailLevel.BASIC))
         .buildClient();
+  }
+
+  public static BlobServiceClient createBlobServiceClient(
+      CloudCredentials credentials, String endpoint) {
+    ClientSecretCredential credential = createCredential(credentials);
+    return new BlobServiceClientBuilder().credential(credential).endpoint(endpoint).buildClient();
   }
 }
