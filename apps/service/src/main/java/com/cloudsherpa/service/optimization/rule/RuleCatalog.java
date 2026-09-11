@@ -1,6 +1,7 @@
 package com.cloudsherpa.service.optimization.rule;
 
 import com.cloudsherpa.lib.entities.OptimizationActionTypeEnum;
+import com.cloudsherpa.lib.entities.ProviderEnum;
 import com.cloudsherpa.service.metrics.MetricDisplayNameMapper;
 import com.cloudsherpa.service.optimization.rule.model.ComparisonOperator;
 import com.cloudsherpa.service.optimization.rule.model.MetricThresholdCondition;
@@ -24,7 +25,12 @@ public class RuleCatalog {
         computeDownsizeMemoryRule(),
         computeTerminateNoDiskIoRule(),
         computeTerminateNoNetworkRule(),
-        computeTerminateLowRule());
+        computeTerminateLowRule(),
+        computeUpscaleCPURule(),
+        computeSuspendLowMemoryAndCpuRule(),
+        computeSuspendLowNetworkRule(),
+        computeSuspendLowDiskBytesRule(),
+        computeDownsizeStorageTierRule());
   }
 
   // ! ---------------------------------------- TERMINATE ----------------------------------------
@@ -174,9 +180,27 @@ public class RuleCatalog {
         "COMPUTE-DOWNSIZE-MEMORY",
         true,
         OptimizationActionTypeEnum.DOWNSIZE,
-        null,
+        List.of(ProviderEnum.AWS),
         COMPUTE_RESOURCE_TYPES,
         List.of(lowMemory));
+  }
+
+  private OptimizationRule computeDownsizeStorageTierRule() {
+    MetricThresholdCondition lowPctDiskUsed30d =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.PERCENTAGE_DISK_SPACE_USED,
+            4,
+            StatField.P95,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(20));
+
+    return new OptimizationRule(
+        "COMPUTE-DOWNSIZE-STORAGE-TIER",
+        true,
+        OptimizationActionTypeEnum.DOWNSIZE,
+        List.of(ProviderEnum.AWS),
+        COMPUTE_RESOURCE_TYPES,
+        List.of(lowPctDiskUsed30d));
   }
 
   // # ---------------------------------------- DOWNSIZE ----------------------------------------
@@ -197,7 +221,7 @@ public class RuleCatalog {
             4,
             StatField.MAXIMUM,
             ComparisonOperator.LESS_THAN,
-            new BigDecimal(2000));
+            new BigDecimal(1000000));
 
     return new OptimizationRule(
         "COMPUTE-SUSPEND-IDLE",
@@ -207,5 +231,104 @@ public class RuleCatalog {
         COMPUTE_RESOURCE_TYPES,
         List.of(lowCpu, lowNetworkIn));
   }
+
+  private OptimizationRule computeSuspendLowMemoryAndCpuRule() {
+    MetricThresholdCondition lowCpuP95 =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.CPU_UTILIZATION,
+            4,
+            StatField.P95,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(15));
+
+    MetricThresholdCondition lowMemoryP95 =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.MEMORY_UTILIZATION,
+            4,
+            StatField.P95,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(25));
+
+    return new OptimizationRule(
+        "COMPUTE-SUSPEND-LOW-CPU-MEMORY",
+        true,
+        OptimizationActionTypeEnum.SUSPEND,
+        null,
+        COMPUTE_RESOURCE_TYPES,
+        List.of(lowCpuP95, lowMemoryP95));
+  }
+
+  private OptimizationRule computeSuspendLowNetworkRule() {
+    MetricThresholdCondition lowNetworkIn =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.NETWORK_IN,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(5000000)); // 5 000 000 bytes = 5 MB
+
+    MetricThresholdCondition lowNetworkOut =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.NETWORK_OUT,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(5000000)); // 5 000 000 bytes = 5 MB
+
+    return new OptimizationRule(
+        "COMPUTE-SUSPEND-LOW-NETWORK",
+        true,
+        OptimizationActionTypeEnum.SUSPEND,
+        null,
+        COMPUTE_RESOURCE_TYPES,
+        List.of(lowNetworkIn, lowNetworkOut));
+  }
+
+  private OptimizationRule computeSuspendLowDiskBytesRule() {
+    MetricThresholdCondition lowDiskRead =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.DISK_READ_BYTES,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(5000000)); // < 5000000 bytes = 5 MB
+
+    MetricThresholdCondition lowDiskWrite =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.DISK_WRITE_BYTES,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(5000000)); // < 5000000 bytes = 5 MB
+
+    return new OptimizationRule(
+        "COMPUTE-SUSPEND-LOW-DISK-BYTES",
+        true,
+        OptimizationActionTypeEnum.SUSPEND,
+        null,
+        COMPUTE_RESOURCE_TYPES,
+        List.of(lowDiskRead, lowDiskWrite));
+  }
+
   // ? ---------------------------------------- SUSPEND ----------------------------------------
+
+  // * ---------------------------------------- UPSCALE ----------------------------------------
+  private OptimizationRule computeUpscaleCPURule() {
+    MetricThresholdCondition highCpu =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.CPU_UTILIZATION,
+            4,
+            StatField.P95,
+            ComparisonOperator.GREATER_THAN,
+            new BigDecimal(85));
+
+    return new OptimizationRule(
+        "COMPUTE-UPSCALE-CPU",
+        true,
+        OptimizationActionTypeEnum.UPSCALE,
+        null,
+        COMPUTE_RESOURCE_TYPES,
+        List.of(highCpu));
+  }
+  // * ---------------------------------------- UPSCALE ----------------------------------------
 }

@@ -75,7 +75,10 @@ export function useChartTheme(chartColour?: ChartColour) {
     const isDark = currentTheme === "dark";
     const tokens = isDark ? darkTokens : lightTokens;
 
-    const activeColour = tokens[(chartColour || "chart-1") as keyof typeof tokens] || "#327dcd";
+    console.log(chartColour);
+    const tokenKey = (chartColour || "chart_1").replace("_", "-");
+    const safeKey = tokenKey as keyof typeof tokens;
+    const activeColour = tokens[safeKey] || "#327dcd";
 
     return {
         themeName: isDark ? "cloudSherpaDark" : "cloudSherpaLight",

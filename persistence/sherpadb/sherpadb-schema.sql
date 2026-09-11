@@ -29,6 +29,7 @@ CREATE TYPE public.predefined_time_enum AS ENUM (
 CREATE TYPE public.type_enum AS ENUM ('KPI', 'CHART');
 CREATE TYPE public.execution_status_enum AS ENUM ('pending', 'processing', 'completed', 'failed');
 CREATE TYPE PUBLIC.chart_type_enum AS ENUM ('gauge_chart', 'line_chart');
+CREATE TYPE public.chart_colour_enum AS ENUM ('chart_1', 'chart_2', 'chart_3', 'chart_4', 'chart_5');
 -- Differentiates actual compute usage from other types.
 -- Maps to CUR: line_item_line_item_type
 CREATE TYPE public.charge_type_enum AS ENUM ('Usage', 'Other', 'Credit'); 
@@ -46,6 +47,7 @@ CREATE TYPE public.optimization_action_type_enum AS ENUM (
   'DOWNSIZE',
   'TERMINATE',
   'SUSPEND'
+  'UPSCALE'
 );
 
 -- ----------------------------------------------------------------
@@ -426,7 +428,8 @@ CREATE TABLE IF NOT EXISTS public.kpi_charges (
 CREATE TABLE IF NOT EXISTS public.widget_chart (
   chart_id uuid PRIMARY KEY,
   widget_id uuid REFERENCES public.widget(widget_id) ON DELETE CASCADE,
-  chart_type public.chart_type_enum NOT NULL
+  chart_type public.chart_type_enum NOT NULL,
+  chart_colour public.chart_colour_enum NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS public.chart_resource (

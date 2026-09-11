@@ -1,5 +1,6 @@
 package com.cloudsherpa.service.dashboard.dto;
 
+import com.cloudsherpa.lib.entities.ChartColourEnum;
 import com.cloudsherpa.lib.entities.ChartTypeEnum;
 import com.cloudsherpa.lib.entities.ProviderEnum;
 import com.cloudsherpa.lib.entities.TypeEnum;
@@ -10,6 +11,7 @@ public record ChartWidgetConfigUpdateDTO(
     TypeEnum widgetType,
     String displayName,
     ChartTypeEnum chartType,
+    ChartColourEnum chartColour,
     ProviderEnum provider,
     UUID accountId,
     UUID resourceId,
