@@ -34,7 +34,8 @@ public class RuleCatalog {
         computeSuspendLowNetworkRule(),
         computeSuspendLowDiskBytesRule(),
         computeDownsizeStorageTierRule(),
-        rdsDownsizeRule());
+        rdsDownsizeRule(),
+        cloudRunSuspendIdleRule());
   }
 
   // ! ---------------------------------------- TERMINATE ----------------------------------------
@@ -338,6 +339,32 @@ public class RuleCatalog {
         null,
         COMPUTE_RESOURCE_TYPES,
         List.of(lowDiskRead, lowDiskWrite));
+  }
+
+  private OptimizationRule cloudRunSuspendIdleRule() {
+    MetricThresholdCondition lowRequests =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.HTTP_REQUESTS,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(10));
+
+    MetricThresholdCondition lowContainerCpuP95 =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.CONTAINER_CPU_UTILIZATIONS,
+            4,
+            StatField.P95,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(10));
+
+    return new OptimizationRule(
+        "CLOUDRUN-SUSPEND-IDLE",
+        true,
+        OptimizationActionTypeEnum.SUSPEND,
+        List.of(ProviderEnum.GCP),
+        CLOUDRUN_RESOURCE_TYPES,
+        List.of(lowRequests, lowContainerCpuP95));
   }
 
   // ? ---------------------------------------- SUSPEND ----------------------------------------
