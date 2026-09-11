@@ -21,18 +21,18 @@ const CHART_TYPE_OPTIONS: { value: ChartType; label: string }[] = [
 ];
 
 const CHART_COLOURS: { label: string; value: ChartColour }[] = [
-    { label: "Blue", value: "chart-1" },
-    { label: "Purple", value: "chart-2" },
-    { label: "Green", value: "chart-3" },
-    { label: "Orange", value: "chart-4" },
-    { label: "Pink", value: "chart-5" },
+    { label: "Blue", value: "chart_1" },
+    { label: "Purple", value: "chart_2" },
+    { label: "Green", value: "chart_3" },
+    { label: "Orange", value: "chart_4" },
+    { label: "Pink", value: "chart_5" },
 ];
 
 export default function ChartFormDetails({
     configuration,
     setConfiguration,
 }: Readonly<ChartFormDetailsProps>) {
-    const currentColour = configuration.chartColour || "chart-1";
+    const currentColour = configuration.chartColour || "chart_1";
     const currentColourLabel =
         CHART_COLOURS.find((c) => c.value === currentColour)?.label || "Blue";
 
