@@ -80,7 +80,6 @@ export async function fetchDashboards(): Promise<DashboardDTO[]> {
         const data = await apiClient<DashboardDTO[]>("/dashboards", {
             method: "GET",
         });
-        console.log(data);
         return data;
     } catch (error) {
         console.error("Failed to fetch dashboards:", error);
@@ -110,7 +109,6 @@ export async function updateDashboardLayout(
 }
 
 export async function createWidget(dashboardId: string, payload: WidgetDto): Promise<WidgetDto> {
-    console.log(payload);
     return await apiClient<WidgetDto>(`/dashboards/${dashboardId}/widgets`, {
         method: "POST",
         body: JSON.stringify(payload),
