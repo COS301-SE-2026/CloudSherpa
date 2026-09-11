@@ -26,8 +26,7 @@ import org.slf4j.LoggerFactory;
 
 public class CsvExportReader implements ExportReader<RawBillingRow> {
 
-  private static final Logger logger = // NOSONAR keeping here for dev
-      LoggerFactory.getLogger(CsvExportReader.class);
+  private static final Logger logger = LoggerFactory.getLogger(CsvExportReader.class);
 
   private final AzureBlobReader blobReader;
 
