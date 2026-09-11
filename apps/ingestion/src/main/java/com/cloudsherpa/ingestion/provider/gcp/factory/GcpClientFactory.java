@@ -14,13 +14,17 @@ import com.google.cloud.functions.v2.FunctionServiceClient;
 import com.google.cloud.functions.v2.FunctionServiceSettings;
 import com.google.cloud.run.v2.ServicesClient;
 import com.google.cloud.run.v2.ServicesSettings;
+import com.google.cloud.storage.Storage;
+import com.google.cloud.storage.StorageOptions;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 public final class GcpClientFactory {
 
-  private GcpClientFactory() {}
+  private GcpClientFactory() {
+  }
 
   public static GoogleCredentials credentials(CloudCredentials credentials) throws IOException {
 
@@ -34,17 +38,15 @@ public final class GcpClientFactory {
 
     GoogleCredentials googleCredentials = credentials(credentials);
 
-    InstancesSettings settings =
-        InstancesSettings.newBuilder()
-            .setCredentialsProvider(FixedCredentialsProvider.create(googleCredentials))
-            .build();
+    InstancesSettings settings = InstancesSettings.newBuilder()
+        .setCredentialsProvider(FixedCredentialsProvider.create(googleCredentials))
+        .build();
 
     return InstancesClient.create(settings);
   }
 
   public static BigQuery createBigQueryClient(CloudCredentials credentials) throws IOException {
-    ServiceAccountCredentials googleCredentials =
-        (ServiceAccountCredentials) credentials(credentials);
+    ServiceAccountCredentials googleCredentials = (ServiceAccountCredentials) credentials(credentials);
     return BigQueryOptions.newBuilder()
         .setCredentials(googleCredentials)
         .setProjectId(googleCredentials.getProjectId())
@@ -57,10 +59,9 @@ public final class GcpClientFactory {
 
     GoogleCredentials googleCredentials = credentials(credentials);
 
-    ClusterManagerSettings settings =
-        ClusterManagerSettings.newBuilder()
-            .setCredentialsProvider(FixedCredentialsProvider.create(googleCredentials))
-            .build();
+    ClusterManagerSettings settings = ClusterManagerSettings.newBuilder()
+        .setCredentialsProvider(FixedCredentialsProvider.create(googleCredentials))
+        .build();
 
     return ClusterManagerClient.create(settings);
   }
@@ -69,10 +70,9 @@ public final class GcpClientFactory {
       throws IOException {
     GoogleCredentials googleCredentials = credentials(credentials);
 
-    FunctionServiceSettings settings =
-        FunctionServiceSettings.newBuilder()
-            .setCredentialsProvider(FixedCredentialsProvider.create(googleCredentials))
-            .build();
+    FunctionServiceSettings settings = FunctionServiceSettings.newBuilder()
+        .setCredentialsProvider(FixedCredentialsProvider.create(googleCredentials))
+        .build();
 
     return FunctionServiceClient.create(settings);
   }
@@ -82,11 +82,21 @@ public final class GcpClientFactory {
 
     GoogleCredentials googleCredentials = credentials(credentials);
 
-    ServicesSettings settings =
-        ServicesSettings.newBuilder()
-            .setCredentialsProvider(FixedCredentialsProvider.create(googleCredentials))
-            .build();
+    ServicesSettings settings = ServicesSettings.newBuilder()
+        .setCredentialsProvider(FixedCredentialsProvider.create(googleCredentials))
+        .build();
 
     return ServicesClient.create(settings);
+  }
+
+  public static Storage createStorageClient(CloudCredentials credentials) throws IOException {
+
+    GoogleCredentials googleCredentials = credentials(credentials);
+
+    return StorageOptions.newBuilder()
+        .setCredentials(googleCredentials)
+        .build()
+        .getService();
+
   }
 }
