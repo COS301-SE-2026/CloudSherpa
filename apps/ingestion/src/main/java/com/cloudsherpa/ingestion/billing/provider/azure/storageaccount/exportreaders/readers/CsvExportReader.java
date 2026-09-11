@@ -50,6 +50,8 @@ public class CsvExportReader implements ExportReader<RawBillingRow> {
     List<RawBillingRow> batch = new ArrayList<>();
 
     while (batch.size() < maxRows && records.hasNext()) {
+      CSVRecord csvRecord = records.next();
+      csvRecord.get("chargeId");
       batch.add(new RawBillingRow("tbd"));
     }
 
