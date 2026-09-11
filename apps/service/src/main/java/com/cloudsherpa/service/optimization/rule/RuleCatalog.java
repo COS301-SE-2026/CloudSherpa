@@ -1,6 +1,7 @@
 package com.cloudsherpa.service.optimization.rule;
 
 import com.cloudsherpa.lib.entities.OptimizationActionTypeEnum;
+import com.cloudsherpa.lib.entities.ProviderEnum;
 import com.cloudsherpa.service.metrics.MetricDisplayNameMapper;
 import com.cloudsherpa.service.optimization.rule.model.ComparisonOperator;
 import com.cloudsherpa.service.optimization.rule.model.MetricThresholdCondition;
@@ -21,7 +22,8 @@ public class RuleCatalog {
         computeDownsizeRule(),
         computeTerminateIdleRule(),
         computeSuspendIdleRule(),
-        computeDownsizeMemoryRule());
+        computeDownsizeMemoryRule(),
+        computeDownsizeStorageTierRule());
   }
 
   // ! ---------------------------------------- TERMINATE ----------------------------------------
@@ -85,9 +87,27 @@ public class RuleCatalog {
         "COMPUTE-DOWNSIZE-MEMORY",
         true,
         OptimizationActionTypeEnum.DOWNSIZE,
-        null,
+        List.of(ProviderEnum.AWS),
         COMPUTE_RESOURCE_TYPES,
         List.of(lowMemory));
+  }
+
+  private OptimizationRule computeDownsizeStorageTierRule() {
+    MetricThresholdCondition lowPctDiskUsed30d =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.PERCENTAGE_DISK_SPACE_USED,
+            4,
+            StatField.P95,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(20));
+
+    return new OptimizationRule(
+        "COMPUTE-DOWNSIZE-STORAGE-TIER",
+        true,
+        OptimizationActionTypeEnum.DOWNSIZE,
+        List.of(ProviderEnum.AWS),
+        COMPUTE_RESOURCE_TYPES,
+        List.of(lowPctDiskUsed30d));
   }
 
   // # ---------------------------------------- DOWNSIZE ----------------------------------------

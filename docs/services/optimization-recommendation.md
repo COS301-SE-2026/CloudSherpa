@@ -175,6 +175,13 @@ Recommends downsizing compute instances whose P95 memory utilization stayed belo
 |---|---|---|---|
 | Memory Utilization | 4d | P95 | < 20 |
 
+**`COMPUTE-DOWNSIZE-STORAGE-TIER`**  
+Recommends downsizing storage allocation or moving to a cheaper storage tier when disk usage is persistently low. Triggers when the P95 Percentage Disk Space Used remains below 20% over the last 4 days.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Percentage Disk Space Used | 30d | P95 | < 20 |
+
 ### SUSPEND
 
 **`COMPUTE-SUSPEND-IDLE`**
