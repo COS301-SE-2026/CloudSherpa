@@ -23,6 +23,9 @@ public class RuleCatalog {
         computeTerminateIdleRule(),
         computeSuspendIdleRule(),
         computeDownsizeMemoryRule(),
+        computeTerminateNoDiskIoRule(),
+        computeTerminateNoNetworkRule(),
+        computeTerminateLowRule(),
         computeUpscaleCPURule(),
         computeSuspendLowMemoryAndCpuRule(),
         computeSuspendLowNetworkRule(),
@@ -55,6 +58,92 @@ public class RuleCatalog {
         null,
         COMPUTE_RESOURCE_TYPES,
         List.of(idleCpu, idleNetworkIn));
+  }
+
+  private OptimizationRule computeTerminateNoDiskIoRule() {
+    MetricThresholdCondition readIo =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.DISK_READ_BYTES,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(1000));
+
+    MetricThresholdCondition writeIo =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.DISK_WRITE_BYTES,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(1000));
+
+    return new OptimizationRule(
+        "COMPUTE-TERMINATE-NO-DISK-IO",
+        true,
+        OptimizationActionTypeEnum.TERMINATE,
+        null,
+        COMPUTE_RESOURCE_TYPES,
+        List.of(readIo, writeIo));
+  }
+
+  private OptimizationRule computeTerminateNoNetworkRule() {
+    MetricThresholdCondition netIn =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.NETWORK_IN,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(1000));
+
+    MetricThresholdCondition netOut =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.NETWORK_OUT,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(1000));
+
+    return new OptimizationRule(
+        "COMPUTE-TERMINATE-NO-NETWORK",
+        true,
+        OptimizationActionTypeEnum.TERMINATE,
+        null,
+        COMPUTE_RESOURCE_TYPES,
+        List.of(netIn, netOut));
+  }
+
+  private OptimizationRule computeTerminateLowRule() {
+    MetricThresholdCondition lowCpu =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.CPU_UTILIZATION,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(3));
+
+    MetricThresholdCondition lowMemoryP95 =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.MEMORY_UTILIZATION,
+            4,
+            StatField.P95,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(5));
+
+    MetricThresholdCondition lowNetworkIn =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.NETWORK_IN,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(2000));
+
+    return new OptimizationRule(
+        "COMPUTE-TERMINATE-LOW",
+        true,
+        OptimizationActionTypeEnum.TERMINATE,
+        null,
+        COMPUTE_RESOURCE_TYPES,
+        List.of(lowCpu, lowMemoryP95, lowNetworkIn));
   }
 
   // ! ---------------------------------------- TERMINATE ----------------------------------------

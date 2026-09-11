@@ -152,12 +152,37 @@ The following rules are currently implemented in `RuleCatalog`, grouped by actio
 ### TERMINATE
 
 **`COMPUTE-TERMINATE-IDLE`**
-Recommends terminating compute instances that are completely idle: near-zero CPU and near-zero network activity over 4 days. Requires both conditions to be met to avoid false positives. Uses `MAXIMUM` stat to catch instances that never even briefly spike in usage. Termination is the most aggressive action, reserved for resources clearly no longer needed.
+Recommends terminating compute instances that are completely idle: near-zero CPU and near-zero network activity over 4 days. Requires both conditions to be met to avoid false positives.
 
 | Metric | Window | Stat | Condition |
 |---|---|---|---|
 | CPU Utilization | 4d | MAXIMUM | < 5 |
 | Network In | 4d | MAXIMUM | < 1000 |
+
+**`COMPUTE-TERMINATE-NO-DISK-IO`**
+Recommends terminating compute instances that has near-zero disk I/O (both read and write) over 4 days.
+
+| Metric | Window | Stat | Condition |
+|---|---|---|---|
+| Disk Read Bytes | 4d | MAXIMUM | < 1000 |
+| Disk Write Bytes | 4d | MAXIMUM | < 1000 |
+
+**`COMPUTE-TERMINATE-NO-NETWORK`**
+Recommends terminating compute instances with virtually no network activity in either direction over 4 days
+
+| Metric | Window | Stat | Condition |
+|---|---|---|---|
+| Network In | 4d | MAXIMUM | < 1000 |
+| Network Out | 4d | MAXIMUM | < 1000 |
+
+**`COMPUTE-TERMINATE-LOW`**
+Recommends terminating instances that have very low metrics.
+
+| Metric | Window | Stat | Condition |
+|---|---|---|---|
+| CPU Utilization | 4d | MAXIMUM | < 3 |
+| Memory Utilization | 4d | P95 | < 5 |
+| Network In | 4d | MAXIMUM | < 2000
 
 ### DOWNSIZE
 
