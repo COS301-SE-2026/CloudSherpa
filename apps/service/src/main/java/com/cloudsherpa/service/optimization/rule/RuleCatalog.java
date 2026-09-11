@@ -24,6 +24,9 @@ public class RuleCatalog {
         computeSuspendIdleRule(),
         computeDownsizeMemoryRule(),
         computeUpscaleCPURule(),
+        computeSuspendLowMemoryAndCpuRule(),
+        computeSuspendLowNetworkRule(),
+        computeSuspendLowDiskBytesRule(),
         computeDownsizeStorageTierRule());
   }
 
@@ -129,7 +132,7 @@ public class RuleCatalog {
             4,
             StatField.MAXIMUM,
             ComparisonOperator.LESS_THAN,
-            new BigDecimal(2000));
+            new BigDecimal(1000000));
 
     return new OptimizationRule(
         "COMPUTE-SUSPEND-IDLE",
@@ -138,6 +141,84 @@ public class RuleCatalog {
         null,
         COMPUTE_RESOURCE_TYPES,
         List.of(lowCpu, lowNetworkIn));
+  }
+
+  private OptimizationRule computeSuspendLowMemoryAndCpuRule() {
+    MetricThresholdCondition lowCpuP95 =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.CPU_UTILIZATION,
+            4,
+            StatField.P95,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(15));
+
+    MetricThresholdCondition lowMemoryP95 =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.MEMORY_UTILIZATION,
+            4,
+            StatField.P95,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(25));
+
+    return new OptimizationRule(
+        "COMPUTE-SUSPEND-LOW-CPU-MEMORY",
+        true,
+        OptimizationActionTypeEnum.SUSPEND,
+        null,
+        COMPUTE_RESOURCE_TYPES,
+        List.of(lowCpuP95, lowMemoryP95));
+  }
+
+  private OptimizationRule computeSuspendLowNetworkRule() {
+    MetricThresholdCondition lowNetworkIn =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.NETWORK_IN,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(5000000)); // 5 000 000 bytes = 5 MB
+
+    MetricThresholdCondition lowNetworkOut =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.NETWORK_OUT,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(5000000)); // 5 000 000 bytes = 5 MB
+
+    return new OptimizationRule(
+        "COMPUTE-SUSPEND-LOW-NETWORK",
+        true,
+        OptimizationActionTypeEnum.SUSPEND,
+        null,
+        COMPUTE_RESOURCE_TYPES,
+        List.of(lowNetworkIn, lowNetworkOut));
+  }
+
+  private OptimizationRule computeSuspendLowDiskBytesRule() {
+    MetricThresholdCondition lowDiskRead =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.DISK_READ_BYTES,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(5000000)); // < 5000000 bytes = 5 MB
+
+    MetricThresholdCondition lowDiskWrite =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.DISK_WRITE_BYTES,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(5000000)); // < 5000000 bytes = 5 MB
+
+    return new OptimizationRule(
+        "COMPUTE-SUSPEND-LOW-DISK-BYTES",
+        true,
+        OptimizationActionTypeEnum.SUSPEND,
+        null,
+        COMPUTE_RESOURCE_TYPES,
+        List.of(lowDiskRead, lowDiskWrite));
   }
 
   // ? ---------------------------------------- SUSPEND ----------------------------------------

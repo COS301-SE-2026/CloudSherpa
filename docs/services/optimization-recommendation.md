@@ -185,12 +185,37 @@ Recommends downsizing storage allocation or moving to a cheaper storage tier whe
 ### SUSPEND
 
 **`COMPUTE-SUSPEND-IDLE`**
-Recommends suspending compute instances with low CPU and network over 4 days. More conservative than terminate. Suspend allows the instance to be stopped/started rather than permanently removed.
+Recommends suspending compute instances with low CPU and network over 4 days. More conservative than terminate.
 
 | Metric | Window | Stat | Condition |
 |---|---|---|---|
 | CPU Utilization | 4d | P95 | < 15 |
-| Network In | 4d | MAXIMUM | < 2000 |
+| Network In | 4d | MAXIMUM | < 1000000 |
+
+**`COMPUTE-SUSPEND-LOW-CPU-MEMORY`**
+Recommends suspending instances showing sustained low CPU and low memory usage over 4 days.
+
+| Metric | Window | Stat | Condition |
+|---|---|---|---|
+| CPU Utilization | 4d | P95 | < 15 |
+| Memory Utilization | 4d | P95 | < 25 |
+
+**`COMPUTE-SUSPEND-LOW-NETWORK`**
+Recommends suspending instances with negligible total network traffic (both directions) over 4 days.
+
+| Metric | Window | Stat | Condition |
+|---|---|---|---|
+| Network In | 4d | MAXIMUM | < 5000000 |
+| Network Out | 4d | MAXIMUM | < 5000000 |
+
+**`COMPUTE-SUSPEND-LOW-DISK-BYTES`**
+Recommends suspending instances with negligible disk throughput (both directions) over 4 days.
+
+| Metric | Window | Stat | Condition |
+|---|---|---|---|
+| Disk Read Bytes | 4d | MAXIMUM | < 5000000 |
+| Disk Write Bytes | 4d | MAXIMUM | < 5000000 |
+
 
 ### UPSCALE
 
