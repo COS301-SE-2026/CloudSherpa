@@ -148,7 +148,11 @@ export default function RecommendationReasoning({
             const days = parsed.timeframe.replace("d", "");
             const agg = parsed.aggregation.toUpperCase();
 
-            return `the ${agg} ${parsed.metricName} was ${formattedVal} over the last ${days} days`;
+            return (
+                <span key={key}>
+                    the ${agg} ${parsed.metricName} was ${formattedVal} over the last ${days} days
+                </span>
+            );
         })
         .filter(Boolean);
 
@@ -156,12 +160,31 @@ export default function RecommendationReasoning({
 
     switch (actionType) {
         case "TERMINATE":
-            return `We recommend terminating this resource because ${joinedEvidence}.`;
+            return (
+                <span>
+                    We recommend <strong className="text-destructive">terminating</strong> this
+                    resource because ${joinedEvidence}.
+                </span>
+            );
         case "SUSPEND":
-            return `We recommend suspending this resource because ${joinedEvidence}.`;
+            return (
+                <span>
+                    We recommend <strong className="text-yellow-600">suspending</strong> this
+                    resource because ${joinedEvidence}.
+                </span>
+            );
         case "DOWNSIZE":
-            return `We recommend downsizing this resource because ${joinedEvidence}.`;
+            return (
+                <span>
+                    `We recommend <strong className="text-warning">downsizing</strong> this resource
+                    because ${joinedEvidence}.
+                </span>
+            );
         default:
-            return `Action recommended based on the following monitored metrics: ${joinedEvidence}.`;
+            return (
+                <span>
+                    Action recommended based on the following monitored metrics: ${joinedEvidence}.
+                </span>
+            );
     }
 }
