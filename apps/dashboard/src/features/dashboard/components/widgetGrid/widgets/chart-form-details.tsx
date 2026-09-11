@@ -88,7 +88,9 @@ export default function ChartFormDetails({
                                 <div className="flex items-center gap-2">
                                     <div
                                         className="h-4 w-4 rounded-sm border border-border shadow-sm"
-                                        style={{ backgroundColor: `var(--${currentColour})` }}
+                                        style={{
+                                            backgroundColor: `var(--${currentColour.replace("_", "-")})`,
+                                        }}
                                     />
                                     <span className="capitalize">{currentColourLabel}</span>
                                 </div>
@@ -116,7 +118,9 @@ export default function ChartFormDetails({
                                                 ? "ring-2 ring-primary ring-offset-1 ring-offset-background scale-110 z-10"
                                                 : "border border-border/50 hover:border-foreground hover:scale-110"
                                         )}
-                                        style={{ backgroundColor: `var(--${colourObj.value})` }}
+                                        style={{
+                                            backgroundColor: `var(--${colourObj.value.replace("_", "-")})`,
+                                        }}
                                     />
                                 ))}
                             </div>
