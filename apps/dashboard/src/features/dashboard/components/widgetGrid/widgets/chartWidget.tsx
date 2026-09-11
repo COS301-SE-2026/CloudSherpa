@@ -3,7 +3,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/atoms/car
 import { LineChart } from "@/features/dashboard/components/widgetGrid/widgets/charts/LineChart";
 import { GaugeChart } from "@/features/dashboard/components/widgetGrid/widgets/charts/GaugeChart";
 import { Button } from "@/components/atoms/button";
-import { ChartType, ChartWidgetConfig } from "@/features/dashboard/types/widgets";
+import { ChartType, ChartWidgetConfig, ChartColour } from "@/features/dashboard/types/widgets";
 import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
 import { WidgetMenu } from "@/features/dashboard/components/widgetMenu";
 import { WidgetDropdown } from "@/features/dashboard/components/widgetDropdown";
@@ -22,6 +22,7 @@ interface BaseChartProps {
     resourceId: string;
     metricType: string;
     onDataStatusChange?: (hasData: boolean) => void;
+    chartColour?: ChartColour;
 }
 
 const CHART_COMPONENTS: Record<ChartType, React.ComponentType<BaseChartProps>> = {
@@ -40,7 +41,7 @@ export function ChartWidget({
     preview = false,
     isEditMode = false,
 }: Readonly<WidgetProps>) {
-    const { chartType, displayName, resourceId, metricName, id } = config;
+    const { chartType, chartColour, displayName, resourceId, metricName, id } = config;
     const ChartComponent = CHART_COMPONENTS[chartType];
     const [hasNoData, setHasNoData] = useState(false);
     const router = useRouter();
@@ -155,6 +156,7 @@ export function ChartWidget({
                 resourceId={resourceId}
                 metricType={metricName}
                 onDataStatusChange={(hasData) => setHasNoData(!hasData)}
+                chartColour={chartColour}
             />
         );
     };
