@@ -10,7 +10,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -51,8 +53,11 @@ public class CsvExportReader implements ExportReader<RawBillingRow> {
 
     while (batch.size() < maxRows && records.hasNext()) {
       CSVRecord csvRecord = records.next();
-      csvRecord.get("chargeId");
-      batch.add(new RawBillingRow("tbd"));
+      try {
+        batch.add(readRow(csvRecord));
+      } catch (IllegalArgumentException e) {
+        logger.error("Failed to read CSV export row, SKIPPING ", e);
+      }
     }
 
     return batch;
@@ -61,6 +66,32 @@ public class CsvExportReader implements ExportReader<RawBillingRow> {
   @Override
   public void close() throws IOException {
     this.parser.close();
+  }
+
+  private RawBillingRow readRow(CSVRecord csvRecord) {
+    // non-negiotables, all fields must be present
+
+    String billingAccountId = csvRecord.get("billingAccountId");
+    LocalDate date = LocalDate.parse(csvRecord.get("date"));
+    String consumedService = csvRecord.get("consumedService");
+    String meterCategory = csvRecord.get("meterCategory");
+    String meterSubCategory = csvRecord.get("meterSubCategory");
+    String resourceId = csvRecord.get("resourceId");
+    String chargeType = csvRecord.get("chargeType");
+    String billingCurrency = csvRecord.get("billingCurrency");
+    BigDecimal costInPricingCurrency =
+        BigDecimal.valueOf(Double.parseDouble(csvRecord.get("costInPricingCurrency")));
+
+    return new RawBillingRow(
+        billingAccountId,
+        date,
+        consumedService,
+        meterCategory,
+        meterSubCategory,
+        resourceId,
+        chargeType,
+        billingCurrency,
+        costInPricingCurrency);
   }
 
   private CSVParser openCsvParser(BlobContainerClient containerClient, String blobName)
