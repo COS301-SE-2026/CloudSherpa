@@ -1,7 +1,9 @@
 package com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.pipeline;
 
+import com.azure.storage.blob.BlobContainerClient;
 import com.cloudsherpa.ingestion.billing.BillingIngestionPipelineStep;
 import com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.AzureBillingContext;
+import com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.exportreaders.exeptions.ExportReaderException;
 import com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.exportreaders.factories.CsvExportReaderFactory;
 import com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.exportreaders.factories.ExportReaderFactory;
 import com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.exportreaders.factories.ParquetExportReaderFactory;
@@ -10,6 +12,8 @@ import com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.model.Azu
 import com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.model.AzureManifest.Partition;
 import com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.model.RawBillingRow;
 import java.io.IOException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
@@ -18,6 +22,8 @@ import org.springframework.stereotype.Component;
 public class NormalizationStep implements BillingIngestionPipelineStep<AzureBillingContext> {
   private final CsvExportReaderFactory csvReaderFactory;
   private final ParquetExportReaderFactory parquetReaderFactory;
+
+  private Logger logger = LoggerFactory.getLogger(NormalizationStep.class);
 
   public NormalizationStep(
       CsvExportReaderFactory csvReaderFactory, ParquetExportReaderFactory parquetReaderFactory) {
@@ -43,16 +49,22 @@ public class NormalizationStep implements BillingIngestionPipelineStep<AzureBill
           };
 
       for (Partition blob : manifest.blobs()) {
-        normalizeBlob(factory, blob.blobName());
+        normalizeBlob(factory, context.getBlobContainerClient(), blob.blobName());
       }
     }
   }
 
-  private void normalizeBlob(ExportReaderFactory<RawBillingRow> readerFactory, String blobName) {
-    try (ExportReader<RawBillingRow> reader = readerFactory.createExportReader(blobName)) {
+  private void normalizeBlob(
+      ExportReaderFactory<RawBillingRow> readerFactory,
+      BlobContainerClient containerClient,
+      String blobName) {
+    try (ExportReader<RawBillingRow> reader =
+        readerFactory.createExportReader(containerClient, blobName)) {
       // tbd
     } catch (IOException e) {
       // tbd
+    } catch (ExportReaderException e) {
+      logger.warn("Failed to read blob {}, SKIPPING", blobName, e);
     }
   }
 }
