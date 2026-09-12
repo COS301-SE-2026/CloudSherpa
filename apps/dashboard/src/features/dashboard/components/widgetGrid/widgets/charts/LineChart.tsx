@@ -100,20 +100,6 @@ export function LineChart({
                     symbol: "circle",
                     showSymbol: false,
                     symbolSize: 6,
-                    areaStyle: {
-                        opacity: 0.2,
-                        color: {
-                            type: "linear",
-                            x: 0,
-                            y: 0,
-                            x2: 0,
-                            y2: 1,
-                            colorStops: [
-                                { offset: 0, color: activeColour },
-                                { offset: 1, color: "transparent" },
-                            ],
-                        },
-                    },
                     emphasis: {
                         itemStyle: {
                             color: activeColour,
