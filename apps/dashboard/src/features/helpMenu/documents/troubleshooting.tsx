@@ -25,7 +25,7 @@ const Aws_Troubleshooting_INS = creatingIns([
             "Check the specific error message - Look for the policy type and ARN mentioned in the error. This is the fastest way to identify the source of a denial.",
             "Verify IAM policy permissions - Ensure the principal (user/role) has the correct identity-based permissions.",
             "Test your policies - use the IAM policy simulator to test a principal's permissions against specific services and actions.",
-            "Check the timing - If you are not seeing a newly created resource or a recent tag, wait a few minutes and try again. For cross-region searches, has replication latency (up to 36 hours for initial setup).",
+            "Check the timing - If you are not seeing a newly created resource or a recent tag, wait a few minutes and try again. For cross-region searches it has replication latency which can be up to 36 hours for initial setup.",
         ],
     },
 ]);
