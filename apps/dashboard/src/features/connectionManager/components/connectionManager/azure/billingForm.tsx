@@ -11,11 +11,27 @@ import { Input } from "@/components/atoms/input";
 interface AzureBillingFormProps {
     readonly optedInToBilling: boolean;
     readonly handleOptedInToBillingChange: (checked: boolean) => void;
+    readonly storageAccountName: string;
+    readonly setStorageAccountName: React.Dispatch<React.SetStateAction<string>>;
+    readonly blobContainerName: string;
+    readonly setBlobContainerName: React.Dispatch<React.SetStateAction<string>>;
+    readonly exportDirectory: string;
+    readonly setExportDirectory: React.Dispatch<React.SetStateAction<string>>;
+    readonly exportName: string;
+    readonly setExportName: React.Dispatch<React.SetStateAction<string>>;
 }
 
 export function AzureBillingForm({
     optedInToBilling,
     handleOptedInToBillingChange,
+    storageAccountName,
+    setStorageAccountName,
+    blobContainerName,
+    setBlobContainerName,
+    exportDirectory,
+    setExportDirectory,
+    exportName,
+    setExportName,
 }: AzureBillingFormProps) {
     return (
         <BillingFormContainer
@@ -34,6 +50,8 @@ export function AzureBillingForm({
                             id="storageAccount"
                             type="text"
                             placeholder="e.g. companybilling"
+                            value={storageAccountName}
+                            onChange={(e) => setStorageAccountName(e.target.value)}
                         ></Input>
                     </Field>
                     <Field>
@@ -45,6 +63,8 @@ export function AzureBillingForm({
                             id="storageContainer"
                             type="text"
                             placeholder="e.g. cost-exports"
+                            value={blobContainerName}
+                            onChange={(e) => setBlobContainerName(e.target.value)}
                         ></Input>
                     </Field>
                     <Field>
@@ -57,6 +77,8 @@ export function AzureBillingForm({
                             id="exportDirectory"
                             type="text"
                             placeholder="e.g. exports/daily"
+                            value={exportDirectory}
+                            onChange={(e) => setExportDirectory(e.target.value)}
                         ></Input>
                     </Field>
                     <Field>
@@ -68,6 +90,8 @@ export function AzureBillingForm({
                             id="storageContainer"
                             type="text"
                             placeholder="e.g. daily-cost-export"
+                            value={exportName}
+                            onChange={(e) => setExportName(e.target.value)}
                         ></Input>
                     </Field>
                 </FieldGroup>

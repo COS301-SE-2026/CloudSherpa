@@ -13,7 +13,6 @@ import { ServicesList } from "@/components/molecules/services-list";
 import { PermissionsList } from "@/components/molecules/permissions-list";
 import { ScanProgress } from "@/components/molecules/scan-progress";
 import { AzureBillingForm } from "./billingForm";
-import { boolean } from "zod";
 
 interface StepTwoPropsForAzure {
     credentials: CloudCredentials | null;
@@ -42,6 +41,10 @@ export default function StepTwoAzure({
     const [permissions, setPermissions] = useState<string[]>([]);
 
     const [optedInToBilling, setOptedInToBilling] = useState(false);
+    const [storageAccountName, setStorageAccountName] = useState("");
+    const [blobContainerName, setBlobContainerName] = useState("");
+    const [exportDirectory, setExportDirectory] = useState("");
+    const [exportName, setExportName] = useState("");
 
     React.useEffect(() => {
         const loadPermissions = async () => {
@@ -152,6 +155,14 @@ export default function StepTwoAzure({
                 handleOptedInToBillingChange={(checked: boolean) => {
                     setOptedInToBilling(checked);
                 }}
+                storageAccountName={storageAccountName}
+                setStorageAccountName={setStorageAccountName}
+                blobContainerName={blobContainerName}
+                setBlobContainerName={setBlobContainerName}
+                exportDirectory={exportDirectory}
+                setExportDirectory={setExportDirectory}
+                exportName={exportName}
+                setExportName={setExportName}
             />
             <ServicesList
                 servicesAvailable={servicesAvailable}
