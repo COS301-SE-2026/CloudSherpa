@@ -12,6 +12,8 @@ import { CloudCredentials } from "@/lib/fetch/dto/cloud-credentials";
 import { ServicesList } from "@/components/molecules/services-list";
 import { PermissionsList } from "@/components/molecules/permissions-list";
 import { ScanProgress } from "@/components/molecules/scan-progress";
+import { AzureBillingForm } from "./billingForm";
+import { boolean } from "zod";
 
 interface StepTwoPropsForAzure {
     credentials: CloudCredentials | null;
@@ -38,6 +40,8 @@ export default function StepTwoAzure({
     const [currentScanningService, setCurrentScanningService] = useState("");
 
     const [permissions, setPermissions] = useState<string[]>([]);
+
+    const [optedInToBilling, setOptedInToBilling] = useState(false);
 
     React.useEffect(() => {
         const loadPermissions = async () => {
@@ -143,6 +147,12 @@ export default function StepTwoAzure({
             forLoading={forLoading}
             forErrors={forErrors}
         >
+            <AzureBillingForm
+                optedInToBilling={optedInToBilling}
+                handleOptedInToBillingChange={(checked: boolean) => {
+                    setOptedInToBilling(checked);
+                }}
+            />
             <ServicesList
                 servicesAvailable={servicesAvailable}
                 selectedServices={selectedService}
