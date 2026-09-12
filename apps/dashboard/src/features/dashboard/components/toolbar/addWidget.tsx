@@ -5,6 +5,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/atoms/dropdown-menu";
 import { Button } from "@/components/atoms/button";
+import { Plus } from "lucide-react";
 
 interface ToolbarProps {
     handleAddWidget: () => void;
@@ -15,8 +16,12 @@ export default function AddWidget({ handleAddWidget, handleAddKpi }: Readonly<To
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button className="text-sm px-3 py-1.5 h-auto bg-primary hover:bg-primary/90">
-                    + Widget
+                <Button
+                    variant="outline"
+                    className="text-sm px-3 py-1.5 h-auto bg-primary hover:bg-primary/90"
+                >
+                    <Plus />
+                    Widget
                 </Button>
             </DropdownMenuTrigger>
 
