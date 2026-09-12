@@ -11,7 +11,13 @@ import com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.exportrea
 import com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.model.AzureManifest;
 import com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.model.AzureManifest.Partition;
 import com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.model.RawBillingRow;
+import com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.normalization.AzureBillingNormalizer;
+import com.cloudsherpa.ingestion.service.SherpaDbPersistenceService;
+import com.cloudsherpa.lib.entities.BillingExportExecution;
+import com.cloudsherpa.lib.entities.NormalizedCosts;
 import java.io.IOException;
+import java.util.List;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
@@ -22,13 +28,22 @@ import org.springframework.stereotype.Component;
 public class NormalizationStep implements BillingIngestionPipelineStep<AzureBillingContext> {
   private final CsvExportReaderFactory csvReaderFactory;
   private final ParquetExportReaderFactory parquetReaderFactory;
+  private final SherpaDbPersistenceService persistenceService;
+  private final AzureBillingNormalizer normalizer;
+
+  private static final Integer BATCH_SIZE = 100;
 
   private Logger logger = LoggerFactory.getLogger(NormalizationStep.class);
 
   public NormalizationStep(
-      CsvExportReaderFactory csvReaderFactory, ParquetExportReaderFactory parquetReaderFactory) {
+      CsvExportReaderFactory csvReaderFactory,
+      ParquetExportReaderFactory parquetReaderFactory,
+      SherpaDbPersistenceService persistenceService,
+      AzureBillingNormalizer normalizer) {
     this.csvReaderFactory = csvReaderFactory;
     this.parquetReaderFactory = parquetReaderFactory;
+    this.persistenceService = persistenceService;
+    this.normalizer = normalizer;
   }
 
   @Override
@@ -49,7 +64,8 @@ public class NormalizationStep implements BillingIngestionPipelineStep<AzureBill
           };
 
       for (Partition blob : manifest.blobs()) {
-        normalizeBlob(factory, context.getBlobContainerClient(), blob.blobName());
+        normalizeBlob(
+            factory, context.getBlobContainerClient(), blob.blobName(), context.getUserId(), null);
       }
     }
   }
@@ -57,14 +73,22 @@ public class NormalizationStep implements BillingIngestionPipelineStep<AzureBill
   private void normalizeBlob(
       ExportReaderFactory<RawBillingRow> readerFactory,
       BlobContainerClient containerClient,
-      String blobName) {
+      String blobName,
+      UUID userId,
+      BillingExportExecution execution) {
     try (ExportReader<RawBillingRow> reader =
         readerFactory.createExportReader(containerClient, blobName)) {
-      // tbd
+      persistenceService.recordCosts(
+          normalizeRawBillingBatch(reader.readBatch(BATCH_SIZE), execution), userId);
     } catch (IOException e) {
       // tbd
     } catch (ExportReaderException e) {
       logger.warn("Failed to read blob {}, SKIPPING", blobName, e);
     }
+  }
+
+  private List<NormalizedCosts> normalizeRawBillingBatch(
+      List<RawBillingRow> rawBillingBatch, BillingExportExecution execution) {
+    return rawBillingBatch.stream().map(row -> normalizer.normalize(row, execution)).toList();
   }
 }
