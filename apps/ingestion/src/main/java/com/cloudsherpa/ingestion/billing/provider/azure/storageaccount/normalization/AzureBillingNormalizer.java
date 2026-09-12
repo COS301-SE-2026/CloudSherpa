@@ -1,9 +1,9 @@
 package com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.normalization;
 
-import com.cloudsherpa.ingestion.billing.BillingExport;
 import com.cloudsherpa.ingestion.billing.CostRecordNormalizer;
 import com.cloudsherpa.ingestion.billing.provider.aws.cur.exceptions.NormalizationException;
 import com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.model.RawBillingRow;
+import com.cloudsherpa.lib.entities.BillingExportExecution;
 import com.cloudsherpa.lib.entities.ChargeTypeEnum;
 import com.cloudsherpa.lib.entities.NormalizedCosts;
 import com.cloudsherpa.lib.entities.ProviderEnum;
@@ -15,12 +15,19 @@ import java.security.NoSuchAlgorithmException;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.Arrays;
 import java.util.HexFormat;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.apache.commons.text.WordUtils;
 import org.springframework.stereotype.Component;
 
 @Component
-public class AzureBillingNormalizer implements CostRecordNormalizer<RawBillingRow, BillingExport> {
+public class AzureBillingNormalizer
+    implements CostRecordNormalizer<RawBillingRow, BillingExportExecution> {
 
   private final ObjectMapper objectMapper;
 
@@ -29,7 +36,7 @@ public class AzureBillingNormalizer implements CostRecordNormalizer<RawBillingRo
   }
 
   @Override
-  public NormalizedCosts normalize(RawBillingRow costRecord, BillingExport export)
+  public NormalizedCosts normalize(RawBillingRow costRecord, BillingExportExecution export)
       throws NormalizationException {
     NormalizedCosts normalized = new NormalizedCosts();
 
@@ -54,13 +61,13 @@ public class AzureBillingNormalizer implements CostRecordNormalizer<RawBillingRo
   }
 
   @Override
-  public UUID getExecutionId(BillingExport export) {
-    throw new UnsupportedOperationException("BillingExport not implemented yet for Azure");
+  public UUID getExecutionId(BillingExportExecution export) {
+    return export.getId();
   }
 
   @Override
   public String getChargeId(RawBillingRow costRecord) {
-    throw new UnsupportedOperationException("Not implemented yet");
+    return getResourceId(costRecord) + "%%%" + getServiceName(costRecord);
   }
 
   @Override
@@ -89,8 +96,17 @@ public class AzureBillingNormalizer implements CostRecordNormalizer<RawBillingRo
 
   @Override
   public String getServiceName(RawBillingRow costRecord) {
-    // Ughie: think service name might have to be comprised of multiple records
-    return costRecord.consumedService();
+    String[] splitConsumedService = costRecord.consumedService().split("\\.");
+    String[] splitMeterCategory = costRecord.meterCategory().split(" ");
+    String[] splitMeterSubCategory = costRecord.meterSubCategory().split(" ");
+
+    Set<String> serviceNameSet =
+        Stream.of(splitConsumedService, splitMeterCategory, splitMeterSubCategory)
+            .flatMap(Arrays::stream)
+            .map(WordUtils::capitalizeFully)
+            .collect(Collectors.toCollection(LinkedHashSet::new));
+
+    return String.join(" ", serviceNameSet);
   }
 
   @Override
