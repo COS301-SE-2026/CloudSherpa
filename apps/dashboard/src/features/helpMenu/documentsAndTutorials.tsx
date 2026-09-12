@@ -80,7 +80,7 @@ const BROWSECATEGORIES: BrowseCategory[] = [
     {
         id: "troubleshooting",
         label: "Troubleshooting",
-        description: "Troubleshoot your problems",
+        description: "Find solutions to common problems",
         icon: Wrench,
     },
 ];
