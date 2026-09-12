@@ -1,5 +1,6 @@
 package com.cloudsherpa.service.optimization.rule;
 
+import com.cloudsherpa.lib.entities.ProviderEnum;
 import com.cloudsherpa.service.optimization.rule.model.MetricThresholdCondition;
 import com.cloudsherpa.service.optimization.rule.model.OptimizationRule;
 import java.util.ArrayList;
@@ -17,7 +18,6 @@ public class RuleValidator {
     validateMetricThresholdConditions(rule, errors);
     validateProviders(rule, errors);
     validateResourceTypes(rule, errors);
-    validateRequiredSupportedAction(rule, errors);
 
     return errors;
   }
@@ -46,8 +46,15 @@ public class RuleValidator {
   }
 
   private void validateProviders(OptimizationRule rule, List<String> errors) {
-    if (rule.providers() != null && rule.providers().contains(null)) {
-      errors.add("providers must not contain null entries");
+    if (rule.providers() == null) {
+      return;
+    }
+
+    for (ProviderEnum p : rule.providers()) {
+      if (p == null) {
+        errors.add("providers must not contain null entries");
+        break;
+      }
     }
   }
 
@@ -66,12 +73,6 @@ public class RuleValidator {
 
     if (hasBlankEntry) {
       errors.add("resourceTypes must not contain blank entries");
-    }
-  }
-
-  private void validateRequiredSupportedAction(OptimizationRule rule, List<String> errors) {
-    if (rule.requiredSupportedAction() != null && rule.requiredSupportedAction().isBlank()) {
-      errors.add("requiredSupportedAction must not be blank when present");
     }
   }
 

@@ -29,6 +29,7 @@ CREATE TYPE public.predefined_time_enum AS ENUM (
 CREATE TYPE public.type_enum AS ENUM ('KPI', 'CHART');
 CREATE TYPE public.execution_status_enum AS ENUM ('pending', 'processing', 'completed', 'failed');
 CREATE TYPE PUBLIC.chart_type_enum AS ENUM ('gauge_chart', 'line_chart');
+CREATE TYPE public.chart_colour_enum AS ENUM ('chart_1', 'chart_2', 'chart_3', 'chart_4', 'chart_5');
 -- Differentiates actual compute usage from other types.
 -- Maps to CUR: line_item_line_item_type
 CREATE TYPE public.charge_type_enum AS ENUM ('Usage', 'Other', 'Credit'); 
@@ -45,7 +46,8 @@ CREATE TYPE public.optimization_status_enum AS ENUM (
 CREATE TYPE public.optimization_action_type_enum AS ENUM (
   'DOWNSIZE',
   'TERMINATE',
-  'SUSPEND'
+  'SUSPEND',
+  'UPSCALE'
 );
 
 -- ----------------------------------------------------------------
@@ -161,6 +163,14 @@ CREATE TABLE IF NOT EXISTS public.gcp_billing_export_config (
   config_id uuid PRIMARY KEY REFERENCES public.billing_export_config(config_id) ON DELETE CASCADE,
   dataset_id varchar(1024) NOT NULL,
   billing_account_id char(20) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS public.azure_billing_export_config (
+  config_id uuid PRIMARY KEY REFERENCES public.billing_export_config(config_id) ON DELETE CASCADE,
+  storage_account_name varchar(24) NOT NULL CONSTRAINT storage_account_name_length_check CHECK (length(storage_account_name) >= 3), -- must be between 3 and 24 characters long https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/resource-name-rules#microsoftstorage
+  storage_container varchar(63) NOT NULL CONSTRAINT storage_container_length_check CHECK ((length(storage_container) >= 3)), -- must be between 3 and 63 characters long https://learn.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata
+  billing_export_directory varchar(255) NOT NULL, -- https://learn.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-shares--directories--files--and-metadata#directory-and-file-names
+  export_name text NOT NULL -- was unable to determine naming restrictions, hence liberal with size, NOTE the assumption is thatN th this is the full export name not export prefix
 );
 
 CREATE TABLE IF NOT EXISTS public.billing_export_execution (
@@ -418,7 +428,8 @@ CREATE TABLE IF NOT EXISTS public.kpi_charges (
 CREATE TABLE IF NOT EXISTS public.widget_chart (
   chart_id uuid PRIMARY KEY,
   widget_id uuid REFERENCES public.widget(widget_id) ON DELETE CASCADE,
-  chart_type public.chart_type_enum NOT NULL
+  chart_type public.chart_type_enum NOT NULL,
+  chart_colour public.chart_colour_enum NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS public.chart_resource (
