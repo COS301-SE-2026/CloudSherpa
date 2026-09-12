@@ -104,7 +104,7 @@ const DOCUMENTS: Documents[] = [
 
     {
         id: "document2",
-        name: "How to manage your reasources",
+        name: "How to manage your resources",
         category: "Resources",
         timeToRead: 3,
         href: "/helpMenu/documents/resources",
