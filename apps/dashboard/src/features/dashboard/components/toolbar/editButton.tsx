@@ -16,8 +16,6 @@ interface ToolbarProps {
 
 export default function EditButton({
     isEditMode,
-    handleAddWidget,
-    handleAddKpi,
     handleStartEditing,
     handleSaveEdit,
     handleCancelEdit,
@@ -45,29 +43,13 @@ export default function EditButton({
             </Button>
 
             {isEditMode && (
-                <>
-                    <Button
-                        size="sm"
-                        onClick={handleSaveEdit}
-                        className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm order-2"
-                    >
-                        Save
-                    </Button>
-                    <Button
-                        size="sm"
-                        onClick={() => handleAddWidget()}
-                        className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm order-1 md:order-3"
-                    >
-                        Add Chart
-                    </Button>
-                    <Button
-                        size="sm"
-                        onClick={() => handleAddKpi()}
-                        className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm order-1 md:order-3"
-                    >
-                        Add KPI
-                    </Button>
-                </>
+                <Button
+                    size="sm"
+                    onClick={handleSaveEdit}
+                    className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm order-2"
+                >
+                    Save
+                </Button>
             )}
         </div>
     );
