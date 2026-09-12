@@ -97,7 +97,7 @@ class ManifestParsingStepTest {
     step.execute(context);
 
     assertEquals(1, context.getManifests().size());
-    AzureManifest parsedManifest = context.getManifests().get(0);
+    AzureManifest parsedManifest = context.getManifests().values().iterator().next();
     assertEquals(8032, parsedManifest.byteCount());
     assertEquals(1, parsedManifest.blobCount());
     assertEquals(36, parsedManifest.dataRowCount());

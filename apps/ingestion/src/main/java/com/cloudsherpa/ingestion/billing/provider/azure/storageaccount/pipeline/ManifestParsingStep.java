@@ -10,8 +10,10 @@ import com.cloudsherpa.ingestion.provider.azure.services.blobstorage.AzureBlobRe
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
@@ -33,11 +35,12 @@ public class ManifestParsingStep implements BillingIngestionPipelineStep<AzureBi
   }
 
   public void execute(AzureBillingContext context) {
-    List<AzureManifest> manifests = new ArrayList<>();
+    Map<UUID, AzureManifest> manifests = new HashMap<>();
 
     for (BlobItem item : context.getManifestBlobItems()) {
       try {
-        manifests.add(parseManifest(context.getBlobContainerClient(), item));
+        AzureManifest manifest = parseManifest(context.getBlobContainerClient(), item);
+        manifests.put(getManifestExportId(manifest, context.getConfigId()), manifest);
       } catch (IOException e) {
         logger.warn("Failed to parse manifest {}, SKIPPING", item.getName(), e);
       } catch (BlobStorageException e) {
@@ -56,5 +59,11 @@ public class ManifestParsingStep implements BillingIngestionPipelineStep<AzureBi
     try (InputStream stream = blobReader.openStream(containerClient, item.getName())) {
       return objectMapper.readValue(stream, AzureManifest.class);
     }
+  }
+
+  private UUID getManifestExportId(AzureManifest manifest, UUID configId) {
+    return UUID.nameUUIDFromBytes(
+        ((configId.toString() + ":" + manifest.runInfo().runId())
+            .getBytes(StandardCharsets.UTF_8)));
   }
 }

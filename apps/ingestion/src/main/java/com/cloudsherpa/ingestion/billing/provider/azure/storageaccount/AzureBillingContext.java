@@ -6,7 +6,9 @@ import com.azure.storage.blob.models.BlobItem;
 import com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.model.AzureManifest;
 import com.cloudsherpa.ingestion.connector.CloudCredentials;
 import com.cloudsherpa.lib.entities.AzureBillingExportConfig;
+import com.cloudsherpa.lib.entities.BillingExportExecution;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public class AzureBillingContext {
@@ -18,7 +20,8 @@ public class AzureBillingContext {
   private UUID userId;
   private UUID configId;
   private List<BlobItem> manifestBlobItems;
-  private List<AzureManifest> manifests;
+  private Map<UUID, AzureManifest> manifests;
+  private Map<UUID, BillingExportExecution> executions;
 
   public AzureBillingContext(UUID userId, UUID configId) {
     this.userId = userId;
@@ -73,11 +76,19 @@ public class AzureBillingContext {
     this.blobContainerClient = blobContainerClient;
   }
 
-  public List<AzureManifest> getManifests() {
+  public Map<UUID, AzureManifest> getManifests() {
     return manifests;
   }
 
-  public void setManifests(List<AzureManifest> manifests) {
+  public void setManifests(Map<UUID, AzureManifest> manifests) {
     this.manifests = manifests;
+  }
+
+  public Map<UUID, BillingExportExecution> getExecutions() {
+    return executions;
+  }
+
+  public void setExecutions(Map<UUID, BillingExportExecution> executions) {
+    this.executions = executions;
   }
 }
