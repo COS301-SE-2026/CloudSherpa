@@ -15,6 +15,7 @@ import {
     CommandList,
     CommandSeparator,
 } from "@/components/atoms/command";
+import { useToolbar } from "@/features/dashboard/components/toolbar/toolbarProvider";
 
 interface DashboardStub {
     id: string;
@@ -36,8 +37,13 @@ export function DashboardSelector({
     onCreate,
     onDelete,
 }: Readonly<DashboardSelectorProps>) {
-    const [open, setOpen] = useState(false);
-    const [view, setView] = useState<"list" | "create">("list");
+    const {
+        isSelectorOpen: open,
+        setIsSelectorOpen: setOpen,
+        selectorView: view,
+        setSelectorView: setView,
+    } = useToolbar();
+
     const [newDashboardName, setNewDashboardName] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
 
