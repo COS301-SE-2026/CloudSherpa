@@ -21,6 +21,8 @@ import {
 import { CloudAccountDetails } from "@/lib/fetch/dto/cloud-account";
 import { CloudResource, ResourceStatus } from "@/lib/fetch/dto/cloud-resource";
 import {IngestionSlider, formattingSecond, calculatingIngestionPeriod} from "@/features/connectionManager/components/connectionManager/wizardSetup/stepThree";
+import {Checkbox} from "@/components/atoms/checkbox";
+import {Label} from "@/components/atoms/label";
 
 /*
 - the user should be able to veiw details about a particular connectio here
@@ -48,6 +50,10 @@ export default function ConfigureConnection() {
     const [isChanging, setIsChanging] = useState(false);
 
     const [ingestionPeriod, setIngestionPeriod] = useState<number | null>(null);
+
+    const [resourceDiscovery, setResourceDiscovery] = useState(false);
+
+    const [monitorNewResources, setMonitorNewResources] = useState(false);
 
     async function loadConnection() {
         try {
@@ -263,7 +269,34 @@ export default function ConfigureConnection() {
                     </div>
 
                     <Card className = "mb-8 bg-card border-border">
-                        <CardContent className = "pt-6">
+                        <CardContent className = "pt-6 space-y-6">
+                            <div className = "space-y-4">
+                                <div className = "flex items-start gap-3">
+                                    <Checkbox id = "resource-discovery" checked = {resourceDiscovery} onCheckedChange = {(checkedBox) => setResourceDiscovery(checkedBox === true)} className = "mt-0.5"/>
+
+                                    <div className = "space-y-1">
+                                        <Label htmlFor = "resource-discovery" className = "text-sm font-medium text-foreground cursor-pointer"> Enable automatic resource discovery </Label>
+
+                                        <p className = "text-sm text-muted-foreground leading-relaxed"> This setting allows CloudSherpa to periodically scan you provider cloud account to find recently added resources.</p>
+                                    </div>
+                                </div>
+
+                                <div className = "flex items-start gap-3">
+                                    <Checkbox id = "monitor-new-resources" checked = {monitorNewResources} onCheckedChange = {(checkedBox) => setMonitorNewResources(checkedBox === true)} className = "mt-0.5"/>
+
+                                    <div className = "space-y-1">
+                                        <Label htmlFor = "monitor-new-resources" className = "text-sm font-medium text-foreground cursor-pointer"> Automatically monitor newly discovered resources </Label>
+
+                                        <p className = "text-xs text-muted-foreground leading-relaxed"> When selected, new resources added to CloudSherpa during automatic and manual resource discovery will be
+                                                                                                        set to &quot;active&quot; and have metrics ingested. It is highly recommended that this setting be enabled
+                                                                                                        with &quot;Automatic ingestion ingestion interval adjustment&quot; to avoid unexpected cloud costs associated
+                                                                                                        with API free tier limit, as adding active resources without adjusting the ingestion interval leads to an 
+                                                                                                        increase in requests to cloud providers.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
                             <IngestionSlider ingestionPeriod = {accurateIngestionPeriod}
                                              setIngestionPeriod = {setIngestionPeriod}
                                              activeCount = {activeCount}
