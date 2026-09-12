@@ -7,8 +7,6 @@ import { cn } from "@/lib/utils";
 
 interface ToolbarProps {
     isEditMode: boolean;
-    handleAddWidget: () => void;
-    handleAddKpi: () => void;
     handleStartEditing: () => void;
     handleSaveEdit: () => void;
     handleCancelEdit: () => void;

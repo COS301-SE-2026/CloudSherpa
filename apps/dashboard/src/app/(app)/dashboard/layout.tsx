@@ -236,7 +236,6 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
         }
 
         addWidget(newLayout, newConfig);
-        setIsEditMode(true);
 
         try {
             await createWidget(activeDashboardId, {

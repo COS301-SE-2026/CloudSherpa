@@ -6,6 +6,7 @@ import { DateRange } from "react-day-picker";
 import { DashboardStub } from "@/features/dashboard/types/widgets";
 import EditButton from "@/features/dashboard/components/toolbar/editButton";
 import { HelpMenu } from "@/features/helpMenu/helpMenu";
+import AddWidget from "@/features/dashboard/components/toolbar/addWidget";
 
 interface ToolbarProps {
     dashboards: DashboardStub[];
@@ -53,16 +54,20 @@ export default function Toolbar({
                     />
 
                     {hasActiveDashboard && (
-                        <div className="hidden sm:block">
-                            <EditButton
-                                isEditMode={isEditMode}
-                                handleStartEditing={handleStartEditing}
-                                handleSaveEdit={handleSaveEdit}
-                                handleCancelEdit={handleCancelEdit}
+                        <>
+                            <AddWidget
                                 handleAddWidget={handleAddWidget}
                                 handleAddKpi={handleAddKpi}
                             />
-                        </div>
+                            <div className="hidden sm:block">
+                                <EditButton
+                                    isEditMode={isEditMode}
+                                    handleStartEditing={handleStartEditing}
+                                    handleSaveEdit={handleSaveEdit}
+                                    handleCancelEdit={handleCancelEdit}
+                                />
+                            </div>
+                        </>
                     )}
                 </div>
 
@@ -80,8 +85,6 @@ export default function Toolbar({
                         handleStartEditing={handleStartEditing}
                         handleSaveEdit={handleSaveEdit}
                         handleCancelEdit={handleCancelEdit}
-                        handleAddWidget={handleAddWidget}
-                        handleAddKpi={handleAddKpi}
                     />
                 )}
             </div>
