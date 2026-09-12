@@ -7,8 +7,7 @@ import {
     BookOpen,
     PlayCircle,
     Command,
-    Laptop,
-    ArrowUpRight,
+    ArrowUpRight, X
 } from "lucide-react";
 import { Button } from "@/components/atoms/button";
 import { Input } from "@/components/atoms/input";
@@ -235,7 +234,7 @@ export function HelpMenu() {
                                         </span>
                                     </span>
 
-                                    {link.href && (
+                                    {(link.href || link.action === "tutorials") && (
                                         <ArrowUpRight
                                             className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
                                             strokeWidth={1.75}
