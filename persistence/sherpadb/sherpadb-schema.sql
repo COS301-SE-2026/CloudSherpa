@@ -46,7 +46,7 @@ CREATE TYPE public.optimization_status_enum AS ENUM (
 CREATE TYPE public.optimization_action_type_enum AS ENUM (
   'DOWNSIZE',
   'TERMINATE',
-  'SUSPEND'
+  'SUSPEND',
   'UPSCALE'
 );
 
