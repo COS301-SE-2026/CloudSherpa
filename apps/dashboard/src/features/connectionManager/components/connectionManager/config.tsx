@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Separator } from "@/components/atoms/separator";
 import { Input } from "@/components/atoms/input";
 import { Button } from "@/components/atoms/button";
@@ -20,6 +20,7 @@ import {
 } from "@/lib/fetch/cloud-account-api";
 import { CloudAccountDetails } from "@/lib/fetch/dto/cloud-account";
 import { CloudResource, ResourceStatus } from "@/lib/fetch/dto/cloud-resource";
+import {IngestionSlider, formattingSecond, calculatingIngestionPeriod} from "@/features/connectionManager/components/connectionManager/wizardSetup/stepThree";
 
 /*
 - the user should be able to veiw details about a particular connectio here
@@ -45,6 +46,8 @@ export default function ConfigureConnection() {
     const [loading, setLoading] = useState(true);
 
     const [isChanging, setIsChanging] = useState(false);
+
+    const [ingestionPeriod, setIngestionPeriod] = useState<number | null>(null);
 
     async function loadConnection() {
         try {
@@ -99,6 +102,12 @@ export default function ConfigureConnection() {
         setNewName(connectionName);
         setIsChanging(false);
     };
+
+    const activeCount = resources.length;
+
+    const recIngestionPeriod = useMemo(() => calculatingIngestionPeriod(activeCount), [activeCount]);
+
+    const accurateIngestionPeriod = ingestionPeriod ?? recIngestionPeriod;
 
     if (loading) {
         return <div className="flex h-screen items-center justify-center">Loading...</div>;
@@ -246,6 +255,21 @@ export default function ConfigureConnection() {
                                     {account?.accountEmail}{" "}
                                 </span>
                             </div>
+                        </CardContent>
+                    </Card>
+
+                    <div className = "flex items-center gap-2 mb-3">
+                        <h2 className = "text-base font-medium text-foreground"> Settings </h2>
+                    </div>
+
+                    <Card className = "mb-8 bg-card border-border">
+                        <CardContent className = "pt-6">
+                            <IngestionSlider ingestionPeriod = {accurateIngestionPeriod}
+                                             setIngestionPeriod = {setIngestionPeriod}
+                                             activeCount = {activeCount}
+                                             recIngestionPeriod = {recIngestionPeriod}
+                                             formatSeconds = {formattingSecond}
+                            />
                         </CardContent>
                     </Card>
 
