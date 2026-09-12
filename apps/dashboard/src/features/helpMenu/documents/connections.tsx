@@ -16,9 +16,9 @@ const Aws_INS = creatingIns([
         name: "Navigate to Connection Manager",
         description: "Access the Connection Manager from your dashboard",
         details: [
-            "From your dashboard, locate the sidebar on the left",
-            "Click on Connection Manager",
-            "You will be redirected to the Connection Manager page where you can view and configure your cloud connections",
+            "From your dashboard, locate the sidebar on the left.",
+            "Click on Connection Manager.",
+            "You will be redirected to the Connection Manager page where you can view and configure your cloud connections.",
         ],
     },
 
@@ -26,9 +26,9 @@ const Aws_INS = creatingIns([
         name: "Add an AWS cloud provider",
         description: "Follow the steps of the wizard to add your first cloud provider",
         details: [
-            "On the Connection Manager page, click on add button located in the top right corner",
-            "A wizard will appear",
-            "Follow the steps of the wizard and you will be able to successfully add your first AWS connection",
+            "On the Connection Manager page, click on add button located in the top right corner.",
+            "A wizard will appear.",
+            "Follow the steps of the wizard and you will be able to successfully add your first AWS connection.",
         ],
     },
 
@@ -36,8 +36,8 @@ const Aws_INS = creatingIns([
         name: "Enter your credentials",
         description: "Provide your credentials for the cloud provider",
         details: [
-            "Enter your cloud providers credentials",
-            "Ensure you have the required permissions",
+            "Enter your cloud providers credentials.",
+            "Ensure you have the required permissions.",
         ],
     },
 
@@ -45,8 +45,8 @@ const Aws_INS = creatingIns([
         name: "Select services and resources",
         description: "Choose which services and resources you would like CloudSherpa to monitor",
         details: [
-            "Select the services you want to keep track of",
-            "Choose the specific resources within each service you want to monitor",
+            "Select the services you want to keep track of.",
+            "Choose the specific resources within each service you want to monitor.",
         ],
     },
 
@@ -54,8 +54,8 @@ const Aws_INS = creatingIns([
         name: "Manage your connections",
         description: "View and configure your connections",
         details: [
-            "You can add or remove connections at any time from the Connection Manager",
-            "You are able to rename your connections",
+            "You can add or remove connections at any time from the Connection Manager.",
+            "You are able to rename your connections.",
         ],
     },
 ]);
@@ -65,9 +65,9 @@ const Gcp_INS = creatingIns([
         name: "Navigate to Connection manager",
         description: "Access the Connection Manager from your dashboard",
         details: [
-            "From your dashboard, locate the sidebar on the left",
-            "Click on Connection Manager",
-            "You will be redirected to the Connection Manager page where you can view and configure your cloud connections",
+            "From your dashboard, locate the sidebar on the left.",
+            "Click on Connection Manager.",
+            "You will be redirected to the Connection Manager page where you can view and configure your cloud connections.",
         ],
     },
 
@@ -75,8 +75,8 @@ const Gcp_INS = creatingIns([
         name: "Add a GCP cloud provider",
         description: "Follow the steps of the wizard to add GCP as a cloud provider",
         details: [
-            "On the Connection Manager page, click on the add button which is located on the top right-hand side corner of the page",
-            "Follow the steps of the wizard to add your GCP connection",
+            "On the Connection Manager page, click on the add button which is located on the top right-hand side corner of the page.",
+            "Follow the steps of the wizard to add your GCP connection.",
         ],
     },
 
@@ -84,8 +84,8 @@ const Gcp_INS = creatingIns([
         name: "Enter your credentials",
         description: "Provide your credentials for GCP",
         details: [
-            "Add an account name which you can refer to when looking for the connection",
-            "Upload your GCP service account JSON file",
+            "Add an account name which you can refer to when looking for the connection.",
+            "Upload your GCP service account JSON file.",
         ],
     },
 
@@ -93,9 +93,9 @@ const Gcp_INS = creatingIns([
         name: "Select your services and resources",
         description: "Choose which services and resources you would like CloudSherpa to monitor",
         details: [
-            "Select the services that would be monitored by CloudSherpa and you would then get a list of permissions that you would need to grant for your newly created GCP IAM user and then proceed to step 3",
-            "Once all of the resources associated with your selected services have been discovered, you can choose which ones you would like to monitor",
-            "The table can be filtered by the names of the resources or you can search for a resource using the toolbar",
+            "Select the services that would be monitored by CloudSherpa and you would then get a list of permissions that you would need to grant for your newly created GCP IAM user and then proceed to step 3.",
+            "Once all of the resources associated with your selected services have been discovered, you can choose which ones you would like to monitor.",
+            "The table can be filtered by the names of the resources or you can search for a resource using the toolbar.",
         ],
     },
 ]);
@@ -105,9 +105,9 @@ const Azure_INS = creatingIns([
         name: "Navigate to Connection Manager",
         description: "Access the Connection Manager from your dashboard",
         details: [
-            "From your dashboard, locate the sidebar on the left",
-            "Click on the Connection Manager",
-            "You will be redirected to the Connection Manager page where you can view and configure your cloud connections",
+            "From your dashboard, locate the sidebar on the left.",
+            "Click on the Connection Manager.",
+            "You will be redirected to the Connection Manager page where you can view and configure your cloud connections.",
         ],
     },
 
@@ -115,8 +115,8 @@ const Azure_INS = creatingIns([
         name: "Add an Azure cloud provider",
         description: "Follow the steps of the wizard to add Azure as a cloud provider",
         details: [
-            "On the Connection Manager page, click on the add button which is located on the top right-hand side corner of the page",
-            "Follow the steps of the wizard to add your Azure connection",
+            "On the Connection Manager page, click on the add button which is located on the top right-hand side corner of the page.",
+            "Follow the steps of the wizard to add your Azure connection.",
         ],
     },
 
@@ -124,8 +124,8 @@ const Azure_INS = creatingIns([
         name: "Enter your credentials",
         description: "Provide your credentials for Azure",
         details: [
-            "Add an account name which you can refer to when looking for a particular connection",
-            "Enter your Subscription ID, Tenant ID, Client ID and your Client Secret",
+            "Add an account name which you can refer to when looking for a particular connection.",
+            "Enter your Subscription ID, Tenant ID, Client ID and your Client Secret.",
         ],
     },
 
@@ -133,9 +133,9 @@ const Azure_INS = creatingIns([
         name: "Select your services and resources",
         description: "Choose which services and resources you would like CloudSherpa to monitor",
         details: [
-            "Select the services that would be monitored by CloudSherpa and you would then get a list of permissions that you would need to grant and then proceed to step 3",
-            "Once all of the resources associated with your selected services have been discovered, you can choose which ones you would like to monitor",
-            "The table can be filtered by the names of the resources or you can search for a resource using the toolbar",
+            "Select the services that would be monitored by CloudSherpa and you would then get a list of permissions that you would need to grant and then proceed to step 3.",
+            "Once all of the resources associated with your selected services have been discovered, you can choose which ones you would like to monitor.",
+            "The table can be filtered by the names of the resources or you can search for a resource using the toolbar.",
         ],
     },
 ]);

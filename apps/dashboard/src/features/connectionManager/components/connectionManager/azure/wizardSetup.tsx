@@ -8,6 +8,7 @@ import StepThreeAzure from "./stepThree";
 import { useState } from "react";
 import { ResourceDetail } from "@/lib/fetch/dto/cloud-resource";
 import { AzureCredentialsDto } from "@/lib/fetch/dto/cloud-credentials";
+import { HelpButton } from "../helpButton";
 
 interface DataForWizard {
     credentials: AzureCredentialsDto | null;
@@ -97,6 +98,8 @@ export default function WizardSetupAzure() {
                     onBack={handleBack}
                 />
             )}
+
+            <HelpButton provider="azure" />
         </>
     );
 }

@@ -20,9 +20,9 @@ const INS: Instructions[] = [
         name: "Create your account",
         description: "Sign up and log in to CloudSherpa for the first time",
         details: [
-            "Go to the signup page and create your CloudSherpa account",
-            "Enter your credentials",
-            "Log in and you will land on an empty dashboard and can thereafter utilize CloudSherpas features",
+            "Go to the signup page and create your CloudSherpa account.",
+            "Enter your credentials.",
+            "Log in and you will land on an empty dashboard and can thereafter utilize CloudSherpas features.",
         ],
     },
 
@@ -31,9 +31,9 @@ const INS: Instructions[] = [
         name: "Explore your dashboard",
         description: "Monitor data laid out across widgets",
         details: [
-            "You can add widgets that you would like to monitor which are represented in charts",
-            "Use the period selector to monitor is specific time range",
-            "Click edit to rearrange widget or to add new widgets",
+            "You can add widgets that you would like to monitor which are represented in charts.",
+            "Use the period selector to monitor is specific time range.",
+            "Click edit to rearrange widget or to add new widgets.",
         ],
     },
 ];

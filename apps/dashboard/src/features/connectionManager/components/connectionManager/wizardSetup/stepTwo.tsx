@@ -3,6 +3,8 @@
 import React, { ReactNode } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/atoms/card";
 import { Button } from "@/components/atoms/button";
+import { Wrench } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export interface PropsForStepTwo {
     heading: string;
@@ -12,6 +14,7 @@ export interface PropsForStepTwo {
     forLoading: boolean;
     forErrors: string;
     children: ReactNode;
+    cloudProvider?: "aws" | "gcp" | "azure";
 }
 
 export function StepTwo({
@@ -22,7 +25,14 @@ export function StepTwo({
     forLoading,
     forErrors,
     children,
+    cloudProvider = "aws",
 }: Readonly<PropsForStepTwo>) {
+    const router = useRouter();
+
+    const handlingTroubleshoot = () => {
+        router.push(`/helpMenu/documents/troubleshooting?forProviders=${cloudProvider}`);
+    };
+
     return (
         <div className="min-h-screen bg-background flex items-center justify-center p-8">
             <Card className="w-full max-w-2xl shadow-none">
@@ -58,7 +68,19 @@ export function StepTwo({
                     <form onSubmit={onSubmit} className="space-y-8">
                         {" "}
                         {children}
-                        <div className="flex justify-between pt-4">
+                        <div className="flex items-center justify-between pt-4">
+                            <Button
+                                type="button"
+                                variant="link"
+                                onClick={handlingTroubleshoot}
+                                className="text-primary hover:text-primary/80 p-0 h-auto gap-1.5 text-sm font-medium"
+                            >
+                                {" "}
+                                <Wrench size={14} strokeWidth={1.75} /> Troubleshoot service
+                                accounts and billing exports{" "}
+                            </Button>
+                        </div>
+                        <div className="flex gap-3">
                             <Button
                                 type="button"
                                 disabled={forLoading}
@@ -72,7 +94,7 @@ export function StepTwo({
                             <Button
                                 type="submit"
                                 disabled={forLoading}
-                                className="bg-primary hover:bg-accent hover:text-accent-foreground text-primary-foreground px-6 py-2 rounded-md transition-all duration-200 font-medium"
+                                className="bg-primary hover:bg-accent hover:text-accent-foreground text-primary-foreground px-6 py-2 rounded-md transition-all duration-200 font-medium ml-auto"
                             >
                                 {" "}
                                 Next{" "}
