@@ -38,7 +38,8 @@ public class RuleCatalog {
         cloudRunSuspendIdleRule(),
         rdsTerminateIdleRule(),
         rdsTerminateNoConnectionsRule(),
-        rdsTerminateNoIoRule());
+        rdsTerminateNoIoRule(),
+        rdsTerminateNoNetworkRule());
   }
 
   // ! ---------------------------------------- TERMINATE ----------------------------------------
@@ -222,6 +223,32 @@ public class RuleCatalog {
         List.of(ProviderEnum.AWS),
         RDS_RESOURCE_TYPES,
         List.of(readIopsLow, writeIopsLow));
+  }
+
+  private OptimizationRule rdsTerminateNoNetworkRule() {
+    MetricThresholdCondition netInLow =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.NETWORK_IN,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(1000));
+
+    MetricThresholdCondition netOutLow =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.NETWORK_OUT,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(1000));
+
+    return new OptimizationRule(
+        "RDS-TERMINATE-NO-NETWORK",
+        true,
+        OptimizationActionTypeEnum.TERMINATE,
+        List.of(ProviderEnum.AWS),
+        RDS_RESOURCE_TYPES,
+        List.of(netInLow, netOutLow));
   }
 
   // ! ---------------------------------------- TERMINATE ----------------------------------------

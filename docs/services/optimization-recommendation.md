@@ -207,6 +207,14 @@ Terminate RDS instances with virtually no I/O activity.
 | Read IOPS | 4d | MAXIMUM | < 10 |
 | Write IOPS | 4d | MAXIMUM | < 10 |
 
+**`RDS-TERMINATE-NO-NETWORK`**  
+Terminate RDS instances with negligible network traffic.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Network In | 4d | MAXIMUM | < 1000 |
+| Network Out | 4d | MAXIMUM | < 1000 |
+
 ### DOWNSIZE
 
 **`COMPUTE-DOWNSIZE`**
