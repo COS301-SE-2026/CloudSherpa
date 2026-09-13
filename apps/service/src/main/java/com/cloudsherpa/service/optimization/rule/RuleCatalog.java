@@ -35,7 +35,10 @@ public class RuleCatalog {
         computeSuspendLowDiskBytesRule(),
         computeDownsizeStorageTierRule(),
         rdsDownsizeRule(),
-        cloudRunSuspendIdleRule());
+        cloudRunSuspendIdleRule(),
+        rdsUpscaleCpuRule(),
+        rdsUpscaleIoAndConnectionsRule(),
+        rdsUpscaleMemoryRule());
   }
 
   // ! ---------------------------------------- TERMINATE ----------------------------------------
@@ -404,6 +407,58 @@ public class RuleCatalog {
         List.of(ProviderEnum.AWS),
         RDS_RESOURCE_TYPES,
         List.of(highCpuP95));
+  }
+
+  private OptimizationRule rdsUpscaleMemoryRule() {
+    MetricThresholdCondition highMemoryP95 =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.MEMORY_UTILIZATION,
+            4,
+            StatField.P95,
+            ComparisonOperator.GREATER_THAN,
+            new BigDecimal(80));
+
+    return new OptimizationRule(
+        "RDS-UPSCALE-MEMORY",
+        true,
+        OptimizationActionTypeEnum.UPSCALE,
+        List.of(ProviderEnum.AWS),
+        RDS_RESOURCE_TYPES,
+        List.of(highMemoryP95));
+  }
+
+  private OptimizationRule rdsUpscaleIoAndConnectionsRule() {
+    MetricThresholdCondition highReadIops =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.READ_IOPS,
+            4,
+            StatField.P95,
+            ComparisonOperator.GREATER_THAN,
+            new BigDecimal(1000));
+
+    MetricThresholdCondition highWriteIops =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.WRITE_IOPS,
+            4,
+            StatField.P95,
+            ComparisonOperator.GREATER_THAN,
+            new BigDecimal(1000));
+
+    MetricThresholdCondition highDbConnections =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.DATABASE_CONNECTIONS,
+            4,
+            StatField.P95,
+            ComparisonOperator.GREATER_THAN,
+            new BigDecimal(200));
+
+    return new OptimizationRule(
+        "RDS-UPSCALE-IO-CONN",
+        true,
+        OptimizationActionTypeEnum.UPSCALE,
+        List.of(ProviderEnum.AWS),
+        RDS_RESOURCE_TYPES,
+        List.of(highReadIops, highWriteIops, highDbConnections));
   }
   // * ---------------------------------------- UPSCALE ----------------------------------------
 }
