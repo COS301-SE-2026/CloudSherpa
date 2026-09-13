@@ -37,7 +37,8 @@ public class RuleCatalog {
         rdsDownsizeRule(),
         cloudRunSuspendIdleRule(),
         cloudRunTerminateIdleRule(),
-        cloudRunTerminateNoRequestsRule());
+        cloudRunTerminateNoRequestsRule(),
+        cloudRunTerminateLowCpuMemoryRule());
   }
 
   // ! ---------------------------------------- TERMINATE ----------------------------------------
@@ -195,6 +196,32 @@ public class RuleCatalog {
         List.of(ProviderEnum.GCP),
         CLOUDRUN_RESOURCE_TYPES,
         List.of(noRequests));
+  }
+
+  private OptimizationRule cloudRunTerminateLowCpuMemoryRule() {
+    MetricThresholdCondition lowCpuP95 =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.CONTAINER_CPU_UTILIZATIONS,
+            4,
+            StatField.P95,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(5));
+
+    MetricThresholdCondition lowMemP95 =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.MEMORY_UTILIZATION,
+            4,
+            StatField.P95,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(10));
+
+    return new OptimizationRule(
+        "CLOUDRUN-TERMINATE-LOW-CPU-MEM",
+        true,
+        OptimizationActionTypeEnum.TERMINATE,
+        List.of(ProviderEnum.GCP),
+        CLOUDRUN_RESOURCE_TYPES,
+        List.of(lowCpuP95, lowMemP95));
   }
 
   // ! ---------------------------------------- TERMINATE ----------------------------------------
