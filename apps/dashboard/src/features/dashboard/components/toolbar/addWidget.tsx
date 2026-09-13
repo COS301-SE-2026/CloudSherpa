@@ -22,14 +22,21 @@ export default function AddWidget({ handleAddWidget, handleAddKpi }: Readonly<To
                 </Button>
             </DropdownMenuTrigger>
 
-            <DropdownMenuContent align="start" className="w-35">
-                <DropdownMenuItem className="cursor-pointer font-medium" onClick={handleAddWidget}>
+            <DropdownMenuContent align="start" className="w-45">
+                <DropdownMenuItem
+                    className="cursor-pointer font-medium flex flex-row justify-between"
+                    onClick={handleAddWidget}
+                >
                     Chart Widget
-                    <span className="bg-muted-foreground text-xs"></span>
+                    <span className="text-muted-foreground text-xs flex flex-row">shift + c</span>
                 </DropdownMenuItem>
 
-                <DropdownMenuItem className="cursor-pointer font-medium" onClick={handleAddKpi}>
+                <DropdownMenuItem
+                    className="cursor-pointer font-medium flex flex-row justify-between"
+                    onClick={handleAddKpi}
+                >
                     KPI Widget
+                    <span className="text-muted-foreground text-xs flex flex-row">shift + k</span>
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
