@@ -17,6 +17,9 @@ public class RuleCatalog {
   private static final List<String> COMPUTE_RESOURCE_TYPES =
       List.of("AWS/EC2", "gce_instance", "Microsoft.Compute/virtualMachines");
 
+  private static final List<String> RDS_RESOURCE_TYPES = List.of("AWS/RDS");
+  private static final List<String> CLOUDRUN_RESOURCE_TYPES = List.of("cloud_run_service");
+
   public List<OptimizationRule> getAllRules() {
     return List.of(
         computeDownsizeRule(),
@@ -30,7 +33,9 @@ public class RuleCatalog {
         computeSuspendLowMemoryAndCpuRule(),
         computeSuspendLowNetworkRule(),
         computeSuspendLowDiskBytesRule(),
-        computeDownsizeStorageTierRule());
+        computeDownsizeStorageTierRule(),
+        rdsDownsizeRule(),
+        cloudRunSuspendIdleRule());
   }
 
   // ! ---------------------------------------- TERMINATE ----------------------------------------
@@ -203,6 +208,32 @@ public class RuleCatalog {
         List.of(lowPctDiskUsed30d));
   }
 
+  private OptimizationRule rdsDownsizeRule() {
+    MetricThresholdCondition lowCpuP95 =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.CPU_UTILIZATION,
+            4,
+            StatField.P95,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(10));
+
+    MetricThresholdCondition lowDbConnections =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.DATABASE_CONNECTIONS,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(5));
+
+    return new OptimizationRule(
+        "RDS-DOWNSIZE-CPU-DB",
+        true,
+        OptimizationActionTypeEnum.DOWNSIZE,
+        List.of(ProviderEnum.AWS),
+        RDS_RESOURCE_TYPES,
+        List.of(lowCpuP95, lowDbConnections));
+  }
+
   // # ---------------------------------------- DOWNSIZE ----------------------------------------
 
   // ? ---------------------------------------- SUSPEND ----------------------------------------
@@ -308,6 +339,32 @@ public class RuleCatalog {
         null,
         COMPUTE_RESOURCE_TYPES,
         List.of(lowDiskRead, lowDiskWrite));
+  }
+
+  private OptimizationRule cloudRunSuspendIdleRule() {
+    MetricThresholdCondition lowRequests =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.HTTP_REQUESTS,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(10));
+
+    MetricThresholdCondition lowContainerCpuP95 =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.CONTAINER_CPU_UTILIZATIONS,
+            4,
+            StatField.P95,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(10));
+
+    return new OptimizationRule(
+        "CLOUDRUN-SUSPEND-IDLE",
+        true,
+        OptimizationActionTypeEnum.SUSPEND,
+        List.of(ProviderEnum.GCP),
+        CLOUDRUN_RESOURCE_TYPES,
+        List.of(lowRequests, lowContainerCpuP95));
   }
 
   // ? ---------------------------------------- SUSPEND ----------------------------------------

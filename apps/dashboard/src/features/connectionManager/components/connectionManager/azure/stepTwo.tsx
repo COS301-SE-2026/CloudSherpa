@@ -184,6 +184,7 @@ export default function StepTwoAzure({
             onBack={onBack || (() => {})}
             forLoading={forLoading}
             forErrors={forErrors}
+            cloudProvider="azure"
         >
             <AzureBillingForm
                 optedInToBilling={optedInToBilling}
