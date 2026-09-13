@@ -8,14 +8,15 @@ import {
     formattingSecond,
     useIngestionPeriod,
 } from "@/features/connectionManager/components/connectionManager/wizardSetup/stepThree";
-import { ResourceDetail, ResourceSelectionDto } from "@/lib/fetch/dto/cloud-resource";
-import { AzureCredentialsDto } from "@/lib/fetch/dto/cloud-credentials";
+import type { ResourceDetail, ResourceSelectionDto } from "@/lib/fetch/dto/cloud-resource";
+import type { AzureCredentialsDto } from "@/lib/fetch/dto/cloud-credentials";
 import {
     createAzureConnection,
-    PersistAzureConnectionRequest,
+    type PersistAzureConnectionRequest,
 } from "@/lib/fetch/azure-connection-api";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import type { AzureBillingConfigType } from "./validTypes";
 
 interface StepThreePropsForAzure {
     displayName: string;
@@ -24,6 +25,7 @@ interface StepThreePropsForAzure {
     onComplete: (ingestionPeriod: number) => void;
     onBack?: () => void;
     ingestionPeriod?: number;
+    billingConfig: AzureBillingConfigType | null;
 }
 
 export default function StepThreeAzure({
@@ -32,6 +34,7 @@ export default function StepThreeAzure({
     resources = [],
     onComplete,
     onBack,
+    billingConfig,
 }: Readonly<StepThreePropsForAzure>) {
     const [forSaving, setForSaving] = useState(false);
 
@@ -86,6 +89,7 @@ export default function StepThreeAzure({
                     tags: resource.tags,
                     active: resource.active,
                 })),
+                billingConfig,
             };
 
             await createAzureConnection(request);

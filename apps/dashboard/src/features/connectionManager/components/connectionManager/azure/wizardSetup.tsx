@@ -98,6 +98,7 @@ export default function WizardSetupAzure() {
                     credentials={wizardData.credentials!}
                     ingestionPeriod={wizardData.ingestionPeriod}
                     resources={wizardData.resources}
+                    billingConfig={wizardData.billingConfig}
                     onComplete={handleStepThreeComplete}
                     onBack={handleBack}
                 />

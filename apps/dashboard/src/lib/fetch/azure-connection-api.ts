@@ -1,4 +1,5 @@
 import apiClient from "./api-client";
+import type { AzureBillingConfigType } from "@/features/connectionManager/components/connectionManager/azure/validTypes";
 import { AzureCredentialsDto } from "./dto/cloud-credentials";
 
 export interface ResourceSelectionDto {
@@ -17,6 +18,7 @@ export interface PersistAzureConnectionRequest {
     ingestionPeriod: string;
     credentials: AzureCredentialsDto;
     resources: ResourceSelectionDto[];
+    billingConfig: AzureBillingConfigType | null;
 }
 
 export async function createAzureConnection(request: PersistAzureConnectionRequest): Promise<void> {
