@@ -41,9 +41,9 @@ class CsvExportReaderTest {
 
     String csv =
         """
-                billingAccountId,date,consumedService,meterCategory,meterSubCategory,resourceId,chargeType,billingCurrency,costInPricingCurrency
-                account-1,2026/09/01,Microsoft.Compute,Virtual Machines,Dv3 Series,resource-1,Usage,USD,12.50
-                account-1,2026/09/02,Microsoft.Storage,Storage,Blob Storage,resource-2,Usage,USD,7.00
+                billingAccountId,date,consumedService,meterCategory,meterSubCategory,ResourceId,chargeType,billingCurrency,costInPricingCurrency
+                account-1,09/01/2026,Microsoft.Compute,Virtual Machines,Dv3 Series,resource-1,Usage,USD,12.50
+                account-1,09/02/2026,Microsoft.Storage,Storage,Blob Storage,resource-2,Usage,USD,7.00
                 """;
 
     when(blobReader.openStream(containerClient, BLOB_NAME))
@@ -115,9 +115,9 @@ class CsvExportReaderTest {
   private CsvExportReader validTestReader() {
     String csv =
         """
-                billingAccountId,date,consumedService,meterCategory,meterSubCategory,resourceId,chargeType,billingCurrency,costInPricingCurrency
-                account-1,2026/09/01,Microsoft.Compute,Virtual Machines,Dv3 Series,resource-1,Usage,USD,12.50
-                account-1,2026/09/02,Microsoft.Storage,Storage,Blob Storage,resource-2,Usage,USD,7.00
+                billingAccountId,date,consumedService,meterCategory,meterSubCategory,ResourceId,chargeType,billingCurrency,costInPricingCurrency
+                account-1,09/01/2026,Microsoft.Compute,Virtual Machines,Dv3 Series,resource-1,Usage,USD,12.50
+                account-1,09/02/2026,Microsoft.Storage,Storage,Blob Storage,resource-2,Usage,USD,7.00
                 """;
 
     when(blobReader.openStream(containerClient, BLOB_NAME))
