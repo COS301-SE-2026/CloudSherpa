@@ -58,7 +58,6 @@ public class CsvExportReader implements ExportReader<RawBillingRow> {
       CSVRecord csvRecord = records.next();
       try {
         RawBillingRow rawBillingRow = readRow(csvRecord);
-        logger.info("Parsed raw billing row: {}", rawBillingRow);
         batch.add(rawBillingRow);
       } catch (IllegalArgumentException e) {
         logger.error("Failed to read CSV export row, SKIPPING ", e);
