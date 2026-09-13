@@ -10,9 +10,10 @@ public record PersistAzureConnectionRequest(
     String displayName,
     Integer ingestionPeriod,
     AzureCredentialsDto credentials,
-    List<ResourceSelectionDto> resources) {
+    List<ResourceSelectionDto> resources,
+    AzureBillingConfigDto billingConfig) {
   public PersistAzureConnectionRequest withUserId(UUID userId) {
     return new PersistAzureConnectionRequest(
-        userId, accountId, displayName, ingestionPeriod, credentials, resources);
+        userId, accountId, displayName, ingestionPeriod, credentials, resources, billingConfig);
   }
 }

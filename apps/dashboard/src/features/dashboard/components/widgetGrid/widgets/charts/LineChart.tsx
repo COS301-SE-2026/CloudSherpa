@@ -9,11 +9,13 @@ import { useChartData } from "@/features/dashboard/hooks/useChartData";
 import { useChartTheme } from "@/features/dashboard/hooks/useChartTheme";
 import { BaseChart } from "./baseChart";
 import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
+import { ChartColour } from "@/features/dashboard/types/widgets";
 
 type LineChartProps = {
     resourceId: string;
     metricType: string;
     onDataStatusChange?: (isEmpty: boolean) => void;
+    chartColour?: ChartColour;
 };
 
 const tooltipTimestampOptions: Intl.DateTimeFormatOptions = {
@@ -30,9 +32,10 @@ export function LineChart({
     resourceId,
     metricType,
     onDataStatusChange,
+    chartColour,
 }: Readonly<LineChartProps>) {
     const { timeSeriesData, hasData } = useChartData(resourceId, metricType);
-    const { themeName, tokens } = useChartTheme();
+    const { themeName, tokens, activeColour } = useChartTheme(chartColour);
     const fromMs = useDashboardStore((state) => state.fromMs);
     const toMs = useDashboardStore((state) => state.toMs);
 
@@ -42,8 +45,10 @@ export function LineChart({
 
     const options: EChartsOption = useMemo(() => {
         return {
+            color: [activeColour],
             tooltip: {
                 trigger: "axis",
+                appendTo: () => document.body,
                 formatter: (params: DefaultLabelFormatterCallbackParams) => {
                     const point = Array.isArray(params) ? params[0] : params;
                     const value = point.value?.value;
@@ -95,30 +100,16 @@ export function LineChart({
                     symbol: "circle",
                     showSymbol: false,
                     symbolSize: 6,
-                    areaStyle: {
-                        opacity: 0.2,
-                        color: {
-                            type: "linear",
-                            x: 0,
-                            y: 0,
-                            x2: 0,
-                            y2: 1,
-                            colorStops: [
-                                { offset: 0, color: tokens["chart-1"] || tokens["primary"] },
-                                { offset: 1, color: "transparent" },
-                            ],
-                        },
-                    },
                     emphasis: {
                         itemStyle: {
-                            color: tokens["chart-1"] || tokens["primary"],
+                            color: activeColour,
                             borderWidth: 2,
                         },
                     },
                 },
             ],
         };
-    }, [timeSeriesData, tokens, fromMs, toMs]);
+    }, [timeSeriesData, tokens, fromMs, toMs, activeColour]);
 
     return <BaseChart option={options} theme={themeName} />;
 }

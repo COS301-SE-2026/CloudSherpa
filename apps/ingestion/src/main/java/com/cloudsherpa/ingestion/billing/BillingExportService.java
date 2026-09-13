@@ -35,6 +35,19 @@ public class BillingExportService {
   }
 
   @Transactional
+  public BillingExportExecution initializeExportExecution(UUID exportId, UUID configId) {
+    BillingExportExecution newExecution =
+        new BillingExportExecution(exportId, configId, ExecutionStatusEnum.pending);
+    billingExportExecutionRepository.save(newExecution);
+    return newExecution;
+  }
+
+  @Transactional
+  public void updateBillingExportExecution(BillingExportExecution execution) {
+    billingExportExecutionRepository.save(execution);
+  }
+
+  @Transactional
   public void transitionExportStatus(BillingExport export, ExecutionStatusEnum status) {
     // update in DB
     BillingExportExecution execution =

@@ -7,13 +7,13 @@ import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
 import { useMetricStore } from "@/features/dashboard/stores/metric-store";
 import { KpiWidgetConfig, LayoutItem, WidgetConfig } from "@/features/dashboard/types/widgets";
 import { createDashboard, updateDashboardLayout, createWidget } from "@/lib/fetch/api-dashboard";
+import { gridApiRef } from "@/features/dashboard/components/widgetGrid/grid";
 
 import {
     ToolbarProvider,
     useToolbar,
 } from "@/features/dashboard/components/toolbar/toolbarProvider";
 import { DateRange } from "react-day-picker";
-import { toast } from "sonner";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -129,9 +129,20 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
     }, [activeDashboardId, setIsEditMode, createSnapshot]);
 
     const handleSaveEdit = useCallback(async () => {
+        if (!activeDashboardId) {
+            clearSnapshot();
+            setIsEditMode(false);
+            return;
+        }
+
+        const compacted = gridApiRef.current?.compactAndGetLayout();
+
+        if (compacted) {
+            useDashboardStore.getState().actions.updateLayouts(compacted);
+        }
+
         clearSnapshot();
         setIsEditMode(false);
-        if (!activeDashboardId) return;
         const currentLayouts = useDashboardStore.getState().layouts;
         const activeDashboard = useDashboardStore.getState().dashboards[activeDashboardId];
         const layoutPayload = activeDashboard.layoutItemIds.map((id) => {
@@ -204,6 +215,7 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
             id: sharedId,
             displayName: "New Chart",
             chartType: "line_chart",
+            chartColour: "chart_1",
             provider: null,
             accountId: null,
             resourceId: null,
@@ -231,6 +243,7 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
                 id: newConfig.id,
                 widgetType: "CHART",
                 chartType: newConfig.chartType,
+                chartColour: newConfig.chartColour,
                 displayName: newConfig.displayName,
                 startX: newLayout.x,
                 startY: newLayout.y,
@@ -245,10 +258,10 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
         } catch (error) {
             console.error("Failed to persist new widget", error);
         }
-    }, [addWidget, getMetricList, setIsEditMode, isEditMode, createSnapshot, activeDashboardId]);
+    }, [addWidget, setIsEditMode, isEditMode, createSnapshot, activeDashboardId]);
 
     return (
-        <div className="flex flex-col flex-1 h-full w-full">
+        <div className="flex flex-col flex-1 h-full w-full min-h-0">
             <AlertDialog
                 open={!!dashboardToDelete}
                 onOpenChange={(open) => !open && setDashboardToDelete(null)}
@@ -290,7 +303,7 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
                 handleCancelEdit={handleCancelEdit}
                 onDeleteDashboard={handleDeleteRequest}
             />
-            <div className="flex-1 overflow-y-auto overflow-x-hidden flex flex-col relative">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden flex flex-col relative min-h-0">
                 {children}
             </div>
         </div>

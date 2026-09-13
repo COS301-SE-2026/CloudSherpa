@@ -7,7 +7,11 @@ async function registerAndLoginNewUser(page: Page) {
     const password = "SafePassword123!";
 
     await page.goto("http://localhost:3000/login");
-    await page.getByRole("button", { name: "Get Started" }).click();
+    await page.getByLabel("get started button").click();
+
+    const signUpButton = page.getByRole("button", { name: /Sign Up/i });
+
+    await expect(page.getByRole("heading", { name: "Sign Up" })).toBeVisible();
 
     //fill reg form
     await page.locator('input[name="email"]').fill(email);
@@ -15,7 +19,8 @@ async function registerAndLoginNewUser(page: Page) {
     await page.locator('input[name="confirmPassword"]').fill(password);
 
     //register
-    await page.getByRole("button", { name: "Sign up" }).click();
+    await expect(signUpButton).toBeEnabled();
+    await signUpButton.click();
 
     //auto logs in
 

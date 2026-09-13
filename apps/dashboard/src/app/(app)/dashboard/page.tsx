@@ -4,8 +4,9 @@ import { useCallback, useEffect, Suspense, useMemo, useRef } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useToolbar } from "@/features/dashboard/components/toolbar/toolbarProvider";
 
+import { Button } from "@/components/atoms/button";
 import { Spinner } from "@/components/atoms/spinner";
-import Grid from "@/features/dashboard/components/widgetGrid/grid";
+import { gridApiRef, Grid } from "@/features/dashboard/components/widgetGrid/grid";
 import { LayoutItem } from "@/features/dashboard/types/widgets";
 import { useDashboardStore, DashboardStore } from "@/features/dashboard/stores/dashboard-store";
 import { useMetricStream } from "@/features/dashboard/services/sse/metric-stream";
@@ -17,7 +18,7 @@ function DashboardContent() {
     const { error: streamError } = useMetricStream();
     const searchParams = useSearchParams();
     const urlId = searchParams.get("id");
-    const { isEditMode } = useToolbar();
+    const { isEditMode, setIsSelectorOpen, setSelectorView } = useToolbar();
 
     const { isLoading, metricFetchError } = useLoadDashboardData();
 
@@ -64,7 +65,7 @@ function DashboardContent() {
     useEffect(() => {
         fetchRecGroups();
         fetchSummary();
-    }, []);
+    }, [fetchRecGroups, fetchSummary]);
 
     useEffect(() => {
         // checks if where user is coming from
@@ -113,6 +114,7 @@ function DashboardContent() {
         if (activeDashboard) {
             return (
                 <Grid
+                    ref={gridApiRef}
                     isEditMode={isEditMode}
                     dashboardId={activeDashboardId || ""}
                     onLayoutChange={handleLayoutChange}
@@ -127,6 +129,14 @@ function DashboardContent() {
                 <p className="text-muted-foreground mb-6">
                     Create your first dashboard to start monitoring your cloud resources.
                 </p>
+                <Button
+                    onClick={() => {
+                        setSelectorView("create");
+                        setIsSelectorOpen(true);
+                    }}
+                >
+                    Create Dashboard
+                </Button>{" "}
             </div>
         );
     };
@@ -146,7 +156,7 @@ function DashboardContent() {
                 </div>
             )}
 
-            <main className="flex-1 overflow-x-hidden m-3 flex flex-col">
+            <main className="flex-1 overflow-x-hidden p-3 flex flex-col min-h-full">
                 {renderMainContent()}
             </main>
         </>
