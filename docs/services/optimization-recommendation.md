@@ -182,7 +182,38 @@ Recommends terminating instances that have very low metrics.
 |---|---|---|---|
 | CPU Utilization | 4d | MAXIMUM | < 3 |
 | Memory Utilization | 4d | P95 | < 5 |
-| Network In | 4d | MAXIMUM | < 2000
+| Network In | 4d | MAXIMUM | < 2000 |
+
+**`RDS-TERMINATE-IDLE`**  
+Terminate RDS instances that are essentially idle.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| CPU Utilization | 4d | MAXIMUM | < 2 |
+| Database Connections | 4d | MAXIMUM | < 1 |
+
+**`RDS-TERMINATE-NO-CONNECTIONS`**  
+Terminate RDS instances with no database connections.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Database Connections | 4d | MAXIMUM | < 1 |
+
+**`RDS-TERMINATE-NO-IO`**  
+Terminate RDS instances with virtually no I/O activity.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Read IOPS | 4d | MAXIMUM | < 10 |
+| Write IOPS | 4d | MAXIMUM | < 10 |
+
+**`RDS-TERMINATE-NO-NETWORK`**  
+Terminate RDS instances with negligible network traffic.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Network In | 4d | MAXIMUM | < 1000 |
+| Network Out | 4d | MAXIMUM | < 1000 |
 
 ### DOWNSIZE
 

@@ -35,7 +35,11 @@ public class RuleCatalog {
         computeSuspendLowDiskBytesRule(),
         computeDownsizeStorageTierRule(),
         rdsDownsizeRule(),
-        cloudRunSuspendIdleRule());
+        cloudRunSuspendIdleRule(),
+        rdsTerminateIdleRule(),
+        rdsTerminateNoConnectionsRule(),
+        rdsTerminateNoIoRule(),
+        rdsTerminateNoNetworkRule());
   }
 
   // ! ---------------------------------------- TERMINATE ----------------------------------------
@@ -149,6 +153,102 @@ public class RuleCatalog {
         null,
         COMPUTE_RESOURCE_TYPES,
         List.of(lowCpu, lowMemoryP95, lowNetworkIn));
+  }
+
+  private OptimizationRule rdsTerminateIdleRule() {
+    MetricThresholdCondition cpuMaxLow =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.CPU_UTILIZATION,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(2));
+
+    MetricThresholdCondition dbConnectionsZero =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.DATABASE_CONNECTIONS,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(1));
+
+    return new OptimizationRule(
+        "RDS-TERMINATE-IDLE",
+        true,
+        OptimizationActionTypeEnum.TERMINATE,
+        List.of(ProviderEnum.AWS),
+        RDS_RESOURCE_TYPES,
+        List.of(cpuMaxLow, dbConnectionsZero));
+  }
+
+  private OptimizationRule rdsTerminateNoConnectionsRule() {
+    MetricThresholdCondition dbConnectionsZero =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.DATABASE_CONNECTIONS,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(1));
+
+    return new OptimizationRule(
+        "RDS-TERMINATE-NO-CONNECTIONS",
+        true,
+        OptimizationActionTypeEnum.TERMINATE,
+        List.of(ProviderEnum.AWS),
+        RDS_RESOURCE_TYPES,
+        List.of(dbConnectionsZero));
+  }
+
+  private OptimizationRule rdsTerminateNoIoRule() {
+    MetricThresholdCondition readIopsLow =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.READ_IOPS,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(10));
+
+    MetricThresholdCondition writeIopsLow =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.WRITE_IOPS,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(10));
+
+    return new OptimizationRule(
+        "RDS-TERMINATE-NO-IO",
+        true,
+        OptimizationActionTypeEnum.TERMINATE,
+        List.of(ProviderEnum.AWS),
+        RDS_RESOURCE_TYPES,
+        List.of(readIopsLow, writeIopsLow));
+  }
+
+  private OptimizationRule rdsTerminateNoNetworkRule() {
+    MetricThresholdCondition netInLow =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.NETWORK_IN,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(1000));
+
+    MetricThresholdCondition netOutLow =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.NETWORK_OUT,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(1000));
+
+    return new OptimizationRule(
+        "RDS-TERMINATE-NO-NETWORK",
+        true,
+        OptimizationActionTypeEnum.TERMINATE,
+        List.of(ProviderEnum.AWS),
+        RDS_RESOURCE_TYPES,
+        List.of(netInLow, netOutLow));
   }
 
   // ! ---------------------------------------- TERMINATE ----------------------------------------
