@@ -36,6 +36,8 @@ public class CloudUsageController {
   private final GcpBillingIngestionService gcpBillingIngestionService;
   private final AzureBillingIngestionService azureBillingIngestionService;
 
+  private static final String DEV_USER_ID = "5ebe4340-c5ec-4833-ad93-06abf4609f03";
+
   @Value("${dev.gcp.billing_config_id:}")
   private String devGcpBillingConfigId;
 
@@ -149,8 +151,7 @@ public class CloudUsageController {
       })
   @PostMapping("/ingest/aws/billing/cur")
   public ResponseEntity<Void> ingestAwsBillingCur() {
-    awsCurIngestionService.execute(
-        "5ebe4340-c5ec-4833-ad93-06abf4609f03", "e0000000-0000-0000-0000-000000000001");
+    awsCurIngestionService.execute(DEV_USER_ID, "e0000000-0000-0000-0000-000000000001");
 
     return ResponseEntity.ok().build();
   }
@@ -181,8 +182,7 @@ public class CloudUsageController {
       return ResponseEntity.badRequest().body("Environment misconfigured");
     }
 
-    gcpBillingIngestionService.execute(
-        "5ebe4340-c5ec-4833-ad93-06abf4609f03", devGcpBillingConfigId);
+    gcpBillingIngestionService.execute(DEV_USER_ID, devGcpBillingConfigId);
 
     return ResponseEntity.ok().build();
   }
@@ -202,8 +202,7 @@ public class CloudUsageController {
   @PostMapping("ingest/azure/billing/{configId}")
   public ResponseEntity<Void> ingestAzureBilling(@PathVariable UUID configId) {
 
-    azureBillingIngestionService.execute(
-        "5ebe4340-c5ec-4833-ad93-06abf4609f03", configId.toString());
+    azureBillingIngestionService.execute(DEV_USER_ID, configId.toString());
 
     return ResponseEntity.ok().build();
   }

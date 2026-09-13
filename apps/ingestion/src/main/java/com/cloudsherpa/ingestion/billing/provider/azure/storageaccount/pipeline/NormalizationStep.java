@@ -17,6 +17,8 @@ import com.cloudsherpa.lib.entities.BillingExportExecution;
 import com.cloudsherpa.lib.entities.ExecutionStatusEnum;
 import com.cloudsherpa.lib.entities.NormalizedCosts;
 import java.io.IOException;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -59,6 +61,7 @@ public class NormalizationStep implements BillingIngestionPipelineStep<AzureBill
               String format = manifest.deliveryConfig().fileFormat();
               BillingExportExecution execution = context.getExecutions().get(executionId);
               execution.setStatus(ExecutionStatusEnum.processing);
+              execution.setStartedAt(OffsetDateTime.now(ZoneOffset.UTC));
               exportService.updateBillingExportExecution(execution);
 
               if (format == null) {
@@ -83,6 +86,7 @@ public class NormalizationStep implements BillingIngestionPipelineStep<AzureBill
               }
 
               execution.setStatus(ExecutionStatusEnum.completed);
+              execution.setCompletedAt(OffsetDateTime.now(ZoneOffset.UTC));
               exportService.updateBillingExportExecution(execution);
             });
   }
