@@ -142,6 +142,7 @@ export default function StepTwoAzure({
             onBack={onBack || (() => {})}
             forLoading={forLoading}
             forErrors={forErrors}
+            cloudProvider="azure"
         >
             <ServicesList
                 servicesAvailable={servicesAvailable}
