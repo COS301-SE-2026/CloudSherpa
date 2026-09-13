@@ -35,7 +35,10 @@ public class RuleCatalog {
         computeSuspendLowDiskBytesRule(),
         computeDownsizeStorageTierRule(),
         rdsDownsizeRule(),
-        cloudRunSuspendIdleRule());
+        cloudRunSuspendIdleRule(),
+        rdsDownsizeCpuRule(),
+        rdsDownsizeMemoryRule(),
+        rdsDownsizeStorageTierRule());
   }
 
   // ! ---------------------------------------- TERMINATE ----------------------------------------
@@ -250,6 +253,42 @@ public class RuleCatalog {
         List.of(ProviderEnum.AWS),
         RDS_RESOURCE_TYPES,
         List.of(lowCpuP95));
+  }
+
+  private OptimizationRule rdsDownsizeMemoryRule() {
+    MetricThresholdCondition lowMemoryP95 =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.MEMORY_UTILIZATION,
+            4,
+            StatField.P95,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(20));
+
+    return new OptimizationRule(
+        "RDS-DOWNSIZE-MEMORY",
+        true,
+        OptimizationActionTypeEnum.DOWNSIZE,
+        List.of(ProviderEnum.AWS),
+        RDS_RESOURCE_TYPES,
+        List.of(lowMemoryP95));
+  }
+
+  private OptimizationRule rdsDownsizeStorageTierRule() {
+    MetricThresholdCondition lowPctDiskUsed30d =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.PERCENTAGE_DISK_SPACE_USED,
+            30,
+            StatField.P95,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(20));
+
+    return new OptimizationRule(
+        "RDS-DOWNSIZE-STORAGE-TIER",
+        true,
+        OptimizationActionTypeEnum.DOWNSIZE,
+        List.of(ProviderEnum.AWS),
+        RDS_RESOURCE_TYPES,
+        List.of(lowPctDiskUsed30d));
   }
 
   // # ---------------------------------------- DOWNSIZE ----------------------------------------
