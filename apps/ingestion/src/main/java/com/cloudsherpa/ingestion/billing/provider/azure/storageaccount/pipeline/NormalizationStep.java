@@ -18,7 +18,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 @Component
-@Order(4)
+@Order(5)
 public class NormalizationStep implements BillingIngestionPipelineStep<AzureBillingContext> {
   private final CsvExportReaderFactory csvReaderFactory;
   private final ParquetExportReaderFactory parquetReaderFactory;
@@ -33,7 +33,7 @@ public class NormalizationStep implements BillingIngestionPipelineStep<AzureBill
 
   @Override
   public void execute(AzureBillingContext context) {
-    for (AzureManifest manifest : context.getManifests()) {
+    for (AzureManifest manifest : context.getManifests().values()) {
       String format = manifest.deliveryConfig().fileFormat();
 
       if (format == null) {
