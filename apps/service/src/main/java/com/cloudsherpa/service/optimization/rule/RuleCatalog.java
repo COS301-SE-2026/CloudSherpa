@@ -40,7 +40,10 @@ public class RuleCatalog {
         cloudRunDownsizeMemoryRule(),
         cloudRunDownsizeRequestsRule(),
         cloudRunSuspendLowInstancesRule(),
-        cloudRunSuspendNoRequestsRule());
+        cloudRunSuspendNoRequestsRule(),
+        cloudRunUpscaleCpuRule(),
+        cloudRunUpscaleRequestsRule(),
+        cloudRunUpscaleLatencyRule());
   }
 
   // ! ---------------------------------------- TERMINATE ----------------------------------------
@@ -489,6 +492,60 @@ public class RuleCatalog {
         null,
         COMPUTE_RESOURCE_TYPES,
         List.of(highCpu));
+  }
+
+  private OptimizationRule cloudRunUpscaleCpuRule() {
+    MetricThresholdCondition highContainerCpuP95 =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.CONTAINER_CPU_UTILIZATIONS,
+            4,
+            StatField.P95,
+            ComparisonOperator.GREATER_THAN,
+            new BigDecimal(85));
+
+    return new OptimizationRule(
+        "CLOUDRUN-UPSCALE-CPU",
+        true,
+        OptimizationActionTypeEnum.UPSCALE,
+        List.of(ProviderEnum.GCP),
+        CLOUDRUN_RESOURCE_TYPES,
+        List.of(highContainerCpuP95));
+  }
+
+  private OptimizationRule cloudRunUpscaleRequestsRule() {
+    MetricThresholdCondition highRequestsP95 =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.HTTP_REQUESTS,
+            4,
+            StatField.P95,
+            ComparisonOperator.GREATER_THAN,
+            new BigDecimal(500));
+
+    return new OptimizationRule(
+        "CLOUDRUN-UPSCALE-REQUESTS",
+        true,
+        OptimizationActionTypeEnum.UPSCALE,
+        List.of(ProviderEnum.GCP),
+        CLOUDRUN_RESOURCE_TYPES,
+        List.of(highRequestsP95));
+  }
+
+  private OptimizationRule cloudRunUpscaleLatencyRule() {
+    MetricThresholdCondition highLatencyP95 =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.REQUEST_LATENCY,
+            4,
+            StatField.P95,
+            ComparisonOperator.GREATER_THAN,
+            new BigDecimal(1000));
+
+    return new OptimizationRule(
+        "CLOUDRUN-UPSCALE-LATENCY",
+        true,
+        OptimizationActionTypeEnum.UPSCALE,
+        List.of(ProviderEnum.GCP),
+        CLOUDRUN_RESOURCE_TYPES,
+        List.of(highLatencyP95));
   }
   // * ---------------------------------------- UPSCALE ----------------------------------------
 }

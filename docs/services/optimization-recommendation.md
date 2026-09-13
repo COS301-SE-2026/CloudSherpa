@@ -302,6 +302,27 @@ Recommends upscaling compute instances whose P95 CPU utilization consistently ex
 |---|---|---|---|
 | CPU Utilization | 4d | P95 | > 85 |
 
+**`CLOUDRUN-UPSCALE-CPU`**  
+Recommends upscaling Cloud Run services when container CPU is consistently high.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Container CPU Utilizations | 4d | P95 | > 85 |
+
+**`CLOUDRUN-UPSCALE-REQUESTS`**  
+Recommends upscaling Cloud Run services when request volume is consistently high.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Request Count | 4d | P95 | > 500 |
+
+**`CLOUDRUN-UPSCALE-LATENCY`**  
+Recommends upscaling Cloud Run services when request latency is persistently high.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Request Latency | 4d | P95 | > 1000 |
+
 All rules above apply to listed resource types in `RuleCatalog`.
 
 ## Rule Validation
