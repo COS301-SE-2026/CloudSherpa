@@ -286,24 +286,26 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-            <Toolbar
-                dashboards={dashboardStubs}
-                isEditMode={isEditMode}
-                hasActiveDashboard={hasActiveDashboard}
-                selectedDashboardId={activeDashboardId || ""}
-                onDashboardChange={handleDashboardChange}
-                onCreateDashboard={handleCreateDashboard}
-                dateRange={dateRange}
-                onDateRangeChange={handleDateRangeChange}
-                handleAddWidget={handleAddWidget}
-                handleAddKpi={handleAddKpi}
-                handleStartEditing={handleStartEditing}
-                handleSaveEdit={handleSaveEdit}
-                handleCancelEdit={handleCancelEdit}
-                onDeleteDashboard={handleDeleteRequest}
-            />
             <div className="flex-1 overflow-y-auto overflow-x-hidden flex flex-col relative min-h-0">
-                {children}
+                <div className="absolute top-0 left-0 right-0 z-50">
+                    <Toolbar
+                        dashboards={dashboardStubs}
+                        isEditMode={isEditMode}
+                        hasActiveDashboard={hasActiveDashboard}
+                        selectedDashboardId={activeDashboardId || ""}
+                        onDashboardChange={handleDashboardChange}
+                        onCreateDashboard={handleCreateDashboard}
+                        dateRange={dateRange}
+                        onDateRangeChange={handleDateRangeChange}
+                        handleAddWidget={handleAddWidget}
+                        handleAddKpi={handleAddKpi}
+                        handleStartEditing={handleStartEditing}
+                        handleSaveEdit={handleSaveEdit}
+                        handleCancelEdit={handleCancelEdit}
+                        onDeleteDashboard={handleDeleteRequest}
+                    />
+                </div>
+                <div className="flex-1 flex flex-col min-h-0 pt-20">{children}</div>
             </div>
         </div>
     );

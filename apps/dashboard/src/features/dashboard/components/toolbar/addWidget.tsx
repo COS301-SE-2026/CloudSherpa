@@ -16,10 +16,7 @@ export default function AddWidget({ handleAddWidget, handleAddKpi }: Readonly<To
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button
-                    variant="outline"
-                    className="text-sm px-3 py-1.5 h-auto bg-primary hover:bg-primary/90"
-                >
+                <Button variant="outline" className="text-sm px-3 py-1.5 h-auto">
                     <Plus />
                     Widget
                 </Button>
