@@ -21,7 +21,11 @@ import {
 
 interface StepTwoPropsForAzure {
     credentials: CloudCredentials | null;
-    onNext: (forData: { servicesSelected: string[]; resources: ResourceDetail[] }) => void;
+    onNext: (forData: {
+        servicesSelected: string[];
+        resources: ResourceDetail[];
+        billingConfig: AzureBillingConfigType | null;
+    }) => void;
 
     onBack?: () => void;
 }
@@ -129,7 +133,11 @@ export default function StepTwoAzure({
                 return;
             }
 
-            onNext({ servicesSelected: selectedService, resources: discoveredResources });
+            onNext({
+                servicesSelected: selectedService,
+                resources: discoveredResources,
+                billingConfig: validatedBillingConfig?.data ?? null,
+            });
         } catch (err) {
             console.error(err);
 
