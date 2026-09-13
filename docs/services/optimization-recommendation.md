@@ -199,6 +199,14 @@ Terminate RDS instances with no database connections.
 |---|---:|---|---|
 | Database Connections | 4d | MAXIMUM | < 1 |
 
+**`RDS-TERMINATE-NO-IO`**  
+Terminate RDS instances with virtually no I/O activity.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Read IOPS | 4d | MAXIMUM | < 10 |
+| Write IOPS | 4d | MAXIMUM | < 10 |
+
 ### DOWNSIZE
 
 **`COMPUTE-DOWNSIZE`**
