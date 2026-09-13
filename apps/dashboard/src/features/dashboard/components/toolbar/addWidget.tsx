@@ -25,6 +25,7 @@ export default function AddWidget({ handleAddWidget, handleAddKpi }: Readonly<To
             <DropdownMenuContent align="start" className="w-35">
                 <DropdownMenuItem className="cursor-pointer font-medium" onClick={handleAddWidget}>
                     Chart Widget
+                    <span className="bg-muted-foreground text-xs"></span>
                 </DropdownMenuItem>
 
                 <DropdownMenuItem className="cursor-pointer font-medium" onClick={handleAddKpi}>
