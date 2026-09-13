@@ -17,6 +17,21 @@ import { WidgetWrapper } from "@/features/dashboard/components/widgetGrid/widget
 const MIN_WIDGET_W = 3;
 const MIN_WIDGET_H = 3;
 
+function findScrollable(el: HTMLElement | null): HTMLElement | null {
+    let node = el?.parentElement ?? null;
+    while (node) {
+        const style = getComputedStyle(node);
+        if (
+            (style.overflowY === "auto" || style.overflowY === "scroll") &&
+            node.scrollHeight > node.clientHeight
+        ) {
+            return node;
+        }
+        node = node.parentElement;
+    }
+    return null;
+}
+
 const repairLayout = (fullLayout: LayoutItem[]): LayoutItem[] =>
     fullLayout.map((l) => {
         return {
@@ -50,6 +65,9 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
     const onLayoutChangeRef = useRef(onLayoutChange);
     const isInternalUpdate = useRef(false);
     const isEditModeRef = useRef(isEditMode);
+    const hasSyncedOnce = useRef(false);
+    const pendingScroll = useRef(false);
+    const lastScrollHeight = useRef(0);
 
     useImperativeHandle(ref, () => ({
         compactAndGetLayout: () => {
@@ -126,6 +144,32 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
     }, []);
 
     useEffect(() => {
+        const growEl = gridRef.current;
+        if (!growEl) return;
+
+        const container = findScrollable(growEl);
+        if (container) {
+            lastScrollHeight.current = container.scrollHeight;
+        }
+
+        const ro = new ResizeObserver(() => {
+            if (!pendingScroll.current) return;
+            const scrollEl = findScrollable(growEl);
+            if (!scrollEl) return;
+
+            const newHeight = scrollEl.scrollHeight;
+            if (newHeight > lastScrollHeight.current) {
+                scrollEl.scrollTo({ top: newHeight, behavior: "smooth" });
+                lastScrollHeight.current = newHeight;
+                pendingScroll.current = false;
+            }
+        });
+
+        ro.observe(growEl);
+        return () => ro.disconnect();
+    }, []);
+
+    useEffect(() => {
         if (!gridStackInstance.current) return;
 
         if (isInternalUpdate.current) {
@@ -143,6 +187,8 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
                 currentGridNodes.set(node.id, node);
             }
         });
+
+        let addedNewWidget = false;
 
         // add/update widgets based on layouts prop
         layouts.forEach((layoutItem) => {
@@ -179,6 +225,7 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
                         minW: MIN_WIDGET_W,
                         minH: MIN_WIDGET_H,
                     });
+                    addedNewWidget = true;
                 }
             }
         });
@@ -194,6 +241,21 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
         //compact on change or load
         gridStackInstance.current.compact();
         gridStackInstance.current.batchUpdate(false);
+
+        if (hasSyncedOnce.current && addedNewWidget) {
+            pendingScroll.current = true;
+
+            const container = findScrollable(gridRef.current);
+            if (container) {
+                const currentHeight = container.scrollHeight;
+                if (currentHeight > lastScrollHeight.current) {
+                    container.scrollTo({ top: currentHeight, behavior: "smooth" });
+                    lastScrollHeight.current = currentHeight;
+                    pendingScroll.current = false;
+                }
+            }
+        }
+        hasSyncedOnce.current = true;
     }, [layouts]);
 
     //lock layouts outside edit
