@@ -34,6 +34,9 @@ public class CsvExportReader implements ExportReader<RawBillingRow> {
 
   private final Iterator<CSVRecord> records;
 
+  private static final DateTimeFormatter EXPORT_DATE_FORMAT =
+      DateTimeFormatter.ofPattern("MM/dd/uuuu");
+
   public CsvExportReader(
       BlobContainerClient containerClient, String blobName, AzureBlobReader blobReader) {
     this.blobReader = blobReader;
@@ -54,7 +57,9 @@ public class CsvExportReader implements ExportReader<RawBillingRow> {
     while (batch.size() < maxRows && records.hasNext()) {
       CSVRecord csvRecord = records.next();
       try {
-        batch.add(readRow(csvRecord));
+        RawBillingRow rawBillingRow = readRow(csvRecord);
+        logger.info("Parsed raw billing row: {}", rawBillingRow);
+        batch.add(rawBillingRow);
       } catch (IllegalArgumentException e) {
         logger.error("Failed to read CSV export row, SKIPPING ", e);
       }
@@ -70,15 +75,13 @@ public class CsvExportReader implements ExportReader<RawBillingRow> {
 
   private RawBillingRow readRow(CSVRecord csvRecord) {
 
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
-
     // non-negiotables, all fields must be present
     String billingAccountId = csvRecord.get("billingAccountId");
-    LocalDate date = LocalDate.parse(csvRecord.get("date"), formatter);
+    LocalDate date = LocalDate.parse(csvRecord.get("date"), EXPORT_DATE_FORMAT);
     String consumedService = csvRecord.get("consumedService");
     String meterCategory = csvRecord.get("meterCategory");
     String meterSubCategory = csvRecord.get("meterSubCategory");
-    String resourceId = csvRecord.get("resourceId");
+    String resourceId = csvRecord.get("ResourceId");
     String chargeType = csvRecord.get("chargeType");
     String billingCurrency = csvRecord.get("billingCurrency");
     BigDecimal costInPricingCurrency =
