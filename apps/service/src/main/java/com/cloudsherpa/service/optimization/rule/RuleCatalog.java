@@ -35,7 +35,8 @@ public class RuleCatalog {
         computeSuspendLowDiskBytesRule(),
         computeDownsizeStorageTierRule(),
         rdsDownsizeRule(),
-        cloudRunSuspendIdleRule());
+        cloudRunSuspendIdleRule(),
+        rdsTerminateIdleRule());
   }
 
   // ! ---------------------------------------- TERMINATE ----------------------------------------
@@ -149,6 +150,32 @@ public class RuleCatalog {
         null,
         COMPUTE_RESOURCE_TYPES,
         List.of(lowCpu, lowMemoryP95, lowNetworkIn));
+  }
+
+  private OptimizationRule rdsTerminateIdleRule() {
+    MetricThresholdCondition cpuMaxLow =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.CPU_UTILIZATION,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(2));
+
+    MetricThresholdCondition dbConnectionsZero =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.DATABASE_CONNECTIONS,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(1));
+
+    return new OptimizationRule(
+        "RDS-TERMINATE-IDLE",
+        true,
+        OptimizationActionTypeEnum.TERMINATE,
+        List.of(ProviderEnum.AWS),
+        RDS_RESOURCE_TYPES,
+        List.of(cpuMaxLow, dbConnectionsZero));
   }
 
   // ! ---------------------------------------- TERMINATE ----------------------------------------

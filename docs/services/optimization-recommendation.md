@@ -182,7 +182,15 @@ Recommends terminating instances that have very low metrics.
 |---|---|---|---|
 | CPU Utilization | 4d | MAXIMUM | < 3 |
 | Memory Utilization | 4d | P95 | < 5 |
-| Network In | 4d | MAXIMUM | < 2000
+| Network In | 4d | MAXIMUM | < 2000 |
+
+**`RDS-TERMINATE-IDLE`**  
+Terminate RDS instances that are essentially idle.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| CPU Utilization | 4d | MAXIMUM | < 2 |
+| Database Connections | 4d | MAXIMUM | < 1 |
 
 ### DOWNSIZE
 
