@@ -184,6 +184,14 @@ Recommends terminating instances that have very low metrics.
 | Memory Utilization | 4d | P95 | < 5 |
 | Network In | 4d | MAXIMUM | < 2000
 
+**`CLOUDRUN-TERMINATE-IDLE`**  
+Terminate Cloud Run services with no requests and very low CPU.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Request Count | 4d | MAXIMUM | < 1 |
+| Container CPU Utilizations | 4d | P95 | < 5 |
+
 ### DOWNSIZE
 
 **`COMPUTE-DOWNSIZE`**
