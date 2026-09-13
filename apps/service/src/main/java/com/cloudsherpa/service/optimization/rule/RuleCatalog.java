@@ -38,7 +38,9 @@ public class RuleCatalog {
         cloudRunSuspendIdleRule(),
         cloudRunDownsizeCpuRule(),
         cloudRunDownsizeMemoryRule(),
-        cloudRunDownsizeRequestsRule());
+        cloudRunDownsizeRequestsRule(),
+        cloudRunSuspendLowInstancesRule(),
+        cloudRunSuspendNoRequestsRule());
   }
 
   // ! ---------------------------------------- TERMINATE ----------------------------------------
@@ -422,6 +424,50 @@ public class RuleCatalog {
         List.of(ProviderEnum.GCP),
         CLOUDRUN_RESOURCE_TYPES,
         List.of(lowRequests, lowContainerCpuP95));
+  }
+
+  private OptimizationRule cloudRunSuspendNoRequestsRule() {
+    MetricThresholdCondition noRequests =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.HTTP_REQUESTS,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(1));
+
+    return new OptimizationRule(
+        "CLOUDRUN-SUSPEND-NO-REQUESTS",
+        true,
+        OptimizationActionTypeEnum.SUSPEND,
+        List.of(ProviderEnum.GCP),
+        CLOUDRUN_RESOURCE_TYPES,
+        List.of(noRequests));
+  }
+
+  private OptimizationRule cloudRunSuspendLowInstancesRule() {
+    MetricThresholdCondition runningInstancesZero =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.RUNNING_INSTANCES,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(1));
+
+    MetricThresholdCondition lowContainerCpuP95 =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.CONTAINER_CPU_UTILIZATIONS,
+            4,
+            StatField.P95,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(15));
+
+    return new OptimizationRule(
+        "CLOUDRUN-SUSPEND-LOW-INSTANCES",
+        true,
+        OptimizationActionTypeEnum.SUSPEND,
+        List.of(ProviderEnum.GCP),
+        CLOUDRUN_RESOURCE_TYPES,
+        List.of(runningInstancesZero, lowContainerCpuP95));
   }
 
   // ? ---------------------------------------- SUSPEND ----------------------------------------

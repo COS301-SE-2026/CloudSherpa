@@ -278,6 +278,21 @@ Recommends suspending Cloud Run services with negligible traffic and low CPU.
 | Request Count | 4d | MAXIMUM | < 10 |
 | Container CPU Utilizations | 4d | P95 | < 10 |
 
+**`CLOUDRUN-SUSPEND-NO-REQUESTS`**  
+Recommends suspending Cloud Run services with effectively no requests.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Request Count | 4d | MAXIMUM | < 1 |
+
+**`CLOUDRUN-SUSPEND-LOW-INSTANCES`**  
+Recommends suspending Cloud Run services that have no running instances and very low CPU.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Running Instances | 4d | MAXIMUM | < 1 |
+| Container CPU Utilizations | 4d | P95 | < 15 |
+
 ### UPSCALE
 
 **`COMPUTE-UPSCALE-CPU`**
