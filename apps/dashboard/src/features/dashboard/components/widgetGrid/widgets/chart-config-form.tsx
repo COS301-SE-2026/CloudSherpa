@@ -31,6 +31,7 @@ export function ChartConfigFormInner({ ChartId }: Readonly<ChartConfigFormProps>
                   displayName: "Default",
                   widgetType: "CHART",
                   chartType: "line_chart",
+                  chartColour: "chart_1",
                   provider: null,
                   accountId: null,
                   resourceId: null,

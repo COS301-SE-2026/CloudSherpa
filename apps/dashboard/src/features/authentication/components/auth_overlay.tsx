@@ -66,6 +66,7 @@ export function AuthOverlay({ isSignUp, toggle }: Readonly<OverlayProps>) {
                     </p>
 
                     <Button
+                        aria-label="get started button"
                         variant="default"
                         className="w-40  text-primary-foreground hover:bg-primary-foreground hover:text-primary hover:border-none  transition-all duration-300"
                         onClick={() => toggle(true)}

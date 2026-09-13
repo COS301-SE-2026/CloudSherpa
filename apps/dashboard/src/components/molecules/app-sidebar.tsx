@@ -1,6 +1,15 @@
 "use client";
 import * as React from "react";
-import { LayoutDashboard, Network, Moon, Sun, HelpCircle, Telescope } from "lucide-react";
+import {
+    LayoutDashboard,
+    Network,
+    Moon,
+    Sun,
+    HelpCircle,
+    Telescope,
+    ServerPlus,
+    Lightbulb,
+} from "lucide-react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { useAuthContext } from "@/features/authentication/providers/AuthContext";
@@ -132,7 +141,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                             <SidebarMenuItem>
                                 <SidebarMenuButton asChild tooltip="Add AWS connection">
                                     <Link href="/addConnection/aws">
-                                        <Network />
+                                        <ServerPlus />
                                         <span>AWS</span>
                                     </Link>
                                 </SidebarMenuButton>
@@ -140,7 +149,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                             <SidebarMenuItem>
                                 <SidebarMenuButton asChild tooltip="Add GCP connection">
                                     <Link href="/addConnection/gcp">
-                                        <Network />
+                                        <ServerPlus />
                                         <span>GCP</span>
                                     </Link>
                                 </SidebarMenuButton>
@@ -148,7 +157,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                             <SidebarMenuItem>
                                 <SidebarMenuButton asChild tooltip="Add Azure connection">
                                     <Link href="/addConnection/azure">
-                                        <Network />
+                                        <ServerPlus />
                                         <span>Azure</span>
                                     </Link>
                                 </SidebarMenuButton>
@@ -204,10 +213,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                 <SidebarMenuButton asChild tooltip="Recommendations">
                                     <Link href="/recommendations">
                                         <div className="flex flex-row gap-2">
-                                            <Network />
+                                            <Lightbulb />
                                             <span>Recommendations</span>
                                         </div>
-                                        {summary && <Badge>{`${summary.active} active`}</Badge>}
+                                        {(summary?.active ?? 0) > 0 && (
+                                            <Badge>{`${summary?.active} active`}</Badge>
+                                        )}{" "}
                                     </Link>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>

@@ -2,6 +2,7 @@
 
 import { useTheme } from "next-themes";
 import * as echarts from "echarts";
+import { ChartColour } from "@/features/dashboard/types/widgets";
 
 import lightTokens from "@/app/tokens/chart-light.json";
 import darkTokens from "@/app/tokens/chart-dark.json";
@@ -67,14 +68,22 @@ if ("window" in globalThis) {
     echarts.registerTheme("cloudSherpaDark", createEChartsTheme(darkTokens));
 }
 
-export function useChartTheme() {
+export function useChartTheme(chartColour?: ChartColour) {
     const { theme, systemTheme } = useTheme();
 
     const currentTheme = theme === "system" ? systemTheme : theme;
     const isDark = currentTheme === "dark";
+    const tokens = isDark ? darkTokens : lightTokens;
+
+    console.log(chartColour);
+    const tokenKey = (chartColour || "chart_1").replace("_", "-");
+    const safeKey = tokenKey as keyof typeof tokens;
+    const activeColour = tokens[safeKey] || "#327dcd";
 
     return {
         themeName: isDark ? "cloudSherpaDark" : "cloudSherpaLight",
         tokens: isDark ? darkTokens : lightTokens,
+        activeColour,
+        isLightMode: !isDark,
     };
 }

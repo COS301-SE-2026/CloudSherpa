@@ -1,0 +1,26 @@
+package com.cloudsherpa.ingestion.provider.gcp.services.gke;
+
+public record GkeResourceIdentifier(String projectId, String location, String clusterName) {
+
+  public static GkeResourceIdentifier fromAssetName(String assetName) {
+
+    String[] parts = assetName.split("/");
+
+    String projectId = valueAfter(parts, "projects");
+    String location = valueAfter(parts, "locations");
+    String clusterName = valueAfter(parts, "clusters");
+
+    return new GkeResourceIdentifier(projectId, location, clusterName);
+  }
+
+  private static String valueAfter(String[] parts, String key) {
+
+    for (int i = 0; i < parts.length - 1; i++) {
+      if (parts[i].equals(key)) {
+        return parts[i + 1];
+      }
+    }
+
+    throw new IllegalArgumentException("Unable to find " + key + " in GCP asset name");
+  }
+}

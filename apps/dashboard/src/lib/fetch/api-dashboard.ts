@@ -1,5 +1,5 @@
 import { TimeWindowPreset } from "@/features/dashboard/types/timewindow";
-import { ChartType } from "@/features/dashboard/types/widgets";
+import { ChartType, ChartColour } from "@/features/dashboard/types/widgets";
 import apiClient from "@/lib/fetch/api-client";
 
 export interface BaseWidgetDTO {
@@ -15,6 +15,7 @@ export interface BaseWidgetDTO {
 export interface ChartWidgetDTO extends BaseWidgetDTO {
     widgetType: "CHART";
     chartType: ChartType;
+    chartColour: ChartColour;
     provider: string | null;
     accountId: string | null;
     resourceId: string | null;
@@ -57,6 +58,7 @@ export interface ChartWidgetConfigUpdateDTO {
     id: string;
     widgetType: "CHART";
     chartType: ChartType;
+    chartColour: ChartColour;
     displayName: string | null;
     provider: string | null;
     accountId: string | null;
