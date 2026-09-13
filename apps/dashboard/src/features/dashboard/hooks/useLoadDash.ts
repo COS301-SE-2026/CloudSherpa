@@ -10,6 +10,7 @@ import {
     LayoutItem,
     WidgetConfig,
     ChartType,
+    ChartColour,
 } from "@/features/dashboard/types/widgets";
 import { MetricType } from "@/features/dashboard/types/metric";
 
@@ -44,6 +45,7 @@ export function processFetchedDashboards(fetchedData: DashboardDTO[]) {
                 configsArray.push({
                     id: w.id,
                     chartType: w.chartType as ChartType,
+                    chartColour: w.chartColour as ChartColour,
                     widgetType: "CHART",
                     displayName: w.displayName,
                     provider: w.provider,

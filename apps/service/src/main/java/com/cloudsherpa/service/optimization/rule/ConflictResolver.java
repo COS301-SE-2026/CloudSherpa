@@ -101,6 +101,7 @@ public class ConflictResolver {
   private Integer getHierarchyWeight(OptimizationActionTypeEnum action) {
     return switch (action) {
       case TERMINATE -> 100;
+      case UPSCALE -> 75;
       case DOWNSIZE -> 50;
       case SUSPEND -> 25;
     };

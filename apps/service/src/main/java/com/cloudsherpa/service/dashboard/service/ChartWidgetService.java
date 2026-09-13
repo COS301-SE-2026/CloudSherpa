@@ -32,7 +32,8 @@ public class ChartWidgetService {
     UUID chartResourceId = UUID.randomUUID();
 
     WidgetChart newWidgetChart =
-        new WidgetChart(widgetChartId, widgetId, chartWidgetDto.chartType());
+        new WidgetChart(
+            widgetChartId, widgetId, chartWidgetDto.chartType(), chartWidgetDto.chartColour());
     ChartResource chartResource =
         new ChartResource(
             chartResourceId,
@@ -50,6 +51,7 @@ public class ChartWidgetService {
   public void updateChartWidget(ChartWidgetConfigUpdateDTO updateChartWidgetDto) {
     WidgetChart widgetChart = getWidgetChartByWidgetId(updateChartWidgetDto.id());
     widgetChart.setChartType(updateChartWidgetDto.chartType());
+    widgetChart.setChartColour(updateChartWidgetDto.chartColour());
     List<ChartResource> resources =
         chartResourceRepository.findByWidgetChartId(widgetChart.getId());
 
@@ -96,6 +98,7 @@ public class ChartWidgetService {
         widget.getWidth(),
         widget.getHeight(),
         chart.getChartType(),
+        chart.getChartColour(),
         provider,
         accountId,
         resourceId,

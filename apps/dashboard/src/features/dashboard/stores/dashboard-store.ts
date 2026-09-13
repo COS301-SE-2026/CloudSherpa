@@ -192,6 +192,7 @@ const createDashboardSlice: StateCreator<DashboardStore, [], [], DashboardSlice>
                     id: widget.id,
                     widgetType: "CHART",
                     chartType: widget.chartType,
+                    chartColour: widget.chartColour,
                     displayName: widget.displayName,
                     provider: widget.provider,
                     accountId: widget.accountId,
