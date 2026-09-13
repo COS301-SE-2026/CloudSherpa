@@ -13,6 +13,11 @@ import { ServicesList } from "@/components/molecules/services-list";
 import { PermissionsList } from "@/components/molecules/permissions-list";
 import { ScanProgress } from "@/components/molecules/scan-progress";
 import { AzureBillingForm } from "./billingForm";
+import {
+    AzureBillingConfig,
+    AzureBillingConfigSafeParseType,
+    AzureBillingConfigType,
+} from "./validTypes";
 
 interface StepTwoPropsForAzure {
     credentials: CloudCredentials | null;
@@ -82,6 +87,15 @@ export default function StepTwoAzure({
 
     const handlingSubmit = async (forHandlingSubmit: React.SubmitEvent<HTMLFormElement>) => {
         forHandlingSubmit.preventDefault();
+
+        const validatedBillingConfig: AzureBillingConfigSafeParseType | null =
+            validateBillingConfig();
+
+        if (optedInToBilling && validatedBillingConfig != null && !validatedBillingConfig.success) {
+            setForErrors("Please enter a valid billing configuration");
+            return;
+        }
+
         try {
             setForLoading(true);
             setForErrors("");
@@ -140,6 +154,19 @@ export default function StepTwoAzure({
             setSelectedService(servicesAvailable.map((forServices) => forServices.id));
         }
     };
+
+    function validateBillingConfig(): AzureBillingConfigSafeParseType | null {
+        if (!optedInToBilling) {
+            return null;
+        }
+
+        return AzureBillingConfig.safeParse({
+            storageAccountName: storageAccountName,
+            blobContainerName: blobContainerName,
+            exportDirectory: exportDirectory,
+            exportName: exportName,
+        });
+    }
 
     return (
         <StepTwo
