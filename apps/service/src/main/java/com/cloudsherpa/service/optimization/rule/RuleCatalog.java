@@ -234,6 +234,24 @@ public class RuleCatalog {
         List.of(lowCpuP95, lowDbConnections));
   }
 
+  private OptimizationRule rdsDownsizeCpuRule() {
+    MetricThresholdCondition lowCpuP95 =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.CPU_UTILIZATION,
+            4,
+            StatField.P95,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(10));
+
+    return new OptimizationRule(
+        "RDS-DOWNSIZE-CPU",
+        true,
+        OptimizationActionTypeEnum.DOWNSIZE,
+        List.of(ProviderEnum.AWS),
+        RDS_RESOURCE_TYPES,
+        List.of(lowCpuP95));
+  }
+
   // # ---------------------------------------- DOWNSIZE ----------------------------------------
 
   // ? ---------------------------------------- SUSPEND ----------------------------------------
