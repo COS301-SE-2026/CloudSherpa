@@ -260,7 +260,7 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
     }, [addWidget, setIsEditMode, isEditMode, createSnapshot, activeDashboardId]);
 
     return (
-        <div className="flex flex-col flex-1 h-full w-full min-h-0">
+        <div className="flex flex-col flex-1 h-full max-h-[100dvh] w-full min-h-0">
             <AlertDialog
                 open={!!dashboardToDelete}
                 onOpenChange={(open) => !open && setDashboardToDelete(null)}

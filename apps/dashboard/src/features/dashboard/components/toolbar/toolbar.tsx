@@ -42,7 +42,7 @@ export default function Toolbar({
     onDateRangeChange,
 }: Readonly<ToolbarProps>) {
     return (
-        <header className=" flex  flex-col items-center group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 pt-3">
+        <header className="sticky top-0 z-50 w-full flex flex-col items-center group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 pt-3 pb-2">
             <div className="h-16 w-full flex flex-row items-center justify-between  px-6">
                 <div className="flex flex-row gap-2">
                     <DashboardSelector
