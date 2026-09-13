@@ -387,5 +387,23 @@ public class RuleCatalog {
         COMPUTE_RESOURCE_TYPES,
         List.of(highCpu));
   }
+
+  private OptimizationRule rdsUpscaleCpuRule() {
+    MetricThresholdCondition highCpuP95 =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.CPU_UTILIZATION,
+            4,
+            StatField.P95,
+            ComparisonOperator.GREATER_THAN,
+            new BigDecimal(85));
+
+    return new OptimizationRule(
+        "RDS-UPSCALE-CPU",
+        true,
+        OptimizationActionTypeEnum.UPSCALE,
+        List.of(ProviderEnum.AWS),
+        RDS_RESOURCE_TYPES,
+        List.of(highCpuP95));
+  }
   // * ---------------------------------------- UPSCALE ----------------------------------------
 }
