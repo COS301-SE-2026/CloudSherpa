@@ -207,13 +207,20 @@ Recommends downsizing storage allocation or moving to a cheaper storage tier whe
 |---|---:|---|---|
 | Percentage Disk Space Used | 30d | P95 | < 20 |
 
-**`RDS-DOWNSIZE-CPU`**  
+**`RDS-DOWNSIZE-CPU-DB`**  
 Recommends downsizing AWS RDS instances showing sustained low CPU and very low connections over 4 days.
 
 | Metric | Window | Stat | Condition |
 |---|---:|---|---|
 | CPU Utilization | 4d | P95 | < 10 |
 | Database Connections | 4d | MAXIMUM | < 5 |
+
+**`RDS-DOWNSIZE-CPU`**  
+Downsize RDS instances with sustained low CPU.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| CPU Utilization | 4d | P95 | < 10 |
 
 **`RDS-DOWNSIZE-MEMORY`**  
 Downsize RDS instances with sustained low memory usage.
