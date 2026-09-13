@@ -207,6 +207,14 @@ Recommends downsizing storage allocation or moving to a cheaper storage tier whe
 |---|---:|---|---|
 | Percentage Disk Space Used | 30d | P95 | < 20 |
 
+**`RDS-DOWNSIZE`**  
+Recommends downsizing AWS RDS instances showing sustained low CPU and very low connections over 4 days.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| CPU Utilization | 4d | P95 | < 10 |
+| Database Connections | 4d | MAXIMUM | < 5 |
+
 ### SUSPEND
 
 **`COMPUTE-SUSPEND-IDLE`**
@@ -241,6 +249,13 @@ Recommends suspending instances with negligible disk throughput (both directions
 | Disk Read Bytes | 4d | MAXIMUM | < 5000000 |
 | Disk Write Bytes | 4d | MAXIMUM | < 5000000 |
 
+**`CLOUDRUN-SUSPEND-IDLE`**  
+Recommends suspending Cloud Run services with negligible traffic and low CPU.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Request Count | 4d | MAXIMUM | < 10 |
+| Container CPU Utilizations | 4d | P95 | < 10 |
 
 ### UPSCALE
 
