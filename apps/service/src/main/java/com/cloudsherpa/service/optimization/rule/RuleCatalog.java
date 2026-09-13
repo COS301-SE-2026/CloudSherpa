@@ -36,7 +36,8 @@ public class RuleCatalog {
         computeDownsizeStorageTierRule(),
         rdsDownsizeRule(),
         cloudRunSuspendIdleRule(),
-        rdsTerminateIdleRule());
+        rdsTerminateIdleRule(),
+        rdsTerminateNoConnectionsRule());
   }
 
   // ! ---------------------------------------- TERMINATE ----------------------------------------
@@ -176,6 +177,24 @@ public class RuleCatalog {
         List.of(ProviderEnum.AWS),
         RDS_RESOURCE_TYPES,
         List.of(cpuMaxLow, dbConnectionsZero));
+  }
+
+  private OptimizationRule rdsTerminateNoConnectionsRule() {
+    MetricThresholdCondition dbConnectionsZero =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.DATABASE_CONNECTIONS,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(1));
+
+    return new OptimizationRule(
+        "RDS-TERMINATE-NO-CONNECTIONS",
+        true,
+        OptimizationActionTypeEnum.TERMINATE,
+        List.of(ProviderEnum.AWS),
+        RDS_RESOURCE_TYPES,
+        List.of(dbConnectionsZero));
   }
 
   // ! ---------------------------------------- TERMINATE ----------------------------------------

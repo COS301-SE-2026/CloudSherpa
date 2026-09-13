@@ -192,6 +192,13 @@ Terminate RDS instances that are essentially idle.
 | CPU Utilization | 4d | MAXIMUM | < 2 |
 | Database Connections | 4d | MAXIMUM | < 1 |
 
+**`RDS-TERMINATE-NO-CONNECTIONS`**  
+Terminate RDS instances with no database connections.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Database Connections | 4d | MAXIMUM | < 1 |
+
 ### DOWNSIZE
 
 **`COMPUTE-DOWNSIZE`**
