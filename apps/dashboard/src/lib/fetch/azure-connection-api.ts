@@ -1,5 +1,5 @@
 import apiClient from "./api-client";
-import type { AzureBillingConfigType } from "@/features/connectionManager/components/connectionManager/azure/validTypes";
+import { AzureBillingConfigType } from "@/features/connectionManager/components/connectionManager/azure/validTypes";
 import { AzureCredentialsDto } from "./dto/cloud-credentials";
 
 export interface ResourceSelectionDto {

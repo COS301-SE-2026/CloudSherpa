@@ -8,15 +8,15 @@ import {
     formattingSecond,
     useIngestionPeriod,
 } from "@/features/connectionManager/components/connectionManager/wizardSetup/stepThree";
-import type { ResourceDetail, ResourceSelectionDto } from "@/lib/fetch/dto/cloud-resource";
-import type { AzureCredentialsDto } from "@/lib/fetch/dto/cloud-credentials";
+import { ResourceDetail, ResourceSelectionDto } from "@/lib/fetch/dto/cloud-resource";
+import { AzureCredentialsDto } from "@/lib/fetch/dto/cloud-credentials";
 import {
     createAzureConnection,
-    type PersistAzureConnectionRequest,
+    PersistAzureConnectionRequest,
 } from "@/lib/fetch/azure-connection-api";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import type { AzureBillingConfigType } from "./validTypes";
+import { AzureBillingConfigType } from "./validTypes";
 
 interface StepThreePropsForAzure {
     displayName: string;
