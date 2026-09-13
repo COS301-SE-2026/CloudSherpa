@@ -36,7 +36,8 @@ public class RuleCatalog {
         computeDownsizeStorageTierRule(),
         rdsDownsizeRule(),
         cloudRunSuspendIdleRule(),
-        cloudRunDownsizeCpuRule());
+        cloudRunDownsizeCpuRule(),
+        cloudRunDownsizeMemoryRule());
   }
 
   // ! ---------------------------------------- TERMINATE ----------------------------------------
@@ -251,6 +252,24 @@ public class RuleCatalog {
         List.of(ProviderEnum.GCP),
         CLOUDRUN_RESOURCE_TYPES,
         List.of(lowContainerCpuP95));
+  }
+
+  private OptimizationRule cloudRunDownsizeMemoryRule() {
+    MetricThresholdCondition lowContainerMemoryP95 =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.MEMORY_UTILIZATION,
+            4,
+            StatField.P95,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(15));
+
+    return new OptimizationRule(
+        "CLOUDRUN-DOWNSIZE-MEMORY",
+        true,
+        OptimizationActionTypeEnum.DOWNSIZE,
+        List.of(ProviderEnum.GCP),
+        CLOUDRUN_RESOURCE_TYPES,
+        List.of(lowContainerMemoryP95));
   }
 
   // # ---------------------------------------- DOWNSIZE ----------------------------------------

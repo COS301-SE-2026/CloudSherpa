@@ -222,6 +222,13 @@ Recommends downsizing Cloud Run services with consistently low container CPU.
 |---|---:|---|---|
 | Container CPU Utilizations | 4d | P95 | < 10 |
 
+**`CLOUDRUN-DOWNSIZE-MEMORY`**  
+Recommends downsizing Cloud Run services with consistently low container memory usage.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Memory Utilization | 4d | P95 | < 15 |
+
 ### SUSPEND
 
 **`COMPUTE-SUSPEND-IDLE`**
