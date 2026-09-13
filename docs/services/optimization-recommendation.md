@@ -229,6 +229,13 @@ Recommends downsizing Cloud Run services with consistently low container memory 
 |---|---:|---|---|
 | Memory Utilization | 4d | P95 | < 15 |
 
+**`CLOUDRUN-DOWNSIZE-REQUESTS`**  
+Recommends downsizing Cloud Run services with persistently low request volume.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Request Count | 4d | MAXIMUM | < 50 |
+
 ### SUSPEND
 
 **`COMPUTE-SUSPEND-IDLE`**
