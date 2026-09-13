@@ -215,6 +215,13 @@ Recommends downsizing AWS RDS instances showing sustained low CPU and very low c
 | CPU Utilization | 4d | P95 | < 10 |
 | Database Connections | 4d | MAXIMUM | < 5 |
 
+**`CLOUDRUN-DOWNSIZE-CPU`**  
+Recommends downsizing Cloud Run services with consistently low container CPU.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Container CPU Utilizations | 4d | P95 | < 10 |
+
 ### SUSPEND
 
 **`COMPUTE-SUSPEND-IDLE`**

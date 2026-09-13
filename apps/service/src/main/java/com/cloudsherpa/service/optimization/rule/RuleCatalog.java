@@ -35,7 +35,8 @@ public class RuleCatalog {
         computeSuspendLowDiskBytesRule(),
         computeDownsizeStorageTierRule(),
         rdsDownsizeRule(),
-        cloudRunSuspendIdleRule());
+        cloudRunSuspendIdleRule(),
+        cloudRunDownsizeCpuRule());
   }
 
   // ! ---------------------------------------- TERMINATE ----------------------------------------
@@ -232,6 +233,24 @@ public class RuleCatalog {
         List.of(ProviderEnum.AWS),
         RDS_RESOURCE_TYPES,
         List.of(lowCpuP95, lowDbConnections));
+  }
+
+  private OptimizationRule cloudRunDownsizeCpuRule() {
+    MetricThresholdCondition lowContainerCpuP95 =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.CONTAINER_CPU_UTILIZATIONS,
+            4,
+            StatField.P95,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(10));
+
+    return new OptimizationRule(
+        "CLOUDRUN-DOWNSIZE-CPU",
+        true,
+        OptimizationActionTypeEnum.DOWNSIZE,
+        List.of(ProviderEnum.GCP),
+        CLOUDRUN_RESOURCE_TYPES,
+        List.of(lowContainerCpuP95));
   }
 
   // # ---------------------------------------- DOWNSIZE ----------------------------------------
