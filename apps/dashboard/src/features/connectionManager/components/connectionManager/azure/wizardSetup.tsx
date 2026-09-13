@@ -8,6 +8,7 @@ import StepThreeAzure from "./stepThree";
 import { useState } from "react";
 import { ResourceDetail } from "@/lib/fetch/dto/cloud-resource";
 import { AzureCredentialsDto } from "@/lib/fetch/dto/cloud-credentials";
+import { AzureBillingConfigType } from "./validTypes";
 import { HelpButton } from "../helpButton";
 
 interface DataForWizard {
@@ -17,6 +18,7 @@ interface DataForWizard {
     ingestionPeriod: number;
     servicesSelected: string[];
     resources: ResourceDetail[];
+    billingConfig: AzureBillingConfigType | null;
 }
 
 //copied from previous pr
@@ -29,6 +31,7 @@ export default function WizardSetupAzure() {
         ingestionPeriod: 60,
         servicesSelected: [],
         resources: [],
+        billingConfig: null,
     });
 
     const handleStepOneNext = (data: {
@@ -55,11 +58,13 @@ export default function WizardSetupAzure() {
     const handleStepTwoNext = (data: {
         servicesSelected: string[];
         resources: ResourceDetail[];
+        billingConfig: AzureBillingConfigType | null;
     }) => {
         setWizardData((previous) => ({
             ...previous,
             servicesSelected: data.servicesSelected,
             resources: data.resources,
+            billingConfig: data.billingConfig,
         }));
 
         setStep(3);
