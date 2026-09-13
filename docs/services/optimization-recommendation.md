@@ -192,6 +192,13 @@ Terminate Cloud Run services with no requests and very low CPU.
 | Request Count | 4d | MAXIMUM | < 1 |
 | Container CPU Utilizations | 4d | P95 | < 5 |
 
+**`CLOUDRUN-TERMINATE-NO-REQUESTS`**  
+Terminate Cloud Run services with no requests.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Request Count | 4d | MAXIMUM | < 1 |
+
 ### DOWNSIZE
 
 **`COMPUTE-DOWNSIZE`**

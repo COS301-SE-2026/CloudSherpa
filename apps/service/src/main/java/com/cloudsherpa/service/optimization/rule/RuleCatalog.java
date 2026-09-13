@@ -36,7 +36,8 @@ public class RuleCatalog {
         computeDownsizeStorageTierRule(),
         rdsDownsizeRule(),
         cloudRunSuspendIdleRule(),
-        cloudRunTerminateIdleRule());
+        cloudRunTerminateIdleRule(),
+        cloudRunTerminateNoRequestsRule());
   }
 
   // ! ---------------------------------------- TERMINATE ----------------------------------------
@@ -176,6 +177,24 @@ public class RuleCatalog {
         List.of(ProviderEnum.GCP),
         CLOUDRUN_RESOURCE_TYPES,
         List.of(noRequests, lowCpuP95));
+  }
+
+  private OptimizationRule cloudRunTerminateNoRequestsRule() {
+    MetricThresholdCondition noRequests =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.HTTP_REQUESTS,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(1));
+
+    return new OptimizationRule(
+        "CLOUDRUN-TERMINATE-NO-REQUESTS",
+        true,
+        OptimizationActionTypeEnum.TERMINATE,
+        List.of(ProviderEnum.GCP),
+        CLOUDRUN_RESOURCE_TYPES,
+        List.of(noRequests));
   }
 
   // ! ---------------------------------------- TERMINATE ----------------------------------------
