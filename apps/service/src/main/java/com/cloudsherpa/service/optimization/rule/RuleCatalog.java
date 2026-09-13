@@ -38,7 +38,8 @@ public class RuleCatalog {
         cloudRunSuspendIdleRule(),
         cloudRunTerminateIdleRule(),
         cloudRunTerminateNoRequestsRule(),
-        cloudRunTerminateLowCpuMemoryRule());
+        cloudRunTerminateLowCpuMemoryRule(),
+        cloudRunTerminateLowInstancesRule());
   }
 
   // ! ---------------------------------------- TERMINATE ----------------------------------------
@@ -222,6 +223,24 @@ public class RuleCatalog {
         List.of(ProviderEnum.GCP),
         CLOUDRUN_RESOURCE_TYPES,
         List.of(lowCpuP95, lowMemP95));
+  }
+
+  private OptimizationRule cloudRunTerminateLowInstancesRule() {
+    MetricThresholdCondition runningInstancesZero =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.RUNNING_INSTANCES,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(1));
+
+    return new OptimizationRule(
+        "CLOUDRUN-TERMINATE-LOW-INSTANCES",
+        true,
+        OptimizationActionTypeEnum.TERMINATE,
+        List.of(ProviderEnum.GCP),
+        CLOUDRUN_RESOURCE_TYPES,
+        List.of(runningInstancesZero));
   }
 
   // ! ---------------------------------------- TERMINATE ----------------------------------------

@@ -207,6 +207,13 @@ Terminate Cloud Run services with sustained low CPU and low memory.
 | Container CPU Utilizations | 4d | P95 | < 5 |
 | Memory Utilization | 4d | P95 | < 10 |
 
+**`CLOUDRUN-TERMINATE-LOW-INSTANCES`**  
+Terminate Cloud Run services with no running instances.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Running Instances | 4d | MAXIMUM | < 1 |
+
 ### DOWNSIZE
 
 **`COMPUTE-DOWNSIZE`**
