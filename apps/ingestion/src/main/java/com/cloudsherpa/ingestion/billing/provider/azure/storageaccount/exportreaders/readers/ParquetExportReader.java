@@ -2,6 +2,7 @@ package com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.exportre
 
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
+import com.cloudsherpa.ingestion.billing.deserialization.parquet.ParquetReaderService;
 import com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.exportreaders.exeptions.ExportReaderException;
 import com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.model.RawBillingRow;
 import java.io.IOException;
@@ -9,6 +10,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import org.apache.avro.generic.GenericRecord;
+import org.apache.parquet.hadoop.ParquetReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,12 +20,20 @@ public class ParquetExportReader implements ExportReader<RawBillingRow> {
   private final Logger logger = LoggerFactory.getLogger(ParquetExportReader.class);
 
   private static final Path TEMP_DIRECTORY = Paths.get("/tmp/sherpa/azure");
-  private String downlaodedBlobFileName;
+  private Path blobFilePath;
+  private ParquetReader<GenericRecord> reader;
 
-  public ParquetExportReader(BlobContainerClient containerClient, String blobName) {
+  public ParquetExportReader(
+      BlobContainerClient containerClient, String blobName, ParquetReaderService readerService) {
     directoryExistsValidation();
-    this.downlaodedBlobFileName = parseBlobFilename(blobName);
+    this.blobFilePath = parseBlobFilename(blobName);
     downloadBlob(containerClient, blobName);
+    try {
+      reader = readerService.openParquetReader(blobFilePath);
+    } catch (IOException e) {
+      throw new ExportReaderException(
+          "Failed to open parquet file at path " + blobFilePath.toString(), e);
+    }
   }
 
   @Override
@@ -32,7 +43,7 @@ public class ParquetExportReader implements ExportReader<RawBillingRow> {
 
   @Override
   public void close() throws IOException {
-    // Close parquet reader
+    reader.close();
   }
 
   private void directoryExistsValidation() {
@@ -47,11 +58,11 @@ public class ParquetExportReader implements ExportReader<RawBillingRow> {
 
   private void downloadBlob(BlobContainerClient containerClient, String blobName) {
     BlobClient blobClient = containerClient.getBlobClient(blobName);
-    blobClient.downloadToFile(TEMP_DIRECTORY.toString() + downlaodedBlobFileName);
+    blobClient.downloadToFile(blobFilePath.toString());
   }
 
-  private String parseBlobFilename(String blobName) {
+  private Path parseBlobFilename(String blobName) {
     String[] splitBlobName = blobName.split("/");
-    return splitBlobName[splitBlobName.length - 1];
+    return TEMP_DIRECTORY.resolve(splitBlobName[splitBlobName.length - 1]);
   }
 }
