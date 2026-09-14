@@ -87,6 +87,42 @@ export default function RecommendationReasoning({
         }
         case "COMPUTE-DOWNSIZE-MEMORY": {
             const memory = extractMetricDetails(evidence, "Memory");
+            return (
+                <span>
+                    Consider <strong className="text-warning">downsizing</strong> this compute
+                    instance. Over the last <strong>{memory?.days || "4"} days</strong>, 95% of the
+                    time your <strong>Memory utilization</strong> stayed below{" "}
+                    <strong>{memory?.formattedValue}</strong>, suggesting excess memory allocation.
+                </span>
+            );
+        }
+        case "COMPUTE-DOWNSIZE-STORAGE-TIER": {
+            const disk = extractMetricDetails(evidence, "disk space");
+            return (
+                <span>
+                    Consider <strong className="text-warning">downsizing</strong> this storage
+                    volume. Over the last <strong>{disk?.days || "4"} days</strong>, 95% of the time
+                    your <strong>Disk Space Used</strong> stayed below{" "}
+                    <strong>{disk?.formattedValue}</strong>.
+                </span>
+            );
+        }
+        case "RDS-DOWNSIZE-CPU-DB": {
+            const cpu = extractMetricDetails(evidence, "CPU");
+            const conn = extractMetricDetails(evidence, "connections");
+            const days = cpu?.days || conn?.days || "4";
+
+            return (
+                <span>
+                    Consider <strong className="text-warning">downsizing</strong> this database.
+                    Over the last {days} days, 95% of the time <strong>CPU utilization</strong> was
+                    below <strong>{cpu?.formattedValue}</strong> with a maximum of{" "}
+                    <strong>{conn?.formattedValue} Database Connections</strong>.
+                </span>
+            );
+        }
+        case "COMPUTE-DOWNSIZE-MEMORY": {
+            const memory = extractMetricDetails(evidence, "Memory");
             if (memory) {
                 return (
                     <span>
