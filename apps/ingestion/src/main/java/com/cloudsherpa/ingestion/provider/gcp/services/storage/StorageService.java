@@ -6,6 +6,5 @@ import com.google.cloud.asset.v1.ResourceSearchResult;
 
 public interface StorageService {
 
-  ResourceDetail getResourceDetail(
-      ResourceSearchResult resource, CloudCredentials credentials);
+  ResourceDetail getResourceDetail(ResourceSearchResult resource, CloudCredentials credentials);
 }

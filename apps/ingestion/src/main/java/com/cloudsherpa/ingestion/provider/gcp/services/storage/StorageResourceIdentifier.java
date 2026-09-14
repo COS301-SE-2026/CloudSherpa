@@ -4,22 +4,20 @@ public record StorageResourceIdentifier(String bucketName) {
 
   public static StorageResourceIdentifier fromAssetName(String assetName) {
 
-    String[] parts = assetName.split("/");
+    String prefix = "//storage.googleapis.com/";
 
-    String bucketName = valueAfter(parts, "buckets");
-
-    return new StorageResourceIdentifier(bucketName);
-  }
-
-  private static String valueAfter(String[] parts, String key) {
-
-    for (int i = 0; i < parts.length - 1; i++) {
-      if (parts[i].equals(key)) {
-        return parts[i + 1];
-      }
+    if (!assetName.startsWith(prefix)) {
+      throw new IllegalArgumentException(
+          "Unable to parse GCP Storage asset name: " + assetName);
     }
 
-    throw new IllegalArgumentException(
-        "Unable to find " + key + " in GCP asset name");
+    String bucketName = assetName.substring(prefix.length());
+
+    if (bucketName.isBlank()) {
+      throw new IllegalArgumentException(
+          "GCP Storage asset name does not contain a bucket name: " + assetName);
+    }
+
+    return new StorageResourceIdentifier(bucketName);
   }
 }

@@ -15,8 +15,7 @@ public class GcpStorageScanner implements GcpResourceScanner {
   private final StoragePermissionsService permissionsService;
 
   public GcpStorageScanner(
-      GcpStorageService storageService,
-      StoragePermissionsService permissionsService) {
+      GcpStorageService storageService, StoragePermissionsService permissionsService) {
     this.storageService = storageService;
     this.permissionsService = permissionsService;
   }
@@ -42,9 +41,7 @@ public class GcpStorageScanner implements GcpResourceScanner {
   }
 
   @Override
-  public ResourceDetail scan(
-      ResourceSearchResult resource,
-      CloudCredentials credentials) {
+  public ResourceDetail scan(ResourceSearchResult resource, CloudCredentials credentials) {
 
     return storageService.getResourceDetail(resource, credentials);
   }
