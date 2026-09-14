@@ -18,21 +18,6 @@ import { WidgetWrapper } from "@/features/dashboard/components/widgetGrid/widget
 const MIN_WIDGET_W = 3;
 const MIN_WIDGET_H = 3;
 
-function findScrollable(el: HTMLElement | null): HTMLElement | null {
-    let node = el?.parentElement ?? null;
-    while (node) {
-        const style = getComputedStyle(node);
-        if (
-            (style.overflowY === "auto" || style.overflowY === "scroll") &&
-            node.scrollHeight > node.clientHeight
-        ) {
-            return node;
-        }
-        node = node.parentElement;
-    }
-    return null;
-}
-
 const repairLayout = (fullLayout: LayoutItem[]): LayoutItem[] =>
     fullLayout.map((l) => {
         return {

@@ -59,27 +59,26 @@ export default function Toolbar({
                         onCreate={onCreateDashboard}
                         onDelete={onDeleteDashboard}
                     />
-
-                    {hasActiveDashboard && (
-                        <>
-                            <AddWidget
-                                handleAddWidget={handleAddWidget}
-                                handleAddKpi={handleAddKpi}
-                            />
-                            <div className="hidden sm:block">
-                                <EditButton
-                                    isEditMode={isEditMode}
-                                    handleStartEditing={handleStartEditing}
-                                    handleSaveEdit={handleSaveEdit}
-                                    handleCancelEdit={handleCancelEdit}
-                                />
-                            </div>
-                        </>
-                    )}
                 </div>
 
                 {hasActiveDashboard && (
                     <div className="flex flex-row items-center gap-2">
+                        {hasActiveDashboard && (
+                            <>
+                                <div className="hidden sm:block">
+                                    <EditButton
+                                        isEditMode={isEditMode}
+                                        handleStartEditing={handleStartEditing}
+                                        handleSaveEdit={handleSaveEdit}
+                                        handleCancelEdit={handleCancelEdit}
+                                    />
+                                </div>
+                                <AddWidget
+                                    handleAddWidget={handleAddWidget}
+                                    handleAddKpi={handleAddKpi}
+                                />
+                            </>
+                        )}
                         <TimePeriodSelector date={dateRange} onDateChange={onDateRangeChange} />
                         <HelpMenu />
                     </div>

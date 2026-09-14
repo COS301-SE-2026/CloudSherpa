@@ -1,11 +1,15 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useState, useEffect, useRef } from "react";
+import { useCallback, useState, useEffect } from "react";
 import Toolbar from "@/features/dashboard/components/toolbar/toolbar";
 import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
-import { useMetricStore } from "@/features/dashboard/stores/metric-store";
-import { KpiWidgetConfig, LayoutItem, WidgetConfig } from "@/features/dashboard/types/widgets";
+import {
+    KpiWidgetConfig,
+    LayoutItem,
+    WidgetConfig,
+    DashboardConfig,
+} from "@/features/dashboard/types/widgets";
 import { createDashboard, updateDashboardLayout, createWidget } from "@/lib/fetch/api-dashboard";
 import { gridApiRef } from "@/features/dashboard/components/widgetGrid/grid";
 
@@ -32,6 +36,24 @@ function generateSharedId() {
     return { sharedId };
 }
 
+function getMaxY(
+    activeDashboard: DashboardConfig | undefined,
+    currentLayouts: Record<string, LayoutItem>
+): number {
+    let maxY = 0;
+
+    if (activeDashboard) {
+        activeDashboard.layoutItemIds.forEach((id) => {
+            const l = currentLayouts[id];
+            if (l && l.y !== undefined && l.h !== undefined) {
+                maxY = Math.max(maxY, l.y + l.h);
+            }
+        });
+    }
+
+    return maxY;
+}
+
 function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode }>) {
     const router = useRouter();
     const { isEditMode, setIsEditMode } = useToolbar();
@@ -53,8 +75,6 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
     const fromMs = useDashboardStore((state) => state.fromMs);
     const toMs = useDashboardStore((state) => state.toMs);
     const setWindow = useDashboardStore((state) => state.setWindow);
-
-    const getMetricList = useMetricStore((state) => state.getMetricList);
 
     const dateRange = { from: new Date(fromMs), to: new Date(toMs) };
     const dashboardStubs = Object.values(dashboardsMap).map((d) => ({
@@ -183,16 +203,7 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
 
         const currentLayouts = useDashboardStore.getState().layouts;
         const activeDashboard = useDashboardStore.getState().dashboards[activeDashboardId];
-        let maxY = 0;
-
-        if (activeDashboard) {
-            activeDashboard.layoutItemIds.forEach((id) => {
-                const l = currentLayouts[id];
-                if (l && l.y !== undefined && l.h !== undefined) {
-                    maxY = Math.max(maxY, l.y + l.h);
-                }
-            });
-        }
+        const maxY = getMaxY(activeDashboard, currentLayouts);
 
         const newLayout: LayoutItem = {
             id: sharedId,
@@ -238,16 +249,7 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
 
         const currentLayouts = useDashboardStore.getState().layouts;
         const activeDashboard = useDashboardStore.getState().dashboards[activeDashboardId];
-        let maxY = 0;
-
-        if (activeDashboard) {
-            activeDashboard.layoutItemIds.forEach((id) => {
-                const l = currentLayouts[id];
-                if (l && l.y !== undefined && l.h !== undefined) {
-                    maxY = Math.max(maxY, l.y + l.h);
-                }
-            });
-        }
+        const maxY = getMaxY(activeDashboard, currentLayouts); // CHANGED
 
         const newLayout: LayoutItem = {
             id: sharedId,
