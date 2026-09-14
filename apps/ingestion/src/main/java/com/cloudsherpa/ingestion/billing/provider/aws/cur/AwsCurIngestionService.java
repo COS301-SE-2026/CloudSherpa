@@ -1,13 +1,13 @@
 package com.cloudsherpa.ingestion.billing.provider.aws.cur;
 
-import com.cloudsherpa.ingestion.billing.BillingIngestionServiceInterface;
+import com.cloudsherpa.ingestion.billing.BillingIngestionService;
 import com.cloudsherpa.ingestion.billing.provider.aws.cur.pipeline.AwsCurContext;
 import com.cloudsherpa.ingestion.billing.provider.aws.cur.pipeline.AwsCurIngestionPipelineStep;
 import java.util.List;
 import org.springframework.stereotype.Service;
 
-@Service
-public class AwsCurIngestionService implements BillingIngestionServiceInterface {
+@Service("awsBillingIngestionService")
+public class AwsCurIngestionService implements BillingIngestionService {
   private final List<AwsCurIngestionPipelineStep> steps;
 
   public AwsCurIngestionService(List<AwsCurIngestionPipelineStep> steps) {

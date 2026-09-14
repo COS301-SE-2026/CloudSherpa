@@ -1,6 +1,6 @@
 package com.cloudsherpa.ingestion.billing.provider.gcp.bigquery;
 
-import com.cloudsherpa.ingestion.billing.BillingIngestionServiceInterface;
+import com.cloudsherpa.ingestion.billing.BillingIngestionService;
 import com.cloudsherpa.ingestion.billing.provider.gcp.bigquery.exceptions.DatasetNotFoundException;
 import com.cloudsherpa.ingestion.billing.provider.gcp.bigquery.exceptions.TableNotFoundException;
 import com.cloudsherpa.ingestion.billing.provider.gcp.bigquery.pipeline.GcpBillingContext;
@@ -11,8 +11,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-@Service
-public class GcpBillingIngestionService implements BillingIngestionServiceInterface {
+@Service("gcpBillingIngestionService")
+public class GcpBillingIngestionService implements BillingIngestionService {
 
   private final Logger logger = LoggerFactory.getLogger(GcpBillingIngestionService.class);
   private final List<GcpBillingIngestionStep> gcpBillingIngestionSteps;
