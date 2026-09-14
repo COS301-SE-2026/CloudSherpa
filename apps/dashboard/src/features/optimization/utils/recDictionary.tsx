@@ -188,6 +188,47 @@ export default function RecommendationReasoning({
                 </span>
             );
         }
+        case "RDS-TERMINATE-NO-CONNECTIONS": {
+            const conn = extractMetricDetails(evidence, "connections");
+            return (
+                <span>
+                    This database has <strong>no active connections</strong>. Over the last{" "}
+                    {conn?.days || "4"} days, maximum <strong>Database Connections</strong> were{" "}
+                    <strong>{conn?.formattedValue}</strong>.{" "}
+                    <strong className="text-destructive">Terminating</strong> it is recommended.
+                </span>
+            );
+        }
+        case "RDS-TERMINATE-NO-IO": {
+            const read = extractMetricDetails(evidence, "read");
+            const write = extractMetricDetails(evidence, "write");
+            const days = read?.days || write?.days || "4";
+
+            return (
+                <span>
+                    This database shows <strong>no I/O operations</strong>. Over the last {days}{" "}
+                    days, maximum <strong>Read IOPS</strong> was{" "}
+                    <strong>{read?.formattedValue}</strong> and <strong>Write IOPS</strong> was{" "}
+                    <strong>{write?.formattedValue}</strong>.{" "}
+                    <strong className="text-destructive">Terminating</strong> it is recommended.
+                </span>
+            );
+        }
+        case "RDS-TERMINATE-NO-NETWORK": {
+            const netIn = extractMetricDetails(evidence, "network in");
+            const netOut = extractMetricDetails(evidence, "network out");
+            const days = netIn?.days || netOut?.days || "4";
+
+            return (
+                <span>
+                    This database shows <strong>no network activity</strong>. Over the last {days}{" "}
+                    days, maximum <strong>Network In</strong> was{" "}
+                    <strong>{netIn?.formattedValue}</strong> and <strong>Network Out</strong> was{" "}
+                    <strong>{netOut?.formattedValue}</strong>.{" "}
+                    <strong className="text-destructive">Terminating</strong> it is recommended.
+                </span>
+            );
+        }
         case "COMPUTE-SUSPEND-IDLE": {
             const cpu = extractMetricDetails(evidence, "CPU");
             const network = extractMetricDetails(evidence, "Network");
