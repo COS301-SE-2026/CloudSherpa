@@ -292,6 +292,67 @@ export default function RecommendationReasoning({
                 </span>
             );
         }
+        case "COMPUTE-SUSPEND-LOW-CPU-MEMORY": {
+            const cpu = extractMetricDetails(evidence, "CPU");
+            const memory = extractMetricDetails(evidence, "Memory");
+            const days = cpu?.days || memory?.days || "4";
+
+            return (
+                <span>
+                    This resource is consistently underutilized. Over the last {days} days, 95% of
+                    the time <strong>CPU</strong> was below <strong>{cpu?.formattedValue}</strong>{" "}
+                    and <strong>Memory</strong> was below <strong>{memory?.formattedValue}</strong>.{" "}
+                    <strong className="text-yellow-600">Suspending</strong> it during off-hours is
+                    recommended.
+                </span>
+            );
+        }
+        case "COMPUTE-SUSPEND-LOW-NETWORK": {
+            const netIn = extractMetricDetails(evidence, "network in");
+            const netOut = extractMetricDetails(evidence, "network out");
+            const days = netIn?.days || netOut?.days || "4";
+
+            return (
+                <span>
+                    This resource shows minimal network traffic. Over the last {days} days, maximum{" "}
+                    <strong>Network In</strong> was <strong>{netIn?.formattedValue}</strong> and{" "}
+                    <strong>Network Out</strong> was <strong>{netOut?.formattedValue}</strong>.{" "}
+                    <strong className="text-yellow-600">Suspending</strong> it during off-hours is
+                    recommended.
+                </span>
+            );
+        }
+        case "COMPUTE-SUSPEND-LOW-DISK-BYTES": {
+            const read = extractMetricDetails(evidence, "read");
+            const write = extractMetricDetails(evidence, "write");
+            const days = read?.days || write?.days || "4";
+
+            return (
+                <span>
+                    This resource shows minimal disk activity. Over the last {days} days, maximum{" "}
+                    <strong>Disk Read</strong> was <strong>{read?.formattedValue}</strong> and{" "}
+                    <strong>Disk Write</strong> was <strong>{write?.formattedValue}</strong>.{" "}
+                    <strong className="text-yellow-600">Suspending</strong> it during off-hours is
+                    recommended.
+                </span>
+            );
+        }
+        case "CLOUDRUN-SUSPEND-IDLE": {
+            const req = extractMetricDetails(evidence, "requests");
+            const cpu = extractMetricDetails(evidence, "CPU");
+            const days = req?.days || cpu?.days || "4";
+
+            return (
+                <span>
+                    This Cloud Run service is inactive. Over the last {days} days, maximum{" "}
+                    <strong>HTTP Requests</strong> were <strong>{req?.formattedValue}</strong> and
+                    95% of the time <strong>Container CPU</strong> was below{" "}
+                    <strong>{cpu?.formattedValue}</strong>.{" "}
+                    <strong className="text-yellow-600">Suspending</strong> the service is
+                    recommended.
+                </span>
+            );
+        }
     }
 
     // fallback future rules
