@@ -70,7 +70,7 @@ export default function RecommendationReasoning({
             if (cpu) {
                 return (
                     <span>
-                        Consider <strong className="text-warning">downsizing</strong> this compute
+                        Consider <strong className="text-chart-3">downsizing</strong> this compute
                         instance. Over the last <strong>{cpu.days} days</strong> , 95% of the time
                         your <strong>CPU utilization</strong> stayed below{" "}
                         <strong>{cpu.formattedValue}</strong>, indicating the resource is
@@ -84,7 +84,7 @@ export default function RecommendationReasoning({
             const memory = extractMetricDetails(evidence, "Memory");
             return (
                 <span>
-                    Consider <strong className="text-warning">downsizing</strong> this compute
+                    Consider <strong className="text-chart-3">downsizing</strong> this compute
                     instance. Over the last <strong>{memory?.days || "4"} days</strong>, 95% of the
                     time your <strong>Memory utilization</strong> stayed below{" "}
                     <strong>{memory?.formattedValue}</strong>, suggesting excess memory allocation.
@@ -95,7 +95,7 @@ export default function RecommendationReasoning({
             const disk = extractMetricDetails(evidence, "disk space");
             return (
                 <span>
-                    Consider <strong className="text-warning">downsizing</strong> this storage
+                    Consider <strong className="text-chart-3">downsizing</strong> this storage
                     volume. Over the last <strong>{disk?.days || "4"} days</strong>, 95% of the time
                     your <strong>Disk Space Used</strong> stayed below{" "}
                     <strong>{disk?.formattedValue}</strong>.
@@ -109,7 +109,7 @@ export default function RecommendationReasoning({
 
             return (
                 <span>
-                    Consider <strong className="text-warning">downsizing</strong> this database.
+                    Consider <strong className="text-chart-3">downsizing</strong> this database.
                     Over the last {days} days, 95% of the time <strong>CPU utilization</strong> was
                     below <strong>{cpu?.formattedValue}</strong> with a maximum of{" "}
                     <strong>{conn?.formattedValue} Database Connections</strong>.
@@ -120,7 +120,7 @@ export default function RecommendationReasoning({
             const cpu = extractMetricDetails(evidence, "cpu");
             return (
                 <span>
-                    Consider <strong className="text-warning">downsizing</strong> this database.
+                    Consider <strong className="text-chart-3">downsizing</strong> this database.
                     Over the last {cpu?.days || "4"} days, 95% of the time{" "}
                     <strong>CPU utilization</strong> was below{" "}
                     <strong>{cpu?.formattedValue}</strong>.
@@ -132,7 +132,7 @@ export default function RecommendationReasoning({
             if (memory) {
                 return (
                     <span>
-                        Consider <strong className="text-warning">downsizing</strong> this compute
+                        Consider <strong className="text-chart-3">downsizing</strong> this compute
                         instance. Over the last {memory.days} days, 95% of the time your{" "}
                         <strong>Memory utilization</strong> stayed below{" "}
                         <strong>{memory.formattedValue}</strong>, suggesting excess memory
@@ -146,7 +146,7 @@ export default function RecommendationReasoning({
             const disk = extractMetricDetails(evidence, "disk space");
             return (
                 <span>
-                    Consider <strong className="text-warning">downsizing</strong> this database
+                    Consider <strong className="text-chart-3">downsizing</strong> this database
                     storage. Over the last {disk?.days || "30"} days, 95% of the time{" "}
                     <strong>Disk Space Used</strong> stayed below{" "}
                     <strong>{disk?.formattedValue}</strong>.
@@ -453,7 +453,7 @@ export default function RecommendationReasoning({
             const cpu = extractMetricDetails(evidence, "CPU");
             return (
                 <span>
-                    Consider <strong className="text-primary">upscaling</strong> this compute
+                    Consider <strong className="text-warning">upscaling</strong> this compute
                     instance. Over the last <strong>{cpu?.days || "4"} days</strong>, 95% of the
                     time your <strong>CPU utilization</strong> was above{" "}
                     <strong>{cpu?.formattedValue}</strong>, indicating the resource is
@@ -465,7 +465,7 @@ export default function RecommendationReasoning({
             const cpu = extractMetricDetails(evidence, "cpu");
             return (
                 <span>
-                    Consider <strong className="text-primary">upscaling</strong> this database
+                    Consider <strong className="text-warning">upscaling</strong> this database
                     {`&apos`}s compute tier. Over the last <strong>{cpu?.days || "4"} days</strong>,
                     95% of the time your <strong>CPU utilization</strong> was above{" "}
                     <strong>{cpu?.formattedValue}</strong>, indicating a potential performance
@@ -477,7 +477,7 @@ export default function RecommendationReasoning({
             const mem = extractMetricDetails(evidence, "memory");
             return (
                 <span>
-                    Consider <strong className="text-primary">upscaling</strong> this database
+                    Consider <strong className="text-warning">upscaling</strong> this database
                     {`&apos`}s memory tier. Over the last <strong>{mem?.days || "4"} days</strong>,
                     95% of the time your <strong>Memory utilization</strong> was above{" "}
                     <strong>{mem?.formattedValue}</strong>, increasing the risk of Out-Of-Memory
@@ -518,21 +518,21 @@ export default function RecommendationReasoning({
         case "SUSPEND":
             return (
                 <span>
-                    We recommend <strong className="text-yellow-600">suspending</strong> this
+                    We recommend <strong className="text-yellow-500">suspending</strong> this
                     resource because ${joinedEvidence}.
                 </span>
             );
         case "DOWNSIZE":
             return (
                 <span>
-                    `We recommend <strong className="text-warning">downsizing</strong> this resource
+                    `We recommend <strong className="text-chart-3">downsizing</strong> this resource
                     because ${joinedEvidence}.
                 </span>
             );
         case "UPSCALE":
             return (
                 <span>
-                    We recommend <strong className="text-primary">upscaling</strong> this resource
+                    We recommend <strong className="text-warning">upscaling</strong> this resource
                     because {joinedEvidence}.
                 </span>
             );

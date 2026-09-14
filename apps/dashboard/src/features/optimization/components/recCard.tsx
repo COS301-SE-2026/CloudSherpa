@@ -74,12 +74,12 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
         switch (recommendation.actionType) {
             case "TERMINATE":
                 return "text-destructive";
-            case "MODERNIZE":
-                return "text-primary";
             case "DOWNSIZE":
-                return "text-warning";
+                return "text-chart-3";
             case "SUSPEND":
-                return "text-yellow-600";
+                return "text-yellow-500";
+            case "UPSCALE":
+                return "text-warning";
             default:
                 return "";
         }
