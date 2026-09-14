@@ -10,6 +10,7 @@ import {
 } from "react";
 import "gridstack/dist/gridstack.min.css";
 import { GridStack, GridItemHTMLElement, GridStackWidget, GridStackNode } from "gridstack";
+import { useDashboardStore } from "../../stores/dashboard-store";
 
 import { LayoutItem } from "@/features/dashboard/types/widgets";
 import { WidgetWrapper } from "@/features/dashboard/components/widgetGrid/widgets/widgetWrapper";
@@ -66,8 +67,8 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
     const isInternalUpdate = useRef(false);
     const isEditModeRef = useRef(isEditMode);
     const hasSyncedOnce = useRef(false);
-    const pendingScroll = useRef(false);
-    const lastScrollHeight = useRef(0);
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const setIsCompacting = useDashboardStore((state) => state.actions.setIsCompacting);
 
     useImperativeHandle(ref, () => ({
         compactAndGetLayout: () => {
@@ -144,32 +145,6 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
     }, []);
 
     useEffect(() => {
-        const growEl = gridRef.current;
-        if (!growEl) return;
-
-        const container = findScrollable(growEl);
-        if (container) {
-            lastScrollHeight.current = container.scrollHeight;
-        }
-
-        const ro = new ResizeObserver(() => {
-            if (!pendingScroll.current) return;
-            const scrollEl = findScrollable(growEl);
-            if (!scrollEl) return;
-
-            const newHeight = scrollEl.scrollHeight;
-            if (newHeight > lastScrollHeight.current) {
-                scrollEl.scrollTo({ top: newHeight, behavior: "smooth" });
-                lastScrollHeight.current = newHeight;
-                pendingScroll.current = false;
-            }
-        });
-
-        ro.observe(growEl);
-        return () => ro.disconnect();
-    }, []);
-
-    useEffect(() => {
         if (!gridStackInstance.current) return;
 
         if (isInternalUpdate.current) {
@@ -242,21 +217,30 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
         gridStackInstance.current.compact();
         gridStackInstance.current.batchUpdate(false);
 
-        if (hasSyncedOnce.current && addedNewWidget) {
-            pendingScroll.current = true;
+        if (hasSyncedOnce.current && addedNewWidget && !isEditModeRef.current) {
+            setIsCompacting(true);
 
-            const container = findScrollable(gridRef.current);
-            if (container) {
-                const currentHeight = container.scrollHeight;
-                if (currentHeight > lastScrollHeight.current) {
-                    container.scrollTo({ top: currentHeight, behavior: "smooth" });
-                    lastScrollHeight.current = currentHeight;
-                    pendingScroll.current = false;
+            gridStackInstance.current.batchUpdate();
+            gridStackInstance.current.compact();
+            gridStackInstance.current.batchUpdate(false);
+
+            const fullLayout = gridStackInstance.current.save(
+                false,
+                false,
+                (node, w: GridStackWidget) => {
+                    (w as LayoutItem).id = String(node.id || "");
                 }
-            }
+            ) as LayoutItem[];
+
+            isInternalUpdate.current = true;
+            onLayoutChangeRef.current(repairLayout(fullLayout));
+
+            scrollRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+
+            setIsCompacting(false);
         }
         hasSyncedOnce.current = true;
-    }, [layouts]);
+    }, [layouts, setIsCompacting]);
 
     //lock layouts outside edit
     useEffect(() => {
@@ -278,6 +262,7 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
                     <WidgetWrapper key={l.id} layout={l} isEditMode={isEditMode} />
                 ))}
             </div>
+            <div ref={scrollRef} aria-hidden className="h-px w-full" />
         </div>
     );
 });
