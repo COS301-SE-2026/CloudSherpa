@@ -18,13 +18,16 @@ public class GcpGarService implements GarService {
 
     GarResourceIdentifier identifier = GarResourceIdentifier.fromAssetName(resource.getName());
 
-    String repositoryName = String.format(
-        "projects/%s/locations/%s/repositories/%s",
-        identifier.projectId(), identifier.location(), identifier.repositoryName());
+    String repositoryName =
+        String.format(
+            "projects/%s/locations/%s/repositories/%s",
+            identifier.projectId(), identifier.location(), identifier.repositoryName());
 
-    try (ArtifactRegistryClient client = GcpClientFactory.createArtifactRegistryClient(credentials)) {
+    try (ArtifactRegistryClient client =
+        GcpClientFactory.createArtifactRegistryClient(credentials)) {
 
-      Repository repository = client.getRepository(GetRepositoryRequest.newBuilder().setName(repositoryName).build());
+      Repository repository =
+          client.getRepository(GetRepositoryRequest.newBuilder().setName(repositoryName).build());
 
       return new ResourceDetail(
           identifier.repositoryName(),

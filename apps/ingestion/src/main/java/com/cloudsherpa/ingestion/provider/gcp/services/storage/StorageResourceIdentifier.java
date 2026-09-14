@@ -7,8 +7,7 @@ public record StorageResourceIdentifier(String bucketName) {
     String prefix = "//storage.googleapis.com/";
 
     if (!assetName.startsWith(prefix)) {
-      throw new IllegalArgumentException(
-          "Unable to parse GCP Storage asset name: " + assetName);
+      throw new IllegalArgumentException("Unable to parse GCP Storage asset name: " + assetName);
     }
 
     String bucketName = assetName.substring(prefix.length());
