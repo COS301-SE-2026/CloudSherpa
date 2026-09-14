@@ -215,6 +215,36 @@ Terminate RDS instances with negligible network traffic.
 | Network In | 4d | MAXIMUM | < 1000 |
 | Network Out | 4d | MAXIMUM | < 1000 |
 
+**`CLOUDRUN-TERMINATE-IDLE`**  
+Terminate Cloud Run services with no requests and very low CPU.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Request Count | 4d | MAXIMUM | < 1 |
+| Container CPU Utilizations | 4d | P95 | < 5 |
+
+**`CLOUDRUN-TERMINATE-NO-REQUESTS`**  
+Terminate Cloud Run services with no requests.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Request Count | 4d | MAXIMUM | < 1 |
+
+**`CLOUDRUN-TERMINATE-LOW-CPU-MEM`**  
+Terminate Cloud Run services with sustained low CPU and low memory.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Container CPU Utilizations | 4d | P95 | < 5 |
+| Memory Utilization | 4d | P95 | < 10 |
+
+**`CLOUDRUN-TERMINATE-LOW-INSTANCES`**  
+Terminate Cloud Run services with no running instances.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Running Instances | 4d | MAXIMUM | < 1 |
+
 ### DOWNSIZE
 
 **`COMPUTE-DOWNSIZE`**
