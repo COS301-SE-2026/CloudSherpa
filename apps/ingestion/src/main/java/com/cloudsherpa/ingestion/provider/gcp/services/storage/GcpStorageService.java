@@ -18,9 +18,7 @@ public class GcpStorageService implements StorageService {
     StorageResourceIdentifier identifier =
         StorageResourceIdentifier.fromAssetName(resource.getName());
 
-    try {
-      Storage storage = GcpClientFactory.createStorageClient(credentials);
-
+    try (Storage storage = GcpClientFactory.createStorageClient(credentials)) {
       Bucket bucket = storage.get(identifier.bucketName());
 
       if (bucket == null) {
