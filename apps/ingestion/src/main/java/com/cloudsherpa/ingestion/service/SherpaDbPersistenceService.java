@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import org.springframework.stereotype.Service;
@@ -99,15 +100,30 @@ public class SherpaDbPersistenceService {
   @Transactional
   public void recordCost(NormalizedCosts normalizedCosts, UUID userId) {
     setTenantSchema(userId);
-    String currency =
-        normalizedCosts.getCurrency() != null
-            ? normalizedCosts.getCurrency().toString()
-            : CurrencyEnum.USD.toString();
+    String currency = getNormalizedCostCurrency(normalizedCosts);
     normalizedCostsRepository.upsert(
         normalizedCosts,
         normalizedCosts.getProvider().toString(),
         normalizedCosts.getChargeType().toString(),
         currency);
+  }
+
+  @Transactional
+  public void recordCosts(List<NormalizedCosts> costs, UUID userId) {
+    setTenantSchema(userId);
+
+    for (NormalizedCosts cost : costs) {
+      String currency = getNormalizedCostCurrency(cost);
+      normalizedCostsRepository.upsert(
+          cost, cost.getProvider().toString(), cost.getChargeType().toString(), currency);
+    }
+  }
+
+  // This is probably debt, should move to normalizers and not persistence service
+  private String getNormalizedCostCurrency(NormalizedCosts normalizedCosts) {
+    return normalizedCosts.getCurrency() != null
+        ? normalizedCosts.getCurrency().toString()
+        : CurrencyEnum.USD.toString();
   }
 
   private String normalizeTenantSchema(UUID userId) {
