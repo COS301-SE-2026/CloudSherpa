@@ -36,6 +36,8 @@ public class RuleCatalog {
         computeDownsizeStorageTierRule(),
         rdsDownsizeRule(),
         cloudRunSuspendIdleRule(),
+        rdsSuspendLowIoRule(),
+        rdsSuspendIdleRule(),
         cloudRunTerminateIdleRule(),
         cloudRunTerminateNoRequestsRule(),
         cloudRunTerminateLowCpuMemoryRule(),
@@ -557,6 +559,58 @@ public class RuleCatalog {
         List.of(ProviderEnum.GCP),
         CLOUDRUN_RESOURCE_TYPES,
         List.of(lowRequests, lowContainerCpuP95));
+  }
+
+  private OptimizationRule rdsSuspendIdleRule() {
+    MetricThresholdCondition lowCpuP95 =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.CPU_UTILIZATION,
+            4,
+            StatField.P95,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(15));
+
+    MetricThresholdCondition lowDbConnections =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.DATABASE_CONNECTIONS,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(2));
+
+    return new OptimizationRule(
+        "RDS-SUSPEND-IDLE",
+        true,
+        OptimizationActionTypeEnum.SUSPEND,
+        List.of(ProviderEnum.AWS),
+        RDS_RESOURCE_TYPES,
+        List.of(lowCpuP95, lowDbConnections));
+  }
+
+  private OptimizationRule rdsSuspendLowIoRule() {
+    MetricThresholdCondition readIopsLow =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.READ_IOPS,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(20));
+
+    MetricThresholdCondition writeIopsLow =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.WRITE_IOPS,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(20));
+
+    return new OptimizationRule(
+        "RDS-SUSPEND-LOW-IO",
+        true,
+        OptimizationActionTypeEnum.SUSPEND,
+        List.of(ProviderEnum.AWS),
+        RDS_RESOURCE_TYPES,
+        List.of(readIopsLow, writeIopsLow));
   }
 
   // ? ---------------------------------------- SUSPEND ----------------------------------------

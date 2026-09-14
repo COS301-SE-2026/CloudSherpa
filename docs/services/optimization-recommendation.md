@@ -318,6 +318,22 @@ Recommends suspending Cloud Run services with negligible traffic and low CPU.
 | Request Count | 4d | MAXIMUM | < 10 |
 | Container CPU Utilizations | 4d | P95 | < 10 |
 
+**`RDS-SUSPEND-IDLE`**  
+Suspend RDS instances showing sustained low CPU and very few connections.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| CPU Utilization | 4d | P95 | < 15 |
+| Database Connections | 4d | MAXIMUM | < 2 |
+
+**`RDS-SUSPEND-LOW-IO`**  
+Suspend RDS instances with consistently low I/O throughput.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Read IOPS | 4d | MAXIMUM | < 20 |
+| Write IOPS | 4d | MAXIMUM | < 20 |
+
 ### UPSCALE
 
 **`COMPUTE-UPSCALE-CPU`**
