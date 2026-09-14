@@ -84,7 +84,7 @@ public class AzureConnectionPersistenceService extends ConnectionPersistenceServ
             .ingestionPeriod(request.ingestionPeriod().toString())
             .createdAt(now)
             .lastBillingIngestion(now)
-            .lastUsageIngestion(now)
+            .lastUsageIngestion(now.minusDays(14))
             .nextUsageIngestion(OffsetDateTime.now(ZoneOffset.UTC).plusMinutes(1))
             .nextBillingIngestion(OffsetDateTime.now(ZoneOffset.UTC).plusMinutes(1))
             .build();
