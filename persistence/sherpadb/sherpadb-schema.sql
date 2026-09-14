@@ -284,8 +284,9 @@ DECLARE
     c_gcp_gce_service CONSTANT varchar(255) := 'gce_instance';
     c_gcp_gke_service CONSTANT varchar(255) := 'gke_cluster';
     c_gcp_cloud_function_service CONSTANT varchar(255) := 'cloud_function';
-    c_gcp_cloud_run_service CONSTANT varchar(255) := 'cloud_run_service';
+    c_gcp_cloud_run_service CONSTANT varchar(255) := 'cloud_run_revision';
     c_gcp_gcs_service CONSTANT varchar(255) := 'gcs_bucket';
+    c_gcp_gar_service CONSTANT varchar(255) := 'artifactregistry.googleapis.com/Repository';
 
     -- GCP identifier fields
     c_gcp_instance_id CONSTANT varchar(100) := 'instance_id';
@@ -293,6 +294,7 @@ DECLARE
     c_gcp_function_name CONSTANT varchar(100) := 'function_name';
     c_gcp_service_name CONSTANT varchar(100) := 'service_name';
     c_gcp_bucket_name CONSTANT varchar(100) := 'bucket_name';
+    c_gcp_artifact_id CONSTANT varchar(100) := 'repository_id';
 
     -- GCP metrics
     c_gcp_network_bytes_received CONSTANT varchar(255) := 'Network bytes received';
@@ -377,15 +379,6 @@ BEGIN
  'run.googleapis.com/request_count',
  c_gcp_service_name, c_gcp_count_unit, 'HTTP requests'),
 ('GCP', c_gcp_cloud_run_service,
- 'run.googleapis.com/request_latencies',
- c_gcp_service_name, c_gcp_milliseconds_unit, 'Request latency'),
-('GCP', c_gcp_cloud_run_service,
- 'run.googleapis.com/container/cpu/utilizations',
- c_gcp_service_name, c_gcp_percent_unit, 'CPU utilization'),
-('GCP', c_gcp_cloud_run_service,
- 'run.googleapis.com/container/memory/utilizations',
- c_gcp_service_name, c_gcp_percent_unit, 'Memory utilization'),
-('GCP', c_gcp_cloud_run_service,
  'run.googleapis.com/container/instance_count',
  c_gcp_service_name, c_gcp_count_unit, 'Running instances'),
 
@@ -402,6 +395,12 @@ BEGIN
 ('GCP', c_gcp_gcs_service,
  'storage.googleapis.com/network/sent_bytes_count',
  c_gcp_bucket_name, c_gcp_bytes_unit, 'Bytes downloaded'),
+
+ -- Google Artifact Registry
+('GCP', c_gcp_gar_service,
+ 'artifactregistry.googleapis.com/repository/size',
+ c_gcp_artifact_id, 'GiB', 'Gibibytes stored'),
+
 
  -- Azure Virtual Machines
 (c_azure_provider_enum, c_azure_virtual_machine_service, 'Percentage CPU', c_azure_resource_id, NULL, 'CPU utilization'),
