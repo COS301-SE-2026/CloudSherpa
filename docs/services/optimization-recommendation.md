@@ -280,15 +280,6 @@ Recommend upscaling when P95 memory utilization is high.
 |---|---:|---|---|
 | Memory Utilization | 4d | P95 | > 80 |
 
-**`RDS-UPSCALE-IO-CONN`**  
-Recommend upscaling when I/O and connections are consistently high (sustained throughput/connection pressure).
-
-| Metric | Window | Stat | Condition |
-|---|---:|---|---|
-| Read IOPS | 4d | P95 | > 1000 |
-| Write IOPS | 4d | P95 | > 1000 |
-| Database Connections | 4d | P95 | > 200 |
-
 All rules above apply to listed resource types in `RuleCatalog`.
 
 ## Rule Validation
