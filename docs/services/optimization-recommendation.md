@@ -276,6 +276,28 @@ Recommends downsizing AWS RDS instances showing sustained low CPU and very low c
 | CPU Utilization | 4d | P95 | < 10 |
 | Database Connections | 4d | MAXIMUM | < 5 |
 
+<<<<<<< HEAD
+**`CLOUDRUN-DOWNSIZE-CPU`**  
+Recommends downsizing Cloud Run services with consistently low container CPU.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Container CPU Utilizations | 4d | P95 | < 10 |
+
+**`CLOUDRUN-DOWNSIZE-MEMORY`**  
+Recommends downsizing Cloud Run services with consistently low container memory usage.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Memory Utilization | 4d | P95 | < 15 |
+
+**`CLOUDRUN-DOWNSIZE-REQUESTS`**  
+Recommends downsizing Cloud Run services with persistently low request volume.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Request Count | 4d | MAXIMUM | < 50 |
+=======
 **`RDS-DOWNSIZE-CPU`**  
 Downsize RDS instances with sustained low CPU.
 
@@ -296,6 +318,7 @@ Recommend lowering storage tier or allocation when disk usage is persistently lo
 | Metric | Window | Stat | Condition |
 |---|---:|---|---|
 | Percentage Disk Space Used | 30d | P95 | < 20 |
+>>>>>>> dev
 
 ### SUSPEND
 
@@ -339,6 +362,22 @@ Recommends suspending Cloud Run services with negligible traffic and low CPU.
 | Request Count | 4d | MAXIMUM | < 10 |
 | Container CPU Utilizations | 4d | P95 | < 10 |
 
+<<<<<<< HEAD
+**`CLOUDRUN-SUSPEND-NO-REQUESTS`**  
+Recommends suspending Cloud Run services with effectively no requests.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Request Count | 4d | MAXIMUM | < 1 |
+
+**`CLOUDRUN-SUSPEND-LOW-INSTANCES`**  
+Recommends suspending Cloud Run services that have no running instances and very low CPU.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Running Instances | 4d | MAXIMUM | < 1 |
+| Container CPU Utilizations | 4d | P95 | < 15 |
+=======
 **`RDS-SUSPEND-IDLE`**  
 Suspend RDS instances showing sustained low CPU and very few connections.
 
@@ -354,6 +393,7 @@ Suspend RDS instances with consistently low I/O throughput.
 |---|---:|---|---|
 | Read IOPS | 4d | MAXIMUM | < 20 |
 | Write IOPS | 4d | MAXIMUM | < 20 |
+>>>>>>> dev
 
 ### UPSCALE
 
@@ -364,6 +404,28 @@ Recommends upscaling compute instances whose P95 CPU utilization consistently ex
 |---|---|---|---|
 | CPU Utilization | 4d | P95 | > 85 |
 
+<<<<<<< HEAD
+**`CLOUDRUN-UPSCALE-CPU`**  
+Recommends upscaling Cloud Run services when container CPU is consistently high.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Container CPU Utilizations | 4d | P95 | > 85 |
+
+**`CLOUDRUN-UPSCALE-REQUESTS`**  
+Recommends upscaling Cloud Run services when request volume is consistently high.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Request Count | 4d | P95 | > 500 |
+
+**`CLOUDRUN-UPSCALE-LATENCY`**  
+Recommends upscaling Cloud Run services when request latency is persistently high.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Request Latency | 4d | P95 | > 1000 |
+=======
 **`RDS-UPSCALE-CPU`**  
 Recommend upscaling when P95 CPU is consistently high.
 
@@ -377,6 +439,7 @@ Recommend upscaling when P95 memory utilization is high.
 | Metric | Window | Stat | Condition |
 |---|---:|---|---|
 | Memory Utilization | 4d | P95 | > 80 |
+>>>>>>> dev
 
 All rules above apply to listed resource types in `RuleCatalog`.
 

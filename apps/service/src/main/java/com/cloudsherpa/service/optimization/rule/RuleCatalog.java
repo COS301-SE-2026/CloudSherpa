@@ -36,6 +36,14 @@ public class RuleCatalog {
         computeDownsizeStorageTierRule(),
         rdsDownsizeRule(),
         cloudRunSuspendIdleRule(),
+        cloudRunDownsizeCpuRule(),
+        cloudRunDownsizeMemoryRule(),
+        cloudRunDownsizeRequestsRule(),
+        cloudRunSuspendLowInstancesRule(),
+        cloudRunSuspendNoRequestsRule(),
+        cloudRunUpscaleCpuRule(),
+        cloudRunUpscaleRequestsRule(),
+        cloudRunUpscaleLatencyRule(),
         rdsUpscaleCpuRule(),
         rdsUpscaleMemoryRule(),
         rdsDownsizeCpuRule(),
@@ -433,22 +441,40 @@ public class RuleCatalog {
         List.of(lowCpuP95, lowDbConnections));
   }
 
-  private OptimizationRule rdsDownsizeCpuRule() {
-    MetricThresholdCondition lowCpuP95 =
+  private OptimizationRule cloudRunDownsizeCpuRule() {
+    MetricThresholdCondition lowContainerCpuP95 =
         new MetricThresholdCondition(
-            MetricDisplayNameMapper.CPU_UTILIZATION,
+            MetricDisplayNameMapper.CONTAINER_CPU_UTILIZATIONS,
             4,
             StatField.P95,
             ComparisonOperator.LESS_THAN,
             new BigDecimal(10));
 
     return new OptimizationRule(
-        "RDS-DOWNSIZE-CPU",
+        "CLOUDRUN-DOWNSIZE-CPU",
         true,
         OptimizationActionTypeEnum.DOWNSIZE,
-        List.of(ProviderEnum.AWS),
-        RDS_RESOURCE_TYPES,
-        List.of(lowCpuP95));
+        List.of(ProviderEnum.GCP),
+        CLOUDRUN_RESOURCE_TYPES,
+        List.of(lowContainerCpuP95));
+  }
+
+  private OptimizationRule cloudRunDownsizeMemoryRule() {
+    MetricThresholdCondition lowContainerMemoryP95 =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.MEMORY_UTILIZATION,
+            4,
+            StatField.P95,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(15));
+
+    return new OptimizationRule(
+        "CLOUDRUN-DOWNSIZE-MEMORY",
+        true,
+        OptimizationActionTypeEnum.DOWNSIZE,
+        List.of(ProviderEnum.GCP),
+        CLOUDRUN_RESOURCE_TYPES,
+        List.of(lowContainerMemoryP95));
   }
 
   private OptimizationRule rdsDownsizeMemoryRule() {
@@ -467,6 +493,42 @@ public class RuleCatalog {
         List.of(ProviderEnum.AWS),
         RDS_RESOURCE_TYPES,
         List.of(lowMemoryP95));
+  }
+
+  private OptimizationRule rdsDownsizeCpuRule() {
+    MetricThresholdCondition lowCpuP95 =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.CPU_UTILIZATION,
+            4,
+            StatField.P95,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(10));
+
+    return new OptimizationRule(
+        "RDS-DOWNSIZE-CPU",
+        true,
+        OptimizationActionTypeEnum.DOWNSIZE,
+        List.of(ProviderEnum.AWS),
+        RDS_RESOURCE_TYPES,
+        List.of(lowCpuP95));
+  }
+
+  private OptimizationRule cloudRunDownsizeRequestsRule() {
+    MetricThresholdCondition lowRequests =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.HTTP_REQUESTS,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(50));
+
+    return new OptimizationRule(
+        "CLOUDRUN-DOWNSIZE-REQUESTS",
+        true,
+        OptimizationActionTypeEnum.DOWNSIZE,
+        List.of(ProviderEnum.GCP),
+        CLOUDRUN_RESOURCE_TYPES,
+        List.of(lowRequests));
   }
 
   private OptimizationRule rdsDownsizeStorageTierRule() {
@@ -620,30 +682,48 @@ public class RuleCatalog {
         List.of(lowRequests, lowContainerCpuP95));
   }
 
-  private OptimizationRule rdsSuspendIdleRule() {
-    MetricThresholdCondition lowCpuP95 =
+  private OptimizationRule cloudRunSuspendNoRequestsRule() {
+    MetricThresholdCondition noRequests =
         new MetricThresholdCondition(
-            MetricDisplayNameMapper.CPU_UTILIZATION,
+            MetricDisplayNameMapper.HTTP_REQUESTS,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(1));
+
+    return new OptimizationRule(
+        "CLOUDRUN-SUSPEND-NO-REQUESTS",
+        true,
+        OptimizationActionTypeEnum.SUSPEND,
+        List.of(ProviderEnum.GCP),
+        CLOUDRUN_RESOURCE_TYPES,
+        List.of(noRequests));
+  }
+
+  private OptimizationRule cloudRunSuspendLowInstancesRule() {
+    MetricThresholdCondition runningInstancesZero =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.RUNNING_INSTANCES,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(1));
+
+    MetricThresholdCondition lowContainerCpuP95 =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.CONTAINER_CPU_UTILIZATIONS,
             4,
             StatField.P95,
             ComparisonOperator.LESS_THAN,
             new BigDecimal(15));
 
-    MetricThresholdCondition lowDbConnections =
-        new MetricThresholdCondition(
-            MetricDisplayNameMapper.DATABASE_CONNECTIONS,
-            4,
-            StatField.MAXIMUM,
-            ComparisonOperator.LESS_THAN,
-            new BigDecimal(2));
-
     return new OptimizationRule(
-        "RDS-SUSPEND-IDLE",
+        "CLOUDRUN-SUSPEND-LOW-INSTANCES",
         true,
         OptimizationActionTypeEnum.SUSPEND,
-        List.of(ProviderEnum.AWS),
-        RDS_RESOURCE_TYPES,
-        List.of(lowCpuP95, lowDbConnections));
+        List.of(ProviderEnum.GCP),
+        CLOUDRUN_RESOURCE_TYPES,
+        List.of(runningInstancesZero, lowContainerCpuP95));
   }
 
   private OptimizationRule rdsSuspendLowIoRule() {
@@ -672,6 +752,32 @@ public class RuleCatalog {
         List.of(readIopsLow, writeIopsLow));
   }
 
+  private OptimizationRule rdsSuspendIdleRule() {
+    MetricThresholdCondition lowCpuP95 =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.CPU_UTILIZATION,
+            4,
+            StatField.P95,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(15));
+
+    MetricThresholdCondition lowDbConnections =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.DATABASE_CONNECTIONS,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(2));
+
+    return new OptimizationRule(
+        "RDS-SUSPEND-IDLE",
+        true,
+        OptimizationActionTypeEnum.SUSPEND,
+        List.of(ProviderEnum.AWS),
+        RDS_RESOURCE_TYPES,
+        List.of(lowCpuP95, lowDbConnections));
+  }
+
   // ? ---------------------------------------- SUSPEND ----------------------------------------
 
   // * ---------------------------------------- UPSCALE ----------------------------------------
@@ -693,22 +799,58 @@ public class RuleCatalog {
         List.of(highCpu));
   }
 
-  private OptimizationRule rdsUpscaleCpuRule() {
-    MetricThresholdCondition highCpuP95 =
+  private OptimizationRule cloudRunUpscaleCpuRule() {
+    MetricThresholdCondition highContainerCpuP95 =
         new MetricThresholdCondition(
-            MetricDisplayNameMapper.CPU_UTILIZATION,
+            MetricDisplayNameMapper.CONTAINER_CPU_UTILIZATIONS,
             4,
             StatField.P95,
             ComparisonOperator.GREATER_THAN,
             new BigDecimal(85));
 
     return new OptimizationRule(
-        "RDS-UPSCALE-CPU",
+        "CLOUDRUN-UPSCALE-CPU",
         true,
         OptimizationActionTypeEnum.UPSCALE,
-        List.of(ProviderEnum.AWS),
-        RDS_RESOURCE_TYPES,
-        List.of(highCpuP95));
+        List.of(ProviderEnum.GCP),
+        CLOUDRUN_RESOURCE_TYPES,
+        List.of(highContainerCpuP95));
+  }
+
+  private OptimizationRule cloudRunUpscaleRequestsRule() {
+    MetricThresholdCondition highRequestsP95 =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.HTTP_REQUESTS,
+            4,
+            StatField.P95,
+            ComparisonOperator.GREATER_THAN,
+            new BigDecimal(500));
+
+    return new OptimizationRule(
+        "CLOUDRUN-UPSCALE-REQUESTS",
+        true,
+        OptimizationActionTypeEnum.UPSCALE,
+        List.of(ProviderEnum.GCP),
+        CLOUDRUN_RESOURCE_TYPES,
+        List.of(highRequestsP95));
+  }
+
+  private OptimizationRule cloudRunUpscaleLatencyRule() {
+    MetricThresholdCondition highLatencyP95 =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.REQUEST_LATENCY,
+            4,
+            StatField.P95,
+            ComparisonOperator.GREATER_THAN,
+            new BigDecimal(1000));
+
+    return new OptimizationRule(
+        "CLOUDRUN-UPSCALE-LATENCY",
+        true,
+        OptimizationActionTypeEnum.UPSCALE,
+        List.of(ProviderEnum.GCP),
+        CLOUDRUN_RESOURCE_TYPES,
+        List.of(highLatencyP95));
   }
 
   private OptimizationRule rdsUpscaleMemoryRule() {
@@ -727,6 +869,24 @@ public class RuleCatalog {
         List.of(ProviderEnum.AWS),
         RDS_RESOURCE_TYPES,
         List.of(highMemoryP95));
+  }
+
+  private OptimizationRule rdsUpscaleCpuRule() {
+    MetricThresholdCondition highCpuP95 =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.CPU_UTILIZATION,
+            4,
+            StatField.P95,
+            ComparisonOperator.GREATER_THAN,
+            new BigDecimal(85));
+
+    return new OptimizationRule(
+        "RDS-UPSCALE-CPU",
+        true,
+        OptimizationActionTypeEnum.UPSCALE,
+        List.of(ProviderEnum.AWS),
+        RDS_RESOURCE_TYPES,
+        List.of(highCpuP95));
   }
   // * ---------------------------------------- UPSCALE ----------------------------------------
 }
