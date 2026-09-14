@@ -27,7 +27,7 @@ export default function AddWidget({ handleAddWidget, handleAddKpi }: Readonly<To
                 </Button>
             </DropdownMenuTrigger>
 
-            <DropdownMenuContent align="start" className="w-45">
+            <DropdownMenuContent align="start" className="w-50">
                 <DropdownMenuItem
                     className="cursor-pointer w-full font-medium flex flex-row justify-between gap-3"
                     onClick={handleAddWidget}
