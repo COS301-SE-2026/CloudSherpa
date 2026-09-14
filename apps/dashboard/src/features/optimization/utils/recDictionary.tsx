@@ -34,7 +34,7 @@ const formatValue = (metricName: string, value: number): string => {
     const unit = getMetricUnit(metricName);
     const formattedNum = Number.isInteger(value)
         ? String(value)
-        : parseFloat(value.toFixed(2)).toString();
+        : Number.parseFloat(value.toFixed(2)).toString();
     return `${formattedNum}${unit}`;
 };
 
@@ -129,21 +129,6 @@ export default function RecommendationReasoning({
                     <strong>{cpu?.formattedValue}</strong>.
                 </span>
             );
-        }
-        case "COMPUTE-DOWNSIZE-MEMORY": {
-            const memory = extractMetricDetails(evidence, "Memory");
-            if (memory) {
-                return (
-                    <span>
-                        Consider <strong className="text-chart-3">downsizing</strong> this compute
-                        instance. Over the last {memory.days} days, 95% of the time your{" "}
-                        <strong>Memory utilization</strong> stayed below{" "}
-                        <strong>{memory.formattedValue}</strong>, suggesting excess memory
-                        allocation.
-                    </span>
-                );
-            }
-            break;
         }
         case "RDS-DOWNSIZE-STORAGE-TIER": {
             const disk = extractMetricDetails(evidence, "disk space");
@@ -433,21 +418,6 @@ export default function RecommendationReasoning({
                     <strong>Read IOPS</strong> was <strong>{read?.formattedValue}</strong> and{" "}
                     <strong>Write IOPS</strong> was <strong>{write?.formattedValue}</strong>.{" "}
                     <strong className="text-yellow-600">Suspending</strong> it is recommended.
-                </span>
-            );
-        }
-        case "CLOUDRUN-SUSPEND-IDLE": {
-            const req = extractMetricDetails(evidence, "requests");
-            const cpu = extractMetricDetails(evidence, "cpu");
-            const days = req?.days || cpu?.days || "4";
-            return (
-                <span>
-                    This Cloud Run service shows very low activity. Over the last {days} days,
-                    maximum <strong>HTTP Requests</strong> were{" "}
-                    <strong>{req?.formattedValue}</strong> and 95% of the time{" "}
-                    <strong>Container CPU</strong> was below <strong>{cpu?.formattedValue}</strong>.{" "}
-                    <strong className="text-yellow-600">Suspending</strong> the service is
-                    recommended.
                 </span>
             );
         }

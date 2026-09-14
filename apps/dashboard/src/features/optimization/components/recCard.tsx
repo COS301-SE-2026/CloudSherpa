@@ -151,7 +151,7 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
             const { metricName, aggregation, timeframe } = parsed;
 
             const formattedValue =
-                typeof value === "number" ? parseFloat(value.toFixed(2)) : String(value);
+                typeof value === "number" ? Number.parseFloat(value.toFixed(2)) : String(value);
             const unit = getMetricUnit(metricName);
             const displayValue = `${formattedValue}${unit}`;
             const label = formatMetricLabel(metricName, aggregation);
