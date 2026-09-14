@@ -182,7 +182,68 @@ Recommends terminating instances that have very low metrics.
 |---|---|---|---|
 | CPU Utilization | 4d | MAXIMUM | < 3 |
 | Memory Utilization | 4d | P95 | < 5 |
-| Network In | 4d | MAXIMUM | < 2000
+| Network In | 4d | MAXIMUM | < 2000 |
+
+**`RDS-TERMINATE-IDLE`**  
+Terminate RDS instances that are essentially idle.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| CPU Utilization | 4d | MAXIMUM | < 2 |
+| Database Connections | 4d | MAXIMUM | < 1 |
+
+**`RDS-TERMINATE-NO-CONNECTIONS`**  
+Terminate RDS instances with no database connections.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Database Connections | 4d | MAXIMUM | < 1 |
+
+**`RDS-TERMINATE-NO-IO`**  
+Terminate RDS instances with virtually no I/O activity.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Read IOPS | 4d | MAXIMUM | < 10 |
+| Write IOPS | 4d | MAXIMUM | < 10 |
+
+**`RDS-TERMINATE-NO-NETWORK`**  
+Terminate RDS instances with negligible network traffic.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Network In | 4d | MAXIMUM | < 1000 |
+| Network Out | 4d | MAXIMUM | < 1000 |
+
+**`CLOUDRUN-TERMINATE-IDLE`**  
+Terminate Cloud Run services with no requests and very low CPU.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Request Count | 4d | MAXIMUM | < 1 |
+| Container CPU Utilizations | 4d | P95 | < 5 |
+
+**`CLOUDRUN-TERMINATE-NO-REQUESTS`**  
+Terminate Cloud Run services with no requests.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Request Count | 4d | MAXIMUM | < 1 |
+
+**`CLOUDRUN-TERMINATE-LOW-CPU-MEM`**  
+Terminate Cloud Run services with sustained low CPU and low memory.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Container CPU Utilizations | 4d | P95 | < 5 |
+| Memory Utilization | 4d | P95 | < 10 |
+
+**`CLOUDRUN-TERMINATE-LOW-INSTANCES`**  
+Terminate Cloud Run services with no running instances.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Running Instances | 4d | MAXIMUM | < 1 |
 
 ### DOWNSIZE
 
@@ -207,13 +268,34 @@ Recommends downsizing storage allocation or moving to a cheaper storage tier whe
 |---|---:|---|---|
 | Percentage Disk Space Used | 30d | P95 | < 20 |
 
-**`RDS-DOWNSIZE`**  
+**`RDS-DOWNSIZE-CPU-DB`**  
 Recommends downsizing AWS RDS instances showing sustained low CPU and very low connections over 4 days.
 
 | Metric | Window | Stat | Condition |
 |---|---:|---|---|
 | CPU Utilization | 4d | P95 | < 10 |
 | Database Connections | 4d | MAXIMUM | < 5 |
+
+**`RDS-DOWNSIZE-CPU`**  
+Downsize RDS instances with sustained low CPU.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| CPU Utilization | 4d | P95 | < 10 |
+
+**`RDS-DOWNSIZE-MEMORY`**  
+Downsize RDS instances with sustained low memory usage.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Memory Utilization | 4d | P95 | < 20 |
+
+**`RDS-DOWNSIZE-STORAGE-TIER`**  
+Recommend lowering storage tier or allocation when disk usage is persistently low.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Percentage Disk Space Used | 30d | P95 | < 20 |
 
 ### SUSPEND
 
@@ -256,6 +338,22 @@ Recommends suspending Cloud Run services with negligible traffic and low CPU.
 |---|---:|---|---|
 | Request Count | 4d | MAXIMUM | < 10 |
 | Container CPU Utilizations | 4d | P95 | < 10 |
+
+**`RDS-SUSPEND-IDLE`**  
+Suspend RDS instances showing sustained low CPU and very few connections.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| CPU Utilization | 4d | P95 | < 15 |
+| Database Connections | 4d | MAXIMUM | < 2 |
+
+**`RDS-SUSPEND-LOW-IO`**  
+Suspend RDS instances with consistently low I/O throughput.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Read IOPS | 4d | MAXIMUM | < 20 |
+| Write IOPS | 4d | MAXIMUM | < 20 |
 
 ### UPSCALE
 
