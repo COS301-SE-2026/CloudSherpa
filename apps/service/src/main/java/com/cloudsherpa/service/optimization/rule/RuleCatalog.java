@@ -36,6 +36,9 @@ public class RuleCatalog {
         computeDownsizeStorageTierRule(),
         rdsDownsizeRule(),
         cloudRunSuspendIdleRule(),
+        rdsDownsizeCpuRule(),
+        rdsDownsizeMemoryRule(),
+        rdsDownsizeStorageTierRule(),
         rdsSuspendLowIoRule(),
         rdsSuspendIdleRule(),
         cloudRunTerminateIdleRule(),
@@ -426,6 +429,60 @@ public class RuleCatalog {
         List.of(ProviderEnum.AWS),
         RDS_RESOURCE_TYPES,
         List.of(lowCpuP95, lowDbConnections));
+  }
+
+  private OptimizationRule rdsDownsizeCpuRule() {
+    MetricThresholdCondition lowCpuP95 =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.CPU_UTILIZATION,
+            4,
+            StatField.P95,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(10));
+
+    return new OptimizationRule(
+        "RDS-DOWNSIZE-CPU",
+        true,
+        OptimizationActionTypeEnum.DOWNSIZE,
+        List.of(ProviderEnum.AWS),
+        RDS_RESOURCE_TYPES,
+        List.of(lowCpuP95));
+  }
+
+  private OptimizationRule rdsDownsizeMemoryRule() {
+    MetricThresholdCondition lowMemoryP95 =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.MEMORY_UTILIZATION,
+            4,
+            StatField.P95,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(20));
+
+    return new OptimizationRule(
+        "RDS-DOWNSIZE-MEMORY",
+        true,
+        OptimizationActionTypeEnum.DOWNSIZE,
+        List.of(ProviderEnum.AWS),
+        RDS_RESOURCE_TYPES,
+        List.of(lowMemoryP95));
+  }
+
+  private OptimizationRule rdsDownsizeStorageTierRule() {
+    MetricThresholdCondition lowPctDiskUsed30d =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.PERCENTAGE_DISK_SPACE_USED,
+            30,
+            StatField.P95,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(20));
+
+    return new OptimizationRule(
+        "RDS-DOWNSIZE-STORAGE-TIER",
+        true,
+        OptimizationActionTypeEnum.DOWNSIZE,
+        List.of(ProviderEnum.AWS),
+        RDS_RESOURCE_TYPES,
+        List.of(lowPctDiskUsed30d));
   }
 
   // # ---------------------------------------- DOWNSIZE ----------------------------------------
