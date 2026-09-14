@@ -34,7 +34,7 @@ export default function AddWidget({ handleAddWidget, handleAddKpi }: Readonly<To
                 >
                     Chart Widget
                     <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
-                        shift + c
+                        {"shift + c"}
                     </span>
                 </DropdownMenuItem>
 
@@ -44,7 +44,7 @@ export default function AddWidget({ handleAddWidget, handleAddKpi }: Readonly<To
                 >
                     KPI Widget
                     <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
-                        shift + k
+                        {"shift + k"}
                     </span>
                 </DropdownMenuItem>
             </DropdownMenuContent>
