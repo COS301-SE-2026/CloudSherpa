@@ -215,6 +215,36 @@ Terminate RDS instances with negligible network traffic.
 | Network In | 4d | MAXIMUM | < 1000 |
 | Network Out | 4d | MAXIMUM | < 1000 |
 
+**`CLOUDRUN-TERMINATE-IDLE`**  
+Terminate Cloud Run services with no requests and very low CPU.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Request Count | 4d | MAXIMUM | < 1 |
+| Container CPU Utilizations | 4d | P95 | < 5 |
+
+**`CLOUDRUN-TERMINATE-NO-REQUESTS`**  
+Terminate Cloud Run services with no requests.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Request Count | 4d | MAXIMUM | < 1 |
+
+**`CLOUDRUN-TERMINATE-LOW-CPU-MEM`**  
+Terminate Cloud Run services with sustained low CPU and low memory.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Container CPU Utilizations | 4d | P95 | < 5 |
+| Memory Utilization | 4d | P95 | < 10 |
+
+**`CLOUDRUN-TERMINATE-LOW-INSTANCES`**  
+Terminate Cloud Run services with no running instances.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Running Instances | 4d | MAXIMUM | < 1 |
+
 ### DOWNSIZE
 
 **`COMPUTE-DOWNSIZE`**
@@ -238,13 +268,34 @@ Recommends downsizing storage allocation or moving to a cheaper storage tier whe
 |---|---:|---|---|
 | Percentage Disk Space Used | 30d | P95 | < 20 |
 
-**`RDS-DOWNSIZE`**  
+**`RDS-DOWNSIZE-CPU-DB`**  
 Recommends downsizing AWS RDS instances showing sustained low CPU and very low connections over 4 days.
 
 | Metric | Window | Stat | Condition |
 |---|---:|---|---|
 | CPU Utilization | 4d | P95 | < 10 |
 | Database Connections | 4d | MAXIMUM | < 5 |
+
+**`RDS-DOWNSIZE-CPU`**  
+Downsize RDS instances with sustained low CPU.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| CPU Utilization | 4d | P95 | < 10 |
+
+**`RDS-DOWNSIZE-MEMORY`**  
+Downsize RDS instances with sustained low memory usage.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Memory Utilization | 4d | P95 | < 20 |
+
+**`RDS-DOWNSIZE-STORAGE-TIER`**  
+Recommend lowering storage tier or allocation when disk usage is persistently low.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Percentage Disk Space Used | 30d | P95 | < 20 |
 
 ### SUSPEND
 
@@ -288,6 +339,22 @@ Recommends suspending Cloud Run services with negligible traffic and low CPU.
 | Request Count | 4d | MAXIMUM | < 10 |
 | Container CPU Utilizations | 4d | P95 | < 10 |
 
+**`RDS-SUSPEND-IDLE`**  
+Suspend RDS instances showing sustained low CPU and very few connections.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| CPU Utilization | 4d | P95 | < 15 |
+| Database Connections | 4d | MAXIMUM | < 2 |
+
+**`RDS-SUSPEND-LOW-IO`**  
+Suspend RDS instances with consistently low I/O throughput.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Read IOPS | 4d | MAXIMUM | < 20 |
+| Write IOPS | 4d | MAXIMUM | < 20 |
+
 ### UPSCALE
 
 **`COMPUTE-UPSCALE-CPU`**
@@ -296,6 +363,20 @@ Recommends upscaling compute instances whose P95 CPU utilization consistently ex
 | Metric | Window | Stat | Condition |
 |---|---|---|---|
 | CPU Utilization | 4d | P95 | > 85 |
+
+**`RDS-UPSCALE-CPU`**  
+Recommend upscaling when P95 CPU is consistently high.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| CPU Utilization | 4d | P95 | > 85 |
+
+**`RDS-UPSCALE-MEMORY`**  
+Recommend upscaling when P95 memory utilization is high.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Memory Utilization | 4d | P95 | > 80 |
 
 All rules above apply to listed resource types in `RuleCatalog`.
 
