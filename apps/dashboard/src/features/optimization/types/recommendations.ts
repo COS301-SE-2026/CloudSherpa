@@ -4,7 +4,7 @@ import { CloudProviderEnum } from "@/features/dashboard/types/provider";
 //Modernize = get newer/more modern package for better performance
 //Downsize = get smaller package (ie. t3.xlarge to t3.medium)
 //Suspend = recommend power schedule (ie. siwtch off at night)
-export type RecommendedAction = "TERMINATE" | "MODERNIZE" | "DOWNSIZE" | "SUSPEND";
+export type RecommendedAction = "TERMINATE" | "MODERNIZE" | "DOWNSIZE" | "SUSPEND" | "UPSCALE";
 
 export type RecommendationStatus = "ACTIVE" | "DISMISSED" | "APPLIED" | "SUSPENDED" | "EXPIRED";
 

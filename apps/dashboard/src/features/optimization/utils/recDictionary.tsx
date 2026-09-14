@@ -529,6 +529,13 @@ export default function RecommendationReasoning({
                     because ${joinedEvidence}.
                 </span>
             );
+        case "UPSCALE":
+            return (
+                <span>
+                    We recommend <strong className="text-primary">upscaling</strong> this resource
+                    because {joinedEvidence}.
+                </span>
+            );
         default:
             return (
                 <span>
