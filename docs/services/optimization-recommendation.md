@@ -364,6 +364,20 @@ Recommends upscaling compute instances whose P95 CPU utilization consistently ex
 |---|---|---|---|
 | CPU Utilization | 4d | P95 | > 85 |
 
+**`RDS-UPSCALE-CPU`**  
+Recommend upscaling when P95 CPU is consistently high.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| CPU Utilization | 4d | P95 | > 85 |
+
+**`RDS-UPSCALE-MEMORY`**  
+Recommend upscaling when P95 memory utilization is high.
+
+| Metric | Window | Stat | Condition |
+|---|---:|---|---|
+| Memory Utilization | 4d | P95 | > 80 |
+
 All rules above apply to listed resource types in `RuleCatalog`.
 
 ## Rule Validation

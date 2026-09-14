@@ -36,6 +36,8 @@ public class RuleCatalog {
         computeDownsizeStorageTierRule(),
         rdsDownsizeRule(),
         cloudRunSuspendIdleRule(),
+        rdsUpscaleCpuRule(),
+        rdsUpscaleMemoryRule(),
         rdsDownsizeCpuRule(),
         rdsDownsizeMemoryRule(),
         rdsDownsizeStorageTierRule(),
@@ -689,6 +691,42 @@ public class RuleCatalog {
         null,
         COMPUTE_RESOURCE_TYPES,
         List.of(highCpu));
+  }
+
+  private OptimizationRule rdsUpscaleCpuRule() {
+    MetricThresholdCondition highCpuP95 =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.CPU_UTILIZATION,
+            4,
+            StatField.P95,
+            ComparisonOperator.GREATER_THAN,
+            new BigDecimal(85));
+
+    return new OptimizationRule(
+        "RDS-UPSCALE-CPU",
+        true,
+        OptimizationActionTypeEnum.UPSCALE,
+        List.of(ProviderEnum.AWS),
+        RDS_RESOURCE_TYPES,
+        List.of(highCpuP95));
+  }
+
+  private OptimizationRule rdsUpscaleMemoryRule() {
+    MetricThresholdCondition highMemoryP95 =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.MEMORY_UTILIZATION,
+            4,
+            StatField.P95,
+            ComparisonOperator.GREATER_THAN,
+            new BigDecimal(80));
+
+    return new OptimizationRule(
+        "RDS-UPSCALE-MEMORY",
+        true,
+        OptimizationActionTypeEnum.UPSCALE,
+        List.of(ProviderEnum.AWS),
+        RDS_RESOURCE_TYPES,
+        List.of(highMemoryP95));
   }
   // * ---------------------------------------- UPSCALE ----------------------------------------
 }
