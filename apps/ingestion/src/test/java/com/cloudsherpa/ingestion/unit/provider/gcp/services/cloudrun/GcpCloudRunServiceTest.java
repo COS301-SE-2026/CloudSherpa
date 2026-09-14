@@ -58,12 +58,10 @@ class GcpCloudRunServiceTest {
 
       assertNotNull(result);
 
-      assertEquals(
-          "projects/test-project/locations/europe-west1/services/test-service",
-          result.getResourceId());
+      assertEquals("test-service", result.getResourceId());
       assertEquals("test-service", result.getName());
       assertEquals("service_name", result.getResourceType());
-      assertEquals("cloud_run_service", result.getServiceCategory());
+      assertEquals("cloud_run_revision", result.getServiceCategory());
       assertEquals("europe-west1", result.getRegion());
       assertEquals(labels, result.getTags());
     }
@@ -138,8 +136,7 @@ class GcpCloudRunServiceTest {
 
   @Test
   void getResourceDetail_shouldUseServiceResourceNameAsResourceId() {
-    String serviceResourceName =
-        "projects/test-project/locations/europe-west1/services/test-service";
+    String serviceResourceName = "test-service";
 
     when(cloudRunService.getName()).thenReturn(serviceResourceName);
     when(cloudRunService.getLabelsMap()).thenReturn(Map.of());

@@ -29,10 +29,10 @@ public class GcpCloudRunService implements CloudRunService {
           client.getService(GetServiceRequest.newBuilder().setName(serviceName).build());
 
       return new ResourceDetail(
-          service.getName(),
+          identifier.serviceName(),
           identifier.serviceName(),
           "service_name",
-          "cloud_run_service",
+          "cloud_run_revision",
           identifier.location(),
           service.getLabelsMap());
 
