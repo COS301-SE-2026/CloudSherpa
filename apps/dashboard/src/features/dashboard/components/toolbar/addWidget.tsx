@@ -32,7 +32,7 @@ export default function AddWidget({ handleAddWidget, handleAddKpi }: Readonly<To
                     className="cursor-pointer w-full font-medium flex flex-row justify-between gap-3"
                     onClick={handleAddWidget}
                 >
-                    Chart Widget
+                    <span>Chart Widget</span>
                     <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded flex flex-row gap-1">
                         <span>shift</span>
                         <Plus className="h-2 w-2" />
@@ -44,7 +44,7 @@ export default function AddWidget({ handleAddWidget, handleAddKpi }: Readonly<To
                     className="cursor-pointer w-full font-medium flex flex-row justify-between gap-3"
                     onClick={handleAddKpi}
                 >
-                    KPI Widget
+                    <span>KPI Widget</span>
                     <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded flex flex-row gap-1">
                         <span>shift</span>
                         <Plus className="h-2 w-2" />
