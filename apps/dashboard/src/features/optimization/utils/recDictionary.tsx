@@ -127,6 +127,67 @@ export default function RecommendationReasoning({
                 </span>
             );
         }
+        case "COMPUTE-TERMINATE-NO-DISK-IO": {
+            const read = extractMetricDetails(evidence, "read");
+            const write = extractMetricDetails(evidence, "write");
+            const days = read?.days || write?.days || "4";
+
+            return (
+                <span>
+                    This resource shows practically <strong>no disk activity</strong>. Over the last{" "}
+                    {days} days, maximum <strong>Disk Read</strong> was{" "}
+                    <strong>{read?.formattedValue}</strong> and <strong>Disk Write</strong> was{" "}
+                    <strong>{write?.formattedValue}</strong>.{" "}
+                    <strong className="text-destructive">Terminating</strong> is recommended.
+                </span>
+            );
+        }
+        case "COMPUTE-TERMINATE-NO-NETWORK": {
+            const netIn = extractMetricDetails(evidence, "network in");
+            const netOut = extractMetricDetails(evidence, "network out");
+            const days = netIn?.days || netOut?.days || "4";
+
+            return (
+                <span>
+                    This resource shows <strong>no significant network traffic</strong>. Over the
+                    last {days} days, maximum <strong>Network In</strong> was{" "}
+                    <strong>{netIn?.formattedValue}</strong> and <strong>Network Out</strong> was{" "}
+                    <strong>{netOut?.formattedValue}</strong>.{" "}
+                    <strong className="text-destructive">Terminating</strong> is recommended.
+                </span>
+            );
+        }
+        case "COMPUTE-TERMINATE-LOW": {
+            const cpu = extractMetricDetails(evidence, "CPU");
+            const memory = extractMetricDetails(evidence, "Memory");
+            const days = cpu?.days || memory?.days || "4";
+
+            return (
+                <span>
+                    This resource has <strong>exceptionally low overall usage</strong>. Over the
+                    last {days} days, maximum <strong>CPU</strong> was{" "}
+                    <strong>{cpu?.formattedValue}</strong> and 95% of the time{" "}
+                    <strong>Memory</strong> stayed below <strong>{memory?.formattedValue}</strong>.{" "}
+                    <strong className="text-destructive">Terminating</strong> is recommended.
+                </span>
+            );
+        }
+        case "RDS-TERMINATE-IDLE": {
+            const cpu = extractMetricDetails(evidence, "CPU");
+            const conn = extractMetricDetails(evidence, "connections");
+            const days = cpu?.days || conn?.days || "4";
+
+            return (
+                <span>
+                    This database appears <strong>completely idle</strong>. Over the last {days}{" "}
+                    days, maximum <strong>CPU utilization</strong> was{" "}
+                    <strong>{cpu?.formattedValue}</strong> and maximum{" "}
+                    <strong>Database Connections</strong> were{" "}
+                    <strong>{conn?.formattedValue}</strong>.{" "}
+                    <strong className="text-destructive">Terminating</strong> it is recommended.
+                </span>
+            );
+        }
         case "COMPUTE-SUSPEND-IDLE": {
             const cpu = extractMetricDetails(evidence, "CPU");
             const network = extractMetricDetails(evidence, "Network");
