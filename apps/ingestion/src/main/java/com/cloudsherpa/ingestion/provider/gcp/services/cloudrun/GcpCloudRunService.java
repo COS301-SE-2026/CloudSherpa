@@ -15,24 +15,22 @@ public class GcpCloudRunService implements CloudRunService {
   public ResourceDetail getResourceDetail(
       ResourceSearchResult resource, CloudCredentials credentials) {
 
-    CloudRunResourceIdentifier identifier =
-        CloudRunResourceIdentifier.fromAssetName(resource.getName());
+    CloudRunResourceIdentifier identifier = CloudRunResourceIdentifier.fromAssetName(resource.getName());
 
-    String serviceName =
-        String.format(
-            "projects/%s/locations/%s/services/%s",
-            identifier.projectId(), identifier.location(), identifier.serviceName());
+    String serviceName = String.format(
+        "projects/%s/locations/%s/services/%s",
+        identifier.projectId(), identifier.location(), identifier.serviceName());
 
     try (ServicesClient client = GcpClientFactory.createCloudRunClient(credentials)) {
 
-      com.google.cloud.run.v2.Service service =
-          client.getService(GetServiceRequest.newBuilder().setName(serviceName).build());
+      com.google.cloud.run.v2.Service service = client
+          .getService(GetServiceRequest.newBuilder().setName(serviceName).build());
 
       return new ResourceDetail(
-          service.getName(),
+          identifier.serviceName(),
           identifier.serviceName(),
           "service_name",
-          "cloud_run_service",
+          "cloud_run_revision",
           identifier.location(),
           service.getLabelsMap());
 
