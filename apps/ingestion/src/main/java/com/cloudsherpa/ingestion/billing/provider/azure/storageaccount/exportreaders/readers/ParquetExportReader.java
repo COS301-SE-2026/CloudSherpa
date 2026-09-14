@@ -35,6 +35,12 @@ public class ParquetExportReader implements ExportReader<RawBillingRow> {
     try {
       reader = readerService.openParquetReader(blobFilePath);
     } catch (IOException e) {
+      try {
+        Files.delete(blobFilePath);
+      } catch (IOException ioException) {
+        logger.error("Failed to delete downloaded export at {}", blobFilePath);
+      }
+
       throw new ExportReaderException(
           "Failed to open parquet file at path " + blobFilePath.toString(), e);
     }
@@ -65,6 +71,7 @@ public class ParquetExportReader implements ExportReader<RawBillingRow> {
   @Override
   public void close() throws IOException {
     reader.close();
+    Files.delete(blobFilePath);
   }
 
   private void directoryExistsValidation() {
