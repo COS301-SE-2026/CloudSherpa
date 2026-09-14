@@ -31,13 +31,8 @@ const getMetricUnit = (metricName: string): string => {
 };
 
 const formatValue = (metricName: string, value: number): string => {
-    const nameLower = metricName.toLowerCase();
-    const isPercentage =
-        nameLower.includes("utilization") ||
-        nameLower.includes("percentage") ||
-        nameLower.includes("pressure");
-
-    return isPercentage ? `${value.toFixed(2)}%` : value.toFixed(2);
+    const unit = getMetricUnit(metricName);
+    return `${value.toFixed(2)}${unit}`;
 };
 
 // extract format specific metrics
@@ -121,6 +116,17 @@ export default function RecommendationReasoning({
                 </span>
             );
         }
+        case "RDS-DOWNSIZE-CPU": {
+            const cpu = extractMetricDetails(evidence, "cpu");
+            return (
+                <span>
+                    Consider <strong className="text-warning">downsizing</strong> this database.
+                    Over the last {cpu?.days || "4"} days, 95% of the time{" "}
+                    <strong>CPU utilization</strong> was below{" "}
+                    <strong>{cpu?.formattedValue}</strong>.
+                </span>
+            );
+        }
         case "COMPUTE-DOWNSIZE-MEMORY": {
             const memory = extractMetricDetails(evidence, "Memory");
             if (memory) {
@@ -135,6 +141,17 @@ export default function RecommendationReasoning({
                 );
             }
             break;
+        }
+        case "RDS-DOWNSIZE-STORAGE-TIER": {
+            const disk = extractMetricDetails(evidence, "disk space");
+            return (
+                <span>
+                    Consider <strong className="text-warning">downsizing</strong> this database
+                    storage. Over the last {disk?.days || "30"} days, 95% of the time{" "}
+                    <strong>Disk Space Used</strong> stayed below{" "}
+                    <strong>{disk?.formattedValue}</strong>.
+                </span>
+            );
         }
         case "COMPUTE-TERMINATE-IDLE": {
             const cpu = extractMetricDetails(evidence, "CPU");
@@ -265,6 +282,56 @@ export default function RecommendationReasoning({
                 </span>
             );
         }
+        case "CLOUDRUN-TERMINATE-IDLE": {
+            const req = extractMetricDetails(evidence, "requests");
+            const cpu = extractMetricDetails(evidence, "cpu");
+            const days = req?.days || cpu?.days || "4";
+            return (
+                <span>
+                    This Cloud Run service appears <strong>idle</strong>. Over the last {days} days,
+                    maximum <strong>HTTP Requests</strong> were{" "}
+                    <strong>{req?.formattedValue}</strong> and 95% of the time{" "}
+                    <strong>Container CPU</strong> was below <strong>{cpu?.formattedValue}</strong>.{" "}
+                    <strong className="text-destructive">Terminating</strong> is recommended.
+                </span>
+            );
+        }
+        case "CLOUDRUN-TERMINATE-NO-REQUESTS": {
+            const req = extractMetricDetails(evidence, "requests");
+            return (
+                <span>
+                    This Cloud Run service is receiving <strong>no traffic</strong>. Over the last{" "}
+                    {req?.days || "4"} days, maximum <strong>HTTP Requests</strong> were{" "}
+                    <strong>{req?.formattedValue}</strong>.{" "}
+                    <strong className="text-destructive">Terminating</strong> is recommended.
+                </span>
+            );
+        }
+        case "CLOUDRUN-TERMINATE-LOW-CPU-MEM": {
+            const cpu = extractMetricDetails(evidence, "cpu");
+            const mem = extractMetricDetails(evidence, "memory");
+            const days = cpu?.days || mem?.days || "4";
+            return (
+                <span>
+                    This Cloud Run service has <strong>exceptionally low resource usage</strong>.
+                    Over the last {days} days, 95% of the time <strong>CPU</strong> was below{" "}
+                    <strong>{cpu?.formattedValue}</strong> and <strong>Memory</strong> was below{" "}
+                    <strong>{mem?.formattedValue}</strong>.{" "}
+                    <strong className="text-destructive">Terminating</strong> is recommended.
+                </span>
+            );
+        }
+        case "CLOUDRUN-TERMINATE-LOW-INSTANCES": {
+            const instances = extractMetricDetails(evidence, "instances");
+            return (
+                <span>
+                    This Cloud Run service has scaled to zero. Over the last{" "}
+                    {instances?.days || "4"} days, maximum <strong>Running Instances</strong> were{" "}
+                    <strong>{instances?.formattedValue}</strong>.{" "}
+                    <strong className="text-destructive">Terminating</strong> is recommended.
+                </span>
+            );
+        }
         case "COMPUTE-SUSPEND-IDLE": {
             const cpu = extractMetricDetails(evidence, "CPU");
             const network = extractMetricDetails(evidence, "Network");
@@ -350,6 +417,71 @@ export default function RecommendationReasoning({
                     <strong>{cpu?.formattedValue}</strong>.{" "}
                     <strong className="text-yellow-600">Suspending</strong> the service is
                     recommended.
+                </span>
+            );
+        }
+        case "RDS-SUSPEND-LOW-IO": {
+            const read = extractMetricDetails(evidence, "read");
+            const write = extractMetricDetails(evidence, "write");
+            const days = read?.days || write?.days || "4";
+            return (
+                <span>
+                    This database shows minimal I/O activity. Over the last {days} days, maximum{" "}
+                    <strong>Read IOPS</strong> was <strong>{read?.formattedValue}</strong> and{" "}
+                    <strong>Write IOPS</strong> was <strong>{write?.formattedValue}</strong>.{" "}
+                    <strong className="text-yellow-600">Suspending</strong> it is recommended.
+                </span>
+            );
+        }
+        case "CLOUDRUN-SUSPEND-IDLE": {
+            const req = extractMetricDetails(evidence, "requests");
+            const cpu = extractMetricDetails(evidence, "cpu");
+            const days = req?.days || cpu?.days || "4";
+            return (
+                <span>
+                    This Cloud Run service shows very low activity. Over the last {days} days,
+                    maximum <strong>HTTP Requests</strong> were{" "}
+                    <strong>{req?.formattedValue}</strong> and 95% of the time{" "}
+                    <strong>Container CPU</strong> was below <strong>{cpu?.formattedValue}</strong>.{" "}
+                    <strong className="text-yellow-600">Suspending</strong> the service is
+                    recommended.
+                </span>
+            );
+        }
+
+        case "COMPUTE-UPSCALE-CPU": {
+            const cpu = extractMetricDetails(evidence, "CPU");
+            return (
+                <span>
+                    Consider <strong className="text-primary">upscaling</strong> this compute
+                    instance. Over the last <strong>{cpu?.days || "4"} days</strong>, 95% of the
+                    time your <strong>CPU utilization</strong> was above{" "}
+                    <strong>{cpu?.formattedValue}</strong>, indicating the resource is
+                    under-provisioned and may be bottlenecking performance.
+                </span>
+            );
+        }
+        case "RDS-UPSCALE-CPU": {
+            const cpu = extractMetricDetails(evidence, "cpu");
+            return (
+                <span>
+                    Consider <strong className="text-primary">upscaling</strong> this database
+                    {`&apos`}s compute tier. Over the last <strong>{cpu?.days || "4"} days</strong>,
+                    95% of the time your <strong>CPU utilization</strong> was above{" "}
+                    <strong>{cpu?.formattedValue}</strong>, indicating a potential performance
+                    bottleneck.
+                </span>
+            );
+        }
+        case "RDS-UPSCALE-MEMORY": {
+            const mem = extractMetricDetails(evidence, "memory");
+            return (
+                <span>
+                    Consider <strong className="text-primary">upscaling</strong> this database
+                    {`&apos`}s memory tier. Over the last <strong>{mem?.days || "4"} days</strong>,
+                    95% of the time your <strong>Memory utilization</strong> was above{" "}
+                    <strong>{mem?.formattedValue}</strong>, increasing the risk of Out-Of-Memory
+                    events.
                 </span>
             );
         }
