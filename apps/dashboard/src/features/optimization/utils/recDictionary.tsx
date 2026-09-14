@@ -12,7 +12,7 @@ const parseEvidenceKey = (key: string) => {
     return { metricName, aggregation, timeframe };
 };
 
-const getMetricUnit = (metricName: string): string => {
+export const getMetricUnit = (metricName: string): string => {
     const nameLower = metricName.toLowerCase();
     if (
         nameLower.includes("utilization") ||
@@ -21,7 +21,7 @@ const getMetricUnit = (metricName: string): string => {
     ) {
         return "%";
     }
-    if (nameLower.includes("network") || nameLower.includes("bytes") || nameLower.includes("io")) {
+    if (nameLower.includes("network") || nameLower.includes("bytes")) {
         return " MB";
     }
     if (nameLower.includes("memory") && !nameLower.includes("utilization")) {
@@ -32,7 +32,10 @@ const getMetricUnit = (metricName: string): string => {
 
 const formatValue = (metricName: string, value: number): string => {
     const unit = getMetricUnit(metricName);
-    return `${value.toFixed(2)}${unit}`;
+    const formattedNum = Number.isInteger(value)
+        ? String(value)
+        : parseFloat(value.toFixed(2)).toString();
+    return `${formattedNum}${unit}`;
 };
 
 // extract format specific metrics
@@ -497,11 +500,7 @@ export default function RecommendationReasoning({
             const days = parsed.timeframe.replace("d", "");
             const agg = parsed.aggregation.toUpperCase();
 
-            return (
-                <span key={key}>
-                    the ${agg} ${parsed.metricName} was ${formattedVal} over the last ${days} days
-                </span>
-            );
+            return `the ${agg} ${parsed.metricName} was ${formattedVal} over the last ${days} days`;
         })
         .filter(Boolean);
 
@@ -512,21 +511,21 @@ export default function RecommendationReasoning({
             return (
                 <span>
                     We recommend <strong className="text-destructive">terminating</strong> this
-                    resource because ${joinedEvidence}.
+                    resource because {joinedEvidence}.
                 </span>
             );
         case "SUSPEND":
             return (
                 <span>
                     We recommend <strong className="text-yellow-500">suspending</strong> this
-                    resource because ${joinedEvidence}.
+                    resource because {joinedEvidence}.
                 </span>
             );
         case "DOWNSIZE":
             return (
                 <span>
-                    `We recommend <strong className="text-chart-3">downsizing</strong> this resource
-                    because ${joinedEvidence}.
+                    We recommend <strong className="text-chart-3">downsizing</strong> this resource
+                    because {joinedEvidence}.
                 </span>
             );
         case "UPSCALE":
@@ -539,7 +538,7 @@ export default function RecommendationReasoning({
         default:
             return (
                 <span>
-                    Action recommended based on the following monitored metrics: ${joinedEvidence}.
+                    Action recommended based on the following monitored metrics: {joinedEvidence}.
                 </span>
             );
     }
