@@ -39,7 +39,11 @@ public class RuleCatalog {
         cloudRunTerminateIdleRule(),
         cloudRunTerminateNoRequestsRule(),
         cloudRunTerminateLowCpuMemoryRule(),
-        cloudRunTerminateLowInstancesRule());
+        cloudRunTerminateLowInstancesRule(),
+        rdsTerminateIdleRule(),
+        rdsTerminateNoConnectionsRule(),
+        rdsTerminateNoIoRule(),
+        rdsTerminateNoNetworkRule());
   }
 
   // ! ---------------------------------------- TERMINATE ----------------------------------------
@@ -225,6 +229,76 @@ public class RuleCatalog {
         List.of(lowCpuP95, lowMemP95));
   }
 
+  private OptimizationRule rdsTerminateNoConnectionsRule() {
+    MetricThresholdCondition dbConnectionsZero =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.DATABASE_CONNECTIONS,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(1));
+
+    return new OptimizationRule(
+        "RDS-TERMINATE-NO-CONNECTIONS",
+        true,
+        OptimizationActionTypeEnum.TERMINATE,
+        List.of(ProviderEnum.AWS),
+        RDS_RESOURCE_TYPES,
+        List.of(dbConnectionsZero));
+  }
+
+  private OptimizationRule rdsTerminateNoIoRule() {
+    MetricThresholdCondition readIopsLow =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.READ_IOPS,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(10));
+
+    MetricThresholdCondition writeIopsLow =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.WRITE_IOPS,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(10));
+
+    return new OptimizationRule(
+        "RDS-TERMINATE-NO-IO",
+        true,
+        OptimizationActionTypeEnum.TERMINATE,
+        List.of(ProviderEnum.AWS),
+        RDS_RESOURCE_TYPES,
+        List.of(readIopsLow, writeIopsLow));
+  }
+
+  private OptimizationRule rdsTerminateIdleRule() {
+    MetricThresholdCondition cpuMaxLow =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.CPU_UTILIZATION,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(2));
+
+    MetricThresholdCondition dbConnectionsZero =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.DATABASE_CONNECTIONS,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(1));
+
+    return new OptimizationRule(
+        "RDS-TERMINATE-IDLE",
+        true,
+        OptimizationActionTypeEnum.TERMINATE,
+        List.of(ProviderEnum.AWS),
+        RDS_RESOURCE_TYPES,
+        List.of(cpuMaxLow, dbConnectionsZero));
+  }
+
   private OptimizationRule cloudRunTerminateLowInstancesRule() {
     MetricThresholdCondition runningInstancesZero =
         new MetricThresholdCondition(
@@ -241,6 +315,32 @@ public class RuleCatalog {
         List.of(ProviderEnum.GCP),
         CLOUDRUN_RESOURCE_TYPES,
         List.of(runningInstancesZero));
+  }
+
+  private OptimizationRule rdsTerminateNoNetworkRule() {
+    MetricThresholdCondition netInLow =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.NETWORK_IN,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(1000));
+
+    MetricThresholdCondition netOutLow =
+        new MetricThresholdCondition(
+            MetricDisplayNameMapper.NETWORK_OUT,
+            4,
+            StatField.MAXIMUM,
+            ComparisonOperator.LESS_THAN,
+            new BigDecimal(1000));
+
+    return new OptimizationRule(
+        "RDS-TERMINATE-NO-NETWORK",
+        true,
+        OptimizationActionTypeEnum.TERMINATE,
+        List.of(ProviderEnum.AWS),
+        RDS_RESOURCE_TYPES,
+        List.of(netInLow, netOutLow));
   }
 
   // ! ---------------------------------------- TERMINATE ----------------------------------------
