@@ -85,7 +85,10 @@ public class NormalizationStep implements BillingIngestionPipelineStep<AzureBill
                     execution);
               }
 
-              execution.setStatus(ExecutionStatusEnum.completed);
+              if (execution.getStatus() != ExecutionStatusEnum.failed) {
+                execution.setStatus(ExecutionStatusEnum.completed);
+              }
+
               execution.setCompletedAt(OffsetDateTime.now(ZoneOffset.UTC));
               exportService.updateBillingExportExecution(execution);
             });
@@ -102,6 +105,8 @@ public class NormalizationStep implements BillingIngestionPipelineStep<AzureBill
 
       List<RawBillingRow> batch;
       Integer rowsProcessed = 0;
+      execution.setRowsProcessed(rowsProcessed);
+      exportService.updateBillingExportExecution(execution);
       while (!(batch = reader.readBatch(BATCH_SIZE)).isEmpty()) {
         persistenceService.recordCosts(normalizeRawBillingBatch(batch, execution), userId);
         rowsProcessed += batch.size();
@@ -110,19 +115,21 @@ public class NormalizationStep implements BillingIngestionPipelineStep<AzureBill
       }
 
     } catch (IOException e) {
-      execution.setStatus(ExecutionStatusEnum.failed);
-      execution.setErrorMessage("Failed as a result of an IOException");
-      exportService.updateBillingExportExecution(execution);
+      logger.warn("Failed to read blob {}, SKIPPING", blobName, e);
+      failedExecution(execution, "Failed due to IOException");
     } catch (ExportReaderException e) {
       logger.warn("Failed to read blob {}, SKIPPING", blobName, e);
-      execution.setStatus(ExecutionStatusEnum.failed);
-      execution.setErrorMessage("Failed as a result of an ExportReaderException");
-      exportService.updateBillingExportExecution(execution);
+      failedExecution(execution, "Failed due to ExportReaderException");
     }
   }
 
   private List<NormalizedCosts> normalizeRawBillingBatch(
       List<RawBillingRow> rawBillingBatch, BillingExportExecution execution) {
     return rawBillingBatch.stream().map(row -> normalizer.normalize(row, execution)).toList();
+  }
+
+  private void failedExecution(BillingExportExecution execution, String errorMessage) {
+    execution.setStatus(ExecutionStatusEnum.failed);
+    execution.setErrorMessage(errorMessage);
   }
 }
