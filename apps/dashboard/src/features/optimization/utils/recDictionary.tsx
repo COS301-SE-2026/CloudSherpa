@@ -12,6 +12,24 @@ const parseEvidenceKey = (key: string) => {
     return { metricName, aggregation, timeframe };
 };
 
+const getMetricUnit = (metricName: string): string => {
+    const nameLower = metricName.toLowerCase();
+    if (
+        nameLower.includes("utilization") ||
+        nameLower.includes("percentage") ||
+        nameLower.includes("pressure")
+    ) {
+        return "%";
+    }
+    if (nameLower.includes("network") || nameLower.includes("bytes") || nameLower.includes("io")) {
+        return " MB";
+    }
+    if (nameLower.includes("memory") && !nameLower.includes("utilization")) {
+        return " GB";
+    }
+    return "";
+};
+
 const formatValue = (metricName: string, value: number): string => {
     const nameLower = metricName.toLowerCase();
     const isPercentage =
