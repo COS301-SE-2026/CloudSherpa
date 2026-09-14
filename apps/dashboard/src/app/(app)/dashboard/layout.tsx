@@ -45,7 +45,7 @@ function getMaxY(
     if (activeDashboard) {
         activeDashboard.layoutItemIds.forEach((id) => {
             const l = currentLayouts[id];
-            if (l && l.y !== undefined && l.h !== undefined) {
+            if (l?.y !== undefined && l?.h !== undefined) {
                 maxY = Math.max(maxY, l.y + l.h);
             }
         });

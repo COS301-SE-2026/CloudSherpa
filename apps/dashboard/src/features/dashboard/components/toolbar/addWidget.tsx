@@ -5,7 +5,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/atoms/dropdown-menu";
 import { Button } from "@/components/atoms/button";
-import { Plus, ChevronDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 
 interface ToolbarProps {
     handleAddWidget: () => void;
@@ -29,7 +29,7 @@ export default function AddWidget({ handleAddWidget, handleAddKpi }: Readonly<To
 
             <DropdownMenuContent align="start" className="w-45">
                 <DropdownMenuItem
-                    className="cursor-pointer font-medium flex flex-row justify-between"
+                    className="cursor-pointer font-medium flex flex-row justify-between gap-3"
                     onClick={handleAddWidget}
                 >
                     Chart Widget
@@ -39,7 +39,7 @@ export default function AddWidget({ handleAddWidget, handleAddKpi }: Readonly<To
                 </DropdownMenuItem>
 
                 <DropdownMenuItem
-                    className="cursor-pointer font-medium flex flex-row justify-between"
+                    className="cursor-pointer font-medium flex flex-row justify-between gap-3"
                     onClick={handleAddKpi}
                 >
                     KPI Widget

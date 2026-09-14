@@ -30,9 +30,7 @@ export const WidgetWrapper = ({ layout, isEditMode }: WidgetWrapperProps) => {
         <div className="grid-stack-item" {...gridStackAttributes}>
             <div className="grid-stack-item-content relative overflow-visible! rounded-md group">
                 {isEditMode && (
-                    <>
-                        <div className="drag-handle absolute inset-0 z-40 cursor-grab active:cursor-grabbing rounded-xl" />
-                    </>
+                    <div className="drag-handle absolute inset-0 z-40 cursor-grab active:cursor-grabbing rounded-xl" />
                 )}
 
                 <div
