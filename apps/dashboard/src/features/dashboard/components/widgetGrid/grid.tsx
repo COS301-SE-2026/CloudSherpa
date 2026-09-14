@@ -121,7 +121,11 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
             );
 
             gridStackInstance.current.on("change", () => {
-                if (gridStackInstance.current && isEditModeRef.current) {
+                if (
+                    gridStackInstance.current &&
+                    isEditModeRef.current &&
+                    !isInternalUpdate.current
+                ) {
                     isInternalUpdate.current = true;
                     const fullLayout = gridStackInstance.current.save(
                         false,
