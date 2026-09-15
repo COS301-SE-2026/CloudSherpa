@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Separator } from "@/components/atoms/separator";
 import { Input } from "@/components/atoms/input";
 import { Button } from "@/components/atoms/button";
@@ -20,6 +20,20 @@ import {
 } from "@/lib/fetch/cloud-account-api";
 import { CloudAccountDetails } from "@/lib/fetch/dto/cloud-account";
 import { CloudResource, ResourceStatus } from "@/lib/fetch/dto/cloud-resource";
+import {
+    IngestionSlider,
+    formattingSecond,
+    calculatingIngestionPeriod,
+} from "@/features/connectionManager/components/connectionManager/wizardSetup/stepThree";
+import { Checkbox } from "@/components/atoms/checkbox";
+import { Label } from "@/components/atoms/label";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/atoms/select";
 
 /*
 - the user should be able to veiw details about a particular connectio here
@@ -27,6 +41,8 @@ import { CloudResource, ResourceStatus } from "@/lib/fetch/dto/cloud-resource";
 - they should be able to configure this connection - by changing the name of the connection
 - they should also be able to go to the resource manager from this page
 */
+
+type Budget = "free" | "custom";
 
 export default function ConfigureConnection() {
     const params = useParams();
@@ -45,6 +61,18 @@ export default function ConfigureConnection() {
     const [loading, setLoading] = useState(true);
 
     const [isChanging, setIsChanging] = useState(false);
+
+    const [ingestionPeriod, setIngestionPeriod] = useState<number | null>(null);
+
+    const [resourceDiscovery, setResourceDiscovery] = useState(false);
+
+    const [monitorNewResources, setMonitorNewResources] = useState(false);
+
+    const [adjustInterval, setAdjustInterval] = useState(false);
+
+    const [budget, setBudget] = useState<Budget | "">("");
+
+    const [custom, setCustom] = useState("");
 
     async function loadConnection() {
         try {
@@ -98,6 +126,33 @@ export default function ConfigureConnection() {
     const handlingCancel = () => {
         setNewName(connectionName);
         setIsChanging(false);
+    };
+
+    const activeCount = resources.length;
+
+    const recIngestionPeriod = useMemo(
+        () => calculatingIngestionPeriod(activeCount),
+        [activeCount]
+    );
+
+    const accurateIngestionPeriod = ingestionPeriod ?? recIngestionPeriod;
+
+    const handlingAdjust = (checked: boolean) => {
+        setAdjustInterval(checked);
+
+        if (!checked) {
+            setIngestionPeriod(null);
+        }
+    };
+
+    const handlingBudget = (choice: Budget) => {
+        setBudget(choice);
+
+        if (choice === "free") {
+            setCustom("");
+
+            setIngestionPeriod(null);
+        }
     };
 
     if (loading) {
@@ -246,6 +301,159 @@ export default function ConfigureConnection() {
                                     {account?.accountEmail}{" "}
                                 </span>
                             </div>
+                        </CardContent>
+                    </Card>
+
+                    <div className="flex items-center gap-2 mb-3">
+                        <h2 className="text-base font-medium text-foreground"> Settings </h2>
+                    </div>
+
+                    <Card className="mb-8 bg-card border-border">
+                        <CardContent className="pt-6 space-y-6">
+                            <div className="space-y-4">
+                                <div className="flex items-start gap-3">
+                                    <Checkbox
+                                        id="resource-discovery"
+                                        checked={resourceDiscovery}
+                                        onCheckedChange={(checkedBox) =>
+                                            setResourceDiscovery(checkedBox === true)
+                                        }
+                                        className="mt-0.5"
+                                    />
+
+                                    <div className="space-y-1">
+                                        <Label
+                                            htmlFor="resource-discovery"
+                                            className="text-sm font-medium text-foreground cursor-pointer"
+                                        >
+                                            {" "}
+                                            Enable automatic resource discovery{" "}
+                                        </Label>
+
+                                        <p className="text-sm text-muted-foreground leading-relaxed">
+                                            {" "}
+                                            This setting allows CloudSherpa to periodically scan you
+                                            provider cloud account to find recently added resources.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-start gap-3">
+                                    <Checkbox
+                                        id="monitor-new-resources"
+                                        checked={monitorNewResources}
+                                        onCheckedChange={(checkedBox) =>
+                                            setMonitorNewResources(checkedBox === true)
+                                        }
+                                        className="mt-0.5"
+                                    />
+
+                                    <div className="space-y-1">
+                                        <Label
+                                            htmlFor="monitor-new-resources"
+                                            className="text-sm font-medium text-foreground cursor-pointer"
+                                        >
+                                            {" "}
+                                            Automatically monitor newly discovered resources{" "}
+                                        </Label>
+
+                                        <p className="text-sm text-muted-foreground leading-relaxed">
+                                            {" "}
+                                            When selected, new resources added to CloudSherpa during
+                                            automatic and manual resource discovery will be set to
+                                            &quot;active&quot; and have metrics ingested. It is
+                                            highly recommended that this setting be enabled with
+                                            &quot;Automatic ingestion ingestion interval
+                                            adjustment&quot; to avoid unexpected cloud costs
+                                            associated with API free tier limit, as adding active
+                                            resources without adjusting the ingestion interval leads
+                                            to an increase in requests to cloud providers.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-start gap-3">
+                                    <Checkbox
+                                        id="adjust-interval"
+                                        checked={adjustInterval}
+                                        onCheckedChange={(checked) =>
+                                            handlingAdjust(checked === true)
+                                        }
+                                        className="mt-0.5"
+                                    />
+
+                                    <div className="space-y-1 flex-1">
+                                        <Label
+                                            htmlFor="adjust-interval"
+                                            className="text-sm font-medium text-foreground cursor-pointer"
+                                        >
+                                            {" "}
+                                            Automatic ingestion interval adjustment{" "}
+                                        </Label>
+
+                                        <p className="text-sm text-muted-foreground leading-relaxed">
+                                            {" "}
+                                            When enabled, CloudSherpa will automatically adjust your
+                                            ingestion interval based on the number of resources as
+                                            well as metrics to stay within a specified cost range.
+                                        </p>
+
+                                        {adjustInterval && (
+                                            <div className="flex items-center gap-2 pt-2">
+                                                <Select
+                                                    value={budget}
+                                                    onValueChange={(value) =>
+                                                        handlingBudget(value as Budget)
+                                                    }
+                                                >
+                                                    <SelectTrigger className="h-7 text-xs w-28 bg-transparent border-border text-foreground focus:ring-ring">
+                                                        {" "}
+                                                        <SelectValue placeholder="Select" />{" "}
+                                                    </SelectTrigger>
+
+                                                    <SelectContent>
+                                                        <SelectItem value="free"> Free </SelectItem>
+
+                                                        <SelectItem value="custom">
+                                                            {" "}
+                                                            Custom{" "}
+                                                        </SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+
+                                                {budget === "custom" && (
+                                                    <div className="flex items-center gap-1.5">
+                                                        <Input
+                                                            type="number"
+                                                            min={0}
+                                                            step="0.1"
+                                                            placeholder="0.00"
+                                                            value={custom}
+                                                            onChange={(change) =>
+                                                                setCustom(change.target.value)
+                                                            }
+                                                            className="h-9 text-sm w-24 bg-transparent border-border text-foreground focus-visible:ring-ring"
+                                                        />
+
+                                                        <span className="text-sm text-muted-foreground">
+                                                            {" "}
+                                                            / month{" "}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <IngestionSlider
+                                ingestionPeriod={accurateIngestionPeriod}
+                                setIngestionPeriod={setIngestionPeriod}
+                                activeCount={activeCount}
+                                recIngestionPeriod={recIngestionPeriod}
+                                formatSeconds={formattingSecond}
+                            />
                         </CardContent>
                     </Card>
 
