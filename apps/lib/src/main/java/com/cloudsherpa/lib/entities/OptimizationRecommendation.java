@@ -78,8 +78,23 @@ public class OptimizationRecommendation {
     return resourceId;
   }
 
+  public void setResourceId(UUID id)
+  {
+    resourceId = id;
+  }
+
+  public void setRecommendationId(UUID id)
+  {
+    recommendationId = id;
+  }
+
   public ProviderEnum getProvider() {
     return provider;
+  }
+
+  public void setProvider(ProviderEnum provider)
+  {
+    this.provider = provider;
   }
 
   public String getRuleId() {
@@ -88,6 +103,11 @@ public class OptimizationRecommendation {
 
   public OptimizationActionTypeEnum getActionType() {
     return actionType;
+  }
+
+  public void setActionType(OptimizationActionTypeEnum action)
+  {
+    this.actionType = action;
   }
 
   public OptimizationStatusEnum getStatus() {
