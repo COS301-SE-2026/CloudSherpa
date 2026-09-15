@@ -90,7 +90,7 @@ export function DashboardSelector({
                     }}
                 >
                     <Tooltip>
-                        <TooltipTrigger>
+                        <TooltipTrigger asChild>
                             <PopoverTrigger asChild aria-label="Dashboard Selector">
                                 <Button
                                     variant="outline"
