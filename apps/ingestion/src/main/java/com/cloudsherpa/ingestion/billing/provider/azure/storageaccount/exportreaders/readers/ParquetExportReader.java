@@ -1,9 +1,23 @@
 package com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.exportreaders.readers;
 
+import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
+import com.cloudsherpa.ingestion.billing.deserialization.parquet.ParquetDataConverterService;
+import com.cloudsherpa.ingestion.billing.deserialization.parquet.ParquetReaderService;
+import com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.exportreaders.exeptions.ExportReaderException;
 import com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.model.RawBillingRow;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import org.apache.avro.AvroRuntimeException;
+import org.apache.avro.generic.GenericRecord;
+import org.apache.parquet.hadoop.ParquetReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,22 +25,107 @@ public class ParquetExportReader implements ExportReader<RawBillingRow> {
 
   private final Logger logger = LoggerFactory.getLogger(ParquetExportReader.class);
 
-  private String blobName;
-  private BlobContainerClient containerClient;
+  private final Path tmpDirectory;
+  private Path blobFilePath;
+  private ParquetReader<GenericRecord> reader;
+  private ParquetDataConverterService parquetDataConverterService;
 
-  public ParquetExportReader(BlobContainerClient containerClient, String blobName) {
-    this.blobName = blobName;
-    this.containerClient = containerClient;
+  public ParquetExportReader(
+      BlobContainerClient containerClient,
+      String blobName,
+      ParquetReaderService readerService,
+      ParquetDataConverterService parquetDataConverterService,
+      String tmpDirectoryString) {
+    this.parquetDataConverterService = parquetDataConverterService;
+    this.tmpDirectory = Paths.get(tmpDirectoryString);
+    directoryExistsValidation();
+    this.blobFilePath = createTemporaryBlobPath(blobName);
+    downloadBlob(containerClient, blobName);
+    try {
+      reader = readerService.openParquetReader(blobFilePath);
+    } catch (IOException e) {
+      try {
+        Files.delete(blobFilePath);
+      } catch (IOException ioException) {
+        logger.error("Failed to delete downloaded export at {}", blobFilePath);
+      }
+
+      throw new ExportReaderException(
+          "Failed to open parquet file at path " + blobFilePath.toString(), e);
+    }
   }
 
   @Override
   public List<RawBillingRow> readBatch(int maxRows) throws IOException {
-    logger.info("Blob Name {} container client {}", blobName, containerClient);
-    return List.of();
+
+    List<RawBillingRow> batch = new ArrayList<>();
+
+    while (batch.size() < maxRows) {
+      GenericRecord billingRecord = reader.read();
+
+      if (billingRecord == null) {
+        break;
+      }
+
+      try {
+        batch.add(readRow(billingRecord));
+      } catch (AvroRuntimeException e) {
+        logger.error("Bad row, SKIPPING", e);
+      }
+    }
+
+    return batch;
   }
 
   @Override
   public void close() throws IOException {
-    // Close parquet reader
+    reader.close();
+    Files.delete(blobFilePath);
+  }
+
+  private void directoryExistsValidation() {
+    try {
+      Files.createDirectories(tmpDirectory);
+    } catch (IOException e) {
+      String errorMessage = "Directory does not exist and failed to create directory";
+      logger.error(errorMessage, e);
+      throw new ExportReaderException(errorMessage, e);
+    }
+  }
+
+  private void downloadBlob(BlobContainerClient containerClient, String blobName) {
+    BlobClient blobClient = containerClient.getBlobClient(blobName);
+    blobClient.downloadToFile(blobFilePath.toString());
+  }
+
+  private Path createTemporaryBlobPath(String blobName) {
+    String originalFileName = blobName.substring(blobName.lastIndexOf('/') + 1);
+
+    return tmpDirectory.resolve(UUID.randomUUID() + "-" + originalFileName);
+  }
+
+  private RawBillingRow readRow(GenericRecord billingRecord) {
+    String billingAccountId = billingRecord.get("billingAccountId").toString();
+    LocalDate date =
+        parquetDataConverterService.getTimestamp(billingRecord.get("date")).toLocalDate();
+    String consumedService = billingRecord.get("consumedService").toString();
+    String meterCategory = billingRecord.get("meterCategory").toString();
+    String meterSubCategory = billingRecord.get("meterSubCategory").toString();
+    String resourceId = billingRecord.get("ResourceId").toString();
+    String chargeType = billingRecord.get("chargeType").toString();
+    String billingCurrency = billingRecord.get("billingCurrency").toString();
+    BigDecimal costInPricingCurrency =
+        parquetDataConverterService.readDecimal(billingRecord, "costInPricingCurrency");
+
+    return new RawBillingRow(
+        billingAccountId,
+        date,
+        consumedService,
+        meterCategory,
+        meterSubCategory,
+        resourceId,
+        chargeType,
+        billingCurrency,
+        costInPricingCurrency);
   }
 }

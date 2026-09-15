@@ -1,4 +1,4 @@
-package com.cloudsherpa.ingestion.billing.provider.aws.cur.deserialization.parquet;
+package com.cloudsherpa.ingestion.billing.deserialization.parquet;
 
 import java.io.IOException;
 import org.apache.avro.generic.GenericRecord;
@@ -14,7 +14,6 @@ public class ParquetReaderService {
   public ParquetReader<GenericRecord> openParquetReader(java.nio.file.Path javaPath)
       throws IOException {
     Configuration configuration = new Configuration();
-    // CUR timestamp compatibility
     configuration.setBoolean("parquet.avro.readInt96AsFixed", true);
 
     InputFile inputFile = new LocalInputFile(javaPath);
