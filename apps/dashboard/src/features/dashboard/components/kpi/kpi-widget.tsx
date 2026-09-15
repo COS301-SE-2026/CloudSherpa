@@ -51,7 +51,7 @@ export function KPIWidget({ config, preview = false, isEditMode = false }: Reado
             return (
                 <div className="flex flex-1 items-center justify-center">
                     <p className="text-xs text-muted-foreground italic text-center">
-                        Save dashboard changes before configuring this widget.
+                        Drag to move widget.
                     </p>
                 </div>
             );
