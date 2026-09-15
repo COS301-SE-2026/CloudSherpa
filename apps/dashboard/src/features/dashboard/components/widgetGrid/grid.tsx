@@ -12,9 +12,8 @@ import "gridstack/dist/gridstack.min.css";
 import { GridStack, GridItemHTMLElement, GridStackWidget, GridStackNode } from "gridstack";
 import { useDashboardStore } from "../../stores/dashboard-store";
 
-import { LayoutItem } from "@/features/dashboard/types/widgets";
+import { LayoutItem, WidgetConfig } from "@/features/dashboard/types/widgets";
 import { WidgetWrapper } from "@/features/dashboard/components/widgetGrid/widgets/widgetWrapper";
-import { WidgetConfig } from "@/features/dashboard/types/widgets";
 
 const MIN_SIZES: Record<WidgetConfig["widgetType"], { w: number; h: number }> = {
     CHART: { w: 3, h: 3 },
