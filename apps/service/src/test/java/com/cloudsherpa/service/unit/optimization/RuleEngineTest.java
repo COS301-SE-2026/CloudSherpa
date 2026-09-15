@@ -17,6 +17,8 @@ import com.cloudsherpa.service.optimization.rule.RuleSet;
 import com.cloudsherpa.service.optimization.rule.model.MetricThresholdCondition;
 import com.cloudsherpa.service.optimization.rule.model.OptimizationRule;
 import com.cloudsherpa.service.optimization.rule.model.RecommendationCandidate;
+import com.cloudsherpa.service.optimization.rule.model.StatField;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -48,16 +50,16 @@ class RuleEngineTest {
   }
 
   @Test
-  void testEvaluateRuleGeneratesCandidateWhenAllConditionsMatch() {
+  void testEvaluateRule_GeneratesCandidate_WhenAllConditionsMatch() {
     UUID resourceId = UUID.randomUUID();
 
     MetricThresholdCondition condition = mock(MetricThresholdCondition.class);
-
     when(condition.metricName()).thenReturn("cpu_utilization");
     when(condition.windowNumDays()).thenReturn(7);
 
-    OptimizationRule rule = mock(OptimizationRule.class);
+    when(condition.field()).thenReturn(StatField.MAXIMUM);
 
+    OptimizationRule rule = mock(OptimizationRule.class);
     when(rule.ruleId()).thenReturn("TEST-RULE");
     when(rule.actionType()).thenReturn(OptimizationActionTypeEnum.DOWNSIZE);
     when(rule.metricThresholdConditions()).thenReturn(List.of(condition));
@@ -66,9 +68,10 @@ class RuleEngineTest {
     when(ruleSet.loadActiveRules(List.of(rule))).thenReturn(List.of(rule));
 
     OptimizationMetricStatistics stat = mock(OptimizationMetricStatistics.class);
-
     when(stat.getResourceId()).thenReturn(resourceId);
     when(stat.getProvider()).thenReturn(ProviderEnum.AWS);
+
+    when(stat.getMaximumValue()).thenReturn(new BigDecimal(90.0));
 
     when(statisticsRepository.findByMetricNameAndWindowNumDays("cpu_utilization", 7))
         .thenReturn(List.of(stat));
