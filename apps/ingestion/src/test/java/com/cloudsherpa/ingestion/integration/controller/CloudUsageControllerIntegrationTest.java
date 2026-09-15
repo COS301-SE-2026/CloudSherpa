@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.cloudsherpa.ingestion.billing.provider.aws.cur.AwsCurIngestionService;
+import com.cloudsherpa.ingestion.billing.provider.azure.AzureBillingIngestionService;
 import com.cloudsherpa.ingestion.billing.provider.gcp.bigquery.GcpBillingIngestionService;
 import com.cloudsherpa.ingestion.connector.CloudConnectorFactory;
 import com.cloudsherpa.ingestion.controller.CloudUsageController;
@@ -42,6 +43,8 @@ class CloudUsageControllerIntegrationTest {
   @MockitoBean private AwsCurIngestionService awsCurIngestionService;
 
   @MockitoBean private GcpBillingIngestionService gcpBillingIngestionService;
+
+  @MockitoBean private AzureBillingIngestionService azureBillingIngestionService;
 
   @MockitoBean private CloudConnectorFactory connectorFactory;
 

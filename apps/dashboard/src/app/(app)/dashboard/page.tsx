@@ -4,6 +4,7 @@ import { useCallback, useEffect, Suspense, useMemo, useRef } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useToolbar } from "@/features/dashboard/components/toolbar/toolbarProvider";
 
+import { Button } from "@/components/atoms/button";
 import { Spinner } from "@/components/atoms/spinner";
 import { gridApiRef, Grid } from "@/features/dashboard/components/widgetGrid/grid";
 import { LayoutItem } from "@/features/dashboard/types/widgets";
@@ -17,7 +18,7 @@ function DashboardContent() {
     const { error: streamError } = useMetricStream();
     const searchParams = useSearchParams();
     const urlId = searchParams.get("id");
-    const { isEditMode } = useToolbar();
+    const { isEditMode, setIsSelectorOpen, setSelectorView } = useToolbar();
 
     const { isLoading, metricFetchError } = useLoadDashboardData();
 
@@ -128,6 +129,14 @@ function DashboardContent() {
                 <p className="text-muted-foreground mb-6">
                     Create your first dashboard to start monitoring your cloud resources.
                 </p>
+                <Button
+                    onClick={() => {
+                        setSelectorView("create");
+                        setIsSelectorOpen(true);
+                    }}
+                >
+                    Create Dashboard
+                </Button>{" "}
             </div>
         );
     };

@@ -10,7 +10,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -23,14 +26,16 @@ import org.slf4j.LoggerFactory;
 
 public class CsvExportReader implements ExportReader<RawBillingRow> {
 
-  private static final Logger logger = // NOSONAR keeping here for dev
-      LoggerFactory.getLogger(CsvExportReader.class);
+  private static final Logger logger = LoggerFactory.getLogger(CsvExportReader.class);
 
   private final AzureBlobReader blobReader;
 
   private CSVParser parser;
 
   private final Iterator<CSVRecord> records;
+
+  private static final DateTimeFormatter EXPORT_DATE_FORMAT =
+      DateTimeFormatter.ofPattern("MM/dd/uuuu");
 
   public CsvExportReader(
       BlobContainerClient containerClient, String blobName, AzureBlobReader blobReader) {
@@ -51,8 +56,12 @@ public class CsvExportReader implements ExportReader<RawBillingRow> {
 
     while (batch.size() < maxRows && records.hasNext()) {
       CSVRecord csvRecord = records.next();
-      csvRecord.get("chargeId");
-      batch.add(new RawBillingRow("tbd"));
+      try {
+        RawBillingRow rawBillingRow = readRow(csvRecord);
+        batch.add(rawBillingRow);
+      } catch (IllegalArgumentException e) {
+        logger.error("Failed to read CSV export row, SKIPPING ", e);
+      }
     }
 
     return batch;
@@ -61,6 +70,32 @@ public class CsvExportReader implements ExportReader<RawBillingRow> {
   @Override
   public void close() throws IOException {
     this.parser.close();
+  }
+
+  private RawBillingRow readRow(CSVRecord csvRecord) {
+
+    // non-negiotables, all fields must be present
+    String billingAccountId = csvRecord.get("billingAccountId");
+    LocalDate date = LocalDate.parse(csvRecord.get("date"), EXPORT_DATE_FORMAT);
+    String consumedService = csvRecord.get("consumedService");
+    String meterCategory = csvRecord.get("meterCategory");
+    String meterSubCategory = csvRecord.get("meterSubCategory");
+    String resourceId = csvRecord.get("ResourceId");
+    String chargeType = csvRecord.get("chargeType");
+    String billingCurrency = csvRecord.get("billingCurrency");
+    BigDecimal costInPricingCurrency =
+        BigDecimal.valueOf(Double.parseDouble(csvRecord.get("costInPricingCurrency")));
+
+    return new RawBillingRow(
+        billingAccountId,
+        date,
+        consumedService,
+        meterCategory,
+        meterSubCategory,
+        resourceId,
+        chargeType,
+        billingCurrency,
+        costInPricingCurrency);
   }
 
   private CSVParser openCsvParser(BlobContainerClient containerClient, String blobName)
