@@ -27,7 +27,13 @@ import {
 } from "@/features/connectionManager/components/connectionManager/wizardSetup/stepThree";
 import { Checkbox } from "@/components/atoms/checkbox";
 import { Label } from "@/components/atoms/label";
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/atoms/select";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/atoms/select";
 
 /*
 - the user should be able to veiw details about a particular connectio here
@@ -131,18 +137,18 @@ export default function ConfigureConnection() {
 
     const accurateIngestionPeriod = ingestionPeriod ?? recIngestionPeriod;
 
-    const handlingAdjust = (checked : boolean) => {
+    const handlingAdjust = (checked: boolean) => {
         setAdjustInterval(checked);
 
-        if(!checked){
+        if (!checked) {
             setIngestionPeriod(null);
         }
     };
 
-    const handlingBudget = (choice : Budget) => {
+    const handlingBudget = (choice: Budget) => {
         setBudget(choice);
 
-        if(choice === "free"){
+        if (choice === "free") {
             setCustom("");
 
             setIngestionPeriod(null);
@@ -366,34 +372,73 @@ export default function ConfigureConnection() {
                                     </div>
                                 </div>
 
-                                <div className = "flex items-start gap-3">
-                                    <Checkbox id = "adjust-interval" checked = {adjustInterval} onCheckedChange = {(checked) => handlingAdjust(checked === true)} className = "mt-0.5"/>
+                                <div className="flex items-start gap-3">
+                                    <Checkbox
+                                        id="adjust-interval"
+                                        checked={adjustInterval}
+                                        onCheckedChange={(checked) =>
+                                            handlingAdjust(checked === true)
+                                        }
+                                        className="mt-0.5"
+                                    />
 
-                                    <div className = "space-y-1 flex-1">
-                                        <Label htmlFor = "adjust-interval" className = "text-sm font-medium text-foreground cursor-pointer"> Automatic ingestion interval adjustment </Label>
+                                    <div className="space-y-1 flex-1">
+                                        <Label
+                                            htmlFor="adjust-interval"
+                                            className="text-sm font-medium text-foreground cursor-pointer"
+                                        >
+                                            {" "}
+                                            Automatic ingestion interval adjustment{" "}
+                                        </Label>
 
-                                        <p className = "text-sm text-muted-foreground leading-relaxed"> When enabled, CloudSherpa will automatically adjust your ingestion interval based on the number of resources as well as metrics
-                                                                                                        to stay within a specified cost range.
+                                        <p className="text-sm text-muted-foreground leading-relaxed">
+                                            {" "}
+                                            When enabled, CloudSherpa will automatically adjust your
+                                            ingestion interval based on the number of resources as
+                                            well as metrics to stay within a specified cost range.
                                         </p>
 
                                         {adjustInterval && (
-                                            <div className = "flex items-center gap-2 pt-2">
-                                                <Select value = {budget} onValueChange = {(value) => handlingBudget(value as Budget)}>
-                                                    <SelectTrigger className = "h-7 text-xs w-28 bg-transparent border-border text-foreground focus:ring-ring"> <SelectValue placeholder = "Select"/> </SelectTrigger>
+                                            <div className="flex items-center gap-2 pt-2">
+                                                <Select
+                                                    value={budget}
+                                                    onValueChange={(value) =>
+                                                        handlingBudget(value as Budget)
+                                                    }
+                                                >
+                                                    <SelectTrigger className="h-7 text-xs w-28 bg-transparent border-border text-foreground focus:ring-ring">
+                                                        {" "}
+                                                        <SelectValue placeholder="Select" />{" "}
+                                                    </SelectTrigger>
 
                                                     <SelectContent>
-                                                        <SelectItem value = "free"> Free </SelectItem>
+                                                        <SelectItem value="free"> Free </SelectItem>
 
-                                                        <SelectItem value = "custom"> Custom </SelectItem>
+                                                        <SelectItem value="custom">
+                                                            {" "}
+                                                            Custom{" "}
+                                                        </SelectItem>
                                                     </SelectContent>
                                                 </Select>
 
                                                 {budget === "custom" && (
-                                                    <div className = "flex items-center gap-1.5">
-                                                        <Input type = "number" min = {0} step = "0.1" placeholder = "0.00" value = {custom} onChange = {(change) => setCustom(change.target.value)}
-                                                                       className = "h-7 text-sm w-24 bg-transparent border-border text-foreground focus-visible:ring-ring"/>
+                                                    <div className="flex items-center gap-1.5">
+                                                        <Input
+                                                            type="number"
+                                                            min={0}
+                                                            step="0.1"
+                                                            placeholder="0.00"
+                                                            value={custom}
+                                                            onChange={(change) =>
+                                                                setCustom(change.target.value)
+                                                            }
+                                                            className="h-7 text-sm w-24 bg-transparent border-border text-foreground focus-visible:ring-ring"
+                                                        />
 
-                                                        <span className = "text-sm text-muted-foreground"> / month </span>
+                                                        <span className="text-sm text-muted-foreground">
+                                                            {" "}
+                                                            / month{" "}
+                                                        </span>
                                                     </div>
                                                 )}
                                             </div>
