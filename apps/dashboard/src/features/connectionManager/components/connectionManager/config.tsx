@@ -432,7 +432,7 @@ export default function ConfigureConnection() {
                                                             onChange={(change) =>
                                                                 setCustom(change.target.value)
                                                             }
-                                                            className="h-7 text-sm w-24 bg-transparent border-border text-foreground focus-visible:ring-ring"
+                                                            className="h-9 text-sm w-24 bg-transparent border-border text-foreground focus-visible:ring-ring"
                                                         />
 
                                                         <span className="text-sm text-muted-foreground">
