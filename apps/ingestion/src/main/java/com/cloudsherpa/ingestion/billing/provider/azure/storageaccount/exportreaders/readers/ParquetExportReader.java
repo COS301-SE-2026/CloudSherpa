@@ -23,12 +23,16 @@ public class ParquetExportReader implements ExportReader<RawBillingRow> {
 
   private final Logger logger = LoggerFactory.getLogger(ParquetExportReader.class);
 
-  private static final Path TEMP_DIRECTORY = Paths.get("/tmp/sherpa/azure");
+  private final Path tmpDirectory;
   private Path blobFilePath;
   private ParquetReader<GenericRecord> reader;
 
   public ParquetExportReader(
-      BlobContainerClient containerClient, String blobName, ParquetReaderService readerService) {
+      BlobContainerClient containerClient,
+      String blobName,
+      ParquetReaderService readerService,
+      String tmpDirectoryString) {
+    this.tmpDirectory = Paths.get(tmpDirectoryString);
     directoryExistsValidation();
     this.blobFilePath = parseBlobFilename(blobName);
     downloadBlob(containerClient, blobName);
@@ -76,7 +80,7 @@ public class ParquetExportReader implements ExportReader<RawBillingRow> {
 
   private void directoryExistsValidation() {
     try {
-      Files.createDirectory(TEMP_DIRECTORY);
+      Files.createDirectories(tmpDirectory);
     } catch (IOException e) {
       String errorMessage = "Directory does not exist and failed to create directory";
       logger.error(errorMessage, e);
@@ -91,7 +95,7 @@ public class ParquetExportReader implements ExportReader<RawBillingRow> {
 
   private Path parseBlobFilename(String blobName) {
     String[] splitBlobName = blobName.split("/");
-    return TEMP_DIRECTORY.resolve(splitBlobName[splitBlobName.length - 1]);
+    return tmpDirectory.resolve(splitBlobName[splitBlobName.length - 1]);
   }
 
   private RawBillingRow readRow(GenericRecord billingRecord) {
