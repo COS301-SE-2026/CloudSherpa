@@ -35,22 +35,20 @@ async function createNewDashboard(page: Page) {
     await page.getByRole("button", { name: "Dashboard Selector" }).click();
     await page.getByLabel("createNewDashOption").click();
     await page.getByLabel("createDashInput").fill(uniqueDashboardName);
-    await page.getByRole("button", { name: "Create Dashboard" }).click();
+    await page.getByLabel("create dashboard").click();
     await expect(page.getByLabel("dashboard selector dropdown")).toContainText(uniqueDashboardName);
     return uniqueDashboardName;
 }
 
 async function createNewChartWidget(page: Page) {
-    await page.getByLabel("editbtn").first().click();
-    await page.getByRole("button", { name: "Add Chart" }).click();
-    await page.getByRole("button", { name: "Save" }).click();
+    await page.getByLabel("add widget").first().click();
+    await page.getByLabel("add chart widget").first().click();
     await expect(page.getByText("New Chart").first()).toBeVisible();
 }
 
 async function createNewKPIWidget(page: Page) {
-    await page.getByLabel("editbtn").first().click();
-    await page.getByRole("button", { name: "Add KPI" }).click();
-    await page.getByRole("button", { name: "Save" }).click();
+    await page.getByLabel("add widget").first().click();
+    await page.getByLabel("add kpi widget").first().click();
     await expect(page.getByText("New KPI").first()).toBeVisible();
 }
 
@@ -88,17 +86,6 @@ test.describe("dashboard", () => {
     });
 
     //still need one for custom time window
-
-    test("don't persist widget", async ({ page }) => {
-        //create dash
-        await createNewDashboard(page);
-        //create chart widget
-        await page.getByLabel("editbtn").first().click();
-        await page.getByRole("button", { name: "Add Chart" }).click();
-        await expect(page.getByText("New Chart")).toBeVisible();
-        await page.getByLabel("editbtn").first().click();
-        await expect(page.getByText("New Chart")).not.toBeVisible();
-    });
 
     test("Create Dash & chart widget", async ({ page }) => {
         //create dash
