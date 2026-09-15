@@ -74,7 +74,7 @@ public class OptimizationMetricStatistics {
     @Column(name = "calculated_at")
     private OffsetDateTime calculatedAt;
 
-    protected OptimizationMetricStatistics() {}
+    public OptimizationMetricStatistics() {}
 
     private OptimizationMetricStatistics(Builder builder) {
         this.statisticsId = builder.statisticsId;
@@ -218,6 +218,10 @@ public class OptimizationMetricStatistics {
 
     public UUID getStatisticsId() {
         return statisticsId;
+    }
+
+    public void setStatisticsId(UUID statisticsId) {
+        this.statisticsId = statisticsId;
     }
 
     public UUID getResourceId() {
