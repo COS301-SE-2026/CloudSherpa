@@ -65,7 +65,7 @@ export default function EditButton({
                             ) : (
                                 <>
                                     <Pencil className="h-4 w-4" />
-                                    <span className="text-base">Edit</span>
+                                    <span className="text-base">Edit Layout</span>
                                 </>
                             )}
                         </Button>
