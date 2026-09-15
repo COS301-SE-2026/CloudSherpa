@@ -80,7 +80,7 @@ export default function EditButton({
                             </div>
                         ) : (
                             <div className="flex flex-row items-center gap-3">
-                                <span className="text-sm font-medium">Edit Dashboard</span>
+                                <span className="text-sm font-medium">Edit Dashboard Layout</span>
                                 <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
                                     shift + E
                                 </span>
