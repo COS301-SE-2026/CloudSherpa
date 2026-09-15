@@ -13,6 +13,7 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import org.apache.avro.AvroRuntimeException;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.parquet.hadoop.ParquetReader;
@@ -34,10 +35,11 @@ public class ParquetExportReader implements ExportReader<RawBillingRow> {
       String tmpDirectoryString) {
     this.tmpDirectory = Paths.get(tmpDirectoryString);
     directoryExistsValidation();
-    this.blobFilePath = parseBlobFilename(blobName);
+    this.blobFilePath = createTemporaryBlobPath(blobName);
     downloadBlob(containerClient, blobName);
     try {
       reader = readerService.openParquetReader(blobFilePath);
+      logger.info("Opened Azure Parquet export at {}", blobFilePath);
     } catch (IOException e) {
       try {
         Files.delete(blobFilePath);
@@ -61,6 +63,8 @@ public class ParquetExportReader implements ExportReader<RawBillingRow> {
       if (billingRecord == null) {
         break;
       }
+      logger.info("Azure Parquet schema: {}", billingRecord.getSchema());
+      logger.info("Read Azure Parquet record from {}: {}", blobFilePath, billingRecord);
 
       try {
         batch.add(readRow(billingRecord));
@@ -69,6 +73,7 @@ public class ParquetExportReader implements ExportReader<RawBillingRow> {
       }
     }
 
+    logger.info("Read {} rows from Azure Parquet export at {}", batch.size(), blobFilePath);
     return batch;
   }
 
@@ -76,6 +81,7 @@ public class ParquetExportReader implements ExportReader<RawBillingRow> {
   public void close() throws IOException {
     reader.close();
     Files.delete(blobFilePath);
+    logger.info("Deleted downloaded Azure Parquet export at {}", blobFilePath);
   }
 
   private void directoryExistsValidation() {
@@ -91,11 +97,13 @@ public class ParquetExportReader implements ExportReader<RawBillingRow> {
   private void downloadBlob(BlobContainerClient containerClient, String blobName) {
     BlobClient blobClient = containerClient.getBlobClient(blobName);
     blobClient.downloadToFile(blobFilePath.toString());
+    logger.info("Downloaded Azure Parquet blob {} to {}", blobName, blobFilePath);
   }
 
-  private Path parseBlobFilename(String blobName) {
-    String[] splitBlobName = blobName.split("/");
-    return tmpDirectory.resolve(splitBlobName[splitBlobName.length - 1]);
+  private Path createTemporaryBlobPath(String blobName) {
+    String originalFileName = blobName.substring(blobName.lastIndexOf('/') + 1);
+
+    return tmpDirectory.resolve(UUID.randomUUID() + "-" + originalFileName);
   }
 
   private RawBillingRow readRow(GenericRecord billingRecord) {

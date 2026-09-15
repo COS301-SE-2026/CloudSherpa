@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -57,6 +58,7 @@ class AzureParquetExportReaderTest {
   @Mock BlobClient blobClient;
 
   @TempDir Path temporaryDirectory;
+  private Path downloadedBlobPath;
 
   @Test
   void readBatchShouldNotReturnMoreThanMaxSize() throws IOException {
@@ -99,23 +101,21 @@ class AzureParquetExportReaderTest {
 
   @Test
   void tmpFileNameShouldBeCorrectlyConstructed() {
-    Path downloadedExportPath = temporaryDirectory.resolve("test-blob.snappy.parquet");
-
     stubBlobDownload(EXPORT_BLOB_NAME);
 
     createParquetExportReader(
         blobContainerClient, EXPORT_BLOB_NAME, parquetReaderService, temporaryDirectory.toString());
 
-    verify(blobClient).downloadToFile(downloadedExportPath.toString());
-    assertTrue(Files.exists(downloadedExportPath));
+    verify(blobClient).downloadToFile(downloadedBlobPath.toString());
+    assertEquals(temporaryDirectory, downloadedBlobPath.getParent());
+    assertTrue(downloadedBlobPath.getFileName().toString().endsWith("-test-blob.snappy.parquet"));
+    assertTrue(Files.exists(downloadedBlobPath));
   }
 
   @Test
   void tmpFileShouldBeDeletedAfterReaderClosed() throws IOException {
-    Path downloadedExportPath = temporaryDirectory.resolve("test-blob.snappy.parquet");
-
     stubBlobDownload(EXPORT_BLOB_NAME);
-    stubParquetReaderService(downloadedExportPath);
+    stubParquetReaderService();
 
     ParquetExportReader reader =
         createParquetExportReader(
@@ -126,16 +126,14 @@ class AzureParquetExportReaderTest {
     reader.close();
 
     verify(parquetReader).close();
-    assertFalse(Files.exists(downloadedExportPath));
+    assertFalse(Files.exists(downloadedBlobPath));
   }
 
   @Test
   void tmpFileShouldBeDeletedWhenReaderFails() throws IOException {
-    Path downloadedExportPath = temporaryDirectory.resolve("test-blob.snappy.parquet");
-
     stubBlobDownload(EXPORT_BLOB_NAME);
 
-    when(parquetReaderService.openParquetReader(downloadedExportPath)).thenThrow(new IOException());
+    when(parquetReaderService.openParquetReader(any(Path.class))).thenThrow(new IOException());
 
     String temporaryDirectoryPath = temporaryDirectory.toString();
 
@@ -148,7 +146,7 @@ class AzureParquetExportReaderTest {
                 parquetReaderService,
                 temporaryDirectoryPath));
 
-    assertFalse(Files.exists(downloadedExportPath));
+    assertFalse(Files.exists(downloadedBlobPath));
   }
 
   private ParquetExportReader createParquetExportReader(
@@ -165,6 +163,7 @@ class AzureParquetExportReaderTest {
     doAnswer(
             invocation -> {
               Path downloadPath = Path.of(invocation.getArgument(0, String.class));
+              downloadedBlobPath = downloadPath;
 
               Files.createDirectories(downloadPath.getParent());
               Files.createFile(downloadPath);
@@ -175,14 +174,13 @@ class AzureParquetExportReaderTest {
         .downloadToFile(anyString());
   }
 
-  private void stubParquetReaderService(Path parquetFilePath) throws IOException {
-    when(parquetReaderService.openParquetReader(parquetFilePath)).thenReturn(parquetReader);
+  private void stubParquetReaderService() throws IOException {
+    when(parquetReaderService.openParquetReader(any(Path.class))).thenReturn(parquetReader);
   }
 
-  private void stubParquetReaderService(
-      Path parquetFilePath, GenericRecord firstRecord, GenericRecord secondRecord)
+  private void stubParquetReaderService(GenericRecord firstRecord, GenericRecord secondRecord)
       throws IOException {
-    when(parquetReaderService.openParquetReader(parquetFilePath)).thenReturn(parquetReader);
+    when(parquetReaderService.openParquetReader(any(Path.class))).thenReturn(parquetReader);
     when(parquetReader.read()).thenReturn(firstRecord, secondRecord, null);
   }
 
@@ -202,19 +200,17 @@ class AzureParquetExportReaderTest {
   }
 
   private ParquetExportReader createReaderWithTwoValidRecords() throws IOException {
-    Path downloadedExportPath = temporaryDirectory.resolve("test-blob.snappy.parquet");
     stubBlobDownload(EXPORT_BLOB_NAME);
 
     GenericRecord firstRecord = createBillingRecord("rsrc1", LocalDate.of(2026, 9, 14), "12.50");
     GenericRecord secondRecord = createBillingRecord("rsrc2", LocalDate.of(2026, 9, 15), "10.50");
 
-    stubParquetReaderService(downloadedExportPath, firstRecord, secondRecord);
+    stubParquetReaderService(firstRecord, secondRecord);
     return createParquetExportReader(
         blobContainerClient, EXPORT_BLOB_NAME, parquetReaderService, temporaryDirectory.toString());
   }
 
   private ParquetExportReader createReaderWithOneBadRecordAndOneValidRecord() throws IOException {
-    Path downloadedExportPath = temporaryDirectory.resolve("test-blob.snappy.parquet");
     stubBlobDownload(EXPORT_BLOB_NAME);
 
     GenericRecord badRecord = mock(GenericRecord.class);
@@ -223,7 +219,7 @@ class AzureParquetExportReaderTest {
 
     GenericRecord validRecord = createBillingRecord("rsrc1", LocalDate.of(2026, 9, 14), "12.50");
 
-    stubParquetReaderService(downloadedExportPath, badRecord, validRecord);
+    stubParquetReaderService(badRecord, validRecord);
     return createParquetExportReader(
         blobContainerClient, EXPORT_BLOB_NAME, parquetReaderService, temporaryDirectory.toString());
   }
