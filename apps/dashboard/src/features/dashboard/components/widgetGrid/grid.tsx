@@ -14,16 +14,28 @@ import { useDashboardStore } from "../../stores/dashboard-store";
 
 import { LayoutItem } from "@/features/dashboard/types/widgets";
 import { WidgetWrapper } from "@/features/dashboard/components/widgetGrid/widgets/widgetWrapper";
+import { WidgetConfig } from "@/features/dashboard/types/widgets";
 
-const MIN_WIDGET_W = 3;
-const MIN_WIDGET_H = 3;
+const MIN_SIZES: Record<WidgetConfig["widgetType"], { w: number; h: number }> = {
+    CHART: { w: 3, h: 3 },
+    KPI: { w: 3, h: 2 },
+};
+const DEFAULT_MIN = { w: 3, h: 3 };
 
-const repairLayout = (fullLayout: LayoutItem[]): LayoutItem[] =>
+function getMinSize(widgetType?: WidgetConfig["widgetType"]) {
+    return widgetType ? MIN_SIZES[widgetType] : DEFAULT_MIN;
+}
+
+const repairLayout = (
+    fullLayout: LayoutItem[],
+    widgetsMap: Record<string, WidgetConfig>
+): LayoutItem[] =>
     fullLayout.map((l) => {
+        const { w: minW, h: minH } = getMinSize(widgetsMap[l.id]?.widgetType);
         return {
             ...l,
-            w: Number.isFinite(l.w) && l.w > 0 ? l.w : MIN_WIDGET_W,
-            h: Number.isFinite(l.h) && l.h > 0 ? l.h : MIN_WIDGET_H,
+            w: Number.isFinite(l.w) && l.w > 0 ? l.w : minW,
+            h: Number.isFinite(l.h) && l.h > 0 ? l.h : minH,
             x: Number.isFinite(l.x) ? l.x : 0,
             y: Number.isFinite(l.y) ? l.y : 0,
         };
@@ -72,7 +84,8 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
                 }
             ) as LayoutItem[];
 
-            return repairLayout(fullLayout);
+            const widgetsMap = useDashboardStore.getState().widgets;
+            return repairLayout(fullLayout, widgetsMap);
         },
     }));
 
@@ -120,7 +133,8 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
                         }
                     ) as LayoutItem[];
 
-                    const repaired = repairLayout(fullLayout);
+                    const widgetsMap = useDashboardStore.getState().widgets;
+                    const repaired = repairLayout(fullLayout, widgetsMap);
 
                     onLayoutChangeRef.current(repaired);
                 }
@@ -141,6 +155,8 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
             return;
         }
 
+        const widgetsMap = useDashboardStore.getState().widgets;
+
         //batchupdate prevent multiple relayouts during sync
         gridStackInstance.current.batchUpdate();
 
@@ -156,6 +172,7 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
 
         // add/update widgets based on layouts prop
         layouts.forEach((layoutItem) => {
+            const { w: minW, h: minH } = getMinSize(widgetsMap[layoutItem.id]?.widgetType);
             const existingNode = currentGridNodes.get(layoutItem.id);
 
             if (existingNode) {
@@ -172,8 +189,8 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
                         y: layoutItem.y,
                         w: layoutItem.w,
                         h: layoutItem.h,
-                        minW: MIN_WIDGET_W,
-                        minH: MIN_WIDGET_H,
+                        minW,
+                        minH,
                         autoPosition: layoutItem.autoPosition,
                     });
                 }
@@ -186,8 +203,8 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
                     // only make widget if not already
                     gridStackInstance.current?.makeWidget(el, {
                         ...layoutItem,
-                        minW: MIN_WIDGET_W,
-                        minH: MIN_WIDGET_H,
+                        minW,
+                        minH,
                     });
                     addedNewWidget = true;
                 }
@@ -222,7 +239,7 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
             ) as LayoutItem[];
 
             isInternalUpdate.current = true;
-            onLayoutChangeRef.current(repairLayout(fullLayout));
+            onLayoutChangeRef.current(repairLayout(fullLayout, widgetsMap));
 
             scrollRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
 
