@@ -7,7 +7,9 @@ import { useRecStore } from "@/features/optimization/stores/useRecStore";
 import { Badge } from "@/components/atoms/badge";
 import { Separator } from "@/components/atoms/separator";
 import { toast } from "sonner";
-import RecommendationReasoning from "@/features/optimization/utils/recDictionary";
+import RecommendationReasoning, {
+    getMetricUnit,
+} from "@/features/optimization/utils/recDictionary";
 
 interface RecommendationCardProps {
     recommendation: Recommendation;
@@ -74,12 +76,12 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
         switch (recommendation.actionType) {
             case "TERMINATE":
                 return "text-destructive";
-            case "MODERNIZE":
-                return "text-primary";
             case "DOWNSIZE":
-                return "text-warning";
+                return "text-chart-3";
             case "SUSPEND":
-                return "text-yellow-600";
+                return "text-yellow-500";
+            case "UPSCALE":
+                return "text-warning";
             default:
                 return "";
         }
@@ -100,13 +102,26 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
         return { metricName, aggregation, timeframe };
     };
 
-    const isPercentageMetric = (metricName: string): boolean => {
-        const nameLower = metricName.toLowerCase();
-        return (
-            nameLower.includes("utilization") ||
-            nameLower.includes("percentage") ||
-            nameLower.includes("pressure")
-        );
+    const formatMetricLabel = (metricName: string, aggregation: string) => {
+        const titleCasedName = metricName
+            .split(" ")
+            .map((word) => {
+                const lower = word.toLowerCase();
+                if (lower === "cpu") return "CPU";
+                if (lower === "io") return "I/O";
+                if (lower === "iops") return "IOPS";
+                if (lower === "http") return "HTTP";
+                if (lower === "db") return "DB";
+                return lower.charAt(0).toUpperCase() + lower.slice(1);
+            })
+            .join(" ");
+
+        const aggDisplay =
+            aggregation.toLowerCase() === "p95"
+                ? "P95"
+                : aggregation.charAt(0).toUpperCase() + aggregation.slice(1).toLowerCase();
+
+        return `${titleCasedName} (${aggDisplay})`;
     };
 
     const getPeriod = () => {
@@ -135,13 +150,11 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
 
             const { metricName, aggregation, timeframe } = parsed;
 
-            const formattedValue = typeof value === "number" ? value.toFixed(2) : String(value);
-            const displayValue = isPercentageMetric(metricName)
-                ? `${formattedValue}%`
-                : formattedValue;
-
-            const aggDisplay = aggregation.charAt(0).toUpperCase() + aggregation.slice(1);
-            const label = `${metricName} (${aggDisplay})`;
+            const formattedValue =
+                typeof value === "number" ? Number.parseFloat(value.toFixed(2)) : String(value);
+            const unit = getMetricUnit(metricName);
+            const displayValue = `${formattedValue}${unit}`;
+            const label = formatMetricLabel(metricName, aggregation);
 
             const days = timeframe.replace("d", "");
             const subtitle = `Over the last ${days} day${days === "1" ? "" : "s"}`;
