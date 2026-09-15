@@ -222,6 +222,7 @@ export function DashboardSelector({
                                     className="mt-3 w-full bg-primary text-primary-foreground hover:bg-primary/90"
                                     onClick={handleCreate}
                                     disabled={!newDashboardName.trim()}
+                                    aria-label="create dashboard"
                                 >
                                     Create Dashboard
                                 </Button>
