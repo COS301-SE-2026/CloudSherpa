@@ -53,7 +53,7 @@ class RuleValidatorTest {
   }
 
   @Test
-  void testValidateOrThrow_MissingRuleId_ThrowsException() {
+  void testValidateOrThrowMissingRuleIdThrowsException() {
     OptimizationRule rule = mock(OptimizationRule.class);
     when(rule.ruleId()).thenReturn("");
 

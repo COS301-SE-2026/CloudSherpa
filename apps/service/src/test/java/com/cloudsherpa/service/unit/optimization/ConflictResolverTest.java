@@ -58,7 +58,7 @@ class ConflictResolverTest {
   }
 
   @Test
-  void testDeduplicateByRule_RemovesDuplicates() {
+  void testDeduplicateByRuleRemovesDuplicates() {
     RecommendationCandidate candidate1 = mock(RecommendationCandidate.class);
 
     when(candidate1.ruleId()).thenReturn("RULE-A");
@@ -75,7 +75,7 @@ class ConflictResolverTest {
   }
 
   @Test
-  void testValidateEvidence_RejectsMissingEvidence() {
+  void testValidateEvidenceRejectsMissingEvidence() {
     UUID resourceId = UUID.randomUUID();
 
     RecommendationCandidate validCandidate = mock(RecommendationCandidate.class);
