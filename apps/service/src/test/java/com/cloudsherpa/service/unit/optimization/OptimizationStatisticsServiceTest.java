@@ -40,12 +40,12 @@ class OptimizationStatisticsServiceTest {
   @Captor private ArgumentCaptor<List<OptimizationMetricStatistics>> statsCaptor;
 
   @Test
-  void testGetStatisticsForWindow_InvalidWindow_ThrowsException() {
+  void testGetStatisticsForWindowInvalidWindowThrowsException() {
     assertThrows(IllegalArgumentException.class, () -> service.getStatisticsForWindow(14));
   }
 
   @Test
-  void testRecalculateStatistics_CreatesNewAndUpdatesExisting() {
+  void testRecalculateStatisticsCreatesNewAndUpdatesExisting() {
     OffsetDateTime end = OffsetDateTime.now(ZoneOffset.UTC);
     int window = 4;
 
