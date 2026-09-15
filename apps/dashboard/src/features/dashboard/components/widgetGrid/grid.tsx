@@ -10,6 +10,7 @@ import {
 } from "react";
 import "gridstack/dist/gridstack.min.css";
 import { GridStack, GridItemHTMLElement, GridStackWidget, GridStackNode } from "gridstack";
+import { useDashboardStore } from "../../stores/dashboard-store";
 
 import { LayoutItem } from "@/features/dashboard/types/widgets";
 import { WidgetWrapper } from "@/features/dashboard/components/widgetGrid/widgets/widgetWrapper";
@@ -50,6 +51,9 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
     const onLayoutChangeRef = useRef(onLayoutChange);
     const isInternalUpdate = useRef(false);
     const isEditModeRef = useRef(isEditMode);
+    const hasSyncedOnce = useRef(false);
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const setIsCompacting = useDashboardStore((state) => state.actions.setIsCompacting);
 
     useImperativeHandle(ref, () => ({
         compactAndGetLayout: () => {
@@ -102,7 +106,11 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
             );
 
             gridStackInstance.current.on("change", () => {
-                if (gridStackInstance.current && isEditModeRef.current) {
+                if (
+                    gridStackInstance.current &&
+                    isEditModeRef.current &&
+                    !isInternalUpdate.current
+                ) {
                     isInternalUpdate.current = true;
                     const fullLayout = gridStackInstance.current.save(
                         false,
@@ -144,6 +152,8 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
             }
         });
 
+        let addedNewWidget = false;
+
         // add/update widgets based on layouts prop
         layouts.forEach((layoutItem) => {
             const existingNode = currentGridNodes.get(layoutItem.id);
@@ -179,6 +189,7 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
                         minW: MIN_WIDGET_W,
                         minH: MIN_WIDGET_H,
                     });
+                    addedNewWidget = true;
                 }
             }
         });
@@ -194,7 +205,31 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
         //compact on change or load
         gridStackInstance.current.compact();
         gridStackInstance.current.batchUpdate(false);
-    }, [layouts]);
+
+        if (hasSyncedOnce.current && addedNewWidget && !isEditModeRef.current) {
+            setIsCompacting(true);
+
+            gridStackInstance.current.batchUpdate();
+            gridStackInstance.current.compact();
+            gridStackInstance.current.batchUpdate(false);
+
+            const fullLayout = gridStackInstance.current.save(
+                false,
+                false,
+                (node, w: GridStackWidget) => {
+                    (w as LayoutItem).id = String(node.id || "");
+                }
+            ) as LayoutItem[];
+
+            isInternalUpdate.current = true;
+            onLayoutChangeRef.current(repairLayout(fullLayout));
+
+            scrollRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+
+            setIsCompacting(false);
+        }
+        hasSyncedOnce.current = true;
+    }, [layouts, setIsCompacting]);
 
     //lock layouts outside edit
     useEffect(() => {
@@ -216,6 +251,7 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
                     <WidgetWrapper key={l.id} layout={l} isEditMode={isEditMode} />
                 ))}
             </div>
+            <div ref={scrollRef} aria-hidden className="h-px w-full" />
         </div>
     );
 });

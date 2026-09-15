@@ -144,9 +144,7 @@ export function ChartWidget({
         if (isEditMode) {
             return (
                 <div className="flex flex-col  h-full items-center justify-center gap-2">
-                    <p className="text-xs text-muted-foreground italic">
-                        Save dashboard changes before configuring this widget.
-                    </p>
+                    <p className="text-xs text-muted-foreground italic">Drag to move widget.</p>
                 </div>
             );
         }

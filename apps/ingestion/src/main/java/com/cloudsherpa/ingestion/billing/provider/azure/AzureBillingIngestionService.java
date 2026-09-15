@@ -1,14 +1,14 @@
 package com.cloudsherpa.ingestion.billing.provider.azure;
 
 import com.cloudsherpa.ingestion.billing.BillingIngestionPipelineStep;
-import com.cloudsherpa.ingestion.billing.BillingIngestionServiceInterface;
+import com.cloudsherpa.ingestion.billing.BillingIngestionService;
 import com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.AzureBillingContext;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 
-@Service
-public class AzureBillingIngestionService implements BillingIngestionServiceInterface {
+@Service("azureBillingIngestionService")
+public class AzureBillingIngestionService implements BillingIngestionService {
 
   private final List<BillingIngestionPipelineStep<AzureBillingContext>> azureBillingIngestionSteps;
 

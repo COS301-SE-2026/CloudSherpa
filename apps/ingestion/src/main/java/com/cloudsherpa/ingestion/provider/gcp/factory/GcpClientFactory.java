@@ -14,6 +14,10 @@ import com.google.cloud.functions.v2.FunctionServiceClient;
 import com.google.cloud.functions.v2.FunctionServiceSettings;
 import com.google.cloud.run.v2.ServicesClient;
 import com.google.cloud.run.v2.ServicesSettings;
+import com.google.cloud.storage.Storage;
+import com.google.cloud.storage.StorageOptions;
+import com.google.devtools.artifactregistry.v1.ArtifactRegistryClient;
+import com.google.devtools.artifactregistry.v1.ArtifactRegistrySettings;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -88,5 +92,25 @@ public final class GcpClientFactory {
             .build();
 
     return ServicesClient.create(settings);
+  }
+
+  public static Storage createStorageClient(CloudCredentials credentials) throws IOException {
+
+    GoogleCredentials googleCredentials = credentials(credentials);
+
+    return StorageOptions.newBuilder().setCredentials(googleCredentials).build().getService();
+  }
+
+  public static ArtifactRegistryClient createArtifactRegistryClient(CloudCredentials credentials)
+      throws IOException {
+
+    GoogleCredentials googleCredentials = credentials(credentials);
+
+    ArtifactRegistrySettings settings =
+        ArtifactRegistrySettings.newBuilder()
+            .setCredentialsProvider(FixedCredentialsProvider.create(googleCredentials))
+            .build();
+
+    return ArtifactRegistryClient.create(settings);
   }
 }

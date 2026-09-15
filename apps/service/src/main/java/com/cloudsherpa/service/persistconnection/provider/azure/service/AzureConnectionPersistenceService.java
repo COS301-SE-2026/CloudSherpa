@@ -1,16 +1,21 @@
 package com.cloudsherpa.service.persistconnection.provider.azure.service;
 
 import com.cloudsherpa.lib.entities.AccountTypeEnum;
+import com.cloudsherpa.lib.entities.AzureBillingExportConfig;
+import com.cloudsherpa.lib.entities.BillingExportConfig;
 import com.cloudsherpa.lib.entities.CloudAccount;
 import com.cloudsherpa.lib.entities.CloudConnection;
 import com.cloudsherpa.lib.entities.CloudCredential;
 import com.cloudsherpa.lib.entities.ProviderEnum;
 import com.cloudsherpa.lib.entities.StatusEnum;
+import com.cloudsherpa.lib.repositories.AzureBillingExportConfigRepository;
+import com.cloudsherpa.lib.repositories.BillingExportConfigRepository;
 import com.cloudsherpa.lib.repositories.CloudAccountRepository;
 import com.cloudsherpa.lib.repositories.CloudConnectionRepository;
 import com.cloudsherpa.lib.repositories.CloudCredentialRepository;
 import com.cloudsherpa.lib.repositories.ResourceRepository;
 import com.cloudsherpa.service.analytics.service.ResourceRegistryService;
+import com.cloudsherpa.service.persistconnection.provider.azure.dto.AzureBillingConfigDto;
 import com.cloudsherpa.service.persistconnection.provider.azure.dto.AzureCredentialsDto;
 import com.cloudsherpa.service.persistconnection.provider.azure.dto.PersistAzureConnectionRequest;
 import com.cloudsherpa.service.persistconnection.service.ConnectionPersistenceService;
@@ -30,6 +35,8 @@ public class AzureConnectionPersistenceService extends ConnectionPersistenceServ
   private final CloudAccountRepository cloudAccountRepository;
   private final CloudCredentialRepository cloudCredentialRepository;
   private final CredentialEncryptionService encryptionService;
+  private final BillingExportConfigRepository billingExportConfigRepository;
+  private final AzureBillingExportConfigRepository azureBillingExportConfigRepository;
 
   public AzureConnectionPersistenceService(
       CloudConnectionRepository cloudConnectionRepository,
@@ -37,12 +44,16 @@ public class AzureConnectionPersistenceService extends ConnectionPersistenceServ
       CloudCredentialRepository cloudCredentialRepository,
       CredentialEncryptionService encryptionService,
       ResourceRepository resourceRepository,
-      ResourceRegistryService resourceRegistryService) {
+      ResourceRegistryService resourceRegistryService,
+      BillingExportConfigRepository billingExportConfigRepository,
+      AzureBillingExportConfigRepository azureBillingExportConfigRepository) {
     super(cloudAccountRepository, resourceRepository, resourceRegistryService);
     this.cloudConnectionRepository = cloudConnectionRepository;
     this.cloudAccountRepository = cloudAccountRepository;
     this.cloudCredentialRepository = cloudCredentialRepository;
     this.encryptionService = encryptionService;
+    this.billingExportConfigRepository = billingExportConfigRepository;
+    this.azureBillingExportConfigRepository = azureBillingExportConfigRepository;
   }
 
   @Transactional
@@ -51,6 +62,9 @@ public class AzureConnectionPersistenceService extends ConnectionPersistenceServ
     CloudAccount account = createAccount(connection, request);
     createCredential(account, request.credentials());
     createResources(request.userId(), account, request.resources());
+    if (request.billingConfig() != null) {
+      createBillingExportConfig(account, request.billingConfig());
+    }
   }
 
   private CloudConnection getOrCreateConnection(PersistAzureConnectionRequest request) {
@@ -84,7 +98,7 @@ public class AzureConnectionPersistenceService extends ConnectionPersistenceServ
             .ingestionPeriod(request.ingestionPeriod().toString())
             .createdAt(now)
             .lastBillingIngestion(now)
-            .lastUsageIngestion(now)
+            .lastUsageIngestion(now.minusDays(14))
             .nextUsageIngestion(OffsetDateTime.now(ZoneOffset.UTC).plusMinutes(1))
             .nextBillingIngestion(OffsetDateTime.now(ZoneOffset.UTC).plusMinutes(1))
             .build();
@@ -111,5 +125,23 @@ public class AzureConnectionPersistenceService extends ConnectionPersistenceServ
     } catch (JsonProcessingException e) {
       throw new IllegalArgumentException("Unable to serialize Azure credentials.", e);
     }
+  }
+
+  private void createBillingExportConfig(
+      CloudAccount account, AzureBillingConfigDto billingConfigDto) {
+    BillingExportConfig config =
+        new BillingExportConfig(
+            UUID.randomUUID(), account.getId(), OffsetDateTime.now(ZoneOffset.UTC));
+
+    BillingExportConfig savedConfig = billingExportConfigRepository.save(config);
+
+    AzureBillingExportConfig azureExportConfig =
+        new AzureBillingExportConfig(
+            savedConfig.getId(),
+            billingConfigDto.storageAccountName(),
+            billingConfigDto.blobContainerName(),
+            billingConfigDto.exportDirectory(),
+            billingConfigDto.exportName());
+    azureBillingExportConfigRepository.save(azureExportConfig);
   }
 }

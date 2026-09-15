@@ -40,6 +40,8 @@ public class UsageIngestionService {
   private final TenantSchemaService tenantSchemaService;
   private final ObjectMapper mapper;
 
+  private static final int SECONDS_IN_DAY = 86400;
+
   public UsageIngestionService(
       UsageIngestionClient client,
       CloudAccountRepository cloudAccountRepository,
@@ -68,7 +70,7 @@ public class UsageIngestionService {
                 () -> new IllegalArgumentException("Cloud account not found: " + accountId));
     CloudCredential credential = cloudCredentialRepository.findByAccountId(accountId).getFirst();
     String decryptedCredential = encryptionService.decrypt(credential.getCredentialValue());
-    Instant ingestionEndTime = Instant.now().truncatedTo(ChronoUnit.MINUTES);
+    Instant ingestionEndTime = getIngestionEndTime(account.getLastUsageIngestion().toInstant());
     try {
       IngestionRequestEvent request = new IngestionRequestEvent();
       request.setFrom(account.getLastUsageIngestion().toInstant());
@@ -158,6 +160,20 @@ public class UsageIngestionService {
     } catch (JsonProcessingException jsonProcessingException) {
       throw new IllegalStateException(
           "Stored credentials for account " + account.getId().toString() + " are invalid");
+    }
+  }
+
+  /*
+   * the purpose here is to keep ingestions to a reasonable size to limit memory
+   * usage whilst still saving on API calls for the user
+   */
+  private Instant getIngestionEndTime(Instant databaseIngestionStartTime) {
+    Instant proposedEndTime = Instant.now().truncatedTo(ChronoUnit.MINUTES);
+    Instant maximumEndTime = databaseIngestionStartTime.plusSeconds((long) SECONDS_IN_DAY * 2);
+    if (maximumEndTime.isBefore(proposedEndTime)) {
+      return maximumEndTime;
+    } else {
+      return proposedEndTime;
     }
   }
 }

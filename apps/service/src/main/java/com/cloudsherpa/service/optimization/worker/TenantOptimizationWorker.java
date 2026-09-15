@@ -59,8 +59,8 @@ public class TenantOptimizationWorker {
     // Calculate 7-day statistics.
     // Calculate 30-day statistics.
     statisticsService.recalculateStatistics(windowEnd, 4);
-    statisticsService.recalculateStatistics(windowEnd, 7);
-    statisticsService.recalculateStatistics(windowEnd, 30);
+    // statisticsService.recalculateStatistics(windowEnd, 7)
+    // statisticsService.recalculateStatistics(windowEnd, 30)
 
     // Evaluate rules: Load all rules from the catalog, validate them, and run each rule
     // against the newly calculated statistics to generate draft recommendation candidates.
