@@ -25,6 +25,11 @@ public class AzureFunctionsScanner implements AzureResourceScanner {
 
   @Override
   public ResourceDetail scan(JsonNode resource, CloudCredentials credentials) {
+    String kind = resource.path("kind").asText();
+
+    if (!isFunctionApp(kind)) {
+      return null;
+    }
 
     String resourceId = resource.path("id").asText();
     String name = resource.path("name").asText();
@@ -56,5 +61,11 @@ public class AzureFunctionsScanner implements AzureResourceScanner {
   @Override
   public Set<String> getPermissionsRequired() {
     return Set.of();
+  }
+
+  private boolean isFunctionApp(String kind) {
+    return kind != null
+        && java.util.Arrays.stream(kind.split(","))
+            .anyMatch(value -> "functionapp".equalsIgnoreCase(value.trim()));
   }
 }
