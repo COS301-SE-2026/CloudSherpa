@@ -2,6 +2,7 @@ package com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.exportre
 
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
+import com.cloudsherpa.ingestion.billing.deserialization.parquet.ParquetDataConverterService;
 import com.cloudsherpa.ingestion.billing.deserialization.parquet.ParquetReaderService;
 import com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.exportreaders.exeptions.ExportReaderException;
 import com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.model.RawBillingRow;
@@ -27,19 +28,21 @@ public class ParquetExportReader implements ExportReader<RawBillingRow> {
   private final Path tmpDirectory;
   private Path blobFilePath;
   private ParquetReader<GenericRecord> reader;
+  private ParquetDataConverterService parquetDataConverterService;
 
   public ParquetExportReader(
       BlobContainerClient containerClient,
       String blobName,
       ParquetReaderService readerService,
+      ParquetDataConverterService parquetDataConverterService,
       String tmpDirectoryString) {
+    this.parquetDataConverterService = parquetDataConverterService;
     this.tmpDirectory = Paths.get(tmpDirectoryString);
     directoryExistsValidation();
     this.blobFilePath = createTemporaryBlobPath(blobName);
     downloadBlob(containerClient, blobName);
     try {
       reader = readerService.openParquetReader(blobFilePath);
-      logger.info("Opened Azure Parquet export at {}", blobFilePath);
     } catch (IOException e) {
       try {
         Files.delete(blobFilePath);
@@ -63,8 +66,6 @@ public class ParquetExportReader implements ExportReader<RawBillingRow> {
       if (billingRecord == null) {
         break;
       }
-      logger.info("Azure Parquet schema: {}", billingRecord.getSchema());
-      logger.info("Read Azure Parquet record from {}: {}", blobFilePath, billingRecord);
 
       try {
         batch.add(readRow(billingRecord));
@@ -73,7 +74,6 @@ public class ParquetExportReader implements ExportReader<RawBillingRow> {
       }
     }
 
-    logger.info("Read {} rows from Azure Parquet export at {}", batch.size(), blobFilePath);
     return batch;
   }
 
@@ -81,7 +81,6 @@ public class ParquetExportReader implements ExportReader<RawBillingRow> {
   public void close() throws IOException {
     reader.close();
     Files.delete(blobFilePath);
-    logger.info("Deleted downloaded Azure Parquet export at {}", blobFilePath);
   }
 
   private void directoryExistsValidation() {
@@ -97,7 +96,6 @@ public class ParquetExportReader implements ExportReader<RawBillingRow> {
   private void downloadBlob(BlobContainerClient containerClient, String blobName) {
     BlobClient blobClient = containerClient.getBlobClient(blobName);
     blobClient.downloadToFile(blobFilePath.toString());
-    logger.info("Downloaded Azure Parquet blob {} to {}", blobName, blobFilePath);
   }
 
   private Path createTemporaryBlobPath(String blobName) {
@@ -109,8 +107,7 @@ public class ParquetExportReader implements ExportReader<RawBillingRow> {
   private RawBillingRow readRow(GenericRecord billingRecord) {
     String billingAccountId = billingRecord.get("billingAccountId").toString();
     LocalDate date =
-        LocalDate.ofEpochDay(
-            (Integer) billingRecord.get("date")); // Assumption, yet to be validated
+        parquetDataConverterService.getTimestamp(billingRecord.get("date")).toLocalDate();
     String consumedService = billingRecord.get("consumedService").toString();
     String meterCategory = billingRecord.get("meterCategory").toString();
     String meterSubCategory = billingRecord.get("meterSubCategory").toString();
@@ -118,10 +115,7 @@ public class ParquetExportReader implements ExportReader<RawBillingRow> {
     String chargeType = billingRecord.get("chargeType").toString();
     String billingCurrency = billingRecord.get("billingCurrency").toString();
     BigDecimal costInPricingCurrency =
-        new BigDecimal(
-            billingRecord
-                .get("costInPricingCurrency")
-                .toString()); // Assumption, yet to be validated
+        parquetDataConverterService.readDecimal(billingRecord, "costInPricingCurrency");
 
     return new RawBillingRow(
         billingAccountId,

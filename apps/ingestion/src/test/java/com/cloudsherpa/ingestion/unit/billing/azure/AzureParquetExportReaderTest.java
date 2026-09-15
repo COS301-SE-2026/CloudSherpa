@@ -13,16 +13,21 @@ import static org.mockito.Mockito.when;
 
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
+import com.cloudsherpa.ingestion.billing.deserialization.parquet.ParquetDataConverterService;
 import com.cloudsherpa.ingestion.billing.deserialization.parquet.ParquetReaderService;
 import com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.exportreaders.exeptions.ExportReaderException;
 import com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.exportreaders.readers.ParquetExportReader;
 import com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.model.RawBillingRow;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import org.apache.avro.AvroRuntimeException;
+import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
 import org.apache.avro.SchemaBuilder;
 import org.apache.avro.generic.GenericData;
@@ -33,27 +38,36 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.OngoingStubbing;
 
 @ExtendWith(MockitoExtension.class)
 class AzureParquetExportReaderTest {
 
   private static final String EXPORT_BLOB_NAME = "/test-dir/test-export/test-blob.snappy.parquet";
+  private static final Schema INT96_SCHEMA = Schema.createFixed("Int96", null, null, 12);
+  private static final Schema DECIMAL_SCHEMA =
+      LogicalTypes.decimal(38, 18).addToSchema(Schema.createFixed("Decimal", null, null, 16));
   private static final Schema RAW_BILLING_ROW_SCHEMA =
       SchemaBuilder.record("AzureBillingRow")
           .fields()
           .requiredString("billingAccountId")
-          .requiredInt("date")
+          .name("date")
+          .type(INT96_SCHEMA)
+          .noDefault()
           .requiredString("consumedService")
           .requiredString("meterCategory")
           .requiredString("meterSubCategory")
           .requiredString("ResourceId")
           .requiredString("chargeType")
           .requiredString("billingCurrency")
-          .requiredString("costInPricingCurrency")
+          .name("costInPricingCurrency")
+          .type(DECIMAL_SCHEMA)
+          .noDefault()
           .endRecord();
 
   @Mock BlobContainerClient blobContainerClient;
   @Mock ParquetReaderService parquetReaderService;
+  @Mock ParquetDataConverterService parquetDataConverterService;
   @Mock ParquetReader<GenericRecord> parquetReader;
   @Mock BlobClient blobClient;
 
@@ -155,7 +169,11 @@ class AzureParquetExportReaderTest {
       ParquetReaderService parquetReaderService,
       String tmpDirectoryString) {
     return new ParquetExportReader(
-        blobContainerClient, blobName, parquetReaderService, tmpDirectoryString);
+        blobContainerClient,
+        blobName,
+        parquetReaderService,
+        parquetDataConverterService,
+        tmpDirectoryString);
   }
 
   private void stubBlobDownload(String blobName) {
@@ -184,27 +202,41 @@ class AzureParquetExportReaderTest {
     when(parquetReader.read()).thenReturn(firstRecord, secondRecord, null);
   }
 
-  private GenericRecord createBillingRecord(
-      String resourceId, LocalDate date, String costInPricingCurrency) {
+  private GenericRecord createBillingRecord(String resourceId) {
     GenericRecord billingRecord = new GenericData.Record(RAW_BILLING_ROW_SCHEMA);
     billingRecord.put("billingAccountId", "billing-account");
-    billingRecord.put("date", Math.toIntExact(date.toEpochDay()));
+    billingRecord.put("date", new GenericData.Fixed(INT96_SCHEMA, new byte[12]));
     billingRecord.put("consumedService", "Microsoft.Compute");
     billingRecord.put("meterCategory", "Virtual Machines");
     billingRecord.put("meterSubCategory", "D Series");
     billingRecord.put("ResourceId", resourceId);
     billingRecord.put("chargeType", "Usage");
     billingRecord.put("billingCurrency", "USD");
-    billingRecord.put("costInPricingCurrency", costInPricingCurrency);
+    billingRecord.put("costInPricingCurrency", new GenericData.Fixed(DECIMAL_SCHEMA, new byte[16]));
     return billingRecord;
+  }
+
+  private void stubParquetDataConversion(LocalDate... dates) {
+    OffsetDateTime[] timestamps =
+        java.util.Arrays.stream(dates)
+            .map(date -> date.atStartOfDay().atOffset(ZoneOffset.UTC))
+            .toArray(OffsetDateTime[]::new);
+
+    OngoingStubbing<OffsetDateTime> timestampStubbing =
+        when(parquetDataConverterService.getTimestamp(any())).thenReturn(timestamps[0]);
+    for (int index = 1; index < timestamps.length; index++) {
+      timestampStubbing = timestampStubbing.thenReturn(timestamps[index]);
+    }
+    when(parquetDataConverterService.readDecimal(any(), anyString())).thenReturn(BigDecimal.TEN);
   }
 
   private ParquetExportReader createReaderWithTwoValidRecords() throws IOException {
     stubBlobDownload(EXPORT_BLOB_NAME);
 
-    GenericRecord firstRecord = createBillingRecord("rsrc1", LocalDate.of(2026, 9, 14), "12.50");
-    GenericRecord secondRecord = createBillingRecord("rsrc2", LocalDate.of(2026, 9, 15), "10.50");
+    GenericRecord firstRecord = createBillingRecord("rsrc1");
+    GenericRecord secondRecord = createBillingRecord("rsrc2");
 
+    stubParquetDataConversion(LocalDate.of(2026, 9, 14), LocalDate.of(2026, 9, 15));
     stubParquetReaderService(firstRecord, secondRecord);
     return createParquetExportReader(
         blobContainerClient, EXPORT_BLOB_NAME, parquetReaderService, temporaryDirectory.toString());
@@ -217,8 +249,9 @@ class AzureParquetExportReaderTest {
     when(badRecord.get("billingAccountId"))
         .thenThrow(new AvroRuntimeException("Invalid billing account"));
 
-    GenericRecord validRecord = createBillingRecord("rsrc1", LocalDate.of(2026, 9, 14), "12.50");
+    GenericRecord validRecord = createBillingRecord("rsrc1");
 
+    stubParquetDataConversion(LocalDate.of(2026, 9, 14));
     stubParquetReaderService(badRecord, validRecord);
     return createParquetExportReader(
         blobContainerClient, EXPORT_BLOB_NAME, parquetReaderService, temporaryDirectory.toString());
