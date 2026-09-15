@@ -40,7 +40,7 @@ const formatValue = (metricName: string, value: number): string => {
 
 // extract format specific metrics
 const extractMetricDetails = (evidence: Record<string, number>, keyword: string) => {
-    const key = Object.keys(evidence).find((k) => k.includes(keyword));
+    const key = Object.keys(evidence).find((k) => k.toLowerCase().includes(keyword.toLowerCase()));
     if (!key) return null;
 
     const parsed = parseEvidenceKey(key);
@@ -438,9 +438,10 @@ export default function RecommendationReasoning({
             const cpu = extractMetricDetails(evidence, "cpu");
             return (
                 <span>
-                    Consider <strong className="text-warning">upscaling</strong> this database
-                    {`&apos`}s compute tier. Over the last <strong>{cpu?.days || "4"} days</strong>,
-                    95% of the time your <strong>CPU utilization</strong> was above{" "}
+                    Consider <strong className="text-warning">upscaling</strong> this
+                    database&apos;s compute tier. Over the last{" "}
+                    <strong>{cpu?.days || "4"} days</strong>, 95% of the time your{" "}
+                    <strong>CPU utilization</strong> was above{" "}
                     <strong>{cpu?.formattedValue}</strong>, indicating a potential performance
                     bottleneck.
                 </span>
@@ -450,9 +451,10 @@ export default function RecommendationReasoning({
             const mem = extractMetricDetails(evidence, "memory");
             return (
                 <span>
-                    Consider <strong className="text-warning">upscaling</strong> this database
-                    {`&apos`}s memory tier. Over the last <strong>{mem?.days || "4"} days</strong>,
-                    95% of the time your <strong>Memory utilization</strong> was above{" "}
+                    Consider <strong className="text-warning">upscaling</strong> this
+                    database&apos;s memory tier. Over the last{" "}
+                    <strong>{mem?.days || "4"} days</strong>, 95% of the time your{" "}
+                    <strong>Memory utilization</strong> was above{" "}
                     <strong>{mem?.formattedValue}</strong>, increasing the risk of Out-Of-Memory
                     events.
                 </span>
