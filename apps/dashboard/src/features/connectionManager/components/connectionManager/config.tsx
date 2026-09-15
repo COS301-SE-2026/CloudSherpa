@@ -351,7 +351,7 @@ export default function ConfigureConnection() {
                                             Automatically monitor newly discovered resources{" "}
                                         </Label>
 
-                                        <p className="text-xs text-muted-foreground leading-relaxed">
+                                        <p className="text-sm text-muted-foreground leading-relaxed">
                                             {" "}
                                             When selected, new resources added to CloudSherpa during
                                             automatic and manual resource discovery will be set to
