@@ -43,7 +43,7 @@ class RuleValidatorTest {
     when(condition.windowNumDays()).thenReturn(7);
     when(condition.field()).thenReturn(StatField.P95);
     when(condition.operator()).thenReturn(ComparisonOperator.LESS_THAN);
-    when(condition.threshold()).thenReturn(new BigDecimal("10"));
+    when(condition.threshold()).thenReturn(new BigDecimal(10));
 
     when(rule.metricThresholdConditions()).thenReturn(List.of(condition));
 
@@ -64,7 +64,7 @@ class RuleValidatorTest {
   }
 
   @Test
-  void testValidate_InvalidWindowNumDays_ReturnsError() {
+  void testValidateInvalidWindowNumDaysReturnsError() {
     OptimizationRule rule = mock(OptimizationRule.class);
 
     when(rule.ruleId()).thenReturn("TEST-RULE");
@@ -76,7 +76,7 @@ class RuleValidatorTest {
     when(condition.windowNumDays()).thenReturn(14);
     when(condition.field()).thenReturn(StatField.MAXIMUM);
     when(condition.operator()).thenReturn(ComparisonOperator.EQUAL);
-    when(condition.threshold()).thenReturn(new BigDecimal("0"));
+    when(condition.threshold()).thenReturn(new BigDecimal(0));
 
     when(rule.metricThresholdConditions()).thenReturn(List.of(condition));
 
