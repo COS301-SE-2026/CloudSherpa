@@ -12,6 +12,8 @@ import com.cloudsherpa.lib.entities.OptimizationStatusEnum;
 import com.cloudsherpa.lib.entities.ProviderEnum;
 import com.cloudsherpa.lib.repositories.OptimizationRecommendationRepository;
 import com.cloudsherpa.service.optimization.service.OptimizationRecommendationService;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -42,6 +44,10 @@ class OptimizationRecommendationServiceTest {
     activeRec.setProvider(ProviderEnum.AWS);
     activeRec.setActionType(OptimizationActionTypeEnum.DOWNSIZE);
     activeRec.setStatus(OptimizationStatusEnum.ACTIVE);
+
+    activeRec.setRuleId("COMPUTE-DOWNSIZE-TEST");
+    activeRec.setCreatedAt(OffsetDateTime.now(ZoneOffset.UTC));
+    activeRec.setUpdatedAt(OffsetDateTime.now(ZoneOffset.UTC));
   }
 
   @Test
@@ -64,7 +70,7 @@ class OptimizationRecommendationServiceTest {
   }
 
   @Test
-  void testAcknowledgeRecommendation_UpdatesStatus() {
+  void testAcknowledgeRecommendationUpdatesStatus() {
     when(repository.findById(recId)).thenReturn(Optional.of(activeRec));
     when(repository.save(any(OptimizationRecommendation.class))).thenReturn(activeRec);
 
@@ -75,7 +81,7 @@ class OptimizationRecommendationServiceTest {
   }
 
   @Test
-  void testReEnableRecommendation_FailsIfNotDismissed() {
+  void testReEnableRecommendationFailsIfNotDismissed() {
     when(repository.findById(recId)).thenReturn(Optional.of(activeRec));
 
     Map<String, Object> result = service.reEnableRecommendation(recId);

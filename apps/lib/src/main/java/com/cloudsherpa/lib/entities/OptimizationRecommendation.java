@@ -101,6 +101,11 @@ public class OptimizationRecommendation {
     return ruleId;
   }
 
+  public  void setRuleId(String id)
+  {
+    ruleId = id;
+  }
+
   public OptimizationActionTypeEnum getActionType() {
     return actionType;
   }
@@ -124,6 +129,11 @@ public class OptimizationRecommendation {
 
   public OffsetDateTime getCreatedAt() {
     return createdAt;
+  }
+
+  public void setCreatedAt(OffsetDateTime time)
+  {
+    createdAt = time;
   }
 
   public OffsetDateTime getUpdatedAt() {
