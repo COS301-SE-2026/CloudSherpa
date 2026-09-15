@@ -27,6 +27,7 @@ import {
 } from "@/features/connectionManager/components/connectionManager/wizardSetup/stepThree";
 import { Checkbox } from "@/components/atoms/checkbox";
 import { Label } from "@/components/atoms/label";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/atoms/select";
 
 /*
 - the user should be able to veiw details about a particular connectio here
@@ -34,6 +35,8 @@ import { Label } from "@/components/atoms/label";
 - they should be able to configure this connection - by changing the name of the connection
 - they should also be able to go to the resource manager from this page
 */
+
+type Budget = "free" | "custom";
 
 export default function ConfigureConnection() {
     const params = useParams();
@@ -58,6 +61,12 @@ export default function ConfigureConnection() {
     const [resourceDiscovery, setResourceDiscovery] = useState(false);
 
     const [monitorNewResources, setMonitorNewResources] = useState(false);
+
+    const [adjustInterval, setAdjustInterval] = useState(false);
+
+    const [budget, setBudget] = useState<Budget | "">("");
+
+    const [custom, setCustom] = useState("");
 
     async function loadConnection() {
         try {
@@ -121,6 +130,24 @@ export default function ConfigureConnection() {
     );
 
     const accurateIngestionPeriod = ingestionPeriod ?? recIngestionPeriod;
+
+    const handlingAdjust = (checked : boolean) => {
+        setAdjustInterval(checked);
+
+        if(!checked){
+            setIngestionPeriod(null);
+        }
+    };
+
+    const handlingBudget = (choice : Budget) => {
+        setBudget(choice);
+
+        if(choice === "free"){
+            setCustom("");
+
+            setIngestionPeriod(null);
+        }
+    };
 
     if (loading) {
         return <div className="flex h-screen items-center justify-center">Loading...</div>;
