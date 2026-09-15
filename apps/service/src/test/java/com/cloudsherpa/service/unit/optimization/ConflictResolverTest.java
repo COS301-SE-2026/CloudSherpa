@@ -1,17 +1,25 @@
 package com.cloudsherpa.service.unit.optimization;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.cloudsherpa.lib.entities.OptimizationActionTypeEnum;
+import com.cloudsherpa.lib.entities.OptimizationRecommendation;
+import com.cloudsherpa.lib.entities.OptimizationStatusEnum;
 import com.cloudsherpa.lib.repositories.OptimizationRecommendationRepository;
 import com.cloudsherpa.service.optimization.rule.ConflictResolver;
 import com.cloudsherpa.service.optimization.rule.model.RecommendationCandidate;
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -92,5 +100,32 @@ class ConflictResolverTest {
     List<RecommendationCandidate> validated = resolver.validateEvidence(grouped);
 
     assertEquals(1, validated.size(), "Candidate without evidence should be filtered out");
+  }
+
+  @Test
+  void testResolveAndPersistSupersedesOldRules() {
+    UUID resourceId = UUID.randomUUID();
+    OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
+
+    RecommendationCandidate winner = mock(RecommendationCandidate.class);
+
+    when(winner.resourceId()).thenReturn(resourceId);
+    when(winner.ruleId()).thenReturn("NEW-WINNER-RULE");
+    when(winner.actionType()).thenReturn(OptimizationActionTypeEnum.TERMINATE);
+    when(winner.evidence()).thenReturn(Map.of("key", "val"));
+
+    OptimizationRecommendation oldActiveRec = new OptimizationRecommendation();
+    oldActiveRec.setRuleId("OLD-LOSER-RULE");
+    oldActiveRec.setStatus(OptimizationStatusEnum.ACTIVE);
+
+    when(repository.findByResourceIdAndRuleId(resourceId, "NEW-WINNER-RULE"))
+        .thenReturn(Optional.empty());
+
+    when(repository.findActiveByResourceId(resourceId)).thenReturn(List.of(oldActiveRec));
+
+    resolver.resolveAndPersist(List.of(winner), now);
+
+    verify(repository, times(2)).save(any(OptimizationRecommendation.class));
+    assertEquals(OptimizationStatusEnum.SUPERSEDED, oldActiveRec.getStatus());
   }
 }

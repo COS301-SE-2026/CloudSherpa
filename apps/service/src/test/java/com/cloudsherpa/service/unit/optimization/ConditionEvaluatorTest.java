@@ -88,4 +88,21 @@ class ConditionEvaluatorTest {
 
     assertEquals("cpu_utilization_maximum_7d", key);
   }
+
+  @Test
+  void testMatchesEqualOperatorReturnsTrue() {
+    MetricThresholdCondition condition = mock(MetricThresholdCondition.class);
+
+    when(condition.field()).thenReturn(StatField.AVERAGE);
+    when(condition.operator()).thenReturn(ComparisonOperator.EQUAL);
+    when(condition.threshold()).thenReturn(new BigDecimal(10.0));
+
+    OptimizationMetricStatistics stat = mock(OptimizationMetricStatistics.class);
+
+    when(stat.getAverageValue()).thenReturn(new BigDecimal(10.0));
+
+    boolean result = evaluator.matches(condition, stat);
+
+    assertTrue(result, "10.0 is equal to 10.0, should return true");
+  }
 }
