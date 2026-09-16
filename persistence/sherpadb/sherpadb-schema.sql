@@ -708,6 +708,21 @@ BEGIN
       );
       CREATE INDEX IF NOT EXISTS ix_%1$s_budgets_scope ON %1$I.budgets (scope, scope_id);
     $sql$, schema_name);
+
+    EXECUTE format($sql$
+    CREATE TABLE IF NOT EXISTS %I.widget_thresholds (
+      threshold_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      widget_id UUID NOT NULL,
+      user_id UUID,
+      metric_name TEXT NOT NULL,
+      operator TEXT NOT NULL,
+      value DOUBLE PRECISION NOT NULL,
+      severity TEXT,
+      enabled BOOLEAN DEFAULT TRUE,
+      created_at TIMESTAMPTZ DEFAULT now(),
+      updated_at TIMESTAMPTZ DEFAULT now()
+    );
+  $sql$, tenant_schema);
 END;
 $$ LANGUAGE plpgsql;
 
