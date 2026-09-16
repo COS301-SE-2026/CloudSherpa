@@ -332,8 +332,9 @@ export default function ConfigureConnection() {
 
                                         <p className="text-sm text-muted-foreground leading-relaxed">
                                             {" "}
-                                            This setting allows CloudSherpa to periodically scan you
-                                            provider cloud account to find recently added resources.
+                                            This setting allows CloudSherpa to periodically scan
+                                            your provider cloud account to find recently added
+                                            resources.
                                         </p>
                                     </div>
                                 </div>
@@ -362,12 +363,13 @@ export default function ConfigureConnection() {
                                             When selected, new resources added to CloudSherpa during
                                             automatic and manual resource discovery will be set to
                                             &quot;active&quot; and have metrics ingested. It is
-                                            highly recommended that this setting be enabled with
-                                            &quot;Automatic ingestion ingestion interval
-                                            adjustment&quot; to avoid unexpected cloud costs
-                                            associated with API free tier limit, as adding active
-                                            resources without adjusting the ingestion interval leads
-                                            to an increase in requests to cloud providers.
+                                            highly recommended that this setting be enabled in
+                                            conjunction with &quot;Automatic ingestion ingestion
+                                            interval adjustment&quot; to avoid unexpected cloud
+                                            costs associated with API free tier limit, as adding
+                                            active resources without adjusting the ingestion
+                                            interval leads to an increase in requests to cloud
+                                            providers.
                                         </p>
                                     </div>
                                 </div>
