@@ -1,5 +1,6 @@
 package com.cloudsherpa.service.webhooks.controller;
 
+import com.cloudsherpa.service.webhooks.events.WebhookEvent;
 import com.cloudsherpa.service.webhooks.model.Webhook;
 import com.cloudsherpa.service.webhooks.model.WebhookDelivery;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,6 +12,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
+import java.util.Map;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -104,7 +106,59 @@ public class WebhooksController {
     return List.of();
   }
 
-  public void getEvents() {}
+  @Operation(summary = "Get all supported webhook events")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Succesfully returned all supported webhook events",
+            content =
+                @Content(
+                    schema =
+                        @Schema(
+                            type = "object",
+                            description = "Webhook events grouped by cloud account display name",
+                            additionalPropertiesSchema = WebhookEvent.class),
+                    examples =
+                        @ExampleObject(
+                            name = "Webhook events by cloud account",
+                            value =
+                                """
+                          {
+                            "Usage Threshold Alerts": {
+                              "id": "msg_demo_usage_threshold",
+                              "type": "usage.threshold",
+                              "timestamp": "2026-09-16T08:32:15Z",
+                              "account": {
+                                "name": "Azure production",
+                                "provider": "AZURE"
+                              },
+                              "data": {
+                                "metric": "cost",
+                                "threshold": 500.00,
+                                "currentValue": 612.45
+                              }
+                            },
+                            "Billing Ingestion": {
+                              "id": "msg_demo_billing_ingestion",
+                              "type": "billing.ingestion",
+                              "timestamp": "2026-09-16T08:45:02Z",
+                              "account": {
+                                "name": "AWS staging",
+                                "provider": "AWS"
+                              },
+                              "data": {
+                                "past14Days": 200 ,
+                                "forecasted14Days": 220
+                              }
+                            }
+                          }
+                          """)))
+      })
+  @GetMapping("events")
+  public Map<String, WebhookEvent<?>> getEvents() {
+    return Map.of();
+  }
 
   public void addWebhook() {}
 
