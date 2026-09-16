@@ -32,7 +32,7 @@ Table cloud_account {
   connection_id uuid [ref: > cloud_connection.connection_id]
   account_type account_type_enum
   ingestion_period ingestion_period_enum
-  display_name varchar(255)
+  display_name varchar(80)
   created_at timestamptz
   last_usage_ingestion timestamptz
   next_usage_ingestion timestamptz
@@ -102,7 +102,7 @@ Table billing_export_execution {
 
 Table dashboard {
   dashboard_id uuid [pk]
-  display_name varchar(255)
+  display_name varchar(80)
   user_id uuid [ref: > users.user_id]
   time_from timestamptz
   time_to timestamptz
@@ -118,7 +118,7 @@ Table widget {
   start_y integer
   width integer
   height integer
-  display_name varchar(100)
+  display_name varchar(80)
 }
 
 Table widget_kpi {
