@@ -722,7 +722,7 @@ BEGIN
       created_at TIMESTAMPTZ DEFAULT now(),
       updated_at TIMESTAMPTZ DEFAULT now()
     );
-  $sql$, tenant_schema);
+  $sql$, schema_name);
 END;
 $$ LANGUAGE plpgsql;
 
