@@ -1,5 +1,7 @@
 package com.cloudsherpa.service.webhooks.controller;
 
+import com.cloudsherpa.service.webhooks.dto.AddWebhookDto;
+import com.cloudsherpa.service.webhooks.dto.AddWebhookResponseDto;
 import com.cloudsherpa.service.webhooks.events.WebhookEvent;
 import com.cloudsherpa.service.webhooks.model.Webhook;
 import com.cloudsherpa.service.webhooks.model.WebhookDelivery;
@@ -13,7 +15,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.Map;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -160,7 +165,55 @@ public class WebhooksController {
     return Map.of();
   }
 
-  public void addWebhook() {}
+  @Operation(summary = "Add a new webhook")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Succesfully added a new webhook",
+            content =
+                @Content(
+                    schema = @Schema(implementation = AddWebhookResponseDto.class),
+                    examples =
+                        @ExampleObject(
+                            name = "Example secret",
+                            value =
+                                """
+                            {
+                                "secret": "ceb3eebb7ad20566a86afc938ef49161d785791697acfa893210b4beadc3ffed"
+                            }
+                            """))),
+        @ApiResponse(responseCode = "400", description = "Bad request", content = @Content)
+      })
+  @PostMapping("add")
+  public ResponseEntity<AddWebhookResponseDto> addWebhook(
+      @io.swagger.v3.oas.annotations.parameters.RequestBody(
+              description = "Add webhook payload",
+              required = true,
+              content =
+                  @Content(
+                      schema = @Schema(implementation = AddWebhookDto.class),
+                      examples =
+                          @ExampleObject(
+                              name = "Example payload",
+                              value =
+                                  """
+                            {
+                                "name": "Example Webhook",
+                                "endpointUrl": "https://example.com/api",
+                                "eventTypes": [
+                                    "billing.ingestion",
+                                    "usage.threshold"
+                                ],
+                                "cloudAccounts": [
+                                    "c2a49b36-55d2-4233-96dd-cc4e3ae97672"
+                                ]
+                            }
+                            """)))
+          @RequestBody
+          AddWebhookDto request) {
+    return ResponseEntity.ok().build();
+  }
 
   public void editWebhook() {}
 
