@@ -94,6 +94,21 @@ const extractMetricDetails = (evidence: Record<string, number>, keyword: string)
     };
 };
 
+const titleCaseMetric = (metricName: string) => {
+    return metricName
+        .split(" ")
+        .map((word) => {
+            const lower = word.toLowerCase();
+            if (lower === "cpu") return "CPU";
+            if (lower === "io") return "I/O";
+            if (lower === "iops") return "IOPS";
+            if (lower === "http") return "HTTP";
+            if (lower === "db") return "DB";
+            return lower.charAt(0).toUpperCase() + lower.slice(1);
+        })
+        .join(" ");
+};
+
 export default function RecommendationReasoning({
     recommendation,
 }: Readonly<{
@@ -118,8 +133,8 @@ export default function RecommendationReasoning({
                 return (
                     <span>
                         Consider <strong className="text-chart-3">downsizing</strong> this compute
-                        instance. Over the last <strong>{cpu.days} days</strong> , 95% of the time
-                        your <strong>CPU utilization</strong> stayed below{" "}
+                        instance. 95% of the last <strong>{cpu.days} days</strong>, your{" "}
+                        <strong>CPU utilization</strong> stayed below{" "}
                         <strong>{cpu.formattedValue}</strong>, indicating the resource is
                         over-provisioned.
                     </span>
@@ -132,8 +147,8 @@ export default function RecommendationReasoning({
             return (
                 <span>
                     Consider <strong className="text-chart-3">downsizing</strong> this compute
-                    instance. Over the last <strong>{memory?.days || "4"} days</strong>, 95% of the
-                    time your <strong>Memory utilization</strong> stayed below{" "}
+                    instance. 95% of the last <strong>{memory?.days || "4"} days</strong>, your{" "}
+                    <strong>Memory utilization</strong> stayed below{" "}
                     <strong>{memory?.formattedValue}</strong>, suggesting excess memory allocation.
                 </span>
             );
@@ -143,8 +158,8 @@ export default function RecommendationReasoning({
             return (
                 <span>
                     Consider <strong className="text-chart-3">downsizing</strong> this storage
-                    volume. Over the last <strong>{disk?.days || "4"} days</strong>, 95% of the time
-                    your <strong>Disk Space Used</strong> stayed below{" "}
+                    volume. 95% of the last <strong>{disk?.days || "4"} days</strong>, your{" "}
+                    <strong>Disk Space Used</strong> stayed below{" "}
                     <strong>{disk?.formattedValue}</strong>.
                 </span>
             );
@@ -156,9 +171,9 @@ export default function RecommendationReasoning({
 
             return (
                 <span>
-                    Consider <strong className="text-chart-3">downsizing</strong> this database.
-                    Over the last {days} days, 95% of the time <strong>CPU utilization</strong> was
-                    below <strong>{cpu?.formattedValue}</strong> with a maximum of{" "}
+                    Consider <strong className="text-chart-3">downsizing</strong> this database. 95%
+                    of the last {days} days, the <strong>CPU utilization</strong> was below{" "}
+                    <strong>{cpu?.formattedValue}</strong> with a maximum of{" "}
                     <strong>{conn?.formattedValue} Database Connections</strong>.
                 </span>
             );
@@ -167,8 +182,8 @@ export default function RecommendationReasoning({
             const cpu = extractMetricDetails(evidence, "cpu");
             return (
                 <span>
-                    Consider <strong className="text-chart-3">downsizing</strong> this database.
-                    Over the last {cpu?.days || "4"} days, 95% of the time{" "}
+                    Consider <strong className="text-chart-3">downsizing</strong> this database. 95%{" "}
+                    of the last {cpu?.days || "4"} days, the
                     <strong>CPU utilization</strong> was below{" "}
                     <strong>{cpu?.formattedValue}</strong>.
                 </span>
@@ -179,7 +194,7 @@ export default function RecommendationReasoning({
             return (
                 <span>
                     Consider <strong className="text-chart-3">downsizing</strong> this database
-                    storage. Over the last {disk?.days || "30"} days, 95% of the time{" "}
+                    storage. 95% of the last {disk?.days || "30"} days, the
                     <strong>Disk Space Used</strong> stayed below{" "}
                     <strong>{disk?.formattedValue}</strong>.
                 </span>
@@ -196,14 +211,14 @@ export default function RecommendationReasoning({
                     {days} days
                     {cpu && (
                         <span>
-                            , maximum <strong>CPU utilization</strong> was{" "}
-                            <strong>{cpu.formattedValue}</strong>
+                            , this resource was observed to have a maximum of{" "}
+                            <strong>{cpu.formattedValue}</strong> <strong>CPU utilization</strong>
                         </span>
                     )}
                     {network && (
                         <span>
                             {" "}
-                            {cpu ? "and" : ","} maximum <strong>Network In</strong> was{" "}
+                            {cpu ? "and a" : ","} maximum <strong>Network In</strong> of{" "}
                             <strong>{network.formattedValue}</strong>
                         </span>
                     )}
@@ -220,8 +235,8 @@ export default function RecommendationReasoning({
             return (
                 <span>
                     This resource shows practically <strong>no disk activity</strong>. Over the last{" "}
-                    {days} days, maximum <strong>Disk Read</strong> was{" "}
-                    <strong>{read?.formattedValue}</strong> and <strong>Disk Write</strong> was{" "}
+                    {days} days, this resource had a maximum <strong>Disk Read</strong> of{" "}
+                    <strong>{read?.formattedValue}</strong> and <strong>Disk Write</strong> of{" "}
                     <strong>{write?.formattedValue}</strong>.{" "}
                     <strong className="text-destructive">Terminating</strong> is recommended.
                 </span>
@@ -235,9 +250,9 @@ export default function RecommendationReasoning({
             return (
                 <span>
                     This resource shows <strong>no significant network traffic</strong>. Over the
-                    last {days} days, maximum <strong>Network In</strong> was{" "}
-                    <strong>{netIn?.formattedValue}</strong> and <strong>Network Out</strong> was{" "}
-                    <strong>{netOut?.formattedValue}</strong>.{" "}
+                    last {days} days, this resource had a maximum <strong>Network In</strong> of{" "}
+                    <strong>{netIn?.formattedValue}</strong> and a maximum{" "}
+                    <strong>Network Out</strong> of <strong>{netOut?.formattedValue}</strong>.{" "}
                     <strong className="text-destructive">Terminating</strong> is recommended.
                 </span>
             );
@@ -250,7 +265,7 @@ export default function RecommendationReasoning({
             return (
                 <span>
                     This resource has <strong>exceptionally low overall usage</strong>. Over the
-                    last {days} days, maximum <strong>CPU</strong> was{" "}
+                    last {days} days, the maximum <strong>CPU</strong> for this resource was{" "}
                     <strong>{cpu?.formattedValue}</strong> and 95% of the time{" "}
                     <strong>Memory</strong> stayed below <strong>{memory?.formattedValue}</strong>.{" "}
                     <strong className="text-destructive">Terminating</strong> is recommended.
@@ -265,10 +280,9 @@ export default function RecommendationReasoning({
             return (
                 <span>
                     This database appears <strong>completely idle</strong>. Over the last {days}{" "}
-                    days, maximum <strong>CPU utilization</strong> was{" "}
-                    <strong>{cpu?.formattedValue}</strong> and maximum{" "}
-                    <strong>Database Connections</strong> were{" "}
-                    <strong>{conn?.formattedValue}</strong>.{" "}
+                    days, this database had a maximum of <strong>{cpu?.formattedValue}</strong>{" "}
+                    <strong>CPU utilization</strong> and a maximum of{" "}
+                    <strong>{conn?.formattedValue}</strong> <strong>Database Connections</strong>.{" "}
                     <strong className="text-destructive">Terminating</strong> it is recommended.
                 </span>
             );
@@ -278,8 +292,8 @@ export default function RecommendationReasoning({
             return (
                 <span>
                     This database has <strong>no active connections</strong>. Over the last{" "}
-                    {conn?.days || "4"} days, maximum <strong>Database Connections</strong> were{" "}
-                    <strong>{conn?.formattedValue}</strong>.{" "}
+                    {conn?.days || "4"} days, this database had a maximum of{" "}
+                    <strong>{conn?.formattedValue}</strong> <strong>Database Connections</strong>.{" "}
                     <strong className="text-destructive">Terminating</strong> it is recommended.
                 </span>
             );
@@ -292,9 +306,9 @@ export default function RecommendationReasoning({
             return (
                 <span>
                     This database shows <strong>no I/O operations</strong>. Over the last {days}{" "}
-                    days, maximum <strong>Read IOPS</strong> was{" "}
-                    <strong>{read?.formattedValue}</strong> and <strong>Write IOPS</strong> was{" "}
-                    <strong>{write?.formattedValue}</strong>.{" "}
+                    days, this database had a maximum of <strong>{read?.formattedValue}</strong>{" "}
+                    <strong>Read IOPS</strong> and <strong>{write?.formattedValue}</strong>{" "}
+                    <strong>Write IOPS</strong>.{" "}
                     <strong className="text-destructive">Terminating</strong> it is recommended.
                 </span>
             );
@@ -307,7 +321,7 @@ export default function RecommendationReasoning({
             return (
                 <span>
                     This database shows <strong>no network activity</strong>. Over the last {days}{" "}
-                    days, maximum <strong>Network In</strong> was{" "}
+                    days, the maximum <strong>Network In</strong> for this database was{" "}
                     <strong>{netIn?.formattedValue}</strong> and <strong>Network Out</strong> was{" "}
                     <strong>{netOut?.formattedValue}</strong>.{" "}
                     <strong className="text-destructive">Terminating</strong> it is recommended.
@@ -321,8 +335,8 @@ export default function RecommendationReasoning({
             return (
                 <span>
                     This Cloud Run service appears <strong>idle</strong>. Over the last {days} days,
-                    maximum <strong>HTTP Requests</strong> were{" "}
-                    <strong>{req?.formattedValue}</strong> and 95% of the time{" "}
+                    this service had a maximum of <strong>{req?.formattedValue}</strong>{" "}
+                    <strong>HTTP Requests</strong> and 95% of the time the{" "}
                     <strong>Container CPU</strong> was below <strong>{cpu?.formattedValue}</strong>.{" "}
                     <strong className="text-destructive">Terminating</strong> is recommended.
                 </span>
@@ -333,8 +347,8 @@ export default function RecommendationReasoning({
             return (
                 <span>
                     This Cloud Run service is receiving <strong>no traffic</strong>. Over the last{" "}
-                    {req?.days || "4"} days, maximum <strong>HTTP Requests</strong> were{" "}
-                    <strong>{req?.formattedValue}</strong>.{" "}
+                    {req?.days || "4"} days, this service had a maximum of{" "}
+                    <strong>{req?.formattedValue}</strong> <strong>HTTP Requests</strong>.{" "}
                     <strong className="text-destructive">Terminating</strong> is recommended.
                 </span>
             );
@@ -346,9 +360,9 @@ export default function RecommendationReasoning({
             return (
                 <span>
                     This Cloud Run service has <strong>exceptionally low resource usage</strong>.
-                    Over the last {days} days, 95% of the time <strong>CPU</strong> was below{" "}
-                    <strong>{cpu?.formattedValue}</strong> and <strong>Memory</strong> was below{" "}
-                    <strong>{mem?.formattedValue}</strong>.{" "}
+                    95% of the last <strong>{days} days</strong>, the <strong>CPU</strong> for this
+                    service was below <strong>{cpu?.formattedValue}</strong> and the{" "}
+                    <strong>Memory</strong> was below <strong>{mem?.formattedValue}</strong>.{" "}
                     <strong className="text-destructive">Terminating</strong> is recommended.
                 </span>
             );
@@ -358,8 +372,8 @@ export default function RecommendationReasoning({
             return (
                 <span>
                     This Cloud Run service has scaled to zero. Over the last{" "}
-                    {instances?.days || "4"} days, maximum <strong>Running Instances</strong> were{" "}
-                    <strong>{instances?.formattedValue}</strong>.{" "}
+                    {instances?.days || "4"} days, this service had a maximum of{" "}
+                    <strong>{instances?.formattedValue}</strong> <strong>Running Instances</strong>.{" "}
                     <strong className="text-destructive">Terminating</strong> is recommended.
                 </span>
             );
@@ -371,18 +385,18 @@ export default function RecommendationReasoning({
 
             return (
                 <span>
-                    This resource shows <strong>minimal active usage</strong>. Over the last {days}{" "}
-                    days
+                    This resource shows <strong>minimal active usage</strong>. 95% of the last{" "}
+                    <strong>{days} days</strong>
                     {cpu && (
                         <span>
-                            , 95% of the time your <strong>CPU utilization</strong> was only{" "}
+                            , your <strong>CPU utilization</strong> was only{" "}
                             <strong>{cpu.formattedValue}</strong>
                         </span>
                     )}
                     {network && (
                         <span>
                             {" "}
-                            {cpu ? "with" : ","} maximum <strong>Network In</strong> at{" "}
+                            {cpu ? "with the" : ","} maximum <strong>Network In</strong> at{" "}
                             <strong>{network.formattedValue}</strong>
                         </span>
                     )}
@@ -398,9 +412,10 @@ export default function RecommendationReasoning({
 
             return (
                 <span>
-                    This resource is consistently underutilized. Over the last {days} days, 95% of
-                    the time <strong>CPU</strong> was below <strong>{cpu?.formattedValue}</strong>{" "}
-                    and <strong>Memory</strong> was below <strong>{memory?.formattedValue}</strong>.{" "}
+                    This resource is consistently underutilized. 95% of the last{" "}
+                    <strong>{days} days</strong>, the <strong>CPU</strong> was below{" "}
+                    <strong>{cpu?.formattedValue}</strong> and the <strong>Memory</strong> was below{" "}
+                    <strong>{memory?.formattedValue}</strong>.{" "}
                     <strong className="text-yellow-600">Suspending</strong> it during off-hours is
                     recommended.
                 </span>
@@ -413,9 +428,9 @@ export default function RecommendationReasoning({
 
             return (
                 <span>
-                    This resource shows minimal network traffic. Over the last {days} days, maximum{" "}
-                    <strong>Network In</strong> was <strong>{netIn?.formattedValue}</strong> and{" "}
-                    <strong>Network Out</strong> was <strong>{netOut?.formattedValue}</strong>.{" "}
+                    This resource shows minimal network traffic. Over the last {days} days, the
+                    maximum <strong>Network In</strong> was <strong>{netIn?.formattedValue}</strong>{" "}
+                    and <strong>Network Out</strong> was <strong>{netOut?.formattedValue}</strong>.{" "}
                     <strong className="text-yellow-600">Suspending</strong> it during off-hours is
                     recommended.
                 </span>
@@ -443,10 +458,10 @@ export default function RecommendationReasoning({
 
             return (
                 <span>
-                    This Cloud Run service is inactive. Over the last {days} days, maximum{" "}
-                    <strong>HTTP Requests</strong> were <strong>{req?.formattedValue}</strong> and
-                    95% of the time <strong>Container CPU</strong> was below{" "}
-                    <strong>{cpu?.formattedValue}</strong>.{" "}
+                    This Cloud Run service is inactive. Over the last {days} days, this service had
+                    a maximum of <strong>{req?.formattedValue}</strong>{" "}
+                    <strong>HTTP Requests</strong> and its <strong>Container CPU</strong> was below{" "}
+                    <strong>{cpu?.formattedValue}</strong> for 95% of the time.{" "}
                     <strong className="text-yellow-600">Suspending</strong> the service is
                     recommended.
                 </span>
@@ -458,9 +473,10 @@ export default function RecommendationReasoning({
             const days = read?.days || write?.days || "4";
             return (
                 <span>
-                    This database shows minimal I/O activity. Over the last {days} days, maximum{" "}
-                    <strong>Read IOPS</strong> was <strong>{read?.formattedValue}</strong> and{" "}
-                    <strong>Write IOPS</strong> was <strong>{write?.formattedValue}</strong>.{" "}
+                    This database shows minimal I/O activity. Over the last {days} days, the
+                    database had a maximum of <strong>{read?.formattedValue}</strong>{" "}
+                    <strong>Read IOPS</strong> and <strong>{write?.formattedValue}</strong>{" "}
+                    <strong>Write IOPS</strong>.{" "}
                     <strong className="text-yellow-600">Suspending</strong> it is recommended.
                 </span>
             );
@@ -471,8 +487,8 @@ export default function RecommendationReasoning({
             return (
                 <span>
                     Consider <strong className="text-warning">upscaling</strong> this compute
-                    instance. Over the last <strong>{cpu?.days || "4"} days</strong>, 95% of the
-                    time your <strong>CPU utilization</strong> was above{" "}
+                    instance. 95% of the last <strong>{cpu?.days || "4"} days</strong>, your{" "}
+                    <strong>CPU utilization</strong> was above{" "}
                     <strong>{cpu?.formattedValue}</strong>, indicating the resource is
                     under-provisioned and may be bottlenecking performance.
                 </span>
@@ -483,11 +499,10 @@ export default function RecommendationReasoning({
             return (
                 <span>
                     Consider <strong className="text-warning">upscaling</strong> this
-                    database&apos;s compute tier. Over the last{" "}
-                    <strong>{cpu?.days || "4"} days</strong>, 95% of the time your{" "}
-                    <strong>CPU utilization</strong> was above{" "}
-                    <strong>{cpu?.formattedValue}</strong>, indicating a potential performance
-                    bottleneck.
+                    database&apos;s compute tier. 95% of the last{" "}
+                    <strong>{cpu?.days || "4"} days</strong>, your <strong>CPU utilization</strong>{" "}
+                    was above <strong>{cpu?.formattedValue}</strong>, indicating a potential
+                    performance bottleneck.
                 </span>
             );
         }
@@ -496,8 +511,8 @@ export default function RecommendationReasoning({
             return (
                 <span>
                     Consider <strong className="text-warning">upscaling</strong> this
-                    database&apos;s memory tier. Over the last{" "}
-                    <strong>{mem?.days || "4"} days</strong>, 95% of the time your{" "}
+                    database&apos;s memory tier. 95% of the last{" "}
+                    <strong>{mem?.days || "4"} days</strong>, your{" "}
                     <strong>Memory utilization</strong> was above{" "}
                     <strong>{mem?.formattedValue}</strong>, increasing the risk of Out-Of-Memory
                     events.
@@ -514,9 +529,13 @@ export default function RecommendationReasoning({
 
             const formattedVal = formatValue(parsed.metricName, value);
             const days = parsed.timeframe.replace("d", "");
-            const agg = parsed.aggregation.toUpperCase();
+            const prettyMetric = titleCaseMetric(parsed.metricName);
 
-            return `the ${agg} ${parsed.metricName} was ${formattedVal} over the last ${days} days`;
+            if (parsed.aggregation.toLowerCase() === "p95") {
+                return `95% of the last ${days} days, the ${prettyMetric} stayed below ${formattedVal}`;
+            } else {
+                return `the maximum ${prettyMetric} was ${formattedVal} over the last ${days} days`;
+            }
         })
         .filter(Boolean);
 
