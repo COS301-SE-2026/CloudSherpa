@@ -2,6 +2,7 @@ package com.cloudsherpa.service.webhooks.controller;
 
 import com.cloudsherpa.service.webhooks.dto.AddWebhookDto;
 import com.cloudsherpa.service.webhooks.dto.AddWebhookResponseDto;
+import com.cloudsherpa.service.webhooks.dto.EditWebhookDto;
 import com.cloudsherpa.service.webhooks.events.WebhookEvent;
 import com.cloudsherpa.service.webhooks.model.Webhook;
 import com.cloudsherpa.service.webhooks.model.WebhookDelivery;
@@ -15,8 +16,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -215,7 +218,43 @@ public class WebhooksController {
     return ResponseEntity.ok().build();
   }
 
-  public void editWebhook() {}
+  @Operation(summary = "Edit existing webhook")
+  @ApiResponses(
+      value = {
+        @ApiResponse(responseCode = "200", description = "Succesfully added a new webhook"),
+        @ApiResponse(responseCode = "400", description = "Bad request")
+      })
+  @PostMapping("edit/{webhookId}")
+  public ResponseEntity<Void> editWebhook(
+      @PathVariable("webhookId") UUID id,
+      @io.swagger.v3.oas.annotations.parameters.RequestBody(
+              description = "Edit webhook payload",
+              required = true,
+              content =
+                  @Content(
+                      schema = @Schema(implementation = EditWebhookDto.class),
+                      examples =
+                          @ExampleObject(
+                              name = "Example payload",
+                              value =
+                                  """
+                        {
+                          "name": "Billing update",
+                          "endpointUrl": "https://example.com/webhooks/billing-update",
+                          "eventTypes": [
+                            "billing.ingestion",
+                            "usage.threshold"
+                          ],
+                          "status": "PAUSED",
+                          "cloudAccounts": [
+                            "c2a49b36-55d2-4233-96dd-cc4e3ae97672"
+                          ]
+                        }
+                        """)))
+          @RequestBody
+          EditWebhookDto request) {
+    return ResponseEntity.ok().build();
+  }
 
   public void deleteWebhook() {}
 }
