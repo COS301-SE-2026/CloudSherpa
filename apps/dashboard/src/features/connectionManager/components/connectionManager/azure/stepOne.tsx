@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import { Input } from "@/components/atoms/input";
 import { Label } from "@/components/atoms/label";
 import { StepOne } from "@/features/connectionManager/components/connectionManager/wizardSetup/stepOne";
-
 //copied and pasted from previous pr
 
 interface StepOnePropsForAzure {
@@ -28,10 +27,28 @@ export default function StepOneAzure({ onNext }: Readonly<StepOnePropsForAzure>)
 
     const [clientSecret, setClientSecret] = useState("");
 
+    const [errors, setErrors] = useState("");
+
     const handlingSubmit = (submitting: React.SubmitEvent<HTMLFormElement>) => {
         submitting.preventDefault();
+        const cleanDisplayName = displayName.trim();
+        const cleanSubId = subscriptionId.trim();
+        const cleanTenantId = tenantId.trim();
+        const cleanClientId = clientId.trim();
+        const cleanSecret = clientSecret.trim();
 
-        onNext({ displayName, subscriptionId, tenantId, clientId, clientSecret });
+        if (!cleanDisplayName || !cleanSubId || !cleanTenantId || !cleanClientId || !cleanSecret) {
+            setErrors("Fields cannot be empty or just spaces.");
+            return;
+        }
+
+        onNext({
+            displayName: displayName,
+            subscriptionId: cleanSubId,
+            tenantId: cleanTenantId,
+            clientId: cleanClientId,
+            clientSecret: cleanSecret,
+        });
     };
 
     return (
@@ -125,6 +142,7 @@ export default function StepOneAzure({ onNext }: Readonly<StepOnePropsForAzure>)
                     required
                 />
             </div>
+            {errors && <p className="text-sm text-destructive w-full"> {errors} </p>}
         </StepOne>
     );
 }

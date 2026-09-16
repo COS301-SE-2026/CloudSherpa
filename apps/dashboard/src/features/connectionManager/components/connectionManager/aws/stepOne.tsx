@@ -23,13 +23,29 @@ export default function StepOneAws({ onNext }: Readonly<PropsForStepOne>) {
 
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    const [errors, setErrors] = useState("");
+
     const handleSubmit = (forHandlingSubmit: React.SubmitEvent<HTMLFormElement>) => {
         forHandlingSubmit.preventDefault();
+
+        const cleanDisplayName = formData.displayName.trim();
+        const cleanAccessKey = formData.accessKey.trim();
+        const cleanSecretKey = formData.secretKey.trim();
+
+        if (!cleanDisplayName || !cleanAccessKey || !cleanSecretKey) {
+            setErrors("All fields are required and cannot be just spaces.");
+            return;
+        }
 
         setIsSubmitting(true);
 
         try {
-            onNext(formData);
+            onNext({
+                displayName: formData.displayName,
+                accessKey: cleanAccessKey,
+                secretKey: cleanSecretKey,
+                awsRegion: formData.awsRegion,
+            });
         } finally {
             setIsSubmitting(false);
         }
@@ -90,6 +106,7 @@ export default function StepOneAws({ onNext }: Readonly<PropsForStepOne>) {
                     required
                 />
             </div>
+            {errors && <p className="text-sm text-destructive w-full"> {errors} </p>}
         </StepOne>
     );
 }

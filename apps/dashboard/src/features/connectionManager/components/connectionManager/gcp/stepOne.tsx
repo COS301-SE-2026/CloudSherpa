@@ -54,6 +54,13 @@ export default function StepOneGcp({ onNext }: Readonly<StepOnePropsForGcp>) {
     const handlingSubmit = async (submittingFile: React.SubmitEvent<HTMLFormElement>) => {
         submittingFile.preventDefault();
 
+        const cleanDisplayName = displayName.trim();
+
+        if (!cleanDisplayName) {
+            setErrors("Display name field cannot be empty or just spaces.");
+            return;
+        }
+
         if (!accountKey) {
             setErrors("Please upload a service account key before continuing");
 
