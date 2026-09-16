@@ -216,8 +216,7 @@ export default function RecommendationReasoning({
                             <strong>{network.formattedValue}</strong>
                         </span>
                     )}
-                    .<strong className="text-destructive"> Terminating</strong> it is recommended to
-                    reduce costs.
+                    .<strong className="text-destructive"> Terminating</strong> it is recommended.
                 </span>
             );
         }
@@ -299,10 +298,10 @@ export default function RecommendationReasoning({
 
             return (
                 <span>
-                    This database shows <strong>no I/O operations</strong>. Over the last {days}{" "}
-                    days, this database had a maximum of <strong>{read?.formattedValue}</strong>{" "}
-                    <strong>Read IOPS</strong> and <strong>{write?.formattedValue}</strong>{" "}
-                    <strong>Write IOPS</strong>.{" "}
+                    This database shows <strong>no Input/Output operations</strong>. Over the last{" "}
+                    {days} days, this database had a maximum of{" "}
+                    <strong>{read?.formattedValue}</strong> <strong>Read Operations</strong> and{" "}
+                    <strong>{write?.formattedValue}</strong> <strong>Write Operations</strong>.{" "}
                     <strong className="text-destructive">Terminating</strong> it is recommended.
                 </span>
             );
@@ -467,10 +466,10 @@ export default function RecommendationReasoning({
             const days = read?.days || write?.days || "4";
             return (
                 <span>
-                    This database shows minimal I/O activity. Over the last {days} days, the
-                    database had a maximum of <strong>{read?.formattedValue}</strong>{" "}
-                    <strong>Read IOPS</strong> and <strong>{write?.formattedValue}</strong>{" "}
-                    <strong>Write IOPS</strong>.{" "}
+                    This database shows minimal Input/Output activity. Over the last {days} days,
+                    the database had a maximum of <strong>{read?.formattedValue}</strong>{" "}
+                    <strong>Read Operations</strong> and <strong>{write?.formattedValue}</strong>{" "}
+                    <strong>Write Operations</strong>.{" "}
                     <strong className="text-yellow-600">Suspending</strong> it is recommended.
                 </span>
             );
