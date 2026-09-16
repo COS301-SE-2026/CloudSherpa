@@ -15,7 +15,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "pending_webhook_events", schema = "public")
-public class PendingWebhookEvents {
+public class PendingWebhookEvent {
 
     @Id 
     @Column(name = "event_id", nullable = false)

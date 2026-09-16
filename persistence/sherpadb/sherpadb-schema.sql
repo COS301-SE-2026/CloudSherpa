@@ -699,11 +699,11 @@ BEGIN
     EXECUTE format($sql$
       CREATE TABLE IF NOT EXISTS %I.webhooks (
         webhook_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-        webhook_name text,
-        endpoint_url text,
-        event_types text[],
-        cloud_accounts uuid[],
-        webhook_status public.webhook_status_enum
+        webhook_name text NOT NULL,
+        endpoint_url text NOT NULL,
+        event_types text[] NOT NULL,
+        cloud_accounts uuid[] NOT NULL,
+        webhook_status public.webhook_status_enum NOT NULL
       );
     $sql$, schema_name);
 
