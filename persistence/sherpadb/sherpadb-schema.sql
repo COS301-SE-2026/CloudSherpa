@@ -457,7 +457,7 @@ CREATE TABLE IF NOT EXISTS public.pending_webhook_events (
   tenant_id uuid NOT NULL,
   cloud_account uuid NOT NULL REFERENCES public.cloud_account(account_id) ON DELETE CASCADE,
   event_type text NOT NULL,
-  event_timestamp timestampz NOT NULL,
+  event_timestamp timestamptz NOT NULL,
   payload jsonb NOT NULL
 );
 
@@ -714,7 +714,7 @@ BEGIN
         event_id uuid NOT NULL,
         cloud_account uuid REFERENCES public.cloud_account(account_id) ON DELETE SET NULL,
         event_type text NOT NULL,
-        event_timestamp timestampz NOT NULL,
+        event_timestamp timestamptz NOT NULL,
         payload jsonb NOT NULL,
         delivery_status public.webhook_delivery_status_enum NOT NULL DEFAULT 'PENDING',
         response_code int,
