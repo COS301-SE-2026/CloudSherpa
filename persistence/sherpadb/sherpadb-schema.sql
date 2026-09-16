@@ -672,6 +672,42 @@ BEGIN
             expires_at timestamptz
         );
     $sql$, schema_name, schema_name);
+
+    EXECUTE format($sql$
+      CREATE TABLE IF NOT EXISTS %I.alerts (
+        alert_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id uuid,
+        widget_id uuid,
+        alert_type varchar(20) NOT NULL,
+        severity varchar(20) NOT NULL,
+        title text NOT NULL,
+        message text,
+        payload jsonb DEFAULT '{}'::jsonb,
+        status varchar(20) NOT NULL DEFAULT 'ACTIVE',
+        canonical_key text,
+        created_at timestamptz DEFAULT NOW(),
+        last_seen timestamptz DEFAULT NOW(),
+        resolved_at timestamptz
+      );
+      CREATE INDEX IF NOT EXISTS ix_%1$s_alerts_canonical_key ON %1$I.alerts (canonical_key);
+      CREATE INDEX IF NOT EXISTS ix_%1$s_alerts_status_created_at ON %1$I.alerts (status, created_at DESC);
+    $sql$, schema_name);
+
+    EXECUTE format($sql$
+      CREATE TABLE IF NOT EXISTS %I.budgets (
+        budget_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id uuid,
+        scope varchar(20) NOT NULL,
+        scope_id uuid,
+        amount numeric NOT NULL,
+        currency public.currency_enum DEFAULT 'USD',
+        window_days integer NOT NULL DEFAULT 30,
+        enabled boolean NOT NULL DEFAULT true,
+        created_at timestamptz DEFAULT NOW(),
+        updated_at timestamptz DEFAULT NOW()
+      );
+      CREATE INDEX IF NOT EXISTS ix_%1$s_budgets_scope ON %1$I.budgets (scope, scope_id);
+    $sql$, schema_name);
 END;
 $$ LANGUAGE plpgsql;
 
