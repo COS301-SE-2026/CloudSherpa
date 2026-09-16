@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -256,5 +257,16 @@ public class WebhooksController {
     return ResponseEntity.ok().build();
   }
 
-  public void deleteWebhook() {}
+  @Operation(summary = "Delete webhook")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "204",
+            description =
+                "Deleted webhook / not, generic response code protects against information gathering via response codes")
+      })
+  @DeleteMapping("delete/webhookId")
+  public ResponseEntity<Void> deleteWebhook() {
+    return ResponseEntity.noContent().build();
+  }
 }
