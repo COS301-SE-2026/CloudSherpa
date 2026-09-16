@@ -7,9 +7,7 @@ import { useRecStore } from "@/features/optimization/stores/useRecStore";
 import { Badge } from "@/components/atoms/badge";
 import { Separator } from "@/components/atoms/separator";
 import { toast } from "sonner";
-import RecommendationReasoning, {
-    getMetricUnit,
-} from "@/features/optimization/utils/recDictionary";
+import RecommendationReasoning, { formatValue } from "@/features/optimization/utils/recDictionary";
 
 interface RecommendationCardProps {
     recommendation: Recommendation;
@@ -150,10 +148,7 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
 
             const { metricName, aggregation, timeframe } = parsed;
 
-            const formattedValue =
-                typeof value === "number" ? Number.parseFloat(value.toFixed(2)) : String(value);
-            const unit = getMetricUnit(metricName);
-            const displayValue = `${formattedValue}${unit}`;
+            const displayValue = formatValue(metricName, value as number);
             const label = formatMetricLabel(metricName, aggregation);
 
             const days = timeframe.replace("d", "");

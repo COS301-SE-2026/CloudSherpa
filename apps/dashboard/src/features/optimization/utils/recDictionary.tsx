@@ -30,12 +30,56 @@ export const getMetricUnit = (metricName: string): string => {
     return "";
 };
 
-const formatValue = (metricName: string, value: number): string => {
-    const unit = getMetricUnit(metricName);
-    const formattedNum = Number.isInteger(value)
-        ? String(value)
-        : Number.parseFloat(value.toFixed(2)).toString();
-    return `${formattedNum}${unit}`;
+export const formatValue = (metricName: string, value: number): string => {
+    const nameLower = metricName.toLowerCase();
+
+    //handle percentages
+    if (
+        nameLower.includes("utilization") ||
+        nameLower.includes("percentage") ||
+        nameLower.includes("pressure")
+    ) {
+        const formattedNum = Number.isInteger(value)
+            ? value.toLocaleString()
+            : Number.parseFloat(value.toFixed(2)).toLocaleString();
+        return `${formattedNum}%`;
+    }
+
+    // handle bytes
+    if (nameLower.includes("bytes") || nameLower.includes("network")) {
+        if (value === 0) return "0 B";
+
+        const k = 1024;
+        const sizes = ["B", "KB", "MB", "GB", "TB", "PB"];
+        const i = Math.floor(Math.log(Math.abs(value)) / Math.log(k));
+
+        const calculatedSize = value / Math.pow(k, i);
+        const formattedNum = Number.isInteger(calculatedSize)
+            ? calculatedSize.toLocaleString()
+            : Number.parseFloat(calculatedSize.toFixed(2)).toLocaleString();
+
+        return `${formattedNum} ${sizes[i]}`;
+    }
+
+    // assume base GB if not utilization
+    if (nameLower.includes("memory")) {
+        if (value >= 1024) {
+            const tbValue = value / 1024;
+            const formattedNum = Number.isInteger(tbValue)
+                ? tbValue.toLocaleString()
+                : Number.parseFloat(tbValue.toFixed(2)).toLocaleString();
+            return `${formattedNum} TB`;
+        }
+        const formattedNum = Number.isInteger(value)
+            ? value.toLocaleString()
+            : Number.parseFloat(value.toFixed(2)).toLocaleString();
+        return `${formattedNum} GB`;
+    }
+
+    // fallback for requests connections and IOPs
+    return Number.isInteger(value)
+        ? value.toLocaleString()
+        : Number.parseFloat(value.toFixed(2)).toLocaleString();
 };
 
 // extract format specific metrics
