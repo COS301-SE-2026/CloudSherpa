@@ -50,26 +50,19 @@ export const formatValue = (metricName: string, value: number): string => {
 
     // handle bytes
     if (nameLower.includes("bytes") || nameLower.includes("network")) {
-        if (value === 0) return "0 B";
+        if (value === 0) return "0 MB";
 
-        const k = 1024;
-        const sizes = ["B", "KB", "MB", "GB", "TB", "PB"];
-        const i = Math.floor(Math.log(Math.abs(value)) / Math.log(k));
-
-        const calculatedSize = value / Math.pow(k, i);
-        return `${formatNumber(calculatedSize)} ${sizes[i]}`;
+        const sizeInMB = value / 1048576; // bytes to mb = bytes/1024/1024
+        return `${formatNumber(sizeInMB)} MB`;
     }
 
     // assume base GB if not utilization
     if (nameLower.includes("memory")) {
         if (value >= 1024) {
             const tbValue = value / 1024;
-            return `${formatNumber(value)} GB`;
+            return `${formatNumber(tbValue)} TB`;
         }
-        const formattedNum = Number.isInteger(value)
-            ? value.toLocaleString()
-            : Number.parseFloat(value.toFixed(2)).toLocaleString();
-        return `${formattedNum} GB`;
+        return `${formatNumber(value)} GB`;
     }
 
     // fallback for requests connections and IOPs
@@ -508,7 +501,7 @@ export default function RecommendationReasoning({
                     <strong>{mem?.days || "4"} days</strong>, your{" "}
                     <strong>Memory utilization</strong> was above{" "}
                     <strong>{mem?.formattedValue}</strong>, increasing the risk of Out-Of-Memory
-                    events.
+                    events (which force the database to suddenly crash and restart).
                 </span>
             );
         }
