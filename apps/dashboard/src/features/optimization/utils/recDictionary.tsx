@@ -30,6 +30,12 @@ export const getMetricUnit = (metricName: string): string => {
     return "";
 };
 
+const formatNumber = (num: number): string => {
+    return Number.isInteger(num)
+        ? num.toLocaleString()
+        : Number.parseFloat(num.toFixed(2)).toLocaleString();
+};
+
 export const formatValue = (metricName: string, value: number): string => {
     const nameLower = metricName.toLowerCase();
 
@@ -39,10 +45,7 @@ export const formatValue = (metricName: string, value: number): string => {
         nameLower.includes("percentage") ||
         nameLower.includes("pressure")
     ) {
-        const formattedNum = Number.isInteger(value)
-            ? value.toLocaleString()
-            : Number.parseFloat(value.toFixed(2)).toLocaleString();
-        return `${formattedNum}%`;
+        return `${formatNumber(value)}%`;
     }
 
     // handle bytes
@@ -54,21 +57,14 @@ export const formatValue = (metricName: string, value: number): string => {
         const i = Math.floor(Math.log(Math.abs(value)) / Math.log(k));
 
         const calculatedSize = value / Math.pow(k, i);
-        const formattedNum = Number.isInteger(calculatedSize)
-            ? calculatedSize.toLocaleString()
-            : Number.parseFloat(calculatedSize.toFixed(2)).toLocaleString();
-
-        return `${formattedNum} ${sizes[i]}`;
+        return `${formatNumber(calculatedSize)} ${sizes[i]}`;
     }
 
     // assume base GB if not utilization
     if (nameLower.includes("memory")) {
         if (value >= 1024) {
             const tbValue = value / 1024;
-            const formattedNum = Number.isInteger(tbValue)
-                ? tbValue.toLocaleString()
-                : Number.parseFloat(tbValue.toFixed(2)).toLocaleString();
-            return `${formattedNum} TB`;
+            return `${formatNumber(value)} GB`;
         }
         const formattedNum = Number.isInteger(value)
             ? value.toLocaleString()
@@ -77,9 +73,7 @@ export const formatValue = (metricName: string, value: number): string => {
     }
 
     // fallback for requests connections and IOPs
-    return Number.isInteger(value)
-        ? value.toLocaleString()
-        : Number.parseFloat(value.toFixed(2)).toLocaleString();
+    return formatNumber(value);
 };
 
 // extract format specific metrics
