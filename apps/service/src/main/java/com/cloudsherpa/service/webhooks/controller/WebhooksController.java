@@ -1,6 +1,7 @@
 package com.cloudsherpa.service.webhooks.controller;
 
 import com.cloudsherpa.service.webhooks.model.Webhook;
+import com.cloudsherpa.service.webhooks.model.WebhookDelivery;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -35,6 +36,7 @@ public class WebhooksController {
                                 """
                           [
                             {
+                              "id": "c2a49b36-55d2-4233-96dd-cc4e3ae97671",
                               "name": "General alerts",
                               "endpointUrl": "https://example.com/webhooks/general",
                               "eventTypes": ["usage.threshold", "resource.discovery"],
@@ -44,6 +46,7 @@ public class WebhooksController {
                               ]
                             },
                             {
+                              "id": "c2a49b36-55d2-4233-96dd-cc4e3ae97673",
                               "name": "Billing update",
                               "endpointUrl": "https://example.com/webhooks/billing-update",
                               "eventTypes": ["billing.ingestion"],
@@ -60,7 +63,46 @@ public class WebhooksController {
     return List.of();
   }
 
-  public void getDeliveries() {}
+  @Operation(summary = "Get all webhook deliveries for the current user")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Succesfully returned all webhook deliveries",
+            content =
+                @Content(
+                    array = @ArraySchema(schema = @Schema(implementation = WebhookDelivery.class)),
+                    examples =
+                        @ExampleObject(
+                            name = "Webhook delivery list",
+                            value =
+                                """
+                          [
+                            {
+                              "deliveryId": "7d5905cf-3518-42c0-8f23-7a71a7cc5d58",
+                              "timestamp": "2026-09-16T08:32:15Z",
+                              "webhookId": "c2a49b36-55d2-4233-96dd-cc4e3ae97671",
+                              "eventType": "usage.threshold",
+                              "cloudAccount": "c2a49b36-55d2-4233-96dd-cc4e3ae97672",
+                              "result": "DELIVERED",
+                              "responseCode": 200
+                            },
+                            {
+                              "deliveryId": "8c307a33-6d4a-4c35-bf14-c643d6b1f3c6",
+                              "timestamp": "2026-09-16T08:45:02Z",
+                              "webhookId": "c2a49b36-55d2-4233-96dd-cc4e3ae97673",
+                              "eventType": "billing.ingestion",
+                              "cloudAccount": "c2a49b36-55d2-4233-96dd-cc4e3ae97672",
+                              "result": "FAILED",
+                              "responseCode": 503
+                            }
+                          ]
+                          """)))
+      })
+  @GetMapping("deliveries")
+  public List<WebhookDelivery> getDeliveries() {
+    return List.of();
+  }
 
   public void getEvents() {}
 
