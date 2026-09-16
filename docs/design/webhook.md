@@ -71,7 +71,12 @@ Functionality allowing the user to manually retry a failed delivery has been dee
 
 Producer-consumer architecture.
 
-A bounded in-memory queue will be used as the message bus, requiring no additional infrastructure. The behaviour when the queue is full still needs to be defined, particularly whether producers should block, reject new messages, or apply another form of backpressure.
+A bounded in-memory queue will be used as the message bus, requiring no additional infrastructure. 
+
+#### Policy when queue is full
+When the queue is full, the producer persists the overflow in the database and starts a scheduled worker to read from the DB and retry adding the events to the bounded queue. 
+
+![CloudSherpa webhooks diagram](../assets/diagrams/images/webhooks.png)
 
 ### Security
 
