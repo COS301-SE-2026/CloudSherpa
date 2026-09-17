@@ -132,6 +132,31 @@ export const AddWebhook = ({
 
                         <p className = "text-xs text-muted-foreground mt-1"> {eventsSelected.length} events selected </p>
                     </div>
+
+                    <div className = "space-y-2">
+                        <Label> Cloud accounts </Label>
+
+                        <p className = "text-xs text-muted-foreground mb-2"> Applies to all selected events. </p>
+
+                        <div className = "relative">
+                            <Button variant = "outline" onClick = {() => setAccountDropdownOpen(!accountDropdownOpen)} className = "w-full justify-between">
+                                <span> {accountsSelected.length === cloudAccounts.length ? "All connected accounts" : `${accountsSelected.length} accounts selected`} </span>
+                                <ChevronDown size = {16}/>
+                            </Button>
+
+                            {accountDropdownOpen && (
+                                <div className = "absolute z-10 mt-1 w-full bg-popover border border-border rounded-md shadow-md max-h-60 overflow-y-auto p-2 space-y-1">
+                                    {cloudAccounts.map((account) => (
+                                        <div key = {account.id} className = "flex items-center gap-2 p-2 hover:bg-muted rounded-md">
+                                            <Checkbox id = {account.id} checked = {accountsSelected.includes(account.id)} onCheckedChange = {() => toggleAccount(account.id)}/>
+
+                                            <Label htmlFor = {account.id} className = "text-sm font-normal cursor-pointer"> {account.displayName} </Label>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </div>
 
                 <DialogFooter>
