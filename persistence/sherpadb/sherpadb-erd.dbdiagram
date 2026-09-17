@@ -150,6 +150,24 @@
         "schemaName": "public",
         "x": 2524.5595055635163,
         "y": 267.77442729933125
+      },
+      {
+        "name": "pending_webhook_events",
+        "schemaName": "public",
+        "x": 1386.1988719873043,
+        "y": 1560.6688308243765
+      },
+      {
+        "name": "webhooks",
+        "schemaName": "public",
+        "x": 1893.0934619867392,
+        "y": 1566.1184146497208
+      },
+      {
+        "name": "webhook_deliveries",
+        "schemaName": "public",
+        "x": 2428.21484375,
+        "y": 1536
       }
     ],
     "tableGroupCollapseStates": [],
@@ -511,6 +529,171 @@
           "widget_chart_id"
         ],
         "secondTableName": "chart_resource",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "config_id"
+        ],
+        "firstTableName": "billing_export_config",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "config_id"
+        ],
+        "secondTableName": "aws_billing_export_config",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "config_id"
+        ],
+        "firstTableName": "billing_export_config",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "config_id"
+        ],
+        "secondTableName": "gcp_billing_export_config",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "config_id"
+        ],
+        "firstTableName": "billing_export_config",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "config_id"
+        ],
+        "secondTableName": "azure_billing_export_config",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "kpi_id"
+        ],
+        "firstTableName": "widget_kpi",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "widget_kpi_id"
+        ],
+        "secondTableName": "kpi_charges",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "account_id"
+        ],
+        "firstTableName": "cloud_account",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "cloud_account"
+        ],
+        "secondTableName": "pending_webhook_events",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "resource_id"
+        ],
+        "firstTableName": "resource",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "resource_id"
+        ],
+        "secondTableName": "optimization_metric_statistics",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "resource_id"
+        ],
+        "firstTableName": "resource",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "resource_id"
+        ],
+        "secondTableName": "optimization_recommendation",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "recommendation_id"
+        ],
+        "firstTableName": "optimization_recommendation",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "recommendation_id"
+        ],
+        "secondTableName": "recommendation_history",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "resource_id"
+        ],
+        "firstTableName": "resource",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "resource_id"
+        ],
+        "secondTableName": "recommendation_history",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "webhook_id"
+        ],
+        "firstTableName": "webhooks",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "webhook_id"
+        ],
+        "secondTableName": "webhook_deliveries",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "account_id"
+        ],
+        "firstTableName": "cloud_account",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "cloud_account"
+        ],
+        "secondTableName": "webhook_deliveries",
         "secondSchemaName": "public",
         "secondRelation": "*",
         "checkPoints": []

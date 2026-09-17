@@ -150,6 +150,15 @@ Table chart_resource {
   metric_name varchar(100)
 }
 
+Table pending_webhook_events {
+  event_id uuid [pk]
+  tenant_id uuid [not null]
+  cloud_account uuid [not null, ref: > cloud_account.account_id]
+  event_type text [not null]
+  event_timestamp timestamptz [not null]
+  payload jsonb [not null]
+}
+
 // ==========================================
 // TENANT SCHEMA TEMPLATE (e.g. tenant_xxxx)
 // ==========================================
@@ -267,4 +276,26 @@ Table processing_watermark {
   last_processed_period timestamptz
   last_successful_run timestamptz
   updated_at timestamptz
+}
+
+Table webhooks {
+  webhook_id uuid [pk]
+  webhook_name text
+  endpoint_url text
+  event_types text[]
+  cloud_accounts uuid[]
+  webhook_status webhook_status_enum
+}
+
+Table webhook_deliveries {
+  webhook_delivery_id uuid [pk]
+  webhook_id uuid [ref: > webhooks.webhook_id]
+  event_id uuid
+  cloud_account uuid [ref: > cloud_account.account_id]
+  event_type text [not null]
+  event_timestamp timestamptz [not null]
+  payload jsonb [not null]
+  delivery_status webhook_delivery_status_enum [not null, default: 'PENDING']
+  response_code integer
+  attempt_count integer [not null, default: 0]
 }
