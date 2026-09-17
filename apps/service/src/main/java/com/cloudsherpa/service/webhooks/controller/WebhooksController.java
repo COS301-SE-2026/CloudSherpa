@@ -4,9 +4,9 @@ import com.cloudsherpa.service.webhooks.WebhookEventDefinitionRegistry;
 import com.cloudsherpa.service.webhooks.dto.AddWebhookDto;
 import com.cloudsherpa.service.webhooks.dto.AddWebhookResponseDto;
 import com.cloudsherpa.service.webhooks.dto.EditWebhookDto;
+import com.cloudsherpa.service.webhooks.dto.WebhookDeliveryResponse;
 import com.cloudsherpa.service.webhooks.dto.WebhookEventDto;
 import com.cloudsherpa.service.webhooks.dto.WebhookResponse;
-import com.cloudsherpa.service.webhooks.model.WebhookDelivery;
 import com.cloudsherpa.service.webhooks.service.WebhookService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -93,7 +93,9 @@ public class WebhooksController {
             description = "Succesfully returned all webhook deliveries",
             content =
                 @Content(
-                    array = @ArraySchema(schema = @Schema(implementation = WebhookDelivery.class)),
+                    array =
+                        @ArraySchema(
+                            schema = @Schema(implementation = WebhookDeliveryResponse.class)),
                     examples =
                         @ExampleObject(
                             name = "Webhook delivery list",
@@ -122,8 +124,8 @@ public class WebhooksController {
                           """)))
       })
   @GetMapping("deliveries")
-  public List<WebhookDelivery> getDeliveries() {
-    return List.of();
+  public List<WebhookDeliveryResponse> getDeliveries() {
+    return webhookService.getWebhookDeliveries();
   }
 
   @Operation(summary = "Get all supported webhook events")
