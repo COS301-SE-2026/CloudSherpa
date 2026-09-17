@@ -1,5 +1,7 @@
 package com.cloudsherpa.service.alerts.controller;
 
+import com.cloudsherpa.lib.entities.Alert;
+import com.cloudsherpa.lib.repositories.AlertRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -18,6 +20,12 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Alerts", description = "Operations for listing and managing alerts")
 public class AlertsController {
 
+  private final AlertRepository alertRepository;
+
+  public AlertsController(AlertRepository alertRepository) {
+    this.alertRepository = alertRepository;
+  }
+
   @Operation(
       summary = "List alerts",
       description =
@@ -34,9 +42,9 @@ public class AlertsController {
                       value =
                           "[{\"alert_id\":\"b0000000-0000-0000-0000-000000000001\",\"alert_type\":\"BILLING\",\"severity\":\"WARNING\",\"title\":\"30-day projected spend may exceed budget\",\"message\":\"Projected 30d spend $1,200 vs budget $1,000\",\"status\":\"ACTIVE\",\"created_at\":\"2026-09-16T12:00:00Z\"}]")))
   @GetMapping
-  public ResponseEntity<List<Map<String, Object>>> getAlerts() {
+  public ResponseEntity<List<Alert>> getAlerts() {
     // fetch all alerts
-    return ResponseEntity.ok(List.of());
+    return ResponseEntity.ok(alertRepository.findAll());
   }
 
   @Operation(summary = "Get alert", description = "Return details for a single alert by id.")
@@ -53,10 +61,11 @@ public class AlertsController {
                           "{\"alert_id\":\"b0000000-0000-0000-0000-000000000001\",\"alert_type\":\"THRESHOLD\",\"severity\":\"CRITICAL\",\"title\":\"CPU > 90%\",\"message\":\"CPU usage 95% on instance i-0123\",\"status\":\"ACTIVE\",\"created_at\":\"2026-09-16T12:00:00Z\"}")))
   @ApiResponse(responseCode = "404", description = "Alert not found", content = @Content)
   @GetMapping("/{id}")
-  public ResponseEntity<Map<String, Object>> getAlert(
-      @Parameter(description = "Alert UUID") @PathVariable UUID id) {
-    // fetch alert details
-    return ResponseEntity.ok(Map.of());
+  public ResponseEntity<Alert> getAlert(@PathVariable UUID id) {
+    return alertRepository
+        .findById(id)
+        .map(ResponseEntity::ok)
+        .orElseGet(() -> ResponseEntity.notFound().build());
   }
 
   @Operation(summary = "Acknowledge alert", description = "Mark an alert as ACKNOWLEDGED.")
