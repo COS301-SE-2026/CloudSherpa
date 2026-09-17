@@ -45,6 +45,18 @@ export const ExampleForPayload = ({event} : PropsForPayload) => {
 
                 <pre className = "bg-background border border-border rounded-md p-3 text-xs overflow-x-auto text-foreground"> {JSON.stringify(headers, null, 2)} </pre>
             </div>
+
+            <div>
+                <div className = "flex justify-between items-center mb-2">
+                    <h3 className = "text-sm font-semibold text-foreground"> JSON body </h3>
+
+                    <Button variant = "outline" size = "sm" onClick = {() => handlingCopy(JSON.stringify(body, null,2), setCopyBody)}>
+                        {copyBody ? "Copied to clipboard." : "Copy JSON"}
+                    </Button>
+                </div>
+
+                <pre className = "bg-background border border-border rounded-md p-3 text-xs overflow-x-auto text-foreground"> {JSON.stringify(body, null, 2)} </pre>
+            </div>
         </div>
     );
 };
