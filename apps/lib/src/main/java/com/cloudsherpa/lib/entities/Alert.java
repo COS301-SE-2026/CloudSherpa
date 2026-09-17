@@ -65,28 +65,107 @@ public class Alert {
   @Column(name = "resolved_at")
   private OffsetDateTime resolvedAt;
 
-  public Alert() {}
+  protected Alert() {}
 
-  public Alert(
-      UUID userId,
-      UUID widgetId,
-      String alertType,
-      String severity,
-      String title,
-      String message,
-      Map<String, Object> payload,
-      String status,
-      String canonicalKey) {
-    this.alertId = UUID.randomUUID();
-    this.userId = userId;
-    this.widgetId = widgetId;
-    this.alertType = alertType;
-    this.severity = severity;
-    this.title = title;
-    this.message = message;
-    this.payload = payload;
-    this.status = status;
-    this.canonicalKey = canonicalKey;
+  private Alert(Builder builder) {
+    this.alertId = builder.alertId;
+    this.userId = builder.userId;
+    this.widgetId = builder.widgetId;
+    this.alertType = builder.alertType;
+    this.severity = builder.severity;
+    this.title = builder.title;
+    this.message = builder.message;
+    this.payload = builder.payload;
+    this.status = builder.status;
+    this.canonicalKey = builder.canonicalKey;
+    this.createdAt = builder.createdAt;
+    this.lastSeen = builder.lastSeen;
+    this.resolvedAt = builder.resolvedAt;
+  }
+
+  public static class Builder {
+    private UUID alertId = UUID.randomUUID();
+    private UUID userId;
+    private UUID widgetId;
+    private String alertType;
+    private String severity;
+    private String title;
+    private String message;
+    private Map<String, Object> payload;
+    private String status;
+    private String canonicalKey;
+    private OffsetDateTime createdAt;
+    private OffsetDateTime lastSeen;
+    private OffsetDateTime resolvedAt;
+
+    public Builder alertId(UUID alertId) {
+      this.alertId = alertId;
+      return this;
+    }
+
+    public Builder userId(UUID userId) {
+      this.userId = userId;
+      return this;
+    }
+
+    public Builder widgetId(UUID widgetId) {
+      this.widgetId = widgetId;
+      return this;
+    }
+
+    public Builder alertType(String alertType) {
+      this.alertType = alertType;
+      return this;
+    }
+
+    public Builder severity(String severity) {
+      this.severity = severity;
+      return this;
+    }
+
+    public Builder title(String title) {
+      this.title = title;
+      return this;
+    }
+
+    public Builder message(String message) {
+      this.message = message;
+      return this;
+    }
+
+    public Builder payload(Map<String, Object> payload) {
+      this.payload = payload;
+      return this;
+    }
+
+    public Builder status(String status) {
+      this.status = status;
+      return this;
+    }
+
+    public Builder canonicalKey(String canonicalKey) {
+      this.canonicalKey = canonicalKey;
+      return this;
+    }
+
+    public Builder createdAt(OffsetDateTime createdAt) {
+      this.createdAt = createdAt;
+      return this;
+    }
+
+    public Builder lastSeen(OffsetDateTime lastSeen) {
+      this.lastSeen = lastSeen;
+      return this;
+    }
+
+    public Builder resolvedAt(OffsetDateTime resolvedAt) {
+      this.resolvedAt = resolvedAt;
+      return this;
+    }
+
+    public Alert build() {
+      return new Alert(this);
+    }
   }
 
   public UUID getAlertId() {
