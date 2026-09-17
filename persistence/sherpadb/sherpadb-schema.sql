@@ -730,18 +730,18 @@ BEGIN
     $sql$, schema_name);
 
     EXECUTE format($sql$
-      CREATE TABLE IF NOT EXISTS %I.widget_thresholds (
-        threshold_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        widget_id UUID REFERENCES public.widget(widget_id) ON DELETE CASCADE,
-        user_id UUID REFERENCES public.users(user_id) ON DELETE CASCADE,
-        metric_name TEXT NOT NULL,
-        operator TEXT NOT NULL,
-        value DOUBLE PRECISION NOT NULL,
-        severity TEXT,
-        enabled BOOLEAN DEFAULT TRUE,
-        created_at TIMESTAMPTZ DEFAULT now(),
-        updated_at TIMESTAMPTZ DEFAULT now()
-      );
+      CREATE TABLE IF NOT EXISTS %I.threshold (
+      threshold_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      resource_id uuid NOT NULL REFERENCES %I.resource(resource_id) ON DELETE CASCADE,
+      user_id uuid NOT NULL REFERENCES public.users(user_id) ON DELETE CASCADE,
+      metric_name text NOT NULL,
+      operator text NOT NULL,
+      value double precision NOT NULL,
+      severity text NOT NULL DEFAULT 'WARNING',
+      enabled boolean NOT NULL DEFAULT true,
+      created_at timestamptz DEFAULT now(),
+      updated_at timestamptz DEFAULT now()
+    );
     $sql$, schema_name);
 
     -- --------------------------------------------------------------------------
