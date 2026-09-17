@@ -445,6 +445,21 @@
       },
       {
         "firstFieldNames": [
+          "account_id"
+        ],
+        "firstTableName": "cloud_account",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "cloud_account"
+        ],
+        "secondTableName": "pending_webhook_events",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
           "resource_id"
         ],
         "firstTableName": "resource",
@@ -505,15 +520,15 @@
       },
       {
         "firstFieldNames": [
-          "user_id"
+          "webhook_id"
         ],
-        "firstTableName": "users",
+        "firstTableName": "webhooks",
         "firstSchemaName": "public",
         "firstRelation": "1",
         "secondFieldNames": [
-          "user_id"
+          "webhook_id"
         ],
-        "secondTableName": "alerts",
+        "secondTableName": "webhook_deliveries",
         "secondSchemaName": "public",
         "secondRelation": "*",
         "checkPoints": []

@@ -50,6 +50,17 @@ CREATE TYPE public.optimization_action_type_enum AS ENUM (
   'UPSCALE'
 );
 
+CREATE TYPE public.webhook_status_enum AS ENUM (
+  'ACTIVE',
+  'PAUSED'
+);
+
+CREATE TYPE public.webhook_delivery_status_enum AS ENUM (
+  'PENDING',
+  'DELIVERED',
+  'FAILED'
+);
+
 -- ----------------------------------------------------------------
 -- PUBLIC TABLES 
 -- ----------------------------------------------------------------
@@ -441,6 +452,15 @@ CREATE TABLE IF NOT EXISTS public.chart_resource (
   metric_name varchar(100)
 );
 
+CREATE TABLE IF NOT EXISTS public.pending_webhook_events (
+  event_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  cloud_account uuid NOT NULL REFERENCES public.cloud_account(account_id) ON DELETE CASCADE,
+  event_type text NOT NULL,
+  event_timestamp timestamptz NOT NULL,
+  payload jsonb NOT NULL
+);
+
 -- ----------------------------------------------------------------
 -- GLOBAL FUNCTIONS
 -- ----------------------------------------------------------------
@@ -673,6 +693,7 @@ BEGIN
         );
     $sql$, schema_name, schema_name);
 
+<<<<<<< HEAD
     EXECUTE format($sql$
       CREATE TABLE IF NOT EXISTS %I.alerts (
         alert_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -723,6 +744,36 @@ BEGIN
         updated_at TIMESTAMPTZ DEFAULT now()
       );
     $sql$, schema_name);
+=======
+    -- --------------------------------------------------------------------------
+    -- Webhook Tables
+    -- --------------------------------------------------------------------------
+    EXECUTE format($sql$
+      CREATE TABLE IF NOT EXISTS %I.webhooks (
+        webhook_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+        webhook_name text,
+        endpoint_url text,
+        event_types text[],
+        cloud_accounts uuid[],
+        webhook_status public.webhook_status_enum
+      );
+    $sql$, schema_name);
+
+    EXECUTE format($sql$
+      CREATE TABLE IF NOT EXISTS %I.webhook_deliveries (
+        webhook_delivery_id uuid PRIMARY KEY,
+        webhook_id uuid REFERENCES %I.webhooks(webhook_id) ON DELETE SET NULL,
+        event_id uuid NOT NULL,
+        cloud_account uuid REFERENCES public.cloud_account(account_id) ON DELETE SET NULL,
+        event_type text NOT NULL,
+        event_timestamp timestamptz NOT NULL,
+        payload jsonb NOT NULL,
+        delivery_status public.webhook_delivery_status_enum NOT NULL DEFAULT 'PENDING',
+        response_code int,
+        attempt_count int NOT NULL DEFAULT 0
+      );
+    $sql$, schema_name, schema_name);
+>>>>>>> dev
 END;
 $$ LANGUAGE plpgsql;
 

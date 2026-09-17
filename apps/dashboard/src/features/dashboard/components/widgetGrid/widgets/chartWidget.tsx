@@ -7,7 +7,7 @@ import { ChartType, ChartWidgetConfig, ChartColour } from "@/features/dashboard/
 import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
 import { WidgetMenu } from "@/features/dashboard/components/widgetMenu";
 import { WidgetDropdown } from "@/features/dashboard/components/widgetDropdown";
-import { CircleAlert, Sparkles } from "lucide-react";
+import { CircleAlert, Lightbulb } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
     Tooltip,
@@ -200,7 +200,7 @@ export function ChartWidget({
                                             className="cursor-pointer flex items-center"
                                             onClick={() => handleClickRecommendation()}
                                         >
-                                            <Sparkles className="h-5 w-5 text-primary cursor-pointer" />
+                                            <Lightbulb className="h-5 w-5 text-primary cursor-pointer" />
                                         </button>
                                     </TooltipTrigger>
                                     <TooltipContent
