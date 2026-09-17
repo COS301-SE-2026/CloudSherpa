@@ -7,6 +7,7 @@ import com.cloudsherpa.service.webhooks.dto.EditWebhookDto;
 import com.cloudsherpa.service.webhooks.dto.WebhookEventDto;
 import com.cloudsherpa.service.webhooks.dto.WebhookResponse;
 import com.cloudsherpa.service.webhooks.model.WebhookDelivery;
+import com.cloudsherpa.service.webhooks.service.WebhookService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -33,9 +34,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class WebhooksController {
 
   private final WebhookEventDefinitionRegistry definitionRegistry;
+  private final WebhookService webhookService;
 
-  public WebhooksController(WebhookEventDefinitionRegistry definitionRegistry) {
+  public WebhooksController(
+      WebhookEventDefinitionRegistry definitionRegistry, WebhookService webhookService) {
     this.definitionRegistry = definitionRegistry;
+    this.webhookService = webhookService;
   }
 
   @Operation(summary = "Get all webhooks for the current user")
@@ -78,7 +82,7 @@ public class WebhooksController {
       })
   @GetMapping()
   public List<WebhookResponse> getWebhooks() {
-    return List.of();
+    return webhookService.getWebhooks();
   }
 
   @Operation(summary = "Get all webhook deliveries for the current user")
