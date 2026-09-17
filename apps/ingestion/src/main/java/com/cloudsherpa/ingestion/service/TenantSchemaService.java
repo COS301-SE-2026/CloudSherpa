@@ -2,6 +2,7 @@ package com.cloudsherpa.ingestion.service;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Transactional;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import org.springframework.stereotype.Service;
@@ -13,12 +14,14 @@ public class TenantSchemaService {
 
   private static final Pattern TENANT_SCHEMA_PATTERN = Pattern.compile("^tenant_[a-f0-9_]{36}$");
 
+  @Transactional
   public void useTenantSchema(UUID userId) {
     entityManager
         .createNativeQuery("SET search_path TO " + normalizeTenantSchema(userId) + ", public")
         .executeUpdate();
   }
 
+  @Transactional
   public void usePublicSchema() {
     entityManager.createNativeQuery("SET search_path TO public").executeUpdate();
   }
