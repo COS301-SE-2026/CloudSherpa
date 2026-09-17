@@ -278,6 +278,48 @@ Table processing_watermark {
   updated_at timestamptz
 }
 
+Table alerts {
+  alert_id uuid [pk]
+  user_id uuid [ref: > users.user_id]
+  widget_id uuid [ref: > widget.widget_id]
+  alert_type varchar(20)
+  severity varchar(20)
+  title text
+  message text
+  payload jsonb
+  status varchar(20)
+  canonical_key text
+  created_at timestamptz
+  last_seen timestamptz
+  resolved_at timestamptz
+}
+
+Table budgets {
+  budget_id uuid [pk]
+  user_id uuid [ref: > users.user_id]
+  scope varchar(20)
+  scope_id uuid
+  amount numeric
+  currency currency_enum
+  window_days integer
+  enabled boolean
+  created_at timestamptz
+  updated_at timestamptz
+}
+
+Table widget_thresholds {
+  threshold_id uuid [pk]
+  widget_id uuid [ref: > widget.widget_id]
+  user_id uuid [ref: > users.user_id]
+  metric_name text
+  operator text
+  value double
+  severity text
+  enabled boolean
+  created_at timestamptz
+  updated_at timestamptz
+}
+
 Table webhooks {
   webhook_id uuid [pk]
   webhook_name text
