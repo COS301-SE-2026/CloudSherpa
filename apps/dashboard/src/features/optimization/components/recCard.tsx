@@ -197,10 +197,7 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
     };
 
     return (
-        <Card
-            onClick={() => setOpen(!open)}
-            className={cn("cursor-pointer", !open && "hover:bg-muted/30")}
-        >
+        <Card onClick={() => setOpen(!open)} className={cn("cursor-pointer", "hover:bg-muted/30")}>
             <CardHeader className="flex flex-row justify-between items-center gap-2">
                 <div className="flex flex-row items-center gap-2">
                     <span className={`font-bold text-lg ${getActionTextColor()}`}>
