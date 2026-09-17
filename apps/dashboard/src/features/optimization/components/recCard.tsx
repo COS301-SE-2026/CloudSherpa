@@ -8,6 +8,7 @@ import { Badge } from "@/components/atoms/badge";
 import { Separator } from "@/components/atoms/separator";
 import { toast } from "sonner";
 import RecommendationReasoning, { formatValue } from "@/features/optimization/utils/recDictionary";
+import { cn } from "@/lib/utils";
 
 interface RecommendationCardProps {
     recommendation: Recommendation;
@@ -196,7 +197,10 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
     };
 
     return (
-        <Card onClick={() => setOpen(!open)} className="cursor-pointer">
+        <Card
+            onClick={() => setOpen(!open)}
+            className={cn("cursor-pointer", !open && "hover:bg-muted/30")}
+        >
             <CardHeader className="flex flex-row justify-between items-center gap-2">
                 <div className="flex flex-row items-center gap-2">
                     <span className={`font-bold text-lg ${getActionTextColor()}`}>

@@ -1,4 +1,3 @@
-import React from "react";
 import { ArrowUp, ArrowDown } from "lucide-react";
 
 type TrendProps = {
