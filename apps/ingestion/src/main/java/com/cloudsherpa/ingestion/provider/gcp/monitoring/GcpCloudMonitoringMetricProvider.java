@@ -6,10 +6,13 @@ import com.cloudsherpa.ingestion.connector.Instance;
 import com.cloudsherpa.ingestion.connector.InstanceScope;
 import com.cloudsherpa.ingestion.connector.Metric;
 import com.cloudsherpa.ingestion.connector.ServiceScope;
+import com.cloudsherpa.ingestion.exceptions.CloudMonitoringException;
 import com.cloudsherpa.ingestion.models.IngestionRequestEvent;
 import com.cloudsherpa.ingestion.models.UsageRecordModel;
+import com.cloudsherpa.ingestion.normalization.normalizers.Normalizer;
 import com.cloudsherpa.ingestion.provider.gcp.factory.GcpClientFactory;
 import com.cloudsherpa.ingestion.provider.monitoring.CloudMonitoringMetricProvider;
+import com.cloudsherpa.ingestion.service.IngestionPersistenceService;
 import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.monitoring.v3.MetricServiceClient;
@@ -32,6 +35,12 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class GcpCloudMonitoringMetricProvider implements CloudMonitoringMetricProvider {
+  private final IngestionPersistenceService persistenceService;
+
+  public GcpCloudMonitoringMetricProvider(IngestionPersistenceService persistenceService) {
+    this.persistenceService = persistenceService;
+  }
+
   private static final Logger logger =
       LoggerFactory.getLogger(GcpCloudMonitoringMetricProvider.class);
 
@@ -120,7 +129,8 @@ public class GcpCloudMonitoringMetricProvider implements CloudMonitoringMetricPr
       String resourceId,
       String serviceType,
       String resourceType,
-      String region) {
+      String region,
+      AccountContext accountContext) {
     List<UsageRecordModel> results = new ArrayList<>();
 
     for (Point point : series.getPointsList()) {
@@ -143,6 +153,12 @@ public class GcpCloudMonitoringMetricProvider implements CloudMonitoringMetricPr
               .getLabelsMap()); // region is contained within this but may not always
       // have the same label, e.g. "zone", "region",
       // "location" etc.
+      usage.setAccountId(accountContext.accountId());
+      usage.setProjectId(accountContext.accountId());
+      usage.setIngestionId(accountContext.ingestionId());
+      usage.setProvider("GCP");
+      usage.setSource("GCPMonitoringService");
+      usage.setRecordId(UUID.randomUUID());
 
       results.add(usage);
     }
@@ -151,92 +167,90 @@ public class GcpCloudMonitoringMetricProvider implements CloudMonitoringMetricPr
   }
 
   @Override
-  public List<UsageRecordModel> collectMetrics(
-      AccountScope accountScope, IngestionRequestEvent request) {
+  public void collectMetrics(
+      AccountScope accountScope, IngestionRequestEvent request, Normalizer normalizer) {
     String ingestionId = UUID.randomUUID().toString();
     MetricServiceClient client = null;
     try {
       client = buildClient(request.getCredentials());
-    } catch (IOException e) {
-      throw new IllegalArgumentException(
-          "Invalid account credentials provided for GCP usage metric ingestion");
-    }
-    String projectName = "projects/" + request.getCredentials().getProjectId();
+      String projectName = "projects/" + request.getCredentials().getProjectId();
 
-    Aggregation aggregation =
-        Aggregation.newBuilder()
-            .setAlignmentPeriod(Duration.newBuilder().setSeconds(request.getPeriod()).build())
-            .setPerSeriesAligner(Aggregation.Aligner.ALIGN_MEAN)
-            .build();
-
-    TimeInterval interval =
-        TimeInterval.newBuilder()
-            .setStartTime(Timestamps.fromMillis(request.getFrom().toEpochMilli()))
-            .setEndTime(Timestamps.fromMillis(request.getTo().toEpochMilli()))
-            .build();
-    List<MetricFilter> requestFilters = new ArrayList<>();
-    for (ServiceScope scope :
-        accountScope.getServiceScopes()) { // we build filters per metric and return all of them
-      requestFilters.addAll(processServiceScope(scope));
-    }
-
-    List<UsageRecordModel> results = new ArrayList<>();
-
-    for (MetricFilter metricFilter : requestFilters) {
-
-      ListTimeSeriesRequest metricRequest =
-          ListTimeSeriesRequest.newBuilder()
-              .setName(projectName)
-              .setFilter(metricFilter.filter())
-              .setInterval(interval)
-              .setAggregation(aggregation)
-              .setView(ListTimeSeriesRequest.TimeSeriesView.FULL)
+      Aggregation aggregation =
+          Aggregation.newBuilder()
+              .setAlignmentPeriod(Duration.newBuilder().setSeconds(request.getPeriod()).build())
+              .setPerSeriesAligner(Aggregation.Aligner.ALIGN_MEAN)
               .build();
-      logger.info(
-          "GCP querying metric={} resource={} from={} to={} filter={}",
-          metricFilter.metrics().getName(),
-          metricFilter.resourceId(),
-          request.getFrom(),
-          request.getTo(),
-          metricFilter.filter());
-      Iterable<TimeSeries> timeSeries = client.listTimeSeries(metricRequest).iterateAll();
-      List<TimeSeries> seriesList = new ArrayList<>();
 
-      for (TimeSeries oneSeries : timeSeries) {
-        seriesList.add(oneSeries);
+      TimeInterval interval =
+          TimeInterval.newBuilder()
+              .setStartTime(Timestamps.fromMillis(request.getFrom().toEpochMilli()))
+              .setEndTime(Timestamps.fromMillis(request.getTo().toEpochMilli()))
+              .build();
+      List<MetricFilter> requestFilters = new ArrayList<>();
+      for (ServiceScope scope :
+          accountScope.getServiceScopes()) { // we build filters per metric and return all of them
+        requestFilters.addAll(processServiceScope(scope));
       }
 
-      int pointCount = seriesList.stream().mapToInt(TimeSeries::getPointsCount).sum();
+      List<UsageRecordModel> results = new ArrayList<>();
 
-      logger.info(
-          "GCP query completed metric={} series={} points={}",
-          metricFilter.metrics().getName(),
-          seriesList.size(),
-          pointCount);
+      for (MetricFilter metricFilter : requestFilters) {
 
-      timeSeries.forEach(
-          series ->
-              results.addAll(
-                  processSeries(
-                      series,
-                      metricFilter.metrics(),
-                      metricFilter.resourceId(),
-                      metricFilter.serviceType(),
-                      metricFilter.resourceType(),
-                      metricFilter.region())));
+        ListTimeSeriesRequest metricRequest =
+            ListTimeSeriesRequest.newBuilder()
+                .setName(projectName)
+                .setFilter(metricFilter.filter())
+                .setInterval(interval)
+                .setAggregation(aggregation)
+                .setView(ListTimeSeriesRequest.TimeSeriesView.FULL)
+                .build();
+        logger.info(
+            "GCP querying metric={} resource={} from={} to={} filter={}",
+            metricFilter.metrics().getName(),
+            metricFilter.resourceId(),
+            request.getFrom(),
+            request.getTo(),
+            metricFilter.filter());
+        Iterable<TimeSeries> timeSeries = client.listTimeSeries(metricRequest).iterateAll();
+        List<TimeSeries> seriesList = new ArrayList<>();
+
+        for (TimeSeries oneSeries : timeSeries) {
+          seriesList.add(oneSeries);
+        }
+
+        int pointCount = seriesList.stream().mapToInt(TimeSeries::getPointsCount).sum();
+
+        logger.info(
+            "GCP query completed metric={} series={} points={}",
+            metricFilter.metrics().getName(),
+            seriesList.size(),
+            pointCount);
+        AccountContext accountContext =
+            new AccountContext(accountScope.getAccountId(), ingestionId);
+        seriesList.forEach(
+            series ->
+                results.addAll(
+                    processSeries(
+                        series,
+                        metricFilter.metrics(),
+                        metricFilter.resourceId(),
+                        metricFilter.serviceType(),
+                        metricFilter.resourceType(),
+                        metricFilter.region(),
+                        accountContext)));
+        persistenceService.normalizeAndPersistUsage(results, request.getUserId(), normalizer);
+        results.clear();
+      }
+    } catch (IOException e) {
+      throw new IllegalArgumentException(
+          "Invalid account credentials provided for GCP usage metric ingestion", e);
+    } catch (Exception e) {
+      throw new CloudMonitoringException("Failed to collect GCP monitoring metrics", e);
+    } finally {
+      if (client != null) {
+        client.close();
+      }
     }
-
-    client.close();
-    for (UsageRecordModel result : results) {
-      result.setAccountId(accountScope.getAccountId());
-      result.setProjectId(accountScope.getAccountId());
-      result.setIngestionId(ingestionId);
-      result.setProvider("GCP");
-      result.setSource("GCPMonitoringService");
-      result.setRecordId(UUID.randomUUID());
-    }
-
-    return results;
   }
 
   public record MetricFilter(
@@ -246,4 +260,6 @@ public class GcpCloudMonitoringMetricProvider implements CloudMonitoringMetricPr
       String filter,
       Metric metrics,
       String region) {}
+
+  public record AccountContext(String accountId, String ingestionId) {}
 }

@@ -78,16 +78,41 @@ public class OptimizationRecommendation {
     return resourceId;
   }
 
+  public void setResourceId(UUID id)
+  {
+    resourceId = id;
+  }
+
+  public void setRecommendationId(UUID id)
+  {
+    recommendationId = id;
+  }
+
   public ProviderEnum getProvider() {
     return provider;
+  }
+
+  public void setProvider(ProviderEnum provider)
+  {
+    this.provider = provider;
   }
 
   public String getRuleId() {
     return ruleId;
   }
 
+  public  void setRuleId(String id)
+  {
+    ruleId = id;
+  }
+
   public OptimizationActionTypeEnum getActionType() {
     return actionType;
+  }
+
+  public void setActionType(OptimizationActionTypeEnum action)
+  {
+    this.actionType = action;
   }
 
   public OptimizationStatusEnum getStatus() {
@@ -104,6 +129,11 @@ public class OptimizationRecommendation {
 
   public OffsetDateTime getCreatedAt() {
     return createdAt;
+  }
+
+  public void setCreatedAt(OffsetDateTime time)
+  {
+    createdAt = time;
   }
 
   public OffsetDateTime getUpdatedAt() {

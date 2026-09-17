@@ -7,7 +7,9 @@ import com.cloudsherpa.ingestion.connector.Metric;
 import com.cloudsherpa.ingestion.connector.ServiceScope;
 import com.cloudsherpa.ingestion.models.IngestionRequestEvent;
 import com.cloudsherpa.ingestion.models.UsageRecordModel;
+import com.cloudsherpa.ingestion.normalization.normalizers.Normalizer;
 import com.cloudsherpa.ingestion.provider.monitoring.CloudMonitoringMetricProvider;
+import com.cloudsherpa.ingestion.service.IngestionPersistenceService;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,14 +30,20 @@ import software.amazon.awssdk.services.cloudwatch.model.Statistic;
 public class AwsCloudWatchMetricProvider implements CloudMonitoringMetricProvider {
   private record TimeWindow(Instant from, Instant to) {}
 
+  private final IngestionPersistenceService persistenceService;
+
+  public AwsCloudWatchMetricProvider(IngestionPersistenceService persistenceService) {
+    this.persistenceService = persistenceService;
+  }
+
   private final CloudWatchClient defaultClient =
       CloudWatchClient.builder()
           .credentialsProvider(DefaultCredentialsProvider.create())
           .region(Region.EU_NORTH_1)
           .build();
 
-  public List<UsageRecordModel> collectMetrics(
-      AccountScope accountScope, IngestionRequestEvent request) {
+  public void collectMetrics(
+      AccountScope accountScope, IngestionRequestEvent request, Normalizer normalizer) {
 
     UUID ingestionId = UUID.randomUUID();
     int period = request.getPeriod();
@@ -43,46 +51,37 @@ public class AwsCloudWatchMetricProvider implements CloudMonitoringMetricProvide
     // per request
     List<TimeWindow> timeWindows = createTimeWindows(request.getFrom(), request.getTo(), period);
 
-    List<UsageRecordModel> result = new ArrayList<>();
-
     for (ServiceScope serviceScope : accountScope.getServiceScopes()) { // EC2, RDS etc.
-      result.addAll(
-          collectServiceMetrics(
-              accountScope, request, serviceScope, timeWindows, ingestionId, period));
-    }
 
-    return result;
+      collectServiceMetrics(
+          accountScope, request, serviceScope, timeWindows, ingestionId, period, normalizer);
+    }
   }
 
-  private List<UsageRecordModel> collectServiceMetrics(
+  private void collectServiceMetrics(
       AccountScope accountScope,
       IngestionRequestEvent request,
       ServiceScope serviceScope,
       List<TimeWindow> timeWindows,
       UUID ingestionId,
-      int period) {
-
-    List<UsageRecordModel> result = new ArrayList<>();
+      int period,
+      Normalizer normalizer) {
 
     for (InstanceScope instance : serviceScope.getInstances()) {
-      result.addAll(
-          collectInstanceScopeMetrics(
-              accountScope, request, serviceScope, instance, timeWindows, ingestionId, period));
+      IngestionScope ingestionScope = new IngestionScope(ingestionId, period);
+      collectInstanceScopeMetrics(
+          accountScope, request, serviceScope, instance, timeWindows, ingestionScope, normalizer);
     }
-
-    return result;
   }
 
-  private List<UsageRecordModel> collectInstanceScopeMetrics(
+  private void collectInstanceScopeMetrics(
       AccountScope accountScope,
       IngestionRequestEvent request,
       ServiceScope serviceScope,
       InstanceScope instance,
       List<TimeWindow> timeWindows,
-      UUID ingestionId,
-      int period) {
-
-    List<UsageRecordModel> result = new ArrayList<>();
+      IngestionScope ingestionScope,
+      Normalizer normalizer) {
 
     for (Instance instanceValue : instance.getInstances()) {
       CloudWatchClient instanceClient = createClient(request, instanceValue.getRegion());
@@ -95,6 +94,7 @@ public class AwsCloudWatchMetricProvider implements CloudMonitoringMetricProvide
 
       AwsInstanceContext context =
           new AwsInstanceContext(
+              request.getUserId(),
               accountScope,
               serviceScope,
               instance,
@@ -102,18 +102,14 @@ public class AwsCloudWatchMetricProvider implements CloudMonitoringMetricProvide
               dimension,
               timeWindows,
               instanceClient,
-              ingestionId,
-              period);
+              ingestionScope.ingestionId(),
+              ingestionScope.period());
 
-      result.addAll(collectInstanceMetrics(context));
+      collectInstanceMetrics(context, normalizer);
     }
-
-    return result;
   }
 
-  private List<UsageRecordModel> collectInstanceMetrics(AwsInstanceContext context) {
-
-    List<UsageRecordModel> result = new ArrayList<>();
+  private void collectInstanceMetrics(AwsInstanceContext context, Normalizer normalizer) {
 
     for (Metric metric : context.serviceScope().getMetrics()) { // metrics such as CPU Utilization
 
@@ -126,19 +122,16 @@ public class AwsCloudWatchMetricProvider implements CloudMonitoringMetricProvide
               metric.getName(),
               context.period(),
               context.ingestionId(),
+              context.userId(),
               context.dimension(),
               context.timeWindows(),
               context.client());
 
-      result.addAll(collectMetric(metricContext));
+      collectMetric(metricContext, normalizer);
     }
-
-    return result;
   }
 
-  private List<UsageRecordModel> collectMetric(AwsMetricRequestContext context) {
-
-    List<UsageRecordModel> result = new ArrayList<>();
+  private void collectMetric(AwsMetricRequestContext context, Normalizer normalizer) {
 
     for (TimeWindow window : context.timeWindows()) { // AWS batching windows of 1440 datapoints
 
@@ -153,10 +146,8 @@ public class AwsCloudWatchMetricProvider implements CloudMonitoringMetricProvide
               .statistics(Statistic.AVERAGE)
               .build();
 
-      result.addAll(buildRequestResult(context.client(), request, context));
+      buildRequestResult(context.client(), request, context, normalizer);
     }
-
-    return result;
   }
 
   private record AwsMetricRequestContext(
@@ -167,11 +158,15 @@ public class AwsCloudWatchMetricProvider implements CloudMonitoringMetricProvide
       String metric,
       int period,
       UUID ingestionId,
+      UUID userId,
       Dimension dimension,
       List<TimeWindow> timeWindows,
       CloudWatchClient client) {}
 
+  private record IngestionScope(UUID ingestionId, int period) {}
+
   private record AwsInstanceContext(
+      UUID userId,
       AccountScope accountScope,
       ServiceScope serviceScope,
       InstanceScope instanceScope,
@@ -182,10 +177,13 @@ public class AwsCloudWatchMetricProvider implements CloudMonitoringMetricProvide
       UUID ingestionId,
       int period) {}
 
-  private List<UsageRecordModel> buildRequestResult(
-      CloudWatchClient client, GetMetricStatisticsRequest req, AwsMetricRequestContext context) {
+  private void buildRequestResult(
+      CloudWatchClient client,
+      GetMetricStatisticsRequest req,
+      AwsMetricRequestContext context,
+      Normalizer normalizer) {
 
-    List<UsageRecordModel> records = new ArrayList<>();
+    List<UsageRecordModel> usageRecords = new ArrayList<>();
 
     for (Datapoint dp : client.getMetricStatistics(req).datapoints()) {
 
@@ -209,10 +207,9 @@ public class AwsCloudWatchMetricProvider implements CloudMonitoringMetricProvide
       r.setPeriodStart(dp.timestamp().minusSeconds(context.period()));
       r.setPeriodEnd(dp.timestamp());
 
-      records.add(r);
+      usageRecords.add(r);
     }
-
-    return records;
+    persistenceService.normalizeAndPersistUsage(usageRecords, context.userId(), normalizer);
   }
 
   private CloudWatchClient createClient(IngestionRequestEvent request, String region) {

@@ -1,7 +1,7 @@
 package com.cloudsherpa.ingestion.billing.provider.aws.cur.normalization;
 
 import com.cloudsherpa.ingestion.billing.BillingExport;
-import com.cloudsherpa.ingestion.billing.provider.aws.cur.deserialization.parquet.ParquetReaderService;
+import com.cloudsherpa.ingestion.billing.deserialization.parquet.ParquetReaderService;
 import com.cloudsherpa.ingestion.billing.provider.aws.cur.exceptions.NormalizationException;
 import com.cloudsherpa.ingestion.service.SherpaDbPersistenceService;
 import com.cloudsherpa.lib.entities.NormalizedCosts;

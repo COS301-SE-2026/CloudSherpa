@@ -3,8 +3,10 @@ package com.cloudsherpa.ingestion.provider.gcp.monitoring;
 import com.cloudsherpa.ingestion.connector.AccountScope;
 import com.cloudsherpa.ingestion.models.IngestionRequestEvent;
 import com.cloudsherpa.ingestion.models.UsageRecordModel;
+import com.cloudsherpa.ingestion.normalization.normalizers.Normalizer;
 import com.cloudsherpa.ingestion.provider.mock.engine.MockMetricEngine;
 import com.cloudsherpa.ingestion.provider.monitoring.CloudMonitoringMetricProvider;
+import com.cloudsherpa.ingestion.service.IngestionPersistenceService;
 import java.util.List;
 import org.springframework.stereotype.Component;
 
@@ -12,16 +14,19 @@ import org.springframework.stereotype.Component;
 public class MockCloudMonitoringMetricProvider implements CloudMonitoringMetricProvider {
 
   private final MockMetricEngine metricEngine;
+  private final IngestionPersistenceService persistenceService;
 
-  public MockCloudMonitoringMetricProvider(GcpMockRegistry registry) {
-
+  public MockCloudMonitoringMetricProvider(
+      GcpMockRegistry registry, IngestionPersistenceService persistenceService) {
+    this.persistenceService = persistenceService;
     this.metricEngine = new MockMetricEngine(registry);
   }
 
   @Override
-  public List<UsageRecordModel> collectMetrics(
-      AccountScope accountScope, IngestionRequestEvent request) {
+  public void collectMetrics(
+      AccountScope accountScope, IngestionRequestEvent request, Normalizer normalizer) {
 
-    return metricEngine.collectMetrics(request);
+    List<UsageRecordModel> usageRecords = metricEngine.collectMetrics(request);
+    persistenceService.normalizeAndPersistUsage(usageRecords, request.getUserId(), normalizer);
   }
 }

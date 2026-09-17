@@ -50,6 +50,17 @@ CREATE TYPE public.optimization_action_type_enum AS ENUM (
   'UPSCALE'
 );
 
+CREATE TYPE public.webhook_status_enum AS ENUM (
+  'ACTIVE',
+  'PAUSED'
+);
+
+CREATE TYPE public.webhook_delivery_status_enum AS ENUM (
+  'PENDING',
+  'DELIVERED',
+  'FAILED'
+);
+
 -- ----------------------------------------------------------------
 -- PUBLIC TABLES 
 -- ----------------------------------------------------------------
@@ -95,7 +106,7 @@ CREATE TABLE IF NOT EXISTS public.cloud_account (
   connection_id uuid REFERENCES public.cloud_connection(connection_id) ON DELETE CASCADE,
   account_type public.account_type_enum NOT NULL,
   ingestion_period public.ingestion_period_enum,
-  display_name varchar(255),
+  display_name varchar(80),
   created_at timestamptz DEFAULT NOW(),
   last_usage_ingestion timestamptz DEFAULT NOW(),
   next_usage_ingestion timestamptz DEFAULT NOW(),
@@ -185,7 +196,7 @@ CREATE TABLE IF NOT EXISTS public.billing_export_execution (
 
 CREATE TABLE IF NOT EXISTS public.dashboard (
   dashboard_id uuid PRIMARY KEY,
-  display_name varchar(255) NOT NULL,
+  display_name varchar(80) NOT NULL,
   user_id uuid REFERENCES public.users(user_id) ON DELETE CASCADE,
   time_from timestamptz,
   time_to timestamptz,
@@ -201,7 +212,7 @@ CREATE TABLE IF NOT EXISTS public.widget (
   start_y integer NOT NULL, 
   width integer NOT NULL,   
   height integer NOT NULL,  
-  display_name varchar(100)
+  display_name varchar(80)
 );
 
 CREATE TABLE IF NOT EXISTS public.widget_kpi (
@@ -319,6 +330,10 @@ DECLARE
 
     -- Azure service types
     c_azure_virtual_machine_service CONSTANT varchar(255) := 'Microsoft.Compute/virtualMachines';
+    c_azure_container_registry_service CONSTANT varchar(255) := 'Microsoft.ContainerRegistry/registries';
+    c_azure_kubernetes_service CONSTANT varchar(255) := 'Microsoft.ContainerService/managedClusters';
+    c_azure_functions_service CONSTANT varchar(255) := 'Microsoft.Web/sites';
+    c_azure_postgresql_service CONSTANT varchar(255) := 'Microsoft.DBforPostgreSQL/flexibleServers';
 BEGIN
 
     INSERT INTO public.offered_metric (
@@ -412,7 +427,39 @@ BEGIN
 (c_azure_provider_enum, c_azure_virtual_machine_service, 'Disk Write Operations/Sec', c_azure_resource_id, NULL, 'Disk write IOPS'),
 (c_azure_provider_enum, c_azure_virtual_machine_service, 'OS Disk Latency', c_azure_resource_id, NULL, 'OS disk latency'),
 (c_azure_provider_enum, c_azure_virtual_machine_service, 'Inbound Flows', c_azure_resource_id, NULL, 'Inbound network flows'),
-(c_azure_provider_enum, c_azure_virtual_machine_service, 'Outbound Flows', c_azure_resource_id, NULL, 'Outbound network flows')
+(c_azure_provider_enum, c_azure_virtual_machine_service, 'Outbound Flows', c_azure_resource_id, NULL, 'Outbound network flows'),
+
+-- Azure Container Registry
+(c_azure_provider_enum, c_azure_container_registry_service, 'StorageUsed', c_azure_resource_id, NULL, 'Container registry storage used'),
+
+-- Azure Kubernetes Service
+(c_azure_provider_enum, c_azure_kubernetes_service, 'node_cpu_usage_percentage', c_azure_resource_id, NULL, 'Aggregated CPU utilization percentage'),
+(c_azure_provider_enum, c_azure_kubernetes_service, 'node_cpu_usage_millicores', c_azure_resource_id, NULL, 'Aggregated CPU utilization in millicores'),
+(c_azure_provider_enum, c_azure_kubernetes_service, 'node_memory_rss_bytes', c_azure_resource_id, NULL, 'Container RSS memory used'),
+(c_azure_provider_enum, c_azure_kubernetes_service, 'node_memory_rss_percentage', c_azure_resource_id, NULL, 'Container RSS memory used percentage'),
+(c_azure_provider_enum, c_azure_kubernetes_service, 'node_memory_working_set_bytes', c_azure_resource_id, NULL, 'Container working set memory used'),
+(c_azure_provider_enum, c_azure_kubernetes_service, 'node_memory_working_set_percentage', c_azure_resource_id, NULL, 'Container working set memory used percentage'),
+(c_azure_provider_enum, c_azure_kubernetes_service, 'node_disk_usage_bytes', c_azure_resource_id, NULL, 'Node disk space used'),
+(c_azure_provider_enum, c_azure_kubernetes_service, 'node_disk_usage_percentage', c_azure_resource_id, NULL, 'Node disk space used percentage'),
+(c_azure_provider_enum, c_azure_kubernetes_service, 'node_network_in_bytes', c_azure_resource_id, NULL, 'Node network bytes received'),
+(c_azure_provider_enum, c_azure_kubernetes_service, 'node_network_out_bytes', c_azure_resource_id, NULL, 'Node network bytes transmitted'),
+
+-- Azure Functions
+(c_azure_provider_enum, c_azure_functions_service, 'AverageMemoryWorkingSet', c_azure_resource_id, NULL, 'Average memory working set'),
+(c_azure_provider_enum, c_azure_functions_service, 'MemoryWorkingSet', c_azure_resource_id, NULL, 'Memory working set'),
+(c_azure_provider_enum, c_azure_functions_service, 'AppConnections', c_azure_resource_id, NULL, 'Number of bound sockets'),
+(c_azure_provider_enum, c_azure_functions_service, 'CurrentAssemblies', c_azure_resource_id, NULL, 'Current assemblies loaded'),
+(c_azure_provider_enum, c_azure_functions_service, 'Handles', c_azure_resource_id, NULL, 'Number of handles currently open'),
+(c_azure_provider_enum, c_azure_functions_service, 'HealthCheckStatus', c_azure_resource_id, NULL, 'Function app health check status'),
+(c_azure_provider_enum, c_azure_functions_service, 'PrivateBytes', c_azure_resource_id, NULL, 'Private memory allocated by the function app'),
+
+-- Azure PostgreSQL Flexible Server
+(c_azure_provider_enum, c_azure_postgresql_service, 'active_connections', c_azure_resource_id, NULL, 'Active database connections'),
+(c_azure_provider_enum, c_azure_postgresql_service, 'cpu_percent', c_azure_resource_id, NULL, 'CPU utilization percentage'),
+(c_azure_provider_enum, c_azure_postgresql_service, 'memory_percent', c_azure_resource_id, NULL, 'Memory utilization percentage'),
+(c_azure_provider_enum, c_azure_postgresql_service, 'storage_percent', c_azure_resource_id, NULL, 'Storage utilization percentage'),
+(c_azure_provider_enum, c_azure_postgresql_service, 'storage_used', c_azure_resource_id, NULL, 'Storage used'),
+(c_azure_provider_enum, c_azure_postgresql_service, 'iops', c_azure_resource_id, NULL, 'Input/output operations per second')
     ON CONFLICT DO NOTHING;
 END $$;
 
@@ -439,6 +486,15 @@ CREATE TABLE IF NOT EXISTS public.chart_resource (
   resource_id uuid, 
   metric_type varchar(50),
   metric_name varchar(100)
+);
+
+CREATE TABLE IF NOT EXISTS public.pending_webhook_events (
+  event_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  cloud_account uuid NOT NULL REFERENCES public.cloud_account(account_id) ON DELETE CASCADE,
+  event_type text NOT NULL,
+  event_timestamp timestamptz NOT NULL,
+  payload jsonb NOT NULL
 );
 
 -- ----------------------------------------------------------------
@@ -671,6 +727,86 @@ BEGIN
             updated_at timestamptz DEFAULT NOW(),
             expires_at timestamptz
         );
+    $sql$, schema_name, schema_name);
+
+    EXECUTE format($sql$
+      CREATE TABLE IF NOT EXISTS %I.alerts (
+        alert_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id uuid REFERENCES public.users(user_id) ON DELETE CASCADE,
+        widget_id uuid REFERENCES public.widget(widget_id) ON DELETE CASCADE,
+        alert_type varchar(20) NOT NULL,
+        severity varchar(20) NOT NULL,
+        title text NOT NULL,
+        message text,
+        payload jsonb DEFAULT '{}'::jsonb,
+        status varchar(20) NOT NULL DEFAULT 'ACTIVE',
+        canonical_key text,
+        created_at timestamptz DEFAULT NOW(),
+        last_seen timestamptz DEFAULT NOW(),
+        resolved_at timestamptz
+      );
+      CREATE INDEX IF NOT EXISTS ix_%1$s_alerts_canonical_key ON %1$I.alerts (canonical_key);
+      CREATE INDEX IF NOT EXISTS ix_%1$s_alerts_status_created_at ON %1$I.alerts (status, created_at DESC);
+    $sql$, schema_name);
+
+    EXECUTE format($sql$
+      CREATE TABLE IF NOT EXISTS %I.budgets (
+        budget_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id uuid REFERENCES public.users(user_id) ON DELETE CASCADE,
+        scope varchar(20) NOT NULL,
+        scope_id uuid,
+        amount numeric NOT NULL,
+        currency public.currency_enum DEFAULT 'USD',
+        window_days integer NOT NULL DEFAULT 30,
+        enabled boolean NOT NULL DEFAULT true,
+        created_at timestamptz DEFAULT NOW(),
+        updated_at timestamptz DEFAULT NOW()
+      );
+      CREATE INDEX IF NOT EXISTS ix_%1$s_budgets_scope ON %1$I.budgets (scope, scope_id);
+    $sql$, schema_name);
+
+    EXECUTE format($sql$
+      CREATE TABLE IF NOT EXISTS %I.widget_thresholds (
+        threshold_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        widget_id UUID REFERENCES public.widget(widget_id) ON DELETE CASCADE,
+        user_id UUID REFERENCES public.users(user_id) ON DELETE CASCADE,
+        metric_name TEXT NOT NULL,
+        operator TEXT NOT NULL,
+        value DOUBLE PRECISION NOT NULL,
+        severity TEXT,
+        enabled BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMPTZ DEFAULT now(),
+        updated_at TIMESTAMPTZ DEFAULT now()
+      );
+    $sql$, schema_name);
+
+    -- --------------------------------------------------------------------------
+    -- Webhook Tables
+    -- --------------------------------------------------------------------------
+    EXECUTE format($sql$
+      CREATE TABLE IF NOT EXISTS %I.webhooks (
+        webhook_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+        webhook_name text NOT NULL,
+        endpoint_url text NOT NULL,
+        event_types text[] NOT NULL,
+        cloud_accounts uuid[] NOT NULL,
+        webhook_status public.webhook_status_enum NOT NULL
+      );
+    $sql$, schema_name);
+
+    EXECUTE format($sql$
+      CREATE TABLE IF NOT EXISTS %I.webhook_deliveries (
+        webhook_delivery_id uuid PRIMARY KEY,
+        webhook_id uuid REFERENCES %I.webhooks(webhook_id) ON DELETE SET NULL,
+        event_id uuid NOT NULL,
+        cloud_account uuid REFERENCES public.cloud_account(account_id) ON DELETE SET NULL,
+        event_type text NOT NULL,
+        event_timestamp timestamptz NOT NULL,
+        payload jsonb NOT NULL,
+        delivery_status public.webhook_delivery_status_enum NOT NULL DEFAULT 'PENDING',
+        response_code int,
+        attempt_count int NOT NULL DEFAULT 0
+      );
     $sql$, schema_name, schema_name);
 END;
 $$ LANGUAGE plpgsql;

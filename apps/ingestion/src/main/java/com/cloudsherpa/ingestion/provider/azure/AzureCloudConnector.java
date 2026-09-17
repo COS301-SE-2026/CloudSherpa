@@ -8,11 +8,12 @@ import com.cloudsherpa.ingestion.connector.UsageCapable;
 import com.cloudsherpa.ingestion.models.BillingRecordModel;
 import com.cloudsherpa.ingestion.models.IngestionRequestEvent;
 import com.cloudsherpa.ingestion.models.ResourceDetail;
-import com.cloudsherpa.ingestion.models.UsageRecordModel;
+import com.cloudsherpa.ingestion.normalization.normalizers.Normalizer;
 import com.cloudsherpa.ingestion.provider.azure.monitoring.AzureCloudMonitorMetricProvider;
 import com.cloudsherpa.ingestion.provider.azure.monitoring.MockCloudMonitorMetricProvider;
 import com.cloudsherpa.ingestion.provider.azure.scanner.AzureResourceDiscoveryService;
 import com.cloudsherpa.ingestion.provider.monitoring.CloudMonitoringMetricProvider;
+import com.cloudsherpa.ingestion.service.IngestionPersistenceService;
 import java.util.List;
 import org.springframework.stereotype.Component;
 
@@ -25,16 +26,17 @@ public class AzureCloudConnector implements CloudConnector, UsageCapable, Billin
 
   public AzureCloudConnector(
       MockCloudMonitorMetricProvider mockMetricProvider,
-      AzureResourceDiscoveryService discoveryService) {
-    metricProvider = new AzureCloudMonitorMetricProvider();
+      AzureResourceDiscoveryService discoveryService,
+      IngestionPersistenceService ingestionPersistenceService) {
+    metricProvider = new AzureCloudMonitorMetricProvider(ingestionPersistenceService);
     this.mockMetricProvider = mockMetricProvider;
     this.discoveryService = discoveryService;
   }
 
   @Override
-  public List<UsageRecordModel> fetchUsage(
-      AccountScope accountScope, IngestionRequestEvent request) {
-    return metricProvider.collectMetrics(accountScope, request);
+  public void fetchUsage(
+      AccountScope accountScope, IngestionRequestEvent request, Normalizer normalizer) {
+    metricProvider.collectMetrics(accountScope, request, normalizer);
   }
 
   @Override
@@ -71,8 +73,8 @@ public class AzureCloudConnector implements CloudConnector, UsageCapable, Billin
   }
 
   @Override
-  public List<UsageRecordModel> fetchMockUsage(
-      AccountScope accountScope, IngestionRequestEvent request) {
-    return mockMetricProvider.collectMetrics(accountScope, request);
+  public void fetchMockUsage(
+      AccountScope accountScope, IngestionRequestEvent request, Normalizer normalizer) {
+    mockMetricProvider.collectMetrics(accountScope, request, normalizer);
   }
 }
