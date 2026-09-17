@@ -43,14 +43,20 @@ Note: Optimization baseline records are already persisted to the tenant `optimiz
 
 ## High-level data flow
 
+**Real-time detectors (Threshold & Anomaly):**
 1. Metrics and costs are ingested to tenant tables (`normalized_metrics`, `normalized_costs`) and emit metric events via the `notify_metric_event()` trigger.
 2. An Evaluation Worker subscribes to metric/cost events and runs detectors.
 3. Detector order:
    - Threshold detector (widget thresholds).
    - Anomaly detector (precomputed baselines from `optimization_metric_statistics`).
-   - Billing/Forecast detector (budget comparison using forecasts).
 4. On trigger, persist an `alerts` record and call the SSE broadcast with `alert` event targeted to the user.
 5. Frontend renders toast + inbox item; APIs support list/ack/dismiss.
+
+**Scheduled Billing/Forecast detector:**
+1. A scheduled job triggers at a configurable interval.
+2. For each tenant/account/resource scope, the job invokes the pluggable forecasting service.
+3. The threshold service evaluates thresholds against active budgets using the forecasting service.
+4. Create `alerts` records for any threshold violations and broadcast SSE to affected users.
 
 ---
 
@@ -98,7 +104,7 @@ SSE payload example (threshold):
 Design principle: require user-configured budgets as the primary billing alert trigger. Use the forecasting service to compare to budgets. Keep anomaly detection as a secondary safety net for tenants without budgets or if budgets are disabled.
 
 1. Triggering model
-   - Budget check against forecasted upper quantile.
+   - Budget check against forecasted median.
 
 2. Forecast source
    - Use Chronos forecasting via the intelligence service to get `forecast_median`, `forecast_q1`, `forecast_q3` for the next `window_days`.
@@ -108,14 +114,13 @@ Design principle: require user-configured budgets as the primary billing alert t
      - Query tenant `normalized_costs` for the past `window_days` and compute `historical_total` and daily mean/stddev.
    - Call forecasting service with the historical daily series and `forecast_horizon = window_days`.
    - Compute:
-     - `projected_median_total = sum(forecast_median)`
-     - `projected_q90_total` (use `forecast_q3` as conservative upper quantile; map quantile semantics consistently)
+     - `projected_median_total = sum(forecast_median)` as the primary forecast metric.
    - Compare to configured budget amount for the same scope (tenant/account/resource).
 
 4. Checks & thresholds 
    - Budget check (primary):
-     - WARNING when `projected_q90_total >= budget * 0.9`
-     - CRITICAL when `projected_q90_total >= budget`
+     - WARNING when `projected_median_total >= budget * 0.9`
+     - CRITICAL when `projected_median_total >= budget`
    - Relative growth check (secondary):
      - WARNING when `projected_median_total >= historical_total * 1.3` (30% growth)
      - CRITICAL when `projected_median_total >= historical_total * 2.0` (100% growth)
@@ -140,7 +145,6 @@ Example SSE payload (billing):
     "forecast_q3":[...],
     "forecast_horizon_days":30,
     "projected_median_total": X,
-    "projected_q90_total": Y,
     "budget_id": "uuid",
     "budget_amount": B,
     "historic_total_30d": H
