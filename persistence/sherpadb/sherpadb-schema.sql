@@ -693,7 +693,6 @@ BEGIN
         );
     $sql$, schema_name, schema_name);
 
-<<<<<<< HEAD
     EXECUTE format($sql$
       CREATE TABLE IF NOT EXISTS %I.alerts (
         alert_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -744,7 +743,7 @@ BEGIN
         updated_at TIMESTAMPTZ DEFAULT now()
       );
     $sql$, schema_name);
-=======
+
     -- --------------------------------------------------------------------------
     -- Webhook Tables
     -- --------------------------------------------------------------------------
@@ -773,7 +772,6 @@ BEGIN
         attempt_count int NOT NULL DEFAULT 0
       );
     $sql$, schema_name, schema_name);
->>>>>>> dev
 END;
 $$ LANGUAGE plpgsql;
 
