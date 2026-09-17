@@ -28,7 +28,23 @@ export const ExampleForPayload = ({event} : PropsForPayload) => {
 
     return(
         <div className = "space-y-6">
-            
+            <div>
+                <div className = "flex justify-between items-center mb-2">
+                    <h3 className = "text-sm font-semibold text-foreground"> Request headers </h3>
+
+                    <Button variant = "outline" size = "sm" onClick = {() => handlingCopy(JSON.stringify(headers, null, 2), setCopyHeaders)}>
+                        {copyHeaders ? (
+                            <Check size = {12} className = "mr-1"/>
+                        ) : (
+                            <Copy size = {12} className = "mr-1"/>
+                        )}
+
+                        {copyHeaders ? "Copied to clipboard." : "Copy headers"}
+                    </Button>
+                </div>
+
+                <pre className = "bg-background border border-border rounded-md p-3 text-xs overflow-x-auto text-foreground"> {JSON.stringify(headers, null, 2)} </pre>
+            </div>
         </div>
     );
 };
