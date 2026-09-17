@@ -14,6 +14,17 @@ interface PropsForPopup{
 }
 
 export const Popup = ({secret, onClose} : PropsForPopup) => {
+    const [saved, setSaved] = useState(false);
+
+    const [copied, setCopied] = useState(false);
+
+    const handlingCopy = () => {
+        navigator.clipboard.writeText(secret);
+
+        setCopied(true);
+
+        setTimeout(() => setCopied(false), 2000);
+    };
 
     return(
         <Dialog open = {true} onOpenChange = {onClose}>
