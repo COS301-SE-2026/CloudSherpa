@@ -95,7 +95,43 @@ export const AddWebhook = ({
                 </div>
 
                 <div className = "grid grid-cols-1 md:grid-cols-2 gap-6">
-                    
+                    <div className = "space-y-2">
+                        <Label> Events </Label>
+
+                        <p className = "text-xs text-muted-foreground mb-2"> Select categories or individual events. </p>
+
+                        <ScrollArea className = "h-60 rounded-md border border-border bg-background">
+                            {Object.entries(groupEvents).map(([category, events]) => (
+                                <div key = {category} className = "border-b border-border last:border-0">
+                                    <Button variant = "ghost" onClick = {() => toggleCategory(category)} className = "w-full justify-between px-3 py-2 h-auto rounded-none">
+                                        <div className = "flex items-center gap-2">
+                                            {categories.includes(category) ? (
+                                                <ChevronDown size = {16}/>
+                                            ) : (
+                                                <ChevronRight size = {16}/>
+                                            )}
+                                            <span> {category} </span>
+                                        </div>
+                                        <span className = "text-muted-foreground text-xs"> {events.length} events </span>
+                                    </Button>
+
+                                    {categories.includes(category) && (
+                                        <div className = "px-6 pb-2 space-y-1">
+                                            {events.map((event) => (
+                                                <div key = {event.id} className = "flex items-center gap-2 py-1">
+                                                    <Checkbox id = {event.id} checked = {eventsSelected.includes(event.id)} onCheckedChange = {() => toggleEvents(event.id)}/>
+
+                                                    <Label htmlFor = {event.id} className = "text-sm font-normal cursor-pointer"> {event.description} </Label>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </ScrollArea>
+
+                        <p className = "text-xs text-muted-foreground mt-1"> {eventsSelected.length} events selected </p>
+                    </div>
                 </div>
 
                 <DialogFooter>
