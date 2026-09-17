@@ -134,9 +134,10 @@ function DashboardContent() {
                         setSelectorView("create");
                         setIsSelectorOpen(true);
                     }}
+                    className="cursor-pointer"
                 >
                     Create Dashboard
-                </Button>{" "}
+                </Button>
             </div>
         );
     };
