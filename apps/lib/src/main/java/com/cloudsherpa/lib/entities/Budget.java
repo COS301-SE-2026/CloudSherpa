@@ -23,6 +23,10 @@ public class Budget {
   @Column(name = "user_id")
   private UUID userId;
 
+  @jakarta.persistence.ManyToOne
+  @jakarta.persistence.JoinColumn(name = "user_id", insertable = false, updatable = false)
+  private User user;
+
   @Column(name = "scope", nullable = false, length = 20)
   private String scope;
 

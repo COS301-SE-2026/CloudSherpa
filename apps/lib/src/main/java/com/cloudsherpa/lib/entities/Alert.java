@@ -3,6 +3,8 @@ package com.cloudsherpa.lib.entities;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.OffsetDateTime;
 import java.util.Map;
@@ -21,8 +23,16 @@ public class Alert {
   @Column(name = "user_id")
   private UUID userId;
 
+  @ManyToOne
+  @JoinColumn(name = "user_id", insertable = false, updatable = false)
+  private User user;
+
   @Column(name = "widget_id")
   private UUID widgetId;
+
+  @ManyToOne
+  @JoinColumn(name = "widget_id", insertable = false, updatable = false)
+  private Widget widget;
 
   @Column(name = "alert_type", nullable = false, length = 20)
   private String alertType;
@@ -95,12 +105,20 @@ public class Alert {
     this.userId = userId;
   }
 
+  public User getUser() {
+    return user;
+  }
+
   public UUID getWidgetId() {
     return widgetId;
   }
 
   public void setWidgetId(UUID widgetId) {
     this.widgetId = widgetId;
+  }
+
+  public Widget getWidget() {
+    return widget;
   }
 
   public String getAlertType() {

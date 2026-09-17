@@ -3,6 +3,8 @@ package com.cloudsherpa.lib.entities;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -18,8 +20,16 @@ public class WidgetThreshold {
   @Column(name = "widget_id")
   private UUID widgetId;
 
+  @ManyToOne
+  @JoinColumn(name = "widget_id", insertable = false, updatable = false)
+  private Widget widget;
+
   @Column(name = "user_id")
   private UUID userId;
+
+  @ManyToOne
+  @JoinColumn(name = "user_id", insertable = false, updatable = false)
+  private User user;
 
   @Column(name = "metric_name", nullable = false)
   private String metricName;
@@ -78,12 +88,20 @@ public class WidgetThreshold {
     this.widgetId = widgetId;
   }
 
+  public Widget getWidget() {
+    return widget;
+  }
+
   public UUID getUserId() {
     return userId;
   }
 
   public void setUserId(UUID userId) {
     this.userId = userId;
+  }
+
+  public User getUser() {
+    return user;
   }
 
   public String getMetricName() {
