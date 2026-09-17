@@ -2,11 +2,19 @@ package com.cloudsherpa.service.webhooks.service;
 
 import com.cloudsherpa.lib.entities.Webhook;
 import com.cloudsherpa.lib.entities.WebhookDelivery;
+import com.cloudsherpa.lib.entities.WebhookStatusEnum;
 import com.cloudsherpa.lib.repositories.WebhookDeliveryRepository;
 import com.cloudsherpa.lib.repositories.WebhookRepository;
+import com.cloudsherpa.service.webhooks.dto.AddWebhookDto;
+import com.cloudsherpa.service.webhooks.dto.AddWebhookResponseDto;
 import com.cloudsherpa.service.webhooks.dto.WebhookDeliveryResponse;
 import com.cloudsherpa.service.webhooks.dto.WebhookResponse;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 import java.util.List;
+import java.util.UUID;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -30,6 +38,24 @@ public class WebhookService {
     return webhookDeliveries.stream().map(this::fromWebhookDelivery).toList();
   }
 
+  public AddWebhookResponseDto addWebhook(AddWebhookDto request) {
+
+    String webhookKey = generateHmacSigningSecret();
+
+    Webhook webhook =
+        new Webhook(
+            UUID.randomUUID(),
+            request.name(),
+            request.endpointUrl(),
+            request.eventTypes(),
+            request.cloudAccounts(),
+            WebhookStatusEnum.PAUSED,
+            webhookKey);
+    webhookRepository.save(webhook);
+
+    return new AddWebhookResponseDto(webhookKey);
+  }
+
   private WebhookResponse fromWebhook(Webhook webhook) {
     return new WebhookResponse(
         webhook.getWebhookId(),
@@ -49,5 +75,17 @@ public class WebhookService {
         webhookDelivery.getCloudAccountId(),
         webhookDelivery.getDeliveryStatus(),
         webhookDelivery.getResponseCode());
+  }
+
+  private String generateHmacSigningSecret() {
+    try {
+      KeyGenerator keyGen = KeyGenerator.getInstance("HmacSHA256");
+      SecretKey secretKey = keyGen.generateKey();
+
+      return Base64.getEncoder().encodeToString(secretKey.getEncoded());
+    } catch (NoSuchAlgorithmException e) {
+      throw new IllegalStateException(
+          "Algorithm for generating webhook HMAC keys does not exist", e);
+    }
   }
 }

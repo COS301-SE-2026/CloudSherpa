@@ -3,6 +3,10 @@ package com.cloudsherpa.lib.entities;
 import java.util.List;
 import java.util.UUID;
 
+import org.hibernate.annotations.JdbcType;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -30,20 +34,30 @@ public class Webhook {
     private List<UUID> cloudAccounts;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "webhook_status", nullable = false, columnDefinition = "public.webhook_status_enum")
     private WebhookStatusEnum webhookStatus;
+
+    @Column(name = "webhook_signing_key", length = 44, nullable = false)
+    String webhookSigningKey;
 
     protected Webhook() {}
 
     public Webhook(
         UUID webhookId,
         String webhookName,
+        String endpointUrl,
         List<String> eventTypes,
-        WebhookStatusEnum webhookStatus) {
+        List<UUID> cloudAccounts,
+        WebhookStatusEnum webhookStatus,
+        String webhookSigningKey) {
         this.webhookId = webhookId;
         this.webhookName = webhookName;
+        this.endpointUrl = endpointUrl;
         this.eventTypes = eventTypes;
         this.webhookStatus = webhookStatus;
+        this.cloudAccounts = cloudAccounts;
+        this.webhookSigningKey = webhookSigningKey;
     }
 
     public UUID getWebhookId() {
@@ -88,5 +102,9 @@ public class Webhook {
 
     public void setCloudAccounts(List<UUID> cloudAccounts) {
         this.cloudAccounts = cloudAccounts;
+    }
+
+    public String getSigningKey() {
+        return webhookSigningKey;
     }
 }

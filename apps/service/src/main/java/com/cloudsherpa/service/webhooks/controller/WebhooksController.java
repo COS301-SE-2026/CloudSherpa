@@ -229,7 +229,8 @@ public class WebhooksController {
                             """)))
           @RequestBody
           AddWebhookDto request) {
-    return ResponseEntity.ok().build();
+    AddWebhookResponseDto response = webhookService.addWebhook(request);
+    return ResponseEntity.ok(response);
   }
 
   @Operation(summary = "Edit existing webhook")
@@ -267,6 +268,7 @@ public class WebhooksController {
                         """)))
           @RequestBody
           EditWebhookDto request) {
+
     return ResponseEntity.ok().build();
   }
 

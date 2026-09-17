@@ -790,7 +790,8 @@ BEGIN
         endpoint_url text NOT NULL,
         event_types text[] NOT NULL,
         cloud_accounts uuid[] NOT NULL,
-        webhook_status public.webhook_status_enum NOT NULL
+        webhook_status public.webhook_status_enum NOT NULL,
+        webhook_signing_key varchar(44) NOT NULL
       );
     $sql$, schema_name);
 
