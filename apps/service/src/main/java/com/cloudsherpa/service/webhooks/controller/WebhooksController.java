@@ -1,9 +1,10 @@
 package com.cloudsherpa.service.webhooks.controller;
 
+import com.cloudsherpa.service.webhooks.WebhookEventDefinitionRegistry;
 import com.cloudsherpa.service.webhooks.dto.AddWebhookDto;
 import com.cloudsherpa.service.webhooks.dto.AddWebhookResponseDto;
 import com.cloudsherpa.service.webhooks.dto.EditWebhookDto;
-import com.cloudsherpa.service.webhooks.events.WebhookEvent;
+import com.cloudsherpa.service.webhooks.dto.WebhookEventDto;
 import com.cloudsherpa.service.webhooks.model.Webhook;
 import com.cloudsherpa.service.webhooks.model.WebhookDelivery;
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,6 +31,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/webhooks")
 @Tag(name = "Webhooks", description = "CloudSherpa Webhooks CRUD operations")
 public class WebhooksController {
+
+  private final WebhookEventDefinitionRegistry definitionRegistry;
+
+  public WebhooksController(WebhookEventDefinitionRegistry definitionRegistry) {
+    this.definitionRegistry = definitionRegistry;
+  }
 
   @Operation(summary = "Get all webhooks for the current user")
   @ApiResponses(
@@ -123,50 +130,50 @@ public class WebhooksController {
             description = "Succesfully returned all supported webhook events",
             content =
                 @Content(
-                    schema =
-                        @Schema(
-                            type = "object",
-                            description = "Webhook events grouped by cloud account display name",
-                            additionalPropertiesSchema = WebhookEvent.class),
                     examples =
                         @ExampleObject(
-                            name = "Webhook events by cloud account",
+                            name = "Webhook events by category",
                             value =
                                 """
                           {
-                            "Usage Threshold Alerts": {
-                              "id": "msg_demo_usage_threshold",
-                              "type": "usage.threshold",
-                              "timestamp": "2026-09-16T08:32:15Z",
-                              "account": {
-                                "name": "Azure production",
-                                "provider": "AZURE"
-                              },
-                              "data": {
-                                "metric": "cost",
-                                "threshold": 500.00,
-                                "currentValue": 612.45
+                            "Dev": {
+                              "Dev Event": {
+                                "id": "msg_demo_dev_event",
+                                "type": "dev.event",
+                                "timestamp": "1970-01-01T00:00:00Z",
+                                "account": {
+                                  "name": "Development account",
+                                  "provider": "AZURE"
+                                },
+                                "data": {
+                                  "devString": "Dev Event String",
+                                  "devDecimal": 20.0,
+                                  "devTime": "1970-01-01T00:00:00Z"
+                                }
                               }
                             },
-                            "Billing Ingestion": {
-                              "id": "msg_demo_billing_ingestion",
-                              "type": "billing.ingestion",
-                              "timestamp": "2026-09-16T08:45:02Z",
-                              "account": {
-                                "name": "AWS staging",
-                                "provider": "AWS"
-                              },
-                              "data": {
-                                "past14Days": 200 ,
-                                "forecasted14Days": 220
+                            "Usage": {
+                              "Usage Threshold Alert": {
+                                "id": "msg_demo_usage_threshold",
+                                "type": "usage.threshold",
+                                "timestamp": "2026-09-16T08:32:15Z",
+                                "account": {
+                                  "name": "Azure production",
+                                  "provider": "AZURE"
+                                },
+                                "data": {
+                                  "metric": "cost",
+                                  "threshold": 500.00,
+                                  "currentValue": 612.45
+                                }
                               }
                             }
                           }
                           """)))
       })
   @GetMapping("events")
-  public Map<String, WebhookEvent<?>> getEvents() {
-    return Map.of();
+  public Map<String, Map<String, WebhookEventDto<?>>> getEvents() {
+    return definitionRegistry.getEventDefinitions();
   }
 
   @Operation(summary = "Add a new webhook")
