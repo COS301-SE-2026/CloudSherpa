@@ -190,6 +190,7 @@ export const AddWebhook = ({
                 <DialogFooter>
                     <Button variant = "outline" onClick = {onClose}> Cancel </Button>
 
+                    <Button onClick = {handlingSubmit} disabled = {submit || !name || !endpointUrl || eventsSelected.length === 0}> {submit ? "Saving" : initialData ? "Save changes" : "Create webhook"} </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
