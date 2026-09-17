@@ -73,6 +73,34 @@ export const AddWebhook = ({
         setAccountsSelected((previous) => previous.includes(accountId) ? previous.filter((forId) => forId !== accountId) : [...previous, accountId]);
     };
 
+    const handlingSubmit = async () => {
+        if(!name || !endpointUrl || eventsSelected.length === 0){
+            return;
+        }
+
+        setSubmit(true);
+
+        try{
+            const payload : CreateWebhookPayload = {
+                name, endpointUrl, eventTypes : eventsSelected, cloudAccounts : accountsSelected,
+            };
+
+            if(initialData){
+                await editWebhook(initialData.id, {...payload, status : initialData.status});
+                onSuccess("");
+            }else{
+                const result = await addWebhook(payload);
+                onSuccess(result.secret);
+            }
+            onClose();
+        }catch(error){
+            const errorMessage = error instanceof Error ? error.message : "Failed to save the webhook";
+            alert(errorMessage);
+        }finally{
+            setSubmit(false);
+        }
+    };
+
     return(
         <Dialog open = {isOpen} onOpenChange = {onClose}>
             <DialogContent className = "max-w-4xl max-h-[90vh] overflow-y-auto">
