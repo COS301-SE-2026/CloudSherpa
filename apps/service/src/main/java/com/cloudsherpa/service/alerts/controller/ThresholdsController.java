@@ -2,6 +2,7 @@ package com.cloudsherpa.service.alerts.controller;
 
 import com.cloudsherpa.lib.entities.Threshold;
 import com.cloudsherpa.lib.repositories.ThresholdRepository;
+import com.cloudsherpa.service.alerts.dto.ThresholdResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -43,7 +44,7 @@ public class ThresholdsController {
       content =
           @Content(
               mediaType = "application/json",
-              schema = @Schema(implementation = Threshold.class),
+              schema = @Schema(implementation = ThresholdResponse.class),
               examples =
                   @ExampleObject(
                       value =
@@ -53,7 +54,7 @@ public class ThresholdsController {
       description = "Invalid metric name or operator",
       content = @Content)
   @PostMapping
-  public ResponseEntity<Threshold> createThreshold(@RequestBody Map<String, Object> req) {
+  public ResponseEntity<ThresholdResponse> createThreshold(@RequestBody Map<String, Object> req) {
     UUID resourceId = UUID.fromString((String) req.get("resourceId"));
     UUID userId = req.get("userId") != null ? UUID.fromString((String) req.get("userId")) : null;
     String metricName = (String) req.get(METRIC_NAME);
@@ -71,7 +72,8 @@ public class ThresholdsController {
     Threshold threshold =
         new Threshold(resourceId, userId, metricName, operator, value, severity, enabled);
 
-    return ResponseEntity.status(201).body(thresholdRepository.save(threshold));
+    return ResponseEntity.status(201)
+        .body(ThresholdResponse.from(thresholdRepository.save(threshold)));
   }
 
   @Operation(
@@ -83,20 +85,20 @@ public class ThresholdsController {
       content =
           @Content(
               mediaType = "application/json",
-              schema = @Schema(implementation = Threshold.class),
+              schema = @Schema(implementation = ThresholdResponse.class),
               examples =
                   @ExampleObject(
                       value =
                           "[{\"thresholdId\":\"t0000000-0000-0000-0000-000000000001\",\"resourceId\":\"r0000000-0000-0000-0000-000000000001\",\"metricName\":\"CPUUtilization\",\"operator\":\"GT\",\"value\":80.0,\"severity\":\"WARNING\",\"enabled\":true}]")))
   @GetMapping
-  public ResponseEntity<List<Threshold>> listThresholds(
+  public ResponseEntity<List<ThresholdResponse>> listThresholds(
       @RequestParam(name = "resourceId", required = false) UUID resourceId) {
     List<Threshold> thresholds =
         resourceId == null
             ? thresholdRepository.findAll()
             : thresholdRepository.findByResourceId(resourceId);
 
-    return ResponseEntity.ok(thresholds);
+    return ResponseEntity.ok(thresholds.stream().map(ThresholdResponse::from).toList());
   }
 
   @Operation(summary = "Update threshold", description = "Update an existing threshold.")
