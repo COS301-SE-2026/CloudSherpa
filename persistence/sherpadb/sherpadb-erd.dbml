@@ -278,7 +278,6 @@ Table processing_watermark {
   updated_at timestamptz
 }
 
-<<<<<<< HEAD
 Table alerts {
   alert_id uuid [pk]
   user_id uuid [ref: > users.user_id]
@@ -320,7 +319,7 @@ Table widget_thresholds {
   created_at timestamptz
   updated_at timestamptz
 }
-=======
+
 Table webhooks {
   webhook_id uuid [pk]
   webhook_name text
@@ -342,4 +341,3 @@ Table webhook_deliveries {
   response_code integer
   attempt_count integer [not null, default: 0]
 }
->>>>>>> dev
