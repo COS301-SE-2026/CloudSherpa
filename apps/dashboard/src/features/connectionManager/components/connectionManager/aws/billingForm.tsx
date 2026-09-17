@@ -4,6 +4,7 @@ import { Button } from "@/components/atoms/button";
 import { BillingConfig } from "./stepTwo";
 import { Label } from "@/components/atoms/label";
 import { BillingFormContainer } from "../billingFormContainer";
+import { Dropdown } from "@/components/atoms/dropdown";
 
 interface BillingFormProps {
     readonly bucketName: string;
@@ -36,6 +37,11 @@ const regions = [
     "sa-east-1",
 ];
 
+const regionOptions = regions.map((region) => ({
+    label: region,
+    value: region,
+}));
+
 export function AwsBillingForm({
     bucketName,
     setBucketName,
@@ -55,7 +61,7 @@ export function AwsBillingForm({
             optedInToBilling={optedInToBilling}
             handleOptedInToBillingChange={handleOptedInToBillingChange}
         >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
                 <div className="space-y-2">
                     <label htmlFor="bucketName" className="text-sm font-medium text-foreground">
                         S3 Bucket Name
@@ -75,21 +81,15 @@ export function AwsBillingForm({
                         Bucket region
                     </Label>
 
-                    <select
-                        id="region"
+                    <Dropdown
+                        options={regionOptions}
                         value={bucketRegion}
-                        onChange={(e) => setBucketRegion(e.target.value)}
-                        className="w-full bg-background border-border rounded-md px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all cursor-pointer"
-                    >
-                        <option value="" className="bg-card">
-                            Select a region
-                        </option>
-                        {regions.map((region) => (
-                            <option key={region} value={region} className="bg-card">
-                                {region}
-                            </option>
-                        ))}
-                    </select>
+                        onChange={setBucketRegion}
+                        placeholder="Select a region"
+                        labelKey="label"
+                        valueKey="value"
+                        className="w-full"
+                    />
                 </div>
 
                 <div className="space-y-2">
