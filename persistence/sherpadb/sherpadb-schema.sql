@@ -106,7 +106,7 @@ CREATE TABLE IF NOT EXISTS public.cloud_account (
   connection_id uuid REFERENCES public.cloud_connection(connection_id) ON DELETE CASCADE,
   account_type public.account_type_enum NOT NULL,
   ingestion_period public.ingestion_period_enum,
-  display_name varchar(255),
+  display_name varchar(80),
   created_at timestamptz DEFAULT NOW(),
   last_usage_ingestion timestamptz DEFAULT NOW(),
   next_usage_ingestion timestamptz DEFAULT NOW(),
@@ -196,7 +196,7 @@ CREATE TABLE IF NOT EXISTS public.billing_export_execution (
 
 CREATE TABLE IF NOT EXISTS public.dashboard (
   dashboard_id uuid PRIMARY KEY,
-  display_name varchar(255) NOT NULL,
+  display_name varchar(80) NOT NULL,
   user_id uuid REFERENCES public.users(user_id) ON DELETE CASCADE,
   time_from timestamptz,
   time_to timestamptz,
@@ -212,7 +212,7 @@ CREATE TABLE IF NOT EXISTS public.widget (
   start_y integer NOT NULL, 
   width integer NOT NULL,   
   height integer NOT NULL,  
-  display_name varchar(100)
+  display_name varchar(80)
 );
 
 CREATE TABLE IF NOT EXISTS public.widget_kpi (

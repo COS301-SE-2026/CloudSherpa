@@ -216,6 +216,7 @@ export function DashboardSelector({
                                     value={newDashboardName}
                                     onChange={(e) => setNewDashboardName(e.target.value)}
                                     onKeyDown={(e) => e.key === "Enter" && handleCreate()}
+                                    maxLength={80}
                                 />
 
                                 <Button

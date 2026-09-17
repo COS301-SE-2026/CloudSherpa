@@ -55,6 +55,7 @@ export default function ChartFormDetails({
                         onChange={(e) =>
                             setConfiguration({ ...configuration, displayName: e.target.value })
                         }
+                        maxLength={80}
                         placeholder="Widget title"
                     />
                 </div>
