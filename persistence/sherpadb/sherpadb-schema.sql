@@ -319,6 +319,10 @@ DECLARE
 
     -- Azure service types
     c_azure_virtual_machine_service CONSTANT varchar(255) := 'Microsoft.Compute/virtualMachines';
+    c_azure_container_registry_service CONSTANT varchar(255) := 'Microsoft.ContainerRegistry/registries';
+    c_azure_kubernetes_service CONSTANT varchar(255) := 'Microsoft.ContainerService/managedClusters';
+    c_azure_functions_service CONSTANT varchar(255) := 'Microsoft.Web/sites';
+    c_azure_postgresql_service CONSTANT varchar(255) := 'Microsoft.DBforPostgreSQL/flexibleServers';
 BEGIN
 
     INSERT INTO public.offered_metric (
@@ -412,7 +416,40 @@ BEGIN
 (c_azure_provider_enum, c_azure_virtual_machine_service, 'Disk Write Operations/Sec', c_azure_resource_id, NULL, 'Disk write IOPS'),
 (c_azure_provider_enum, c_azure_virtual_machine_service, 'OS Disk Latency', c_azure_resource_id, NULL, 'OS disk latency'),
 (c_azure_provider_enum, c_azure_virtual_machine_service, 'Inbound Flows', c_azure_resource_id, NULL, 'Inbound network flows'),
-(c_azure_provider_enum, c_azure_virtual_machine_service, 'Outbound Flows', c_azure_resource_id, NULL, 'Outbound network flows')
+(c_azure_provider_enum, c_azure_virtual_machine_service, 'Outbound Flows', c_azure_resource_id, NULL, 'Outbound network flows'),
+
+-- Azure Container Registry
+(c_azure_provider_enum, c_azure_container_registry_service, NULL,
+ c_azure_resource_id, NULL, 'Container registry storage used'),
+
+-- Azure Kubernetes Service
+(c_azure_provider_enum, c_azure_kubernetes_service, 'node_cpu_usage_percentage', c_azure_resource_id, NULL, 'Aggregated CPU utilization percentage'),
+(c_azure_provider_enum, c_azure_kubernetes_service, 'node_cpu_usage_millicores', c_azure_resource_id, NULL, 'Aggregated CPU utilization in millicores'),
+(c_azure_provider_enum, c_azure_kubernetes_service, 'node_memory_rss_bytes', c_azure_resource_id, NULL, 'Container RSS memory used'),
+(c_azure_provider_enum, c_azure_kubernetes_service, 'node_memory_rss_percentage', c_azure_resource_id, NULL, 'Container RSS memory used percentage'),
+(c_azure_provider_enum, c_azure_kubernetes_service, 'node_memory_working_set_bytes', c_azure_resource_id, NULL, 'Container working set memory used'),
+(c_azure_provider_enum, c_azure_kubernetes_service, 'node_memory_working_set_percentage', c_azure_resource_id, NULL, 'Container working set memory used percentage'),
+(c_azure_provider_enum, c_azure_kubernetes_service, 'node_disk_usage_bytes', c_azure_resource_id, NULL, 'Node disk space used'),
+(c_azure_provider_enum, c_azure_kubernetes_service, 'node_disk_usage_percentage', c_azure_resource_id, NULL, 'Node disk space used percentage'),
+(c_azure_provider_enum, c_azure_kubernetes_service, 'node_network_in_bytes', c_azure_resource_id, NULL, 'Node network bytes received'),
+(c_azure_provider_enum, c_azure_kubernetes_service, 'node_network_out_bytes', c_azure_resource_id, NULL, 'Node network bytes transmitted'),
+
+-- Azure Functions
+(c_azure_provider_enum, c_azure_functions_service, 'AverageMemoryWorkingSet', c_azure_resource_id, NULL, 'Average memory working set'),
+(c_azure_provider_enum, c_azure_functions_service, 'MemoryWorkingSet', c_azure_resource_id, NULL, 'Memory working set'),
+(c_azure_provider_enum, c_azure_functions_service, 'AppConnections', c_azure_resource_id, NULL, 'Number of bound sockets'),
+(c_azure_provider_enum, c_azure_functions_service, 'CurrentAssemblies', c_azure_resource_id, NULL, 'Current assemblies loaded'),
+(c_azure_provider_enum, c_azure_functions_service, 'Handles', c_azure_resource_id, NULL, 'Number of handles currently open'),
+(c_azure_provider_enum, c_azure_functions_service, 'HealthCheckStatus', c_azure_resource_id, NULL, 'Function app health check status'),
+(c_azure_provider_enum, c_azure_functions_service, 'PrivateBytes', c_azure_resource_id, NULL, 'Private memory allocated by the function app'),
+
+-- Azure PostgreSQL Flexible Server
+(c_azure_provider_enum, c_azure_postgresql_service, 'active_connections', c_azure_resource_id, NULL, 'Active database connections'),
+(c_azure_provider_enum, c_azure_postgresql_service, 'cpu_percent', c_azure_resource_id, NULL, 'CPU utilization percentage'),
+(c_azure_provider_enum, c_azure_postgresql_service, 'memory_percent', c_azure_resource_id, NULL, 'Memory utilization percentage'),
+(c_azure_provider_enum, c_azure_postgresql_service, 'storage_percent', c_azure_resource_id, NULL, 'Storage utilization percentage'),
+(c_azure_provider_enum, c_azure_postgresql_service, 'storage_used', c_azure_resource_id, NULL, 'Storage used'),
+(c_azure_provider_enum, c_azure_postgresql_service, 'iops', c_azure_resource_id, NULL, 'Input/output operations per second')
     ON CONFLICT DO NOTHING;
 END $$;
 
