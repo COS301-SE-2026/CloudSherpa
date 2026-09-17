@@ -118,8 +118,8 @@
       {
         "name": "optimization_recommendation",
         "schemaName": "public",
-        "x": 1108.9577656831452,
-        "y": 851.3856663205272
+        "x": 1107.3294238303858,
+        "y": 901.8642637560697
       },
       {
         "name": "recommendation_history",
@@ -150,6 +150,24 @@
         "schemaName": "public",
         "x": 2524.5595055635163,
         "y": 267.77442729933125
+      },
+      {
+        "name": "alerts",
+        "schemaName": "public",
+        "x": 1371.541015625,
+        "y": 12
+      },
+      {
+        "name": "budgets",
+        "schemaName": "public",
+        "x": 740.8759765625,
+        "y": 12
+      },
+      {
+        "name": "widget_thresholds",
+        "schemaName": "public",
+        "x": 1056.20849609375,
+        "y": 12
       }
     ],
     "tableGroupCollapseStates": [],
