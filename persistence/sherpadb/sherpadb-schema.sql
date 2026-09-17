@@ -742,7 +742,7 @@ BEGIN
       created_at timestamptz DEFAULT now(),
       updated_at timestamptz DEFAULT now()
     );
-    $sql$, schema_name);
+    $sql$, schema_name, schema_name);
 
     -- --------------------------------------------------------------------------
     -- Webhook Tables
