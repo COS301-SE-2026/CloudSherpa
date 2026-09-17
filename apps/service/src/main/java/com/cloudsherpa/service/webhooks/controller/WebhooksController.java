@@ -286,8 +286,9 @@ public class WebhooksController {
             description =
                 "Deleted webhook / not, generic response code protects against information gathering via response codes")
       })
-  @DeleteMapping("delete/webhookId")
-  public ResponseEntity<Void> deleteWebhook() {
+  @DeleteMapping("delete/{webhookId}")
+  public ResponseEntity<Void> deleteWebhook(@PathVariable("webhookId") UUID webhookId) {
+    webhookService.deleteWebhook(webhookId);
     return ResponseEntity.noContent().build();
   }
 }

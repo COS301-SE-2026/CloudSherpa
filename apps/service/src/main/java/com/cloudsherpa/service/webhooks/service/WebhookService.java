@@ -18,12 +18,15 @@ import java.util.NoSuchElementException;
 import java.util.UUID;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class WebhookService {
   private final WebhookRepository webhookRepository;
   private final WebhookDeliveryRepository webhookDeliveryRepository;
+  private final Logger logger = LoggerFactory.getLogger(WebhookService.class);
 
   public WebhookService(
       WebhookRepository webhookRepository, WebhookDeliveryRepository webhookDeliveryRepository) {
@@ -72,6 +75,14 @@ public class WebhookService {
       webhookRepository.save(webhook);
     } catch (NoSuchElementException e) {
       throw new WebhookNotFoundException(webhookId);
+    }
+  }
+
+  public void deleteWebhook(UUID webhookId) {
+    try {
+      webhookRepository.deleteAllById(List.of(webhookId));
+    } catch (IllegalArgumentException e) {
+      logger.warn("Webhook with ID {} was not found and hence already absent", webhookId);
     }
   }
 
