@@ -1,5 +1,6 @@
 package com.cloudsherpa.service.listener;
 
+import com.cloudsherpa.service.alerts.service.ThresholdEvaluationService;
 import com.cloudsherpa.service.listener.dto.MetricStreamEventDto;
 import com.cloudsherpa.service.metrics.MetricDisplayNameMapper;
 import com.cloudsherpa.service.sse.SseService;
@@ -43,6 +44,7 @@ public class PostgresNotificationListener implements SmartLifecycle {
   private final SseService sseService;
   private final MetricDisplayNameMapper metricDisplayNameMapper;
   private final ActiveListeners activeListeners;
+  private final ThresholdEvaluationService thresholdEvaluationService;
 
   private volatile boolean running;
 
@@ -52,11 +54,13 @@ public class PostgresNotificationListener implements SmartLifecycle {
       SseService sseService,
       ActiveListeners activeListeners,
       ObjectMapper objectMapper,
-      MetricDisplayNameMapper metricDisplayNameMapper) {
+      MetricDisplayNameMapper metricDisplayNameMapper,
+      ThresholdEvaluationService thresholdEvaluationService) {
     this.sseService = sseService;
     this.activeListeners = activeListeners;
     this.objectMapper = objectMapper;
     this.metricDisplayNameMapper = metricDisplayNameMapper;
+    this.thresholdEvaluationService = thresholdEvaluationService;
   }
 
   // Creates a long-lived connection and registers the LISTEN channel.
@@ -158,6 +162,7 @@ public class PostgresNotificationListener implements SmartLifecycle {
               .withDisplayNameMappedMetric(metricDisplayNameMapper);
 
       sseService.broadcast(userId, "metric", event);
+      thresholdEvaluationService.evaluate(event, userId);
     } catch (Exception e) {
       logger.warn("Failed to parse metric payload: {}", payload, e);
     }
