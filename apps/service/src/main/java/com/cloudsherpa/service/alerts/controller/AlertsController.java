@@ -1,7 +1,7 @@
 package com.cloudsherpa.service.alerts.controller;
 
-import com.cloudsherpa.lib.entities.Alert;
 import com.cloudsherpa.lib.repositories.AlertRepository;
+import com.cloudsherpa.service.alerts.dto.AlertResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -10,7 +10,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -36,15 +35,15 @@ public class AlertsController {
       content =
           @Content(
               mediaType = "application/json",
-              schema = @Schema(implementation = Map.class),
+              schema = @Schema(implementation = AlertResponse.class),
               examples =
                   @ExampleObject(
                       value =
-                          "[{\"alert_id\":\"b0000000-0000-0000-0000-000000000001\",\"alert_type\":\"BILLING\",\"severity\":\"WARNING\",\"title\":\"30-day projected spend may exceed budget\",\"message\":\"Projected 30d spend $1,200 vs budget $1,000\",\"status\":\"ACTIVE\",\"created_at\":\"2026-09-16T12:00:00Z\"}]")))
+                          "[{\"alertId\":\"b0000000-0000-0000-0000-000000000001\",\"userId\":\"5ebe4340-c5ec-4833-ad93-06abf4609f03\",\"alertType\":\"BILLING\",\"severity\":\"WARNING\",\"title\":\"30-day projected spend may exceed budget\",\"message\":\"Projected 30d spend $1,200 vs budget $1,000\",\"payload\":{},\"status\":\"ACTIVE\",\"canonicalKey\":null,\"createdAt\":\"2026-09-16T12:00:00Z\",\"lastSeen\":\"2026-09-16T12:00:00Z\",\"resolvedAt\":null}]")))
   @GetMapping
-  public ResponseEntity<List<Alert>> getAlerts() {
+  public ResponseEntity<List<AlertResponse>> getAlerts() {
     // fetch all alerts
-    return ResponseEntity.ok(alertRepository.findAll());
+    return ResponseEntity.ok(alertRepository.findAll().stream().map(AlertResponse::from).toList());
   }
 
   @Operation(summary = "Get alert", description = "Return details for a single alert by id.")
@@ -54,16 +53,17 @@ public class AlertsController {
       content =
           @Content(
               mediaType = "application/json",
-              schema = @Schema(implementation = Map.class),
+              schema = @Schema(implementation = AlertResponse.class),
               examples =
                   @ExampleObject(
                       value =
-                          "{\"alert_id\":\"b0000000-0000-0000-0000-000000000001\",\"alert_type\":\"THRESHOLD\",\"severity\":\"CRITICAL\",\"title\":\"CPU > 90%\",\"message\":\"CPU usage 95% on instance i-0123\",\"status\":\"ACTIVE\",\"created_at\":\"2026-09-16T12:00:00Z\"}")))
+                          "{\"alertId\":\"b0000000-0000-0000-0000-000000000001\",\"userId\":\"5ebe4340-c5ec-4833-ad93-06abf4609f03\",\"alertType\":\"THRESHOLD\",\"severity\":\"CRITICAL\",\"title\":\"CPU > 90%\",\"message\":\"CPU usage 95% on instance i-0123\",\"payload\":{},\"status\":\"ACTIVE\",\"canonicalKey\":null,\"createdAt\":\"2026-09-16T12:00:00Z\",\"lastSeen\":\"2026-09-16T12:00:00Z\",\"resolvedAt\":null}")))
   @ApiResponse(responseCode = "404", description = "Alert not found", content = @Content)
   @GetMapping("/{id}")
-  public ResponseEntity<Alert> getAlert(@PathVariable UUID id) {
+  public ResponseEntity<AlertResponse> getAlert(@PathVariable UUID id) {
     return alertRepository
         .findById(id)
+        .map(AlertResponse::from)
         .map(ResponseEntity::ok)
         .orElseGet(() -> ResponseEntity.notFound().build());
   }
