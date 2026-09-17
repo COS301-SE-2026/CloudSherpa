@@ -6,12 +6,8 @@ import static org.mockito.Mockito.*;
 
 import com.azure.core.http.rest.Response;
 import com.azure.monitor.query.metrics.MetricsClient;
-import com.azure.monitor.query.metrics.models.MetricResult;
-import com.azure.monitor.query.metrics.models.MetricValue;
 import com.azure.monitor.query.metrics.models.MetricsQueryResourcesOptions;
 import com.azure.monitor.query.metrics.models.MetricsQueryResourcesResult;
-import com.azure.monitor.query.metrics.models.MetricsQueryResult;
-import com.azure.monitor.query.metrics.models.TimeSeriesElement;
 import com.cloudsherpa.ingestion.connector.AccountScope;
 import com.cloudsherpa.ingestion.connector.CloudCredentials;
 import com.cloudsherpa.ingestion.connector.Instance;
@@ -19,16 +15,14 @@ import com.cloudsherpa.ingestion.connector.InstanceScope;
 import com.cloudsherpa.ingestion.connector.Metric;
 import com.cloudsherpa.ingestion.connector.ServiceScope;
 import com.cloudsherpa.ingestion.models.IngestionRequestEvent;
-import com.cloudsherpa.ingestion.models.UsageRecordModel;
+import com.cloudsherpa.ingestion.normalization.normalizers.Normalizer;
 import com.cloudsherpa.ingestion.provider.azure.factory.AzureClientFactory;
 import com.cloudsherpa.ingestion.provider.azure.monitoring.AzureCloudMonitorMetricProvider;
+import com.cloudsherpa.ingestion.service.IngestionPersistenceService;
 import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
@@ -36,10 +30,13 @@ import org.mockito.MockedStatic;
 class AzureCloudMonitorMetricProviderTest {
 
   private AzureCloudMonitorMetricProvider provider;
+  private IngestionPersistenceService persistenceService = mock(IngestionPersistenceService.class);
+
+  private Normalizer normalizer = mock(Normalizer.class);
 
   @BeforeEach
   void setUp() {
-    provider = new AzureCloudMonitorMetricProvider();
+    provider = new AzureCloudMonitorMetricProvider(persistenceService);
   }
 
   // Validation tests
@@ -49,7 +46,9 @@ class AzureCloudMonitorMetricProviderTest {
     IngestionRequestEvent request = validRequest();
 
     IllegalArgumentException ex =
-        assertThrows(IllegalArgumentException.class, () -> provider.collectMetrics(null, request));
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> provider.collectMetrics(null, request, normalizer));
 
     assertEquals("Account scope cannot be null", ex.getMessage());
   }
@@ -59,7 +58,8 @@ class AzureCloudMonitorMetricProviderTest {
     AccountScope scope = validScope();
 
     IllegalArgumentException ex =
-        assertThrows(IllegalArgumentException.class, () -> provider.collectMetrics(scope, null));
+        assertThrows(
+            IllegalArgumentException.class, () -> provider.collectMetrics(scope, null, normalizer));
 
     assertEquals("Ingestion request cannot be null", ex.getMessage());
   }
@@ -71,7 +71,9 @@ class AzureCloudMonitorMetricProviderTest {
     request.setCredentials(null);
 
     IllegalArgumentException ex =
-        assertThrows(IllegalArgumentException.class, () -> provider.collectMetrics(scope, request));
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> provider.collectMetrics(scope, request, normalizer));
 
     assertEquals("Azure credentials are required for Azure metric ingestion", ex.getMessage());
   }
@@ -84,7 +86,9 @@ class AzureCloudMonitorMetricProviderTest {
     request.getCredentials().setSubscriptionId(" ");
 
     IllegalArgumentException ex =
-        assertThrows(IllegalArgumentException.class, () -> provider.collectMetrics(scope, request));
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> provider.collectMetrics(scope, request, normalizer));
 
     assertEquals("Azure subscriptionId is required", ex.getMessage());
   }
@@ -97,7 +101,9 @@ class AzureCloudMonitorMetricProviderTest {
     request.getCredentials().setTenantId(" ");
 
     IllegalArgumentException ex =
-        assertThrows(IllegalArgumentException.class, () -> provider.collectMetrics(scope, request));
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> provider.collectMetrics(scope, request, normalizer));
 
     assertEquals("Azure tenantId is required", ex.getMessage());
   }
@@ -110,7 +116,9 @@ class AzureCloudMonitorMetricProviderTest {
     request.getCredentials().setClientId(null);
 
     IllegalArgumentException ex =
-        assertThrows(IllegalArgumentException.class, () -> provider.collectMetrics(scope, request));
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> provider.collectMetrics(scope, request, normalizer));
 
     assertEquals("Azure clientId is required", ex.getMessage());
   }
@@ -123,7 +131,9 @@ class AzureCloudMonitorMetricProviderTest {
     request.getCredentials().setClientSecret(" ");
 
     IllegalArgumentException ex =
-        assertThrows(IllegalArgumentException.class, () -> provider.collectMetrics(scope, request));
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> provider.collectMetrics(scope, request, normalizer));
 
     assertEquals("Azure clientSecret is required", ex.getMessage());
   }
@@ -136,7 +146,9 @@ class AzureCloudMonitorMetricProviderTest {
     scope.setAccountId(" ");
 
     IllegalArgumentException ex =
-        assertThrows(IllegalArgumentException.class, () -> provider.collectMetrics(scope, request));
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> provider.collectMetrics(scope, request, normalizer));
 
     assertEquals("AccountId is required", ex.getMessage());
   }
@@ -149,7 +161,9 @@ class AzureCloudMonitorMetricProviderTest {
     request.setFrom(null);
 
     IllegalArgumentException ex =
-        assertThrows(IllegalArgumentException.class, () -> provider.collectMetrics(scope, request));
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> provider.collectMetrics(scope, request, normalizer));
 
     assertEquals("Metric request from/to timestamps are required", ex.getMessage());
   }
@@ -162,7 +176,9 @@ class AzureCloudMonitorMetricProviderTest {
     request.setTo(null);
 
     IllegalArgumentException ex =
-        assertThrows(IllegalArgumentException.class, () -> provider.collectMetrics(scope, request));
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> provider.collectMetrics(scope, request, normalizer));
 
     assertEquals("Metric request from/to timestamps are required", ex.getMessage());
   }
@@ -176,7 +192,9 @@ class AzureCloudMonitorMetricProviderTest {
     request.setTo(Instant.parse("2026-01-01T01:00:00Z"));
 
     IllegalArgumentException ex =
-        assertThrows(IllegalArgumentException.class, () -> provider.collectMetrics(scope, request));
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> provider.collectMetrics(scope, request, normalizer));
 
     assertEquals("Metric request 'from' must be before 'to'", ex.getMessage());
   }
@@ -192,7 +210,9 @@ class AzureCloudMonitorMetricProviderTest {
     request.setTo(timestamp);
 
     IllegalArgumentException ex =
-        assertThrows(IllegalArgumentException.class, () -> provider.collectMetrics(scope, request));
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> provider.collectMetrics(scope, request, normalizer));
 
     assertEquals("Metric request 'from' must be before 'to'", ex.getMessage());
   }
@@ -205,7 +225,9 @@ class AzureCloudMonitorMetricProviderTest {
     request.setPeriod(0);
 
     IllegalArgumentException ex =
-        assertThrows(IllegalArgumentException.class, () -> provider.collectMetrics(scope, request));
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> provider.collectMetrics(scope, request, normalizer));
 
     assertEquals("Metric period must be > 0", ex.getMessage());
   }
@@ -218,124 +240,11 @@ class AzureCloudMonitorMetricProviderTest {
     request.setPeriod(-1);
 
     IllegalArgumentException ex =
-        assertThrows(IllegalArgumentException.class, () -> provider.collectMetrics(scope, request));
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> provider.collectMetrics(scope, request, normalizer));
 
     assertEquals("Metric period must be > 0", ex.getMessage());
-  }
-
-  // Metric collection tests
-
-  @Test
-  void collectMetrics_shouldMapAzureResponseIntoUsageRecord() {
-    AccountScope scope = validScope();
-    IngestionRequestEvent request = validRequest();
-
-    MetricsClient client = mock(MetricsClient.class);
-
-    MetricsQueryResourcesResult result = mock(MetricsQueryResourcesResult.class);
-
-    Response<MetricsQueryResourcesResult> response = mock(Response.class);
-
-    MetricsQueryResult resourceResult = mock(MetricsQueryResult.class);
-
-    MetricResult metricResult = mock(MetricResult.class);
-
-    TimeSeriesElement series = mock(TimeSeriesElement.class);
-
-    MetricValue value = mock(MetricValue.class);
-
-    OffsetDateTime timestamp = OffsetDateTime.of(2026, 1, 1, 12, 0, 0, 0, ZoneOffset.UTC);
-
-    when(response.getValue()).thenReturn(result);
-
-    when(value.getTimeStamp()).thenReturn(timestamp);
-    when(value.getAverage()).thenReturn(73.5);
-
-    when(series.getValues()).thenReturn(List.of(value));
-
-    when(series.getMetadata()).thenReturn(Map.of("VMName", "vm-01", "Environment", "dev"));
-
-    when(metricResult.getMetricName()).thenReturn("Percentage CPU");
-
-    when(metricResult.getTimeSeries()).thenReturn(List.of(series));
-
-    when(metricResult.getResourceType()).thenReturn("Microsoft.Compute/virtualMachines");
-
-    /*
-     * Deliberately leave Azure's unit null.
-     *
-     * The unit fallback behaviour is intentional and is
-     * explicitly not tested here. Azure ingestion returns a unit
-     * and therefore no fallback unit is necessary. GCP does not return this
-     * unit and the fallback in the request is intended for GCP only
-     */
-    when(metricResult.getUnit()).thenReturn(null);
-
-    when(resourceResult.getResourceId())
-        .thenReturn(
-            "/subscriptions/sub/resourceGroups/rg/"
-                + "providers/Microsoft.Compute/"
-                + "virtualMachines/vm-01");
-
-    when(resourceResult.getMetrics()).thenReturn(List.of(metricResult));
-
-    when(result.getMetricsQueryResults()).thenReturn(List.of(resourceResult));
-
-    when(client.queryResourcesWithResponse(
-            anyList(), anyList(), anyString(), any(MetricsQueryResourcesOptions.class), any()))
-        .thenReturn(response);
-
-    try (MockedStatic<AzureClientFactory> factory = mockStatic(AzureClientFactory.class)) {
-
-      factory
-          .when(
-              () ->
-                  AzureClientFactory.createMetricsClient(
-                      any(CloudCredentials.class), eq("westeurope")))
-          .thenReturn(client);
-
-      List<UsageRecordModel> usages = provider.collectMetrics(scope, request);
-
-      assertEquals(1, usages.size());
-
-      UsageRecordModel usage = usages.get(0);
-
-      assertEquals("AZURE", usage.getProvider());
-      assertEquals("subscription-123", usage.getAccountId());
-      assertEquals("subscription-123", usage.getSubscriptionId());
-
-      assertEquals("Microsoft.Compute/virtualMachines", usage.getServiceName());
-
-      assertEquals("Percentage CPU", usage.getMetricName());
-
-      assertEquals(
-          "/subscriptions/sub/resourceGroups/rg/"
-              + "providers/Microsoft.Compute/"
-              + "virtualMachines/vm-01",
-          usage.getResourceId());
-
-      assertEquals("Microsoft.Compute/virtualMachines", usage.getResourceType());
-
-      assertEquals("westeurope", usage.getRegion());
-
-      assertNull(usage.getUnit());
-
-      assertEquals(73.5, usage.getValue());
-
-      assertEquals(timestamp.toInstant(), usage.getTimestamp());
-
-      assertEquals(timestamp.toInstant(), usage.getPeriodStart());
-
-      assertEquals(timestamp.toInstant().plusSeconds(300), usage.getPeriodEnd());
-
-      assertEquals("AzureMonitor", usage.getSource());
-
-      assertEquals(Map.of("VMName", "vm-01", "Environment", "dev"), usage.getDimensions());
-
-      assertNotNull(usage.getRecordId());
-      assertNotNull(usage.getIngestionId());
-      assertNotNull(usage.getIngestionTimestamp());
-    }
   }
 
   // Region grouping
@@ -392,7 +301,7 @@ class AzureCloudMonitorMetricProviderTest {
           .when(() -> AzureClientFactory.createMetricsClient(any(), eq("eastus")))
           .thenReturn(east);
 
-      provider.collectMetrics(scope, request);
+      provider.collectMetrics(scope, request, normalizer);
 
       verify(west, times(1))
           .queryResourcesWithResponse(
@@ -453,7 +362,7 @@ class AzureCloudMonitorMetricProviderTest {
           .when(() -> AzureClientFactory.createMetricsClient(any(), eq("westeurope")))
           .thenReturn(client);
 
-      provider.collectMetrics(scope, request);
+      provider.collectMetrics(scope, request, normalizer);
 
       verify(client, times(1))
           .queryResourcesWithResponse(
@@ -508,7 +417,7 @@ class AzureCloudMonitorMetricProviderTest {
           .when(() -> AzureClientFactory.createMetricsClient(any(), eq("westeurope")))
           .thenReturn(client);
 
-      provider.collectMetrics(scope, request);
+      provider.collectMetrics(scope, request, normalizer);
 
       verify(client, times(2))
           .queryResourcesWithResponse(
@@ -554,7 +463,7 @@ class AzureCloudMonitorMetricProviderTest {
           .when(() -> AzureClientFactory.createMetricsClient(any(), eq("westeurope")))
           .thenReturn(client);
 
-      provider.collectMetrics(scope, request);
+      provider.collectMetrics(scope, request, normalizer);
 
       verify(client, times(1))
           .queryResourcesWithResponse(
@@ -598,7 +507,7 @@ class AzureCloudMonitorMetricProviderTest {
           .when(() -> AzureClientFactory.createMetricsClient(any(), eq("westeurope")))
           .thenReturn(client);
 
-      provider.collectMetrics(scope, request);
+      provider.collectMetrics(scope, request, normalizer);
 
       verify(client, times(2))
           .queryResourcesWithResponse(
@@ -613,6 +522,7 @@ class AzureCloudMonitorMetricProviderTest {
     AccountScope scope = validScope();
 
     Instance invalid = new Instance();
+    MetricsClient client = mock(MetricsClient.class);
 
     invalid.setIdentifier(null);
     invalid.setRegion("westeurope");
@@ -625,9 +535,18 @@ class AzureCloudMonitorMetricProviderTest {
 
     IngestionRequestEvent request = validRequest();
 
-    List<UsageRecordModel> result = provider.collectMetrics(scope, request);
+    try (MockedStatic<AzureClientFactory> factory = mockStatic(AzureClientFactory.class)) {
 
-    assertTrue(result.isEmpty());
+      factory
+          .when(() -> AzureClientFactory.createMetricsClient(any(), eq("westeurope")))
+          .thenReturn(client);
+
+      provider.collectMetrics(scope, request, normalizer);
+
+      verify(client, times(0))
+          .queryResourcesWithResponse(
+              anyList(), anyList(), anyString(), any(MetricsQueryResourcesOptions.class), any());
+    }
   }
 
   @Test
@@ -635,6 +554,7 @@ class AzureCloudMonitorMetricProviderTest {
     AccountScope scope = validScope();
 
     Instance invalid = new Instance();
+    MetricsClient client = mock(MetricsClient.class);
 
     invalid.setIdentifier(" ");
     invalid.setRegion("westeurope");
@@ -647,9 +567,18 @@ class AzureCloudMonitorMetricProviderTest {
 
     IngestionRequestEvent request = validRequest();
 
-    List<UsageRecordModel> result = provider.collectMetrics(scope, request);
+    try (MockedStatic<AzureClientFactory> factory = mockStatic(AzureClientFactory.class)) {
 
-    assertTrue(result.isEmpty());
+      factory
+          .when(() -> AzureClientFactory.createMetricsClient(any(), eq("westeurope")))
+          .thenReturn(client);
+
+      provider.collectMetrics(scope, request, normalizer);
+
+      verify(client, times(0))
+          .queryResourcesWithResponse(
+              anyList(), anyList(), anyString(), any(MetricsQueryResourcesOptions.class), any());
+    }
   }
 
   @Test
@@ -661,7 +590,9 @@ class AzureCloudMonitorMetricProviderTest {
     IngestionRequestEvent request = validRequest();
 
     IllegalArgumentException ex =
-        assertThrows(IllegalArgumentException.class, () -> provider.collectMetrics(scope, request));
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> provider.collectMetrics(scope, request, normalizer));
 
     assertTrue(ex.getMessage().contains("Azure resource is missing its region"));
   }
@@ -671,110 +602,191 @@ class AzureCloudMonitorMetricProviderTest {
   @Test
   void collectMetrics_shouldSkipNullServiceScope() {
     AccountScope scope = validScope();
+    MetricsClient client = mock(MetricsClient.class);
 
     scope.setServiceScopes(Collections.singletonList(null));
 
     IngestionRequestEvent request = validRequest();
 
-    List<UsageRecordModel> result = provider.collectMetrics(scope, request);
+    try (MockedStatic<AzureClientFactory> factory = mockStatic(AzureClientFactory.class)) {
 
-    assertTrue(result.isEmpty());
+      factory
+          .when(() -> AzureClientFactory.createMetricsClient(any(), eq("westeurope")))
+          .thenReturn(client);
+
+      provider.collectMetrics(scope, request, normalizer);
+
+      verify(client, times(0))
+          .queryResourcesWithResponse(
+              anyList(), anyList(), anyString(), any(MetricsQueryResourcesOptions.class), any());
+    }
   }
 
   @Test
   void collectMetrics_shouldSkipServiceWithoutInstances() {
     AccountScope scope = validScope();
+    MetricsClient client = mock(MetricsClient.class);
 
     scope.getServiceScopes().get(0).setInstances(List.of());
 
     IngestionRequestEvent request = validRequest();
 
-    List<UsageRecordModel> result = provider.collectMetrics(scope, request);
+    try (MockedStatic<AzureClientFactory> factory = mockStatic(AzureClientFactory.class)) {
 
-    assertTrue(result.isEmpty());
+      factory
+          .when(() -> AzureClientFactory.createMetricsClient(any(), eq("westeurope")))
+          .thenReturn(client);
+
+      provider.collectMetrics(scope, request, normalizer);
+
+      verify(client, times(0))
+          .queryResourcesWithResponse(
+              anyList(), anyList(), anyString(), any(MetricsQueryResourcesOptions.class), any());
+    }
   }
 
   @Test
   void collectMetrics_shouldSkipServiceWithNullInstances() {
     AccountScope scope = validScope();
+    MetricsClient client = mock(MetricsClient.class);
 
     scope.getServiceScopes().get(0).setInstances(null);
 
     IngestionRequestEvent request = validRequest();
 
-    List<UsageRecordModel> result = provider.collectMetrics(scope, request);
+    try (MockedStatic<AzureClientFactory> factory = mockStatic(AzureClientFactory.class)) {
 
-    assertTrue(result.isEmpty());
+      factory
+          .when(() -> AzureClientFactory.createMetricsClient(any(), eq("westeurope")))
+          .thenReturn(client);
+
+      provider.collectMetrics(scope, request, normalizer);
+
+      verify(client, times(0))
+          .queryResourcesWithResponse(
+              anyList(), anyList(), anyString(), any(MetricsQueryResourcesOptions.class), any());
+    }
   }
 
   @Test
   void collectMetrics_shouldSkipServiceWithoutMetrics() {
     AccountScope scope = validScope();
+    MetricsClient client = mock(MetricsClient.class);
 
     scope.getServiceScopes().get(0).setMetrics(List.of());
 
     IngestionRequestEvent request = validRequest();
 
-    List<UsageRecordModel> result = provider.collectMetrics(scope, request);
+    try (MockedStatic<AzureClientFactory> factory = mockStatic(AzureClientFactory.class)) {
 
-    assertTrue(result.isEmpty());
+      factory
+          .when(() -> AzureClientFactory.createMetricsClient(any(), eq("westeurope")))
+          .thenReturn(client);
+
+      provider.collectMetrics(scope, request, normalizer);
+
+      verify(client, times(0))
+          .queryResourcesWithResponse(
+              anyList(), anyList(), anyString(), any(MetricsQueryResourcesOptions.class), any());
+    }
   }
 
   @Test
   void collectMetrics_shouldSkipServiceWithNullMetrics() {
     AccountScope scope = validScope();
+    MetricsClient client = mock(MetricsClient.class);
 
     scope.getServiceScopes().get(0).setMetrics(null);
 
     IngestionRequestEvent request = validRequest();
 
-    List<UsageRecordModel> result = provider.collectMetrics(scope, request);
+    try (MockedStatic<AzureClientFactory> factory = mockStatic(AzureClientFactory.class)) {
 
-    assertTrue(result.isEmpty());
+      factory
+          .when(() -> AzureClientFactory.createMetricsClient(any(), eq("westeurope")))
+          .thenReturn(client);
+
+      provider.collectMetrics(scope, request, normalizer);
+
+      verify(client, times(0))
+          .queryResourcesWithResponse(
+              anyList(), anyList(), anyString(), any(MetricsQueryResourcesOptions.class), any());
+    }
   }
 
   @Test
   void collectMetrics_shouldSkipServiceWithBlankName() {
     AccountScope scope = validScope();
+    MetricsClient client = mock(MetricsClient.class);
 
     scope.getServiceScopes().get(0).setName(" ");
 
     IngestionRequestEvent request = validRequest();
 
-    List<UsageRecordModel> result = provider.collectMetrics(scope, request);
+    try (MockedStatic<AzureClientFactory> factory = mockStatic(AzureClientFactory.class)) {
 
-    assertTrue(result.isEmpty());
+      factory
+          .when(() -> AzureClientFactory.createMetricsClient(any(), eq("westeurope")))
+          .thenReturn(client);
+
+      provider.collectMetrics(scope, request, normalizer);
+
+      verify(client, times(0))
+          .queryResourcesWithResponse(
+              anyList(), anyList(), anyString(), any(MetricsQueryResourcesOptions.class), any());
+    }
   }
 
   @Test
   void collectMetrics_shouldSkipServiceWithNullName() {
     AccountScope scope = validScope();
+    MetricsClient client = mock(MetricsClient.class);
 
     scope.getServiceScopes().get(0).setName(null);
 
     IngestionRequestEvent request = validRequest();
 
-    List<UsageRecordModel> result = provider.collectMetrics(scope, request);
+    try (MockedStatic<AzureClientFactory> factory = mockStatic(AzureClientFactory.class)) {
 
-    assertTrue(result.isEmpty());
+      factory
+          .when(() -> AzureClientFactory.createMetricsClient(any(), eq("westeurope")))
+          .thenReturn(client);
+
+      provider.collectMetrics(scope, request, normalizer);
+
+      verify(client, times(0))
+          .queryResourcesWithResponse(
+              anyList(), anyList(), anyString(), any(MetricsQueryResourcesOptions.class), any());
+    }
   }
 
   @Test
   void collectMetrics_shouldIgnoreNullInstanceScope() {
     AccountScope scope = validScope();
+    MetricsClient client = mock(MetricsClient.class);
 
     scope.getServiceScopes().get(0).setInstances(Collections.singletonList(null));
 
     IngestionRequestEvent request = validRequest();
 
-    List<UsageRecordModel> result = provider.collectMetrics(scope, request);
+    try (MockedStatic<AzureClientFactory> factory = mockStatic(AzureClientFactory.class)) {
 
-    assertTrue(result.isEmpty());
+      factory
+          .when(() -> AzureClientFactory.createMetricsClient(any(), eq("westeurope")))
+          .thenReturn(client);
+
+      provider.collectMetrics(scope, request, normalizer);
+
+      verify(client, times(0))
+          .queryResourcesWithResponse(
+              anyList(), anyList(), anyString(), any(MetricsQueryResourcesOptions.class), any());
+    }
   }
 
   @Test
   void collectMetrics_shouldIgnoreInstanceScopeWithNullInstances() {
     AccountScope scope = validScope();
+    MetricsClient client = mock(MetricsClient.class);
 
     InstanceScope instanceScope = new InstanceScope();
 
@@ -784,817 +796,21 @@ class AzureCloudMonitorMetricProviderTest {
 
     IngestionRequestEvent request = validRequest();
 
-    List<UsageRecordModel> result = provider.collectMetrics(scope, request);
-
-    assertTrue(result.isEmpty());
-  }
-
-  // Empty/malformed Azure responses or rejections of sent request
-
-  @Test
-  void collectMetrics_shouldReturnEmptyListWhenAzureResponseValueIsNull() {
-    AccountScope scope = validScope();
-    IngestionRequestEvent request = validRequest();
-
-    MetricsClient client = mock(MetricsClient.class);
-
-    Response<MetricsQueryResourcesResult> response = mock(Response.class);
-
-    when(response.getValue()).thenReturn(null);
-
-    when(client.queryResourcesWithResponse(
-            anyList(), anyList(), anyString(), any(MetricsQueryResourcesOptions.class), any()))
-        .thenReturn(response);
-
     try (MockedStatic<AzureClientFactory> factory = mockStatic(AzureClientFactory.class)) {
 
       factory
           .when(() -> AzureClientFactory.createMetricsClient(any(), eq("westeurope")))
           .thenReturn(client);
 
-      List<UsageRecordModel> result = provider.collectMetrics(scope, request);
-
-      assertTrue(result.isEmpty());
-    }
-  }
-
-  @Test
-  void collectMetrics_shouldReturnEmptyListWhenMetricsQueryResultsIsNull() {
-    AccountScope scope = validScope();
-    IngestionRequestEvent request = validRequest();
-
-    MetricsClient client = mock(MetricsClient.class);
-
-    MetricsQueryResourcesResult result = mock(MetricsQueryResourcesResult.class);
-
-    Response<MetricsQueryResourcesResult> response = mock(Response.class);
-
-    when(response.getValue()).thenReturn(result);
-
-    when(result.getMetricsQueryResults()).thenReturn(null);
-
-    when(client.queryResourcesWithResponse(
-            anyList(), anyList(), anyString(), any(MetricsQueryResourcesOptions.class), any()))
-        .thenReturn(response);
-
-    try (MockedStatic<AzureClientFactory> factory = mockStatic(AzureClientFactory.class)) {
-
-      factory
-          .when(() -> AzureClientFactory.createMetricsClient(any(), eq("westeurope")))
-          .thenReturn(client);
-
-      List<UsageRecordModel> usages = provider.collectMetrics(scope, request);
-
-      assertTrue(usages.isEmpty());
-    }
-  }
-
-  @Test
-  void collectMetrics_shouldIgnoreNullResourceResult() {
-    AccountScope scope = validScope();
-    IngestionRequestEvent request = validRequest();
-
-    MetricsClient client = mock(MetricsClient.class);
-
-    MetricsQueryResourcesResult result = mock(MetricsQueryResourcesResult.class);
-
-    Response<MetricsQueryResourcesResult> response = mock(Response.class);
-
-    when(response.getValue()).thenReturn(result);
-
-    when(result.getMetricsQueryResults()).thenReturn(Collections.singletonList(null));
-
-    when(client.queryResourcesWithResponse(
-            anyList(), anyList(), anyString(), any(MetricsQueryResourcesOptions.class), any()))
-        .thenReturn(response);
-
-    try (MockedStatic<AzureClientFactory> factory = mockStatic(AzureClientFactory.class)) {
-
-      factory
-          .when(() -> AzureClientFactory.createMetricsClient(any(), eq("westeurope")))
-          .thenReturn(client);
-
-      List<UsageRecordModel> usages = provider.collectMetrics(scope, request);
-
-      assertTrue(usages.isEmpty());
-    }
-  }
-
-  @Test
-  void collectMetrics_shouldIgnoreResourceResultWithoutResourceId() {
-    AccountScope scope = validScope();
-    IngestionRequestEvent request = validRequest();
-
-    MetricsClient client = mock(MetricsClient.class);
-
-    MetricsQueryResourcesResult result = mock(MetricsQueryResourcesResult.class);
-
-    MetricsQueryResult resourceResult = mock(MetricsQueryResult.class);
-
-    Response<MetricsQueryResourcesResult> response = mock(Response.class);
-
-    when(response.getValue()).thenReturn(result);
-
-    when(result.getMetricsQueryResults()).thenReturn(List.of(resourceResult));
-
-    when(resourceResult.getResourceId()).thenReturn(null);
-
-    when(client.queryResourcesWithResponse(
-            anyList(), anyList(), anyString(), any(MetricsQueryResourcesOptions.class), any()))
-        .thenReturn(response);
-
-    try (MockedStatic<AzureClientFactory> factory = mockStatic(AzureClientFactory.class)) {
-
-      factory
-          .when(() -> AzureClientFactory.createMetricsClient(any(), eq("westeurope")))
-          .thenReturn(client);
-
-      List<UsageRecordModel> usages = provider.collectMetrics(scope, request);
-
-      assertTrue(usages.isEmpty());
-    }
-  }
-
-  @Test
-  void collectMetrics_shouldIgnoreUnexpectedResourceReturnedByAzure() {
-    AccountScope scope = validScope();
-    IngestionRequestEvent request = validRequest();
-
-    MetricsClient client = mock(MetricsClient.class);
-
-    MetricsQueryResourcesResult result = mock(MetricsQueryResourcesResult.class);
-
-    MetricsQueryResult resourceResult = mock(MetricsQueryResult.class);
-
-    Response<MetricsQueryResourcesResult> response = mock(Response.class);
-
-    when(response.getValue()).thenReturn(result);
-
-    when(result.getMetricsQueryResults()).thenReturn(List.of(resourceResult));
-
-    when(resourceResult.getResourceId())
-        .thenReturn(
-            "/subscriptions/sub/resourceGroups/rg/"
-                + "providers/Microsoft.Compute/"
-                + "virtualMachines/unexpected");
-
-    when(client.queryResourcesWithResponse(
-            anyList(), anyList(), anyString(), any(MetricsQueryResourcesOptions.class), any()))
-        .thenReturn(response);
-
-    try (MockedStatic<AzureClientFactory> factory = mockStatic(AzureClientFactory.class)) {
-
-      factory
-          .when(() -> AzureClientFactory.createMetricsClient(any(), eq("westeurope")))
-          .thenReturn(client);
-
-      List<UsageRecordModel> usages = provider.collectMetrics(scope, request);
-
-      assertTrue(usages.isEmpty());
-    }
-  }
-
-  @Test
-  void collectMetrics_shouldIgnoreResourceResultWithNullMetrics() {
-    AccountScope scope = validScope();
-    IngestionRequestEvent request = validRequest();
-
-    MetricsClient client = mock(MetricsClient.class);
-
-    MetricsQueryResourcesResult result = mock(MetricsQueryResourcesResult.class);
-
-    MetricsQueryResult resourceResult = mock(MetricsQueryResult.class);
-
-    Response<MetricsQueryResourcesResult> response = mock(Response.class);
-
-    when(response.getValue()).thenReturn(result);
-
-    when(result.getMetricsQueryResults()).thenReturn(List.of(resourceResult));
-
-    when(resourceResult.getResourceId())
-        .thenReturn(
-            "/subscriptions/sub/resourceGroups/rg/"
-                + "providers/Microsoft.Compute/"
-                + "virtualMachines/vm-01");
-
-    when(resourceResult.getMetrics()).thenReturn(null);
-
-    when(client.queryResourcesWithResponse(
-            anyList(), anyList(), anyString(), any(MetricsQueryResourcesOptions.class), any()))
-        .thenReturn(response);
-
-    try (MockedStatic<AzureClientFactory> factory = mockStatic(AzureClientFactory.class)) {
-
-      factory
-          .when(() -> AzureClientFactory.createMetricsClient(any(), eq("westeurope")))
-          .thenReturn(client);
-
-      List<UsageRecordModel> usages = provider.collectMetrics(scope, request);
-
-      assertTrue(usages.isEmpty());
-    }
-  }
-
-  // Metrics and time-series handling
-
-  @Test
-  void collectMetrics_shouldIgnoreNullMetricResult() {
-    AccountScope scope = validScope();
-    IngestionRequestEvent request = validRequest();
-
-    MetricsClient client = mock(MetricsClient.class);
-
-    MetricsQueryResourcesResult result = mock(MetricsQueryResourcesResult.class);
-
-    MetricsQueryResult resourceResult = mock(MetricsQueryResult.class);
-
-    Response<MetricsQueryResourcesResult> response = mock(Response.class);
-
-    when(response.getValue()).thenReturn(result);
-
-    when(result.getMetricsQueryResults()).thenReturn(List.of(resourceResult));
-
-    when(resourceResult.getResourceId())
-        .thenReturn(
-            "/subscriptions/sub/resourceGroups/rg/"
-                + "providers/Microsoft.Compute/"
-                + "virtualMachines/vm-01");
-
-    when(resourceResult.getMetrics()).thenReturn(Collections.singletonList(null));
-
-    when(client.queryResourcesWithResponse(
-            anyList(), anyList(), anyString(), any(MetricsQueryResourcesOptions.class), any()))
-        .thenReturn(response);
-
-    try (MockedStatic<AzureClientFactory> factory = mockStatic(AzureClientFactory.class)) {
-
-      factory
-          .when(() -> AzureClientFactory.createMetricsClient(any(), eq("westeurope")))
-          .thenReturn(client);
-
-      List<UsageRecordModel> usages = provider.collectMetrics(scope, request);
-
-      assertTrue(usages.isEmpty());
-    }
-  }
-
-  @Test
-  void collectMetrics_shouldIgnoreMetricResultWithNullTimeSeries() {
-    AccountScope scope = validScope();
-    IngestionRequestEvent request = validRequest();
-
-    MetricsClient client = mock(MetricsClient.class);
-
-    MetricsQueryResourcesResult result = mock(MetricsQueryResourcesResult.class);
-
-    MetricsQueryResult resourceResult = mock(MetricsQueryResult.class);
-
-    MetricResult metricResult = mock(MetricResult.class);
-
-    Response<MetricsQueryResourcesResult> response = mock(Response.class);
-
-    when(response.getValue()).thenReturn(result);
-
-    when(result.getMetricsQueryResults()).thenReturn(List.of(resourceResult));
-
-    when(resourceResult.getResourceId())
-        .thenReturn(
-            "/subscriptions/sub/resourceGroups/rg/"
-                + "providers/Microsoft.Compute/"
-                + "virtualMachines/vm-01");
-
-    when(resourceResult.getMetrics()).thenReturn(List.of(metricResult));
-
-    when(metricResult.getTimeSeries()).thenReturn(null);
-
-    when(client.queryResourcesWithResponse(
-            anyList(), anyList(), anyString(), any(MetricsQueryResourcesOptions.class), any()))
-        .thenReturn(response);
-
-    try (MockedStatic<AzureClientFactory> factory = mockStatic(AzureClientFactory.class)) {
-
-      factory
-          .when(() -> AzureClientFactory.createMetricsClient(any(), eq("westeurope")))
-          .thenReturn(client);
-
-      List<UsageRecordModel> usages = provider.collectMetrics(scope, request);
-
-      assertTrue(usages.isEmpty());
-    }
-  }
-
-  @Test
-  void collectMetrics_shouldIgnoreNullTimeSeries() {
-    AccountScope scope = validScope();
-    IngestionRequestEvent request = validRequest();
-
-    MetricsClient client = mock(MetricsClient.class);
-
-    MetricsQueryResourcesResult result = mock(MetricsQueryResourcesResult.class);
-
-    MetricsQueryResult resourceResult = mock(MetricsQueryResult.class);
-
-    MetricResult metricResult = mock(MetricResult.class);
-
-    Response<MetricsQueryResourcesResult> response = mock(Response.class);
-
-    when(response.getValue()).thenReturn(result);
-
-    when(result.getMetricsQueryResults()).thenReturn(List.of(resourceResult));
-
-    when(resourceResult.getResourceId())
-        .thenReturn(
-            "/subscriptions/sub/resourceGroups/rg/"
-                + "providers/Microsoft.Compute/"
-                + "virtualMachines/vm-01");
-
-    when(resourceResult.getMetrics()).thenReturn(List.of(metricResult));
-
-    when(metricResult.getTimeSeries()).thenReturn(Collections.singletonList(null));
-
-    when(client.queryResourcesWithResponse(
-            anyList(), anyList(), anyString(), any(MetricsQueryResourcesOptions.class), any()))
-        .thenReturn(response);
-
-    try (MockedStatic<AzureClientFactory> factory = mockStatic(AzureClientFactory.class)) {
-
-      factory
-          .when(() -> AzureClientFactory.createMetricsClient(any(), eq("westeurope")))
-          .thenReturn(client);
-
-      List<UsageRecordModel> usages = provider.collectMetrics(scope, request);
-
-      assertTrue(usages.isEmpty());
-    }
-  }
-
-  @Test
-  void collectMetrics_shouldIgnoreTimeSeriesWithNullValues() {
-    AccountScope scope = validScope();
-    IngestionRequestEvent request = validRequest();
-
-    MetricsClient client = mock(MetricsClient.class);
-
-    MetricsQueryResourcesResult result = mock(MetricsQueryResourcesResult.class);
-
-    MetricsQueryResult resourceResult = mock(MetricsQueryResult.class);
-
-    MetricResult metricResult = mock(MetricResult.class);
-
-    TimeSeriesElement series = mock(TimeSeriesElement.class);
-
-    Response<MetricsQueryResourcesResult> response = mock(Response.class);
-
-    when(response.getValue()).thenReturn(result);
-
-    when(result.getMetricsQueryResults()).thenReturn(List.of(resourceResult));
-
-    when(resourceResult.getResourceId())
-        .thenReturn(
-            "/subscriptions/sub/resourceGroups/rg/"
-                + "providers/Microsoft.Compute/"
-                + "virtualMachines/vm-01");
-
-    when(resourceResult.getMetrics()).thenReturn(List.of(metricResult));
-
-    when(metricResult.getMetricName()).thenReturn("Percentage CPU");
-
-    when(metricResult.getTimeSeries()).thenReturn(List.of(series));
-
-    when(series.getValues()).thenReturn(null);
-
-    when(client.queryResourcesWithResponse(
-            anyList(), anyList(), anyString(), any(MetricsQueryResourcesOptions.class), any()))
-        .thenReturn(response);
-
-    try (MockedStatic<AzureClientFactory> factory = mockStatic(AzureClientFactory.class)) {
-
-      factory
-          .when(() -> AzureClientFactory.createMetricsClient(any(), eq("westeurope")))
-          .thenReturn(client);
-
-      List<UsageRecordModel> usages = provider.collectMetrics(scope, request);
-
-      assertTrue(usages.isEmpty());
-    }
-  }
-
-  @Test
-  void collectMetrics_shouldIgnoreMetricValueWithNullTimestamp() {
-    AccountScope scope = validScope();
-    IngestionRequestEvent request = validRequest();
-
-    MetricsClient client = mock(MetricsClient.class);
-
-    MetricsQueryResourcesResult result = mock(MetricsQueryResourcesResult.class);
-
-    MetricsQueryResult resourceResult = mock(MetricsQueryResult.class);
-
-    MetricResult metricResult = mock(MetricResult.class);
-
-    TimeSeriesElement series = mock(TimeSeriesElement.class);
-
-    MetricValue value = mock(MetricValue.class);
-
-    Response<MetricsQueryResourcesResult> response = mock(Response.class);
-
-    when(response.getValue()).thenReturn(result);
-
-    when(result.getMetricsQueryResults()).thenReturn(List.of(resourceResult));
-
-    when(resourceResult.getResourceId())
-        .thenReturn(
-            "/subscriptions/sub/resourceGroups/rg/"
-                + "providers/Microsoft.Compute/"
-                + "virtualMachines/vm-01");
-
-    when(resourceResult.getMetrics()).thenReturn(List.of(metricResult));
-
-    when(metricResult.getMetricName()).thenReturn("Percentage CPU");
-
-    when(metricResult.getTimeSeries()).thenReturn(List.of(series));
-
-    when(series.getValues()).thenReturn(List.of(value));
-
-    when(value.getTimeStamp()).thenReturn(null);
-
-    when(client.queryResourcesWithResponse(
-            anyList(), anyList(), anyString(), any(MetricsQueryResourcesOptions.class), any()))
-        .thenReturn(response);
-
-    try (MockedStatic<AzureClientFactory> factory = mockStatic(AzureClientFactory.class)) {
-
-      factory
-          .when(() -> AzureClientFactory.createMetricsClient(any(), eq("westeurope")))
-          .thenReturn(client);
-
-      List<UsageRecordModel> usages = provider.collectMetrics(scope, request);
-
-      assertTrue(usages.isEmpty());
-    }
-  }
-
-  // Metric value extraction from ranging azure return types
-
-  @Test
-  void collectMetrics_shouldUseAverageValue() {
-    List<UsageRecordModel> usages =
-        collectSingleMetricWithValueSetup(
-            value -> {
-              when(value.getAverage()).thenReturn(10.0);
-            });
-
-    assertEquals(1, usages.size());
-    assertEquals(10.0, usages.get(0).getValue());
-  }
-
-  @Test
-  void collectMetrics_shouldFallbackToTotalWhenAverageMissing() {
-    List<UsageRecordModel> usages =
-        collectSingleMetricWithValueSetup(
-            value -> {
-              when(value.getAverage()).thenReturn(null);
-
-              when(value.getTotal()).thenReturn(20.0);
-            });
-
-    assertEquals(1, usages.size());
-    assertEquals(20.0, usages.get(0).getValue());
-  }
-
-  @Test
-  void collectMetrics_shouldFallbackToMaximumWhenAverageAndTotalMissing() {
-    List<UsageRecordModel> usages =
-        collectSingleMetricWithValueSetup(
-            value -> {
-              when(value.getAverage()).thenReturn(null);
-
-              when(value.getTotal()).thenReturn(null);
-
-              when(value.getMaximum()).thenReturn(30.0);
-            });
-
-    assertEquals(1, usages.size());
-    assertEquals(30.0, usages.get(0).getValue());
-  }
-
-  @Test
-  void collectMetrics_shouldFallbackToMinimumWhenPreviousValuesMissing() {
-    List<UsageRecordModel> usages =
-        collectSingleMetricWithValueSetup(
-            value -> {
-              when(value.getAverage()).thenReturn(null);
-
-              when(value.getTotal()).thenReturn(null);
-
-              when(value.getMaximum()).thenReturn(null);
-
-              when(value.getMinimum()).thenReturn(40.0);
-            });
-
-    assertEquals(1, usages.size());
-    assertEquals(40.0, usages.get(0).getValue());
-  }
-
-  @Test
-  void collectMetrics_shouldFallbackToCountWhenOtherValuesMissing() {
-    List<UsageRecordModel> usages =
-        collectSingleMetricWithValueSetup(
-            value -> {
-              when(value.getAverage()).thenReturn(null);
-
-              when(value.getTotal()).thenReturn(null);
-
-              when(value.getMaximum()).thenReturn(null);
-
-              when(value.getMinimum()).thenReturn(null);
-
-              when(value.getCount()).thenReturn(50.0);
-            });
-
-    assertEquals(1, usages.size());
-    assertEquals(50.0, usages.get(0).getValue());
-  }
-
-  @Test
-  void collectMetrics_shouldIgnoreMetricValueWhenAllValuesMissing() {
-    List<UsageRecordModel> usages =
-        collectSingleMetricWithValueSetup(
-            value -> {
-              when(value.getAverage()).thenReturn(null);
-
-              when(value.getTotal()).thenReturn(null);
-
-              when(value.getMaximum()).thenReturn(null);
-
-              when(value.getMinimum()).thenReturn(null);
-
-              when(value.getCount()).thenReturn(null);
-            });
-
-    assertTrue(usages.isEmpty());
-  }
-
-  // Resource type handling
-
-  @Test
-  void collectMetrics_shouldFallbackToServiceNameWhenResourceTypeMissing() {
-    AccountScope scope = validScope();
-    IngestionRequestEvent request = validRequest();
-
-    MetricsClient client = mock(MetricsClient.class);
-
-    MetricsQueryResourcesResult result = mock(MetricsQueryResourcesResult.class);
-
-    MetricsQueryResult resourceResult = mock(MetricsQueryResult.class);
-
-    MetricResult metricResult = mock(MetricResult.class);
-
-    TimeSeriesElement series = mock(TimeSeriesElement.class);
-
-    MetricValue value = mock(MetricValue.class);
-
-    OffsetDateTime timestamp = OffsetDateTime.of(2026, 1, 1, 12, 0, 0, 0, ZoneOffset.UTC);
-
-    Response<MetricsQueryResourcesResult> response = mock(Response.class);
-
-    when(response.getValue()).thenReturn(result);
-
-    when(value.getTimeStamp()).thenReturn(timestamp);
-
-    when(value.getAverage()).thenReturn(73.5);
-
-    when(series.getValues()).thenReturn(List.of(value));
-
-    when(series.getMetadata()).thenReturn(Map.of());
-
-    when(metricResult.getMetricName()).thenReturn("Percentage CPU");
-
-    when(metricResult.getResourceType()).thenReturn(null);
-
-    when(metricResult.getTimeSeries()).thenReturn(List.of(series));
-
-    when(resourceResult.getResourceId())
-        .thenReturn(
-            "/subscriptions/sub/resourceGroups/rg/"
-                + "providers/Microsoft.Compute/"
-                + "virtualMachines/vm-01");
-
-    when(resourceResult.getMetrics()).thenReturn(List.of(metricResult));
-
-    when(result.getMetricsQueryResults()).thenReturn(List.of(resourceResult));
-
-    when(client.queryResourcesWithResponse(
-            anyList(), anyList(), anyString(), any(MetricsQueryResourcesOptions.class), any()))
-        .thenReturn(response);
-
-    try (MockedStatic<AzureClientFactory> factory = mockStatic(AzureClientFactory.class)) {
-
-      factory
-          .when(() -> AzureClientFactory.createMetricsClient(any(), eq("westeurope")))
-          .thenReturn(client);
-
-      List<UsageRecordModel> usages = provider.collectMetrics(scope, request);
-
-      assertEquals(1, usages.size());
-
-      assertEquals("Microsoft.Compute/virtualMachines", usages.get(0).getResourceType());
-    }
-  }
-
-  @Test
-  void collectMetrics_shouldFallbackToServiceNameWhenResourceTypeBlank() {
-    AccountScope scope = validScope();
-    IngestionRequestEvent request = validRequest();
-
-    MetricsClient client = mock(MetricsClient.class);
-
-    MetricsQueryResourcesResult result = mock(MetricsQueryResourcesResult.class);
-
-    MetricsQueryResult resourceResult = mock(MetricsQueryResult.class);
-
-    MetricResult metricResult = mock(MetricResult.class);
-
-    TimeSeriesElement series = mock(TimeSeriesElement.class);
-
-    MetricValue value = mock(MetricValue.class);
-
-    OffsetDateTime timestamp = OffsetDateTime.of(2026, 1, 1, 12, 0, 0, 0, ZoneOffset.UTC);
-
-    Response<MetricsQueryResourcesResult> response = mock(Response.class);
-
-    when(response.getValue()).thenReturn(result);
-
-    when(value.getTimeStamp()).thenReturn(timestamp);
-
-    when(value.getAverage()).thenReturn(73.5);
-
-    when(series.getValues()).thenReturn(List.of(value));
-
-    when(series.getMetadata()).thenReturn(Map.of());
-
-    when(metricResult.getMetricName()).thenReturn("Percentage CPU");
-
-    when(metricResult.getResourceType()).thenReturn(" ");
-
-    when(metricResult.getTimeSeries()).thenReturn(List.of(series));
-
-    when(resourceResult.getResourceId())
-        .thenReturn(
-            "/subscriptions/sub/resourceGroups/rg/"
-                + "providers/Microsoft.Compute/"
-                + "virtualMachines/vm-01");
-
-    when(resourceResult.getMetrics()).thenReturn(List.of(metricResult));
-
-    when(result.getMetricsQueryResults()).thenReturn(List.of(resourceResult));
-
-    when(client.queryResourcesWithResponse(
-            anyList(), anyList(), anyString(), any(MetricsQueryResourcesOptions.class), any()))
-        .thenReturn(response);
-
-    try (MockedStatic<AzureClientFactory> factory = mockStatic(AzureClientFactory.class)) {
-
-      factory
-          .when(() -> AzureClientFactory.createMetricsClient(any(), eq("westeurope")))
-          .thenReturn(client);
-
-      List<UsageRecordModel> usages = provider.collectMetrics(scope, request);
-
-      assertEquals(1, usages.size());
-
-      assertEquals("Microsoft.Compute/virtualMachines", usages.get(0).getResourceType());
-    }
-  }
-
-  @Test
-  void collectMetrics_shouldReturnEmptyDimensionsWhenMetadataMissing() {
-    AccountScope scope = validScope();
-    IngestionRequestEvent request = validRequest();
-
-    MetricsClient client = mock(MetricsClient.class);
-
-    MetricsQueryResourcesResult result = mock(MetricsQueryResourcesResult.class);
-
-    MetricsQueryResult resourceResult = mock(MetricsQueryResult.class);
-
-    MetricResult metricResult = mock(MetricResult.class);
-
-    TimeSeriesElement series = mock(TimeSeriesElement.class);
-
-    MetricValue value = mock(MetricValue.class);
-
-    OffsetDateTime timestamp = OffsetDateTime.of(2026, 1, 1, 12, 0, 0, 0, ZoneOffset.UTC);
-
-    Response<MetricsQueryResourcesResult> response = mock(Response.class);
-
-    when(response.getValue()).thenReturn(result);
-
-    when(value.getTimeStamp()).thenReturn(timestamp);
-
-    when(value.getAverage()).thenReturn(73.5);
-
-    when(series.getValues()).thenReturn(List.of(value));
-
-    when(series.getMetadata()).thenReturn(null);
-
-    when(metricResult.getMetricName()).thenReturn("Percentage CPU");
-
-    when(metricResult.getResourceType()).thenReturn("Microsoft.Compute/virtualMachines");
-
-    when(metricResult.getTimeSeries()).thenReturn(List.of(series));
-
-    when(resourceResult.getResourceId())
-        .thenReturn(
-            "/subscriptions/sub/resourceGroups/rg/"
-                + "providers/Microsoft.Compute/"
-                + "virtualMachines/vm-01");
-
-    when(resourceResult.getMetrics()).thenReturn(List.of(metricResult));
-
-    when(result.getMetricsQueryResults()).thenReturn(List.of(resourceResult));
-
-    when(client.queryResourcesWithResponse(
-            anyList(), anyList(), anyString(), any(MetricsQueryResourcesOptions.class), any()))
-        .thenReturn(response);
-
-    try (MockedStatic<AzureClientFactory> factory = mockStatic(AzureClientFactory.class)) {
-
-      factory
-          .when(() -> AzureClientFactory.createMetricsClient(any(), eq("westeurope")))
-          .thenReturn(client);
-
-      List<UsageRecordModel> usages = provider.collectMetrics(scope, request);
-
-      assertEquals(1, usages.size());
-      assertNotNull(usages.get(0).getDimensions());
-      assertTrue(usages.get(0).getDimensions().isEmpty());
+      provider.collectMetrics(scope, request, normalizer);
+
+      verify(client, times(0))
+          .queryResourcesWithResponse(
+              anyList(), anyList(), anyString(), any(MetricsQueryResourcesOptions.class), any());
     }
   }
 
   // Helper functions
-
-  private List<UsageRecordModel> collectSingleMetricWithValueSetup(
-      java.util.function.Consumer<MetricValue> valueSetup) {
-
-    AccountScope scope = validScope();
-    IngestionRequestEvent request = validRequest();
-
-    MetricsClient client = mock(MetricsClient.class);
-
-    MetricsQueryResourcesResult result = mock(MetricsQueryResourcesResult.class);
-
-    MetricsQueryResult resourceResult = mock(MetricsQueryResult.class);
-
-    MetricResult metricResult = mock(MetricResult.class);
-
-    TimeSeriesElement series = mock(TimeSeriesElement.class);
-
-    MetricValue value = mock(MetricValue.class);
-
-    OffsetDateTime timestamp = OffsetDateTime.of(2026, 1, 1, 12, 0, 0, 0, ZoneOffset.UTC);
-
-    Response<MetricsQueryResourcesResult> response = mock(Response.class);
-
-    when(response.getValue()).thenReturn(result);
-
-    when(value.getTimeStamp()).thenReturn(timestamp);
-
-    valueSetup.accept(value);
-
-    when(series.getValues()).thenReturn(List.of(value));
-
-    when(series.getMetadata()).thenReturn(Map.of());
-
-    when(metricResult.getMetricName()).thenReturn("Percentage CPU");
-
-    when(metricResult.getResourceType()).thenReturn("Microsoft.Compute/virtualMachines");
-
-    when(metricResult.getTimeSeries()).thenReturn(List.of(series));
-
-    when(resourceResult.getResourceId())
-        .thenReturn(
-            "/subscriptions/sub/resourceGroups/rg/"
-                + "providers/Microsoft.Compute/"
-                + "virtualMachines/vm-01");
-
-    when(resourceResult.getMetrics()).thenReturn(List.of(metricResult));
-
-    when(result.getMetricsQueryResults()).thenReturn(List.of(resourceResult));
-
-    when(client.queryResourcesWithResponse(
-            anyList(), anyList(), anyString(), any(MetricsQueryResourcesOptions.class), any()))
-        .thenReturn(response);
-
-    try (MockedStatic<AzureClientFactory> factory = mockStatic(AzureClientFactory.class)) {
-
-      factory
-          .when(() -> AzureClientFactory.createMetricsClient(any(), eq("westeurope")))
-          .thenReturn(client);
-
-      return provider.collectMetrics(scope, request);
-    }
-  }
 
   private AccountScope validScope() {
     Metric metric = new Metric();

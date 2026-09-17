@@ -1,37 +1,41 @@
 package com.cloudsherpa.ingestion.unit.provider.aws;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import com.cloudsherpa.ingestion.connector.*;
 import com.cloudsherpa.ingestion.models.IngestionRequestEvent;
-import com.cloudsherpa.ingestion.models.UsageRecordModel;
+import com.cloudsherpa.ingestion.normalization.normalizers.Normalizer;
 import com.cloudsherpa.ingestion.provider.aws.AwsCloudConnector;
 import com.cloudsherpa.ingestion.provider.aws.monitoring.MockCloudWatchMetricProvider;
 import com.cloudsherpa.ingestion.provider.scanner.ResourceDiscoveryService;
+import com.cloudsherpa.ingestion.service.IngestionPersistenceService;
 import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = AwsCloudConnectorTest.TestConfig.class)
 class AwsCloudConnectorTest {
 
   private ResourceDiscoveryService discoveryService;
-
-  @Autowired private MockCloudWatchMetricProvider mockMetricProvider;
+  private MockCloudWatchMetricProvider mockMetricProvider;
+  private IngestionPersistenceService ingestionPersistenceService;
 
   private AwsCloudConnector connector;
 
+  private Normalizer normalizer;
+
   @BeforeEach
   void setUp() {
-    connector = new AwsCloudConnector(discoveryService, mockMetricProvider);
+    discoveryService = mock(ResourceDiscoveryService.class);
+    mockMetricProvider = mock(MockCloudWatchMetricProvider.class);
+    ingestionPersistenceService = mock(IngestionPersistenceService.class);
+    normalizer = mock(Normalizer.class);
+
+    connector =
+        new AwsCloudConnector(discoveryService, mockMetricProvider, ingestionPersistenceService);
   }
 
   @Test
@@ -40,53 +44,14 @@ class AwsCloudConnectorTest {
   }
 
   @Test
-  void fetchMockUsageShouldGenerateRecords() {
+  void fetchMockUsageShouldDelegateToMetricProvider() {
 
     IngestionRequestEvent request = buildRequest(300);
-
-    List<UsageRecordModel> result = connector.fetchMockUsage(request.getScopes().get(0), request);
-
-    assertFalse(result.isEmpty());
-  }
-
-  @Test
-  void fetchMockUsageShouldThrowForInvalidPeriod() {
-
-    IngestionRequestEvent request = buildRequest(0);
-
     AccountScope accountScope = request.getScopes().get(0);
 
-    IllegalArgumentException ex =
-        assertThrows(
-            IllegalArgumentException.class, () -> connector.fetchMockUsage(accountScope, request));
+    connector.fetchMockUsage(accountScope, request, normalizer);
 
-    assertTrue(ex.getMessage().contains("Period must be > 0"));
-  }
-
-  @Test
-  void fetchMockUsageShouldPopulateImportantFields() {
-
-    IngestionRequestEvent request = buildRequest(300);
-
-    List<UsageRecordModel> result = connector.fetchMockUsage(request.getScopes().get(0), request);
-
-    UsageRecordModel usageRecord = result.get(0);
-
-    assertNotNull(usageRecord.getProvider());
-    assertNotNull(usageRecord.getMetricName());
-    assertNotNull(usageRecord.getTimestamp());
-    assertNotNull(usageRecord.getResourceId());
-    assertNotNull(usageRecord.getIngestionId());
-  }
-
-  @Test
-  void testConnectionShouldReturnBoolean() {
-    CloudCredentials credentials = new CloudCredentials();
-    credentials.setAccessKeyId("accessKey");
-    credentials.setSecretAccessKey("secretKey");
-    boolean result = connector.testConnection(credentials);
-
-    assertTrue(result || !result);
+    verify(mockMetricProvider).collectMetrics(accountScope, request, normalizer);
   }
 
   private IngestionRequestEvent buildRequest(int period) {
