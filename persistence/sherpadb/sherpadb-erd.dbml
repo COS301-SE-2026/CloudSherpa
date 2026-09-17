@@ -271,8 +271,8 @@ Table processing_watermark {
 
 Table alerts {
   alert_id uuid [pk]
-  user_id uuid
-  widget_id uuid
+  user_id uuid [ref: > users.user_id]
+  widget_id uuid [ref: > widget.widget_id]
   alert_type varchar(20)
   severity varchar(20)
   title text
@@ -287,7 +287,7 @@ Table alerts {
 
 Table budgets {
   budget_id uuid [pk]
-  user_id uuid
+  user_id uuid [ref: > users.user_id]
   scope varchar(20)
   scope_id uuid
   amount numeric
@@ -300,8 +300,8 @@ Table budgets {
 
 Table widget_thresholds {
   threshold_id uuid [pk]
-  widget_id uuid
-  user_id uuid
+  widget_id uuid [ref: > widget.widget_id]
+  user_id uuid [ref: > users.user_id]
   metric_name text
   operator text
   value double

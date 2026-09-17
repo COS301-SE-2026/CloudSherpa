@@ -676,8 +676,8 @@ BEGIN
     EXECUTE format($sql$
       CREATE TABLE IF NOT EXISTS %I.alerts (
         alert_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-        user_id uuid,
-        widget_id uuid,
+        user_id uuid REFERENCES public.users(user_id) ON DELETE CASCADE,
+        widget_id uuid REFERENCES public.widget(widget_id) ON DELETE CASCADE,
         alert_type varchar(20) NOT NULL,
         severity varchar(20) NOT NULL,
         title text NOT NULL,
@@ -696,7 +696,7 @@ BEGIN
     EXECUTE format($sql$
       CREATE TABLE IF NOT EXISTS %I.budgets (
         budget_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-        user_id uuid,
+        user_id uuid REFERENCES public.users(user_id) ON DELETE CASCADE,
         scope varchar(20) NOT NULL,
         scope_id uuid,
         amount numeric NOT NULL,
@@ -710,19 +710,19 @@ BEGIN
     $sql$, schema_name);
 
     EXECUTE format($sql$
-    CREATE TABLE IF NOT EXISTS %I.widget_thresholds (
-      threshold_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-      widget_id UUID NOT NULL,
-      user_id UUID,
-      metric_name TEXT NOT NULL,
-      operator TEXT NOT NULL,
-      value DOUBLE PRECISION NOT NULL,
-      severity TEXT,
-      enabled BOOLEAN DEFAULT TRUE,
-      created_at TIMESTAMPTZ DEFAULT now(),
-      updated_at TIMESTAMPTZ DEFAULT now()
-    );
-  $sql$, schema_name);
+      CREATE TABLE IF NOT EXISTS %I.widget_thresholds (
+        threshold_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        widget_id UUID REFERENCES public.widget(widget_id) ON DELETE CASCADE,
+        user_id UUID REFERENCES public.users(user_id) ON DELETE CASCADE,
+        metric_name TEXT NOT NULL,
+        operator TEXT NOT NULL,
+        value DOUBLE PRECISION NOT NULL,
+        severity TEXT,
+        enabled BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMPTZ DEFAULT now(),
+        updated_at TIMESTAMPTZ DEFAULT now()
+      );
+    $sql$, schema_name);
 END;
 $$ LANGUAGE plpgsql;
 
