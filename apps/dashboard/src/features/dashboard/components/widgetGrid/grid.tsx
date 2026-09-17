@@ -65,6 +65,8 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
     const hasSyncedOnce = useRef(false);
     const scrollRef = useRef<HTMLDivElement>(null);
     const setIsCompacting = useDashboardStore((state) => state.actions.setIsCompacting);
+    const compactTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const isInteractingRef = useRef(false);
 
     useImperativeHandle(ref, () => ({
         compactAndGetLayout: () => {
@@ -117,6 +119,18 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
                 gridRef.current
             );
 
+            gridStackInstance.current.on("dragstart resizestart", () => {
+                isInteractingRef.current = true;
+            });
+
+            gridStackInstance.current.on("dragstop resizestop", () => {
+                isInteractingRef.current = false;
+                //force compact on mouse let go
+                // if (isEditModeRef.current && gridStackInstance.current) {
+                //     gridStackInstance.current.compact();
+                // }
+            });
+
             gridStackInstance.current.on("change", () => {
                 if (
                     gridStackInstance.current &&
@@ -143,6 +157,37 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
         return () => {
             gridStackInstance.current?.destroy(false);
             gridStackInstance.current = null;
+        };
+    }, []);
+
+    useEffect(() => {
+        if (!gridRef.current) return;
+
+        const resizeObserver = new ResizeObserver(() => {
+            if (compactTimeoutRef.current) {
+                clearTimeout(compactTimeoutRef.current);
+            }
+
+            compactTimeoutRef.current = setTimeout(() => {
+                if (
+                    !isInteractingRef.current &&
+                    isEditModeRef.current &&
+                    gridStackInstance.current
+                ) {
+                    gridStackInstance.current.batchUpdate();
+                    gridStackInstance.current.compact();
+                    gridStackInstance.current.batchUpdate(false);
+                }
+            }, 250);
+        });
+
+        resizeObserver.observe(gridRef.current);
+
+        return () => {
+            resizeObserver.disconnect();
+            if (compactTimeoutRef.current) {
+                clearTimeout(compactTimeoutRef.current);
+            }
         };
     }, []);
 
