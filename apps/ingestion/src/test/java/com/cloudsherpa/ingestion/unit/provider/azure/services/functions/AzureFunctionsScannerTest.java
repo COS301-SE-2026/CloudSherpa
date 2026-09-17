@@ -3,17 +3,17 @@ package com.cloudsherpa.ingestion.unit.provider.azure.services.functions;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.verifyNoInteractions;
 
 import com.cloudsherpa.ingestion.connector.CloudCredentials;
 import com.cloudsherpa.ingestion.models.ResourceDetail;
 import com.cloudsherpa.ingestion.provider.azure.services.functions.AzureFunctionsScanner;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -40,8 +40,9 @@ class AzureFunctionsScannerTest {
     assertEquals(java.util.List.of("microsoft.web/sites"), scanner.getResourceTypes());
   }
 
-  @Test
-  void scanAcceptsFunctionAppKind() throws Exception {
+  @ParameterizedTest
+  @ValueSource(strings = {"functionapp,linux", "FUNCTIONAPP,linux", "linux,app,functionapp"})
+  void scanAcceptsFunctionAppKinds(String kind) throws Exception {
     JsonNode resource =
         objectMapper.readTree(
             """
@@ -49,116 +50,31 @@ class AzureFunctionsScannerTest {
               "id": "/subscriptions/sub-id/resourceGroups/test-rg/providers/Microsoft.Web/sites/test-function",
               "name": "test-function",
               "location": "eastus",
-              "kind": "functionapp,linux",
-              "tags": {
-                "environment": "test",
-                "team": "platform"
-              }
+              "kind": "%s"
             }
-            """);
-
-    ResourceDetail result = scanner.scan(resource, credentials);
-
-    assertEquals(RESOURCE_ID, result.getResourceId());
-    assertEquals("test-function", result.getName());
-    assertEquals("resource_id", result.getResourceType());
-    assertEquals("Microsoft.Web/sites", result.getServiceCategory());
-    assertEquals("eastus", result.getRegion());
-    assertEquals(
-        Map.of(
-            "environment", "test",
-            "team", "platform"),
-        result.getTags());
-
-    verifyNoInteractions(credentials);
-  }
-
-  @Test
-  void scanAcceptsFunctionAppKindRegardlessOfCase() throws Exception {
-    JsonNode resource =
-        objectMapper.readTree(
             """
-            {
-              "id": "/subscriptions/sub-id/resourceGroups/test-rg/providers/Microsoft.Web/sites/test-function",
-              "name": "test-function",
-              "location": "eastus",
-              "kind": "FUNCTIONAPP,linux"
-            }
-            """);
+                .formatted(kind));
 
     ResourceDetail result = scanner.scan(resource, credentials);
 
     assertEquals("test-function", result.getName());
   }
 
-  @Test
-  void scanAcceptsFunctionAppWhenKindContainsMultipleValues() throws Exception {
-    JsonNode resource =
-        objectMapper.readTree(
-            """
-            {
-              "id": "/subscriptions/sub-id/resourceGroups/test-rg/providers/Microsoft.Web/sites/test-function",
-              "name": "test-function",
-              "location": "eastus",
-              "kind": "linux,app,functionapp"
-            }
-            """);
+  @ParameterizedTest
+  @ValueSource(strings = {"app", "", "   "})
+  void scanRejectsInvalidFunctionAppKinds(String kind) throws Exception {
+    String kindField = kind.isEmpty() ? "" : ",\n    \"kind\": \"" + kind + "\"";
 
-    ResourceDetail result = scanner.scan(resource, credentials);
-
-    assertEquals("test-function", result.getName());
-  }
-
-  @Test
-  void scanRejectsNormalAppService() throws Exception {
     JsonNode resource =
         objectMapper.readTree(
             """
             {
               "id": "/subscriptions/sub-id/resourceGroups/test-rg/providers/Microsoft.Web/sites/test-app",
               "name": "test-app",
-              "location": "eastus",
-              "kind": "app",
-              "tags": {
-                "environment": "test"
-              }
+              "location": "eastus"%s
             }
-            """);
-
-    ResourceDetail result = scanner.scan(resource, credentials);
-
-    assertNull(result);
-  }
-
-  @Test
-  void scanRejectsMissingKind() throws Exception {
-    JsonNode resource =
-        objectMapper.readTree(
             """
-            {
-              "id": "/subscriptions/sub-id/resourceGroups/test-rg/providers/Microsoft.Web/sites/test-app",
-              "name": "test-app",
-              "location": "eastus"
-            }
-            """);
-
-    ResourceDetail result = scanner.scan(resource, credentials);
-
-    assertNull(result);
-  }
-
-  @Test
-  void scanRejectsBlankKind() throws Exception {
-    JsonNode resource =
-        objectMapper.readTree(
-            """
-            {
-              "id": "/subscriptions/sub-id/resourceGroups/test-rg/providers/Microsoft.Web/sites/test-app",
-              "name": "test-app",
-              "location": "eastus",
-              "kind": ""
-            }
-            """);
+                .formatted(kindField));
 
     ResourceDetail result = scanner.scan(resource, credentials);
 

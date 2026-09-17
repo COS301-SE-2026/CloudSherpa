@@ -419,8 +419,7 @@ BEGIN
 (c_azure_provider_enum, c_azure_virtual_machine_service, 'Outbound Flows', c_azure_resource_id, NULL, 'Outbound network flows'),
 
 -- Azure Container Registry
-(c_azure_provider_enum, c_azure_container_registry_service, NULL,
- c_azure_resource_id, NULL, 'Container registry storage used'),
+(c_azure_provider_enum, c_azure_container_registry_service, 'StorageUsed', c_azure_resource_id, NULL, 'Container registry storage used'),
 
 -- Azure Kubernetes Service
 (c_azure_provider_enum, c_azure_kubernetes_service, 'node_cpu_usage_percentage', c_azure_resource_id, NULL, 'Aggregated CPU utilization percentage'),
