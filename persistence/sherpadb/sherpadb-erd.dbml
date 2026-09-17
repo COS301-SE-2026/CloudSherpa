@@ -307,17 +307,21 @@ Table budgets {
   updated_at timestamptz
 }
 
-Table widget_thresholds {
+Table threshold {
   threshold_id uuid [pk]
-  widget_id uuid [ref: > widget.widget_id]
-  user_id uuid [ref: > users.user_id]
-  metric_name text
-  operator text
+  resource_id uuid [not null, ref: > resource.resource_id]
+  user_id uuid [not null, ref: > users.user_id]
+  metric_name text [not null]
+  operator text [not null]
   value double
-  severity text
-  enabled boolean
+  severity text [not null]
+  enabled boolean [not null]
   created_at timestamptz
   updated_at timestamptz
+
+  indexes {
+    (resource_id, metric_name, enabled) [name: "ix_threshold_resource_metric"]
+  }
 }
 
 Table webhooks {

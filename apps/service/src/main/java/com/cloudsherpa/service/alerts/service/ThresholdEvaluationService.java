@@ -1,17 +1,14 @@
 package com.cloudsherpa.service.alerts.service;
 
 import com.cloudsherpa.lib.entities.Alert;
-import com.cloudsherpa.lib.entities.ChartResource;
-import com.cloudsherpa.lib.entities.WidgetThreshold;
+import com.cloudsherpa.lib.entities.Threshold;
 import com.cloudsherpa.lib.repositories.AlertRepository;
-import com.cloudsherpa.lib.repositories.ChartResourceRepository;
-import com.cloudsherpa.lib.repositories.WidgetThresholdRepository;
+import com.cloudsherpa.lib.repositories.ThresholdRepository;
 import com.cloudsherpa.service.listener.dto.MetricStreamEventDto;
 import com.cloudsherpa.service.sse.SseService;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -27,63 +24,40 @@ public class ThresholdEvaluationService {
   private static final String ALERT_STATUS_ACTIVE = "ACTIVE";
   private static final String ALERT_TYPE_THRESHOLD = "THRESHOLD";
 
-  private final ChartResourceRepository chartResourceRepository;
-  private final WidgetThresholdRepository widgetThresholdRepository;
+  private final ThresholdRepository thresholdRepository;
   private final AlertRepository alertRepository;
   private final SseService sseService;
 
   public ThresholdEvaluationService(
-      ChartResourceRepository chartResourceRepository,
-      WidgetThresholdRepository widgetThresholdRepository,
+      ThresholdRepository thresholdRepository,
       AlertRepository alertRepository,
       SseService sseService) {
-    this.chartResourceRepository = chartResourceRepository;
-    this.widgetThresholdRepository = widgetThresholdRepository;
+    this.thresholdRepository = thresholdRepository;
     this.alertRepository = alertRepository;
     this.sseService = sseService;
   }
 
-  // resource-1 reports CPUUtilization, so matching widgets are evaluated.
+  // resource-1 reports CPUUtilization, so matching resource thresholds are evaluated.
   public void evaluate(MetricStreamEventDto event, UUID userId) {
-    List<ChartResource> trackingWidgets =
-        chartResourceRepository.findByResourceIdAndMetricName(
+    List<Threshold> thresholds =
+        thresholdRepository.findByResourceIdAndMetricNameAndEnabledTrue(
             event.resourceId(), event.metricName());
 
-    if (trackingWidgets.isEmpty()) {
-      return;
-    }
-
-    // ChartResource -> WidgetChart -> Widget provides the threshold owner.
-    List<UUID> widgetIds = new ArrayList<>(trackingWidgets.size());
-
-    for (ChartResource chartResource : trackingWidgets) {
-      if (chartResource.getWidgetChart() != null) {
-        widgetIds.add(chartResource.getWidgetChart().getWidgetId());
-      }
-    }
-
-    for (UUID widgetId : widgetIds) {
-      List<WidgetThreshold> thresholds =
-          widgetThresholdRepository.findByWidgetIdAndMetricNameAndEnabledTrue(
-              widgetId, event.metricName());
-
-      for (WidgetThreshold threshold : thresholds) {
-        try {
-          evaluateThreshold(threshold, event, userId);
-        } catch (Exception exception) {
-          // One failed threshold must not stop the remaining thresholds.
-          logger.error(
-              "Threshold evaluation failed for thresholdId={} resourceId={}",
-              threshold.getThresholdId(),
-              event.resourceId(),
-              exception);
-        }
+    for (Threshold threshold : thresholds) {
+      try {
+        evaluateThreshold(threshold, event, userId);
+      } catch (Exception exception) {
+        // One failed threshold must not stop the remaining thresholds.
+        logger.error(
+            "Threshold evaluation failed for thresholdId={} resourceId={}",
+            threshold.getThresholdId(),
+            event.resourceId(),
+            exception);
       }
     }
   }
 
-  private void evaluateThreshold(
-      WidgetThreshold threshold, MetricStreamEventDto event, UUID userId) {
+  private void evaluateThreshold(Threshold threshold, MetricStreamEventDto event, UUID userId) {
     // CPUUtilization=92 with GT 80 creates an alert.
     if (event.metricValue() == null || !isViolated(threshold, event.metricValue())) {
       return;
@@ -112,7 +86,7 @@ public class ThresholdEvaluationService {
   }
 
   private Alert buildNewAlert(
-      WidgetThreshold threshold, MetricStreamEventDto event, UUID userId, String canonicalKey) {
+      Threshold threshold, MetricStreamEventDto event, UUID userId, String canonicalKey) {
     OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
 
     // Example payload: metric_value=92, operator=GT, threshold_value=80.
@@ -128,7 +102,7 @@ public class ThresholdEvaluationService {
 
     return Alert.builder()
         .userId(userId)
-        .widgetId(threshold.getWidgetId())
+        .widgetId(null)
         .alertType(ALERT_TYPE_THRESHOLD)
         .severity(Optional.ofNullable(threshold.getSeverity()).orElse("WARNING"))
         .title(buildTitle(threshold, event))
@@ -141,7 +115,7 @@ public class ThresholdEvaluationService {
         .build();
   }
 
-  private boolean isViolated(WidgetThreshold threshold, BigDecimal metricValue) {
+  private boolean isViolated(Threshold threshold, BigDecimal metricValue) {
     double value = metricValue.doubleValue();
     double thresholdValue = threshold.getValue();
 
@@ -158,15 +132,15 @@ public class ThresholdEvaluationService {
     };
   }
 
-  private String buildCanonicalKey(WidgetThreshold threshold, MetricStreamEventDto event) {
+  private String buildCanonicalKey(Threshold threshold, MetricStreamEventDto event) {
     return "threshold:" + threshold.getThresholdId() + ":" + event.resourceId();
   }
 
-  private String buildTitle(WidgetThreshold threshold, MetricStreamEventDto event) {
+  private String buildTitle(Threshold threshold, MetricStreamEventDto event) {
     return event.metricName() + " " + threshold.getOperator() + " " + threshold.getValue();
   }
 
-  private String buildMessage(WidgetThreshold threshold, MetricStreamEventDto event) {
+  private String buildMessage(Threshold threshold, MetricStreamEventDto event) {
     return event.metricName()
         + " is "
         + event.metricValue()
