@@ -106,6 +106,7 @@ public class ThresholdsController {
       description = "Invalid metric name or operator",
       content = @Content)
   @ApiResponse(responseCode = "404", description = "Threshold not found", content = @Content)
+  @PutMapping("/{id}")
   public ResponseEntity<Void> updateThreshold(
       @PathVariable UUID id, @RequestBody Map<String, Object> req) {
 

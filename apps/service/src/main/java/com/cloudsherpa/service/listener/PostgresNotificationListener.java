@@ -1,6 +1,7 @@
 package com.cloudsherpa.service.listener;
 
 import com.cloudsherpa.service.alerts.service.ThresholdEvaluationService;
+import com.cloudsherpa.service.config.TenantContext;
 import com.cloudsherpa.service.listener.dto.MetricStreamEventDto;
 import com.cloudsherpa.service.metrics.MetricDisplayNameMapper;
 import com.cloudsherpa.service.sse.SseService;
@@ -155,14 +156,17 @@ public class PostgresNotificationListener implements SmartLifecycle {
   // Parse and forward the metric to any connected SSE clients.
   private void processMetricForAnalytics(String payload, UUID userId) {
     try {
-      // Parse the raw string back into a JSON object
-      MetricStreamEventDto event =
-          objectMapper
-              .readValue(payload, MetricStreamEventDto.class)
-              .withDisplayNameMappedMetric(metricDisplayNameMapper);
+      MetricStreamEventDto rawEvent = objectMapper.readValue(payload, MetricStreamEventDto.class);
+      MetricStreamEventDto event = rawEvent.withDisplayNameMappedMetric(metricDisplayNameMapper);
 
       sseService.broadcast(userId, "metric", event);
-      thresholdEvaluationService.evaluate(event, userId);
+
+      TenantContext.setCurrentTenant(userId.toString());
+      try {
+        thresholdEvaluationService.evaluate(rawEvent, userId);
+      } finally {
+        TenantContext.clear();
+      }
     } catch (Exception e) {
       logger.warn("Failed to parse metric payload: {}", payload, e);
     }
