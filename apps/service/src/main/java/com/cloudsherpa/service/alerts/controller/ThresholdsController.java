@@ -1,5 +1,7 @@
 package com.cloudsherpa.service.alerts.controller;
 
+import com.cloudsherpa.lib.entities.Threshold;
+import com.cloudsherpa.lib.repositories.ThresholdRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -7,10 +9,10 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +22,12 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Thresholds", description = "Manage widget-level threshold configurations")
 public class ThresholdsController {
 
-  private static final String WIDGET_ID = "widgetId";
+  private final ThresholdRepository thresholdRepository;
+
+  public ThresholdsController(ThresholdRepository thresholdRepository) {
+    this.thresholdRepository = thresholdRepository;
+  }
+
   private static final String METRIC_NAME = "metric_name";
   private static final String OPERATOR = "operator";
   private static final String VALUE = "value";
@@ -43,32 +50,21 @@ public class ThresholdsController {
                       value =
                           "{\"thresholdId\":\"t0000000-0000-0000-0000-000000000001\",\"widgetId\":\"w0000000-0000-0000-0000-000000000001\",\"userId\":\"5ebe4340-c5ec-4833-ad93-06abf4609f03\",\"metricName\":\"CPUUtilization\",\"operator\":\"GT\",\"value\":80.0,\"severity\":\"WARNING\",\"enabled\":true,\"createdAt\":\"2026-09-16T12:00:00Z\",\"updatedAt\":\"2026-09-16T12:00:00Z\"}")))
   @PostMapping
-  public ResponseEntity<Map<String, Object>> createThreshold(
-      @Parameter(description = "Threshold creation payload") @RequestBody Map<String, Object> req) {
-    // Example response
-    Map<String, Object> created =
-        Map.of(
-            "thresholdId",
-            UUID.randomUUID().toString(),
-            WIDGET_ID,
-            req.getOrDefault(WIDGET_ID, null),
-            "userId",
-            req.getOrDefault("userId", null),
-            METRIC_NAME,
-            req.getOrDefault(METRIC_NAME, "CPUUtilization"),
-            OPERATOR,
-            req.getOrDefault(OPERATOR, "GT"),
-            VALUE,
-            req.getOrDefault(VALUE, 80.0),
-            SEVERITY,
-            req.getOrDefault(SEVERITY, "WARNING"),
-            ENABLED,
-            req.getOrDefault(ENABLED, true),
-            "createdAt",
-            OffsetDateTime.now(ZoneOffset.UTC).toString(),
-            "updatedAt",
-            OffsetDateTime.now(ZoneOffset.UTC).toString());
-    return ResponseEntity.status(201).body(created);
+  public ResponseEntity<Threshold> createThreshold(@RequestBody Map<String, Object> req) {
+    UUID resourceId = UUID.fromString((String) req.get("resourceId"));
+    UUID userId = req.get("userId") != null ? UUID.fromString((String) req.get("userId")) : null;
+    String metricName = (String) req.get(METRIC_NAME);
+    String operator = (String) req.get(OPERATOR);
+    double value = ((Number) req.get(VALUE)).doubleValue();
+    String severity = (String) req.getOrDefault(SEVERITY, "WARNING");
+    boolean enabled = (boolean) req.getOrDefault(ENABLED, true);
+
+    validateThreshold(metricName, operator);
+
+    Threshold threshold =
+        new Threshold(resourceId, userId, metricName, operator, value, severity, enabled);
+
+    return ResponseEntity.status(201).body(thresholdRepository.save(threshold));
   }
 
   @Operation(
@@ -86,44 +82,48 @@ public class ThresholdsController {
                       value =
                           "[{\"thresholdId\":\"t0000000-0000-0000-0000-000000000001\",\"widgetId\":\"w0000000-0000-0000-0000-000000000001\",\"metricName\":\"CPUUtilization\",\"operator\":\"GT\",\"value\":80.0,\"severity\":\"WARNING\",\"enabled\":true}]")))
   @GetMapping
-  public ResponseEntity<List<Map<String, Object>>> listThresholds(
-      @Parameter(description = "Widget UUID to filter thresholds")
-          @RequestParam(name = WIDGET_ID, required = false)
-          UUID widgetId) {
-    // Example-only response
-    Map<String, Object> sample =
-        Map.of(
-            "thresholdId",
-            "t0000000-0000-0000-0000-000000000001",
-            WIDGET_ID,
-            widgetId == null ? "w0000000-0000-0000-0000-000000000001" : widgetId.toString(),
-            METRIC_NAME,
-            "CPUUtilization",
-            OPERATOR,
-            "GT",
-            VALUE,
-            80.0,
-            SEVERITY,
-            "WARNING",
-            ENABLED,
-            true,
-            "createdAt",
-            "2026-09-16T12:00:00Z",
-            "updatedAt",
-            "2026-09-16T12:00:00Z");
-    return ResponseEntity.ok(List.of(sample));
+  public ResponseEntity<List<Threshold>> listThresholds(
+      @RequestParam(name = "resourceId", required = false) UUID resourceId) {
+    List<Threshold> thresholds =
+        resourceId == null
+            ? thresholdRepository.findAll()
+            : thresholdRepository.findByResourceId(resourceId);
+
+    return ResponseEntity.ok(thresholds);
   }
 
-  @Operation(
-      summary = "Update threshold",
-      description = "Update an existing threshold (widget ownership enforced server-side).")
+  @Operation(summary = "Update threshold", description = "Update an existing threshold.")
   @ApiResponse(responseCode = "204", description = "Updated")
   @ApiResponse(responseCode = "404", description = "Threshold not found", content = @Content)
   @PutMapping("/{id}")
   public ResponseEntity<Void> updateThreshold(
-      @Parameter(description = "Threshold UUID") @PathVariable UUID id,
-      @Parameter(description = "Threshold update payload") @RequestBody Map<String, Object> req) {
-    // persist update
+      @PathVariable UUID id, @RequestBody Map<String, Object> req) {
+
+    Optional<Threshold> optionalThreshold = thresholdRepository.findById(id);
+    if (!optionalThreshold.isPresent()) {
+      return ResponseEntity.notFound().build();
+    }
+
+    Threshold threshold = optionalThreshold.get();
+
+    Object metricNameObj = req.get(METRIC_NAME);
+    if (metricNameObj != null) {
+      threshold.setMetricName((String) metricNameObj);
+    }
+
+    Object operatorObj = req.get(OPERATOR);
+    if (operatorObj != null) {
+      threshold.setOperator((String) operatorObj);
+    }
+
+    Object valueObj = req.get(VALUE);
+    if (valueObj != null) {
+      threshold.setValue(((Number) valueObj).doubleValue());
+    }
+
+    validateThreshold(threshold.getMetricName(), threshold.getOperator());
+    thresholdRepository.save(threshold);
+
     return ResponseEntity.noContent().build();
   }
 
@@ -135,5 +135,15 @@ public class ThresholdsController {
       @Parameter(description = "Threshold UUID") @PathVariable UUID id) {
     // delete or disable
     return ResponseEntity.noContent().build();
+  }
+
+  private void validateThreshold(String metricName, String operator) {
+    if (metricName == null || metricName.isBlank()) {
+      throw new IllegalArgumentException("metric_name is required");
+    }
+
+    if (!Set.of("GT", "GTE", "LT", "LTE", "EQ").contains(operator)) {
+      throw new IllegalArgumentException("Unsupported operator: " + operator);
+    }
   }
 }
