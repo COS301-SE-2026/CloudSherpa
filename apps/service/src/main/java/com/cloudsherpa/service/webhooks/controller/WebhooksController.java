@@ -1,5 +1,6 @@
 package com.cloudsherpa.service.webhooks.controller;
 
+import com.cloudsherpa.service.webhooks.WebhookEventDefinitionRegistry;
 import com.cloudsherpa.service.webhooks.dto.AddWebhookDto;
 import com.cloudsherpa.service.webhooks.dto.AddWebhookResponseDto;
 import com.cloudsherpa.service.webhooks.dto.EditWebhookDto;
@@ -30,6 +31,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/webhooks")
 @Tag(name = "Webhooks", description = "CloudSherpa Webhooks CRUD operations")
 public class WebhooksController {
+
+  private final WebhookEventDefinitionRegistry definitionRegistry;
+
+  public WebhooksController(WebhookEventDefinitionRegistry definitionRegistry) {
+    this.definitionRegistry = definitionRegistry;
+  }
 
   @Operation(summary = "Get all webhooks for the current user")
   @ApiResponses(
@@ -166,7 +173,7 @@ public class WebhooksController {
       })
   @GetMapping("events")
   public Map<String, Map<String, WebhookEventDto<?>>> getEvents() {
-    return Map.of();
+    return definitionRegistry.getEventDefinitions();
   }
 
   @Operation(summary = "Add a new webhook")

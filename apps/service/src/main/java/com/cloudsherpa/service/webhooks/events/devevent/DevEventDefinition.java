@@ -29,6 +29,11 @@ public class DevEventDefinition implements WebhookEventDefinition<DevPayload> {
   }
 
   @Override
+  public Class<DevPayload> payloadClass() {
+    return DevPayload.class;
+  }
+
+  @Override
   public DevPayload examplePayload() {
     return new DevPayload("Dev Event String", new BigDecimal("20.0"), Instant.ofEpochMilli(0));
   }

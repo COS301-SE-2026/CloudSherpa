@@ -9,5 +9,7 @@ public interface WebhookEventDefinition<T extends WebhookPayload> {
 
   String description();
 
+  Class<T> payloadClass();
+
   T examplePayload();
 }
