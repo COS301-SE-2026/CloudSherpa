@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/thresholds")
-@Tag(name = "Thresholds", description = "Manage widget-level threshold configurations")
+@Tag(name = "Thresholds", description = "Manage resource-level threshold configurations")
 public class ThresholdsController {
 
   private final ThresholdRepository thresholdRepository;
@@ -36,19 +36,22 @@ public class ThresholdsController {
 
   @Operation(
       summary = "Create threshold",
-      description =
-          "Create a widget-level threshold (only widget owners allowed; validation applied server-side).")
+      description = "Create a resource-level threshold (validation applied server-side).")
   @ApiResponse(
       responseCode = "201",
       description = "Threshold created",
       content =
           @Content(
               mediaType = "application/json",
-              schema = @Schema(implementation = Map.class),
+              schema = @Schema(implementation = Threshold.class),
               examples =
                   @ExampleObject(
                       value =
-                          "{\"thresholdId\":\"t0000000-0000-0000-0000-000000000001\",\"widgetId\":\"w0000000-0000-0000-0000-000000000001\",\"userId\":\"5ebe4340-c5ec-4833-ad93-06abf4609f03\",\"metricName\":\"CPUUtilization\",\"operator\":\"GT\",\"value\":80.0,\"severity\":\"WARNING\",\"enabled\":true,\"createdAt\":\"2026-09-16T12:00:00Z\",\"updatedAt\":\"2026-09-16T12:00:00Z\"}")))
+                          "{\"thresholdId\":\"t0000000-0000-0000-0000-000000000001\",\"resourceId\":\"r0000000-0000-0000-0000-000000000001\",\"userId\":\"5ebe4340-c5ec-4833-ad93-06abf4609f03\",\"metricName\":\"CPUUtilization\",\"operator\":\"GT\",\"value\":80.0,\"severity\":\"WARNING\",\"enabled\":true,\"createdAt\":\"2026-09-16T12:00:00Z\",\"updatedAt\":\"2026-09-16T12:00:00Z\"}")))
+  @ApiResponse(
+      responseCode = "400",
+      description = "Invalid metric name or operator",
+      content = @Content)
   @PostMapping
   public ResponseEntity<Threshold> createThreshold(@RequestBody Map<String, Object> req) {
     UUID resourceId = UUID.fromString((String) req.get("resourceId"));
@@ -59,7 +62,11 @@ public class ThresholdsController {
     String severity = (String) req.getOrDefault(SEVERITY, "WARNING");
     boolean enabled = (boolean) req.getOrDefault(ENABLED, true);
 
-    validateThreshold(metricName, operator);
+    try {
+      validateThreshold(metricName, operator);
+    } catch (IllegalArgumentException e) {
+      return ResponseEntity.badRequest().build();
+    }
 
     Threshold threshold =
         new Threshold(resourceId, userId, metricName, operator, value, severity, enabled);
@@ -69,18 +76,18 @@ public class ThresholdsController {
 
   @Operation(
       summary = "List thresholds",
-      description = "List thresholds for a widget (scoped to tenant via global security).")
+      description = "List thresholds, optionally filtered by resource.")
   @ApiResponse(
       responseCode = "200",
       description = "List of thresholds",
       content =
           @Content(
               mediaType = "application/json",
-              schema = @Schema(implementation = List.class),
+              schema = @Schema(implementation = Threshold.class),
               examples =
                   @ExampleObject(
                       value =
-                          "[{\"thresholdId\":\"t0000000-0000-0000-0000-000000000001\",\"widgetId\":\"w0000000-0000-0000-0000-000000000001\",\"metricName\":\"CPUUtilization\",\"operator\":\"GT\",\"value\":80.0,\"severity\":\"WARNING\",\"enabled\":true}]")))
+                          "[{\"thresholdId\":\"t0000000-0000-0000-0000-000000000001\",\"resourceId\":\"r0000000-0000-0000-0000-000000000001\",\"metricName\":\"CPUUtilization\",\"operator\":\"GT\",\"value\":80.0,\"severity\":\"WARNING\",\"enabled\":true}]")))
   @GetMapping
   public ResponseEntity<List<Threshold>> listThresholds(
       @RequestParam(name = "resourceId", required = false) UUID resourceId) {
@@ -94,8 +101,11 @@ public class ThresholdsController {
 
   @Operation(summary = "Update threshold", description = "Update an existing threshold.")
   @ApiResponse(responseCode = "204", description = "Updated")
+  @ApiResponse(
+      responseCode = "400",
+      description = "Invalid metric name or operator",
+      content = @Content)
   @ApiResponse(responseCode = "404", description = "Threshold not found", content = @Content)
-  @PutMapping("/{id}")
   public ResponseEntity<Void> updateThreshold(
       @PathVariable UUID id, @RequestBody Map<String, Object> req) {
 
@@ -121,7 +131,11 @@ public class ThresholdsController {
       threshold.setValue(((Number) valueObj).doubleValue());
     }
 
-    validateThreshold(threshold.getMetricName(), threshold.getOperator());
+    try {
+      validateThreshold(threshold.getMetricName(), threshold.getOperator());
+    } catch (IllegalArgumentException e) {
+      return ResponseEntity.badRequest().build();
+    }
     thresholdRepository.save(threshold);
 
     return ResponseEntity.noContent().build();
