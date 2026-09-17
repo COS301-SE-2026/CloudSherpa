@@ -5,7 +5,7 @@ import com.cloudsherpa.service.webhooks.dto.AddWebhookDto;
 import com.cloudsherpa.service.webhooks.dto.AddWebhookResponseDto;
 import com.cloudsherpa.service.webhooks.dto.EditWebhookDto;
 import com.cloudsherpa.service.webhooks.dto.WebhookEventDto;
-import com.cloudsherpa.service.webhooks.model.Webhook;
+import com.cloudsherpa.service.webhooks.dto.WebhookResponse;
 import com.cloudsherpa.service.webhooks.model.WebhookDelivery;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -46,7 +46,7 @@ public class WebhooksController {
             description = "Succesfully returned all webhooks",
             content =
                 @Content(
-                    array = @ArraySchema(schema = @Schema(implementation = Webhook.class)),
+                    array = @ArraySchema(schema = @Schema(implementation = WebhookResponse.class)),
                     examples =
                         @ExampleObject(
                             name = "Webhook list",
@@ -77,7 +77,7 @@ public class WebhooksController {
                           """)))
       })
   @GetMapping()
-  public List<Webhook> getWebhooks() {
+  public List<WebhookResponse> getWebhooks() {
     return List.of();
   }
 

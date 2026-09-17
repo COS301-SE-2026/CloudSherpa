@@ -26,6 +26,9 @@ public class Webhook {
     @Column(name = "event_types", nullable = false)
     private List<String> eventTypes;
 
+    @Column(name = "cloud_accounts", nullable = false)
+    private List<UUID> cloudAccounts;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "webhook_status", nullable = false, columnDefinition = "public.webhook_status_enum")
     private WebhookStatusEnum webhookStatus;
@@ -63,6 +66,10 @@ public class Webhook {
         return endpointUrl;
     }
 
+    public List<UUID> getCloudAccounts() {
+        return cloudAccounts;
+    }
+
     public void setWebhookName(String webhookName) {
         this.webhookName = webhookName;
     }
@@ -77,5 +84,9 @@ public class Webhook {
 
     public void setEndpointUrl(String endpointUrl) {
         this.endpointUrl = endpointUrl;
+    }
+
+    public void setCloudAccounts(List<UUID> cloudAccounts) {
+        this.cloudAccounts = cloudAccounts;
     }
 }
