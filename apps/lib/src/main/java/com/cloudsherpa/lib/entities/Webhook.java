@@ -3,7 +3,6 @@ package com.cloudsherpa.lib.entities;
 import java.util.List;
 import java.util.UUID;
 
-import org.hibernate.annotations.JdbcType;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 

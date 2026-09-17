@@ -7,6 +7,7 @@ import com.cloudsherpa.service.webhooks.dto.EditWebhookDto;
 import com.cloudsherpa.service.webhooks.dto.WebhookDeliveryResponse;
 import com.cloudsherpa.service.webhooks.dto.WebhookEventDto;
 import com.cloudsherpa.service.webhooks.dto.WebhookResponse;
+import com.cloudsherpa.service.webhooks.exceptions.WebhookNotFoundException;
 import com.cloudsherpa.service.webhooks.service.WebhookService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -269,7 +270,12 @@ public class WebhooksController {
           @RequestBody
           EditWebhookDto request) {
 
-    return ResponseEntity.ok().build();
+    try {
+      webhookService.editWebhook(id, request);
+      return ResponseEntity.ok().build();
+    } catch (WebhookNotFoundException e) {
+      return ResponseEntity.notFound().build();
+    }
   }
 
   @Operation(summary = "Delete webhook")

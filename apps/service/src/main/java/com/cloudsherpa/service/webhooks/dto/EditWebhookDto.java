@@ -1,6 +1,6 @@
 package com.cloudsherpa.service.webhooks.dto;
 
-import com.cloudsherpa.service.webhooks.model.WebhookStatusEnum;
+import com.cloudsherpa.lib.entities.WebhookStatusEnum;
 import java.util.List;
 import java.util.UUID;
 
