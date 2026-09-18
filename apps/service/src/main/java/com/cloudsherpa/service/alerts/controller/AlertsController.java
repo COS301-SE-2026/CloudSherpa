@@ -1,14 +1,15 @@
 package com.cloudsherpa.service.alerts.controller;
 
+import com.cloudsherpa.lib.repositories.AlertRepository;
+import com.cloudsherpa.service.alerts.dto.AlertResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,45 +19,43 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Alerts", description = "Operations for listing and managing alerts")
 public class AlertsController {
 
-  @Operation(
-      summary = "List alerts",
-      description =
-          "Return a list of alerts for the current tenant/user (security/tenant scoping handled globally).")
+  private final AlertRepository alertRepository;
+
+  public AlertsController(AlertRepository alertRepository) {
+    this.alertRepository = alertRepository;
+  }
+
+  @Operation(summary = "List alerts", description = "Return alerts for the current tenant.")
   @ApiResponse(
       responseCode = "200",
-      description = "A list of alerts",
+      description = "Alerts returned",
       content =
           @Content(
               mediaType = "application/json",
-              schema = @Schema(implementation = Map.class),
-              examples =
-                  @ExampleObject(
-                      value =
-                          "[{\"alert_id\":\"b0000000-0000-0000-0000-000000000001\",\"alert_type\":\"BILLING\",\"severity\":\"WARNING\",\"title\":\"30-day projected spend may exceed budget\",\"message\":\"Projected 30d spend $1,200 vs budget $1,000\",\"status\":\"ACTIVE\",\"created_at\":\"2026-09-16T12:00:00Z\"}]")))
+              array = @ArraySchema(schema = @Schema(implementation = AlertResponse.class))))
   @GetMapping
-  public ResponseEntity<List<Map<String, Object>>> getAlerts() {
-    // fetch all alerts
-    return ResponseEntity.ok(List.of());
+  public ResponseEntity<List<AlertResponse>> getAlerts() {
+    return ResponseEntity.ok(alertRepository.findAll().stream().map(AlertResponse::from).toList());
   }
 
-  @Operation(summary = "Get alert", description = "Return details for a single alert by id.")
+  @Operation(summary = "Get alert", description = "Return details for a single alert.")
   @ApiResponse(
       responseCode = "200",
       description = "Alert found",
       content =
           @Content(
               mediaType = "application/json",
-              schema = @Schema(implementation = Map.class),
-              examples =
-                  @ExampleObject(
-                      value =
-                          "{\"alert_id\":\"b0000000-0000-0000-0000-000000000001\",\"alert_type\":\"THRESHOLD\",\"severity\":\"CRITICAL\",\"title\":\"CPU > 90%\",\"message\":\"CPU usage 95% on instance i-0123\",\"status\":\"ACTIVE\",\"created_at\":\"2026-09-16T12:00:00Z\"}")))
+              schema = @Schema(implementation = AlertResponse.class)))
   @ApiResponse(responseCode = "404", description = "Alert not found", content = @Content)
   @GetMapping("/{id}")
-  public ResponseEntity<Map<String, Object>> getAlert(
+  public ResponseEntity<AlertResponse> getAlert(
       @Parameter(description = "Alert UUID") @PathVariable UUID id) {
-    // fetch alert details
-    return ResponseEntity.ok(Map.of());
+
+    return alertRepository
+        .findById(id)
+        .map(AlertResponse::from)
+        .map(ResponseEntity::ok)
+        .orElseGet(() -> ResponseEntity.notFound().build());
   }
 
   @Operation(summary = "Acknowledge alert", description = "Mark an alert as ACKNOWLEDGED.")
@@ -65,7 +64,6 @@ public class AlertsController {
   @PostMapping("/{id}/acknowledge")
   public ResponseEntity<Void> acknowledge(
       @Parameter(description = "Alert UUID") @PathVariable UUID id) {
-    // update status -> ACKNOWLEDGED
     return ResponseEntity.noContent().build();
   }
 
@@ -75,7 +73,6 @@ public class AlertsController {
   @PostMapping("/{id}/dismiss")
   public ResponseEntity<Void> dismiss(
       @Parameter(description = "Alert UUID") @PathVariable UUID id) {
-    // update status -> DISMISSED
     return ResponseEntity.noContent().build();
   }
 }
