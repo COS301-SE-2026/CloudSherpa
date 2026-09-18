@@ -24,7 +24,7 @@ export function PermissionsList({
                             key={permission}
                             className="rounded-md bg-card px-4 py-3 text-sm text-foreground"
                         >
-                            - {permission}
+                            {permission}
                         </div>
                     ))
                 )}
