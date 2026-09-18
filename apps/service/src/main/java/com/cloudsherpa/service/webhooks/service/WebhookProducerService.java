@@ -2,10 +2,12 @@ package com.cloudsherpa.service.webhooks.service;
 
 import com.cloudsherpa.lib.entities.PendingWebhookEvent;
 import com.cloudsherpa.lib.repositories.PendingWebhookEventRepository;
-import com.cloudsherpa.service.webhooks.events.WebhookEvent;
+import com.cloudsherpa.service.webhooks.events.WebhookPayload;
 import com.cloudsherpa.service.webhooks.queue.WebhookEventQueue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 
@@ -24,23 +26,33 @@ public class WebhookProducerService {
     this.eventQueue = eventQueue;
   }
 
-  public void produceEvent(WebhookEvent<?> event) {
+  public void produceEvent(
+      UUID tenantId, UUID cloudAccountId, String eventType, WebhookPayload payload) {
     // Write to pending in DB
-    PendingWebhookEvent pendingEvent = fromWebhookEvent(event);
+    PendingWebhookEvent pendingEvent =
+        constructPendingWebhookEvent(tenantId, cloudAccountId, eventType, payload, Instant.now());
     pendingWebhookEventRepository.save(pendingEvent);
 
     // Offer to queue
-    eventQueue.offerEvent(event);
+    eventQueue.offerEvent(pendingEvent.getEventId());
   }
 
-  private PendingWebhookEvent fromWebhookEvent(WebhookEvent<?> event) {
-    JsonNode payload = objectMapper.valueToTree(event.data());
+  public void retryProductions() {
+    List<PendingWebhookEvent> pendingWebhookEvents = pendingWebhookEventRepository.findAll();
+
+    for (PendingWebhookEvent event : pendingWebhookEvents) {
+      eventQueue.offerEvent(event.getEventId());
+    }
+  }
+
+  private PendingWebhookEvent constructPendingWebhookEvent(
+      UUID tenantId,
+      UUID cloudAccountId,
+      String eventType,
+      WebhookPayload payload,
+      Instant timestamp) {
+    JsonNode jsonPayload = objectMapper.valueToTree(payload);
     return new PendingWebhookEvent(
-        UUID.randomUUID(),
-        event.userId(),
-        event.cloudAccountId(),
-        event.type(),
-        event.timestamp(),
-        payload);
+        UUID.randomUUID(), tenantId, cloudAccountId, eventType, timestamp, jsonPayload);
   }
 }

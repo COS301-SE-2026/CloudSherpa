@@ -5,4 +5,4 @@ import java.util.UUID;
 
 // Shared envelope for the actual (not metadata) event
 public record WebhookEvent<T extends WebhookPayload>(
-    UUID userId, String id, String type, Instant timestamp, UUID cloudAccountId, T data) {}
+    UUID userId, UUID id, String type, Instant timestamp, UUID cloudAccountId, T data) {}

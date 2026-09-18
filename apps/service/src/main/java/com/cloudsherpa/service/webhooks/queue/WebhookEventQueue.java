@@ -1,6 +1,6 @@
 package com.cloudsherpa.service.webhooks.queue;
 
-import com.cloudsherpa.service.webhooks.events.WebhookEvent;
+import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import org.springframework.stereotype.Component;
@@ -9,11 +9,10 @@ import org.springframework.stereotype.Component;
 public class WebhookEventQueue {
 
   private static final Integer QUEUE_CAPACITY = 100;
-  private final BlockingQueue<WebhookEvent<?>> eventQueue =
-      new LinkedBlockingQueue<WebhookEvent<?>>(QUEUE_CAPACITY);
+  private final BlockingQueue<UUID> eventQueue = new LinkedBlockingQueue<UUID>(QUEUE_CAPACITY);
 
-  public boolean offerEvent(WebhookEvent<?> event) {
-    return eventQueue.offer(event);
+  public boolean offerEvent(UUID eventId) {
+    return eventQueue.offer(eventId);
   }
 
   public Integer capacity() {
