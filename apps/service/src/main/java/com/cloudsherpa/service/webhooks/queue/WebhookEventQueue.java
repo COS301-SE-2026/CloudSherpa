@@ -15,7 +15,7 @@ public class WebhookEventQueue {
   private Logger logger = LoggerFactory.getLogger(WebhookEventQueue.class);
 
   private static final Integer QUEUE_CAPACITY = 10;
-  private final BlockingQueue<UUID> eventQueue = new LinkedBlockingQueue<UUID>(QUEUE_CAPACITY);
+  private final BlockingQueue<UUID> eventQueue = new LinkedBlockingQueue<>(QUEUE_CAPACITY);
   // Used to prevent duplicate entries in queue
   private Set<UUID> qeuedOrProcessing = new HashSet<>();
 
