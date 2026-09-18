@@ -4,9 +4,10 @@ import com.cloudsherpa.lib.entities.WebhookStatusEnum;
 import java.util.List;
 import java.util.UUID;
 
-public record EditWebhookDto(
-    String name,
+public record WebhookResponse(
+    UUID webhookId,
+    String webhookName,
     String endpointUrl,
     List<String> eventTypes,
-    WebhookStatusEnum status,
-    List<UUID> cloudAccounts) {}
+    List<UUID> cloudAccounts,
+    WebhookStatusEnum webhookStatus) {}

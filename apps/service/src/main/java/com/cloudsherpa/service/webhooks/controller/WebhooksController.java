@@ -4,9 +4,11 @@ import com.cloudsherpa.service.webhooks.WebhookEventDefinitionRegistry;
 import com.cloudsherpa.service.webhooks.dto.AddWebhookDto;
 import com.cloudsherpa.service.webhooks.dto.AddWebhookResponseDto;
 import com.cloudsherpa.service.webhooks.dto.EditWebhookDto;
+import com.cloudsherpa.service.webhooks.dto.WebhookDeliveryResponse;
 import com.cloudsherpa.service.webhooks.dto.WebhookEventDto;
-import com.cloudsherpa.service.webhooks.model.Webhook;
-import com.cloudsherpa.service.webhooks.model.WebhookDelivery;
+import com.cloudsherpa.service.webhooks.dto.WebhookResponse;
+import com.cloudsherpa.service.webhooks.exceptions.WebhookNotFoundException;
+import com.cloudsherpa.service.webhooks.service.WebhookService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -33,9 +35,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class WebhooksController {
 
   private final WebhookEventDefinitionRegistry definitionRegistry;
+  private final WebhookService webhookService;
 
-  public WebhooksController(WebhookEventDefinitionRegistry definitionRegistry) {
+  public WebhooksController(
+      WebhookEventDefinitionRegistry definitionRegistry, WebhookService webhookService) {
     this.definitionRegistry = definitionRegistry;
+    this.webhookService = webhookService;
   }
 
   @Operation(summary = "Get all webhooks for the current user")
@@ -46,7 +51,7 @@ public class WebhooksController {
             description = "Succesfully returned all webhooks",
             content =
                 @Content(
-                    array = @ArraySchema(schema = @Schema(implementation = Webhook.class)),
+                    array = @ArraySchema(schema = @Schema(implementation = WebhookResponse.class)),
                     examples =
                         @ExampleObject(
                             name = "Webhook list",
@@ -77,8 +82,8 @@ public class WebhooksController {
                           """)))
       })
   @GetMapping()
-  public List<Webhook> getWebhooks() {
-    return List.of();
+  public List<WebhookResponse> getWebhooks() {
+    return webhookService.getWebhooks();
   }
 
   @Operation(summary = "Get all webhook deliveries for the current user")
@@ -89,7 +94,9 @@ public class WebhooksController {
             description = "Succesfully returned all webhook deliveries",
             content =
                 @Content(
-                    array = @ArraySchema(schema = @Schema(implementation = WebhookDelivery.class)),
+                    array =
+                        @ArraySchema(
+                            schema = @Schema(implementation = WebhookDeliveryResponse.class)),
                     examples =
                         @ExampleObject(
                             name = "Webhook delivery list",
@@ -118,8 +125,8 @@ public class WebhooksController {
                           """)))
       })
   @GetMapping("deliveries")
-  public List<WebhookDelivery> getDeliveries() {
-    return List.of();
+  public List<WebhookDeliveryResponse> getDeliveries() {
+    return webhookService.getWebhookDeliveries();
   }
 
   @Operation(summary = "Get all supported webhook events")
@@ -223,7 +230,8 @@ public class WebhooksController {
                             """)))
           @RequestBody
           AddWebhookDto request) {
-    return ResponseEntity.ok().build();
+    AddWebhookResponseDto response = webhookService.addWebhook(request);
+    return ResponseEntity.ok(response);
   }
 
   @Operation(summary = "Edit existing webhook")
@@ -261,7 +269,13 @@ public class WebhooksController {
                         """)))
           @RequestBody
           EditWebhookDto request) {
-    return ResponseEntity.ok().build();
+
+    try {
+      webhookService.editWebhook(id, request);
+      return ResponseEntity.ok().build();
+    } catch (WebhookNotFoundException e) {
+      return ResponseEntity.notFound().build();
+    }
   }
 
   @Operation(summary = "Delete webhook")
@@ -272,8 +286,9 @@ public class WebhooksController {
             description =
                 "Deleted webhook / not, generic response code protects against information gathering via response codes")
       })
-  @DeleteMapping("delete/webhookId")
-  public ResponseEntity<Void> deleteWebhook() {
+  @DeleteMapping("delete/{webhookId}")
+  public ResponseEntity<Void> deleteWebhook(@PathVariable("webhookId") UUID webhookId) {
+    webhookService.deleteWebhook(webhookId);
     return ResponseEntity.noContent().build();
   }
 }
