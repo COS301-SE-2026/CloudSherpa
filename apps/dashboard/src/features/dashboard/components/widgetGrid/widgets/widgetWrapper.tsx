@@ -26,11 +26,22 @@ export const WidgetWrapper = ({ layout, isEditMode }: WidgetWrapperProps) => {
         ...(autoPosition ? { "gs-auto-position": "true" } : {}),
     };
 
+    const renderPlaceholderWidget = () => {
+        return (
+            <div className="h-full w-full py-7 px-6 flex flex-col justify-start items-start">
+                <span className="text-base text-muted-foreground">{config.displayName}</span>
+                <div className="w-full h-full flex flex-col justify-center items-center">
+                    <p className="text-xs text-muted-foreground">Drag to move widget.</p>
+                </div>
+            </div>
+        );
+    };
+
     return (
         <div className="grid-stack-item" {...gridStackAttributes}>
             <div className="grid-stack-item-content relative overflow-visible! rounded-md group">
                 {isEditMode && (
-                    <div className="drag-handle absolute inset-0 z-40 cursor-grab active:cursor-grabbing rounded-xl" />
+                    <div className="drag-handle absolute inset-0 z-40 cursor-grab active:cursor-grabbing rounded-xl hover:bg-muted/30" />
                 )}
 
                 <div
@@ -40,7 +51,7 @@ export const WidgetWrapper = ({ layout, isEditMode }: WidgetWrapperProps) => {
                             "pointer-events-none ring-2 ring-primary/20 rounded-xl transition-all"
                     )}
                 >
-                    <Widget config={config} />
+                    {isEditMode ? renderPlaceholderWidget() : <Widget config={config} />}
                 </div>
             </div>
         </div>

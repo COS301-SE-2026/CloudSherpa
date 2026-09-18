@@ -65,8 +65,26 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
     const hasSyncedOnce = useRef(false);
     const scrollRef = useRef<HTMLDivElement>(null);
     const setIsCompacting = useDashboardStore((state) => state.actions.setIsCompacting);
-    const compactTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const compactTimerRef = useRef<NodeJS.Timeout | null>(null);
     const isInteractingRef = useRef(false);
+
+    const cancelPendingCompact = () => {
+        if (compactTimerRef.current) {
+            clearTimeout(compactTimerRef.current);
+            compactTimerRef.current = null;
+        }
+    };
+
+    const scheduleCompact = (delayMs: number) => {
+        cancelPendingCompact(); //reset if already running
+        compactTimerRef.current = setTimeout(() => {
+            if (isEditModeRef.current && !isInteractingRef.current && gridStackInstance.current) {
+                gridStackInstance.current.batchUpdate();
+                gridStackInstance.current.compact();
+                gridStackInstance.current.batchUpdate(false);
+            }
+        }, delayMs);
+    };
 
     useImperativeHandle(ref, () => ({
         compactAndGetLayout: () => {
@@ -107,7 +125,7 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
                     handle: ".drag-handle",
                     staticGrid: !isEditModeRef.current, //lock grid not in edit mode
                     float: false,
-                    animate: false, //better performance
+                    animate: true, //better performance
                     minRow: 3,
                     resizable: { handles: "se" }, // part of library handles widget resizing from "south-east"/bottom-right corner
 
@@ -121,14 +139,12 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
 
             gridStackInstance.current.on("dragstart resizestart", () => {
                 isInteractingRef.current = true;
+                cancelPendingCompact();
             });
 
             gridStackInstance.current.on("dragstop resizestop", () => {
                 isInteractingRef.current = false;
-                //force compact on mouse let go
-                // if (isEditModeRef.current && gridStackInstance.current) {
-                //     gridStackInstance.current.compact();
-                // }
+                scheduleCompact(2000);
             });
 
             gridStackInstance.current.on("change", () => {
@@ -155,6 +171,7 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
         }
 
         return () => {
+            cancelPendingCompact();
             gridStackInstance.current?.destroy(false);
             gridStackInstance.current = null;
         };
@@ -164,30 +181,16 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
         if (!gridRef.current) return;
 
         const resizeObserver = new ResizeObserver(() => {
-            if (compactTimeoutRef.current) {
-                clearTimeout(compactTimeoutRef.current);
+            if (!isInteractingRef.current) {
+                scheduleCompact(250);
             }
-
-            compactTimeoutRef.current = setTimeout(() => {
-                if (
-                    !isInteractingRef.current &&
-                    isEditModeRef.current &&
-                    gridStackInstance.current
-                ) {
-                    gridStackInstance.current.batchUpdate();
-                    gridStackInstance.current.compact();
-                    gridStackInstance.current.batchUpdate(false);
-                }
-            }, 250);
         });
 
         resizeObserver.observe(gridRef.current);
 
         return () => {
             resizeObserver.disconnect();
-            if (compactTimeoutRef.current) {
-                clearTimeout(compactTimeoutRef.current);
-            }
+            cancelPendingCompact();
         };
     }, []);
 
