@@ -221,6 +221,64 @@ CREATE TABLE IF NOT EXISTS public.widget_kpi (
   aggregation integer NOT NULL
 );
 
+-- Agentic dashboard construction tables
+CREATE TABLE IF NOT EXISTS public.ai_session (
+    session_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id uuid NOT NULL
+        REFERENCES public.users(user_id)
+        ON DELETE CASCADE,
+    created_at timestamptz NOT NULL DEFAULT NOW(),
+    last_activity timestamptz NOT NULL DEFAULT NOW(),
+    current_version_id uuid
+);
+
+CREATE TABLE IF NOT EXISTS public.ai_message (
+    message_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    session_id uuid NOT NULL
+        REFERENCES public.ai_session(session_id)
+        ON DELETE CASCADE,
+    role varchar(20) NOT NULL,
+    content text NOT NULL,
+    created_at timestamptz NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT chk_ai_message_role
+        CHECK (role IN ('USER', 'ASSISTANT'))
+);
+
+CREATE INDEX IF NOT EXISTS ix_ai_message_session_created
+    ON public.ai_message (session_id, created_at);
+
+CREATE TABLE IF NOT EXISTS public.ai_dashboard_version (
+    version_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    session_id uuid NOT NULL
+        REFERENCES public.ai_session(session_id)
+        ON DELETE CASCADE,
+
+    version_number integer NOT NULL,
+
+    parent_version_id uuid
+        REFERENCES public.ai_dashboard_version(version_id)
+        ON DELETE SET NULL,
+
+    title varchar(80) NOT NULL,
+    description text,
+
+    created_at timestamptz NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT uq_ai_version_number
+        UNIQUE (session_id, version_number)
+);
+
+ALTER TABLE public.ai_session
+    ADD CONSTRAINT fk_ai_session_current_version
+    FOREIGN KEY (current_version_id)
+    REFERENCES public.ai_dashboard_version(version_id)
+    ON DELETE SET NULL;
+
+
+
+-- CloudSherpa supported metrics
 INSERT INTO public.offered_metric (
     provider,
     service_type,
