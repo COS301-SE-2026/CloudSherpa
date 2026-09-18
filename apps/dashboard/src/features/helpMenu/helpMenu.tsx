@@ -100,10 +100,10 @@ interface KeyboardShortcuts {
 }
 
 const SHORTCUT: KeyboardShortcuts[] = [
-    {key: ["enter"], function: "Submit form" },
-    {key: ["shift + E"], function: "Edit dashboard layout"},
-    {key: ["shift + c"], function: "Chart widget"},
-    {key: ["shift + k"], function: "KPI widget"}
+    { key: ["enter"], function: "Submit form" },
+    { key: ["shift + E"], function: "Edit dashboard layout" },
+    { key: ["shift + c"], function: "Chart widget" },
+    { key: ["shift + k"], function: "KPI widget" },
 ];
 
 export function HelpMenu() {
