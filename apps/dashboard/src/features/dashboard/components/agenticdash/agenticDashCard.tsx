@@ -4,6 +4,7 @@ import { Button } from "@/components/atoms/button";
 import { useState } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/atoms/tabs";
 import StandardDashInput from "@/features/dashboard/components/agenticdash/standard";
+import History from "@/features/dashboard/components/agenticdash/history";
 
 export default function AgenticDashCard() {
     const [open, setOpen] = useState(false);
@@ -36,11 +37,10 @@ export default function AgenticDashCard() {
                                 </TabsList>
                                 <div className="h-full w-full p-0 flex flex-col">
                                     <TabsContent value="standard">
-                                        {/* component for standard input (ie. normal textbox with submit button) */}
                                         <StandardDashInput />
                                     </TabsContent>
                                     <TabsContent value="history">
-                                        {/* table content of past dashbaords and date created */}
+                                        <History />
                                     </TabsContent>
                                 </div>
                             </Tabs>
