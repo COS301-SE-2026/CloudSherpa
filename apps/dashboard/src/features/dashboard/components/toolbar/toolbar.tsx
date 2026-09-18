@@ -7,6 +7,7 @@ import { DashboardStub } from "@/features/dashboard/types/widgets";
 import EditButton from "@/features/dashboard/components/toolbar/editButton";
 import { HelpMenu } from "@/features/helpMenu/helpMenu";
 import AddWidget from "@/features/dashboard/components/toolbar/addWidget";
+import AgenticDashCard from "@/features/dashboard/components/agenticdash/agenticDashCard";
 
 interface ToolbarProps {
     dashboards: DashboardStub[];
@@ -65,6 +66,7 @@ export default function Toolbar({
                     <div className="flex flex-row items-center gap-2">
                         {hasActiveDashboard && (
                             <>
+                                <AgenticDashCard />
                                 <div className="hidden sm:block">
                                     <EditButton
                                         isEditMode={isEditMode}
