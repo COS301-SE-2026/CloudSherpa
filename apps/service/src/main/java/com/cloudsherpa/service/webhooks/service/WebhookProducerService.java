@@ -49,7 +49,7 @@ public class WebhookProducerService {
 
     List<PendingWebhookEvent> pendingWebhookEvents =
         pendingWebhookEventRepository
-            .findAll(PageRequest.of(0, available, Sort.by("eventTimestamp").ascending()))
+            .findAll(PageRequest.of(0, available * 2, Sort.by("eventTimestamp").ascending()))
             .getContent();
 
     for (PendingWebhookEvent event : pendingWebhookEvents) {
