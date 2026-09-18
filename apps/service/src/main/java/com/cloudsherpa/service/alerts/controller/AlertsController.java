@@ -1,5 +1,6 @@
 package com.cloudsherpa.service.alerts.controller;
 
+import com.cloudsherpa.lib.entities.Alert;
 import com.cloudsherpa.lib.repositories.AlertRepository;
 import com.cloudsherpa.service.alerts.dto.AlertResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -37,9 +38,8 @@ public class AlertsController {
               array = @ArraySchema(schema = @Schema(implementation = AlertResponse.class))))
   @GetMapping
   public ResponseEntity<List<AlertResponse>> getAlerts(
-      @Parameter(description = "Alert type filter, for example ANOMALY")
-          @RequestParam(name = "alertType", required = false)
-          String alertType) {
+      @RequestParam(name = "alertType", required = false) String alertType) {
+
     List<Alert> alerts =
         alertType == null
             ? alertRepository.findAll()
