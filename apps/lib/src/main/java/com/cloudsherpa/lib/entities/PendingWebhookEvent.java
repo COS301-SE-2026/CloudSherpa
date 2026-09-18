@@ -10,8 +10,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -25,9 +23,8 @@ public class PendingWebhookEvent {
     @Column(name = "tenant_id", nullable = false)
     private UUID tenantId;
 
-    @ManyToOne
-    @JoinColumn(name = "cloud_account", nullable = false) 
-    private CloudAccount cloudAccount;
+    @Column(name = "cloud_account", nullable = false)
+    private UUID cloudAccountId;
 
     @Column(name = "event_type", nullable = false)
     private String eventType;
@@ -44,13 +41,13 @@ public class PendingWebhookEvent {
     public PendingWebhookEvent(
         UUID eventId,
         UUID tenantId,
-        CloudAccount cloudAccount,
+        UUID cloudAccountId,
         String eventType,
         Instant eventTimestamp,
         JsonNode payload) {
         this.eventId = eventId;
         this.tenantId = tenantId;
-        this.cloudAccount = cloudAccount;
+        this.cloudAccountId = cloudAccountId;
         this.eventType = eventType;
         this.eventTimestamp = eventTimestamp;
         this.payload = payload;
@@ -64,8 +61,8 @@ public class PendingWebhookEvent {
         return tenantId;
     }
 
-    public CloudAccount getCloudAccountId() {
-        return cloudAccount;
+    public UUID getCloudAccountId() {
+        return cloudAccountId;
     }
 
     public String getEventType() {
@@ -84,8 +81,8 @@ public class PendingWebhookEvent {
         this.tenantId = tenantId;
     }
 
-    public void setCloudAccountId(CloudAccount cloudAccount) {
-        this.cloudAccount = cloudAccount;
+    public void setCloudAccountId(UUID cloudAccountId) {
+        this.cloudAccountId = cloudAccountId;
     }
 
     public void setEventType(String eventType) {
