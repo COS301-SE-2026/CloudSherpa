@@ -305,7 +305,7 @@ public class WebhooksController {
     return ResponseEntity.noContent().build();
   }
 
-  @PostMapping("path")
+  @PostMapping("dev")
   public ResponseEntity<Void> triggerDevEvent() {
     if (!environment.matchesProfiles("dev")) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();

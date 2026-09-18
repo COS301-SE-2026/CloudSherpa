@@ -22,7 +22,7 @@ public class WebhookEventQueue {
   public boolean offerEvent(UUID eventId) {
 
     if (qeuedOrProcessing.add(eventId)) {
-      if (!eventQueue.add(eventId)) {
+      if (!eventQueue.offer(eventId)) {
         qeuedOrProcessing.remove(eventId);
         logger.info("Did not add webhook event {} to the queue", eventId);
         return false;
