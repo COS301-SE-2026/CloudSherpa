@@ -712,7 +712,10 @@ BEGIN
             window_end timestamptz NOT NULL,
             calculated_at timestamptz DEFAULT NOW()
         );
-    $sql$, schema_name, schema_name);
+
+        CREATE INDEX IF NOT EXISTS ix_%1$s_opt_metric_stats_resource_metric
+        ON %1$I.optimization_metric_statistics (resource_id, metric_name, window_end DESC);
+    $sql$, schema_name, schema_name, schema_name);
 
     EXECUTE format($sql$
         CREATE TABLE IF NOT EXISTS %I.optimization_recommendation (
