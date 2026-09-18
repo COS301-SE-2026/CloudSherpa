@@ -7,7 +7,9 @@ import com.cloudsherpa.service.webhooks.dto.EditWebhookDto;
 import com.cloudsherpa.service.webhooks.dto.WebhookDeliveryResponse;
 import com.cloudsherpa.service.webhooks.dto.WebhookEventDto;
 import com.cloudsherpa.service.webhooks.dto.WebhookResponse;
+import com.cloudsherpa.service.webhooks.events.devevent.DevPayload;
 import com.cloudsherpa.service.webhooks.exceptions.WebhookNotFoundException;
+import com.cloudsherpa.service.webhooks.service.WebhookProducerService;
 import com.cloudsherpa.service.webhooks.service.WebhookService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -17,9 +19,13 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.core.env.Environment;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,11 +42,18 @@ public class WebhooksController {
 
   private final WebhookEventDefinitionRegistry definitionRegistry;
   private final WebhookService webhookService;
+  private final WebhookProducerService producerService;
+  private final Environment environment;
 
   public WebhooksController(
-      WebhookEventDefinitionRegistry definitionRegistry, WebhookService webhookService) {
+      WebhookEventDefinitionRegistry definitionRegistry,
+      WebhookService webhookService,
+      WebhookProducerService producerService,
+      Environment environment) {
     this.definitionRegistry = definitionRegistry;
     this.webhookService = webhookService;
+    this.producerService = producerService;
+    this.environment = environment;
   }
 
   @Operation(summary = "Get all webhooks for the current user")
@@ -290,5 +303,21 @@ public class WebhooksController {
   public ResponseEntity<Void> deleteWebhook(@PathVariable("webhookId") UUID webhookId) {
     webhookService.deleteWebhook(webhookId);
     return ResponseEntity.noContent().build();
+  }
+
+  @PostMapping("path")
+  public ResponseEntity<Void> triggerDevEvent() {
+    if (!environment.matchesProfiles("dev")) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
+    DevPayload payload = new DevPayload("Test", BigDecimal.valueOf(2), Instant.now());
+
+    producerService.produceEvent(
+        UUID.fromString("5ebe4340-c5ec-4833-ad93-06abf4609f03"),
+        UUID.fromString("a0000000-0000-0000-0000-000000000001"),
+        "dev.event",
+        payload);
+    return ResponseEntity.ok().build();
   }
 }
