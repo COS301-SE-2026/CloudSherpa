@@ -46,6 +46,31 @@ export const Webhooks = () => {
 
     const [paginationForDelivery, setPaginationForDelivery] = useState({pageIndex : 0, pageSize : 5});
 
+    useEffect(() => {
+        const loadingData = async () => {
+            try{
+                const [webhooks, events, deliveries, accounts] = await Promise.all([
+                    fetchWebhooks(), fetchWebhookEvents(), fetchWebhookDeliveries(), getAwsAccountConnections(),
+                ]);
+
+                setWebhooks(webhooks);
+                setEventsAvailable(events);
+                setDelivery(deliveries);
+                setCloudAccounts(accounts);
+
+                if(events.length>0){
+                    setEventSelectedForPayload(events[0]);
+                }
+            }catch(error){
+                //console.error("error loading webhook data");
+            }finally{
+                setLoading(false);
+            }
+        };
+
+        loadingData();
+    }, []);
+
     const handlingDelete = async (id : string) => {
         if(!confirm("Are you sure you want to delete this webhook?")){
             return;
@@ -73,6 +98,79 @@ export const Webhooks = () => {
 
         fetchWebhooks().then(setWebhooks);
     };
+
+    const filteredWebhooks = useMemo(() => {
+        return webhooks.filter((webhook) => webhook.name.toLowerCase().includes(webhookSearch.toLowerCase()) && (filterForStatus === "all" || webhook.status === filterForStatus));
+    }, [webhooks, webhookSearch, filterForStatus]);
+
+    const filteredDeliveries = useMemo(() => {
+        return delivery.filter((forDelivery) => forDelivery.eventType.toLowerCase().includes(deliverySearch.toLowerCase()));
+    }, [delivery, deliverySearch]);
+
+    const webhookColumns = useMemo<ColumnDef<Webhook>[]>(() => [
+        {accessorKey : "name", header : "Name",
+         cell : (info) => (<span className = "font-medium text-foreground"> {info.getValue() as string} </span>),
+        },
+
+        {accessorKey : "endpointUrl", header : "Endpoint URL",
+         cell : (info) => (<span className = "text-primary"> {info.getValue() as string} </span>),
+        },
+
+        {accessorKey : "eventTypes", header : "Events",
+         cell : (info) => `${(info.getValue() as string []).length} events`,
+        },
+
+        {accessorKey : "cloudAccounts", header : "Accounts",
+         cell : (info) => `${(info.getValue() as string[]).length} accounts`,
+        },
+
+        {accessorKey : "status", header : "Status", cell : (info) => {
+            const status = info.getValue() as string;
+
+            return(
+                <Badge variant = {status === "ACTIVE" ? "default" : "secondary"}
+
+                className = {status === "ACTIVE" ? "bg-success/20 text-success hover:bg-success/30" : "bg-warning/20 text-warning hover:bg-warning/30"}> {status === "ACTIVE" ? "Active" : "Paused"} </Badge>
+            );
+        },},
+
+        {id : "actions", header : "Actions", cell : ({row}) => (
+            <div className = "flex items-center gap-2">
+                <Button variant = "ghost" size = "icon" onClick = {() => handlingEdit(row.original)} className = "h-8 w-8 text-muted-foreground hover:text-foreground"> <Edit size = {16}/> </Button>
+
+                <Button variant = "ghost" size = "icon" onClick = {() => handlingDelete(row.original.id)} className = "h-8 w-8 text-destructive hover:text-destructive-foreground"> <Trash2 size = {16}/> </Button>
+            </div>
+        ),},
+    ], []);
+
+    const deliveryColumns = useMemo<ColumnDef<WebhookDelivery>[]>(() => [
+        {accessorKey : "timestamp", header : "Time", cell : (info) => new Date(info.getValue() as string).toLocaleString(),},
+
+        {accessorKey : "webhookId", header : "Webhook", cell : (info) => webhooks.find((webhook) => webhook.id === info.getValue())?.name ?? (info.getValue() as string),},
+
+        {accessorKey : "eventType", header : "Event"},
+
+        {accessorKey : "cloudAccount", header : "Account"},
+
+        {accessorKey : "result", header : "Result", cell : (info) => {
+            const forResult = info.getValue() as string;
+
+            return(
+                <span className = {forResult === "DELIVERED" ? "text-success" : "text-destructive"}> {forResult === "DELIVERED" ? "Delivered" : "Failed"} </span>
+            );
+        },},
+
+        {accessorKey : "responseCode", header : "HTTP"},
+
+    ], [webhooks]);
+
+    const tableForWebhook = useReactTable({
+        data : filteredWebhooks, columns : webhookColumns, getCoreRowModel : getCoreRowModel(), getPaginationRowModel : getPaginationRowModel(), state : {pagination : paginationForWebhook}, onPaginationChange : setPaginationForWebhook,
+    });
+
+    const tableForDelivery = useReactTable({
+        data : filteredDeliveries, columns : deliveryColumns, getCoreRowModel : getCoreRowModel(), getPaginationRowModel : getPaginationRowModel(), state : {pagination : paginationForDelivery}, onPaginationChange : setPaginationForDelivery,
+    });
 
     return(
         <div className = "p-6 max-w-7xl mx-auto space-y-8 bg-background text-foreground">
