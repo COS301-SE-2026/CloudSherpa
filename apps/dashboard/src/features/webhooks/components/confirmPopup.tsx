@@ -35,8 +35,36 @@ export const Popup = ({secret, onClose} : PropsForPopup) => {
                     <DialogDescription> This secret is shown once. Copy it now and store it securely in your receiving application. </DialogDescription>
                 </DialogHeader>
 
-                <DialogFooter>
+                <div className = "space-y-4 py-4">
+                    <div className = "space-y-2">
+                        <Label> HMAC signing secret </Label>
 
+                        <div className = "flex gap-2">
+                            <Input readOnly value = {secret} className = "flex-1"/>
+
+                            <Button variant = "secondary" onClick = {handlingCopy}>
+                                {copied ? (
+                                    <Check size = {16} className = "mr-2"/>
+                                ) : (
+                                    <Copy size = {16} className = "mr-2"/>
+                                )}
+
+                                {copied ? "Copied to clipboard." : "Copy"}
+                            </Button>
+                        </div>
+
+                        <p className = "text-xs text-muted-foreground mt-2"> Prototype only: generated locally, never sent or retained as part of the webhook configuration. </p>
+                    </div>
+
+                    <div className = "flex items-center gap-2 mt-6">
+                        <Checkbox id = "save-secret" checked = {saved} onCheckedChange = {(change) => setSaved(change as boolean)}/>
+
+                        <Label htmlFor = "save-secret" className = "text-sm cursor-pointer"> I have saved this secret. I understand I can not view it again. </Label>
+                    </div>
+                </div>
+
+                <DialogFooter>
+                    <Button onClick = {onClose} disabled = {!saved}> Done </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
