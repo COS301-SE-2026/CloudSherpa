@@ -8,6 +8,7 @@ import {
     SelectValue,
 } from "@/components/atoms/select";
 import { cn } from "@/lib/utils";
+import { ChevronDown } from "lucide-react";
 
 interface DropdownProps<T> {
     options: T[];
@@ -37,6 +38,7 @@ export function Dropdown<T>({
                 )}
             >
                 <SelectValue placeholder={placeholder} />
+                <ChevronDown className="h-4 w-4 opacity-50 transition-transform duration-200" />
             </SelectTrigger>
 
             <SelectContent
