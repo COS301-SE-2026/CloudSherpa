@@ -102,6 +102,23 @@ public class ThresholdsController {
       @Parameter(description = "Threshold UUID") @PathVariable UUID id,
       @RequestBody UpdateThresholdRequest request) {
 
+    try {
+      if (request.metricName() != null && request.metricName().isBlank()) {
+        throw new IllegalArgumentException("metric_name is required");
+      }
+
+      if (request.operator() != null
+          && !Set.of("GT", "GTE", "LT", "LTE", "EQ").contains(request.operator())) {
+        throw new IllegalArgumentException("Unsupported operator: " + request.operator());
+      }
+
+      if (request.value() != null && !Double.isFinite(request.value())) {
+        throw new IllegalArgumentException("value must be a finite number");
+      }
+    } catch (IllegalArgumentException exception) {
+      return ResponseEntity.badRequest().build();
+    }
+
     Optional<Threshold> optionalThreshold = thresholdRepository.findById(id);
 
     if (optionalThreshold.isEmpty()) {
