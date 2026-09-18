@@ -12,10 +12,14 @@ import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class WebhookEventProcessor {
+
+  private final Logger logger = LoggerFactory.getLogger(WebhookEventProcessor.class);
 
   private final PendingWebhookEventRepository pendingWebhookEventRepository;
   private final WebhookRepository webhookRepository;
@@ -38,6 +42,8 @@ public class WebhookEventProcessor {
     if (pendingWebhookEvent == null) {
       return List.of();
     }
+
+    // logger.info(pendingWebhookEvent.getEventType());
 
     List<Webhook> subscribedWebhooks =
         webhookRepository.findSubscribed(
