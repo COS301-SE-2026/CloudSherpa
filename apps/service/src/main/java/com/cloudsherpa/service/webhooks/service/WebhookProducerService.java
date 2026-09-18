@@ -9,6 +9,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -38,7 +40,17 @@ public class WebhookProducerService {
   }
 
   public void retryProductions() {
-    List<PendingWebhookEvent> pendingWebhookEvents = pendingWebhookEventRepository.findAll();
+
+    int available = eventQueue.capacity();
+
+    if (available == 0) {
+      return;
+    }
+
+    List<PendingWebhookEvent> pendingWebhookEvents =
+        pendingWebhookEventRepository
+            .findAll(PageRequest.of(0, available, Sort.by("eventTimestamp").ascending()))
+            .getContent();
 
     for (PendingWebhookEvent event : pendingWebhookEvents) {
       eventQueue.offerEvent(event.getEventId());
