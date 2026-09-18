@@ -1,5 +1,6 @@
 package com.cloudsherpa.service.listener;
 
+import com.cloudsherpa.service.alerts.service.AnomalyEvaluationService;
 import com.cloudsherpa.service.alerts.service.ThresholdEvaluationService;
 import com.cloudsherpa.service.config.TenantContext;
 import com.cloudsherpa.service.listener.dto.MetricStreamEventDto;
@@ -46,6 +47,7 @@ public class PostgresNotificationListener implements SmartLifecycle {
   private final MetricDisplayNameMapper metricDisplayNameMapper;
   private final ActiveListeners activeListeners;
   private final ThresholdEvaluationService thresholdEvaluationService;
+  private final AnomalyEvaluationService anomalyEvaluationService;
 
   private volatile boolean running;
 
@@ -56,12 +58,14 @@ public class PostgresNotificationListener implements SmartLifecycle {
       ActiveListeners activeListeners,
       ObjectMapper objectMapper,
       MetricDisplayNameMapper metricDisplayNameMapper,
-      ThresholdEvaluationService thresholdEvaluationService) {
+      ThresholdEvaluationService thresholdEvaluationService,
+      AnomalyEvaluationService anomalyEvaluationService) {
     this.sseService = sseService;
     this.activeListeners = activeListeners;
     this.objectMapper = objectMapper;
     this.metricDisplayNameMapper = metricDisplayNameMapper;
     this.thresholdEvaluationService = thresholdEvaluationService;
+    this.anomalyEvaluationService = anomalyEvaluationService;
   }
 
   // Creates a long-lived connection and registers the LISTEN channel.
@@ -164,6 +168,7 @@ public class PostgresNotificationListener implements SmartLifecycle {
       TenantContext.setCurrentTenant(userId.toString());
       try {
         thresholdEvaluationService.evaluate(rawEvent, userId);
+        anomalyEvaluationService.evaluate(rawEvent, userId);
       } finally {
         TenantContext.clear();
       }
