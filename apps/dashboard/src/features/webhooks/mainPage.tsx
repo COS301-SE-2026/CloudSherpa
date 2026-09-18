@@ -267,6 +267,74 @@ export const Webhooks = () => {
                 </CardContent>
             </Card>
 
+            <Card>
+                <CardHeader>
+                    <CardTitle> Delivery log </CardTitle>
+                </CardHeader>
+
+                <CardContent className = "space-y-4">
+                    <div className = "flex gap-4">
+                        <div className = "relative flex-1 max-w-sm">
+                            <Search className = "absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground"/>
+
+                            <Input placeholder = "Search deliveries" value = {deliverySearch} onChange = {(change) => setDeliverySearch(change.target.value)} className = "pl-8"/>
+                        </div>
+                    </div>
+
+                    <div className = "rounded-md border border-border">
+                        <Table>
+                            <TableHeader>
+                                {tableForDelivery.getHeaderGroups().map((headerGroup) => (
+                                    <TableRow key = {headerGroup.id}>
+                                        {headerGroup.headers.map((header) => (
+                                            <TableHead key = {header.id}>
+                                                {flexRender(header.column.columnDef.header, header.getContext())}
+                                            </TableHead>
+                                        ))}
+                                    </TableRow>
+                                ))}
+                            </TableHeader>
+
+                            <TableBody>
+                                {tableForDelivery.getRowModel().rows.map((forRow) => (
+                                    <TableRow key = {forRow.id}>
+                                        {forRow.getVisibleCells().map((forCells) => (
+                                            <TableCell key = {forCells.id}>
+                                                {flexRender(forCells.column.columnDef.cell, forCells.getContext())}
+                                            </TableCell>
+                                        ))}
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+
+                    <div className = "flex items-center justify-between text-sm text-muted-foreground">
+                        <span> Showing {tableForDelivery.getState().pagination.pageIndex*tableForDelivery.getState().pagination.pageSize+1} - {Math.min((tableForDelivery.getState().pagination.pageIndex+1)*tableForDelivery.getState().pagination.pageSize, filteredDeliveries.length)} of {filteredDeliveries.length} deliveries </span>
+
+                        <div className = "flex items-center gap-2">
+                            <Button variant = "ghost" size = "icon" className = "h-8 w-8" onClick = {() => tableForDelivery.previousPage()} disabled = {!tableForDelivery.getCanPreviousPage()}> <ChevronLeft size = {16}/> </Button>
+
+                            <span> Page {tableForDelivery.getState().pagination.pageIndex+1} of {tableForDelivery.getPageCount()} </span>
+
+                            <Button variant = "ghost" size = "icon" className = "h-8 w-8" onClick = {() => tableForDelivery.nextPage()} disabled = {!tableForDelivery.getCanNextPage()}> <ChevronRight size = {16}/> </Button>
+
+                            <span className = "ml-2"> Rows per page:
+                                <Select value = {String(tableForDelivery.getState().pagination.pageSize)} onValueChange = {(value) => tableForDelivery.setPageSize(Number(value))}>
+                                    <SelectTrigger className = "w-[70px] h-8"> <SelectValue/> </SelectTrigger>
+
+                                    <SelectContent>
+                                        <SelectItem value = "5"> 5 </SelectItem>
+                                        <SelectItem value = "10"> 10 </SelectItem>
+                                        <SelectItem value = "15"> 15 </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </span>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
         </div>
     );
 };
