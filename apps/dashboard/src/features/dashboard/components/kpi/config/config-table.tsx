@@ -35,7 +35,7 @@ import {
 } from "@/components/atoms/table";
 import { SearchIcon } from "lucide-react";
 import { FormCountCircle } from "@/components/atoms/form-count-circle";
-import React, { useEffect, useMemo } from "react";
+import React, { useMemo } from "react";
 import { DataTablePagination } from "./config-table-pagination";
 import { CloudProviderEnum } from "@/features/dashboard/types/provider";
 import { Spinner } from "@/components/atoms/spinner";
