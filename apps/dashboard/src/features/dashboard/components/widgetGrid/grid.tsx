@@ -66,6 +66,7 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
     const scrollRef = useRef<HTMLDivElement>(null);
     const setIsCompacting = useDashboardStore((state) => state.actions.setIsCompacting);
     const compactTimerRef = useRef<NodeJS.Timeout | null>(null);
+    const layoutChangeTimerRef = useRef<NodeJS.Timeout | null>(null);
     const isInteractingRef = useRef(false);
 
     const cancelPendingCompact = () => {
@@ -144,34 +145,40 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
 
             gridStackInstance.current.on("dragstop resizestop", () => {
                 isInteractingRef.current = false;
-                scheduleCompact(2000);
+                scheduleCompact(500);
             });
 
             gridStackInstance.current.on("change", () => {
-                if (
-                    gridStackInstance.current &&
-                    isEditModeRef.current &&
-                    !isInternalUpdate.current
-                ) {
-                    isInternalUpdate.current = true;
-                    const fullLayout = gridStackInstance.current.save(
-                        false,
-                        false,
-                        (node, w: GridStackWidget) => {
-                            (w as LayoutItem).id = String(node.id || "");
-                        }
-                    ) as LayoutItem[];
-
-                    const widgetsMap = useDashboardStore.getState().widgets;
-                    const repaired = repairLayout(fullLayout, widgetsMap);
-
-                    onLayoutChangeRef.current(repaired);
+                if (layoutChangeTimerRef.current) {
+                    clearTimeout(layoutChangeTimerRef.current);
                 }
+                layoutChangeTimerRef.current = setTimeout(() => {
+                    if (
+                        gridStackInstance.current &&
+                        isEditModeRef.current &&
+                        !isInternalUpdate.current
+                    ) {
+                        isInternalUpdate.current = true;
+                        const fullLayout = gridStackInstance.current.save(
+                            false,
+                            false,
+                            (node, w: GridStackWidget) => {
+                                (w as LayoutItem).id = String(node.id || "");
+                            }
+                        ) as LayoutItem[];
+
+                        const widgetsMap = useDashboardStore.getState().widgets;
+                        const repaired = repairLayout(fullLayout, widgetsMap);
+
+                        onLayoutChangeRef.current(repaired);
+                    }
+                }, 500);
             });
         }
 
         return () => {
             cancelPendingCompact();
+            if (layoutChangeTimerRef.current) clearTimeout(layoutChangeTimerRef.current);
             gridStackInstance.current?.destroy(false);
             gridStackInstance.current = null;
         };
@@ -267,7 +274,9 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
             gridStackInstance.current?.removeWidget(node.el!, false, false);
         });
         //compact on change or load
-        gridStackInstance.current.compact();
+        if (!isInteractingRef.current) {
+            gridStackInstance.current.compact();
+        }
         gridStackInstance.current.batchUpdate(false);
 
         if (hasSyncedOnce.current && addedNewWidget && !isEditModeRef.current) {
