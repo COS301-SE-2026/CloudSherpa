@@ -1,5 +1,6 @@
 package com.cloudsherpa.service.alerts.controller;
 
+import com.cloudsherpa.lib.entities.Alert;
 import com.cloudsherpa.lib.repositories.AlertRepository;
 import com.cloudsherpa.service.alerts.dto.AlertResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,7 +26,9 @@ public class AlertsController {
     this.alertRepository = alertRepository;
   }
 
-  @Operation(summary = "List alerts", description = "Return alerts for the current tenant.")
+  @Operation(
+      summary = "List alerts",
+      description = "Return alerts for the current tenant, optionally filtered by alert type.")
   @ApiResponse(
       responseCode = "200",
       description = "Alerts returned",
@@ -34,8 +37,15 @@ public class AlertsController {
               mediaType = "application/json",
               array = @ArraySchema(schema = @Schema(implementation = AlertResponse.class))))
   @GetMapping
-  public ResponseEntity<List<AlertResponse>> getAlerts() {
-    return ResponseEntity.ok(alertRepository.findAll().stream().map(AlertResponse::from).toList());
+  public ResponseEntity<List<AlertResponse>> getAlerts(
+      @RequestParam(name = "alertType", required = false) String alertType) {
+
+    List<Alert> alerts =
+        alertType == null
+            ? alertRepository.findAll()
+            : alertRepository.findByAlertTypeOrderByCreatedAtDesc(alertType);
+
+    return ResponseEntity.ok(alerts.stream().map(AlertResponse::from).toList());
   }
 
   @Operation(summary = "Get alert", description = "Return details for a single alert.")
