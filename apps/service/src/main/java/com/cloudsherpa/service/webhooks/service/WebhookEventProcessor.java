@@ -2,7 +2,10 @@ package com.cloudsherpa.service.webhooks.service;
 
 import com.cloudsherpa.lib.entities.PendingWebhookEvent;
 import com.cloudsherpa.lib.entities.Webhook;
+import com.cloudsherpa.lib.entities.WebhookDelivery;
+import com.cloudsherpa.lib.entities.WebhookDeliveryStatusEnum;
 import com.cloudsherpa.lib.repositories.PendingWebhookEventRepository;
+import com.cloudsherpa.lib.repositories.WebhookDeliveryRepository;
 import com.cloudsherpa.lib.repositories.WebhookRepository;
 import jakarta.transaction.Transactional;
 import java.util.List;
@@ -14,12 +17,15 @@ public class WebhookEventProcessor {
 
   private final PendingWebhookEventRepository pendingWebhookEventRepository;
   private final WebhookRepository webhookRepository;
+  private final WebhookDeliveryRepository webhookDeliveryRepository;
 
   public WebhookEventProcessor(
       PendingWebhookEventRepository pendingWebhookEventRepository,
-      WebhookRepository webhookRepository) {
+      WebhookRepository webhookRepository,
+      WebhookDeliveryRepository webhookDeliveryRepository) {
     this.pendingWebhookEventRepository = pendingWebhookEventRepository;
     this.webhookRepository = webhookRepository;
+    this.webhookDeliveryRepository = webhookDeliveryRepository;
   }
 
   @Transactional
@@ -37,5 +43,26 @@ public class WebhookEventProcessor {
     if (subscribedWebhooks.isEmpty()) {
       return;
     }
+
+    for (Webhook webhook : subscribedWebhooks) {
+      webhookDeliveryRepository.save(fromPendingEvent(pendingWebhookEvent, webhook.getWebhookId()));
+    }
+
+    pendingWebhookEventRepository.delete(pendingWebhookEvent);
+  }
+
+  private WebhookDelivery fromPendingEvent(
+      PendingWebhookEvent pendingWebhookEvent, UUID webhookId) {
+    return new WebhookDelivery(
+        UUID.randomUUID(),
+        webhookId,
+        pendingWebhookEvent.getEventId(),
+        pendingWebhookEvent.getCloudAccountId(),
+        pendingWebhookEvent.getEventType(),
+        pendingWebhookEvent.getEventTimestamp(),
+        pendingWebhookEvent.getPayload(),
+        WebhookDeliveryStatusEnum.PENDING,
+        null,
+        0);
   }
 }
