@@ -4,8 +4,8 @@ import com.cloudsherpa.lib.repositories.AlertRepository;
 import com.cloudsherpa.service.alerts.dto.AlertResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,42 +25,32 @@ public class AlertsController {
     this.alertRepository = alertRepository;
   }
 
-  @Operation(
-      summary = "List alerts",
-      description =
-          "Return a list of alerts for the current tenant/user (security/tenant scoping handled globally).")
+  @Operation(summary = "List alerts", description = "Return alerts for the current tenant.")
   @ApiResponse(
       responseCode = "200",
-      description = "A list of alerts",
+      description = "Alerts returned",
       content =
           @Content(
               mediaType = "application/json",
-              schema = @Schema(implementation = AlertResponse.class),
-              examples =
-                  @ExampleObject(
-                      value =
-                          "[{\"alertId\":\"b0000000-0000-0000-0000-000000000001\",\"userId\":\"5ebe4340-c5ec-4833-ad93-06abf4609f03\",\"alertType\":\"BILLING\",\"severity\":\"WARNING\",\"title\":\"30-day projected spend may exceed budget\",\"message\":\"Projected 30d spend $1,200 vs budget $1,000\",\"payload\":{},\"status\":\"ACTIVE\",\"canonicalKey\":null,\"createdAt\":\"2026-09-16T12:00:00Z\",\"lastSeen\":\"2026-09-16T12:00:00Z\",\"resolvedAt\":null}]")))
+              array = @ArraySchema(schema = @Schema(implementation = AlertResponse.class))))
   @GetMapping
   public ResponseEntity<List<AlertResponse>> getAlerts() {
-    // fetch all alerts
     return ResponseEntity.ok(alertRepository.findAll().stream().map(AlertResponse::from).toList());
   }
 
-  @Operation(summary = "Get alert", description = "Return details for a single alert by id.")
+  @Operation(summary = "Get alert", description = "Return details for a single alert.")
   @ApiResponse(
       responseCode = "200",
       description = "Alert found",
       content =
           @Content(
               mediaType = "application/json",
-              schema = @Schema(implementation = AlertResponse.class),
-              examples =
-                  @ExampleObject(
-                      value =
-                          "{\"alertId\":\"b0000000-0000-0000-0000-000000000001\",\"userId\":\"5ebe4340-c5ec-4833-ad93-06abf4609f03\",\"alertType\":\"THRESHOLD\",\"severity\":\"CRITICAL\",\"title\":\"CPU > 90%\",\"message\":\"CPU usage 95% on instance i-0123\",\"payload\":{},\"status\":\"ACTIVE\",\"canonicalKey\":null,\"createdAt\":\"2026-09-16T12:00:00Z\",\"lastSeen\":\"2026-09-16T12:00:00Z\",\"resolvedAt\":null}")))
+              schema = @Schema(implementation = AlertResponse.class)))
   @ApiResponse(responseCode = "404", description = "Alert not found", content = @Content)
   @GetMapping("/{id}")
-  public ResponseEntity<AlertResponse> getAlert(@PathVariable UUID id) {
+  public ResponseEntity<AlertResponse> getAlert(
+      @Parameter(description = "Alert UUID") @PathVariable UUID id) {
+
     return alertRepository
         .findById(id)
         .map(AlertResponse::from)
@@ -74,7 +64,6 @@ public class AlertsController {
   @PostMapping("/{id}/acknowledge")
   public ResponseEntity<Void> acknowledge(
       @Parameter(description = "Alert UUID") @PathVariable UUID id) {
-    // update status -> ACKNOWLEDGED
     return ResponseEntity.noContent().build();
   }
 
@@ -84,7 +73,6 @@ public class AlertsController {
   @PostMapping("/{id}/dismiss")
   public ResponseEntity<Void> dismiss(
       @Parameter(description = "Alert UUID") @PathVariable UUID id) {
-    // update status -> DISMISSED
     return ResponseEntity.noContent().build();
   }
 }
