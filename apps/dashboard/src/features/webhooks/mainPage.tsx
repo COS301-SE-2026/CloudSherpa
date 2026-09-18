@@ -335,6 +335,58 @@ export const Webhooks = () => {
                 </CardContent>
             </Card>
 
+            <Card>
+                <CardHeader>
+                    <CardTitle> Payload examples </CardTitle>
+
+                    <CardDescription> Explore the JSON your endpoint would receive </CardDescription>
+                </CardHeader>
+
+                <CardContent>
+                    <div className = "grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className = "space-y-6">
+                            <div className = "space-y-2">
+                                <Label htmlFor = "event-type"> Event type </Label>
+
+                                <Select value = {eventSelectedForPayload?.id} onValueChange = {(value) => setEventSelectedForPayload(eventsAvailable.find((events) => events.id === value) ?? null)}>
+                                    <SelectTrigger id = "event-type">
+                                        <SelectValue placeholder = "Select event"/>
+                                    </SelectTrigger>
+
+                                    <SelectContent>
+                                        {eventsAvailable.map((events) => (
+                                            <SelectItem key = {events.id} value = {events.id}> {events.description} </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className = "bg-muted/50 p-4 rounded border border-border">
+                                <h3 className = "text-sm font-semibold mb-2"> Verify the signature </h3>
+
+                                <p className = "text-xs text-muted-foreground mb-2"> Sign webhook-id.webhook-timestamp.raw_body with HMAC-SHA256. </p>
+                            </div>
+                        </div>
+
+                        <div className = "md:col-span-2">
+                            {eventSelectedForPayload && (
+                                <ExampleForPayload event = {eventSelectedForPayload}/>
+                            )}
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {addWebhookOpen && (
+                <AddWebhook isOpen = {addWebhookOpen} onClose = {() => setAddWebhookOpen(false)}
+                            eventsAvailable = {eventsAvailable} cloudAccounts = {cloudAccounts} 
+                            initialData = {editWebhook} onSuccess = {handlingAddSuccess}
+                />
+            )}
+
+            {secret && (
+                <Popup secret = {secret} onClose = {() => setSecret(null)} />
+            )}
         </div>
     );
 };
