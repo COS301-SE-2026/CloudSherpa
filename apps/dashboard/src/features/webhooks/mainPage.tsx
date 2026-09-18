@@ -239,19 +239,21 @@ export const Webhooks = () => {
                         </Table>
                     </div>
 
-                    <div className = "flex items-center justify-between text-sm text-muted-foreground">
+                    <div className = "grid grid-cols-3 items-center text-sm text-muted-foreground">
                         <span>
                             Showing {tableForWebhook.getState().pagination.pageIndex*tableForWebhook.getState().pagination.pageSize+1} - {Math.min((tableForWebhook.getState().pagination.pageIndex+1)*tableForWebhook.getState().pagination.pageSize, filteredWebhooks.length)} of {filteredWebhooks.length} webhooks
                         </span>
 
-                        <div className = "flex items-center gap-2">
+                        <div className = "flex items-center justify-center gap-2">
                             <Button variant = "ghost" size = "icon" className = "h-8 w-8" onClick = {() => tableForWebhook.previousPage()} disabled = {!tableForWebhook.getCanPreviousPage()}> <ChevronLeft size = {16}/> </Button>
 
                             <span> Page {tableForWebhook.getState().pagination.pageIndex+1} of {tableForWebhook.getPageCount()} </span>
 
                             <Button variant = "ghost" size = "icon" className = "h-8 w-8" onClick = {() => tableForWebhook.nextPage()} disabled = {!tableForWebhook.getCanNextPage()}> <ChevronRight size = {16}/> </Button>
+                        </div>
 
-                            <span className = "ml-2"> Rows per page:
+                        <div className = "flex items-center justify-end gap-2">
+                            <span> Rows per page: </span>
                                 <Select value = {String(tableForWebhook.getState().pagination.pageSize)} onValueChange = {(value) => tableForWebhook.setPageSize(Number(value))}>
                                     <SelectTrigger className = "w-[70px] h-8"> <SelectValue/> </SelectTrigger>
 
@@ -261,8 +263,8 @@ export const Webhooks = () => {
                                         <SelectItem value = "15"> 15 </SelectItem>
                                     </SelectContent>
                                 </Select>
-                            </span>
                         </div>
+                        
                     </div>
                 </CardContent>
             </Card>
@@ -309,17 +311,19 @@ export const Webhooks = () => {
                         </Table>
                     </div>
 
-                    <div className = "flex items-center justify-between text-sm text-muted-foreground">
+                    <div className = "grid grid-cols-3 items-center text-sm text-muted-foreground">
                         <span> Showing {tableForDelivery.getState().pagination.pageIndex*tableForDelivery.getState().pagination.pageSize+1} - {Math.min((tableForDelivery.getState().pagination.pageIndex+1)*tableForDelivery.getState().pagination.pageSize, filteredDeliveries.length)} of {filteredDeliveries.length} deliveries </span>
 
-                        <div className = "flex items-center gap-2">
+                        <div className = "flex items-center justify-center gap-2">
                             <Button variant = "ghost" size = "icon" className = "h-8 w-8" onClick = {() => tableForDelivery.previousPage()} disabled = {!tableForDelivery.getCanPreviousPage()}> <ChevronLeft size = {16}/> </Button>
 
                             <span> Page {tableForDelivery.getState().pagination.pageIndex+1} of {tableForDelivery.getPageCount()} </span>
 
                             <Button variant = "ghost" size = "icon" className = "h-8 w-8" onClick = {() => tableForDelivery.nextPage()} disabled = {!tableForDelivery.getCanNextPage()}> <ChevronRight size = {16}/> </Button>
+                        </div>
 
-                            <span className = "ml-2"> Rows per page:
+                        <div className = "flex items-center justify-end gap-2">
+                            <span> Rows per page: </span>
                                 <Select value = {String(tableForDelivery.getState().pagination.pageSize)} onValueChange = {(value) => tableForDelivery.setPageSize(Number(value))}>
                                     <SelectTrigger className = "w-[70px] h-8"> <SelectValue/> </SelectTrigger>
 
@@ -329,8 +333,8 @@ export const Webhooks = () => {
                                         <SelectItem value = "15"> 15 </SelectItem>
                                     </SelectContent>
                                 </Select>
-                            </span>
                         </div>
+                        
                     </div>
                 </CardContent>
             </Card>
