@@ -185,6 +185,88 @@ export const Webhooks = () => {
                 <Button onClick = {() => {setEditWebhook(null); setAddWebhookOpen(true);}}> <Plus size = {16} className = "mr-2"/> Add webhook </Button>
             </div>
 
+            <Card>
+                <CardHeader>
+                    <CardTitle> Configured webhooks </CardTitle>
+                </CardHeader>
+
+                <CardContent className = "space-y-4">
+                    <div className = "flex gap-4">
+                        <div className = "relative flex-1 max-w-sm">
+                            <Search className = "absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground"/>
+
+                            <Input placeholder = "Search webhooks" value = {webhookSearch} onChange = {(change) => setWebhookSearch(change.target.value)} className = "pl-8"/>
+                        </div>
+
+                        <Select value = {filterForStatus} onValueChange = {setFilterForStatus}>
+                            <SelectTrigger className = "w-[180px]"> <SelectValue placeholder = "All statuses"/> </SelectTrigger>
+
+                            <SelectContent>
+                                <SelectItem value = "all"> All statuses </SelectItem>
+
+                                <SelectItem value = "ACTIVE"> Active </SelectItem>
+
+                                <SelectItem value = "PAUSED"> Paused </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <div className = "rounded-md border border-border">
+                        <Table>
+                            <TableHeader>
+                                {tableForWebhook.getHeaderGroups().map((headerGroup) => (
+                                    <TableRow key = {headerGroup.id}>
+                                        {headerGroup.headers.map((header) => (
+                                            <TableHead key = {header.id}>
+                                                {flexRender(header.column.columnDef.header, header.getContext())}
+                                            </TableHead>
+                                        ))}
+                                    </TableRow>
+                                ))}
+                            </TableHeader>
+
+                            <TableBody>
+                                {tableForWebhook.getRowModel().rows.map((forRows) => (
+                                    <TableRow key = {forRows.id}>
+                                        {forRows.getVisibleCells().map((forCells) => (
+                                            <TableCell key = {forCells.id}>
+                                                {flexRender(forCells.column.columnDef.cell, forCells.getContext())}
+                                            </TableCell>
+                                        ))}
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+
+                    <div className = "flex items-center justify-between text-sm text-muted-foreground">
+                        <span>
+                            Showing {tableForWebhook.getState().pagination.pageIndex*tableForWebhook.getState().pagination.pageSize+1} - {Math.min((tableForWebhook.getState().pagination.pageIndex+1)*tableForWebhook.getState().pagination.pageSize, filteredWebhooks.length)} of {filteredWebhooks.length} webhooks
+                        </span>
+
+                        <div className = "flex items-center gap-2">
+                            <Button variant = "ghost" size = "icon" className = "h-8 w-8" onClick = {() => tableForWebhook.previousPage()} disabled = {!tableForWebhook.getCanPreviousPage()}> <ChevronLeft size = {16}/> </Button>
+
+                            <span> Page {tableForWebhook.getState().pagination.pageIndex+1} of {tableForWebhook.getPageCount()} </span>
+
+                            <Button variant = "ghost" size = "icon" className = "h-8 w-8" onClick = {() => tableForWebhook.nextPage()} disabled = {!tableForWebhook.getCanNextPage()}> <ChevronRight size = {16}/> </Button>
+
+                            <span className = "ml-2"> Rows per page:
+                                <Select value = {String(tableForWebhook.getState().pagination.pageSize)} onValueChange = {(value) => tableForWebhook.setPageSize(Number(value))}>
+                                    <SelectTrigger className = "w-[70px] h-8"> <SelectValue/> </SelectTrigger>
+
+                                    <SelectContent>
+                                        <SelectItem value = "5"> 5 </SelectItem>
+                                        <SelectItem value = "10"> 10 </SelectItem>
+                                        <SelectItem value = "15"> 15 </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </span>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
         </div>
     );
 };
