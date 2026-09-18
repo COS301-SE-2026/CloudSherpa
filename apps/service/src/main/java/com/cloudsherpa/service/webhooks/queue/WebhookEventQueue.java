@@ -1,9 +1,9 @@
 package com.cloudsherpa.service.webhooks.queue;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +17,7 @@ public class WebhookEventQueue {
   private static final Integer QUEUE_CAPACITY = 10;
   private final BlockingQueue<UUID> eventQueue = new LinkedBlockingQueue<UUID>(QUEUE_CAPACITY);
   // Used to prevent duplicate entries in queue
-  private Set<UUID> qeuedOrProcessing = new HashSet<>();
+  private Set<UUID> qeuedOrProcessing = ConcurrentHashMap.newKeySet();
 
   public boolean offerEvent(UUID eventId) {
 
@@ -37,5 +37,13 @@ public class WebhookEventQueue {
 
   public Integer capacity() {
     return eventQueue.remainingCapacity();
+  }
+
+  public UUID takeEvent() throws InterruptedException {
+    return eventQueue.take();
+  }
+
+  public void finishEvent(UUID eventId) {
+    qeuedOrProcessing.remove(eventId);
   }
 }
