@@ -1,5 +1,6 @@
 package com.cloudsherpa.service.webhooks.consumers;
 
+import com.cloudsherpa.lib.entities.CloudAccount;
 import com.cloudsherpa.lib.entities.PendingWebhookEvent;
 import com.cloudsherpa.lib.entities.Webhook;
 import com.cloudsherpa.lib.entities.WebhookDelivery;
@@ -8,6 +9,7 @@ import com.cloudsherpa.lib.repositories.PendingWebhookEventRepository;
 import com.cloudsherpa.lib.repositories.WebhookDeliveryRepository;
 import com.cloudsherpa.lib.repositories.WebhookRepository;
 import com.cloudsherpa.service.webhooks.model.DeliveryTask;
+import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,14 +22,17 @@ public class WebhookEventProcessor {
   private final PendingWebhookEventRepository pendingWebhookEventRepository;
   private final WebhookRepository webhookRepository;
   private final WebhookDeliveryRepository webhookDeliveryRepository;
+  private final EntityManager entityManager;
 
   public WebhookEventProcessor(
       PendingWebhookEventRepository pendingWebhookEventRepository,
       WebhookRepository webhookRepository,
-      WebhookDeliveryRepository webhookDeliveryRepository) {
+      WebhookDeliveryRepository webhookDeliveryRepository,
+      EntityManager entityManager) {
     this.pendingWebhookEventRepository = pendingWebhookEventRepository;
     this.webhookRepository = webhookRepository;
     this.webhookDeliveryRepository = webhookDeliveryRepository;
+    this.entityManager = entityManager;
   }
 
   @Transactional
@@ -43,9 +48,13 @@ public class WebhookEventProcessor {
         webhookRepository.findSubscribed(
             pendingWebhookEvent.getEventType(), pendingWebhookEvent.getCloudAccountId());
 
+    CloudAccount cloudAccount =
+        entityManager.getReference(CloudAccount.class, pendingWebhookEvent.getCloudAccountId());
+
     List<DeliveryTask> deliveryTasks = new ArrayList<>();
     for (Webhook webhook : subscribedWebhooks) {
-      WebhookDelivery delivery = fromPendingEvent(pendingWebhookEvent, webhook.getWebhookId());
+
+      WebhookDelivery delivery = fromPendingEvent(pendingWebhookEvent, webhook, cloudAccount);
       webhookDeliveryRepository.save(delivery);
       deliveryTasks.add(
           new DeliveryTask(pendingWebhookEvent.getTenantId(), delivery.getWebhookDeliveryId()));
@@ -56,12 +65,12 @@ public class WebhookEventProcessor {
   }
 
   private WebhookDelivery fromPendingEvent(
-      PendingWebhookEvent pendingWebhookEvent, UUID webhookId) {
+      PendingWebhookEvent pendingWebhookEvent, Webhook webhook, CloudAccount cloudAccount) {
     return new WebhookDelivery(
         UUID.randomUUID(),
-        webhookId,
+        webhook,
         pendingWebhookEvent.getEventId(),
-        pendingWebhookEvent.getCloudAccountId(),
+        cloudAccount,
         pendingWebhookEvent.getEventType(),
         pendingWebhookEvent.getEventTimestamp(),
         pendingWebhookEvent.getPayload(),

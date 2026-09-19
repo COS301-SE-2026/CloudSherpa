@@ -1,6 +1,7 @@
 package com.cloudsherpa.service.webhooks;
 
 import com.cloudsherpa.lib.entities.ProviderEnum;
+import com.cloudsherpa.service.webhooks.dto.WebhookEventCloudAccount;
 import com.cloudsherpa.service.webhooks.dto.WebhookEventDto;
 import com.cloudsherpa.service.webhooks.events.WebhookEventDefinition;
 import java.time.Instant;
@@ -33,7 +34,7 @@ public class WebhookEventDefinitionRegistry {
                   exampleId(definition.type()),
                   definition.type(),
                   Instant.ofEpochMilli(0),
-                  new WebhookEventDto.WebhookEventCloudAccount("Example Account", ProviderEnum.AWS),
+                  new WebhookEventCloudAccount("Example Account", ProviderEnum.AWS),
                   definition.examplePayload()));
     }
   }

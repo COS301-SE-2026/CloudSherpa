@@ -1,11 +1,14 @@
 package com.cloudsherpa.lib.entities;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import jakarta.persistence.Entity;
 import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.UUID;
@@ -20,14 +23,16 @@ public class WebhookDelivery {
   @Column(name = "webhook_delivery_id", nullable = false)
   private UUID webhookDeliveryId;
 
-  @Column(name = "webhook_id")
-  private UUID webhookId;
+  @ManyToOne(fetch = FetchType.LAZY, optional = true)
+  @JoinColumn(name = "webhook_id")
+  private Webhook webhook;
 
   @Column(name = "event_id", nullable = false)
   private UUID eventId;
 
-  @Column(name = "cloud_account")
-  private UUID cloudAccountId;
+  @ManyToOne(fetch = FetchType.LAZY, optional = true)
+  @JoinColumn(name = "cloud_account")
+  private CloudAccount cloudAccount;
 
   @Column(name = "event_type", nullable = false)
   private String eventType;
@@ -57,9 +62,9 @@ public class WebhookDelivery {
 
   public WebhookDelivery(
       UUID webhookDeliveryId,
-      UUID webhookId,
+      Webhook webhook,
       UUID eventId,
-      UUID cloudAccountId,
+      CloudAccount cloudAccount,
       String eventType,
       Instant eventTimestamp,
       JsonNode payload,
@@ -67,9 +72,9 @@ public class WebhookDelivery {
       Integer responseCode,
       Integer attemptCount) {
     this.webhookDeliveryId = webhookDeliveryId;
-    this.webhookId = webhookId;
+    this.webhook = webhook;
     this.eventId = eventId;
-    this.cloudAccountId = cloudAccountId;
+    this.cloudAccount = cloudAccount;
     this.eventType = eventType;
     this.eventTimestamp = eventTimestamp;
     this.payload = payload;
@@ -82,16 +87,16 @@ public class WebhookDelivery {
     return webhookDeliveryId;
   }
 
-  public UUID getWebhookId() {
-    return webhookId;
+  public Webhook getWebhook() {
+    return webhook;
   }
 
   public UUID getEventId() {
     return eventId;
   }
 
-  public UUID getCloudAccountId() {
-    return cloudAccountId;
+  public CloudAccount getCloudAccount() {
+    return cloudAccount;
   }
 
   public String getEventType() {
@@ -118,16 +123,16 @@ public class WebhookDelivery {
     return attemptCount;
   }
 
-  public void setWebhookId(UUID webhookId) {
-    this.webhookId = webhookId;
+  public void setWebhook(Webhook webhook) {
+    this.webhook = webhook;
   }
 
   public void setEventId(UUID eventId) {
     this.eventId = eventId;
   }
 
-  public void setCloudAccountId(UUID cloudAccountId) {
-    this.cloudAccountId = cloudAccountId;
+  public void setCloudAccount(CloudAccount cloudAccount) {
+    this.cloudAccount = cloudAccount;
   }
 
   public void setEventType(String eventType) {
