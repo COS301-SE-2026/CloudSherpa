@@ -65,6 +65,27 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
     const hasSyncedOnce = useRef(false);
     const scrollRef = useRef<HTMLDivElement>(null);
     const setIsCompacting = useDashboardStore((state) => state.actions.setIsCompacting);
+    const compactTimerRef = useRef<NodeJS.Timeout | null>(null);
+    const layoutChangeTimerRef = useRef<NodeJS.Timeout | null>(null);
+    const isInteractingRef = useRef(false);
+
+    const cancelPendingCompact = () => {
+        if (compactTimerRef.current) {
+            clearTimeout(compactTimerRef.current);
+            compactTimerRef.current = null;
+        }
+    };
+
+    const scheduleCompact = (delayMs: number) => {
+        cancelPendingCompact(); //reset if already running
+        compactTimerRef.current = setTimeout(() => {
+            if (isEditModeRef.current && !isInteractingRef.current && gridStackInstance.current) {
+                gridStackInstance.current.batchUpdate();
+                gridStackInstance.current.compact();
+                gridStackInstance.current.batchUpdate(false);
+            }
+        }, delayMs);
+    };
 
     useImperativeHandle(ref, () => ({
         compactAndGetLayout: () => {
@@ -105,7 +126,7 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
                     handle: ".drag-handle",
                     staticGrid: !isEditModeRef.current, //lock grid not in edit mode
                     float: false,
-                    animate: false, //better performance
+                    animate: true, //better performance
                     minRow: 3,
                     resizable: { handles: "se" }, // part of library handles widget resizing from "south-east"/bottom-right corner
 
@@ -117,32 +138,66 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
                 gridRef.current
             );
 
+            gridStackInstance.current.on("dragstart resizestart", () => {
+                isInteractingRef.current = true;
+                cancelPendingCompact();
+            });
+
+            gridStackInstance.current.on("dragstop resizestop", () => {
+                isInteractingRef.current = false;
+                scheduleCompact(500);
+            });
+
             gridStackInstance.current.on("change", () => {
-                if (
-                    gridStackInstance.current &&
-                    isEditModeRef.current &&
-                    !isInternalUpdate.current
-                ) {
-                    isInternalUpdate.current = true;
-                    const fullLayout = gridStackInstance.current.save(
-                        false,
-                        false,
-                        (node, w: GridStackWidget) => {
-                            (w as LayoutItem).id = String(node.id || "");
-                        }
-                    ) as LayoutItem[];
-
-                    const widgetsMap = useDashboardStore.getState().widgets;
-                    const repaired = repairLayout(fullLayout, widgetsMap);
-
-                    onLayoutChangeRef.current(repaired);
+                if (layoutChangeTimerRef.current) {
+                    clearTimeout(layoutChangeTimerRef.current);
                 }
+                layoutChangeTimerRef.current = setTimeout(() => {
+                    if (
+                        gridStackInstance.current &&
+                        isEditModeRef.current &&
+                        !isInternalUpdate.current
+                    ) {
+                        isInternalUpdate.current = true;
+                        const fullLayout = gridStackInstance.current.save(
+                            false,
+                            false,
+                            (node, w: GridStackWidget) => {
+                                (w as LayoutItem).id = String(node.id || "");
+                            }
+                        ) as LayoutItem[];
+
+                        const widgetsMap = useDashboardStore.getState().widgets;
+                        const repaired = repairLayout(fullLayout, widgetsMap);
+
+                        onLayoutChangeRef.current(repaired);
+                    }
+                }, 500);
             });
         }
 
         return () => {
+            cancelPendingCompact();
+            if (layoutChangeTimerRef.current) clearTimeout(layoutChangeTimerRef.current);
             gridStackInstance.current?.destroy(false);
             gridStackInstance.current = null;
+        };
+    }, []);
+
+    useEffect(() => {
+        if (!gridRef.current) return;
+
+        const resizeObserver = new ResizeObserver(() => {
+            if (!isInteractingRef.current) {
+                scheduleCompact(250);
+            }
+        });
+
+        resizeObserver.observe(gridRef.current);
+
+        return () => {
+            resizeObserver.disconnect();
+            cancelPendingCompact();
         };
     }, []);
 
@@ -219,7 +274,9 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
             gridStackInstance.current?.removeWidget(node.el!, false, false);
         });
         //compact on change or load
-        gridStackInstance.current.compact();
+        if (!isInteractingRef.current) {
+            gridStackInstance.current.compact();
+        }
         gridStackInstance.current.batchUpdate(false);
 
         if (hasSyncedOnce.current && addedNewWidget && !isEditModeRef.current) {

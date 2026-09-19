@@ -76,6 +76,7 @@ export default function Toolbar({
                                 <AddWidget
                                     handleAddWidget={handleAddWidget}
                                     handleAddKpi={handleAddKpi}
+                                    isEditMode={isEditMode}
                                 />
                             </>
                         )}
