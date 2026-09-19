@@ -34,6 +34,29 @@ public class WebhookDeliveryStateService {
     return toAttempt(delivery);
   }
 
+  @Transactional
+  public void recordOutcome(DeliveryTask task, Integer responseCode) {
+    WebhookDelivery delivery =
+        deliveryRepository
+            .findDeliveryForUpdate(task.deliveryId(), WebhookDeliveryStatusEnum.PROCESSING)
+            .orElse(null);
+
+    if (delivery == null) {
+      return;
+    }
+
+    delivery.setAttemptCount(delivery.getAttemptCount() + 1);
+    delivery.setResponseCode(responseCode);
+
+    if (responseCode >= 200 && responseCode <= 299) {
+      delivery.setDeliveryStatus(WebhookDeliveryStatusEnum.DELIVERED);
+    } else {
+      delivery.setDeliveryStatus(WebhookDeliveryStatusEnum.FAILED);
+    }
+
+    deliveryRepository.save(delivery);
+  }
+
   private DeliveryAttempt toAttempt(WebhookDelivery delivery) {
 
     String deliveryId = "msg_" + delivery.getWebhookDeliveryId().toString().replace("-", "");
