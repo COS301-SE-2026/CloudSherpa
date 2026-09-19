@@ -67,11 +67,7 @@ export function ChartConfigFormInner({ ChartId }: Readonly<ChartConfigFormProps>
                 <Button variant={"default"} onClick={() => handleSave()} disabled={isSaving}>
                     Save Chart
                 </Button>
-                <Button
-                    variant={"secondary"}
-                    onClick={() => cancelChartConfig()}
-                    disabled={isSaving}
-                >
+                <Button variant={"ghost"} onClick={() => cancelChartConfig()} disabled={isSaving}>
                     Cancel
                 </Button>
             </div>

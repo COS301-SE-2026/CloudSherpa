@@ -23,7 +23,7 @@
             "primary-950": { "$type": "color", "$value": "{color.brand.950}" },
             "primary-foreground": { "$type": "color", "$value": "{color.brand.50}" },
 
-            "secondary": { "$type": "color", "$value": "{color.neutral.100}" },
+            "secondary": { "$type": "color", "$value": "{color.neutral.200}" },
             "secondary-foreground": { "$type": "color", "$value": "{color.neutral.900}" },
 
             "muted": { "$type": "color", "$value": "{color.neutral.200}" },
@@ -41,7 +41,7 @@
             "warning": { "$type": "color", "$value": "{color.orange.500}" },
             "warning-foreground": { "$type": "color", "$value": "{color.orange.50}" },
 
-            "border": { "$type": "color", "$value": "{color.neutral.200}" },
+            "border": { "$type": "color", "$value": "{color.neutral.300}" },
             "input": { "$type": "color", "$value": "{color.neutral.200}" },
             "ring": { "$type": "color", "$value": "{color.brand.500}" },
 

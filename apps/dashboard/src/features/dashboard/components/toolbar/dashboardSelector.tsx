@@ -95,7 +95,7 @@ export function DashboardSelector({
                                 <PopoverTrigger asChild aria-label="Dashboard Selector">
                                     <Button
                                         variant="outline"
-                                        className="group flex justify-between lg:w-70 lg:truncate"
+                                        className="group flex justify-between lg:w-70 lg:truncate bg-card"
                                         aria-label="dashboard selector dropdown"
                                     >
                                         <span className="min-w-0 truncate">

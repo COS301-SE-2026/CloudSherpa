@@ -74,22 +74,22 @@ interface Connections {
 //will use these colours for the tabs for now, will add the company colours to the style dictionary and will update it
 const providerTabs: Record<Providers, { active: string; inactive: string }> = {
     All: {
-        active: "bg-primary text-primary-foreground hover:bg-primary/90",
+        active: "bg-primary text-primary-foregrounds",
         inactive: "bg-muted text-muted-foreground hover:bg-muted/80",
     },
 
     AWS: {
-        active: "bg-primary text-primary-foreground hover:bg-primary/90",
+        active: "bg-primary text-primary-foregrounds",
         inactive: "bg-muted text-muted-foreground hover:bg-muted/80",
     },
 
     Azure: {
-        active: "bg-primary text-primary-foreground hover:bg-primary/90",
+        active: "bg-primary text-primary-foregrounds",
         inactive: "bg-muted text-muted-foreground hover:bg-muted/80",
     },
 
     GCP: {
-        active: "bg-primary text-primary-foreground hover:bg-primary/90",
+        active: "bg-primary text-primary-foregrounds",
         inactive: "bg-muted text-muted-foreground hover:bg-muted/80",
     },
 };

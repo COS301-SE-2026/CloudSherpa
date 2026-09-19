@@ -57,7 +57,7 @@ export default function Dropdown({
                         variant="outline"
                         role="combobox"
                         aria-expanded={open}
-                        className="justify-between w-full"
+                        className="justify-between w-full bg-card"
                         disabled={disabled}
                     >
                         <span className="truncate">
