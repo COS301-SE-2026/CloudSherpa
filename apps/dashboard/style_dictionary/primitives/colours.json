@@ -1,8 +1,12 @@
 {
     "color": {
         "$type": "color",
+        "constant": {
+            "white": { "$value": "#FFFFFF" },
+            "black": { "$value": "#000000" }
+        },
         "brand": {
-            "50": { "$value": "#eff6ff" },
+            "50": { "$value": "#FFFFFF" },
             "100": { "$value": "#dbeafe" },
             "200": { "$value": "#bedbff" },
             "300": { "$value": "#8ec5ff" },
@@ -15,8 +19,8 @@
             "950": { "$value": "#162456" }
         },
         "neutral": {
-            "50": { "$value": "#e3e9ef" },
-            "100": { "$value": "#d8dee4" },
+            "50": { "$value": "#FFFFFF" },
+            "100": { "$value": "#e3e9ef" },
             "200": { "$value": "#c0c6cc" },
             "300": { "$value": "#a9afb5" },
             "400": { "$value": "#91979d" },

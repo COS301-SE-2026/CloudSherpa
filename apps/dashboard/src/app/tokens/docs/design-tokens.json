@@ -5,9 +5,9 @@
             "shades": [
                 {
                     "position": 50,
-                    "hex": "#eff6ff",
-                    "rgb": "rgb(239 246 255)",
-                    "hsl": "hsl(213.75deg 100% 96.86%)"
+                    "hex": "#FFFFFF",
+                    "rgb": "rgb(255 255 255)",
+                    "hsl": "hsl(0deg 0% 100%)"
                 },
                 {
                     "position": 100,
@@ -76,15 +76,15 @@
             "shades": [
                 {
                     "position": 50,
-                    "hex": "#e3e9ef",
-                    "rgb": "rgb(227 233 239)",
-                    "hsl": "hsl(210deg 27.27% 91.37%)"
+                    "hex": "#FFFFFF",
+                    "rgb": "rgb(255 255 255)",
+                    "hsl": "hsl(0deg 0% 100%)"
                 },
                 {
                     "position": 100,
-                    "hex": "#d8dee4",
-                    "rgb": "rgb(216 222 228)",
-                    "hsl": "hsl(210deg 18.18% 87.06%)"
+                    "hex": "#e3e9ef",
+                    "rgb": "rgb(227 233 239)",
+                    "hsl": "hsl(210deg 27.27% 91.37%)"
                 },
                 {
                     "position": 200,

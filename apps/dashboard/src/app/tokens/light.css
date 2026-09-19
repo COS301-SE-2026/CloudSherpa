@@ -3,7 +3,7 @@
  */
 
 :root {
-    --background: var(--color-neutral-50);
+    --background: var(--color-neutral-100);
     --foreground: var(--color-neutral-950);
     --card: var(--color-neutral-50);
     --card-foreground: var(--color-neutral-950);

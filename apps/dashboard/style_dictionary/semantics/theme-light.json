@@ -1,7 +1,7 @@
 {
     "theme": {
         "light": {
-            "background": { "$type": "color", "$value": "{color.neutral.50}" },
+            "background": { "$type": "color", "$value": "{color.neutral.100}" },
             "foreground": { "$type": "color", "$value": "{color.neutral.950}" },
 
             "card": { "$type": "color", "$value": "{color.neutral.50}" },
