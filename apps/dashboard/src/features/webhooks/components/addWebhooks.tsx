@@ -358,6 +358,8 @@ export const AddWebhook = ({
                                 <Select value = {accountDropdown} onValueChange = {(value) => {const selected = value as "all" | "specific"; setAccountDropdown(selected);
                                         if(selected === "all"){
                                             setAccountsSelected(cloudAccounts.map((account) => account.id));
+                                        }else{
+                                            setAccountsSelected([]);
                                         }
                                     }}>
 
