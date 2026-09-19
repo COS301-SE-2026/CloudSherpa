@@ -1,11 +1,14 @@
 package com.cloudsherpa.lib.entities;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import jakarta.persistence.Entity;
 import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.UUID;
@@ -20,8 +23,9 @@ public class WebhookDelivery {
   @Column(name = "webhook_delivery_id", nullable = false)
   private UUID webhookDeliveryId;
 
-  @Column(name = "webhook_id")
-  private UUID webhookId;
+  @ManyToOne(fetch = FetchType.LAZY, optional = true)
+  @JoinColumn(name = "webhook_id")
+  private Webhook webhook;
 
   @Column(name = "event_id", nullable = false)
   private UUID eventId;
@@ -57,7 +61,7 @@ public class WebhookDelivery {
 
   public WebhookDelivery(
       UUID webhookDeliveryId,
-      UUID webhookId,
+      Webhook webhook,
       UUID eventId,
       UUID cloudAccountId,
       String eventType,
@@ -67,7 +71,7 @@ public class WebhookDelivery {
       Integer responseCode,
       Integer attemptCount) {
     this.webhookDeliveryId = webhookDeliveryId;
-    this.webhookId = webhookId;
+    this.webhook = webhook;
     this.eventId = eventId;
     this.cloudAccountId = cloudAccountId;
     this.eventType = eventType;
@@ -82,8 +86,8 @@ public class WebhookDelivery {
     return webhookDeliveryId;
   }
 
-  public UUID getWebhookId() {
-    return webhookId;
+  public Webhook getWebhook() {
+    return webhook;
   }
 
   public UUID getEventId() {
@@ -118,8 +122,8 @@ public class WebhookDelivery {
     return attemptCount;
   }
 
-  public void setWebhookId(UUID webhookId) {
-    this.webhookId = webhookId;
+  public void setWebhook(Webhook webhook) {
+    this.webhook = webhook;
   }
 
   public void setEventId(UUID eventId) {

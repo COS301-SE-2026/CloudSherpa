@@ -100,7 +100,7 @@ public class WebhookService {
     return new WebhookDeliveryResponse(
         webhookDelivery.getWebhookDeliveryId(),
         webhookDelivery.getEventTimestamp(),
-        webhookDelivery.getWebhookId(),
+        webhookDelivery.getWebhook() != null ? webhookDelivery.getWebhook().getWebhookId() : null,
         webhookDelivery.getEventType(),
         webhookDelivery.getCloudAccountId(),
         webhookDelivery.getDeliveryStatus(),

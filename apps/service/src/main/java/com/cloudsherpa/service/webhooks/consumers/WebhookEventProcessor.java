@@ -45,7 +45,7 @@ public class WebhookEventProcessor {
 
     List<DeliveryTask> deliveryTasks = new ArrayList<>();
     for (Webhook webhook : subscribedWebhooks) {
-      WebhookDelivery delivery = fromPendingEvent(pendingWebhookEvent, webhook.getWebhookId());
+      WebhookDelivery delivery = fromPendingEvent(pendingWebhookEvent, webhook);
       webhookDeliveryRepository.save(delivery);
       deliveryTasks.add(
           new DeliveryTask(pendingWebhookEvent.getTenantId(), delivery.getWebhookDeliveryId()));
@@ -56,10 +56,10 @@ public class WebhookEventProcessor {
   }
 
   private WebhookDelivery fromPendingEvent(
-      PendingWebhookEvent pendingWebhookEvent, UUID webhookId) {
+      PendingWebhookEvent pendingWebhookEvent, Webhook webhook) {
     return new WebhookDelivery(
         UUID.randomUUID(),
-        webhookId,
+        webhook,
         pendingWebhookEvent.getEventId(),
         pendingWebhookEvent.getCloudAccountId(),
         pendingWebhookEvent.getEventType(),
