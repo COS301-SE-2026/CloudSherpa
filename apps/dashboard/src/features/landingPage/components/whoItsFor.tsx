@@ -15,13 +15,13 @@ const WHO: ListOfWho[] = [
     {
         who: "Anyone on any technical level",
         description:
-            "CloudSherpa has intuitive dashboard and is structured in ways that anyone can decipher what is being displayed on the dashboard",
+            "CloudSherpa has an intuitive dashboard and is structured in ways that anyone can decipher what is being displayed on the dashboard",
     },
 
     {
         who: "Cloud engineer",
         description:
-            "On a more technical level users who want rightsizing recommendations and anomaly alerts immediately so that cloud costs can be reduced",
+            "More technical users who want rightsizing recommendations and anomaly alerts immediately so that cloud costs can be reduced",
     },
 ];
 
