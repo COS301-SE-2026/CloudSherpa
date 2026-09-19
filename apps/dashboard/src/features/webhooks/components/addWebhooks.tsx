@@ -47,13 +47,13 @@ export const AddWebhook = ({
     initialData,
     onSuccess,
 }: PropsForAddingWebhooks) => {
-    const [name, setName] = useState("");
+    const [name, setName] = useState(initialData?.name ?? "");
 
-    const [endpointUrl, setEndpointUrl] = useState("");
+    const [endpointUrl, setEndpointUrl] = useState(initialData?.endpointUrl ?? "");
 
-    const [eventsSelected, setEventsSelected] = useState<string[]>([]);
+    const [eventsSelected, setEventsSelected] = useState<string[]>(initialData?.eventTypes ?? []);
 
-    const [accountsSelected, setAccountsSelected] = useState<string[]>([]);
+    const [accountsSelected, setAccountsSelected] = useState<string[]>(initialData?.cloudAccounts ?? cloudAccounts.map((account) => account.id));
 
     const [submit, setSubmit] = useState(false);
 
@@ -61,7 +61,7 @@ export const AddWebhook = ({
 
     const [search, setSearch] = useState("");
 
-    const [accountDropdown, setAccountDropdown] = useState<"all" | "specific">("all");
+    const [accountDropdown, setAccountDropdown] = useState<"all" | "specific">(initialData && initialData.cloudAccounts.length<cloudAccounts.length ? "specific" : "all");
 
     const [accountSearch, setAccountSearch] = useState("");
 
