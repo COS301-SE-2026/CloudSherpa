@@ -28,7 +28,6 @@ public class WebhookDeliveryStateService {
     if (delivery == null) {
       return null;
     }
-
     delivery.setDeliveryStatus(WebhookDeliveryStatusEnum.PROCESSING);
     deliveryRepository.save(delivery);
     return toAttempt(delivery);
@@ -62,7 +61,7 @@ public class WebhookDeliveryStateService {
     String deliveryId = "msg_" + delivery.getWebhookDeliveryId().toString().replace("-", "");
 
     return new DeliveryAttempt(
-        new DeliveryHeaders(deliveryId, ""),
+        new DeliveryHeaders(deliveryId),
         delivery.getWebhook().getEndpointUrl(),
         deliveryId,
         delivery.getEventType(),
@@ -70,6 +69,7 @@ public class WebhookDeliveryStateService {
         new WebhookEventCloudAccount(
             delivery.getCloudAccount().getDisplayName(),
             delivery.getCloudAccount().getConnection().getProvider()),
-        delivery.getPayload());
+        delivery.getPayload(),
+        delivery.getWebhook().getSigningKey());
   }
 }

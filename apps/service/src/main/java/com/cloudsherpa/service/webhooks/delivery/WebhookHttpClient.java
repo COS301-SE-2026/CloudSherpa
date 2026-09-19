@@ -12,14 +12,18 @@ import org.springframework.web.client.RestClientResponseException;
 @Service
 public class WebhookHttpClient {
   private final RestClient restClient;
+  private final WebhookSigningService signingService;
 
-  public WebhookHttpClient(@Qualifier("webhookRestClient") RestClient restClient) {
+  public WebhookHttpClient(
+      @Qualifier("webhookRestClient") RestClient restClient, WebhookSigningService signingService) {
     this.restClient = restClient;
+    this.signingService = signingService;
   }
 
   // Returns delivery status code
   public Integer send(DeliveryAttempt attempt) {
     try {
+      Instant timestamp = Instant.now();
       ResponseEntity<Void> res =
           restClient
               .post()
@@ -27,8 +31,8 @@ public class WebhookHttpClient {
               .body(attempt)
               .header("Content-Type", "application/json")
               .header("webhook-id", attempt.headers().webhookId())
-              .header("webhook-timestamp", Instant.now().toString())
-              .header("webhook-signature", attempt.headers().webhookSignature())
+              .header("webhook-timestamp", timestamp.toString())
+              .header("webhook-signature", signingService.signWebhookDelivery(attempt, timestamp))
               .retrieve()
               .toBodilessEntity();
 
