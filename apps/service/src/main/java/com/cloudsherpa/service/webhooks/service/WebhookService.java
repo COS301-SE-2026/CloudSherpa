@@ -55,7 +55,7 @@ public class WebhookService {
             request.endpointUrl(),
             request.eventTypes(),
             request.cloudAccounts(),
-            WebhookStatusEnum.PAUSED,
+            WebhookStatusEnum.ACTIVE,
             webhookKey);
     webhookRepository.save(webhook);
 

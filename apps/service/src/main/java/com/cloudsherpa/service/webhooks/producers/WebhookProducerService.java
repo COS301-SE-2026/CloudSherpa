@@ -1,4 +1,4 @@
-package com.cloudsherpa.service.webhooks.service;
+package com.cloudsherpa.service.webhooks.producers;
 
 import com.cloudsherpa.lib.entities.PendingWebhookEvent;
 import com.cloudsherpa.lib.repositories.PendingWebhookEventRepository;

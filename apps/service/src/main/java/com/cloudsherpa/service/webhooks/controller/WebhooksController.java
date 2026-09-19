@@ -9,7 +9,7 @@ import com.cloudsherpa.service.webhooks.dto.WebhookEventDto;
 import com.cloudsherpa.service.webhooks.dto.WebhookResponse;
 import com.cloudsherpa.service.webhooks.events.devevent.DevPayload;
 import com.cloudsherpa.service.webhooks.exceptions.WebhookNotFoundException;
-import com.cloudsherpa.service.webhooks.service.WebhookProducerService;
+import com.cloudsherpa.service.webhooks.producers.WebhookProducerService;
 import com.cloudsherpa.service.webhooks.service.WebhookService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
