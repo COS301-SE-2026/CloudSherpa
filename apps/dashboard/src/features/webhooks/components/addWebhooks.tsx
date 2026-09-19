@@ -21,13 +21,19 @@ import {
     DialogTitle,
     DialogFooter,
 } from "@/components/atoms/dialog";
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/atoms/select";
-import {AccountType} from "@/lib/fetch/dto/cloud-account";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/atoms/select";
+import { AccountType } from "@/lib/fetch/dto/cloud-account";
 
-const ACCOUNT_TYPES : Record<AccountType, string> = {
-    [AccountType.AWS_ACCOUNT] : "AWS",
-    [AccountType.GCP_PROJECT] : "GCP",
-    [AccountType.AZURE_SUBSCRIPTION] : "Azure",
+const ACCOUNT_TYPES: Record<AccountType, string> = {
+    [AccountType.AWS_ACCOUNT]: "AWS",
+    [AccountType.GCP_PROJECT]: "GCP",
+    [AccountType.AZURE_SUBSCRIPTION]: "Azure",
 };
 
 interface PropsForAddingWebhooks {
@@ -53,7 +59,9 @@ export const AddWebhook = ({
 
     const [eventsSelected, setEventsSelected] = useState<string[]>(initialData?.eventTypes ?? []);
 
-    const [accountsSelected, setAccountsSelected] = useState<string[]>(initialData?.cloudAccounts ?? cloudAccounts.map((account) => account.id));
+    const [accountsSelected, setAccountsSelected] = useState<string[]>(
+        initialData?.cloudAccounts ?? cloudAccounts.map((account) => account.id)
+    );
 
     const [submit, setSubmit] = useState(false);
 
@@ -61,7 +69,9 @@ export const AddWebhook = ({
 
     const [search, setSearch] = useState("");
 
-    const [accountDropdown, setAccountDropdown] = useState<"all" | "specific">(initialData && initialData.cloudAccounts.length<cloudAccounts.length ? "specific" : "all");
+    const [accountDropdown, setAccountDropdown] = useState<"all" | "specific">(
+        initialData && initialData.cloudAccounts.length < cloudAccounts.length ? "specific" : "all"
+    );
 
     const [accountSearch, setAccountSearch] = useState("");
 
@@ -173,11 +183,15 @@ export const AddWebhook = ({
     const filteredCloudAccounts = useMemo(() => {
         const wordSearched = accountSearch.toLowerCase().trim();
 
-        if(!wordSearched){
+        if (!wordSearched) {
             return cloudAccounts;
         }
 
-        return cloudAccounts.filter((account) => account.displayName.toLowerCase().includes(wordSearched) || account.accountType.toLowerCase().includes(wordSearched));
+        return cloudAccounts.filter(
+            (account) =>
+                account.displayName.toLowerCase().includes(wordSearched) ||
+                account.accountType.toLowerCase().includes(wordSearched)
+        );
     }, [cloudAccounts, accountSearch]);
 
     return (
@@ -355,65 +369,124 @@ export const AddWebhook = ({
                                     </p>
                                 </div>
 
-                                <Select value = {accountDropdown} onValueChange = {(value) => {const selected = value as "all" | "specific"; setAccountDropdown(selected);
-                                        if(selected === "all"){
-                                            setAccountsSelected(cloudAccounts.map((account) => account.id));
-                                        }else{
+                                <Select
+                                    value={accountDropdown}
+                                    onValueChange={(value) => {
+                                        const selected = value as "all" | "specific";
+                                        setAccountDropdown(selected);
+                                        if (selected === "all") {
+                                            setAccountsSelected(
+                                                cloudAccounts.map((account) => account.id)
+                                            );
+                                        } else {
                                             setAccountsSelected([]);
                                         }
-                                    }}>
-
-                                    <SelectTrigger className = "w-[180px] h-9 text-xs"> <SelectValue/> </SelectTrigger>
+                                    }}
+                                >
+                                    <SelectTrigger className="w-[180px] h-9 text-xs">
+                                        {" "}
+                                        <SelectValue />{" "}
+                                    </SelectTrigger>
 
                                     <SelectContent>
-                                        <SelectItem value = "all"> All connected accounts </SelectItem>
-                                        <SelectItem value = "specific"> Specific accounts </SelectItem>
+                                        <SelectItem value="all">
+                                            {" "}
+                                            All connected accounts{" "}
+                                        </SelectItem>
+                                        <SelectItem value="specific">
+                                            {" "}
+                                            Specific accounts{" "}
+                                        </SelectItem>
                                     </SelectContent>
-
                                 </Select>
                             </div>
                         </div>
 
                         {accountDropdown === "all" ? (
-                            <div className = "border-t border-border mt-4 h-[285px] flex flex-col items-center justify-center px-8 text-center">
-                                <Cloud size = {32} strokeWidth = {1.5} className = "text-primary mb-3"/>
+                            <div className="border-t border-border mt-4 h-[285px] flex flex-col items-center justify-center px-8 text-center">
+                                <Cloud size={32} strokeWidth={1.5} className="text-primary mb-3" />
 
-                                <p className = "text-sm font-semibold text-foreground"> All connected accounts </p>
+                                <p className="text-sm font-semibold text-foreground">
+                                    {" "}
+                                    All connected accounts{" "}
+                                </p>
 
-                                <p className = "text-xs text-muted-foreground mt-2 max-w-[280px] leading-5"> Events from all {cloudAccounts.length} connected accounts are included. Choose &quot;Specific accounts&quot; to narrow the selection.</p>
+                                <p className="text-xs text-muted-foreground mt-2 max-w-[280px] leading-5">
+                                    {" "}
+                                    Events from all {cloudAccounts.length} connected accounts are
+                                    included. Choose &quot;Specific accounts&quot; to narrow the
+                                    selection.
+                                </p>
                             </div>
                         ) : (
                             <>
-                                <div className = "px-4 pt-3">
-                                    <div className = "relative">
-                                        <Search size = {15} className = "absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"/>
+                                <div className="px-4 pt-3">
+                                    <div className="relative">
+                                        <Search
+                                            size={15}
+                                            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                                        />
 
-                                        <Input value = {accountSearch} onChange = {(change) => setAccountSearch(change.target.value)} placeholder = "Search accounts" className = "h-9 pl-9 text-xs"/>
+                                        <Input
+                                            value={accountSearch}
+                                            onChange={(change) =>
+                                                setAccountSearch(change.target.value)
+                                            }
+                                            placeholder="Search accounts"
+                                            className="h-9 pl-9 text-xs"
+                                        />
                                     </div>
                                 </div>
 
-                                <ScrollArea className = "h-[235px] mt-3">
+                                <ScrollArea className="h-[235px] mt-3">
                                     <div>
                                         {filteredCloudAccounts.map((account) => (
-                                            <div key = {account.id} className = "flex items-start gap-3 border-t border-border px-4 py-3">
-                                                <Checkbox id = {`account-${account.id}`} checked = {accountsSelected.includes(account.id)} onCheckedChange = {() => toggleAccount(account.id)} className = "mt-1"/>
+                                            <div
+                                                key={account.id}
+                                                className="flex items-start gap-3 border-t border-border px-4 py-3"
+                                            >
+                                                <Checkbox
+                                                    id={`account-${account.id}`}
+                                                    checked={accountsSelected.includes(account.id)}
+                                                    onCheckedChange={() =>
+                                                        toggleAccount(account.id)
+                                                    }
+                                                    className="mt-1"
+                                                />
 
-                                                <label htmlFor = {`account-${account.id}`} className = "flex flex-col cursor-pointer">
-                                                    <span className = "text-sm font-medium"> {account.displayName} </span>
+                                                <label
+                                                    htmlFor={`account-${account.id}`}
+                                                    className="flex flex-col cursor-pointer"
+                                                >
+                                                    <span className="text-sm font-medium">
+                                                        {" "}
+                                                        {account.displayName}{" "}
+                                                    </span>
 
-                                                    <span className = "text-xs text-muted-foreground"> {ACCOUNT_TYPES[account.accountType] ?? account.accountType} </span>
+                                                    <span className="text-xs text-muted-foreground">
+                                                        {" "}
+                                                        {ACCOUNT_TYPES[account.accountType] ??
+                                                            account.accountType}{" "}
+                                                    </span>
                                                 </label>
                                             </div>
                                         ))}
 
                                         {filteredCloudAccounts.length === 0 && (
-                                            <div className = "flex items-center justify-center h-40 text-xs text-muted-foreground"> No accounts found </div>
+                                            <div className="flex items-center justify-center h-40 text-xs text-muted-foreground">
+                                                {" "}
+                                                No accounts found{" "}
+                                            </div>
                                         )}
                                     </div>
                                 </ScrollArea>
 
-                                <div className = "border-t border-border px-4 py-2.5">
-                                    <p className = "text-[10px] text-muted-foreground"> {accountsSelected.length} of {cloudAccounts.length} accounts selected </p>
+                                <div className="border-t border-border px-4 py-2.5">
+                                    <p className="text-[10px] text-muted-foreground">
+                                        {" "}
+                                        {accountsSelected.length} of {cloudAccounts.length} accounts
+                                        selected{" "}
+                                    </p>
                                 </div>
                             </>
                         )}

@@ -79,13 +79,7 @@ const helperForWebhookColumns = (
             const status = info.getValue() as string;
 
             return (
-                <span
-                    className={
-                        status === "ACTIVE"
-                            ? "text-success"
-                            : "text-warning"
-                    }
-                >
+                <span className={status === "ACTIVE" ? "text-success" : "text-warning"}>
                     {" "}
                     {status === "ACTIVE" ? "Active" : "Paused"}{" "}
                 </span>
