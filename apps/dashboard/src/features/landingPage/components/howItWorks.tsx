@@ -24,13 +24,13 @@ const FORSTEPNUM: ForStepNum[] = [
         number: "2",
         name: "CloudSherpa monitors usage",
         description:
-            "Billing and resource data is unified and tracked. A unifrom view is provided across all providers",
+            "Billing and resource data is unified and tracked. A uniform view is provided across all providers",
     },
 
     {
         number: "3",
         name: "Act on clear insights",
-        description: "Get recommendations that tell you exactly where to cut cost",
+        description: "Get recommendations that tell you exactly where to reduce cost",
     },
 ];
 
