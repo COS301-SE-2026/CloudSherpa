@@ -1,6 +1,7 @@
 package com.cloudsherpa.service.webhooks.delivery;
 
 import com.cloudsherpa.service.webhooks.model.DeliveryAttempt;
+import com.cloudsherpa.service.webhooks.model.DeliveryHttpBody;
 import java.time.Instant;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +29,7 @@ public class WebhookHttpClient {
           restClient
               .post()
               .uri(attempt.webhookUrl())
-              .body(attempt)
+              .body(requestBody(attempt))
               .header("Content-Type", "application/json")
               .header("webhook-id", attempt.headers().webhookId())
               .header("webhook-timestamp", timestamp.toString())
@@ -42,5 +43,14 @@ public class WebhookHttpClient {
     } catch (ResourceAccessException e) {
       return -1;
     }
+  }
+
+  private DeliveryHttpBody requestBody(DeliveryAttempt attempt) {
+    return new DeliveryHttpBody(
+        attempt.id(),
+        attempt.type(),
+        attempt.timestamp().toString(),
+        attempt.account(),
+        attempt.data());
   }
 }
