@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
@@ -40,7 +41,7 @@ public class BillingForecastingService extends ForecastingService {
 
   public BillingForecastingService(
       NormalizedCostsRepository normalizedCostsRepository,
-      RestClient restClient,
+      @Qualifier("intelligenceRestClient") RestClient restClient,
       Sampler sampler,
       ChargeProviderRegistry chargeProviderRegistry) {
     super(restClient, sampler);

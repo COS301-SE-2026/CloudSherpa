@@ -2,6 +2,7 @@ package com.cloudsherpa.service.webhooks.delivery;
 
 import com.cloudsherpa.service.webhooks.model.DeliveryAttempt;
 import com.cloudsherpa.service.webhooks.model.DeliveryHeaders;
+import java.time.Instant;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -25,9 +26,9 @@ public class WebhookHttpClient {
               .uri(webhookUri)
               .body(attempt)
               .header("Content-Type", "application/json")
-              .header("webhook-id", headers.webhookId())
-              .header("webhook-timestamp", headers.webhookTimestamp())
-              .header("webhook-signature", headers.webhookSignature())
+              .header("webhook-id", attempt.headers().webhookId())
+              .header("webhook-timestamp", Instant.now().toString())
+              .header("webhook-signature", attempt.headers().webhookSignature())
               .retrieve()
               .toBodilessEntity();
 

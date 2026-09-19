@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestClient;
 
 @Configuration
-public class WebhookRestClient {
+public class WebhookRestClientConfiguration {
   @Bean
   public RestClient webhookRestClient(RestClient.Builder builder) {
     return builder.build();
