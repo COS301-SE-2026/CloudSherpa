@@ -63,12 +63,6 @@ export const Popup = ({ secret, onClose }: PropsForPopup) => {
                                 {copied ? "Copied to clipboard." : "Copy"}
                             </Button>
                         </div>
-
-                        <p className="text-xs text-muted-foreground mt-2">
-                            {" "}
-                            Prototype only: generated locally, never sent or retained as part of the
-                            webhook configuration.{" "}
-                        </p>
                     </div>
 
                     <div className="flex items-center gap-2 mt-6">
