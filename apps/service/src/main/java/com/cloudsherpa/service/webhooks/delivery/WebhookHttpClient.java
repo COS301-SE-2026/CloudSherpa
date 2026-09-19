@@ -5,6 +5,7 @@ import java.time.Instant;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientResponseException;
 
@@ -34,6 +35,8 @@ public class WebhookHttpClient {
       return res.getStatusCode().value();
     } catch (RestClientResponseException e) {
       return e.getStatusCode().value();
+    } catch (ResourceAccessException e) {
+      return -1;
     }
   }
 }
