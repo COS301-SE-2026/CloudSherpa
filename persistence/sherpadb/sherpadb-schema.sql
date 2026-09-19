@@ -57,6 +57,7 @@ CREATE TYPE public.webhook_status_enum AS ENUM (
 
 CREATE TYPE public.webhook_delivery_status_enum AS ENUM (
   'PENDING',
+  'PROCESSING',
   'DELIVERED',
   'FAILED'
 );
