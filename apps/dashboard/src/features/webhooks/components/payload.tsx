@@ -20,8 +20,7 @@ export const ExampleForPayload = ({ event }: PropsForPayload) => {
         "webhook-timestamp": "1789468938",
         "webhook-signature": "v1,Nev4L7n7f0Qa7Q/E55lY4Sm/mgOr2alOEQavuSeXtVg=",
 
-        "Demo signing key":
-            "whsec_AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8= (not an HTTP header)",
+        "Demo signing key": "",
     };
 
     const body: Record<string, unknown> = event.jsonBody ?? {
