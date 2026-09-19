@@ -22,7 +22,6 @@ import { Popup } from "@/features/webhooks/components/confirmPopup";
 import { ExampleForPayload } from "@/features/webhooks/components/payload";
 import { Button } from "@/components/atoms/button";
 import { Input } from "@/components/atoms/input";
-import { Badge } from "@/components/atoms/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/atoms/card";
 import {
     Select,
@@ -80,18 +79,16 @@ const helperForWebhookColumns = (
             const status = info.getValue() as string;
 
             return (
-                <Badge
-                    variant={status === "ACTIVE" ? "default" : "secondary"}
-
+                <span
                     className={
                         status === "ACTIVE"
-                            ? "bg-success/20 text-success hover:bg-success/30"
-                            : "bg-warning/20 text-warning hover:bg-warning/30"
+                            ? "text-success"
+                            : "text-warning"
                     }
                 >
                     {" "}
                     {status === "ACTIVE" ? "Active" : "Paused"}{" "}
-                </Badge>
+                </span>
             );
         },
     },
