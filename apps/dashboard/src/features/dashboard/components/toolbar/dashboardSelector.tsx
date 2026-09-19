@@ -91,20 +91,29 @@ export function DashboardSelector({
                 >
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <PopoverTrigger asChild aria-label="Dashboard Selector">
-                                <Button
-                                    variant="outline"
-                                    className="group flex justify-between lg:w-70 lg:truncate"
-                                    aria-label="dashboard selector dropdown"
-                                >
-                                    <span className="min-w-0 truncate">
-                                        {selectedDashboard?.displayName || "Select Dashboard"}
-                                    </span>
-                                    <ChevronDown className="ml-2 h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
-                                </Button>
-                            </PopoverTrigger>
+                            <div className="lg:w-70">
+                                <PopoverTrigger asChild aria-label="Dashboard Selector">
+                                    <Button
+                                        variant="outline"
+                                        className="group flex justify-between lg:w-70 lg:truncate"
+                                        aria-label="dashboard selector dropdown"
+                                    >
+                                        <span className="min-w-0 truncate">
+                                            {selectedDashboard?.displayName || "Select Dashboard"}
+                                        </span>
+                                        <ChevronDown className="ml-2 h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                                    </Button>
+                                </PopoverTrigger>
+                            </div>
                         </TooltipTrigger>
-                        <TooltipContent className="max-w-2xl" side="right" align="start">
+                        <TooltipContent
+                            className={cn(
+                                "max-w-2xl",
+                                (open || dashboards.length === 0) && "hidden"
+                            )}
+                            side="right"
+                            align="start"
+                        >
                             {selectedDashboard?.displayName || "Select Dashboard"}
                         </TooltipContent>
                     </Tooltip>
@@ -112,6 +121,7 @@ export function DashboardSelector({
                     <PopoverContent
                         className="p-0 w-72 bg-popover border-border-strong shadow-xl"
                         align="start"
+                        onCloseAutoFocus={(e) => e.preventDefault()}
                     >
                         {view === "list" ? (
                             <Command>
@@ -216,6 +226,7 @@ export function DashboardSelector({
                                     value={newDashboardName}
                                     onChange={(e) => setNewDashboardName(e.target.value)}
                                     onKeyDown={(e) => e.key === "Enter" && handleCreate()}
+                                    maxLength={80}
                                 />
 
                                 <Button

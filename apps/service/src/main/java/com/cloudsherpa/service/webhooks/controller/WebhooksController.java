@@ -1,11 +1,16 @@
 package com.cloudsherpa.service.webhooks.controller;
 
+import com.cloudsherpa.service.webhooks.WebhookEventDefinitionRegistry;
 import com.cloudsherpa.service.webhooks.dto.AddWebhookDto;
 import com.cloudsherpa.service.webhooks.dto.AddWebhookResponseDto;
 import com.cloudsherpa.service.webhooks.dto.EditWebhookDto;
-import com.cloudsherpa.service.webhooks.events.WebhookEvent;
-import com.cloudsherpa.service.webhooks.model.Webhook;
-import com.cloudsherpa.service.webhooks.model.WebhookDelivery;
+import com.cloudsherpa.service.webhooks.dto.WebhookDeliveryResponse;
+import com.cloudsherpa.service.webhooks.dto.WebhookEventDto;
+import com.cloudsherpa.service.webhooks.dto.WebhookResponse;
+import com.cloudsherpa.service.webhooks.events.devevent.DevPayload;
+import com.cloudsherpa.service.webhooks.exceptions.WebhookNotFoundException;
+import com.cloudsherpa.service.webhooks.producers.WebhookProducerService;
+import com.cloudsherpa.service.webhooks.service.WebhookService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -14,9 +19,13 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.core.env.Environment;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,6 +40,22 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Webhooks", description = "CloudSherpa Webhooks CRUD operations")
 public class WebhooksController {
 
+  private final WebhookEventDefinitionRegistry definitionRegistry;
+  private final WebhookService webhookService;
+  private final WebhookProducerService producerService;
+  private final Environment environment;
+
+  public WebhooksController(
+      WebhookEventDefinitionRegistry definitionRegistry,
+      WebhookService webhookService,
+      WebhookProducerService producerService,
+      Environment environment) {
+    this.definitionRegistry = definitionRegistry;
+    this.webhookService = webhookService;
+    this.producerService = producerService;
+    this.environment = environment;
+  }
+
   @Operation(summary = "Get all webhooks for the current user")
   @ApiResponses(
       value = {
@@ -39,7 +64,7 @@ public class WebhooksController {
             description = "Succesfully returned all webhooks",
             content =
                 @Content(
-                    array = @ArraySchema(schema = @Schema(implementation = Webhook.class)),
+                    array = @ArraySchema(schema = @Schema(implementation = WebhookResponse.class)),
                     examples =
                         @ExampleObject(
                             name = "Webhook list",
@@ -70,8 +95,8 @@ public class WebhooksController {
                           """)))
       })
   @GetMapping()
-  public List<Webhook> getWebhooks() {
-    return List.of();
+  public List<WebhookResponse> getWebhooks() {
+    return webhookService.getWebhooks();
   }
 
   @Operation(summary = "Get all webhook deliveries for the current user")
@@ -82,7 +107,9 @@ public class WebhooksController {
             description = "Succesfully returned all webhook deliveries",
             content =
                 @Content(
-                    array = @ArraySchema(schema = @Schema(implementation = WebhookDelivery.class)),
+                    array =
+                        @ArraySchema(
+                            schema = @Schema(implementation = WebhookDeliveryResponse.class)),
                     examples =
                         @ExampleObject(
                             name = "Webhook delivery list",
@@ -111,8 +138,8 @@ public class WebhooksController {
                           """)))
       })
   @GetMapping("deliveries")
-  public List<WebhookDelivery> getDeliveries() {
-    return List.of();
+  public List<WebhookDeliveryResponse> getDeliveries() {
+    return webhookService.getWebhookDeliveries();
   }
 
   @Operation(summary = "Get all supported webhook events")
@@ -123,50 +150,50 @@ public class WebhooksController {
             description = "Succesfully returned all supported webhook events",
             content =
                 @Content(
-                    schema =
-                        @Schema(
-                            type = "object",
-                            description = "Webhook events grouped by cloud account display name",
-                            additionalPropertiesSchema = WebhookEvent.class),
                     examples =
                         @ExampleObject(
-                            name = "Webhook events by cloud account",
+                            name = "Webhook events by category",
                             value =
                                 """
                           {
-                            "Usage Threshold Alerts": {
-                              "id": "msg_demo_usage_threshold",
-                              "type": "usage.threshold",
-                              "timestamp": "2026-09-16T08:32:15Z",
-                              "account": {
-                                "name": "Azure production",
-                                "provider": "AZURE"
-                              },
-                              "data": {
-                                "metric": "cost",
-                                "threshold": 500.00,
-                                "currentValue": 612.45
+                            "Dev": {
+                              "Dev Event": {
+                                "id": "msg_demo_dev_event",
+                                "type": "dev.event",
+                                "timestamp": "1970-01-01T00:00:00Z",
+                                "account": {
+                                  "name": "Development account",
+                                  "provider": "AZURE"
+                                },
+                                "data": {
+                                  "devString": "Dev Event String",
+                                  "devDecimal": 20.0,
+                                  "devTime": "1970-01-01T00:00:00Z"
+                                }
                               }
                             },
-                            "Billing Ingestion": {
-                              "id": "msg_demo_billing_ingestion",
-                              "type": "billing.ingestion",
-                              "timestamp": "2026-09-16T08:45:02Z",
-                              "account": {
-                                "name": "AWS staging",
-                                "provider": "AWS"
-                              },
-                              "data": {
-                                "past14Days": 200 ,
-                                "forecasted14Days": 220
+                            "Usage": {
+                              "Usage Threshold Alert": {
+                                "id": "msg_demo_usage_threshold",
+                                "type": "usage.threshold",
+                                "timestamp": "2026-09-16T08:32:15Z",
+                                "account": {
+                                  "name": "Azure production",
+                                  "provider": "AZURE"
+                                },
+                                "data": {
+                                  "metric": "cost",
+                                  "threshold": 500.00,
+                                  "currentValue": 612.45
+                                }
                               }
                             }
                           }
                           """)))
       })
   @GetMapping("events")
-  public Map<String, WebhookEvent<?>> getEvents() {
-    return Map.of();
+  public Map<String, Map<String, WebhookEventDto<?>>> getEvents() {
+    return definitionRegistry.getEventDefinitions();
   }
 
   @Operation(summary = "Add a new webhook")
@@ -216,7 +243,8 @@ public class WebhooksController {
                             """)))
           @RequestBody
           AddWebhookDto request) {
-    return ResponseEntity.ok().build();
+    AddWebhookResponseDto response = webhookService.addWebhook(request);
+    return ResponseEntity.ok(response);
   }
 
   @Operation(summary = "Edit existing webhook")
@@ -254,7 +282,13 @@ public class WebhooksController {
                         """)))
           @RequestBody
           EditWebhookDto request) {
-    return ResponseEntity.ok().build();
+
+    try {
+      webhookService.editWebhook(id, request);
+      return ResponseEntity.ok().build();
+    } catch (WebhookNotFoundException e) {
+      return ResponseEntity.notFound().build();
+    }
   }
 
   @Operation(summary = "Delete webhook")
@@ -265,8 +299,25 @@ public class WebhooksController {
             description =
                 "Deleted webhook / not, generic response code protects against information gathering via response codes")
       })
-  @DeleteMapping("delete/webhookId")
-  public ResponseEntity<Void> deleteWebhook() {
+  @DeleteMapping("delete/{webhookId}")
+  public ResponseEntity<Void> deleteWebhook(@PathVariable("webhookId") UUID webhookId) {
+    webhookService.deleteWebhook(webhookId);
     return ResponseEntity.noContent().build();
+  }
+
+  @PostMapping("dev")
+  public ResponseEntity<Void> triggerDevEvent() {
+    if (!environment.matchesProfiles("dev")) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
+    DevPayload payload = new DevPayload("Test", BigDecimal.valueOf(2), Instant.now());
+
+    producerService.produceEvent(
+        UUID.fromString("5ebe4340-c5ec-4833-ad93-06abf4609f03"),
+        UUID.fromString("a0000000-0000-0000-0000-000000000001"),
+        "dev.event",
+        payload);
+    return ResponseEntity.ok().build();
   }
 }

@@ -32,7 +32,7 @@ Table cloud_account {
   connection_id uuid [ref: > cloud_connection.connection_id]
   account_type account_type_enum
   ingestion_period ingestion_period_enum
-  display_name varchar(255)
+  display_name varchar(80)
   created_at timestamptz
   last_usage_ingestion timestamptz
   next_usage_ingestion timestamptz
@@ -102,7 +102,7 @@ Table billing_export_execution {
 
 Table dashboard {
   dashboard_id uuid [pk]
-  display_name varchar(255)
+  display_name varchar(80)
   user_id uuid [ref: > users.user_id]
   time_from timestamptz
   time_to timestamptz
@@ -118,7 +118,7 @@ Table widget {
   start_y integer
   width integer
   height integer
-  display_name varchar(100)
+  display_name varchar(80)
 }
 
 Table widget_kpi {
@@ -148,6 +148,15 @@ Table chart_resource {
   resource_id uuid
   metric_type varchar(50)
   metric_name varchar(100)
+}
+
+Table pending_webhook_events {
+  event_id uuid [pk]
+  tenant_id uuid [not null]
+  cloud_account uuid [not null, ref: > cloud_account.account_id]
+  event_type text [not null]
+  event_timestamp timestamptz [not null]
+  payload jsonb [not null]
 }
 
 // ==========================================
@@ -267,4 +276,72 @@ Table processing_watermark {
   last_processed_period timestamptz
   last_successful_run timestamptz
   updated_at timestamptz
+}
+
+Table alerts {
+  alert_id uuid [pk]
+  user_id uuid [ref: > users.user_id]
+  widget_id uuid [ref: > widget.widget_id]
+  alert_type varchar(20)
+  severity varchar(20)
+  title text
+  message text
+  payload jsonb
+  status varchar(20)
+  canonical_key text
+  created_at timestamptz
+  last_seen timestamptz
+  resolved_at timestamptz
+}
+
+Table budgets {
+  budget_id uuid [pk]
+  user_id uuid [ref: > users.user_id]
+  scope varchar(20)
+  scope_id uuid
+  amount numeric
+  currency currency_enum
+  window_days integer
+  enabled boolean
+  created_at timestamptz
+  updated_at timestamptz
+}
+
+Table threshold {
+  threshold_id uuid [pk]
+  resource_id uuid [not null, ref: > resource.resource_id]
+  user_id uuid [not null, ref: > users.user_id]
+  metric_name text [not null]
+  operator text [not null]
+  value double
+  severity text [not null]
+  enabled boolean [not null]
+  created_at timestamptz
+  updated_at timestamptz
+
+  indexes {
+    (resource_id, metric_name, enabled) [name: "ix_threshold_resource_metric"]
+  }
+}
+
+Table webhooks {
+  webhook_id uuid [pk]
+  webhook_name text
+  endpoint_url text
+  event_types text[]
+  cloud_accounts uuid[]
+  webhook_status webhook_status_enum
+}
+
+Table webhook_deliveries {
+  webhook_delivery_id uuid [pk]
+  webhook_id uuid [ref: > webhooks.webhook_id]
+  event_id uuid
+  cloud_account uuid [ref: > cloud_account.account_id]
+  event_type text [not null]
+  event_timestamp timestamptz [not null]
+  payload jsonb [not null]
+  delivery_status webhook_delivery_status_enum [not null, default: 'PENDING']
+  response_code integer
+  attempt_count integer [not null, default: 0]
 }

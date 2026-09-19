@@ -1,11 +1,12 @@
 package com.cloudsherpa.ingestion.connector;
 
 import com.cloudsherpa.ingestion.models.*;
-import java.util.List;
+import com.cloudsherpa.ingestion.normalization.normalizers.Normalizer;
 
 public interface UsageCapable {
 
-  List<UsageRecordModel> fetchUsage(AccountScope accountScope, IngestionRequestEvent request);
+  void fetchUsage(AccountScope accountScope, IngestionRequestEvent request, Normalizer normalizer);
 
-  List<UsageRecordModel> fetchMockUsage(AccountScope accountScope, IngestionRequestEvent request);
+  void fetchMockUsage(
+      AccountScope accountScope, IngestionRequestEvent request, Normalizer normalizer);
 }

@@ -18,8 +18,10 @@ import com.cloudsherpa.ingestion.connector.Metric;
 import com.cloudsherpa.ingestion.connector.ServiceScope;
 import com.cloudsherpa.ingestion.models.IngestionRequestEvent;
 import com.cloudsherpa.ingestion.models.UsageRecordModel;
+import com.cloudsherpa.ingestion.normalization.normalizers.Normalizer;
 import com.cloudsherpa.ingestion.provider.azure.factory.AzureClientFactory;
 import com.cloudsherpa.ingestion.provider.monitoring.CloudMonitoringMetricProvider;
+import com.cloudsherpa.ingestion.service.IngestionPersistenceService;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -47,62 +49,63 @@ public class AzureCloudMonitorMetricProvider implements CloudMonitoringMetricPro
   private static final int MAX_METRICS_PER_REQUEST = 20;
   private static final List<AggregationType> AGGREGATIONS =
       Collections.singletonList(AggregationType.AVERAGE);
+  private final IngestionPersistenceService persistenceService;
+
+  public AzureCloudMonitorMetricProvider(IngestionPersistenceService persistenceService) {
+    this.persistenceService = persistenceService;
+  }
 
   @Override
-  public List<UsageRecordModel> collectMetrics(
-      AccountScope accountScope, IngestionRequestEvent request) {
+  public void collectMetrics(
+      AccountScope accountScope, IngestionRequestEvent request, Normalizer normalizer) {
 
     validateRequest(accountScope, request);
 
     QueryContext queryContext = createQueryContext(accountScope, request);
-
-    List<UsageRecordModel> results = new ArrayList<>();
 
     for (ServiceScope serviceScope : accountScope.getServiceScopes()) {
       if (!hasMetricsToCollect(serviceScope)) {
         continue;
       }
 
-      results.addAll(collectServiceMetrics(request.getCredentials(), serviceScope, queryContext));
+      collectServiceMetrics(request.getCredentials(), serviceScope, queryContext, normalizer);
     }
-    return results;
   }
 
-  private List<UsageRecordModel> collectServiceMetrics(
-      CloudCredentials credentials, ServiceScope serviceScope, QueryContext queryContext) {
+  private void collectServiceMetrics(
+      CloudCredentials credentials,
+      ServiceScope serviceScope,
+      QueryContext queryContext,
+      Normalizer normalizer) {
 
     Map<String, List<AzureResource>> resourcesByRegion = groupResourcesByRegion(serviceScope);
 
     List<List<Metric>> metricBatches =
         partition(serviceScope.getMetrics(), MAX_METRICS_PER_REQUEST);
 
-    List<UsageRecordModel> results = new ArrayList<>();
-
     for (Map.Entry<String, List<AzureResource>> regionEntry : resourcesByRegion.entrySet()) {
       MetricsClient client =
           AzureClientFactory.createMetricsClient(
               credentials, regionEntry.getValue().getFirst().region);
-      results.addAll(
-          collectRegionMetrics(
-              client,
-              serviceScope,
-              regionEntry.getKey(),
-              regionEntry.getValue(),
-              metricBatches,
-              queryContext));
+      collectRegionMetrics(
+          client,
+          serviceScope,
+          regionEntry.getKey(),
+          regionEntry.getValue(),
+          metricBatches,
+          queryContext,
+          normalizer);
     }
-    return results;
   }
 
-  private List<UsageRecordModel> collectRegionMetrics(
+  private void collectRegionMetrics(
       MetricsClient client,
       ServiceScope serviceScope,
       String region,
       List<AzureResource> resources,
       List<List<Metric>> metricBatches,
-      QueryContext queryContext) {
-
-    List<UsageRecordModel> results = new ArrayList<>();
+      QueryContext queryContext,
+      Normalizer normalizer) {
 
     List<List<AzureResource>> resourceBatches = partition(resources, MAX_RESOURCES_PER_REQUEST);
 
@@ -112,10 +115,9 @@ public class AzureCloudMonitorMetricProvider implements CloudMonitoringMetricPro
             new QueryBatch(resourceBatch, metricBatch, serviceScope.getName(), region);
 
         MetricsQueryResourcesResult response = queryMetrics(client, batch, queryContext);
-        results.addAll(processResponse(response, batch, serviceScope, queryContext));
+        processResponse(response, batch, serviceScope, queryContext, normalizer);
       }
     }
-    return results;
   }
 
   private Map<String, List<AzureResource>> groupResourcesByRegion(ServiceScope serviceScope) {
@@ -167,16 +169,15 @@ public class AzureCloudMonitorMetricProvider implements CloudMonitoringMetricPro
         .getValue();
   }
 
-  private List<UsageRecordModel> processResponse(
+  private void processResponse(
       MetricsQueryResourcesResult response,
       QueryBatch batch,
       ServiceScope serviceScope,
-      QueryContext queryContext) {
-
-    List<UsageRecordModel> results = new ArrayList<>();
+      QueryContext queryContext,
+      Normalizer normalizer) {
 
     if (response == null || response.getMetricsQueryResults() == null) {
-      return results;
+      return;
     }
 
     Map<String, AzureResource> resourcesById =
@@ -196,29 +197,25 @@ public class AzureCloudMonitorMetricProvider implements CloudMonitoringMetricPro
       AzureResource resource = resourcesById.get(resourceResult.getResourceId());
 
       if (resource != null) {
-        results.addAll(processResourceResult(resourceResult, resource, serviceScope, queryContext));
+        processResourceResult(resourceResult, resource, serviceScope, queryContext, normalizer);
       }
     }
-    return results;
   }
 
-  private List<UsageRecordModel> processResourceResult(
+  private void processResourceResult(
       MetricsQueryResult resourceResult,
       AzureResource resource,
       ServiceScope serviceScope,
-      QueryContext queryContext) {
+      QueryContext queryContext,
+      Normalizer normalizer) {
 
     if (resourceResult.getMetrics() == null) {
-      return new ArrayList<>();
+      return;
     }
-
-    List<UsageRecordModel> results = new ArrayList<>();
 
     for (MetricResult metricResult : resourceResult.getMetrics()) {
-      processMetricResult(metricResult, resource, serviceScope, queryContext, results);
+      processMetricResult(metricResult, resource, serviceScope, queryContext, normalizer);
     }
-
-    return results;
   }
 
   private void processMetricResult(
@@ -226,7 +223,7 @@ public class AzureCloudMonitorMetricProvider implements CloudMonitoringMetricPro
       AzureResource resource,
       ServiceScope serviceScope,
       QueryContext queryContext,
-      List<UsageRecordModel> results) {
+      Normalizer normalizer) {
 
     if (metricResult == null || metricResult.getTimeSeries() == null) {
       return;
@@ -237,7 +234,13 @@ public class AzureCloudMonitorMetricProvider implements CloudMonitoringMetricPro
 
     for (TimeSeriesElement timeSeries : metricResult.getTimeSeries()) {
       processTimeSeries(
-          metricResult, timeSeries, resource, serviceScope, requestedMetric, queryContext, results);
+          metricResult,
+          timeSeries,
+          resource,
+          serviceScope,
+          requestedMetric,
+          queryContext,
+          normalizer);
     }
   }
 
@@ -248,23 +251,23 @@ public class AzureCloudMonitorMetricProvider implements CloudMonitoringMetricPro
       ServiceScope serviceScope,
       Metric requestedMetric,
       QueryContext queryContext,
-      List<UsageRecordModel> results) {
+      Normalizer normalizer) {
 
     if (timeSeries == null || timeSeries.getValues() == null) {
       return;
     }
 
     Map<String, String> dimensions = getDimensions(timeSeries);
-
+    List<UsageRecordModel> results = new ArrayList<>();
     for (MetricValue metricValue : timeSeries.getValues()) {
       UsageRecordModel usage =
           createUsageRecord(
               new RecordContext(
                   metricResult, metricValue, resource, serviceScope, requestedMetric, dimensions),
               queryContext);
-
       addIfPresent(results, usage);
     }
+    persistenceService.normalizeAndPersistUsage(results, queryContext.userId(), normalizer);
   }
 
   private void addIfPresent(List<UsageRecordModel> results, UsageRecordModel usage) {
@@ -398,6 +401,7 @@ public class AzureCloudMonitorMetricProvider implements CloudMonitoringMetricPro
       AccountScope accountScope, IngestionRequestEvent request) {
 
     return new QueryContext(
+        request.getUserId(),
         accountScope,
         request.getFrom(),
         request.getTo(),
@@ -509,6 +513,7 @@ public class AzureCloudMonitorMetricProvider implements CloudMonitoringMetricPro
   }
 
   private record QueryContext(
+      UUID userId,
       AccountScope accountScope,
       Instant from,
       Instant to,

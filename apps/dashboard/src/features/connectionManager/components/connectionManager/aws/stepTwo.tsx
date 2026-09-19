@@ -259,7 +259,7 @@ export default function StepTwoAws({ credentials, onNext, onBack }: Readonly<Pro
                         Add this IAM policy to your user. It includes selected-service discovery
                         permissions and billing export S3 read access.
                     </p>
-                    <pre className="bg-card p-4 rounded-lg overflow-x-auto text-xs font-mono text-foreground whitespace-pre-wrap">
+                    <pre className="h-80 max-h-120 bg-card p-4 rounded-lg overflow-x-auto text-xs font-mono text-foreground whitespace-pre-wrap">
                         {displayPermissions ? JSON.stringify(displayPermissions, null, 2) : "{}"}
                     </pre>
 

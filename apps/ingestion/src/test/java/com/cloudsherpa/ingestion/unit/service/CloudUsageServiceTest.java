@@ -11,7 +11,6 @@ import com.cloudsherpa.ingestion.normalization.normalizers.Normalizer;
 import com.cloudsherpa.ingestion.normalization.normalizers.NormalizerFactory;
 import com.cloudsherpa.ingestion.service.CloudUsageService;
 import com.cloudsherpa.ingestion.service.SherpaDbPersistenceService;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -48,24 +47,16 @@ class CloudUsageServiceTest {
 
     when(factory.getConnector("AWS")).thenReturn(connector);
 
-    UsageRecordModel usageRecord = buildUsageRecord();
-    String resource = "resource1";
-    ResourceDetail resourceDetail =
-        new ResourceDetail("resourceId", "name", "type", "category", "region", null);
-    doReturn(List.of(usageRecord)).when(connector).fetchUsage(any(), any());
-    doReturn(List.of(resource)).when(connector).getAllOfferedServices();
-    doReturn(List.of(resourceDetail)).when(connector).getAllResources(any(), any());
+    doNothing().when(connector).fetchUsage(any(), any(), any());
 
-    IngestionRequestEvent request = buildRequest(true, false);
+    IngestionResult result = service.ingest(buildRequest(true, false));
 
-    IngestionResult result = service.ingest(request);
+    assertNotNull(result);
+    assertTrue(result.getUsage().isEmpty());
+    assertTrue(result.getBilling().isEmpty());
 
-    assertEquals(1, result.getUsage().size());
-    assertEquals(0, result.getBilling().size());
-
-    verify(connector, times(1)).fetchUsage(any(), any());
+    verify(connector, times(1)).fetchUsage(any(), any(), any());
     verify(normalizerFactory).getNormalizer("AWS");
-    verify(normalizer).normalize(any(UsageRecordModel.class));
   }
 
   @Test
@@ -96,19 +87,19 @@ class CloudUsageServiceTest {
 
     when(factory.getConnector("AWS")).thenReturn(connector);
 
-    doReturn(List.of(buildUsageRecord())).when(connector).fetchUsage(any(), any());
+    doNothing().when(connector).fetchUsage(any(), any(), any());
 
     doReturn(List.of(new BillingRecordModel())).when(connector).fetchBilling(any(), any());
 
-    IngestionRequestEvent request = buildRequest(true, true);
+    IngestionResult result = service.ingest(buildRequest(true, true));
 
-    IngestionResult result = service.ingest(request);
-
-    assertEquals(1, result.getUsage().size());
+    assertNotNull(result);
+    assertTrue(result.getUsage().isEmpty());
     assertEquals(1, result.getBilling().size());
 
+    verify(connector).fetchUsage(any(), any(), any());
+    verify(connector).fetchBilling(any(), any());
     verify(normalizerFactory).getNormalizer("AWS");
-    verify(normalizer).normalize(any(UsageRecordModel.class));
   }
 
   @Test
@@ -118,13 +109,11 @@ class CloudUsageServiceTest {
 
     when(factory.getConnector("AWS")).thenReturn(connector);
 
-    doReturn(List.of()).when(connector).fetchUsage(any(), any());
-
     IngestionResult result = service.ingest(buildRequest(true, false));
 
     assertTrue(result.getUsage().isEmpty());
 
-    verify(connector, times(1)).fetchUsage(any(), any());
+    verify(connector, times(1)).fetchUsage(any(), any(), any());
 
     verify(normalizerFactory).getNormalizer("AWS");
     verify(normalizer, never()).normalize(any());
@@ -139,7 +128,7 @@ class CloudUsageServiceTest {
 
     service.ingest(buildRequest(false, false));
 
-    verify(connector, never()).fetchUsage(any(), any());
+    verify(connector, never()).fetchUsage(any(), any(), any());
     verify(normalizerFactory).getNormalizer("AWS");
     verify(normalizer, never()).normalize(any());
   }
@@ -165,49 +154,11 @@ class CloudUsageServiceTest {
   }
 
   @Test
-  void ingestShouldPersistNormalizedMetrics() {
-
-    TestConnector connector = spy(new TestConnector());
-
-    when(factory.getConnector("AWS")).thenReturn(connector);
-
-    doReturn(List.of(buildUsageRecord())).when(connector).fetchUsage(any(), any());
-
-    assertDoesNotThrow(() -> service.ingest(buildRequest(true, false)));
-
-    verify(connector, times(1)).fetchUsage(any(), any());
-    verify(normalizerFactory).getNormalizer("AWS");
-    verify(normalizer).normalize(any(UsageRecordModel.class));
-    verify(persistenceService).recordMetric(any(), any(), any());
-  }
-
-  @Test
-  void ingestShouldContinueWhenPersistenceFails() {
-
-    TestConnector connector = spy(new TestConnector());
-
-    when(factory.getConnector("AWS")).thenReturn(connector);
-
-    doReturn(List.of(buildUsageRecord())).when(connector).fetchUsage(any(), any());
-
-    doThrow(new RuntimeException("DB Failure"))
-        .when(persistenceService)
-        .recordMetric(any(), any(), any());
-
-    assertDoesNotThrow(() -> service.ingest(buildRequest(true, false)));
-    verify(normalizerFactory).getNormalizer("AWS");
-    verify(normalizer).normalize(any(UsageRecordModel.class));
-    verify(persistenceService).recordMetric(any(), any(), any());
-  }
-
-  @Test
   void ingestShouldHandleMultipleScopes() {
 
     TestConnector connector = spy(new TestConnector());
 
     when(factory.getConnector(anyString())).thenReturn(connector);
-
-    doReturn(List.of(buildUsageRecord())).when(connector).fetchUsage(any(), any());
 
     IngestionRequestEvent request = buildRequest(true, false);
 
@@ -222,23 +173,11 @@ class CloudUsageServiceTest {
 
     IngestionResult result = service.ingest(request);
 
-    assertEquals(2, result.getUsage().size());
+    assertNotNull(result);
+    assertTrue(result.getUsage().isEmpty());
+
+    verify(connector, times(2)).fetchUsage(any(), any(), any());
     verify(normalizerFactory, times(2)).getNormalizer("AWS");
-    verify(normalizer, times(2)).normalize(any(UsageRecordModel.class));
-  }
-
-  private UsageRecordModel buildUsageRecord() {
-
-    UsageRecordModel usageRecord = new UsageRecordModel();
-
-    usageRecord.setProvider("AWS");
-    usageRecord.setMetricName("CPUUtilization");
-    usageRecord.setServiceName("EC2");
-    usageRecord.setAccountId("123");
-    usageRecord.setTimestamp(Instant.now());
-    usageRecord.setValue(50.0);
-
-    return usageRecord;
   }
 
   private IngestionRequestEvent buildRequest(boolean usage, boolean billing) {
@@ -282,15 +221,15 @@ class CloudUsageServiceTest {
     }
 
     @Override
-    public List<UsageRecordModel> fetchUsage(
-        AccountScope accountScope, IngestionRequestEvent request) {
-      return List.of();
+    public void fetchUsage(
+        AccountScope accountScope, IngestionRequestEvent request, Normalizer normalizer) {
+      return;
     }
 
     @Override
-    public List<UsageRecordModel> fetchMockUsage(
-        AccountScope accountScope, IngestionRequestEvent request) {
-      return List.of(buildMockRecord());
+    public void fetchMockUsage(
+        AccountScope accountScope, IngestionRequestEvent request, Normalizer normalizer) {
+      return;
     }
 
     @Override
@@ -303,20 +242,6 @@ class CloudUsageServiceTest {
     public List<BillingRecordModel> fetchMockBilling(
         AccountScope accountScope, IngestionRequestEvent request) {
       return List.of(new BillingRecordModel());
-    }
-
-    private static UsageRecordModel buildMockRecord() {
-
-      UsageRecordModel usageRecord = new UsageRecordModel();
-
-      usageRecord.setProvider("AWS");
-      usageRecord.setMetricName("CPUUtilization");
-      usageRecord.setServiceName("EC2");
-      usageRecord.setAccountId("123");
-      usageRecord.setTimestamp(Instant.now());
-      usageRecord.setValue(42.0);
-
-      return usageRecord;
     }
   }
 }

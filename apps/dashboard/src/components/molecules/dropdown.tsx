@@ -9,7 +9,7 @@ import {
 } from "@/components/atoms/command";
 import { Button } from "@/components/atoms/button";
 import { useState } from "react";
-import { ChevronsUpDown, Check } from "lucide-react";
+import { ChevronDown, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface DropdownOption {
@@ -65,7 +65,12 @@ export default function Dropdown({
                                 ? options.find((opt) => opt.value === value)?.label
                                 : placeholder}
                         </span>
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        <ChevronDown
+                            className={cn(
+                                "h-4 w-4 opacity-50 transition-transform duration-200",
+                                open && "rotate-180"
+                            )}
+                        />
                     </Button>
                 </PopoverTrigger>
                 <PopoverContent className="p-0 w-(--radix-popover-trigger-width)">
