@@ -36,7 +36,10 @@ export default function AgenticDashCard() {
                                     <TabsTrigger value="history">History</TabsTrigger>
                                 </TabsList>
                                 <div className="h-full w-full p-0 flex flex-col">
-                                    <TabsContent value="standard">
+                                    <TabsContent
+                                        value="standard"
+                                        className="flex flex-col justify-end"
+                                    >
                                         <StandardDashInput />
                                     </TabsContent>
                                     <TabsContent value="history">
