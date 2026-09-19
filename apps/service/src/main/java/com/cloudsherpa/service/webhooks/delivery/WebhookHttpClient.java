@@ -1,7 +1,6 @@
 package com.cloudsherpa.service.webhooks.delivery;
 
 import com.cloudsherpa.service.webhooks.model.DeliveryAttempt;
-import com.cloudsherpa.service.webhooks.model.DeliveryHeaders;
 import java.time.Instant;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +17,7 @@ public class WebhookHttpClient {
   }
 
   // Returns delivery status code
-  public Integer send(String webhookUri, DeliveryHeaders headers, DeliveryAttempt attempt) {
+  public Integer send(String webhookUri, DeliveryAttempt attempt) {
     try {
       ResponseEntity<Void> res =
           restClient
