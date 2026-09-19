@@ -1,82 +1,165 @@
 "use client";
 
-import {useEffect, useMemo, useState, useCallback} from "react";
-import {Plus, Search, Edit, Trash2, ChevronLeft, ChevronRight} from "lucide-react";
-import {useReactTable, getCoreRowModel, flexRender, ColumnDef, getPaginationRowModel} from "@tanstack/react-table";
-import {fetchWebhooks, fetchWebhookEvents, fetchWebhookDeliveries, deleteWebhook} from "@/features/webhooks/webhooks";
+import { useEffect, useMemo, useState, useCallback } from "react";
+import { Plus, Search, Edit, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+    useReactTable,
+    getCoreRowModel,
+    flexRender,
+    ColumnDef,
+    getPaginationRowModel,
+} from "@tanstack/react-table";
+import {
+    fetchWebhooks,
+    fetchWebhookEvents,
+    fetchWebhookDeliveries,
+    deleteWebhook,
+} from "@/features/webhooks/webhooks";
 import { getAwsAccountConnections } from "@/lib/fetch/cloud-account-api";
-import {Webhook, WebhookDelivery, WebhookEvent, CloudAccount} from "@/features/webhooks/types";
-import {AddWebhook} from "@/features/webhooks/components/addWebhooks";
-import {Popup} from "@/features/webhooks/components/confirmPopup";
-import {ExampleForPayload} from "@/features/webhooks/components/payload";
-import {Button} from "@/components/atoms/button";
-import {Input} from "@/components/atoms/input";
-import {Badge} from "@/components/atoms/badge";
-import {Card, CardContent, CardHeader, CardTitle, CardDescription} from "@/components/atoms/card";
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/atoms/select";
-import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/atoms/table";
-import {Label} from "@/components/atoms/label";
-import {DeletePopup} from "@/features/webhooks/components/deletePopup";
+import { Webhook, WebhookDelivery, WebhookEvent, CloudAccount } from "@/features/webhooks/types";
+import { AddWebhook } from "@/features/webhooks/components/addWebhooks";
+import { Popup } from "@/features/webhooks/components/confirmPopup";
+import { ExampleForPayload } from "@/features/webhooks/components/payload";
+import { Button } from "@/components/atoms/button";
+import { Input } from "@/components/atoms/input";
+import { Badge } from "@/components/atoms/badge";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/atoms/card";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/atoms/select";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/atoms/table";
+import { Label } from "@/components/atoms/label";
+import { DeletePopup } from "@/features/webhooks/components/deletePopup";
 
 //moved to outside to correct sonarqube errors
 const helperForWebhookColumns = (
-    onEdit : (webhook : Webhook) => void, onDelete : (webhook : Webhook) => void,
-) : ColumnDef<Webhook>[] => [
-    {accessorKey : "name", header : "Name",
-         cell : (info) => (<span className = "font-medium text-foreground"> {info.getValue() as string} </span>),
-        },
+    onEdit: (webhook: Webhook) => void,
+    onDelete: (webhook: Webhook) => void
+): ColumnDef<Webhook>[] => [
+    {
+        accessorKey: "name",
+        header: "Name",
+        cell: (info) => (
+            <span className="font-medium text-foreground"> {info.getValue() as string} </span>
+        ),
+    },
 
-        {accessorKey : "endpointUrl", header : "Endpoint URL",
-         cell : (info) => (<span className = "text-primary"> {info.getValue() as string} </span>),
-        },
+    {
+        accessorKey: "endpointUrl",
+        header: "Endpoint URL",
+        cell: (info) => <span className="text-primary"> {info.getValue() as string} </span>,
+    },
 
-        {accessorKey : "eventTypes", header : "Events",
-         cell : (info) => `${(info.getValue() as string []).length} events`,
-        },
+    {
+        accessorKey: "eventTypes",
+        header: "Events",
+        cell: (info) => `${(info.getValue() as string[]).length} events`,
+    },
 
-        {accessorKey : "cloudAccounts", header : "Accounts",
-         cell : (info) => `${(info.getValue() as string[]).length} accounts`,
-        },
+    {
+        accessorKey: "cloudAccounts",
+        header: "Accounts",
+        cell: (info) => `${(info.getValue() as string[]).length} accounts`,
+    },
 
-        {accessorKey : "status", header : "Status", cell : (info) => {
+    {
+        accessorKey: "status",
+        header: "Status",
+        cell: (info) => {
             const status = info.getValue() as string;
 
-            return(
-                <Badge variant = {status === "ACTIVE" ? "default" : "secondary"}
+            return (
+                <Badge
+                    variant={status === "ACTIVE" ? "default" : "secondary"}
 
-                className = {status === "ACTIVE" ? "bg-success/20 text-success hover:bg-success/30" : "bg-warning/20 text-warning hover:bg-warning/30"}> {status === "ACTIVE" ? "Active" : "Paused"} </Badge>
+                    className={
+                        status === "ACTIVE"
+                            ? "bg-success/20 text-success hover:bg-success/30"
+                            : "bg-warning/20 text-warning hover:bg-warning/30"
+                    }
+                >
+                    {" "}
+                    {status === "ACTIVE" ? "Active" : "Paused"}{" "}
+                </Badge>
             );
-        },},
+        },
+    },
 
-        {id : "actions", header : "Actions", cell : ({row}) => (
-            <div className = "flex items-center gap-2">
-                <Button variant = "ghost" size = "icon" onClick = {() => onEdit(row.original)} className = "h-8 w-8 text-muted-foreground hover:text-foreground"> <Edit size = {16}/> </Button>
+    {
+        id: "actions",
+        header: "Actions",
+        cell: ({ row }) => (
+            <div className="flex items-center gap-2">
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => onEdit(row.original)}
+                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                >
+                    {" "}
+                    <Edit size={16} />{" "}
+                </Button>
 
-                <Button variant = "ghost" size = "icon" onClick = {() => onDelete(row.original)} className = "h-8 w-8 text-destructive hover:text-destructive-foreground"> <Trash2 size = {16}/> </Button>
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => onDelete(row.original)}
+                    className="h-8 w-8 text-destructive hover:text-destructive-foreground"
+                >
+                    {" "}
+                    <Trash2 size={16} />{" "}
+                </Button>
             </div>
-        ),},
+        ),
+    },
 ];
 
-const helperForDeliveryColumns = (
-    webhooks : Webhook[],
-) : ColumnDef<WebhookDelivery>[] => [
-    {accessorKey : "timestamp", header : "Time", cell : (info) => new Date(info.getValue() as string).toLocaleString(),},
+const helperForDeliveryColumns = (webhooks: Webhook[]): ColumnDef<WebhookDelivery>[] => [
+    {
+        accessorKey: "timestamp",
+        header: "Time",
+        cell: (info) => new Date(info.getValue() as string).toLocaleString(),
+    },
 
-        {accessorKey : "webhookId", header : "Webhook", cell : (info) => webhooks.find((webhook) => webhook.id === info.getValue())?.name ?? (info.getValue() as string),},
+    {
+        accessorKey: "webhookId",
+        header: "Webhook",
+        cell: (info) =>
+            webhooks.find((webhook) => webhook.id === info.getValue())?.name ??
+            (info.getValue() as string),
+    },
 
-        {accessorKey : "eventType", header : "Event"},
+    { accessorKey: "eventType", header: "Event" },
 
-        {accessorKey : "cloudAccount", header : "Account"},
+    { accessorKey: "cloudAccount", header: "Account" },
 
-        {accessorKey : "result", header : "Result", cell : (info) => {
+    {
+        accessorKey: "result",
+        header: "Result",
+        cell: (info) => {
             const forResult = info.getValue() as string;
 
-            return(
-                <span className = {forResult === "DELIVERED" ? "text-success" : "text-destructive"}> {forResult === "DELIVERED" ? "Delivered" : "Failed"} </span>
+            return (
+                <span className={forResult === "DELIVERED" ? "text-success" : "text-destructive"}>
+                    {" "}
+                    {forResult === "DELIVERED" ? "Delivered" : "Failed"}{" "}
+                </span>
             );
-        },},
+        },
+    },
 
-        {accessorKey : "responseCode", header : "HTTP"},
+    { accessorKey: "responseCode", header: "HTTP" },
 ];
 
 export const Webhooks = () => {
@@ -94,7 +177,9 @@ export const Webhooks = () => {
 
     const [secret, setSecret] = useState<string | null>(null);
 
-    const [eventSelectedForPayload, setEventSelectedForPayload] = useState<WebhookEvent | null>(null);
+    const [eventSelectedForPayload, setEventSelectedForPayload] = useState<WebhookEvent | null>(
+        null
+    );
 
     const [webhookSearch, setWebhookSearch] = useState("");
 
@@ -102,9 +187,12 @@ export const Webhooks = () => {
 
     const [filterForStatus, setFilterForStatus] = useState<string>("all");
 
-    const [paginationForWebhook, setPaginationForWebhook] = useState({pageIndex : 0, pageSize : 5});
+    const [paginationForWebhook, setPaginationForWebhook] = useState({ pageIndex: 0, pageSize: 5 });
 
-    const [paginationForDelivery, setPaginationForDelivery] = useState({pageIndex : 0, pageSize : 5});
+    const [paginationForDelivery, setPaginationForDelivery] = useState({
+        pageIndex: 0,
+        pageSize: 5,
+    });
 
     const [filterForDeliveryStatus, setFilterForDeliveryStatus] = useState<string>("all");
 
@@ -114,9 +202,12 @@ export const Webhooks = () => {
 
     useEffect(() => {
         const loadingData = async () => {
-            try{
+            try {
                 const [webhooks, events, deliveries, accounts] = await Promise.all([
-                    fetchWebhooks(), fetchWebhookEvents(), fetchWebhookDeliveries(), getAwsAccountConnections(),
+                    fetchWebhooks(),
+                    fetchWebhookEvents(),
+                    fetchWebhookDeliveries(),
+                    getAwsAccountConnections(),
                 ]);
 
                 setWebhooks(webhooks);
@@ -124,10 +215,10 @@ export const Webhooks = () => {
                 setDelivery(deliveries);
                 setCloudAccounts(accounts);
 
-                if(events.length>0){
+                if (events.length > 0) {
                     setEventSelectedForPayload(events[0]);
                 }
-            }catch(error){
+            } catch (error) {
                 //console.error("error loading webhook data");
             }
         };
@@ -135,34 +226,36 @@ export const Webhooks = () => {
         loadingData();
     }, []);
 
-    const handlingDelete = useCallback((webhook : Webhook) => {
+    const handlingDelete = useCallback((webhook: Webhook) => {
         setWebhookToDelete(webhook);
     }, []);
 
     const confirmDelete = useCallback(async () => {
-        if(!webhookToDelete){
+        if (!webhookToDelete) {
             return;
         }
 
-        try{
+        try {
             await deleteWebhook(webhookToDelete.id);
 
-            setWebhooks((previous) => previous.filter((webhook) => webhook.id !== webhookToDelete.id));
-        }catch{
+            setWebhooks((previous) =>
+                previous.filter((webhook) => webhook.id !== webhookToDelete.id)
+            );
+        } catch {
             alert("Failed to delete webhook");
-        }finally{
+        } finally {
             setWebhookToDelete(null);
         }
     }, [webhookToDelete]);
 
-    const handlingEdit = useCallback((webhook : Webhook) => {
+    const handlingEdit = useCallback((webhook: Webhook) => {
         setEditWebhook(webhook);
 
         setAddWebhookOpen(true);
     }, []);
 
-    const handlingAddSuccess = (secret : string) => {
-        if(secret){
+    const handlingAddSuccess = (secret: string) => {
+        if (secret) {
             setSecret(secret);
         }
 
@@ -170,52 +263,84 @@ export const Webhooks = () => {
     };
 
     const filteredWebhooks = useMemo(() => {
-        return webhooks.filter((webhook) => webhook.name.toLowerCase().includes(webhookSearch.toLowerCase()) && (filterForStatus === "all" || webhook.status === filterForStatus));
+        return webhooks.filter(
+            (webhook) =>
+                webhook.name.toLowerCase().includes(webhookSearch.toLowerCase()) &&
+                (filterForStatus === "all" || webhook.status === filterForStatus)
+        );
     }, [webhooks, webhookSearch, filterForStatus]);
 
     const filteredDeliveries = useMemo(() => {
         return delivery.filter((forDelivery) => {
-            const searchMatches = forDelivery.eventType.toLowerCase().includes(deliverySearch.toLowerCase());
-        
-            const statusesMatch = filterForDeliveryStatus === "all" || forDelivery.result === filterForDeliveryStatus;
+            const searchMatches = forDelivery.eventType
+                .toLowerCase()
+                .includes(deliverySearch.toLowerCase());
 
-            const webhooksMatch = filterForDeliveryWebhook === "all" || forDelivery.webhookId === filterForDeliveryWebhook;
+            const statusesMatch =
+                filterForDeliveryStatus === "all" || forDelivery.result === filterForDeliveryStatus;
+
+            const webhooksMatch =
+                filterForDeliveryWebhook === "all" ||
+                forDelivery.webhookId === filterForDeliveryWebhook;
 
             return searchMatches && statusesMatch && webhooksMatch;
         });
     }, [delivery, deliverySearch, filterForDeliveryStatus, filterForDeliveryWebhook]);
 
     useEffect(() => {
-        setPaginationForDelivery((previous) => ({...previous, pageIndex : 0}));
+        setPaginationForDelivery((previous) => ({ ...previous, pageIndex: 0 }));
     }, [deliverySearch, filterForDeliveryStatus, filterForDeliveryWebhook]);
 
     useEffect(() => {
-        setPaginationForWebhook((previous) => ({...previous, pageIndex : 0}));
+        setPaginationForWebhook((previous) => ({ ...previous, pageIndex: 0 }));
     }, [webhookSearch, filterForStatus]);
 
-    const webhookColumns = useMemo(() => helperForWebhookColumns(handlingEdit, handlingDelete),[handlingEdit, handlingDelete],);
+    const webhookColumns = useMemo(
+        () => helperForWebhookColumns(handlingEdit, handlingDelete),
+        [handlingEdit, handlingDelete]
+    );
 
-    const deliveryColumns = useMemo(() => helperForDeliveryColumns(webhooks), [webhooks],);
+    const deliveryColumns = useMemo(() => helperForDeliveryColumns(webhooks), [webhooks]);
 
     const tableForWebhook = useReactTable({
-        data : filteredWebhooks, columns : webhookColumns, getCoreRowModel : getCoreRowModel(), getPaginationRowModel : getPaginationRowModel(), state : {pagination : paginationForWebhook}, onPaginationChange : setPaginationForWebhook,
+        data: filteredWebhooks,
+        columns: webhookColumns,
+        getCoreRowModel: getCoreRowModel(),
+        getPaginationRowModel: getPaginationRowModel(),
+        state: { pagination: paginationForWebhook },
+        onPaginationChange: setPaginationForWebhook,
     });
 
     const tableForDelivery = useReactTable({
-        data : filteredDeliveries, columns : deliveryColumns, getCoreRowModel : getCoreRowModel(), getPaginationRowModel : getPaginationRowModel(), state : {pagination : paginationForDelivery}, onPaginationChange : setPaginationForDelivery,
+        data: filteredDeliveries,
+        columns: deliveryColumns,
+        getCoreRowModel: getCoreRowModel(),
+        getPaginationRowModel: getPaginationRowModel(),
+        state: { pagination: paginationForDelivery },
+        onPaginationChange: setPaginationForDelivery,
     });
 
-    return(
-        <div className = "p-6 max-w-7xl mx-auto space-y-8 bg-background text-foreground">
-
-            <div className = "flex justify-between items-center">
+    return (
+        <div className="p-6 max-w-7xl mx-auto space-y-8 bg-background text-foreground">
+            <div className="flex justify-between items-center">
                 <div>
-                    <h1 className = "text-2xl font-bold"> Webhooks </h1>
+                    <h1 className="text-2xl font-bold"> Webhooks </h1>
 
-                    <p className = "text-muted-foreground text-sm mt-1"> Manage endpoints and inspect event deliveries </p>
+                    <p className="text-muted-foreground text-sm mt-1">
+                        {" "}
+                        Manage endpoints and inspect event deliveries{" "}
+                    </p>
                 </div>
 
-                <Button onClick = {() => {setEditWebhook(null); setAddWebhookOpen(true);}}> <Plus size = {16} className = "mr-2"/> Add webhook </Button>
+                <Button
+                    onClick={() => {
+                        setEditWebhook(null);
+                        setAddWebhookOpen(true);
+                    }}
+                >
+                    {" "}
+                    <Plus size={16} className="mr-2" /> Add webhook{" "}
+                </Button>
             </div>
 
             <Card>
@@ -223,35 +348,46 @@ export const Webhooks = () => {
                     <CardTitle> Configured webhooks </CardTitle>
                 </CardHeader>
 
-                <CardContent className = "space-y-4">
-                    <div className = "flex gap-4">
-                        <div className = "relative flex-1 max-w-sm">
-                            <Search className = "absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground"/>
+                <CardContent className="space-y-4">
+                    <div className="flex gap-4">
+                        <div className="relative flex-1 max-w-sm">
+                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
 
-                            <Input placeholder = "Search webhooks" value = {webhookSearch} onChange = {(change) => setWebhookSearch(change.target.value)} className = "pl-8"/>
+                            <Input
+                                placeholder="Search webhooks"
+                                value={webhookSearch}
+                                onChange={(change) => setWebhookSearch(change.target.value)}
+                                className="pl-8"
+                            />
                         </div>
 
-                        <Select value = {filterForStatus} onValueChange = {setFilterForStatus}>
-                            <SelectTrigger className = "w-[180px]"> <SelectValue placeholder = "All statuses"/> </SelectTrigger>
+                        <Select value={filterForStatus} onValueChange={setFilterForStatus}>
+                            <SelectTrigger className="w-[180px]">
+                                {" "}
+                                <SelectValue placeholder="All statuses" />{" "}
+                            </SelectTrigger>
 
                             <SelectContent>
-                                <SelectItem value = "all"> All statuses </SelectItem>
+                                <SelectItem value="all"> All statuses </SelectItem>
 
-                                <SelectItem value = "ACTIVE"> Active </SelectItem>
+                                <SelectItem value="ACTIVE"> Active </SelectItem>
 
-                                <SelectItem value = "PAUSED"> Paused </SelectItem>
+                                <SelectItem value="PAUSED"> Paused </SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
 
-                    <div className = "rounded-md border border-border">
+                    <div className="rounded-md border border-border">
                         <Table>
                             <TableHeader>
                                 {tableForWebhook.getHeaderGroups().map((headerGroup) => (
-                                    <TableRow key = {headerGroup.id}>
+                                    <TableRow key={headerGroup.id}>
                                         {headerGroup.headers.map((header) => (
-                                            <TableHead key = {header.id}>
-                                                {flexRender(header.column.columnDef.header, header.getContext())}
+                                            <TableHead key={header.id}>
+                                                {flexRender(
+                                                    header.column.columnDef.header,
+                                                    header.getContext()
+                                                )}
                                             </TableHead>
                                         ))}
                                     </TableRow>
@@ -260,10 +396,13 @@ export const Webhooks = () => {
 
                             <TableBody>
                                 {tableForWebhook.getRowModel().rows.map((forRows) => (
-                                    <TableRow key = {forRows.id}>
+                                    <TableRow key={forRows.id}>
                                         {forRows.getVisibleCells().map((forCells) => (
-                                            <TableCell key = {forCells.id}>
-                                                {flexRender(forCells.column.columnDef.cell, forCells.getContext())}
+                                            <TableCell key={forCells.id}>
+                                                {flexRender(
+                                                    forCells.column.columnDef.cell,
+                                                    forCells.getContext()
+                                                )}
                                             </TableCell>
                                         ))}
                                     </TableRow>
@@ -272,32 +411,71 @@ export const Webhooks = () => {
                         </Table>
                     </div>
 
-                    <div className = "grid grid-cols-3 items-center text-sm text-muted-foreground">
+                    <div className="grid grid-cols-3 items-center text-sm text-muted-foreground">
                         <span>
-                            Showing {tableForWebhook.getState().pagination.pageIndex*tableForWebhook.getState().pagination.pageSize+1}-{Math.min((tableForWebhook.getState().pagination.pageIndex+1)*tableForWebhook.getState().pagination.pageSize, filteredWebhooks.length)} of {filteredWebhooks.length} webhooks
+                            Showing{" "}
+                            {tableForWebhook.getState().pagination.pageIndex *
+                                tableForWebhook.getState().pagination.pageSize +
+                                1}
+                            -
+                            {Math.min(
+                                (tableForWebhook.getState().pagination.pageIndex + 1) *
+                                    tableForWebhook.getState().pagination.pageSize,
+                                filteredWebhooks.length
+                            )}{" "}
+                            of {filteredWebhooks.length} webhooks
                         </span>
 
-                        <div className = "flex items-center justify-center gap-2">
-                            <Button variant = "ghost" size = "icon" className = "h-8 w-8" onClick = {() => tableForWebhook.previousPage()} disabled = {!tableForWebhook.getCanPreviousPage()}> <ChevronLeft size = {16}/> </Button>
+                        <div className="flex items-center justify-center gap-2">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => tableForWebhook.previousPage()}
+                                disabled={!tableForWebhook.getCanPreviousPage()}
+                            >
+                                {" "}
+                                <ChevronLeft size={16} />{" "}
+                            </Button>
 
-                            <span> Page {tableForWebhook.getState().pagination.pageIndex+1} of {tableForWebhook.getPageCount()} </span>
+                            <span>
+                                {" "}
+                                Page {tableForWebhook.getState().pagination.pageIndex + 1} of{" "}
+                                {tableForWebhook.getPageCount()}{" "}
+                            </span>
 
-                            <Button variant = "ghost" size = "icon" className = "h-8 w-8" onClick = {() => tableForWebhook.nextPage()} disabled = {!tableForWebhook.getCanNextPage()}> <ChevronRight size = {16}/> </Button>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => tableForWebhook.nextPage()}
+                                disabled={!tableForWebhook.getCanNextPage()}
+                            >
+                                {" "}
+                                <ChevronRight size={16} />{" "}
+                            </Button>
                         </div>
 
-                        <div className = "flex items-center justify-end gap-2">
+                        <div className="flex items-center justify-end gap-2">
                             <span> Rows per page: </span>
-                                <Select value = {String(tableForWebhook.getState().pagination.pageSize)} onValueChange = {(value) => tableForWebhook.setPageSize(Number(value))}>
-                                    <SelectTrigger className = "w-[70px] h-8"> <SelectValue/> </SelectTrigger>
+                            <Select
+                                value={String(tableForWebhook.getState().pagination.pageSize)}
+                                onValueChange={(value) =>
+                                    tableForWebhook.setPageSize(Number(value))
+                                }
+                            >
+                                <SelectTrigger className="w-[70px] h-8">
+                                    {" "}
+                                    <SelectValue />{" "}
+                                </SelectTrigger>
 
-                                    <SelectContent>
-                                        <SelectItem value = "5"> 5 </SelectItem>
-                                        <SelectItem value = "10"> 10 </SelectItem>
-                                        <SelectItem value = "15"> 15 </SelectItem>
-                                    </SelectContent>
-                                </Select>
+                                <SelectContent>
+                                    <SelectItem value="5"> 5 </SelectItem>
+                                    <SelectItem value="10"> 10 </SelectItem>
+                                    <SelectItem value="15"> 15 </SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
-                        
                     </div>
                 </CardContent>
             </Card>
@@ -307,45 +485,68 @@ export const Webhooks = () => {
                     <CardTitle> Delivery log </CardTitle>
                 </CardHeader>
 
-                <CardContent className = "space-y-4">
-                    <div className = "flex gap-4">
-                        <div className = "relative flex-1 max-w-sm">
-                            <Search className = "absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground"/>
+                <CardContent className="space-y-4">
+                    <div className="flex gap-4">
+                        <div className="relative flex-1 max-w-sm">
+                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
 
-                            <Input placeholder = "Search deliveries" value = {deliverySearch} onChange = {(change) => setDeliverySearch(change.target.value)} className = "pl-8"/>
+                            <Input
+                                placeholder="Search deliveries"
+                                value={deliverySearch}
+                                onChange={(change) => setDeliverySearch(change.target.value)}
+                                className="pl-8"
+                            />
                         </div>
 
-                        <Select value = {filterForDeliveryWebhook} onValueChange = {setFilterForDeliveryWebhook}>
-                            <SelectTrigger className = "w-[220px]"> <SelectValue placeholder = "All webhooks"/> </SelectTrigger>
+                        <Select
+                            value={filterForDeliveryWebhook}
+                            onValueChange={setFilterForDeliveryWebhook}
+                        >
+                            <SelectTrigger className="w-[220px]">
+                                {" "}
+                                <SelectValue placeholder="All webhooks" />{" "}
+                            </SelectTrigger>
 
                             <SelectContent>
-                                <SelectItem value = "all"> All webhooks </SelectItem>
+                                <SelectItem value="all"> All webhooks </SelectItem>
 
                                 {webhooks.map((webhook) => (
-                                    <SelectItem key = {webhook.id} value = {webhook.id}> {webhook.name} </SelectItem>
+                                    <SelectItem key={webhook.id} value={webhook.id}>
+                                        {" "}
+                                        {webhook.name}{" "}
+                                    </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
 
-                        <Select value = {filterForDeliveryStatus} onValueChange = {setFilterForDeliveryStatus}>
-                            <SelectTrigger className = "w-[180px]"> <SelectValue placeholder = "All statuses"/> </SelectTrigger>
+                        <Select
+                            value={filterForDeliveryStatus}
+                            onValueChange={setFilterForDeliveryStatus}
+                        >
+                            <SelectTrigger className="w-[180px]">
+                                {" "}
+                                <SelectValue placeholder="All statuses" />{" "}
+                            </SelectTrigger>
 
                             <SelectContent>
-                                <SelectItem value = "all"> All statuses </SelectItem>
-                                <SelectItem value = "DELIVERED"> Delivered </SelectItem>
-                                <SelectItem value = "FAILED"> Failed </SelectItem> 
+                                <SelectItem value="all"> All statuses </SelectItem>
+                                <SelectItem value="DELIVERED"> Delivered </SelectItem>
+                                <SelectItem value="FAILED"> Failed </SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
 
-                    <div className = "rounded-md border border-border">
+                    <div className="rounded-md border border-border">
                         <Table>
                             <TableHeader>
                                 {tableForDelivery.getHeaderGroups().map((headerGroup) => (
-                                    <TableRow key = {headerGroup.id}>
+                                    <TableRow key={headerGroup.id}>
                                         {headerGroup.headers.map((header) => (
-                                            <TableHead key = {header.id}>
-                                                {flexRender(header.column.columnDef.header, header.getContext())}
+                                            <TableHead key={header.id}>
+                                                {flexRender(
+                                                    header.column.columnDef.header,
+                                                    header.getContext()
+                                                )}
                                             </TableHead>
                                         ))}
                                     </TableRow>
@@ -354,10 +555,13 @@ export const Webhooks = () => {
 
                             <TableBody>
                                 {tableForDelivery.getRowModel().rows.map((forRow) => (
-                                    <TableRow key = {forRow.id}>
+                                    <TableRow key={forRow.id}>
                                         {forRow.getVisibleCells().map((forCells) => (
-                                            <TableCell key = {forCells.id}>
-                                                {flexRender(forCells.column.columnDef.cell, forCells.getContext())}
+                                            <TableCell key={forCells.id}>
+                                                {flexRender(
+                                                    forCells.column.columnDef.cell,
+                                                    forCells.getContext()
+                                                )}
                                             </TableCell>
                                         ))}
                                     </TableRow>
@@ -366,30 +570,72 @@ export const Webhooks = () => {
                         </Table>
                     </div>
 
-                    <div className = "grid grid-cols-3 items-center text-sm text-muted-foreground">
-                        <span> Showing {tableForDelivery.getState().pagination.pageIndex*tableForDelivery.getState().pagination.pageSize+1}-{Math.min((tableForDelivery.getState().pagination.pageIndex+1)*tableForDelivery.getState().pagination.pageSize, filteredDeliveries.length)} of {filteredDeliveries.length} deliveries </span>
+                    <div className="grid grid-cols-3 items-center text-sm text-muted-foreground">
+                        <span>
+                            {" "}
+                            Showing{" "}
+                            {tableForDelivery.getState().pagination.pageIndex *
+                                tableForDelivery.getState().pagination.pageSize +
+                                1}
+                            -
+                            {Math.min(
+                                (tableForDelivery.getState().pagination.pageIndex + 1) *
+                                    tableForDelivery.getState().pagination.pageSize,
+                                filteredDeliveries.length
+                            )}{" "}
+                            of {filteredDeliveries.length} deliveries{" "}
+                        </span>
 
-                        <div className = "flex items-center justify-center gap-2">
-                            <Button variant = "ghost" size = "icon" className = "h-8 w-8" onClick = {() => tableForDelivery.previousPage()} disabled = {!tableForDelivery.getCanPreviousPage()}> <ChevronLeft size = {16}/> </Button>
+                        <div className="flex items-center justify-center gap-2">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => tableForDelivery.previousPage()}
+                                disabled={!tableForDelivery.getCanPreviousPage()}
+                            >
+                                {" "}
+                                <ChevronLeft size={16} />{" "}
+                            </Button>
 
-                            <span> Page {tableForDelivery.getState().pagination.pageIndex+1} of {tableForDelivery.getPageCount()} </span>
+                            <span>
+                                {" "}
+                                Page {tableForDelivery.getState().pagination.pageIndex + 1} of{" "}
+                                {tableForDelivery.getPageCount()}{" "}
+                            </span>
 
-                            <Button variant = "ghost" size = "icon" className = "h-8 w-8" onClick = {() => tableForDelivery.nextPage()} disabled = {!tableForDelivery.getCanNextPage()}> <ChevronRight size = {16}/> </Button>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => tableForDelivery.nextPage()}
+                                disabled={!tableForDelivery.getCanNextPage()}
+                            >
+                                {" "}
+                                <ChevronRight size={16} />{" "}
+                            </Button>
                         </div>
 
-                        <div className = "flex items-center justify-end gap-2">
+                        <div className="flex items-center justify-end gap-2">
                             <span> Rows per page: </span>
-                                <Select value = {String(tableForDelivery.getState().pagination.pageSize)} onValueChange = {(value) => tableForDelivery.setPageSize(Number(value))}>
-                                    <SelectTrigger className = "w-[70px] h-8"> <SelectValue/> </SelectTrigger>
+                            <Select
+                                value={String(tableForDelivery.getState().pagination.pageSize)}
+                                onValueChange={(value) =>
+                                    tableForDelivery.setPageSize(Number(value))
+                                }
+                            >
+                                <SelectTrigger className="w-[70px] h-8">
+                                    {" "}
+                                    <SelectValue />{" "}
+                                </SelectTrigger>
 
-                                    <SelectContent>
-                                        <SelectItem value = "5"> 5 </SelectItem>
-                                        <SelectItem value = "10"> 10 </SelectItem>
-                                        <SelectItem value = "15"> 15 </SelectItem>
-                                    </SelectContent>
-                                </Select>
+                                <SelectContent>
+                                    <SelectItem value="5"> 5 </SelectItem>
+                                    <SelectItem value="10"> 10 </SelectItem>
+                                    <SelectItem value="15"> 15 </SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
-                        
                     </div>
                 </CardContent>
             </Card>
@@ -398,38 +644,59 @@ export const Webhooks = () => {
                 <CardHeader>
                     <CardTitle> Payload examples </CardTitle>
 
-                    <CardDescription> Explore the JSON your endpoint would receive </CardDescription>
+                    <CardDescription>
+                        {" "}
+                        Explore the JSON your endpoint would receive{" "}
+                    </CardDescription>
                 </CardHeader>
 
                 <CardContent>
-                    <div className = "grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className = "space-y-6">
-                            <div className = "space-y-2">
-                                <Label htmlFor = "event-type"> Event type </Label>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="space-y-6">
+                            <div className="space-y-2">
+                                <Label htmlFor="event-type"> Event type </Label>
 
-                                <Select value = {eventSelectedForPayload?.id} onValueChange = {(value) => setEventSelectedForPayload(eventsAvailable.find((events) => events.id === value) ?? null)}>
-                                    <SelectTrigger id = "event-type">
-                                        <SelectValue placeholder = "Select event"/>
+                                <Select
+                                    value={eventSelectedForPayload?.id}
+                                    onValueChange={(value) =>
+                                        setEventSelectedForPayload(
+                                            eventsAvailable.find((events) => events.id === value) ??
+                                                null
+                                        )
+                                    }
+                                >
+                                    <SelectTrigger id="event-type">
+                                        <SelectValue placeholder="Select event" />
                                     </SelectTrigger>
 
                                     <SelectContent>
                                         {eventsAvailable.map((events) => (
-                                            <SelectItem key = {events.id} value = {events.id}> {events.description} </SelectItem>
+                                            <SelectItem key={events.id} value={events.id}>
+                                                {" "}
+                                                {events.description}{" "}
+                                            </SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
                             </div>
 
-                            <div className = "bg-muted/50 p-4 rounded border border-border">
-                                <h3 className = "text-sm font-semibold mb-2"> Verify the signature </h3>
+                            <div className="bg-muted/50 p-4 rounded border border-border">
+                                <h3 className="text-sm font-semibold mb-2">
+                                    {" "}
+                                    Verify the signature{" "}
+                                </h3>
 
-                                <p className = "text-xs text-muted-foreground mb-2"> Sign webhook-id.webhook-timestamp.raw_body with HMAC-SHA256. </p>
+                                <p className="text-xs text-muted-foreground mb-2">
+                                    {" "}
+                                    Sign webhook-id.webhook-timestamp.raw_body with
+                                    HMAC-SHA256.{" "}
+                                </p>
                             </div>
                         </div>
 
-                        <div className = "md:col-span-2">
+                        <div className="md:col-span-2">
                             {eventSelectedForPayload && (
-                                <ExampleForPayload event = {eventSelectedForPayload}/>
+                                <ExampleForPayload event={eventSelectedForPayload} />
                             )}
                         </div>
                     </div>
@@ -437,18 +704,26 @@ export const Webhooks = () => {
             </Card>
 
             {addWebhookOpen && (
-                <AddWebhook key = {editWebhook?.id ?? "new"} isOpen = {addWebhookOpen} onClose = {() => setAddWebhookOpen(false)}
-                            eventsAvailable = {eventsAvailable} cloudAccounts = {cloudAccounts} 
-                            initialData = {editWebhook} onSuccess = {handlingAddSuccess}
+                <AddWebhook
+                    key={editWebhook?.id ?? "new"}
+                    isOpen={addWebhookOpen}
+                    onClose={() => setAddWebhookOpen(false)}
+                    eventsAvailable={eventsAvailable}
+                    cloudAccounts={cloudAccounts}
+                    initialData={editWebhook}
+                    onSuccess={handlingAddSuccess}
                 />
             )}
 
-            {secret && (
-                <Popup secret = {secret} onClose = {() => setSecret(null)} />
-            )}
+            {secret && <Popup secret={secret} onClose={() => setSecret(null)} />}
 
             {webhookToDelete && (
-                <DeletePopup isOpen = {true} webhookName = {webhookToDelete.name} onCancel = {() => setWebhookToDelete(null)} onConfirm = {confirmDelete}/>
+                <DeletePopup
+                    isOpen={true}
+                    webhookName={webhookToDelete.name}
+                    onCancel={() => setWebhookToDelete(null)}
+                    onConfirm={confirmDelete}
+                />
             )}
         </div>
     );
