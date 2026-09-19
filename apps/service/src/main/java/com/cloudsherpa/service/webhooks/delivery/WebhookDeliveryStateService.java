@@ -28,10 +28,32 @@ public class WebhookDeliveryStateService {
     if (delivery == null) {
       return null;
     }
-
     delivery.setDeliveryStatus(WebhookDeliveryStatusEnum.PROCESSING);
     deliveryRepository.save(delivery);
     return toAttempt(delivery);
+  }
+
+  @Transactional
+  public void recordOutcome(DeliveryTask task, Integer responseCode) {
+    WebhookDelivery delivery =
+        deliveryRepository
+            .findDeliveryForUpdate(task.deliveryId(), WebhookDeliveryStatusEnum.PROCESSING)
+            .orElse(null);
+
+    if (delivery == null) {
+      return;
+    }
+
+    delivery.setAttemptCount(delivery.getAttemptCount() + 1);
+    delivery.setResponseCode(responseCode);
+
+    if (responseCode >= 200 && responseCode <= 299) {
+      delivery.setDeliveryStatus(WebhookDeliveryStatusEnum.DELIVERED);
+    } else {
+      delivery.setDeliveryStatus(WebhookDeliveryStatusEnum.FAILED);
+    }
+
+    deliveryRepository.save(delivery);
   }
 
   private DeliveryAttempt toAttempt(WebhookDelivery delivery) {
@@ -39,13 +61,15 @@ public class WebhookDeliveryStateService {
     String deliveryId = "msg_" + delivery.getWebhookDeliveryId().toString().replace("-", "");
 
     return new DeliveryAttempt(
-        new DeliveryHeaders(deliveryId, ""),
+        new DeliveryHeaders(deliveryId),
+        delivery.getWebhook().getEndpointUrl(),
         deliveryId,
         delivery.getEventType(),
         delivery.getEventTimestamp(),
         new WebhookEventCloudAccount(
             delivery.getCloudAccount().getDisplayName(),
             delivery.getCloudAccount().getConnection().getProvider()),
-        delivery.getPayload());
+        delivery.getPayload(),
+        delivery.getWebhook().getSigningKey());
   }
 }
