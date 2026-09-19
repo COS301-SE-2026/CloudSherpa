@@ -82,27 +82,27 @@
                 },
                 {
                     "position": 100,
-                    "hex": "#e3e9ef",
-                    "rgb": "rgb(227 233 239)",
-                    "hsl": "hsl(210deg 27.27% 91.37%)"
+                    "hex": "#f1f4f8",
+                    "rgb": "rgb(241 244 248)",
+                    "hsl": "hsl(214.29deg 33.33% 95.88%)"
                 },
                 {
                     "position": 200,
-                    "hex": "#c0c6cc",
-                    "rgb": "rgb(192 198 204)",
-                    "hsl": "hsl(210deg 10.53% 77.65%)"
+                    "hex": "#e1e6eb",
+                    "rgb": "rgb(225 230 235)",
+                    "hsl": "hsl(210deg 20% 90.2%)"
                 },
                 {
                     "position": 300,
-                    "hex": "#a9afb5",
-                    "rgb": "rgb(169 175 181)",
-                    "hsl": "hsl(210deg 7.5% 68.63%)"
+                    "hex": "#c2c9d1",
+                    "rgb": "rgb(194 201 209)",
+                    "hsl": "hsl(212deg 14.02% 79.02%)"
                 },
                 {
                     "position": 400,
-                    "hex": "#91979d",
-                    "rgb": "rgb(145 151 157)",
-                    "hsl": "hsl(210deg 5.77% 59.22%)"
+                    "hex": "#9fa7b0",
+                    "rgb": "rgb(159 167 176)",
+                    "hsl": "hsl(211.76deg 9.71% 65.69%)"
                 },
                 {
                     "position": 500,

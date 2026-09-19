@@ -23,9 +23,9 @@
     --primary-foreground: var(--color-brand-50);
     --secondary: var(--color-neutral-100);
     --secondary-foreground: var(--color-neutral-900);
-    --muted: var(--color-neutral-100);
+    --muted: var(--color-neutral-200);
     --muted-foreground: var(--color-neutral-600);
-    --accent: var(--color-neutral-100);
+    --accent: var(--color-neutral-200);
     --accent-foreground: var(--color-neutral-900);
     --destructive: var(--color-red-500);
     --destructive-foreground: var(--color-red-50);
@@ -41,8 +41,8 @@
     --sidebar-foreground: var(--color-neutral-700);
     --sidebar-primary: var(--color-brand-500);
     --sidebar-primary-foreground: var(--color-brand-600);
-    --sidebar-accent: var(--color-brand-400);
-    --sidebar-accent-foreground: var(--color-brand-50);
+    --sidebar-accent: var(--color-neutral-200);
+    --sidebar-accent-foreground: var(--color-neutral-950);
     --sidebar-border: var(--color-neutral-200);
     --sidebar-ring: var(--color-brand-500);
     --chart-1: var(--color-chart-teal-light);
