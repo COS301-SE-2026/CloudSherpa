@@ -17,12 +17,12 @@ public class WebhookHttpClient {
   }
 
   // Returns delivery status code
-  public Integer send(String webhookUri, DeliveryAttempt attempt) {
+  public Integer send(DeliveryAttempt attempt) {
     try {
       ResponseEntity<Void> res =
           restClient
               .post()
-              .uri(webhookUri)
+              .uri(attempt.webhookUrl())
               .body(attempt)
               .header("Content-Type", "application/json")
               .header("webhook-id", attempt.headers().webhookId())

@@ -6,6 +6,7 @@ import java.time.Instant;
 
 public record DeliveryAttempt(
     DeliveryHeaders headers,
+    String webhookUrl,
     String id,
     String type,
     Instant timestamp,
