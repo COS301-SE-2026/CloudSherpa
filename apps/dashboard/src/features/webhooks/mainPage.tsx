@@ -16,10 +16,11 @@ import {Card, CardContent, CardHeader, CardTitle, CardDescription} from "@/compo
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/atoms/select";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/atoms/table";
 import {Label} from "@/components/atoms/label";
+import {DeletePopup} from "@/features/webhooks/components/deletePopup";
 
 //moved to outside to correct sonarqube errors
 const helperForWebhookColumns = (
-    onEdit : (webhook : Webhook) => void, onDelete : (id : string) => void,
+    onEdit : (webhook : Webhook) => void, onDelete : (webhook : Webhook) => void,
 ) : ColumnDef<Webhook>[] => [
     {accessorKey : "name", header : "Name",
          cell : (info) => (<span className = "font-medium text-foreground"> {info.getValue() as string} </span>),
@@ -51,7 +52,7 @@ const helperForWebhookColumns = (
             <div className = "flex items-center gap-2">
                 <Button variant = "ghost" size = "icon" onClick = {() => onEdit(row.original)} className = "h-8 w-8 text-muted-foreground hover:text-foreground"> <Edit size = {16}/> </Button>
 
-                <Button variant = "ghost" size = "icon" onClick = {() => onDelete(row.original.id)} className = "h-8 w-8 text-destructive hover:text-destructive-foreground"> <Trash2 size = {16}/> </Button>
+                <Button variant = "ghost" size = "icon" onClick = {() => onDelete(row.original)} className = "h-8 w-8 text-destructive hover:text-destructive-foreground"> <Trash2 size = {16}/> </Button>
             </div>
         ),},
 ];
@@ -109,6 +110,8 @@ export const Webhooks = () => {
 
     const [filterForDeliveryWebhook, setFilterForDeliveryWebhook] = useState<string>("all");
 
+    const [webhookToDelete, setWebhookToDelete] = useState<Webhook | null>(null);
+
     useEffect(() => {
         const loadingData = async () => {
             try{
@@ -132,19 +135,25 @@ export const Webhooks = () => {
         loadingData();
     }, []);
 
-    const handlingDelete = useCallback(async (id : string) => {
-        if(!confirm("Are you sure you want to delete this webhook?")){
+    const handlingDelete = useCallback((webhook : Webhook) => {
+        setWebhookToDelete(webhook);
+    }, []);
+
+    const confirmDelete = useCallback(async () => {
+        if(!webhookToDelete){
             return;
         }
 
         try{
-            await deleteWebhook(id);
+            await deleteWebhook(webhookToDelete.id);
 
-            setWebhooks((previous) => previous.filter((webhook) => webhook.id !== id));
+            setWebhooks((previous) => previous.filter((webhook) => webhook.id !== webhookToDelete.id));
         }catch{
             alert("Failed to delete webhook");
+        }finally{
+            setWebhookToDelete(null);
         }
-    }, []);
+    }, [webhookToDelete]);
 
     const handlingEdit = useCallback((webhook : Webhook) => {
         setEditWebhook(webhook);
@@ -436,6 +445,10 @@ export const Webhooks = () => {
 
             {secret && (
                 <Popup secret = {secret} onClose = {() => setSecret(null)} />
+            )}
+
+            {webhookToDelete && (
+                <DeletePopup isOpen = {true} webhookName = {webhookToDelete.name} onCancel = {() => setWebhookToDelete(null)} onConfirm = {confirmDelete}/>
             )}
         </div>
     );
