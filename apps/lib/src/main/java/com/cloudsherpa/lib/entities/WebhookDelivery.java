@@ -30,8 +30,9 @@ public class WebhookDelivery {
   @Column(name = "event_id", nullable = false)
   private UUID eventId;
 
-  @Column(name = "cloud_account")
-  private UUID cloudAccountId;
+  @ManyToOne(fetch = FetchType.LAZY, optional = true)
+  @JoinColumn(name = "cloud_account")
+  private CloudAccount cloudAccount;
 
   @Column(name = "event_type", nullable = false)
   private String eventType;
@@ -63,7 +64,7 @@ public class WebhookDelivery {
       UUID webhookDeliveryId,
       Webhook webhook,
       UUID eventId,
-      UUID cloudAccountId,
+      CloudAccount cloudAccount,
       String eventType,
       Instant eventTimestamp,
       JsonNode payload,
@@ -73,7 +74,7 @@ public class WebhookDelivery {
     this.webhookDeliveryId = webhookDeliveryId;
     this.webhook = webhook;
     this.eventId = eventId;
-    this.cloudAccountId = cloudAccountId;
+    this.cloudAccount = cloudAccount;
     this.eventType = eventType;
     this.eventTimestamp = eventTimestamp;
     this.payload = payload;
@@ -94,8 +95,8 @@ public class WebhookDelivery {
     return eventId;
   }
 
-  public UUID getCloudAccountId() {
-    return cloudAccountId;
+  public CloudAccount getCloudAccount() {
+    return cloudAccount;
   }
 
   public String getEventType() {
@@ -130,8 +131,8 @@ public class WebhookDelivery {
     this.eventId = eventId;
   }
 
-  public void setCloudAccountId(UUID cloudAccountId) {
-    this.cloudAccountId = cloudAccountId;
+  public void setCloudAccount(CloudAccount cloudAccount) {
+    this.cloudAccount = cloudAccount;
   }
 
   public void setEventType(String eventType) {
