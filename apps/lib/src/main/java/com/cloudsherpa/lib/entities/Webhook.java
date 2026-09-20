@@ -39,7 +39,7 @@ public class Webhook {
     @Column(name = "webhook_status", nullable = false, columnDefinition = "public.webhook_status_enum")
     private WebhookStatusEnum webhookStatus;
 
-    @Column(name = "webhook_signing_key", length = 44, nullable = false)
+    @Column(name = "webhook_signing_key", nullable = false)
     String webhookSigningKey;
 
     protected Webhook() {}

@@ -1,5 +1,6 @@
 package com.cloudsherpa.service.webhooks.delivery;
 
+import com.cloudsherpa.service.persistconnection.service.CredentialEncryptionService;
 import com.cloudsherpa.service.webhooks.model.DeliveryAttempt;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
@@ -13,9 +14,15 @@ import org.springframework.stereotype.Service;
 @Service
 public class WebhookSigningService {
 
+  private final CredentialEncryptionService encryptionService;
+
+  public WebhookSigningService(CredentialEncryptionService encryptionService) {
+    this.encryptionService = encryptionService;
+  }
+
   public String signWebhookDelivery(DeliveryAttempt attempt, Instant timestamp) {
 
-    String key = attempt.signingKey();
+    String key = encryptionService.decrypt(attempt.signingKey());
     String message =
         attempt.headers().webhookId()
             + attempt.headers()
