@@ -1,3 +1,3 @@
 package com.cloudsherpa.service.webhooks.model;
 
-public record DeliveryHeaders(String webhookId, String webhookSignature) {}
+public record DeliveryHeaders(String webhookId) {}

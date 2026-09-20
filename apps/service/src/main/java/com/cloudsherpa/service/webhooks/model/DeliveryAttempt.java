@@ -6,8 +6,10 @@ import java.time.Instant;
 
 public record DeliveryAttempt(
     DeliveryHeaders headers,
+    String webhookUrl,
     String id,
     String type,
     Instant timestamp,
     WebhookEventCloudAccount account,
-    JsonNode data) {}
+    JsonNode data,
+    String signingKey) {}
