@@ -1,14 +1,13 @@
-package com.cloudsherpa.service.webhooks.service;
+package com.cloudsherpa.service.webhooks.producers;
 
-import com.cloudsherpa.service.webhooks.producers.WebhookProducerService;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
-public class WebhookRetrySchedulor {
+public class WebhookProducerRetrySchedulor {
   private final WebhookProducerService producerService;
 
-  public WebhookRetrySchedulor(WebhookProducerService producerService) {
+  public WebhookProducerRetrySchedulor(WebhookProducerService producerService) {
     this.producerService = producerService;
   }
 
