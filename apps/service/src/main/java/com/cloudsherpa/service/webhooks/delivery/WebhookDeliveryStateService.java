@@ -8,6 +8,7 @@ import com.cloudsherpa.service.webhooks.model.DeliveryAttempt;
 import com.cloudsherpa.service.webhooks.model.DeliveryHeaders;
 import com.cloudsherpa.service.webhooks.model.DeliveryTask;
 import jakarta.transaction.Transactional;
+import java.time.Instant;
 import java.util.Map;
 import org.springframework.stereotype.Service;
 
@@ -63,6 +64,10 @@ public class WebhookDeliveryStateService {
       delivery.setDeliveryStatus(WebhookDeliveryStatusEnum.DELIVERED);
     } else {
       delivery.setDeliveryStatus(WebhookDeliveryStatusEnum.FAILED);
+      Integer nextAttemptSeconds = RETRY_SCHEDULE.get(delivery.getAttemptCount());
+      if (nextAttemptSeconds != null) {
+        delivery.setNextAttemptAt(Instant.now().plusSeconds(nextAttemptSeconds));
+      }
     }
 
     deliveryRepository.save(delivery);

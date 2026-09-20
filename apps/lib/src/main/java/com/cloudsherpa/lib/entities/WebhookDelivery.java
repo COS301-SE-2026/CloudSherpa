@@ -57,6 +57,9 @@ public class WebhookDelivery {
 
   @Column(name = "attempt_count", nullable = false)
   private Integer attemptCount;
+  
+  @Column(name = "next_attempt_at", nullable = true)
+  private Instant nextAttemptAt;
 
   protected WebhookDelivery() {}
 
@@ -123,6 +126,10 @@ public class WebhookDelivery {
     return attemptCount;
   }
 
+  public Instant getNextAttemptAt() {
+    return nextAttemptAt;
+  }
+
   public void setWebhook(Webhook webhook) {
     this.webhook = webhook;
   }
@@ -157,5 +164,9 @@ public class WebhookDelivery {
 
   public void setAttemptCount(Integer attemptCount) {
     this.attemptCount = attemptCount;
+  }
+
+  public void setNextAttemptAt(Instant nextAttemptAt) {
+    this.nextAttemptAt = nextAttemptAt;
   }
 }
