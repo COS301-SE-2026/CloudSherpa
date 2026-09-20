@@ -7,6 +7,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/atoms/tooltip";
+import { Kbd, KbdGroup } from "@/components/atoms/kbd";
 
 import { Pencil } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -31,7 +32,6 @@ export default function EditButton({
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <Button
-                                size="sm"
                                 onClick={handleSaveEdit}
                                 className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
                             >
@@ -40,10 +40,12 @@ export default function EditButton({
                         </TooltipTrigger>
                         <TooltipContent>
                             <div className="flex flex-row items-center gap-3">
-                                <span className="text-sm font-medium">Save Changes</span>
-                                <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
-                                    shift + s
-                                </span>
+                                <span className="text-sm">Save Changes</span>
+                                <KbdGroup>
+                                    <Kbd>Shift</Kbd>
+                                    <span>+</span>
+                                    <Kbd>S</Kbd>
+                                </KbdGroup>
                             </div>
                         </TooltipContent>
                     </Tooltip>
@@ -64,7 +66,7 @@ export default function EditButton({
                                 "Cancel"
                             ) : (
                                 <>
-                                    <Pencil className="h-4 w-4" />
+                                    <Pencil />
                                     <span className="text-sm">Edit Layout</span>
                                 </>
                             )}
@@ -73,17 +75,19 @@ export default function EditButton({
                     <TooltipContent>
                         {isEditMode ? (
                             <div className="flex flex-row items-center gap-3">
-                                <span className="text-sm font-medium">Cancel Edit</span>
-                                <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
-                                    esc
-                                </span>
+                                <span className="text-sm">Cancel Edit</span>
+                                <KbdGroup>
+                                    <Kbd>Esc</Kbd>
+                                </KbdGroup>
                             </div>
                         ) : (
                             <div className="flex flex-row items-center gap-3">
-                                <span className="text-sm font-medium">Edit Dashboard Layout</span>
-                                <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
-                                    shift + E
-                                </span>
+                                <span className="text-sm">Edit Dashboard Layout</span>
+                                <KbdGroup>
+                                    <Kbd>Shift</Kbd>
+                                    <span>+</span>
+                                    <Kbd>E</Kbd>
+                                </KbdGroup>
                             </div>
                         )}
                     </TooltipContent>
