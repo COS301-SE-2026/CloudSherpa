@@ -125,26 +125,12 @@ export function ChartWidget({
         if (!resourceId || !metricName) {
             return (
                 <div className="flex flex-col  h-full items-center justify-center gap-2">
-                    {isEditMode ? (
-                        <p className="text-xs text-muted-foreground italic">
-                            Save dashboard changes before configuring this widget.
-                        </p>
-                    ) : (
-                        <div className="flex flex-col items-center justify-center gap-2">
-                            <span className="text-base">This widget is not configured.</span>
-                            <Button onClick={openConfig} aria-label="configure new widget button">
-                                Configure Widget
-                            </Button>
-                        </div>
-                    )}
-                </div>
-            );
-        }
-
-        if (isEditMode) {
-            return (
-                <div className="flex flex-col  h-full items-center justify-center gap-2">
-                    <p className="text-xs text-muted-foreground italic">Drag to move widget.</p>
+                    <div className="flex flex-col items-center justify-center gap-2">
+                        <span className="text-base">This widget is not configured.</span>
+                        <Button onClick={openConfig} aria-label="configure new widget button">
+                            Configure Widget
+                        </Button>
+                    </div>
                 </div>
             );
         }
