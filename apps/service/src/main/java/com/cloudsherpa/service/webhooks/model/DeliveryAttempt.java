@@ -11,4 +11,5 @@ public record DeliveryAttempt(
     Instant timestamp,
     WebhookEventCloudAccount account,
     JsonNode data,
-    String signingKey) {}
+    String signingKey,
+    Integer attemptCount) {}

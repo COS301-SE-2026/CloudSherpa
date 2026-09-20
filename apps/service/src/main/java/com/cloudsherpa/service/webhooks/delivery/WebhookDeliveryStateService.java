@@ -34,7 +34,7 @@ public class WebhookDeliveryStateService {
   }
 
   @Transactional
-  public void recordOutcome(DeliveryTask task, Integer responseCode) {
+  public void recordOutcome(DeliveryTask task, int responseCode, int attemptsMade) {
     WebhookDelivery delivery =
         deliveryRepository
             .findDeliveryForUpdate(task.deliveryId(), WebhookDeliveryStatusEnum.PROCESSING)
@@ -44,7 +44,7 @@ public class WebhookDeliveryStateService {
       return;
     }
 
-    delivery.setAttemptCount(delivery.getAttemptCount() + 1);
+    delivery.setAttemptCount(delivery.getAttemptCount() + attemptsMade);
     delivery.setResponseCode(responseCode);
 
     if (responseCode >= 200 && responseCode <= 299) {
@@ -69,6 +69,7 @@ public class WebhookDeliveryStateService {
             delivery.getCloudAccount().getDisplayName(),
             delivery.getCloudAccount().getConnection().getProvider()),
         delivery.getPayload(),
-        delivery.getWebhook().getSigningKey());
+        delivery.getWebhook().getSigningKey(),
+        delivery.getAttemptCount());
   }
 }
