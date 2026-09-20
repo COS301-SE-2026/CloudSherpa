@@ -30,7 +30,7 @@
     --destructive: var(--color-red-500);
     --destructive-foreground: var(--color-red-50);
     --success: var(--color-green-500);
-    --success-foreground: var(--color-green-50);
+    --success-foreground: var(--color-green-800);
     --warning: var(--color-orange-500);
     --warning-foreground: var(--color-orange-50);
     --border: var(--color-neutral-300);

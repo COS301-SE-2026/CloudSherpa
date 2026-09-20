@@ -74,22 +74,22 @@ interface Connections {
 //will use these colours for the tabs for now, will add the company colours to the style dictionary and will update it
 const providerTabs: Record<Providers, { active: string; inactive: string }> = {
     All: {
-        active: "bg-primary text-primary-foregrounds",
+        active: "",
         inactive: "bg-muted text-muted-foreground hover:bg-muted/80",
     },
 
     AWS: {
-        active: "bg-primary text-primary-foregrounds",
+        active: "",
         inactive: "bg-muted text-muted-foreground hover:bg-muted/80",
     },
 
     Azure: {
-        active: "bg-primary text-primary-foregrounds",
+        active: "",
         inactive: "bg-muted text-muted-foreground hover:bg-muted/80",
     },
 
     GCP: {
-        active: "bg-primary text-primary-foregrounds",
+        active: "",
         inactive: "bg-muted text-muted-foreground hover:bg-muted/80",
     },
 };
@@ -312,7 +312,7 @@ export default function ManagingConnections() {
                             <CardContent className="p-4">
                                 <div className="flex items-center justify-between mb-3">
                                     <span
-                                        className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${badges(connection.provider)}`}
+                                        className={`bg-primary text-primary-foreground text-xs font-medium px-2.5 py-0.5 rounded-full ${badges(connection.provider)}`}
                                     >
                                         {" "}
                                         {connection.provider}{" "}
@@ -420,7 +420,7 @@ export default function ManagingConnections() {
                                                 inactive{" "}
                                             </Badge>
                                         ) : (
-                                            <Badge className="bg-success/20 text-success border-success/20 hover:bg-success/30 text-xs px-2 py-0.5">
+                                            <Badge className="bg-success text-success-foreground border-success/20 hover:bg-success/30 text-xs px-2 py-0.5">
                                                 {" "}
                                                 active{" "}
                                             </Badge>
