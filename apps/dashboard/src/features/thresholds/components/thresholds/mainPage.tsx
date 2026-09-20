@@ -77,6 +77,52 @@ export function MainPage({resourceId, userId} : Readonly<PropsForMainPage>){
     }
 
     return(
-        
+        <div className = "min-h-screen bg-background text-foreground">
+            <div className = "mx-auto max-w-6xl px-6 py-8">
+                <header className = "mb-6">
+                    <h1 className = "mb-4 text-2xl font-semibold tracking-tight text-foreground"> Alerts &amp; Thresholds </h1>
+
+                    <Tabs value = {selectedTab} onValueChange = {(value) => setSelectedTab(value as "rules" | "thresholds")}>
+                        <TabsList>
+                            <TabsTrigger value = "rules"> Alert Rules </TabsTrigger>
+
+                            <TabsTrigger value = "thresholds"> Thresholds </TabsTrigger>
+                        </TabsList>
+
+                        <TabsContent value = "thresholds" className = "mt-6">
+                            <div className = "mb-4 flex items-center gap-2">
+                                <Input className = "h-9 w-64" placeholder = "Search thresholds" value = {search} onChange = {(change) => setSearch(change.target.value)}/>
+                            </div>
+
+                            <div className = "mb-4 flex items-center justify-between">
+                                <span className = "text-sm text-muted-foreground"> {countForEnabled} of {forTotalCount} rules enabled </span>
+
+                                <Button onClick = {handlingNewThreshold}> <Plus className = "h-4 w-4"/>  New rule </Button>
+                            </div>
+
+                            {loading && (
+                                <Card>
+                                    <CardContent className = "py-8 text-center text-sm text-muted-foreground"> Loading </CardContent>
+                                </Card>
+                            )}
+
+                            {forError && (
+                                <Card>
+                                    <CardContent className = "py-8 text-center text-sm text-destructive"> {forError} </CardContent>
+                                </Card>
+                            )}
+
+                            {!loading && !forError && (
+                                <ThresholdTable thresholds = {forFilters} edit = {handlingEdit} toggleEnabled = {handlingToggleEnabled} onDelete = {handlingDelete}/>
+                            )}
+                        </TabsContent>
+
+                    </Tabs>
+                </header>
+
+                <ThresholdPopup open = {popupOpen} initial = {isEditing} resourceId = {resourceId} userId = {userId} onClose = {() => setPopupOpen(false)} onSubmit = {handlingSubmit}/>
+
+            </div>
+        </div>
     );
 }
