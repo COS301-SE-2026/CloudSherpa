@@ -158,7 +158,6 @@ public class WebhooksController {
                           {
                             "Dev": {
                               "Dev Event": {
-                                "id": "msg_demo_dev_event",
                                 "type": "dev.event",
                                 "timestamp": "1970-01-01T00:00:00Z",
                                 "account": {
@@ -174,7 +173,6 @@ public class WebhooksController {
                             },
                             "Usage": {
                               "Usage Threshold Alert": {
-                                "id": "msg_demo_usage_threshold",
                                 "type": "usage.threshold",
                                 "timestamp": "2026-09-16T08:32:15Z",
                                 "account": {
