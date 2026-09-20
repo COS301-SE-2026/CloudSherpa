@@ -4,6 +4,7 @@ import com.cloudsherpa.lib.entities.ChartColourEnum;
 import com.cloudsherpa.lib.entities.ChartTypeEnum;
 import com.cloudsherpa.lib.entities.ProviderEnum;
 import com.cloudsherpa.lib.entities.TypeEnum;
+import java.util.List;
 import java.util.UUID;
 
 public record DashboardPlanWidgetDto(
@@ -22,5 +23,5 @@ public record DashboardPlanWidgetDto(
     UUID resourceId,
     String metricType,
     String metricName,
-    String[] chargeIds,
+    List<String> chargeIds,
     Integer aggregationWindowDays) {}
