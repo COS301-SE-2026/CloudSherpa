@@ -79,6 +79,36 @@ export function ThresholdTable({
     });
 
     return(
-        
+        <div className = "overflow-hidden rounded-lg border border-border bg-card text-card-foreground">
+            <Table>
+                <TableHeader>
+                    {forThresholdTable.getHeaderGroups().map((headerGroup) => (
+                        <TableRow key = {headerGroup.id} className = "hover:bg-transparent">
+                            {headerGroup.headers.map((header) => {
+                                const ableToSort = header.column.getCanSort();
+
+                                const sorted = header.column.getIsSorted();
+
+                                return(
+                                    <TableHead key = {header.id} className = "text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                        {ableToSort ? (
+                                            <button type = "button" onClick = {header.column.getToggleSortingHandler()} className = "inline-flex items-center gap-1 rounded-sm uppercase tracking-wider hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring focus-visible:ring-offset-2 focus-visible:ring-offset-background">
+                                                {flexRender(header.column.columnDef.header, header.getContext(),)}
+
+                                                {sorted === "asc" && <ArrowUp className = "h-3.5 w-3.5"/>}
+
+                                                {sorted === "desc" && <ArrowDown className = "h-3.5 w-3.5"/>}
+                                            </button>
+                                        ) : (
+                                            flexRender(header.column.columnDef.header, header.getContext(),)
+                                        )}
+                                    </TableHead>
+                                );
+                            })}
+                        </TableRow>
+                    ))}
+                </TableHeader>
+            </Table>
+        </div>
     );
 }
