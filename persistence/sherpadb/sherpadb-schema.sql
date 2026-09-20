@@ -195,6 +195,20 @@ CREATE TABLE IF NOT EXISTS public.billing_export_execution (
   error_message text
 );
 
+CREATE OR REPLACE FUNCTION public.notify_billing_execution_completed()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.status = 'completed' AND OLD.status IS DISTINCT FROM NEW.status THEN
+        PERFORM pg_notify('billing_execution_completed', row_to_json(NEW)::text);
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER billing_execution_completed_trigger
+AFTER UPDATE ON public.billing_export_execution
+FOR EACH ROW EXECUTE FUNCTION public.notify_billing_execution_completed();
+
 CREATE TABLE IF NOT EXISTS public.dashboard (
   dashboard_id uuid PRIMARY KEY,
   display_name varchar(80) NOT NULL,
@@ -793,9 +807,9 @@ BEGIN
         webhook_name text NOT NULL,
         endpoint_url text NOT NULL,
         event_types text[] NOT NULL,
-        cloud_accounts uuid[] NOT NULL,
+        cloud_accounts uuid[] NOT NULL DEFAULT '{}',
         webhook_status public.webhook_status_enum NOT NULL,
-        webhook_signing_key varchar(44) NOT NULL
+        webhook_signing_key text NOT NULL
       );
     $sql$, schema_name);
 

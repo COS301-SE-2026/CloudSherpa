@@ -5,6 +5,7 @@ import com.cloudsherpa.lib.entities.WebhookDelivery;
 import com.cloudsherpa.lib.entities.WebhookStatusEnum;
 import com.cloudsherpa.lib.repositories.WebhookDeliveryRepository;
 import com.cloudsherpa.lib.repositories.WebhookRepository;
+import com.cloudsherpa.service.persistconnection.service.CredentialEncryptionService;
 import com.cloudsherpa.service.webhooks.dto.AddWebhookDto;
 import com.cloudsherpa.service.webhooks.dto.AddWebhookResponseDto;
 import com.cloudsherpa.service.webhooks.dto.EditWebhookDto;
@@ -28,11 +29,15 @@ public class WebhookService {
   private final WebhookRepository webhookRepository;
   private final WebhookDeliveryRepository webhookDeliveryRepository;
   private final Logger logger = LoggerFactory.getLogger(WebhookService.class);
+  private final CredentialEncryptionService encryptionService;
 
   public WebhookService(
-      WebhookRepository webhookRepository, WebhookDeliveryRepository webhookDeliveryRepository) {
+      WebhookRepository webhookRepository,
+      WebhookDeliveryRepository webhookDeliveryRepository,
+      CredentialEncryptionService encryptionService) {
     this.webhookRepository = webhookRepository;
     this.webhookDeliveryRepository = webhookDeliveryRepository;
+    this.encryptionService = encryptionService;
   }
 
   public List<WebhookResponse> getWebhooks() {
@@ -51,15 +56,18 @@ public class WebhookService {
 
     String webhookKey = generateHmacSigningSecret();
 
+    String encryptedWebhookKey = encryptionService.encrypt(webhookKey);
+
     Webhook webhook =
         new Webhook(
             UUID.randomUUID(),
             request.name(),
             request.endpointUrl(),
             request.eventTypes(),
-            request.cloudAccounts(),
+            normalizeCloudAccounts(request.cloudAccounts()),
             WebhookStatusEnum.ACTIVE,
-            webhookKey);
+            encryptedWebhookKey);
+
     webhookRepository.save(webhook);
 
     return new AddWebhookResponseDto(webhookKey);
@@ -73,7 +81,7 @@ public class WebhookService {
       webhook.setEndpointUrl(request.endpointUrl());
       webhook.setEventTypes(request.eventTypes());
       webhook.setWebhookStatus(request.status());
-      webhook.setCloudAccounts(request.cloudAccounts());
+      webhook.setCloudAccounts(normalizeCloudAccounts(request.cloudAccounts()));
 
       webhookRepository.save(webhook);
     } catch (NoSuchElementException e) {
@@ -105,7 +113,12 @@ public class WebhookService {
         webhookDelivery.getEventTimestamp(),
         webhookDelivery.getWebhook() != null ? webhookDelivery.getWebhook().getWebhookId() : null,
         webhookDelivery.getEventType(),
-        webhookDelivery.getCloudAccount().getId(),
+        webhookDelivery.getCloudAccount() != null
+            ? webhookDelivery.getCloudAccount().getId()
+            : null,
+        webhookDelivery.getCloudAccount() != null
+            ? webhookDelivery.getCloudAccount().getDisplayName()
+            : null,
         webhookDelivery.getDeliveryStatus(),
         webhookDelivery.getResponseCode());
   }
@@ -120,5 +133,13 @@ public class WebhookService {
       throw new IllegalStateException(
           "Algorithm for generating webhook HMAC keys does not exist", e);
     }
+  }
+
+  private List<UUID> normalizeCloudAccounts(List<UUID> cloudAccounts) {
+    if (cloudAccounts == null) {
+      return List.of();
+    }
+
+    return cloudAccounts;
   }
 }

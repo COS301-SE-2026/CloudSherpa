@@ -133,7 +133,7 @@ const helperForDeliveryColumns = (webhooks: Webhook[]): ColumnDef<WebhookDeliver
 
     { accessorKey: "eventType", header: "Event" },
 
-    { accessorKey: "cloudAccount", header: "Account" },
+    { accessorKey: "cloudAccountName", header: "Account" },
 
     {
         accessorKey: "result",

@@ -8,7 +8,6 @@ import {
 } from "@/features/webhooks/types";
 
 type DataWebhookEvent = {
-    id: string;
     type: string;
     timestamp: string;
     account: { name: string; provider: string };
@@ -29,12 +28,11 @@ export const fetchWebhookEvents = async (): Promise<WebhookEvent[]> => {
     Object.entries(data).forEach(([category, eventsByName]) => {
         Object.entries(eventsByName).forEach(([name, payload]) => {
             events.push({
-                id: payload.id,
+                id: payload.type,
                 type: payload.type,
                 category,
                 description: name,
                 jsonBody: {
-                    id: payload.id,
                     type: payload.type,
                     timestamp: payload.timestamp,
                     account: payload.account,

@@ -25,7 +25,6 @@ export const ExampleForPayload = ({ event }: PropsForPayload) => {
 
     const body: Record<string, unknown> = event.jsonBody ?? {
         //copied
-        id: "msg_demo_cost_threshold_exceeded",
         type: "cost.threshold_exceeded",
         timestamp: "2026-09-15T10:42:18Z",
         account: {
