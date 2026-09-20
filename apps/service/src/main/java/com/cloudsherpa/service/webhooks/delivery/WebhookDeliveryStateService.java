@@ -60,6 +60,8 @@ public class WebhookDeliveryStateService {
     delivery.setAttemptCount(delivery.getAttemptCount() + attemptsMade);
     delivery.setResponseCode(responseCode);
 
+    delivery.setNextAttemptAt(null);
+
     if (responseCode >= 200 && responseCode <= 299) {
       delivery.setDeliveryStatus(WebhookDeliveryStatusEnum.DELIVERED);
     } else {
