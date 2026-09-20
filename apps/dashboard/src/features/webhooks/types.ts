@@ -26,7 +26,8 @@ export interface WebhookDelivery {
     timestamp: string;
     webhookId: string;
     eventType: string;
-    cloudAccount: string;
+    cloudAccountId: string | null;
+    cloudAccountName: string | null;
     result: "DELIVERED" | "FAILED";
     responseCode: number;
 }

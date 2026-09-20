@@ -105,7 +105,12 @@ public class WebhookService {
         webhookDelivery.getEventTimestamp(),
         webhookDelivery.getWebhook() != null ? webhookDelivery.getWebhook().getWebhookId() : null,
         webhookDelivery.getEventType(),
-        webhookDelivery.getCloudAccount().getId(),
+        webhookDelivery.getCloudAccount() != null
+            ? webhookDelivery.getCloudAccount().getId()
+            : null,
+        webhookDelivery.getCloudAccount() != null
+            ? webhookDelivery.getCloudAccount().getDisplayName()
+            : null,
         webhookDelivery.getDeliveryStatus(),
         webhookDelivery.getResponseCode());
   }

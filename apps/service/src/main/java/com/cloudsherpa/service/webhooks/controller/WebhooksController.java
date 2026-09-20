@@ -121,7 +121,8 @@ public class WebhooksController {
                               "timestamp": "2026-09-16T08:32:15Z",
                               "webhookId": "c2a49b36-55d2-4233-96dd-cc4e3ae97671",
                               "eventType": "usage.threshold",
-                              "cloudAccount": "c2a49b36-55d2-4233-96dd-cc4e3ae97672",
+                              "cloudAccountId": "c2a49b36-55d2-4233-96dd-cc4e3ae97672",
+                              "cloudAccountName": "Some Account",
                               "result": "DELIVERED",
                               "responseCode": 200
                             },
@@ -130,7 +131,8 @@ public class WebhooksController {
                               "timestamp": "2026-09-16T08:45:02Z",
                               "webhookId": "c2a49b36-55d2-4233-96dd-cc4e3ae97673",
                               "eventType": "billing.ingestion",
-                              "cloudAccount": "c2a49b36-55d2-4233-96dd-cc4e3ae97672",
+                              "cloudAccountName": "c2a49b36-55d2-4233-96dd-cc4e3ae97672",
+                              "cloudAccountName": "Some Account",
                               "result": "FAILED",
                               "responseCode": 503
                             }
