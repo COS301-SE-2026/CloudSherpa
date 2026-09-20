@@ -10,6 +10,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -40,7 +42,7 @@ public class AiSessionController {
             content = @Content)
       })
   @PostMapping
-  public ResponseEntity<AiSessionResponseDto> createSession() {
+  public ResponseEntity<AiSessionResponseDto> createSession(@AuthenticationPrincipal Jwt jwt) {
     return ResponseEntity.status(HttpStatus.CREATED).build();
   }
 
@@ -59,7 +61,8 @@ public class AiSessionController {
             content = @Content)
       })
   @DeleteMapping("/{sessionId}")
-  public ResponseEntity<Void> deleteSession(@PathVariable UUID sessionId) {
+  public ResponseEntity<Void> deleteSession(
+      @AuthenticationPrincipal Jwt jwt, @PathVariable UUID sessionId) {
     return ResponseEntity.noContent().build();
   }
 }

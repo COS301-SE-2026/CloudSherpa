@@ -11,6 +11,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,7 +42,8 @@ public class AiVersionController {
             content = @Content)
       })
   @GetMapping
-  public ResponseEntity<List<AiVersionSummaryDto>> getVersions(@PathVariable UUID sessionId) {
+  public ResponseEntity<List<AiVersionSummaryDto>> getVersions(
+      @AuthenticationPrincipal Jwt jwt, @PathVariable UUID sessionId) {
 
     return ResponseEntity.ok().build();
   }
@@ -66,7 +69,9 @@ public class AiVersionController {
       })
   @GetMapping("/{versionId}")
   public ResponseEntity<AiVersionResponseDto> getVersion(
-      @PathVariable UUID sessionId, @PathVariable UUID versionId) {
+      @AuthenticationPrincipal Jwt jwt,
+      @PathVariable UUID sessionId,
+      @PathVariable UUID versionId) {
 
     return ResponseEntity.ok().build();
   }

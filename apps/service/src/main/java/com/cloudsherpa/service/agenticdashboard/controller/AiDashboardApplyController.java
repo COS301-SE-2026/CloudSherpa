@@ -7,6 +7,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,7 +41,9 @@ public class AiDashboardApplyController {
       })
   @PostMapping("/{versionId}/apply")
   public ResponseEntity<Void> applyVersion(
-      @PathVariable UUID sessionId, @PathVariable UUID versionId) {
+      @AuthenticationPrincipal Jwt jwt,
+      @PathVariable UUID sessionId,
+      @PathVariable UUID versionId) {
 
     return ResponseEntity.status(201).build();
   }
