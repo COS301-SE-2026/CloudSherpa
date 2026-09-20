@@ -1,8 +1,14 @@
 package com.cloudsherpa.service.listener;
 
+import com.cloudsherpa.lib.entities.BillingExportConfig;
+import com.cloudsherpa.lib.entities.CloudAccount;
+import com.cloudsherpa.lib.repositories.BillingExportConfigRepository;
+import com.cloudsherpa.lib.repositories.CloudAccountRepository;
 import com.cloudsherpa.service.alerts.service.AnomalyEvaluationService;
+import com.cloudsherpa.service.alerts.service.BudgetEvaluationService;
 import com.cloudsherpa.service.alerts.service.ThresholdEvaluationService;
 import com.cloudsherpa.service.config.TenantContext;
+import com.cloudsherpa.service.listener.dto.BillingExecutionCompletedEventDto;
 import com.cloudsherpa.service.listener.dto.MetricStreamEventDto;
 import com.cloudsherpa.service.metrics.MetricDisplayNameMapper;
 import com.cloudsherpa.service.sse.SseService;
@@ -11,6 +17,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Optional;
 import java.util.UUID;
 import org.postgresql.PGConnection;
 import org.postgresql.PGNotification;
@@ -48,6 +55,9 @@ public class PostgresNotificationListener implements SmartLifecycle {
   private final ActiveListeners activeListeners;
   private final ThresholdEvaluationService thresholdEvaluationService;
   private final AnomalyEvaluationService anomalyEvaluationService;
+  private final BudgetEvaluationService budgetEvaluationService;
+  private final BillingExportConfigRepository billingExportConfigRepository;
+  private final CloudAccountRepository cloudAccountRepository;
 
   private volatile boolean running;
 
@@ -59,13 +69,19 @@ public class PostgresNotificationListener implements SmartLifecycle {
       ObjectMapper objectMapper,
       MetricDisplayNameMapper metricDisplayNameMapper,
       ThresholdEvaluationService thresholdEvaluationService,
-      AnomalyEvaluationService anomalyEvaluationService) {
+      AnomalyEvaluationService anomalyEvaluationService,
+      BudgetEvaluationService budgetEvaluationService,
+      BillingExportConfigRepository billingExportConfigRepository,
+      CloudAccountRepository cloudAccountRepository) {
     this.sseService = sseService;
     this.activeListeners = activeListeners;
     this.objectMapper = objectMapper;
     this.metricDisplayNameMapper = metricDisplayNameMapper;
     this.thresholdEvaluationService = thresholdEvaluationService;
     this.anomalyEvaluationService = anomalyEvaluationService;
+    this.budgetEvaluationService = budgetEvaluationService;
+    this.billingExportConfigRepository = billingExportConfigRepository;
+    this.cloudAccountRepository = cloudAccountRepository;
   }
 
   // Creates a long-lived connection and registers the LISTEN channel.
@@ -99,6 +115,11 @@ public class PostgresNotificationListener implements SmartLifecycle {
       // connection.
 
       loadAndListenTenantMetricEvents();
+
+      // one-time static listen (this channel isn't tenant scoped, so only needs to be issued once)
+      try (Statement stmt = connection.createStatement()) {
+        stmt.execute("LISTEN billing_execution_completed");
+      }
     } catch (SQLException e) {
       logger.warn("Failed to initialize Postgres notification listener", e);
     }
@@ -136,6 +157,13 @@ public class PostgresNotificationListener implements SmartLifecycle {
           String eventName = notification.getName();
           logger.info("NOTIFIED {}", eventName);
 
+          String payload = notification.getParameter();
+
+          if ("billing_execution_completed".equals(eventName)) {
+            processBillingExecutionCompleted(payload);
+            continue;
+          }
+
           UUID userId = activeListeners.getUserIdForChannel(eventName);
           if (userId == null) {
             activeListeners.refreshTenantMetricEvents();
@@ -148,7 +176,6 @@ public class PostgresNotificationListener implements SmartLifecycle {
             continue;
           }
 
-          String payload = notification.getParameter();
           processMetricForAnalytics(payload, userId);
         }
       }
@@ -174,6 +201,41 @@ public class PostgresNotificationListener implements SmartLifecycle {
       }
     } catch (Exception e) {
       logger.warn("Failed to parse metric payload: {}", payload, e);
+    }
+  }
+
+  private void processBillingExecutionCompleted(String payload) {
+    try {
+      BillingExecutionCompletedEventDto event =
+          objectMapper.readValue(payload, BillingExecutionCompletedEventDto.class);
+
+      Optional<BillingExportConfig> config =
+          billingExportConfigRepository.findById(event.configId());
+
+      if (config.isEmpty()) {
+        logger.warn("No billing export config found for configId={}", event.configId());
+        return;
+      }
+
+      Optional<CloudAccount> account = cloudAccountRepository.findById(config.get().getAccountId());
+
+      if (account.isEmpty()) {
+        logger.warn("No cloud account found for accountId={}", config.get().getAccountId());
+        return;
+      }
+
+      UUID userId = account.get().getConnection().getUser().getId();
+      UUID accountId = account.get().getId();
+
+      TenantContext.setCurrentTenant(userId.toString());
+
+      try {
+        budgetEvaluationService.evaluateForAccount(userId, accountId);
+      } finally {
+        TenantContext.clear();
+      }
+    } catch (Exception e) {
+      logger.warn("Failed to parse billing execution completed payload: {}", payload, e);
     }
   }
 
