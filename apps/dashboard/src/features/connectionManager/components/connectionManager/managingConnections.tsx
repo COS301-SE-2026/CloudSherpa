@@ -6,6 +6,7 @@
 - they should be able to view the resources assoc with that connection and delete connections
 */
 
+import { Input } from "@/components/atoms/input";
 import { useEffect, useState } from "react";
 import { Trash2, Search, MoreVertical, Eye, Pencil, X, ChevronDown } from "lucide-react";
 import { Card, CardContent } from "@/components/atoms/card";
@@ -267,11 +268,7 @@ export default function ManagingConnections() {
                                 const styling = providerTabs[providers];
 
                                 return (
-                                    <TabsTrigger
-                                        key={providers}
-                                        value={providers}
-                                        className={`flex-none text-xs px-2.5 py-0.5 h-auto rounded-[var(--radius-sm)] font-medium transition-all bg-transparent ${isActive ? styling.active : styling.inactive}`}
-                                    >
+                                    <TabsTrigger key={providers} value={providers}>
                                         {" "}
                                         {providers}
                                     </TabsTrigger>
@@ -284,12 +281,12 @@ export default function ManagingConnections() {
                     <div className="w-full relative flex-1 sm:max-w-xs">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
 
-                        <input
+                        <Input
                             type="text"
                             placeholder="Search connections..."
                             value={search}
                             onChange={(forChanges) => setSearch(forChanges.target.value)}
-                            className="w-full h-9 pl-9 pr-3 rounded-md border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                            className="w-full h-9 pl-9 pr-3"
                         />
 
                         {search && (
