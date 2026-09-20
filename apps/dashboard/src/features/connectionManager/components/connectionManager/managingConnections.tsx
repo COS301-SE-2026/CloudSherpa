@@ -7,7 +7,7 @@
 */
 
 import { useEffect, useState } from "react";
-import { Trash2, ArrowLeft, Search, MoreVertical, Eye, Pencil, X } from "lucide-react";
+import { Trash2, Search, MoreVertical, Eye, Pencil, X, ChevronDown } from "lucide-react";
 import { Card, CardContent } from "@/components/atoms/card";
 import { Button } from "@/components/atoms/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/atoms/tabs";
@@ -215,8 +215,17 @@ export default function ManagingConnections() {
 
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button className="text-sm px-3 py-1.5 h-auto bg-primary hover:bg-primary/90">
-                                + add
+                            <Button
+                                aria-label="add connection"
+                                className="group p-0 h-auto flex items-stretch"
+                            >
+                                <span className="flex items-center gap-1.5 px-3 py-1.5">
+                                    <span>Add Connection</span>
+                                </span>
+
+                                <span className="flex items-center border-l border-primary-foreground/50 px-2">
+                                    <ChevronDown className="h-4 w-4 text-primary-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                                </span>
                             </Button>
                         </DropdownMenuTrigger>
 

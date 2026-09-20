@@ -26,7 +26,7 @@ export function Problem() {
                         <p className="text-base text-muted-foreground leading-relaxed mb-6">
                             {" "}
                             Teams who operate multi-cloud environments struggle with fragmented
-                            billing, multiple dashboards and pricing models, Overspending is
+                            billing, multiple dashboards and pricing models. Overspending is
                             difficult to detect and combining this information manually is time
                             consuming.{" "}
                         </p>
@@ -34,7 +34,7 @@ export function Problem() {
                         <p className="text-base text-muted-foreground leading-relaxed">
                             {" "}
                             Your overspending is caught weeks later, if at all. By the time a cost
-                            spike is identified the budget has be exceeded{" "}
+                            spike is identified the budget has been exceeded{" "}
                         </p>
                     </div>
 

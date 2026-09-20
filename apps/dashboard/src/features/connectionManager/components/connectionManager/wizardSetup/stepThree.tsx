@@ -35,7 +35,6 @@ import {
     TooltipTrigger,
 } from "@/components/atoms/tooltip";
 import { Slider } from "@/components/atoms/slider";
-import { Label } from "@/components/atoms/label";
 import { ResourceSelectionDto } from "@/lib/fetch/azure-connection-api";
 import { Alert, AlertDescription, AlertTitle } from "@/components/atoms/alert";
 

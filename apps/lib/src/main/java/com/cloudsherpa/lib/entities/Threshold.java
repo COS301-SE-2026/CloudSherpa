@@ -10,19 +10,19 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "widget_thresholds")
-public class WidgetThreshold {
+@Table(name = "threshold")
+public class Threshold {
 
   @Id
   @Column(name = "threshold_id", nullable = false, updatable = false)
   private UUID thresholdId;
 
-  @Column(name = "widget_id")
-  private UUID widgetId;
+  @Column(name = "resource_id", nullable = false)
+  private UUID resourceId;
 
   @ManyToOne
-  @JoinColumn(name = "widget_id", insertable = false, updatable = false)
-  private Widget widget;
+  @JoinColumn(name = "resource_id", nullable = false, insertable = false, updatable = false)
+  private Resource resource;
 
   @Column(name = "user_id")
   private UUID userId;
@@ -52,10 +52,10 @@ public class WidgetThreshold {
   @Column(name = "updated_at")
   private OffsetDateTime updatedAt;
 
-  public WidgetThreshold() {}
+  public Threshold() {}
 
-  public WidgetThreshold(
-      UUID widgetId,
+  public Threshold(
+      UUID resourceId,
       UUID userId,
       String metricName,
       String operator,
@@ -63,7 +63,7 @@ public class WidgetThreshold {
       String severity,
       boolean enabled) {
     this.thresholdId = UUID.randomUUID();
-    this.widgetId = widgetId;
+    this.resourceId = resourceId;
     this.userId = userId;
     this.metricName = metricName;
     this.operator = operator;
@@ -80,16 +80,16 @@ public class WidgetThreshold {
     this.thresholdId = thresholdId;
   }
 
-  public UUID getWidgetId() {
-    return widgetId;
+  public UUID getResourceId() {
+    return resourceId;
   }
 
-  public void setWidgetId(UUID widgetId) {
-    this.widgetId = widgetId;
+  public void setResourceId(UUID resourceId) {
+    this.resourceId = resourceId;
   }
 
-  public Widget getWidget() {
-    return widget;
+  public Resource getResource() {
+    return resource;
   }
 
   public UUID getUserId() {

@@ -83,6 +83,10 @@ public class Alert {
     this.resolvedAt = builder.resolvedAt;
   }
 
+  public static Builder builder() {
+    return new Builder();
+  }
+
   public static class Builder {
     private UUID alertId = UUID.randomUUID();
     private UUID userId;

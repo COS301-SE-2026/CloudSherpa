@@ -108,4 +108,20 @@ public interface NormalizedCostsRepository extends JpaRepository<NormalizedCosts
             LIMIT 1;
             """, nativeQuery = true)
     ProviderEnum getChargeProvider(@Param("chargeId") String chargeId);
+
+    @Query("""
+          SELECT COALESCE(SUM(nc.costAmount), 0)
+          FROM NormalizedCosts nc
+          WHERE nc.usageStartTime BETWEEN :fromDate AND :toDate
+            AND nc.resourceId = :resourceId AND nc.costAmount > 0
+          """)
+  BigDecimal sumTotalCostBetweenForResourceId(@Param("resourceId") String resourceId, @Param("fromDate") OffsetDateTime fromDate, @Param("toDate") OffsetDateTime toDate);
+
+  @Query("""
+          SELECT COALESCE(SUM(nc.costAmount), 0)
+          FROM NormalizedCosts nc
+          WHERE nc.usageStartTime BETWEEN :fromDate AND :toDate
+            AND nc.billingAccountId = :billingAccountId AND nc.costAmount > 0
+          """)
+  BigDecimal sumTotalCostBetweenForBillingAccountId(@Param("billingAccountId") String billingAccountId, @Param("fromDate") OffsetDateTime fromDate, @Param("toDate") OffsetDateTime toDate);
 }

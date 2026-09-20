@@ -1,139 +1,184 @@
 package com.cloudsherpa.service.alerts.controller;
 
+import com.cloudsherpa.lib.entities.Threshold;
+import com.cloudsherpa.lib.repositories.ThresholdRepository;
+import com.cloudsherpa.service.alerts.dto.CreateThresholdRequest;
+import com.cloudsherpa.service.alerts.dto.ThresholdResponse;
+import com.cloudsherpa.service.alerts.dto.UpdateThresholdRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/thresholds")
-@Tag(name = "Thresholds", description = "Manage widget-level threshold configurations")
+@Tag(name = "Thresholds", description = "Manage resource-level threshold configurations")
 public class ThresholdsController {
 
-  private static final String WIDGET_ID = "widgetId";
-  private static final String METRIC_NAME = "metric_name";
-  private static final String OPERATOR = "operator";
-  private static final String VALUE = "value";
-  private static final String SEVERITY = "severity";
-  private static final String ENABLED = "enabled";
+  private final ThresholdRepository thresholdRepository;
 
-  @Operation(
-      summary = "Create threshold",
-      description =
-          "Create a widget-level threshold (only widget owners allowed; validation applied server-side).")
+  public ThresholdsController(ThresholdRepository thresholdRepository) {
+    this.thresholdRepository = thresholdRepository;
+  }
+
+  @Operation(summary = "Create threshold", description = "Create a resource-level threshold.")
   @ApiResponse(
       responseCode = "201",
       description = "Threshold created",
       content =
           @Content(
               mediaType = "application/json",
-              schema = @Schema(implementation = Map.class),
-              examples =
-                  @ExampleObject(
-                      value =
-                          "{\"thresholdId\":\"t0000000-0000-0000-0000-000000000001\",\"widgetId\":\"w0000000-0000-0000-0000-000000000001\",\"userId\":\"5ebe4340-c5ec-4833-ad93-06abf4609f03\",\"metricName\":\"CPUUtilization\",\"operator\":\"GT\",\"value\":80.0,\"severity\":\"WARNING\",\"enabled\":true,\"createdAt\":\"2026-09-16T12:00:00Z\",\"updatedAt\":\"2026-09-16T12:00:00Z\"}")))
+              schema = @Schema(implementation = ThresholdResponse.class)))
+  @ApiResponse(responseCode = "400", description = "Invalid threshold request", content = @Content)
   @PostMapping
-  public ResponseEntity<Map<String, Object>> createThreshold(
-      @Parameter(description = "Threshold creation payload") @RequestBody Map<String, Object> req) {
-    // Example response
-    Map<String, Object> created =
-        Map.of(
-            "thresholdId",
-            UUID.randomUUID().toString(),
-            WIDGET_ID,
-            req.getOrDefault(WIDGET_ID, null),
-            "userId",
-            req.getOrDefault("userId", null),
-            METRIC_NAME,
-            req.getOrDefault(METRIC_NAME, "CPUUtilization"),
-            OPERATOR,
-            req.getOrDefault(OPERATOR, "GT"),
-            VALUE,
-            req.getOrDefault(VALUE, 80.0),
-            SEVERITY,
-            req.getOrDefault(SEVERITY, "WARNING"),
-            ENABLED,
-            req.getOrDefault(ENABLED, true),
-            "createdAt",
-            OffsetDateTime.now(ZoneOffset.UTC).toString(),
-            "updatedAt",
-            OffsetDateTime.now(ZoneOffset.UTC).toString());
-    return ResponseEntity.status(201).body(created);
+  public ResponseEntity<ThresholdResponse> createThreshold(
+      @io.swagger.v3.oas.annotations.parameters.RequestBody(
+              required = true,
+              description = "Threshold creation request",
+              content = @Content(schema = @Schema(implementation = CreateThresholdRequest.class)))
+          @RequestBody
+          CreateThresholdRequest request) {
+
+    try {
+      validateThreshold(request.metricName(), request.operator());
+    } catch (IllegalArgumentException exception) {
+      return ResponseEntity.badRequest().build();
+    }
+
+    Threshold threshold =
+        new Threshold(
+            request.resourceId(),
+            request.userId(),
+            request.metricName(),
+            request.operator(),
+            request.value(),
+            request.severity() == null ? "WARNING" : request.severity(),
+            request.enabled() == null || request.enabled());
+
+    ThresholdResponse response = ThresholdResponse.from(thresholdRepository.save(threshold));
+
+    return ResponseEntity.status(201).body(response);
   }
 
   @Operation(
       summary = "List thresholds",
-      description = "List thresholds for a widget (scoped to tenant via global security).")
+      description = "List thresholds, optionally filtered by resource.")
   @ApiResponse(
       responseCode = "200",
       description = "List of thresholds",
       content =
           @Content(
               mediaType = "application/json",
-              schema = @Schema(implementation = List.class),
-              examples =
-                  @ExampleObject(
-                      value =
-                          "[{\"thresholdId\":\"t0000000-0000-0000-0000-000000000001\",\"widgetId\":\"w0000000-0000-0000-0000-000000000001\",\"metricName\":\"CPUUtilization\",\"operator\":\"GT\",\"value\":80.0,\"severity\":\"WARNING\",\"enabled\":true}]")))
+              array = @ArraySchema(schema = @Schema(implementation = ThresholdResponse.class))))
   @GetMapping
-  public ResponseEntity<List<Map<String, Object>>> listThresholds(
-      @Parameter(description = "Widget UUID to filter thresholds")
-          @RequestParam(name = WIDGET_ID, required = false)
-          UUID widgetId) {
-    // Example-only response
-    Map<String, Object> sample =
-        Map.of(
-            "thresholdId",
-            "t0000000-0000-0000-0000-000000000001",
-            WIDGET_ID,
-            widgetId == null ? "w0000000-0000-0000-0000-000000000001" : widgetId.toString(),
-            METRIC_NAME,
-            "CPUUtilization",
-            OPERATOR,
-            "GT",
-            VALUE,
-            80.0,
-            SEVERITY,
-            "WARNING",
-            ENABLED,
-            true,
-            "createdAt",
-            "2026-09-16T12:00:00Z",
-            "updatedAt",
-            "2026-09-16T12:00:00Z");
-    return ResponseEntity.ok(List.of(sample));
+  public ResponseEntity<List<ThresholdResponse>> listThresholds(
+      @Parameter(description = "Resource UUID to filter thresholds")
+          @RequestParam(name = "resourceId", required = false)
+          UUID resourceId) {
+
+    List<Threshold> thresholds =
+        resourceId == null
+            ? thresholdRepository.findAll()
+            : thresholdRepository.findByResourceId(resourceId);
+
+    return ResponseEntity.ok(thresholds.stream().map(ThresholdResponse::from).toList());
   }
 
-  @Operation(
-      summary = "Update threshold",
-      description = "Update an existing threshold (widget ownership enforced server-side).")
-  @ApiResponse(responseCode = "204", description = "Updated")
+  @Operation(summary = "Update threshold", description = "Update an existing threshold.")
+  @ApiResponse(responseCode = "204", description = "Threshold updated")
+  @ApiResponse(responseCode = "400", description = "Invalid threshold request", content = @Content)
   @ApiResponse(responseCode = "404", description = "Threshold not found", content = @Content)
   @PutMapping("/{id}")
   public ResponseEntity<Void> updateThreshold(
       @Parameter(description = "Threshold UUID") @PathVariable UUID id,
-      @Parameter(description = "Threshold update payload") @RequestBody Map<String, Object> req) {
-    // persist update
+      @RequestBody UpdateThresholdRequest request) {
+
+    try {
+      if (request.metricName() != null && request.metricName().isBlank()) {
+        throw new IllegalArgumentException("metric_name is required");
+      }
+
+      if (request.operator() != null
+          && !Set.of("GT", "GTE", "LT", "LTE", "EQ").contains(request.operator())) {
+        throw new IllegalArgumentException("Unsupported operator: " + request.operator());
+      }
+
+      if (request.value() != null && !Double.isFinite(request.value())) {
+        throw new IllegalArgumentException("value must be a finite number");
+      }
+    } catch (IllegalArgumentException exception) {
+      return ResponseEntity.badRequest().build();
+    }
+
+    Optional<Threshold> optionalThreshold = thresholdRepository.findById(id);
+
+    if (optionalThreshold.isEmpty()) {
+      return ResponseEntity.notFound().build();
+    }
+
+    Threshold threshold = optionalThreshold.get();
+
+    String metricName =
+        request.metricName() != null ? request.metricName() : threshold.getMetricName();
+
+    String operator = request.operator() != null ? request.operator() : threshold.getOperator();
+
+    double value = request.value() != null ? request.value() : threshold.getValue();
+
+    try {
+      validateThreshold(metricName, operator);
+    } catch (IllegalArgumentException exception) {
+      return ResponseEntity.badRequest().build();
+    }
+
+    threshold.setMetricName(metricName);
+    threshold.setOperator(operator);
+    threshold.setValue(value);
+
+    if (request.severity() != null) {
+      threshold.setSeverity(request.severity());
+    }
+
+    if (request.enabled() != null) {
+      threshold.setEnabled(request.enabled());
+    }
+
+    thresholdRepository.save(threshold);
+
     return ResponseEntity.noContent().build();
   }
 
-  @Operation(summary = "Delete threshold", description = "Delete or disable a threshold.")
-  @ApiResponse(responseCode = "204", description = "Deleted/disabled")
+  @Operation(summary = "Delete threshold", description = "Delete an existing threshold.")
+  @ApiResponse(responseCode = "204", description = "Threshold deleted")
   @ApiResponse(responseCode = "404", description = "Threshold not found", content = @Content)
   @DeleteMapping("/{id}")
   public ResponseEntity<Void> deleteThreshold(
       @Parameter(description = "Threshold UUID") @PathVariable UUID id) {
-    // delete or disable
+
+    if (!thresholdRepository.existsById(id)) {
+      return ResponseEntity.notFound().build();
+    }
+
+    thresholdRepository.deleteById(id);
     return ResponseEntity.noContent().build();
+  }
+
+  private void validateThreshold(String metricName, String operator) {
+    if (metricName == null || metricName.isBlank()) {
+      throw new IllegalArgumentException("metric_name is required");
+    }
+
+    if (!Set.of("GT", "GTE", "LT", "LTE", "EQ").contains(operator)) {
+      throw new IllegalArgumentException("Unsupported operator: " + operator);
+    }
   }
 }
