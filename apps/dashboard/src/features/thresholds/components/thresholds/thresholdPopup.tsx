@@ -64,6 +64,49 @@ export function ThresholdPopup({
   };
 
   return(
-    
+    <Dialog open = {open} onOpenChange = {(next) => !next && onClose()}>
+      <DialogContent className = "sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle> {initial ? "Edit threshold" : "New threshold"} </DialogTitle>
+        </DialogHeader>
+
+        <form onSubmit = {handlingSubmit} className = "space-y-4">
+          <div className = "space-y-2">
+            <Label htmlFor = "metricName"> Metric </Label>
+
+            <Input id = "metricName" value = {metricName} onChange = {(change) => setMetricName(change.target.value)} required/>
+          </div>
+
+          <div className = "space-y-2">
+            <Label htmlFor = "operator"> Operator </Label>
+
+            <Select value = {operator} onValueChange = {(change) => setOperator(change as OperatorsForThreshold)}>
+              <SelectTrigger id = "operator">
+                <SelectValue placeholder = "Select operator"/>
+              </SelectTrigger>
+
+              <SelectContent>
+                {OPERATORS.map((forOperators) => (
+                  <SelectItem key = {forOperators} value = {forOperators}> {forOperators} </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className = "flex items-center gap-2">
+            <Checkbox id = "enabled" checked = {enabled} onCheckedChange = {(change) => setEnabled(change === true)}/>
+
+            <Label htmlFor = "enabled"> Enabled </Label>
+          </div>
+
+          <DialogFooter className = "pt-2">
+            <Button type = "button" variant = "outline" onClick = {onClose}> Cancel </Button>
+
+            <Button type = "submit" disabled = {submit}> {submit ? "Saving" : "Save"} </Button>
+          </DialogFooter>
+
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
