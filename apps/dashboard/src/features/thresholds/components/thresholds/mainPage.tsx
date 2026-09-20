@@ -36,6 +36,46 @@ export function MainPage({resourceId, userId} : Readonly<PropsForMainPage>){
 
     const forTotalCount = thresholds.length;
 
+    const handlingToggleEnabled = async (forThreshold : Threshold, enabled : boolean) => {
+        await updateThreshold(forThreshold.thresholdId, {enabled});
+    };
+
+    const handlingEdit = (forThreshold : Threshold) => {
+        setIsEditing(forThreshold);
+
+        setPopupOpen(true);
+    };
+
+    const handlingNewThreshold = () => {
+        setIsEditing(null);
+
+        setPopupOpen(true);
+    };
+
+    const handlingSubmit = async (forPayload : CreateThresholdRequest) => {
+        if(isEditing){
+            await updateThreshold(isEditing.thresholdId, {
+                metric_name : forPayload.metric_name, operator : forPayload.operator, value : forPayload.value, severity : forPayload.severity, enabled : forPayload.enabled,
+            });
+        }else{
+            await createThreshold(forPayload);
+        }
+    };
+
+    const handlingDelete = async (forThreshold : Threshold) => {
+        setDeleteThreshold(forThreshold);
+    };
+
+    const confirmDelete = async () => {
+        if(!deleteThreshold){
+            return;
+        }
+
+        await removeThreshold(deleteThreshold.thresholdId);
+
+        setDeleteThreshold(null);
+    }
+
     return(
         
     );
