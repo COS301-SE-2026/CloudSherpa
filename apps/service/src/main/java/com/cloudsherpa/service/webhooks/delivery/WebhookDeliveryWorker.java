@@ -28,7 +28,6 @@ public class WebhookDeliveryWorker {
       if (attempt == null) {
         return;
       }
-
       Integer responseCode = httpClient.send(attempt);
       logger.info("Received response code {}", responseCode);
       stateService.recordOutcome(task, responseCode);

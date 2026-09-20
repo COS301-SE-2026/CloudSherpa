@@ -63,7 +63,6 @@ public class WebhookDeliveryStateService {
     return new DeliveryAttempt(
         new DeliveryHeaders(deliveryId),
         delivery.getWebhook().getEndpointUrl(),
-        deliveryId,
         delivery.getEventType(),
         delivery.getEventTimestamp(),
         new WebhookEventCloudAccount(

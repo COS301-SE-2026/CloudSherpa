@@ -9,6 +9,7 @@ public record WebhookDeliveryResponse(
     Instant timestamp,
     UUID webhookId,
     String eventType,
-    UUID cloudAccount,
+    UUID cloudAccountId,
+    String cloudAccountName,
     WebhookDeliveryStatusEnum result,
     Integer responseCode) {}
