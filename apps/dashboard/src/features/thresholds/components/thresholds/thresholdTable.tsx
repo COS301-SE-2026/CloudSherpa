@@ -108,6 +108,22 @@ export function ThresholdTable({
                         </TableRow>
                     ))}
                 </TableHeader>
+
+                <TableBody>
+                    {forThresholdTable.getRowModel().rows.length === 0 ? (
+                        <TableRow>
+                            <TableCell colSpan = {forColumns.length} className = "py-8 text-center text-sm text-muted-foreground"> No thresholds found. </TableCell>
+                        </TableRow>
+                    ) : (
+                        forThresholdTable.getRowModel().rows.map((row) => (
+                            <TableRow key = {row.id}>
+                                {row.getVisibleCells().map((cell) => (
+                                    <TableCell key = {cell.id} className = "text-sm"> {flexRender(cell.column.columnDef.cell, cell.getContext())} </TableCell>
+                                ))}
+                            </TableRow>
+                        ))
+                    )}
+                </TableBody>
             </Table>
         </div>
     );
