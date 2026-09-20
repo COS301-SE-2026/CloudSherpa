@@ -93,6 +93,28 @@ export function ThresholdPopup({
             </Select>
           </div>
 
+          <div className = "space-y-2">
+            <Label htmlFor = "value"> Value </Label>
+
+            <Input id = "value" type = "number" step = "any" value = {value} onChange = {(change) => setValue(Number(change.target.value))} required/>
+          </div>
+
+          <div className = "space-y-2">
+            <Label htmlFor = "severity"> Severity </Label>
+
+            <Select value = {severity} onValueChange = {(change) => setSeverity(change as SeverityForThreshold)}>
+              <SelectTrigger id = "severity">
+                <SelectValue placeholder = "Select severity"/>
+              </SelectTrigger>
+
+              <SelectContent>
+                {SEVERITY.map((forSeverity) => (
+                  <SelectItem key = {forSeverity} value = {forSeverity}> {forSeverity} </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className = "flex items-center gap-2">
             <Checkbox id = "enabled" checked = {enabled} onCheckedChange = {(change) => setEnabled(change === true)}/>
 
