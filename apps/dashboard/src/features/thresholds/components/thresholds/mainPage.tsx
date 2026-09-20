@@ -122,6 +122,23 @@ export function MainPage({resourceId, userId} : Readonly<PropsForMainPage>){
 
                 <ThresholdPopup open = {popupOpen} initial = {isEditing} resourceId = {resourceId} userId = {userId} onClose = {() => setPopupOpen(false)} onSubmit = {handlingSubmit}/>
 
+                <AlertDialog open = {deleteThreshold !== null} onOpenChange = {(change) => !change && setDeleteThreshold(null)}>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle> Delete threshold? </AlertDialogTitle>
+
+                            <AlertDialogDescription> This will permanently delete the {deleteThreshold?.metricName} threshold.</AlertDialogDescription>
+
+                        </AlertDialogHeader>
+
+                        <AlertDialogFooter>
+                            <AlertDialogCancel> Cancel </AlertDialogCancel>
+
+                            <AlertDialogAction onClick = {confirmDelete}> Delete </AlertDialogAction>
+                        </AlertDialogFooter>
+
+                    </AlertDialogContent>
+                </AlertDialog>
             </div>
         </div>
     );
