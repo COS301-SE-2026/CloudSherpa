@@ -2,9 +2,16 @@
 
 import { Button } from "@/components/atoms/button";
 import { BillingConfig } from "./stepTwo";
-import { Label } from "@/components/atoms/label";
+import { Input } from "@/components/atoms/input";
 import { BillingFormContainer } from "../billingFormContainer";
 import { Dropdown } from "@/components/atoms/dropdown";
+import {
+    Field,
+    FieldDescription,
+    FieldGroup,
+    FieldLabel,
+    FieldSet,
+} from "@/components/atoms/field";
 
 interface BillingFormProps {
     readonly bucketName: string;
@@ -61,65 +68,86 @@ export function AwsBillingForm({
             optedInToBilling={optedInToBilling}
             handleOptedInToBillingChange={handleOptedInToBillingChange}
         >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
-                <div className="space-y-2">
-                    <label htmlFor="bucketName" className="text-sm font-medium text-foreground">
-                        S3 Bucket Name
-                    </label>
-                    <input
-                        id="bucketName"
-                        type="text"
-                        value={bucketName}
-                        onChange={(e) => setBucketName(e.target.value)}
-                        placeholder="e.g., my-billing-reports-bucket"
-                        className="w-full p-2 rounded-md border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
-                </div>
-
-                <div className="space-y-2">
-                    <Label htmlFor="region" className="text-foreground text-sm font-medium">
-                        Bucket region
-                    </Label>
-
-                    <Dropdown
-                        options={regionOptions}
-                        value={bucketRegion}
-                        onChange={setBucketRegion}
-                        placeholder="Select a region"
-                        labelKey="label"
-                        valueKey="value"
-                        className="w-full"
-                    />
-                </div>
-
-                <div className="space-y-2">
-                    <label htmlFor="exportName" className="text-sm font-medium text-foreground">
-                        Export Name
-                    </label>
-                    <input
-                        id="exportName"
-                        type="text"
-                        value={exportName}
-                        onChange={(e) => setExportName(e.target.value)}
-                        placeholder="e.g., daily-cost-export"
-                        className="w-full p-2 rounded-md border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
-                </div>
-
-                <div className="space-y-2 md:col-span-2">
-                    <label htmlFor="prefix" className="text-sm font-medium text-foreground">
-                        Prefix / Path
-                    </label>
-                    <input
-                        id="prefix"
-                        type="text"
-                        value={prefix}
-                        onChange={(e) => setPrefix(e.target.value)}
-                        placeholder="e.g., cur-reports/2023/"
-                        className="w-full p-2 rounded-md border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
-                </div>
-            </div>
+            <FieldSet>
+                <FieldGroup>
+                    <Field>
+                        <FieldLabel
+                            htmlFor="bucketName"
+                            className="text-sm font-medium text-foreground"
+                        >
+                            S3 Bucket Name
+                        </FieldLabel>
+                        <FieldDescription>
+                            Enter the name of the S3 bucket where your AWS cost and usage reports
+                            are delivered.
+                        </FieldDescription>
+                        <Input
+                            id="bucketName"
+                            type="text"
+                            value={bucketName}
+                            onChange={(e) => setBucketName(e.target.value)}
+                            placeholder="e.g., my-billing-reports-bucket"
+                        />
+                    </Field>
+                    <Field>
+                        <FieldLabel
+                            htmlFor="region"
+                            className="text-foreground text-sm font-medium"
+                        >
+                            Bucket region
+                        </FieldLabel>
+                        <FieldDescription>
+                            Select the AWS region where your S3 bucket is hosted.
+                        </FieldDescription>
+                        <Dropdown
+                            options={regionOptions}
+                            value={bucketRegion}
+                            onChange={setBucketRegion}
+                            placeholder="Select a region"
+                            labelKey="label"
+                            valueKey="value"
+                            className="w-full"
+                        />
+                    </Field>
+                    <Field>
+                        <FieldLabel
+                            htmlFor="exportName"
+                            className="text-sm font-medium text-foreground"
+                        >
+                            Export Name
+                        </FieldLabel>
+                        <FieldDescription>
+                            Enter the name of the data export configured in AWS Billing.
+                        </FieldDescription>
+                        <Input
+                            id="exportName"
+                            type="text"
+                            value={exportName}
+                            onChange={(e) => setExportName(e.target.value)}
+                            placeholder="e.g., daily-cost-export"
+                        />
+                    </Field>
+                    <Field>
+                        <FieldLabel
+                            htmlFor="prefix"
+                            className="text-sm font-medium text-foreground"
+                        >
+                            Prefix / Path
+                        </FieldLabel>
+                        <FieldDescription>
+                            Enter the report path prefix in your S3 bucket.
+                        </FieldDescription>
+                        <Input
+                            id="prefix"
+                            type="text"
+                            value={prefix}
+                            onChange={(e) => setPrefix(e.target.value)}
+                            placeholder="e.g., cur-reports/2023/"
+                        />
+                    </Field>
+                    <Field></Field>
+                </FieldGroup>
+            </FieldSet>
 
             <div className="flex items-center gap-3 pt-2">
                 <Button
