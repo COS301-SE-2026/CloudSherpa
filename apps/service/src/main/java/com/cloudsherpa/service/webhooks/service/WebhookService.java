@@ -57,7 +57,7 @@ public class WebhookService {
             request.name(),
             request.endpointUrl(),
             request.eventTypes(),
-            request.cloudAccounts(),
+            normalizeCloudAccounts(request.cloudAccounts()),
             WebhookStatusEnum.ACTIVE,
             webhookKey);
     webhookRepository.save(webhook);
@@ -73,7 +73,7 @@ public class WebhookService {
       webhook.setEndpointUrl(request.endpointUrl());
       webhook.setEventTypes(request.eventTypes());
       webhook.setWebhookStatus(request.status());
-      webhook.setCloudAccounts(request.cloudAccounts());
+      webhook.setCloudAccounts(normalizeCloudAccounts(request.cloudAccounts()));
 
       webhookRepository.save(webhook);
     } catch (NoSuchElementException e) {
@@ -120,5 +120,13 @@ public class WebhookService {
       throw new IllegalStateException(
           "Algorithm for generating webhook HMAC keys does not exist", e);
     }
+  }
+
+  private List<UUID> normalizeCloudAccounts(List<UUID> cloudAccounts) {
+    if (cloudAccounts == null) {
+      return List.of();
+    }
+
+    return cloudAccounts;
   }
 }
