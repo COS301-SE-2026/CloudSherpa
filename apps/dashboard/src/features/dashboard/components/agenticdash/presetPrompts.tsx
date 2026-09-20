@@ -39,7 +39,7 @@ export default function presetPrompts() {
         <div className="h-full w-full flex flex-col gap-2">
             <span className="text-muted-foreground text-sm">Preset Prompts</span>
 
-            <div className="h-fit w-full grid grid-cols-1 lg:grid-cols-2 gap-2">
+            <div className="h-fit w-full grid grid-cols-1 lg:grid-cols-1 gap-2 z-0">
                 {presets.map((preset) => (
                     <Button
                         key={preset.id}

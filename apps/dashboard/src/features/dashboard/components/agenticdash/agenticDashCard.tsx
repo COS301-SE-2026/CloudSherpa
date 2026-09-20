@@ -3,7 +3,7 @@ import { Sparkles } from "lucide-react";
 import { Button } from "@/components/atoms/button";
 import { useState } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/atoms/tabs";
-import StandardDashInput from "@/features/dashboard/components/agenticdash/standard";
+import GenerateDashInput from "@/features/dashboard/components/agenticdash/generate";
 import History from "@/features/dashboard/components/agenticdash/history";
 
 export default function AgenticDashCard() {
@@ -21,7 +21,7 @@ export default function AgenticDashCard() {
 
             {open && (
                 <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
-                    <Card className="h-160 w-120 ">
+                    <Card className="h-[640px] w-[480px] flex flex-col shadow-xl">
                         <CardHeader>
                             <CardTitle>Dashboard Constructor</CardTitle>
                             <CardDescription>
@@ -30,19 +30,22 @@ export default function AgenticDashCard() {
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="h-full">
-                            <Tabs defaultValue="standard" className="flex flex-col h-full w-full">
+                            <Tabs defaultValue="generate" className="flex flex-col h-full w-full">
                                 <TabsList>
-                                    <TabsTrigger value="standard">Standard</TabsTrigger>
+                                    <TabsTrigger value="generate">Generate</TabsTrigger>
                                     <TabsTrigger value="history">History</TabsTrigger>
                                 </TabsList>
-                                <div className="h-full w-full p-0 flex flex-col">
+                                <div className="flex-1 min-h-0 w-full relative">
                                     <TabsContent
-                                        value="standard"
-                                        className="flex flex-col justify-end"
+                                        value="generate"
+                                        className="absolute inset-0 m-0 data-[state=active]:flex flex-col"
                                     >
-                                        <StandardDashInput />
+                                        <GenerateDashInput />
                                     </TabsContent>
-                                    <TabsContent value="history">
+                                    <TabsContent
+                                        value="history"
+                                        className="absolute inset-0 m-0 data-[state=active]:flex flex-col"
+                                    >
                                         <History />
                                     </TabsContent>
                                 </div>
