@@ -65,8 +65,8 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
     const hasSyncedOnce = useRef(false);
     const scrollRef = useRef<HTMLDivElement>(null);
     const setIsCompacting = useDashboardStore((state) => state.actions.setIsCompacting);
-    const compactTimerRef = useRef<NodeJS.Timeout | null>(null);
-    const layoutChangeTimerRef = useRef<NodeJS.Timeout | null>(null);
+    const compactTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const layoutChangeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const isInteractingRef = useRef(false);
 
     const cancelPendingCompact = () => {
