@@ -26,9 +26,11 @@ public class Webhook {
     @Column(name = "endpoint_url", nullable = false)
     private String endpointUrl;
 
+    @JdbcTypeCode(SqlTypes.ARRAY)
     @Column(name = "event_types", nullable = false)
     private List<String> eventTypes;
 
+    @JdbcTypeCode(SqlTypes.ARRAY)
     @Column(name = "cloud_accounts", nullable = false)
     private List<UUID> cloudAccounts;
 

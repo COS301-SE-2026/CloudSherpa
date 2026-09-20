@@ -21,6 +21,7 @@ import javax.crypto.SecretKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class WebhookService {
@@ -39,6 +40,8 @@ public class WebhookService {
     return webhooks.stream().map(this::fromWebhook).toList();
   }
 
+  // Need to be part of transaction since webhook & cloud account entities loaded lazily
+  @Transactional(readOnly = true)
   public List<WebhookDeliveryResponse> getWebhookDeliveries() {
     List<WebhookDelivery> webhookDeliveries = webhookDeliveryRepository.findAll();
     return webhookDeliveries.stream().map(this::fromWebhookDelivery).toList();
@@ -55,7 +58,7 @@ public class WebhookService {
             request.endpointUrl(),
             request.eventTypes(),
             request.cloudAccounts(),
-            WebhookStatusEnum.PAUSED,
+            WebhookStatusEnum.ACTIVE,
             webhookKey);
     webhookRepository.save(webhook);
 
@@ -100,9 +103,9 @@ public class WebhookService {
     return new WebhookDeliveryResponse(
         webhookDelivery.getWebhookDeliveryId(),
         webhookDelivery.getEventTimestamp(),
-        webhookDelivery.getWebhookId(),
+        webhookDelivery.getWebhook() != null ? webhookDelivery.getWebhook().getWebhookId() : null,
         webhookDelivery.getEventType(),
-        webhookDelivery.getCloudAccountId(),
+        webhookDelivery.getCloudAccount().getId(),
         webhookDelivery.getDeliveryStatus(),
         webhookDelivery.getResponseCode());
   }
