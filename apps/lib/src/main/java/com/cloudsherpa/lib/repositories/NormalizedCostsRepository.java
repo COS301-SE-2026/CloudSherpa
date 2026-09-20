@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -110,18 +111,19 @@ public interface NormalizedCostsRepository extends JpaRepository<NormalizedCosts
     ProviderEnum getChargeProvider(@Param("chargeId") String chargeId);
 
     @Query("""
-          SELECT COALESCE(SUM(nc.costAmount), 0)
-          FROM NormalizedCosts nc
-          WHERE nc.usageStartTime BETWEEN :fromDate AND :toDate
-            AND nc.resourceId = :resourceId AND nc.costAmount > 0
-          """)
-  BigDecimal sumTotalCostBetweenForResourceId(@Param("resourceId") String resourceId, @Param("fromDate") OffsetDateTime fromDate, @Param("toDate") OffsetDateTime toDate);
+            SELECT COALESCE(SUM(nc.costAmount), 0)
+            FROM NormalizedCosts nc
+            WHERE nc.usageStartTime BETWEEN :fromDate AND :toDate
+            AND nc.resourceId = :resourceIdentifier AND nc.costAmount > 0
+            """)
+    BigDecimal sumTotalCostBetweenForResourceIdentifier(@Param("resourceIdentifier") String resourceIdentifier, @Param("fromDate") OffsetDateTime fromDate, @Param("toDate") OffsetDateTime toDate);
 
-  @Query("""
-          SELECT COALESCE(SUM(nc.costAmount), 0)
-          FROM NormalizedCosts nc
-          WHERE nc.usageStartTime BETWEEN :fromDate AND :toDate
-            AND nc.billingAccountId = :billingAccountId AND nc.costAmount > 0
-          """)
-  BigDecimal sumTotalCostBetweenForBillingAccountId(@Param("billingAccountId") String billingAccountId, @Param("fromDate") OffsetDateTime fromDate, @Param("toDate") OffsetDateTime toDate);
+    @Query("""
+            SELECT COALESCE(SUM(nc.costAmount), 0)
+            FROM NormalizedCosts nc, Resource r
+            WHERE nc.resourceId = r.resourceIdentifier
+              AND r.accountId = :accountId
+              AND nc.usageStartTime BETWEEN :fromDate AND :toDate AND nc.costAmount > 0
+            """)
+    BigDecimal sumTotalCostBetweenForAccountId(@Param("accountId") UUID accountId, @Param("fromDate") OffsetDateTime fromDate, @Param("toDate") OffsetDateTime toDate);
 }

@@ -2,15 +2,23 @@ package com.cloudsherpa.service.alerts.service;
 
 import com.cloudsherpa.lib.entities.Alert;
 import com.cloudsherpa.lib.entities.Budget;
+import com.cloudsherpa.lib.entities.Resource;
 import com.cloudsherpa.lib.repositories.AlertRepository;
+import com.cloudsherpa.lib.repositories.BudgetRepository;
 import com.cloudsherpa.lib.repositories.NormalizedCostsRepository;
+import com.cloudsherpa.lib.repositories.ResourceRepository;
 import com.cloudsherpa.service.sse.SseService;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -21,17 +29,24 @@ public class BudgetEvaluationService {
   private final NormalizedCostsRepository normalizedCostsRepository;
   private final AlertRepository alertRepository;
   private final SseService sseService;
+  private final BudgetRepository budgetRepository;
+  private final ResourceRepository resourceRepository;
+  private static final Logger logger = LoggerFactory.getLogger(BudgetEvaluationService.class);
 
   public BudgetEvaluationService(
       NormalizedCostsRepository normalizedCostsRepository,
       AlertRepository alertRepository,
-      SseService sseService) {
+      SseService sseService,
+      BudgetRepository budgetRepository,
+      ResourceRepository resourceRepository) {
     this.normalizedCostsRepository = normalizedCostsRepository;
     this.alertRepository = alertRepository;
     this.sseService = sseService;
+    this.budgetRepository = budgetRepository;
+    this.resourceRepository = resourceRepository;
   }
 
-  public void evaluateCurrentSpend(Budget budget) {
+  private void evaluateCurrentSpend(Budget budget) {
     if (!budget.isEnabled()) {
       return;
     }
@@ -47,14 +62,43 @@ public class BudgetEvaluationService {
     upsertAlert(budget, currentTotal);
   }
 
+  public void evaluateForAccount(UUID userId, UUID accountId) {
+    List<Budget> matchingBudgets = new ArrayList<>();
+
+    matchingBudgets.addAll(budgetRepository.findByUserIdAndScopeAndEnabledTrue(userId, "TENANT"));
+
+    matchingBudgets.addAll(
+        budgetRepository.findByScopeAndScopeIdAndEnabledTrue("ACCOUNT", accountId));
+
+    for (Resource resource : resourceRepository.findByAccountId(accountId)) {
+      matchingBudgets.addAll(
+          budgetRepository.findByScopeAndScopeIdAndEnabledTrue("RESOURCE", resource.getId()));
+    }
+
+    for (Budget budget : matchingBudgets) {
+      evaluateCurrentSpend(budget);
+    }
+  }
+
   private BigDecimal sumScopedCost(Budget budget, OffsetDateTime from, OffsetDateTime to) {
     return switch (budget.getScope()) {
-      case "RESOURCE" -> normalizedCostsRepository.sumTotalCostBetweenForResourceId(
-          budget.getScopeId().toString(), from, to);
-      case "ACCOUNT" -> normalizedCostsRepository.sumTotalCostBetweenForBillingAccountId(
-          budget.getScopeId().toString(), from, to);
+      case "RESOURCE" -> sumCostForResourceBudget(budget, from, to);
+      case "ACCOUNT" -> normalizedCostsRepository.sumTotalCostBetweenForAccountId(
+          budget.getScopeId(), from, to);
       default -> normalizedCostsRepository.sumTotalCostBetween(from, to);
     };
+  }
+
+  private BigDecimal sumCostForResourceBudget(
+      Budget budget, OffsetDateTime from, OffsetDateTime to) {
+    Optional<Resource> resource = resourceRepository.findById(budget.getScopeId());
+
+    if (resource.isEmpty()) {
+      return BigDecimal.ZERO;
+    }
+
+    return normalizedCostsRepository.sumTotalCostBetweenForResourceIdentifier(
+        resource.get().getResourceIdentifier(), from, to);
   }
 
   private void upsertAlert(Budget budget, BigDecimal value) {
@@ -73,6 +117,12 @@ public class BudgetEvaluationService {
     }
 
     alertRepository.save(alert);
+    logger.info(
+        "BUDGET BREACH DETECTED: budgetId={} scope={} amount={} currentSpend={}",
+        budget.getBudgetId(),
+        budget.getScope(),
+        budget.getAmount(),
+        value);
     sseService.broadcast(budget.getUserId(), "alert", alert);
   }
 

@@ -12,4 +12,6 @@ public interface BudgetRepository extends JpaRepository<Budget, UUID> {
   List<Budget> findByScopeAndScopeId(String scope, UUID scopeId);
 
   List<Budget> findByScopeAndScopeIdAndEnabledTrue(String scope, UUID scopeId);
+
+  List<Budget> findByUserIdAndScopeAndEnabledTrue(UUID userId, String scope);
 }
