@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -29,6 +31,7 @@ public class BudgetEvaluationService {
   private final SseService sseService;
   private final BudgetRepository budgetRepository;
   private final ResourceRepository resourceRepository;
+  private static final Logger logger = LoggerFactory.getLogger(BudgetEvaluationService.class);
 
   public BudgetEvaluationService(
       NormalizedCostsRepository normalizedCostsRepository,
@@ -114,6 +117,12 @@ public class BudgetEvaluationService {
     }
 
     alertRepository.save(alert);
+    logger.info(
+        "BUDGET BREACH DETECTED: budgetId={} scope={} amount={} currentSpend={}",
+        budget.getBudgetId(),
+        budget.getScope(),
+        budget.getAmount(),
+        value);
     sseService.broadcast(budget.getUserId(), "alert", alert);
   }
 
