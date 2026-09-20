@@ -191,4 +191,8 @@ public class AiDashboardVersion {
       return new AiDashboardVersion(this);
     }
   }
+
+  public void setCurrent(Boolean current) {
+    this.current = current;
+  }
 }
