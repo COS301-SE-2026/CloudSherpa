@@ -1,5 +1,8 @@
 package com.cloudsherpa.service.listener;
 
+import com.cloudsherpa.service.alerts.service.AnomalyEvaluationService;
+import com.cloudsherpa.service.alerts.service.ThresholdEvaluationService;
+import com.cloudsherpa.service.config.TenantContext;
 import com.cloudsherpa.service.listener.dto.MetricStreamEventDto;
 import com.cloudsherpa.service.metrics.MetricDisplayNameMapper;
 import com.cloudsherpa.service.sse.SseService;
@@ -43,6 +46,8 @@ public class PostgresNotificationListener implements SmartLifecycle {
   private final SseService sseService;
   private final MetricDisplayNameMapper metricDisplayNameMapper;
   private final ActiveListeners activeListeners;
+  private final ThresholdEvaluationService thresholdEvaluationService;
+  private final AnomalyEvaluationService anomalyEvaluationService;
 
   private volatile boolean running;
 
@@ -52,11 +57,15 @@ public class PostgresNotificationListener implements SmartLifecycle {
       SseService sseService,
       ActiveListeners activeListeners,
       ObjectMapper objectMapper,
-      MetricDisplayNameMapper metricDisplayNameMapper) {
+      MetricDisplayNameMapper metricDisplayNameMapper,
+      ThresholdEvaluationService thresholdEvaluationService,
+      AnomalyEvaluationService anomalyEvaluationService) {
     this.sseService = sseService;
     this.activeListeners = activeListeners;
     this.objectMapper = objectMapper;
     this.metricDisplayNameMapper = metricDisplayNameMapper;
+    this.thresholdEvaluationService = thresholdEvaluationService;
+    this.anomalyEvaluationService = anomalyEvaluationService;
   }
 
   // Creates a long-lived connection and registers the LISTEN channel.
@@ -151,13 +160,18 @@ public class PostgresNotificationListener implements SmartLifecycle {
   // Parse and forward the metric to any connected SSE clients.
   private void processMetricForAnalytics(String payload, UUID userId) {
     try {
-      // Parse the raw string back into a JSON object
-      MetricStreamEventDto event =
-          objectMapper
-              .readValue(payload, MetricStreamEventDto.class)
-              .withDisplayNameMappedMetric(metricDisplayNameMapper);
+      MetricStreamEventDto rawEvent = objectMapper.readValue(payload, MetricStreamEventDto.class);
+      MetricStreamEventDto event = rawEvent.withDisplayNameMappedMetric(metricDisplayNameMapper);
 
       sseService.broadcast(userId, "metric", event);
+
+      TenantContext.setCurrentTenant(userId.toString());
+      try {
+        thresholdEvaluationService.evaluate(event, userId);
+        anomalyEvaluationService.evaluate(event, userId);
+      } finally {
+        TenantContext.clear();
+      }
     } catch (Exception e) {
       logger.warn("Failed to parse metric payload: {}", payload, e);
     }

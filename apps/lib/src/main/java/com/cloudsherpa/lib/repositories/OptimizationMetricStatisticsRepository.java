@@ -27,4 +27,6 @@ public interface OptimizationMetricStatisticsRepository extends JpaRepository<Op
         Integer windowNumDays,
         OffsetDateTime windowStart,
         OffsetDateTime windowEnd);
+
+  Optional<OptimizationMetricStatistics> findFirstByResourceIdAndMetricNameOrderByWindowEndDesc(UUID resourceId, String metricName);
 }
