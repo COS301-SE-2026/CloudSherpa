@@ -149,39 +149,50 @@ public class PostgresNotificationListener implements SmartLifecycle {
       // This prevents our Spring scheduling thread from freezing up.
       PGNotification[] notifications = pgConnection.getNotifications(0);
 
-      if (notifications != null && notifications.length > 0) {
-        for (PGNotification notification : notifications) {
-          // This retrieves the actual text payload we sent from the database trigger
-          // Thanks to row_to_json(NEW), it should be a JSON string representing a
-          // database row.
-          String eventName = notification.getName();
-          logger.info("NOTIFIED {}", eventName);
+      if (notifications == null) {
+        return;
+      }
 
-          String payload = notification.getParameter();
-
-          if ("billing_execution_completed".equals(eventName)) {
-            processBillingExecutionCompleted(payload);
-            continue;
-          }
-
-          UUID userId = activeListeners.getUserIdForChannel(eventName);
-          if (userId == null) {
-            activeListeners.refreshTenantMetricEvents();
-            loadAndListenTenantMetricEvents();
-            userId = activeListeners.getUserIdForChannel(eventName);
-          }
-
-          if (userId == null) {
-            logger.warn("No tenant mapping found for Postgres notification channel {}", eventName);
-            continue;
-          }
-
-          processMetricForAnalytics(payload, userId);
-        }
+      for (PGNotification notification : notifications) {
+        handleNotification(notification);
       }
     } catch (SQLException e) {
       logger.warn("Failed to poll Postgres notifications", e);
     }
+  }
+
+  private void handleNotification(PGNotification notification) throws SQLException {
+    String eventName = notification.getName();
+    logger.info("NOTIFIED {}", eventName);
+
+    String payload = notification.getParameter();
+
+    if ("billing_execution_completed".equals(eventName)) {
+      processBillingExecutionCompleted(payload);
+      return;
+    }
+
+    UUID userId = resolveUserIdForChannel(eventName);
+
+    if (userId == null) {
+      logger.warn("No tenant mapping found for Postgres notification channel {}", eventName);
+      return;
+    }
+
+    processMetricForAnalytics(payload, userId);
+  }
+
+  private UUID resolveUserIdForChannel(String eventName) throws SQLException {
+    UUID userId = activeListeners.getUserIdForChannel(eventName);
+
+    if (userId != null) {
+      return userId;
+    }
+
+    activeListeners.refreshTenantMetricEvents();
+    loadAndListenTenantMetricEvents();
+
+    return activeListeners.getUserIdForChannel(eventName);
   }
 
   // Parse and forward the metric to any connected SSE clients.
