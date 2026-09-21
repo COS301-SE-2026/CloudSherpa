@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, useCallback } from "react";
-import { Plus, Search, Edit, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Search, Edit, Trash2, ChevronLeft, ChevronRight, RefreshCcw } from "lucide-react";
 import {
     useReactTable,
     getCoreRowModel,
@@ -40,7 +40,6 @@ import {
 } from "@/components/atoms/table";
 import { Label } from "@/components/atoms/label";
 import { DeletePopup } from "@/features/webhooks/components/deletePopup";
-import { Spinner } from "@/components/atoms/spinner";
 import { ButtonGroup } from "@/components/atoms/button-group";
 
 //moved to outside to correct sonarqube errors
@@ -279,6 +278,8 @@ export const Webhooks = () => {
         );
     }, [webhooks, webhookSearch, filterForStatus]);
 
+    const [deliveryRefreshKey, setDeliveryRefreshKey] = useState(0);
+
     useEffect(() => {
         let ignore = false;
 
@@ -326,6 +327,7 @@ export const Webhooks = () => {
         submittedDeliverySearch,
         filterForDeliveryWebhook,
         filterForDeliveryStatus,
+        deliveryRefreshKey,
     ]);
 
     const webhookColumns = useMemo(
@@ -374,20 +376,7 @@ export const Webhooks = () => {
 
     let deliveryTableBody;
 
-    if (deliveryLoading) {
-        deliveryTableBody = (
-            <TableRow>
-                <TableCell
-                    colSpan={tableForDelivery.getVisibleLeafColumns().length}
-                    className="h-24 text-center"
-                >
-                    <span>
-                        <Spinner /> Loading deliveries…
-                    </span>
-                </TableCell>
-            </TableRow>
-        );
-    } else if (deliveryError) {
+    if (deliveryError) {
         deliveryTableBody = (
             <TableRow>
                 <TableCell
@@ -539,7 +528,7 @@ export const Webhooks = () => {
                                 size="icon"
                                 className="h-8 w-8"
                                 onClick={() => tableForWebhook.nextPage()}
-                                disabled={!tableForWebhook.getCanNextPage()}
+                                disabled={!tableForWebhook.getCanNextPage() || deliveryLoading}
                             >
                                 {" "}
                                 <ChevronRight size={16} />{" "}
@@ -640,6 +629,15 @@ export const Webhooks = () => {
                                 <SelectItem value="FAILED"> Failed </SelectItem>
                             </SelectContent>
                         </Select>
+                        <div className="ml-auto">
+                            <Button
+                                onClick={() => setDeliveryRefreshKey((current) => current + 1)}
+                                disabled={deliveryLoading}
+                            >
+                                <RefreshCcw />
+                                Refresh
+                            </Button>
+                        </div>
                     </div>
 
                     <div className="rounded-md border border-border">
@@ -685,7 +683,7 @@ export const Webhooks = () => {
                                 size="icon"
                                 className="h-8 w-8"
                                 onClick={() => tableForDelivery.previousPage()}
-                                disabled={!tableForDelivery.getCanPreviousPage()}
+                                disabled={!tableForDelivery.getCanPreviousPage() || deliveryLoading}
                             >
                                 {" "}
                                 <ChevronLeft size={16} />{" "}
