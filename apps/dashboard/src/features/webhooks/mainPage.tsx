@@ -73,7 +73,7 @@ const helperForWebhookColumns = (
     },
 
     {
-        accessorKey: "status",
+        accessorKey: "webhookStatus",
         header: "Status",
         cell: (info) => {
             const status = info.getValue() as string;
@@ -202,6 +202,7 @@ export const Webhooks = () => {
                 ]);
 
                 setWebhooks(webhooks);
+                console.log(webhooks);
                 setEventsAvailable(events);
                 setDelivery(deliveries);
                 setCloudAccounts(accounts);
