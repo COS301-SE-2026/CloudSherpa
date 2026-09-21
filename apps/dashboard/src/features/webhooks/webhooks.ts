@@ -1,10 +1,10 @@
 import apiClient from "@/lib/fetch/api-client";
 import {
     Webhook,
-    WebhookDelivery,
     WebhookEvent,
     CreateWebhookPayload,
     UpdateWebhookPayload,
+    WebhookDeliveryPagedResult,
 } from "@/features/webhooks/types";
 
 type DataWebhookEvent = {
@@ -45,8 +45,14 @@ export const fetchWebhookEvents = async (): Promise<WebhookEvent[]> => {
     return events;
 };
 
-export const fetchWebhookDeliveries = async (): Promise<WebhookDelivery[]> => {
-    return apiClient<WebhookDelivery[]>("/webhooks/deliveries", { method: "GET" });
+export const fetchWebhookDeliveries = async (
+    page: number,
+    pageSize: number
+): Promise<WebhookDeliveryPagedResult> => {
+    return apiClient<WebhookDeliveryPagedResult>(
+        `/webhooks/deliveries?page=${page}&pageSize=${pageSize}`,
+        { method: "GET" }
+    );
 };
 
 export const addWebhook = async (payload: CreateWebhookPayload): Promise<{ secret: string }> => {

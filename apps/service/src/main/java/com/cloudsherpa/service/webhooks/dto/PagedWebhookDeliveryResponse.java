@@ -6,5 +6,5 @@ public record PagedWebhookDeliveryResponse(
     List<WebhookDeliveryResponse> deliveries,
     int page,
     int size,
-    int totalElements,
+    long totalElements,
     int totalPages) {}

@@ -65,7 +65,7 @@ public class WebhookService {
         result.stream().map(this::fromWebhookDelivery).toList(),
         result.getNumber(),
         result.getSize(),
-        result.getNumberOfElements(),
+        result.getTotalElements(),
         result.getTotalPages());
   }
 

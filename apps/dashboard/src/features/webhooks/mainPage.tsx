@@ -170,6 +170,8 @@ export const Webhooks = () => {
 
     const [delivery, setDelivery] = useState<WebhookDelivery[]>([]);
 
+    const [totalDeliveryElements, setTotalDeliveryElements] = useState(0);
+
     const [eventsAvailable, setEventsAvailable] = useState<WebhookEvent[]>([]);
 
     const [cloudAccounts, setCloudAccounts] = useState<CloudAccount[]>([]);
@@ -209,13 +211,16 @@ export const Webhooks = () => {
                 const [webhooks, events, deliveries, accounts] = await Promise.all([
                     fetchWebhooks(),
                     fetchWebhookEvents(),
-                    fetchWebhookDeliveries(),
+                    fetchWebhookDeliveries(
+                        paginationForDelivery.pageIndex,
+                        paginationForDelivery.pageSize
+                    ),
                     getAwsAccountConnections(),
                 ]);
 
                 setWebhooks(webhooks);
                 setEventsAvailable(events);
-                setDelivery(deliveries);
+                setDelivery(deliveries.deliveries);
                 setCloudAccounts(accounts);
 
                 if (events.length > 0) {
@@ -298,6 +303,20 @@ export const Webhooks = () => {
         setPaginationForWebhook((previous) => ({ ...previous, pageIndex: 0 }));
     }, [webhookSearch, filterForStatus]);
 
+    useEffect(() => {
+        const loadDeliveries = async () => {
+            const result = await fetchWebhookDeliveries(
+                paginationForDelivery.pageIndex,
+                paginationForDelivery.pageSize
+            );
+
+            setDelivery(result.deliveries);
+            setTotalDeliveryElements(result.totalElements);
+        };
+
+        loadDeliveries();
+    }, [paginationForDelivery.pageIndex, paginationForDelivery.pageSize]);
+
     const webhookColumns = useMemo(
         () => helperForWebhookColumns(handlingEdit, handlingDelete),
         [handlingEdit, handlingDelete]
@@ -318,7 +337,9 @@ export const Webhooks = () => {
         data: filteredDeliveries,
         columns: deliveryColumns,
         getCoreRowModel: getCoreRowModel(),
-        getPaginationRowModel: getPaginationRowModel(),
+        manualPagination: true,
+        rowCount: totalDeliveryElements,
+
         state: { pagination: paginationForDelivery },
         onPaginationChange: setPaginationForDelivery,
     });
