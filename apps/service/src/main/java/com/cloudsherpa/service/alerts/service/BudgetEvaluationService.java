@@ -124,6 +124,9 @@ public class BudgetEvaluationService {
         budget.getAmount(),
         value);
     sseService.broadcast(budget.getUserId(), "alert", alert);
+
+    // Build & submit budget webhook event alert.budget
+
   }
 
   private Alert buildNewAlert(Budget budget, BigDecimal value, String canonicalKey) {

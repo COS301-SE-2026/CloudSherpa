@@ -19,7 +19,7 @@ public class AnomalyAlertDefinition implements WebhookEventDefinition<AnomalyAle
 
   @Override
   public String displayName() {
-    return "Usage Anoomaly Alert";
+    return "Usage Anomaly Alert";
   }
 
   @Override
