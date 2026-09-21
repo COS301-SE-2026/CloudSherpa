@@ -131,7 +131,7 @@ public class DashboardPlanValidator {
   }
 
   private void validateKpiWidget(DashboardPlanWidgetDto widget) {
-    if (widget.chargeIds() == null || widget.chargeIds().length == 0) {
+    if (widget.chargeIds() == null || widget.chargeIds().isEmpty()) {
       throw invalid("KPI charge IDs are required");
     }
 

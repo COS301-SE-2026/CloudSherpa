@@ -158,7 +158,7 @@ public class AiDashboardVersionService {
         AiKpiWidget.builder()
             .widgetId(widgetId)
             .widget(widget)
-            .chargeIds(widgetDto.chargeIds())
+            .chargeIds(widgetDto.chargeIds().toArray(String[]::new))
             .aggregationWindowDays(widgetDto.aggregationWindowDays())
             .build();
 
