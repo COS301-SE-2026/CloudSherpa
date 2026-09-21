@@ -7,7 +7,7 @@ import {Button} from "@/components/atoms/button";
 import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from "@/components/atoms/dialog";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/atoms/select";
 import {Checkbox} from "@/components/atoms/checkbox";
-import { CreateThresholdRequest, Threshold, OperatorsForThreshold, SeverityForThreshold, OPERATORS, SEVERITY} from "@/features/thresholds/types/thresholdTypes";
+import { CreateThresholdRequest, Threshold, OperatorsForThreshold, SeverityForThreshold, OPERATORS, SEVERITY, OPERATOR_LABEL} from "@/features/thresholds/types/thresholdTypes";
 
 interface PropsForThresholds{
   open : boolean;
@@ -25,13 +25,17 @@ export function ThresholdPopup({
 
   const [operator, setOperator] = useState<OperatorsForThreshold>("GT");
 
-  const [value, setValue] = useState<number>(80);
+  const [value, setValue] = useState<number>(0);
 
   const [severity, setSeverity] = useState<SeverityForThreshold>("WARNING");
 
   const [enabled, setEnabled] = useState(true);
 
   const [submit, setSubmit] = useState(false);
+
+  const [metricError, setMetricError] = useState<string | null>(null);
+
+  const [zeroValue, setZeroValue] = useState<string | null>(null);
 
   useEffect(() => {
     if(initial){
@@ -43,14 +47,41 @@ export function ThresholdPopup({
     }else{
       setMetricName("");
       setOperator("GT");
-      setValue(80);
+      setValue(0);
       setSeverity("WARNING");
       setEnabled(true);
     }
+
+    setMetricError(null);
+
+    setZeroValue(null);
+
   }, [initial, open]);
 
   const handlingSubmit = async (submitting : React.FormEvent) => {
     submitting.preventDefault();
+
+    let hasError = false;
+
+    if(metricName.trim() === ""){
+      setMetricError("Please fill out this field");
+      
+      hasError = true;
+    }
+
+    if(!Number.isFinite(value) || value<=0){
+      setZeroValue("Value must be greater than 0");
+
+      hasError = true;
+    }
+
+    if(hasError){
+      return;
+    }
+
+    setMetricError(null);
+
+    setZeroValue(null);
 
     setSubmit(true);
 
@@ -74,7 +105,15 @@ export function ThresholdPopup({
           <div className = "space-y-2">
             <Label htmlFor = "metricName"> Metric </Label>
 
-            <Input id = "metricName" value = {metricName} onChange = {(change) => setMetricName(change.target.value)} required/>
+            <Input id = "metricName" value = {metricName} onChange = {(change) => {setMetricName(change.target.value);
+              if(metricError){
+                setMetricError(null);
+              }
+            }} />
+
+            {metricError && (
+              <p id = "metricName-error" className = "text-xs text-destructive"> {metricError} </p>
+            )}
           </div>
 
           <div className = "space-y-2">
@@ -87,7 +126,7 @@ export function ThresholdPopup({
 
               <SelectContent>
                 {OPERATORS.map((forOperators) => (
-                  <SelectItem key = {forOperators} value = {forOperators}> {forOperators} </SelectItem>
+                  <SelectItem key = {forOperators} value = {forOperators}> {OPERATOR_LABEL[forOperators]} </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -96,7 +135,15 @@ export function ThresholdPopup({
           <div className = "space-y-2">
             <Label htmlFor = "value"> Value </Label>
 
-            <Input id = "value" type = "number" step = "any" value = {value} onChange = {(change) => setValue(Number(change.target.value))} required/>
+            <Input id = "value" type = "number" step = "any" value = {value} onChange = {(change) => {setValue(Number(change.target.value));
+              if(zeroValue){
+                setZeroValue(null);
+              }
+            }}/>
+
+            {zeroValue && (
+              <p id = "zero-error" className = "text-xs text-destructive"> {zeroValue} </p>
+            )}
           </div>
 
           <div className = "space-y-2">
