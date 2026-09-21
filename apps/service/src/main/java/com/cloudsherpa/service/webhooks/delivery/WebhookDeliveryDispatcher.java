@@ -22,11 +22,13 @@ public class WebhookDeliveryDispatcher {
     this.worker = worker;
   }
 
-  public void submit(DeliveryTask task) {
+  public boolean submit(DeliveryTask task) {
     try {
       executor.execute(() -> worker.process(task));
+      return true;
     } catch (TaskRejectedException e) {
       logger.debug("Delivery execution deferred for task {}", task);
+      return false;
     }
   }
 }

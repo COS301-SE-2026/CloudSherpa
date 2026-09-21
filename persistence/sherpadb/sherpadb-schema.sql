@@ -824,7 +824,8 @@ BEGIN
         payload jsonb NOT NULL,
         delivery_status public.webhook_delivery_status_enum NOT NULL DEFAULT 'PENDING',
         response_code int,
-        attempt_count int NOT NULL DEFAULT 0
+        attempt_count int NOT NULL DEFAULT 0,
+        next_attempt_at timestamptz
       );
     $sql$, schema_name, schema_name);
 END;
