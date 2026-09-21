@@ -10,6 +10,7 @@ import {
     ServerPlus,
     Lightbulb,
     Webhook,
+    LogOut,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
@@ -285,6 +286,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                 tooltip="Logout"
                                 aria-label="logout button"
                             >
+                                <LogOut />
                                 <span>Logout</span>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
