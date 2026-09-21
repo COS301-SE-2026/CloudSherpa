@@ -674,9 +674,9 @@ export const Webhooks = () => {
                             {Math.min(
                                 (tableForDelivery.getState().pagination.pageIndex + 1) *
                                     tableForDelivery.getState().pagination.pageSize,
-                                delivery.length
+                                totalDeliveryElements
                             )}{" "}
-                            of {delivery.length} deliveries{" "}
+                            of {totalDeliveryElements} deliveries{" "}
                         </span>
 
                         <div className="flex items-center justify-center gap-2">
