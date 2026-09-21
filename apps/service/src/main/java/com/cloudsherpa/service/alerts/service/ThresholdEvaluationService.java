@@ -94,7 +94,7 @@ public class ThresholdEvaluationService {
         userId,
         threshold.getResource().getAccountId(),
         "alert.threshold",
-        buildWebhookPayload(threshold, event, alert));
+        buildWebhookEventPayload(threshold, event, alert));
   }
 
   private Alert buildNewAlert(
@@ -164,7 +164,7 @@ public class ThresholdEvaluationService {
         + event.resourceId();
   }
 
-  private ThresholdAlertPayload buildWebhookPayload(
+  private ThresholdAlertPayload buildWebhookEventPayload(
       Threshold threshold, MetricStreamEventDto event, Alert alert) {
 
     return new ThresholdAlertPayload(

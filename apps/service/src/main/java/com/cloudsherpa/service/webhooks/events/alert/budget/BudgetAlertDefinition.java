@@ -35,6 +35,7 @@ public class BudgetAlertDefinition implements WebhookEventDefinition<BudgetAlert
         "Current spend exceeded budget of: 1000.00",
         "Current spend 1250.50 has reached budget amount 1000.00",
         "WARNING",
+        "Budget scoped to account AWS Team A",
         new BigDecimal("1000.00"),
         new BigDecimal("1250.50"),
         30);
