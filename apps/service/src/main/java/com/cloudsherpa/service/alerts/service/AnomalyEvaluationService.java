@@ -2,10 +2,14 @@ package com.cloudsherpa.service.alerts.service;
 
 import com.cloudsherpa.lib.entities.Alert;
 import com.cloudsherpa.lib.entities.OptimizationMetricStatistics;
+import com.cloudsherpa.lib.entities.Resource;
 import com.cloudsherpa.lib.repositories.AlertRepository;
 import com.cloudsherpa.lib.repositories.OptimizationMetricStatisticsRepository;
+import com.cloudsherpa.lib.repositories.ResourceRepository;
 import com.cloudsherpa.service.listener.dto.MetricStreamEventDto;
 import com.cloudsherpa.service.sse.SseService;
+import com.cloudsherpa.service.webhooks.events.alert.anomaly.AnomalyAlertPayload;
+import com.cloudsherpa.service.webhooks.producers.WebhookProducerService;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -30,14 +34,20 @@ public class AnomalyEvaluationService {
   private final OptimizationMetricStatisticsRepository statisticsRepository;
   private final AlertRepository alertRepository;
   private final SseService sseService;
+  private final WebhookProducerService webhookProducerService;
+  private final ResourceRepository resourceRepository;
 
   public AnomalyEvaluationService(
       OptimizationMetricStatisticsRepository statisticsRepository,
       AlertRepository alertRepository,
-      SseService sseService) {
+      SseService sseService,
+      WebhookProducerService webhookProducerService,
+      ResourceRepository resourceRepository) {
     this.statisticsRepository = statisticsRepository;
     this.alertRepository = alertRepository;
     this.sseService = sseService;
+    this.webhookProducerService = webhookProducerService;
+    this.resourceRepository = resourceRepository;
   }
 
   public void evaluate(MetricStreamEventDto event, UUID userId) {
@@ -109,6 +119,14 @@ public class AnomalyEvaluationService {
 
     alertRepository.save(alert);
     sseService.broadcast(userId, "alert", alert);
+
+    // Build & submit webhook event
+    Resource resource = resourceRepository.findById(event.resourceId()).orElseThrow();
+    webhookProducerService.produceEvent(
+        userId,
+        resource.getAccountId(),
+        "alert.anomaly",
+        buildWebhookEventPayload(resource, baseline, event, zScore, severity, alert));
   }
 
   private String resolveSeverity(double zScore) {
@@ -191,5 +209,25 @@ public class AnomalyEvaluationService {
         + String.format("%.2f", zScore)
         + ") for resource "
         + event.resourceId();
+  }
+
+  private AnomalyAlertPayload buildWebhookEventPayload(
+      Resource resource,
+      OptimizationMetricStatistics baseline,
+      MetricStreamEventDto event,
+      double zScore,
+      String severity,
+      Alert alert) {
+
+    return new AnomalyAlertPayload(
+        resource.getResourceIdentifier(),
+        resource.getResourceName(),
+        event.metricName(),
+        baseline.getAverageValue(),
+        baseline.getStandardDeviation(),
+        zScore,
+        severity,
+        alert.getCreatedAt(),
+        alert.getLastSeen());
   }
 }
