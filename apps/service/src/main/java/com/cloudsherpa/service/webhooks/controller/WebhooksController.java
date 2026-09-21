@@ -1,10 +1,11 @@
 package com.cloudsherpa.service.webhooks.controller;
 
+import com.cloudsherpa.lib.entities.WebhookDeliveryStatusEnum;
 import com.cloudsherpa.service.webhooks.WebhookEventDefinitionRegistry;
 import com.cloudsherpa.service.webhooks.dto.AddWebhookDto;
 import com.cloudsherpa.service.webhooks.dto.AddWebhookResponseDto;
 import com.cloudsherpa.service.webhooks.dto.EditWebhookDto;
-import com.cloudsherpa.service.webhooks.dto.WebhookDeliveryResponse;
+import com.cloudsherpa.service.webhooks.dto.PagedWebhookDeliveryResponse;
 import com.cloudsherpa.service.webhooks.dto.WebhookEventDto;
 import com.cloudsherpa.service.webhooks.dto.WebhookResponse;
 import com.cloudsherpa.service.webhooks.events.devevent.DevPayload;
@@ -33,6 +34,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -107,41 +109,50 @@ public class WebhooksController {
             description = "Succesfully returned all webhook deliveries",
             content =
                 @Content(
-                    array =
-                        @ArraySchema(
-                            schema = @Schema(implementation = WebhookDeliveryResponse.class)),
+                    schema = @Schema(implementation = PagedWebhookDeliveryResponse.class),
                     examples =
                         @ExampleObject(
                             name = "Webhook delivery list",
                             value =
                                 """
-                          [
-                            {
-                              "deliveryId": "7d5905cf-3518-42c0-8f23-7a71a7cc5d58",
-                              "timestamp": "2026-09-16T08:32:15Z",
-                              "webhookId": "c2a49b36-55d2-4233-96dd-cc4e3ae97671",
-                              "eventType": "usage.threshold",
-                              "cloudAccountId": "c2a49b36-55d2-4233-96dd-cc4e3ae97672",
-                              "cloudAccountName": "Some Account",
-                              "result": "DELIVERED",
-                              "responseCode": 200
-                            },
-                            {
-                              "deliveryId": "8c307a33-6d4a-4c35-bf14-c643d6b1f3c6",
-                              "timestamp": "2026-09-16T08:45:02Z",
-                              "webhookId": "c2a49b36-55d2-4233-96dd-cc4e3ae97673",
-                              "eventType": "billing.ingestion",
-                              "cloudAccountName": "c2a49b36-55d2-4233-96dd-cc4e3ae97672",
-                              "cloudAccountName": "Some Account",
-                              "result": "FAILED",
-                              "responseCode": 503
-                            }
-                          ]
+                          {
+                            "deliveries": [
+                              {
+                                "deliveryId": "7d5905cf-3518-42c0-8f23-7a71a7cc5d58",
+                                "timestamp": "2026-09-16T08:32:15Z",
+                                "webhookId": "c2a49b36-55d2-4233-96dd-cc4e3ae97671",
+                                "eventType": "usage.threshold",
+                                "cloudAccountId": "c2a49b36-55d2-4233-96dd-cc4e3ae97672",
+                                "cloudAccountName": "Some Account",
+                                "result": "DELIVERED",
+                                "responseCode": 200
+                              },
+                              {
+                                "deliveryId": "8c307a33-6d4a-4c35-bf14-c643d6b1f3c6",
+                                "timestamp": "2026-09-16T08:45:02Z",
+                                "webhookId": "c2a49b36-55d2-4233-96dd-cc4e3ae97673",
+                                "eventType": "billing.ingestion",
+                                "cloudAccountId": "c2a49b36-55d2-4233-96dd-cc4e3ae97672",
+                                "cloudAccountName": "Some Account",
+                                "result": "FAILED",
+                                "responseCode": 503
+                              }
+                            ],
+                            "page": 0,
+                            "size": 10,
+                            "totalElements": 2,
+                            "totalPages": 1
+                          }
                           """)))
       })
   @GetMapping("deliveries")
-  public List<WebhookDeliveryResponse> getDeliveries() {
-    return webhookService.getWebhookDeliveries();
+  public PagedWebhookDeliveryResponse getDeliveries(
+      @RequestParam int page,
+      @RequestParam int pageSize,
+      @RequestParam(required = false) String search,
+      @RequestParam(required = false) UUID webhook,
+      @RequestParam(required = false) WebhookDeliveryStatusEnum status) {
+    return webhookService.getWebhookDeliveries(page, pageSize, search, webhook, status);
   }
 
   @Operation(summary = "Get all supported webhook events")

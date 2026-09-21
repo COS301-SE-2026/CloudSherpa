@@ -32,6 +32,14 @@ export interface WebhookDelivery {
     responseCode: number;
 }
 
+export interface WebhookDeliveryPagedResult {
+    deliveries: WebhookDelivery[];
+    page: number;
+    size: number;
+    totalElements: number;
+    totalPages: number;
+}
+
 export interface CreateWebhookPayload {
     name: string;
     endpointUrl: string;
