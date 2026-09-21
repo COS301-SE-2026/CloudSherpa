@@ -9,6 +9,7 @@ import com.cloudsherpa.service.persistconnection.service.CredentialEncryptionSer
 import com.cloudsherpa.service.webhooks.dto.AddWebhookDto;
 import com.cloudsherpa.service.webhooks.dto.AddWebhookResponseDto;
 import com.cloudsherpa.service.webhooks.dto.EditWebhookDto;
+import com.cloudsherpa.service.webhooks.dto.PagedWebhookDeliveryResponse;
 import com.cloudsherpa.service.webhooks.dto.WebhookDeliveryResponse;
 import com.cloudsherpa.service.webhooks.dto.WebhookResponse;
 import com.cloudsherpa.service.webhooks.exceptions.WebhookNotFoundException;
@@ -21,6 +22,9 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,10 +52,21 @@ public class WebhookService {
 
   // Need to be part of transaction since webhook & cloud account entities loaded lazily
   @Transactional(readOnly = true)
-  public List<WebhookDeliveryResponse> getWebhookDeliveries() {
-    List<WebhookDelivery> webhookDeliveries =
-        webhookDeliveryRepository.findAll(Sort.by(Sort.Direction.DESC, "eventTimestamp"));
-    return webhookDeliveries.stream().map(this::fromWebhookDelivery).toList();
+  public PagedWebhookDeliveryResponse getWebhookDeliveries(int page, int pageSize) {
+
+    Pageable pageable =
+        PageRequest.of(
+            page,
+            pageSize,
+            Sort.by(Sort.Order.desc("eventTimestamp"), Sort.Order.desc("webhookDeliveryId")));
+
+    Page<WebhookDelivery> result = webhookDeliveryRepository.findAll(pageable);
+    return new PagedWebhookDeliveryResponse(
+        result.stream().map(this::fromWebhookDelivery).toList(),
+        result.getNumber(),
+        result.getSize(),
+        result.getNumberOfElements(),
+        result.getTotalPages());
   }
 
   public AddWebhookResponseDto addWebhook(AddWebhookDto request) {
