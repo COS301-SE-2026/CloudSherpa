@@ -34,7 +34,7 @@ export interface UpdateThresholdRequest{
 }
 
 export const OPERATOR_LABEL : Record<OperatorsForThreshold, string> = {
-    GT : ">", GTE : ">=", LT : "<", LTE : "<=", EQ : "=",
+    GT : ">", GTE : "> =", LT : "<", LTE : "< =", EQ : "=",
 };
 
 export const OPERATORS : OperatorsForThreshold[] = ["GT", "GTE", "LT", "LTE", "EQ"];

@@ -7,7 +7,7 @@ import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/c
 import {Button} from "@/components/atoms/button";
 import type {Threshold} from "@/features/thresholds/types/thresholdTypes";
 import {OPERATOR_LABEL, SEVERITY_COLOURS} from "@/features/thresholds/types/thresholdTypes";
-import {ArrowUp, ArrowDown} from "lucide-react";
+import {ArrowUp, ArrowDown, Pencil, Trash2} from "lucide-react";
 
 interface PropsForThresholds{
     thresholds : Threshold[];
@@ -66,9 +66,9 @@ export function ThresholdTable({
             const forThreshold = row.original;
 
             return(<div className = "flex items-center gap-2">
-                <Button variant = "link" size = "sm" className = "h-auto p-0 text-primary" onClick = {() => edit(forThreshold)}> Edit </Button>
+                <Button variant = "ghost" size = "sm" className = "h-auto p-0 text-primary" onClick = {() => edit(forThreshold)}> <Pencil className = "h-4 w-4"/> </Button>
 
-                <Button variant = "link" size = "sm" className = "h-auto p-0 text-destructive" onClick = {() => onDelete(forThreshold)}> Delete </Button>
+                <Button variant = "ghost" size = "sm" className = "h-auto p-0 text-destructive" onClick = {() => onDelete(forThreshold)}> <Trash2 className = "h-4 w-4"/> </Button>
             </div>);
         },},
     ], [edit, toggleEnabled, onDelete],

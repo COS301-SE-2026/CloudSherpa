@@ -116,34 +116,36 @@ export function ThresholdPopup({
             )}
           </div>
 
-          <div className = "space-y-2">
-            <Label htmlFor = "operator"> Operator </Label>
+          <div className = "flex items-start gap-2">
+            <div className = "w-16 space-y-2">
+              <Label htmlFor = "operator"> Operator </Label>
 
-            <Select value = {operator} onValueChange = {(change) => setOperator(change as OperatorsForThreshold)}>
-              <SelectTrigger id = "operator">
-                <SelectValue placeholder = "Select operator"/>
-              </SelectTrigger>
+              <Select value = {operator} onValueChange = {(change) => setOperator(change as OperatorsForThreshold)}>
+                <SelectTrigger id = "operator">
+                  <SelectValue placeholder = "Select operator"/>
+                </SelectTrigger>
 
-              <SelectContent>
-                {OPERATORS.map((forOperators) => (
-                  <SelectItem key = {forOperators} value = {forOperators}> {OPERATOR_LABEL[forOperators]} </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+                <SelectContent>
+                  {OPERATORS.map((forOperators) => (
+                    <SelectItem key = {forOperators} value = {forOperators}> {OPERATOR_LABEL[forOperators]} </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-          <div className = "space-y-2">
-            <Label htmlFor = "value"> Value </Label>
+            <div className = "flex-1 space-y-2">
+              <Label htmlFor = "value"> Value </Label>
 
-            <Input id = "value" type = "number" step = "any" value = {value} onChange = {(change) => {setValue(Number(change.target.value));
-              if(zeroValue){
-                setZeroValue(null);
-              }
-            }}/>
+              <Input id = "value" type = "number" step = "any" value = {value} onChange = {(change) => {setValue(Number(change.target.value));
+                if(zeroValue){
+                  setZeroValue(null);
+                }
+              }}/>
 
-            {zeroValue && (
-              <p id = "zero-error" className = "text-xs text-destructive"> {zeroValue} </p>
-            )}
+              {zeroValue && (
+                <p id = "zero-error" className = "text-xs text-destructive"> {zeroValue} </p>
+              )}
+            </div>
           </div>
 
           <div className = "space-y-2">
