@@ -1,5 +1,5 @@
-import {MainPage} from "@/features/thresholds/components/thresholds/mainPage";
+import { MainPage } from "@/features/thresholds/components/thresholds/mainPage";
 
-export default function Page(){
-    return <MainPage/>;
+export default function Page() {
+    return <MainPage />;
 }
