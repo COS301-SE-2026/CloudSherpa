@@ -2,6 +2,7 @@ package com.cloudsherpa.service.webhooks.service;
 
 import com.cloudsherpa.lib.entities.Webhook;
 import com.cloudsherpa.lib.entities.WebhookDelivery;
+import com.cloudsherpa.lib.entities.WebhookDeliveryStatusEnum;
 import com.cloudsherpa.lib.entities.WebhookStatusEnum;
 import com.cloudsherpa.lib.repositories.WebhookDeliveryRepository;
 import com.cloudsherpa.lib.repositories.WebhookRepository;
@@ -52,7 +53,8 @@ public class WebhookService {
 
   // Need to be part of transaction since webhook & cloud account entities loaded lazily
   @Transactional(readOnly = true)
-  public PagedWebhookDeliveryResponse getWebhookDeliveries(int page, int pageSize) {
+  public PagedWebhookDeliveryResponse getWebhookDeliveries(
+      int page, int pageSize, String search, UUID webhookId, WebhookDeliveryStatusEnum status) {
 
     Pageable pageable =
         PageRequest.of(
@@ -60,7 +62,10 @@ public class WebhookService {
             pageSize,
             Sort.by(Sort.Order.desc("eventTimestamp"), Sort.Order.desc("webhookDeliveryId")));
 
-    Page<WebhookDelivery> result = webhookDeliveryRepository.findAll(pageable);
+    String normalizedSearch = search == null || search.isBlank() ? null : search.strip();
+
+    Page<WebhookDelivery> result =
+        webhookDeliveryRepository.findDeliveries(normalizedSearch, webhookId, status, pageable);
     return new PagedWebhookDeliveryResponse(
         result.stream().map(this::fromWebhookDelivery).toList(),
         result.getNumber(),

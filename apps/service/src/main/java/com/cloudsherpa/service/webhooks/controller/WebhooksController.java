@@ -152,7 +152,7 @@ public class WebhooksController {
       @RequestParam(required = false) String search,
       @RequestParam(required = false) UUID webhook,
       @RequestParam(required = false) WebhookDeliveryStatusEnum status) {
-    return webhookService.getWebhookDeliveries(page, pageSize);
+    return webhookService.getWebhookDeliveries(page, pageSize, search, webhook, status);
   }
 
   @Operation(summary = "Get all supported webhook events")
