@@ -41,7 +41,7 @@ public class AuthSecurity {
     } else {
       return http.cors(cors -> cors.configurationSource(corsConfigurationSource))
           .securityMatcher(
-              "/auth/register", "/auth/login", "auth/refresh", "/auth/logout", "/actuator/health")
+              "/auth/register", "/auth/login", "/auth/refresh", "/auth/logout", "/actuator/health")
           .csrf(csrf -> csrf.disable())
           .sessionManagement(
               session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

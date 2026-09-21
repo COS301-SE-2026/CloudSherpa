@@ -135,7 +135,7 @@ public class AuthController {
     return new AuthUserResponse(
         UUID.fromString(jwt.getSubject()),
         jwt.getClaimAsString("email"),
-        jwt.getClaimAsString("userId"));
+        jwt.getClaimAsString("username"));
   }
 
   private ResponseCookie createAccessCookie(String token) {

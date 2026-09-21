@@ -1,6 +1,15 @@
 const API_BASE = process.env["NEXT_PUBLIC_API_URL"];
 
 let refreshPromise: Promise<boolean> | null = null;
+let isLoggingOut = false;
+
+export function startLogout() {
+    isLoggingOut = true;
+}
+
+export function finishLogin() {
+    isLoggingOut = false;
+}
 
 async function refreshSession(): Promise<boolean> {
     if (!API_BASE) return false;
@@ -29,7 +38,11 @@ async function refreshSession(): Promise<boolean> {
  *       callers need to handle exception, this is intentional behavior, lets caller
  *       decide how to handle failed request
  */
-export default async function apiClient<T>(path: string, options?: RequestInit): Promise<T> {
+export default async function apiClient<T>(
+    path: string,
+    options?: RequestInit,
+    refreshOnUnauthorized = true
+): Promise<T> {
     if (!API_BASE) {
         throw new Error("NEXT_PUBLIC_API_URL is not configured");
     }
@@ -50,15 +63,12 @@ export default async function apiClient<T>(path: string, options?: RequestInit):
 
     // Determine if we should attempt to refresh the user's session.
     const canRefresh =
+        !isLoggingOut &&
         response.status === 401 &&
-        // Prevent infinite loops: If the refresh endpoint itself returns a 401,
-        // we DO NOT want to trigger another refresh.
         normalizedPath !== "/auth/refresh" &&
-        // Prevent useless refreshes: If the user is currently trying to log in,
-        // they don't have a session to refresh yet.
         normalizedPath !== "/auth/login";
 
-    if (canRefresh && (await refreshSession())) {
+    if (refreshOnUnauthorized && canRefresh && (await refreshSession())) {
         // If refreshSession() returns true (the token was successfully renewed),
         // we retry the exact same API request as previously
         response = await fetch(`${API_BASE}${normalizedPath}`, options);

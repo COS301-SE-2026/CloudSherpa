@@ -4,7 +4,7 @@ import { useState, createContext, useEffect, useContext, useMemo, useCallback } 
 import { SessionState, User } from "../types/Session";
 import { LoginRequestDto } from "../types/dtos/auth/LoginRequestDto";
 import { LoginResponseDto } from "../types/dtos/auth/LoginResponseDto";
-import apiClient from "@/lib/fetch/api-client";
+import apiClient, { finishLogin, startLogout } from "@/lib/fetch/api-client";
 
 const DISABLE_AUTH = process.env["NEXT_PUBLIC_DISABLE_AUTH"];
 const NODE_ENV = process.env["NODE_ENV"];
@@ -30,9 +30,13 @@ export function AuthProvider({ children }: AuthProps) {
                 setIsAuthReady(true);
             } else {
                 try {
-                    const response: LoginResponseDto = await apiClient("/auth/me", {
-                        method: "GET",
-                    });
+                    const response: LoginResponseDto = await apiClient(
+                        "/auth/me",
+                        {
+                            method: "GET",
+                        },
+                        false
+                    );
 
                     setUser({
                         userId: response.userId,
@@ -52,32 +56,36 @@ export function AuthProvider({ children }: AuthProps) {
     }, []);
 
     const logout = useCallback(async (): Promise<boolean> => {
-        // Want to attempt logout, attempt success => succesful logout
-        // What to do on attempt failure? problably still clear session state ig => inconsistency client server, but
-        // stateless
-
-        let logoutSuccess;
+        startLogout();
+        setUser(null);
 
         try {
-            await apiClient("/auth/logout", {
-                method: "POST",
-            });
-            logoutSuccess = true;
-        } catch {
-            logoutSuccess = false;
-        } finally {
-            setUser(null);
-        }
+            await apiClient(
+                "/auth/logout",
+                {
+                    method: "POST",
+                },
+                false
+            );
 
-        return logoutSuccess;
+            return true;
+        } catch {
+            return false;
+        }
     }, []);
 
     const login = useCallback(async (loginPayload: LoginRequestDto): Promise<boolean> => {
+        finishLogin();
+
         try {
-            const response: LoginResponseDto = await apiClient("/auth/login", {
-                method: "POST",
-                body: JSON.stringify(loginPayload),
-            });
+            const response: LoginResponseDto = await apiClient(
+                "/auth/login",
+                {
+                    method: "POST",
+                    body: JSON.stringify(loginPayload),
+                },
+                false
+            );
 
             setUser({
                 userId: response.userId,
