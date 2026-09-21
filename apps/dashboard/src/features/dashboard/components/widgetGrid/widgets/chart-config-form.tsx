@@ -62,7 +62,7 @@ export function ChartConfigFormInner({ ChartId }: Readonly<ChartConfigFormProps>
 
     return (
         <main className="flex flex-col gap-6 p-6 lg:p-8 w-full h-full">
-            <div className="flex flex-row gap-6">
+            <div className="flex flex-row gap-2">
                 <h1 className="text-2xl">Chart Configuration</h1>
                 <Button variant={"default"} onClick={() => handleSave()} disabled={isSaving}>
                     Save Chart

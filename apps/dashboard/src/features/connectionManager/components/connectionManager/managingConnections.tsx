@@ -6,6 +6,7 @@
 - they should be able to view the resources assoc with that connection and delete connections
 */
 
+import { Input } from "@/components/atoms/input";
 import { useEffect, useState } from "react";
 import { Trash2, Search, MoreVertical, Eye, Pencil, X, ChevronDown } from "lucide-react";
 import { Card, CardContent } from "@/components/atoms/card";
@@ -74,22 +75,22 @@ interface Connections {
 //will use these colours for the tabs for now, will add the company colours to the style dictionary and will update it
 const providerTabs: Record<Providers, { active: string; inactive: string }> = {
     All: {
-        active: "bg-primary text-primary-foreground hover:bg-primary/90",
+        active: "",
         inactive: "bg-muted text-muted-foreground hover:bg-muted/80",
     },
 
     AWS: {
-        active: "bg-primary text-primary-foreground hover:bg-primary/90",
+        active: "",
         inactive: "bg-muted text-muted-foreground hover:bg-muted/80",
     },
 
     Azure: {
-        active: "bg-primary text-primary-foreground hover:bg-primary/90",
+        active: "",
         inactive: "bg-muted text-muted-foreground hover:bg-muted/80",
     },
 
     GCP: {
-        active: "bg-primary text-primary-foreground hover:bg-primary/90",
+        active: "",
         inactive: "bg-muted text-muted-foreground hover:bg-muted/80",
     },
 };
@@ -267,11 +268,7 @@ export default function ManagingConnections() {
                                 const styling = providerTabs[providers];
 
                                 return (
-                                    <TabsTrigger
-                                        key={providers}
-                                        value={providers}
-                                        className={`flex-none text-xs px-2.5 py-0.5 h-auto rounded-[var(--radius-sm)] font-medium transition-all bg-transparent ${isActive ? styling.active : styling.inactive}`}
-                                    >
+                                    <TabsTrigger key={providers} value={providers}>
                                         {" "}
                                         {providers}
                                     </TabsTrigger>
@@ -284,12 +281,12 @@ export default function ManagingConnections() {
                     <div className="w-full relative flex-1 sm:max-w-xs">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
 
-                        <input
+                        <Input
                             type="text"
                             placeholder="Search connections..."
                             value={search}
                             onChange={(forChanges) => setSearch(forChanges.target.value)}
-                            className="w-full h-9 pl-9 pr-3 rounded-md border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                            className="w-full h-9 pl-9 pr-3"
                         />
 
                         {search && (
@@ -312,7 +309,7 @@ export default function ManagingConnections() {
                             <CardContent className="p-4">
                                 <div className="flex items-center justify-between mb-3">
                                     <span
-                                        className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${badges(connection.provider)}`}
+                                        className={`bg-primary text-primary-foreground text-xs font-medium px-2.5 py-0.5 rounded-full ${badges(connection.provider)}`}
                                     >
                                         {" "}
                                         {connection.provider}{" "}
@@ -420,7 +417,7 @@ export default function ManagingConnections() {
                                                 inactive{" "}
                                             </Badge>
                                         ) : (
-                                            <Badge className="bg-success/20 text-success border-success/20 hover:bg-success/30 text-xs px-2 py-0.5">
+                                            <Badge className="bg-success text-success-foreground border-success/20 hover:bg-success/30 text-xs px-2 py-0.5">
                                                 {" "}
                                                 active{" "}
                                             </Badge>

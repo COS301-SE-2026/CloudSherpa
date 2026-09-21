@@ -12,11 +12,11 @@ export interface WebhookEvent {
 }
 
 export interface Webhook {
-    id: string;
-    name: string;
+    webhookId: string;
+    webhookName: string;
     endpointUrl: string;
     eventTypes: string[];
-    status: WebhookStatus;
+    webhookStatus: WebhookStatus;
     cloudAccounts: string[];
     createdAt: string;
 }
@@ -30,6 +30,14 @@ export interface WebhookDelivery {
     cloudAccountName: string | null;
     result: "DELIVERED" | "FAILED";
     responseCode: number;
+}
+
+export interface WebhookDeliveryPagedResult {
+    deliveries: WebhookDelivery[];
+    page: number;
+    size: number;
+    totalElements: number;
+    totalPages: number;
 }
 
 export interface CreateWebhookPayload {

@@ -298,25 +298,25 @@ export default function ResourceManager() {
                         type="single"
                         value={filterStatus}
                         onValueChange={(value) => value && setFilterStatus(value)}
-                        className="bg-muted rounded-lg p-1 h-9"
+                        className="inline-flex h-9 items-center justify-center rounded-lg bg-muted p-[3px] text-muted-foreground"
                     >
                         <ToggleGroupItem
                             value="all"
-                            className="h-full text-xs px-3 capitalize data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                            className="inline-flex h-full items-center justify-center rounded-md px-3 py-1 text-sm font-medium whitespace-nowrap transition-all text-muted-foreground hover:bg-background/50 hover:text-foreground data-[state=on]:bg-background data-[state=on]:text-foreground data-[state=on]:shadow-sm dark:data-[state=on]:bg-primary capitalize"
                         >
                             {" "}
                             All
                         </ToggleGroupItem>
                         <ToggleGroupItem
                             value="active"
-                            className="h-full text-xs px-3 capitalize data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                            className="inline-flex h-full items-center justify-center rounded-md px-3 py-1 text-sm font-medium whitespace-nowrap transition-all text-muted-foreground hover:bg-background/50 hover:text-foreground data-[state=on]:bg-background data-[state=on]:text-foreground data-[state=on]:shadow-sm dark:data-[state=on]:bg-primary capitalize"
                         >
                             {" "}
                             Active{" "}
                         </ToggleGroupItem>
                         <ToggleGroupItem
                             value="inactive"
-                            className="h-full text-xs px-3 capitalize data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                            className="inline-flex h-full items-center justify-center rounded-md px-3 py-1 text-sm font-medium whitespace-nowrap transition-all text-muted-foreground hover:bg-background/50 hover:text-foreground data-[state=on]:bg-background data-[state=on]:text-foreground data-[state=on]:shadow-sm dark:data-[state=on]:bg-primary capitalize"
                         >
                             {" "}
                             Inactive{" "}
