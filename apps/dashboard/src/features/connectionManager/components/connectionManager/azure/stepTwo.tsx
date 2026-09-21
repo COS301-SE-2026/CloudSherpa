@@ -200,13 +200,15 @@ export default function StepTwoAzure({
                 exportName={exportName}
                 setExportName={setExportName}
             />
-            <ServicesList
-                servicesAvailable={servicesAvailable}
-                selectedServices={selectedService}
-                onServiceToggle={checkingServices}
-                onSelectAll={handlingSelectedAll}
-                heading="Services we offer"
-            />
+            <div className="rounded-lg border border-border bg-background p-4">
+                <ServicesList
+                    servicesAvailable={servicesAvailable}
+                    selectedServices={selectedService}
+                    onServiceToggle={checkingServices}
+                    onSelectAll={handlingSelectedAll}
+                    heading="Services we offer"
+                />
+            </div>
 
             <PermissionsList permissions={permissions} />
 

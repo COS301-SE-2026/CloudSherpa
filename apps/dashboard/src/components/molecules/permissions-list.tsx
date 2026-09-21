@@ -22,7 +22,7 @@ export function PermissionsList({
                     permissions.map((permission) => (
                         <div
                             key={permission}
-                            className="rounded-md bg-card px-4 py-3 text-sm text-foreground"
+                            className="rounded-md bg-card px-4 py-3 text-sm text-foreground border border-border"
                         >
                             {permission}
                         </div>

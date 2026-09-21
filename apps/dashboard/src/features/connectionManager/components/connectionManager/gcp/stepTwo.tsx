@@ -195,13 +195,16 @@ export default function StepTwoGcp({
                 billingDataset={billingDataset}
                 handleOptedInToBillingChange={handleOptInToBillingChange}
             ></GcpBillingForm>
-            <ServicesList
-                servicesAvailable={servicesAvailable}
-                selectedServices={selectedServices}
-                onServiceToggle={checkingService}
-                onSelectAll={handlingSelectedAll}
-                heading="Services we offer"
-            />
+
+            <div className="rounded-lg border border-border bg-background p-4">
+                <ServicesList
+                    servicesAvailable={servicesAvailable}
+                    selectedServices={selectedServices}
+                    onServiceToggle={checkingService}
+                    onSelectAll={handlingSelectedAll}
+                    heading="Services we offer"
+                />
+            </div>
 
             <PermissionsList permissions={permissions} />
 

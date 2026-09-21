@@ -47,7 +47,7 @@ export function ServicesList({
                 {servicesAvailable.map((service) => (
                     <label
                         key={service.id}
-                        className="flex items-center gap-3 w-full p-4 bg-background rounded-lg border border-border hover:border-primary/40 transition-all cursor-pointer focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2"
+                        className="flex items-center gap-3 w-full p-4 bg-card rounded-lg border border-border hover:border-primary/40 transition-all cursor-pointer focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2"
                     >
                         <input
                             type="checkbox"
