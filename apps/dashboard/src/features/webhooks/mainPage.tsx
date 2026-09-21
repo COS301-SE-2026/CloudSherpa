@@ -41,6 +41,7 @@ import {
 import { Label } from "@/components/atoms/label";
 import { DeletePopup } from "@/features/webhooks/components/deletePopup";
 import { Spinner } from "@/components/atoms/spinner";
+import { ButtonGroup } from "@/components/atoms/button-group";
 
 //moved to outside to correct sonarqube errors
 const helperForWebhookColumns = (
@@ -190,6 +191,7 @@ export const Webhooks = () => {
     const [webhookSearch, setWebhookSearch] = useState("");
 
     const [deliverySearch, setDeliverySearch] = useState("");
+    const [submittedDeliverySearch, setSubmittedDeliverySearch] = useState("");
 
     const [filterForStatus, setFilterForStatus] = useState<string>("all");
 
@@ -293,7 +295,7 @@ export const Webhooks = () => {
                 const result = await fetchWebhookDeliveries(
                     paginationForDelivery.pageIndex,
                     paginationForDelivery.pageSize,
-                    deliverySearch,
+                    submittedDeliverySearch,
                     filterForDeliveryWebhook === "all" ? undefined : filterForDeliveryWebhook,
                     status
                 );
@@ -321,7 +323,7 @@ export const Webhooks = () => {
     }, [
         paginationForDelivery.pageIndex,
         paginationForDelivery.pageSize,
-        deliverySearch,
+        submittedDeliverySearch,
         filterForDeliveryWebhook,
         filterForDeliveryStatus,
     ]);
@@ -336,6 +338,17 @@ export const Webhooks = () => {
             ...previous,
             pageIndex: 0,
         }));
+    };
+
+    const handleDeliverySearch = () => {
+        setSubmittedDeliverySearch(deliverySearch.trim());
+        resetDeliveryPage();
+    };
+
+    const handleDeliverySearchReset = () => {
+        setDeliverySearch("");
+        setSubmittedDeliverySearch("");
+        resetDeliveryPage();
     };
 
     const deliveryColumns = useMemo(() => helperForDeliveryColumns(webhooks), [webhooks]);
@@ -566,16 +579,23 @@ export const Webhooks = () => {
                     <div className="flex gap-4">
                         <div className="relative flex-1 max-w-sm">
                             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <ButtonGroup>
+                                <Input
+                                    placeholder="Search deliveries"
+                                    value={deliverySearch}
+                                    onChange={(change) => {
+                                        setDeliverySearch(change.target.value);
+                                    }}
+                                    className="pl-8"
+                                />
 
-                            <Input
-                                placeholder="Search deliveries"
-                                value={deliverySearch}
-                                onChange={(change) => {
-                                    setDeliverySearch(change.target.value);
-                                    resetDeliveryPage();
-                                }}
-                                className="pl-8"
-                            />
+                                <Button variant={"outline"} onClick={handleDeliverySearch}>
+                                    Search
+                                </Button>
+                                <Button variant={"outline"} onClick={handleDeliverySearchReset}>
+                                    Reset
+                                </Button>
+                            </ButtonGroup>
                         </div>
 
                         <Select
