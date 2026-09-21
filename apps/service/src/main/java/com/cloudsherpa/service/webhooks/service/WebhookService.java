@@ -21,6 +21,7 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,7 +49,8 @@ public class WebhookService {
   // Need to be part of transaction since webhook & cloud account entities loaded lazily
   @Transactional(readOnly = true)
   public List<WebhookDeliveryResponse> getWebhookDeliveries() {
-    List<WebhookDelivery> webhookDeliveries = webhookDeliveryRepository.findAll();
+    List<WebhookDelivery> webhookDeliveries =
+        webhookDeliveryRepository.findAll(Sort.by(Sort.Direction.DESC, "eventTimestamp"));
     return webhookDeliveries.stream().map(this::fromWebhookDelivery).toList();
   }
 
