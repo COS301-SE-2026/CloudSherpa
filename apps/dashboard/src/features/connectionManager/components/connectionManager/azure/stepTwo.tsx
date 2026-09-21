@@ -201,6 +201,12 @@ export default function StepTwoAzure({
                 setExportName={setExportName}
             />
             <div className="rounded-lg border border-border bg-background p-4">
+                <div className="mb-4 rounded-md border border-amber-300/60 bg-amber-50 p-3 text-sm text-amber-900">
+                    Billing ingestion is account-wide and not limited by selected services. Select
+                    services to discover resources and monitor usage metrics alongside billing
+                    trends.
+                </div>
+
                 <ServicesList
                     servicesAvailable={servicesAvailable}
                     selectedServices={selectedService}
