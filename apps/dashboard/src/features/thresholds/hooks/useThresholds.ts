@@ -15,9 +15,35 @@ interface RequestForThreshold{
 export function useThresholds(resourceId?: string) : RequestForThreshold{
   const [thresholds, setThresholds] = useState<Threshold[]>([]);
 
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
 
   const [forError, setForError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let forCancelled = false;
+
+    (async () => {
+      try{
+        const forData = await fetchThresholds(resourceId);
+
+        if(!forCancelled){
+          setThresholds(forData);
+        }
+      }catch(error){
+        if(!forCancelled){
+          setForError(error instanceof Error ? error.message : "Failed to load thresholds",);
+        }
+      }finally{
+        if(!forCancelled){
+          setLoading(false);
+        }
+      }
+    })();
+
+    return () => {
+      forCancelled = true;
+    };
+  },[resourceId]);
 
   const refreshing = useCallback(async () => {
     setLoading(true);
@@ -34,10 +60,6 @@ export function useThresholds(resourceId?: string) : RequestForThreshold{
       setLoading(false);
     }
   }, [resourceId]);
-
-  useEffect(() => {
-    void refreshing();
-  }, [refreshing]);
 
   const createThreshold = useCallback(
     async (forPayload : CreateThresholdRequest) => {

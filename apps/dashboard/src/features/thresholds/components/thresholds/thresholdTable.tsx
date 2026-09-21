@@ -16,12 +16,17 @@ interface PropsForThresholds{
     onDelete : (forThreshold : Threshold) => void;
 }
 
-export function ThresholdTable({
-    thresholds, edit, toggleEnabled, onDelete,
-} : Readonly<PropsForThresholds>){
-    const [sorting, setSorting] = useState<SortingState>([]);
+interface Columns{
+    edit : (forThreshold : Threshold) => void;
+    toggleEnabled : (forThreshold : Threshold, enabled : boolean) => void;
+    onDelete : (forThreshold : Threshold) => void;
+}
 
-    const forColumns = useMemo<ColumnDef<Threshold>[]>(() => [
+//copied from below to correct sonarqube errors
+function helperForColumns({
+    edit, toggleEnabled, onDelete
+} : Columns) : ColumnDef<Threshold>[]{
+    return[
         {id : "enabled", header : () => "ENABLED", enableSorting : false, cell : ({row}) => {
             const forThreshold = row.original;
 
@@ -71,7 +76,16 @@ export function ThresholdTable({
                 <Button variant = "ghost" size = "sm" className = "h-auto p-0 text-destructive" onClick = {() => onDelete(forThreshold)}> <Trash2 className = "h-4 w-4"/> </Button>
             </div>);
         },},
-    ], [edit, toggleEnabled, onDelete],
+    ];
+}
+
+export function ThresholdTable({
+    thresholds, edit, toggleEnabled, onDelete,
+} : Readonly<PropsForThresholds>){
+    const [sorting, setSorting] = useState<SortingState>([]);
+
+    const forColumns = useMemo<ColumnDef<Threshold>[]>(() => helperForColumns({edit, toggleEnabled, onDelete}),
+        [edit, toggleEnabled, onDelete],
     );
 
     const forThresholdTable = useReactTable({

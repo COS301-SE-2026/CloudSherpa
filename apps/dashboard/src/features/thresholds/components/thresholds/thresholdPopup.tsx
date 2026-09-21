@@ -1,6 +1,6 @@
 "use client";
 
-import {useEffect, useState} from "react";
+import {useState} from "react";
 import {Label} from "@/components/atoms/label";
 import {Input} from "@/components/atoms/input";
 import {Button} from "@/components/atoms/button";
@@ -21,42 +21,21 @@ interface PropsForThresholds{
 export function ThresholdPopup({
   open, initial, resourceId, userId, onClose, onSubmit,
 } : Readonly<PropsForThresholds>){
-  const [metricName, setMetricName] = useState("");
+  const [metricName, setMetricName] = useState(initial?.metricName ?? "");
 
-  const [operator, setOperator] = useState<OperatorsForThreshold>("GT");
+  const [operator, setOperator] = useState<OperatorsForThreshold>(initial?.operator ?? "GT");
 
-  const [value, setValue] = useState<number>(0);
+  const [value, setValue] = useState<number>(initial?.value ?? 0);
 
-  const [severity, setSeverity] = useState<SeverityForThreshold>("WARNING");
+  const [severity, setSeverity] = useState<SeverityForThreshold>(initial?.severity ?? "WARNING");
 
-  const [enabled, setEnabled] = useState(true);
+  const [enabled, setEnabled] = useState(initial?.enabled ?? true);
 
   const [submit, setSubmit] = useState(false);
 
   const [metricError, setMetricError] = useState<string | null>(null);
 
   const [zeroValue, setZeroValue] = useState<string | null>(null);
-
-  useEffect(() => {
-    if(initial){
-      setMetricName(initial.metricName);
-      setOperator(initial.operator);
-      setValue(initial.value);
-      setSeverity(initial.severity);
-      setEnabled(initial.enabled);
-    }else{
-      setMetricName("");
-      setOperator("GT");
-      setValue(0);
-      setSeverity("WARNING");
-      setEnabled(true);
-    }
-
-    setMetricError(null);
-
-    setZeroValue(null);
-
-  }, [initial, open]);
 
   const handlingSubmit = async (submitting : React.FormEvent) => {
     submitting.preventDefault();

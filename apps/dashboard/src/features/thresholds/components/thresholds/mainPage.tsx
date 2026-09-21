@@ -14,8 +14,8 @@ import {Plus} from "lucide-react";
 import {toast} from "sonner";
 
 interface PropsForMainPage{
-    resourceId : string;
-    userId : string;
+    resourceId?: string;
+    userId?: string;
 }
 
 export function MainPage({resourceId, userId} : Readonly<PropsForMainPage>){
@@ -32,6 +32,11 @@ export function MainPage({resourceId, userId} : Readonly<PropsForMainPage>){
     const [deleteThreshold, setDeleteThreshold] = useState<Threshold | null>(null);
 
     const forFilters = useMemo(() => thresholds.filter((forThreshold) => forThreshold.metricName.toLowerCase().includes(search.toLowerCase()),), [thresholds, search],);
+
+    //temporary
+    if(!resourceId || !userId){
+        return null;
+    }
 
     const countForEnabled = thresholds.filter((forThreshold) => forThreshold.enabled).length;
 
@@ -142,7 +147,7 @@ export function MainPage({resourceId, userId} : Readonly<PropsForMainPage>){
                     </Tabs>
                 </header>
 
-                <ThresholdPopup open = {popupOpen} initial = {isEditing} resourceId = {resourceId} userId = {userId} onClose = {() => setPopupOpen(false)} onSubmit = {handlingSubmit}/>
+                <ThresholdPopup key = {isEditing?.thresholdId ?? "new"} open = {popupOpen} initial = {isEditing} resourceId = {resourceId} userId = {userId} onClose = {() => setPopupOpen(false)} onSubmit = {handlingSubmit}/>
 
                 <AlertDialog open = {deleteThreshold !== null} onOpenChange = {(change) => !change && setDeleteThreshold(null)}>
                     <AlertDialogContent>
