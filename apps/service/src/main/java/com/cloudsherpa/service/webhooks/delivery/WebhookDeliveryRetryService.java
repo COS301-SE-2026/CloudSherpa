@@ -34,12 +34,26 @@ public class WebhookDeliveryRetryService {
     try {
       TenantContext.setCurrentTenant(tenantId.toString());
       tasks = transactionTemplate.execute(status -> claimDueRetryDeliveries(tenantId));
+
+      for (DeliveryTask task : tasks) {
+        if (!dispatcher.submit(task)) {
+          // If the task cannot be submitted to the delivery worker thread pool, set status from
+          // PENDING -> FAILED such that
+          // the delivery can be retried on the next scheduled attempt.
+          transactionTemplate.executeWithoutResult(
+              status -> {
+                WebhookDelivery delivery = repository.findById(task.deliveryId()).orElse(null);
+
+                if (delivery == null) {
+                  return;
+                }
+
+                delivery.setDeliveryStatus(WebhookDeliveryStatusEnum.FAILED);
+              });
+        }
+      }
     } finally {
       TenantContext.clear();
-    }
-
-    if (tasks != null) {
-      tasks.forEach(dispatcher::submit);
     }
   }
 
