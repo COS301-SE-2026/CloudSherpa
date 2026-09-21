@@ -157,7 +157,6 @@ export const AddWebhook = ({
             };
 
             if (initialData) {
-                console.log("here");
                 await editWebhook(initialData.webhookId, {
                     ...payload,
                     status: initialData.webhookStatus,
@@ -378,13 +377,7 @@ export const AddWebhook = ({
                                     onValueChange={(value) => {
                                         const selected = value as "all" | "specific";
                                         setAccountDropdown(selected);
-                                        if (selected === "all") {
-                                            setAccountsSelected(
-                                                cloudAccounts.map((account) => account.id)
-                                            );
-                                        } else {
-                                            setAccountsSelected([]);
-                                        }
+                                        setAccountsSelected([]);
                                     }}
                                 >
                                     <SelectTrigger className="w-[180px] h-9 text-xs">

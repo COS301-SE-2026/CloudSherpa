@@ -69,7 +69,15 @@ const helperForWebhookColumns = (
     {
         accessorKey: "cloudAccounts",
         header: "Accounts",
-        cell: (info) => `${(info.getValue() as string[]).length} accounts`,
+        cell: (info) => {
+            const numCloudAccounts = (info.getValue() as string[]).length;
+
+            if (numCloudAccounts == 0) {
+                return "All accounts";
+            }
+
+            return `${numCloudAccounts} accounts`;
+        },
     },
 
     {
@@ -128,12 +136,16 @@ const helperForDeliveryColumns = (webhooks: Webhook[]): ColumnDef<WebhookDeliver
         header: "Webhook",
         cell: (info) =>
             webhooks.find((webhook) => webhook.webhookId === info.getValue())?.webhookName ??
-            (info.getValue() as string),
+            "Deleted Webhook",
     },
 
     { accessorKey: "eventType", header: "Event" },
 
-    { accessorKey: "cloudAccountName", header: "Account" },
+    {
+        accessorKey: "cloudAccountName",
+        header: "Account",
+        cell: (info) => info.getValue() ?? "Deleted Account",
+    },
 
     {
         accessorKey: "result",
