@@ -11,6 +11,7 @@ import type {CreateThresholdRequest, Threshold} from "@/features/thresholds/type
 import {Tabs, TabsList, TabsTrigger, TabsContent} from "@/components/atoms/tabs";
 import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle} from "@/components/atoms/alert-dialog";
 import {Plus} from "lucide-react";
+import {toast} from "sonner";
 
 interface PropsForMainPage{
     resourceId : string;
@@ -37,7 +38,13 @@ export function MainPage({resourceId, userId} : Readonly<PropsForMainPage>){
     const forTotalCount = thresholds.length;
 
     const handlingToggleEnabled = async (forThreshold : Threshold, enabled : boolean) => {
-        await updateThreshold(forThreshold.thresholdId, {enabled});
+        try{
+            await updateThreshold(forThreshold.thresholdId, {enabled});
+            toast.success(enabled ? "Threshold enabled" : "Threshold disabled");
+        }catch{
+            toast.error("Failed to update threshold");
+        }
+        
     };
 
     const handlingEdit = (forThreshold : Threshold) => {
@@ -53,12 +60,20 @@ export function MainPage({resourceId, userId} : Readonly<PropsForMainPage>){
     };
 
     const handlingSubmit = async (forPayload : CreateThresholdRequest) => {
-        if(isEditing){
-            await updateThreshold(isEditing.thresholdId, {
-                metric_name : forPayload.metric_name, operator : forPayload.operator, value : forPayload.value, severity : forPayload.severity, enabled : forPayload.enabled,
-            });
-        }else{
-            await createThreshold(forPayload);
+        try{
+            if(isEditing){
+                await updateThreshold(isEditing.thresholdId, {
+                    metric_name : forPayload.metric_name, operator : forPayload.operator, value : forPayload.value, severity : forPayload.severity, enabled : forPayload.enabled,
+                });
+
+                toast.success("Threshold updated");
+            }else{
+                await createThreshold(forPayload);
+
+                toast.success("Threshold added");
+            }
+        }catch{
+            toast.error(isEditing ? "Failed to update threshold" : "Failed to add threshold");
         }
     };
 
@@ -71,10 +86,17 @@ export function MainPage({resourceId, userId} : Readonly<PropsForMainPage>){
             return;
         }
 
-        await removeThreshold(deleteThreshold.thresholdId);
+        try{
+            await removeThreshold(deleteThreshold.thresholdId);
 
-        setDeleteThreshold(null);
-    }
+            toast.success("Threshold deleted");
+
+            setDeleteThreshold(null);
+        }catch{
+            toast.error("Failed to delete threshold");
+        }
+        
+    };
 
     return(
         <div className = "min-h-screen bg-background text-foreground">
