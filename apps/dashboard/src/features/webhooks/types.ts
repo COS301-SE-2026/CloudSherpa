@@ -12,7 +12,7 @@ export interface WebhookEvent {
 }
 
 export interface Webhook {
-    id: string;
+    webhookId: string;
     webhookName: string;
     endpointUrl: string;
     eventTypes: string[];

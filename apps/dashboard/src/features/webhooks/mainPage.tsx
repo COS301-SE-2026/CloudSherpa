@@ -127,7 +127,7 @@ const helperForDeliveryColumns = (webhooks: Webhook[]): ColumnDef<WebhookDeliver
         accessorKey: "webhookId",
         header: "Webhook",
         cell: (info) =>
-            webhooks.find((webhook) => webhook.id === info.getValue())?.webhookName ??
+            webhooks.find((webhook) => webhook.webhookId === info.getValue())?.webhookName ??
             (info.getValue() as string),
     },
 
@@ -228,10 +228,10 @@ export const Webhooks = () => {
         }
 
         try {
-            await deleteWebhook(webhookToDelete.id);
+            await deleteWebhook(webhookToDelete.webhookId);
 
             setWebhooks((previous) =>
-                previous.filter((webhook) => webhook.id !== webhookToDelete.id)
+                previous.filter((webhook) => webhook.webhookId !== webhookToDelete.webhookId)
             );
         } catch {
             alert("Failed to delete webhook");
@@ -503,7 +503,7 @@ export const Webhooks = () => {
                                 <SelectItem value="all"> All webhooks </SelectItem>
 
                                 {webhooks.map((webhook) => (
-                                    <SelectItem key={webhook.id} value={webhook.id}>
+                                    <SelectItem key={webhook.webhookId} value={webhook.webhookId}>
                                         {" "}
                                         {webhook.webhookName}{" "}
                                     </SelectItem>
@@ -697,7 +697,7 @@ export const Webhooks = () => {
 
             {addWebhookOpen && (
                 <AddWebhook
-                    key={editWebhook?.id ?? "new"}
+                    key={editWebhook?.webhookId ?? "new"}
                     isOpen={addWebhookOpen}
                     onClose={() => setAddWebhookOpen(false)}
                     eventsAvailable={eventsAvailable}

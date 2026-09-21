@@ -53,7 +53,7 @@ export const AddWebhook = ({
     initialData,
     onSuccess,
 }: PropsForAddingWebhooks) => {
-    const [name, setName] = useState(initialData?.name ?? "");
+    const [name, setName] = useState(initialData?.webhookName ?? "");
 
     const [endpointUrl, setEndpointUrl] = useState(initialData?.endpointUrl ?? "");
 
@@ -157,7 +157,10 @@ export const AddWebhook = ({
             };
 
             if (initialData) {
-                await editWebhook(initialData.id, { ...payload, status: initialData.status });
+                await editWebhook(initialData.webhookName, {
+                    ...payload,
+                    status: initialData.status,
+                });
                 onSuccess("");
             } else {
                 const result = await addWebhook(payload);
