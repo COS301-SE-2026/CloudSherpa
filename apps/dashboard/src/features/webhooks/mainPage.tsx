@@ -1,16 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, useCallback } from "react";
-import {
-    Plus,
-    Search,
-    Edit,
-    Trash2,
-    ChevronLeft,
-    ChevronRight,
-    RefreshCw,
-    RefreshCcw,
-} from "lucide-react";
+import { Plus, Search, Edit, Trash2, ChevronLeft, ChevronRight, RefreshCcw } from "lucide-react";
 import {
     useReactTable,
     getCoreRowModel,
@@ -49,7 +40,6 @@ import {
 } from "@/components/atoms/table";
 import { Label } from "@/components/atoms/label";
 import { DeletePopup } from "@/features/webhooks/components/deletePopup";
-import { Spinner } from "@/components/atoms/spinner";
 import { ButtonGroup } from "@/components/atoms/button-group";
 
 //moved to outside to correct sonarqube errors
