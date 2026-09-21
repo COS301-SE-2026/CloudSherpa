@@ -6,7 +6,7 @@ import com.cloudsherpa.lib.repositories.AlertRepository;
 import com.cloudsherpa.lib.repositories.ThresholdRepository;
 import com.cloudsherpa.service.listener.dto.MetricStreamEventDto;
 import com.cloudsherpa.service.sse.SseService;
-import com.cloudsherpa.service.webhooks.events.threshold.ThresholdAlertPayload;
+import com.cloudsherpa.service.webhooks.events.alert.threshold.ThresholdAlertPayload;
 import com.cloudsherpa.service.webhooks.producers.WebhookProducerService;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;

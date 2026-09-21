@@ -1,4 +1,4 @@
-package com.cloudsherpa.service.webhooks.events.threshold;
+package com.cloudsherpa.service.webhooks.events.alert.threshold;
 
 import com.cloudsherpa.service.webhooks.events.WebhookPayload;
 import java.math.BigDecimal;
