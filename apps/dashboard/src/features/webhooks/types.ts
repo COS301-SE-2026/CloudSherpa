@@ -16,7 +16,7 @@ export interface Webhook {
     webhookName: string;
     endpointUrl: string;
     eventTypes: string[];
-    status: WebhookStatus;
+    webhookStatus: WebhookStatus;
     cloudAccounts: string[];
     createdAt: string;
 }

@@ -157,9 +157,10 @@ export const AddWebhook = ({
             };
 
             if (initialData) {
-                await editWebhook(initialData.webhookName, {
+                console.log("here");
+                await editWebhook(initialData.webhookId, {
                     ...payload,
-                    status: initialData.status,
+                    status: initialData.webhookStatus,
                 });
                 onSuccess("");
             } else {

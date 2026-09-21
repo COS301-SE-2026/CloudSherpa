@@ -202,7 +202,6 @@ export const Webhooks = () => {
                 ]);
 
                 setWebhooks(webhooks);
-                console.log(webhooks);
                 setEventsAvailable(events);
                 setDelivery(deliveries);
                 setCloudAccounts(accounts);
@@ -258,7 +257,7 @@ export const Webhooks = () => {
         return webhooks.filter(
             (webhook) =>
                 webhook.webhookName.toLowerCase().includes(webhookSearch.toLowerCase()) &&
-                (filterForStatus === "all" || webhook.status === filterForStatus)
+                (filterForStatus === "all" || webhook.webhookStatus === filterForStatus)
         );
     }, [webhooks, webhookSearch, filterForStatus]);
 
