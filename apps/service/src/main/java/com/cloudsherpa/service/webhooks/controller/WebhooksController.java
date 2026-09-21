@@ -1,5 +1,6 @@
 package com.cloudsherpa.service.webhooks.controller;
 
+import com.cloudsherpa.lib.entities.WebhookDeliveryStatusEnum;
 import com.cloudsherpa.service.webhooks.WebhookEventDefinitionRegistry;
 import com.cloudsherpa.service.webhooks.dto.AddWebhookDto;
 import com.cloudsherpa.service.webhooks.dto.AddWebhookResponseDto;
@@ -146,7 +147,11 @@ public class WebhooksController {
       })
   @GetMapping("deliveries")
   public PagedWebhookDeliveryResponse getDeliveries(
-      @RequestParam int page, @RequestParam int pageSize) {
+      @RequestParam int page,
+      @RequestParam int pageSize,
+      @RequestParam(required = false) String search,
+      @RequestParam(required = false) UUID webhook,
+      @RequestParam(required = false) WebhookDeliveryStatusEnum status) {
     return webhookService.getWebhookDeliveries(page, pageSize);
   }
 
