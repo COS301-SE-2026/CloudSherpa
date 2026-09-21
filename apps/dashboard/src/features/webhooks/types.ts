@@ -13,7 +13,7 @@ export interface WebhookEvent {
 
 export interface Webhook {
     id: string;
-    name: string;
+    webhookName: string;
     endpointUrl: string;
     eventTypes: string[];
     status: WebhookStatus;
