@@ -1,5 +1,24 @@
 const API_BASE = process.env["NEXT_PUBLIC_API_URL"];
 
+let refreshPromise: Promise<boolean> | null = null;
+
+async function refreshSession(): Promise<boolean> {
+    if (!API_BASE) return false;
+
+    // satisfy sonar warning: ??= will only execute the fetch if refreshPromise is currently null
+    refreshPromise ??= fetch(`${API_BASE}/auth/refresh`, {
+        method: "POST",
+        credentials: "include",
+    })
+        .then((response) => response.ok)
+        .catch(() => false)
+        .finally(() => {
+            refreshPromise = null;
+        });
+
+    return refreshPromise;
+}
+
 /* params:
  *   - path
  *       expects initial slash, i.e. for path /api/some-endpoint is valid,
@@ -25,7 +44,25 @@ export default async function apiClient<T>(path: string, options?: RequestInit):
             "Content-Type": "application/json",
         },
     };
-    const response = await fetch(`${API_BASE}${normalizedPath}`, options);
+
+    // Attempt the initial API request with the user's current session/token.
+    let response = await fetch(`${API_BASE}${normalizedPath}`, options);
+
+    // Determine if we should attempt to refresh the user's session.
+    const canRefresh =
+        response.status === 401 &&
+        // Prevent infinite loops: If the refresh endpoint itself returns a 401,
+        // we DO NOT want to trigger another refresh.
+        normalizedPath !== "/auth/refresh" &&
+        // Prevent useless refreshes: If the user is currently trying to log in,
+        // they don't have a session to refresh yet.
+        normalizedPath !== "/auth/login";
+
+    if (canRefresh && (await refreshSession())) {
+        // If refreshSession() returns true (the token was successfully renewed),
+        // we retry the exact same API request as previously
+        response = await fetch(`${API_BASE}${normalizedPath}`, options);
+    }
 
     if (response.status === 204) {
         return [] as T;
