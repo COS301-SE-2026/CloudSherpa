@@ -50,7 +50,7 @@ export function MainPage({ resourceId, userId }: Readonly<PropsForMainPage>) {
     );
 
     //temporary
-    if (!resourceId || !userId) {
+    if (!userId) {
         return null;
     }
 
