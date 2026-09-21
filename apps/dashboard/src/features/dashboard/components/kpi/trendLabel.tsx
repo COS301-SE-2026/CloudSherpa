@@ -33,10 +33,10 @@ export function TrendLabel(props: Readonly<TrendProps>) {
     let icon = null;
 
     if (isGoingUp) {
-        textColor = "text-red-600";
+        textColor = "text-destructive";
         icon = <ArrowUp size={14} />;
     } else if (isGoingDown) {
-        textColor = "text-green-600";
+        textColor = "text-success";
         icon = <ArrowDown size={14} />;
     }
 
