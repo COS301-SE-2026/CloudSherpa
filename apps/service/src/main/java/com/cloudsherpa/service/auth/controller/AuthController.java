@@ -36,6 +36,8 @@ public class AuthController {
   private final Duration refreshTokenExpiry;
   private final boolean authCookieSecure;
 
+  private static final String STRICT = "strict";
+
   public AuthController(
       AuthService authService,
       @Value("${auth.access-token.exp-minutes:15}") long accessTokenExpiryMinutes,
@@ -142,7 +144,7 @@ public class AuthController {
     return ResponseCookie.from("auth_token", token)
         .httpOnly(true)
         .secure(authCookieSecure)
-        .sameSite("Strict")
+        .sameSite(STRICT)
         .path("/")
         .maxAge(accessTokenExpiry)
         .build();
@@ -152,7 +154,7 @@ public class AuthController {
     return ResponseCookie.from("refresh_token", token)
         .httpOnly(true)
         .secure(authCookieSecure)
-        .sameSite("Strict")
+        .sameSite(STRICT)
         .path("/")
         .maxAge(refreshTokenExpiry)
         .build();
@@ -162,7 +164,7 @@ public class AuthController {
     return ResponseCookie.from("auth_token")
         .httpOnly(true)
         .secure(authCookieSecure)
-        .sameSite("Strict")
+        .sameSite(STRICT)
         .path("/")
         .maxAge(Duration.ZERO)
         .build();
