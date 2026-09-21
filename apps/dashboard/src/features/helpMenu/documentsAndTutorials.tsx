@@ -597,7 +597,7 @@ function DocumentsAndTutorialsSuspense() {
                                             handlingCategoryKey(change, forCategories)
                                         }
 
-                                        className="cursor-pointer border-border bg-muted/40 transition-colors hover:border-primary/50"
+                                        className="cursor-pointer border-border bg-card transition-colors hover:bg-muted/30"
                                     >
                                         {" "}
                                         <CardContent className="flex items-start gap-3 p-4">
@@ -646,7 +646,7 @@ function DocumentsAndTutorialsSuspense() {
                                                 handlingDocumentKey(keyPress, docs)
                                             }
 
-                                            className="cursor-pointer gap-0 overflow-hidden border-border bg-muted/40 p-0 transition-color hover:border-primary/50"
+                                            className="cursor-pointer gap-0 overflow-hidden border-border bg-card p-0 transition-color hover:bg-muted/30"
                                         >
                                             <Button
                                                 variant="ghost"
@@ -727,7 +727,7 @@ function DocumentsAndTutorialsSuspense() {
                                         }
                                     }}
 
-                                    className="cursor-pointer gap-0 overflow-hidden border-border p-0 transition-colors hover:border-primary/50"
+                                    className="group cursor-pointer gap-0 overflow-hidden bg-card p-0 transition-colors hover:muted/30"
                                 >
                                     <div className="relative flex h-[110px] items-center justify-center bg-muted-foreground/10">
                                         {/* adding thumbnail for the tut videos */}
@@ -739,7 +739,7 @@ function DocumentsAndTutorialsSuspense() {
                                             />
                                         )}
 
-                                        <span className="absolute inset-0 flex items-center justify-center bg-black/20 transition-opacity hover:bg-black/30">
+                                        <span className="absolute inset-0 flex items-center justify-center bg-black/20 transition-opacity group-hover:bg-black/30">
                                             <span className="flex h-9 w-9 items-center justify-center rounded-full bg-background/80 transition-transform group-hover:scale-110">
                                                 {" "}
                                                 <Play
@@ -758,7 +758,7 @@ function DocumentsAndTutorialsSuspense() {
                                         </Badge>
                                     </div>
 
-                                    <CardContent className="bg-muted/40 px-3.5 py-3">
+                                    <CardContent className="bg-card group-hover:bg-muted/30 px-3.5 py-3">
                                         <p className="text-[13px] font-medium text-foreground">
                                             {" "}
                                             {tuts.name}{" "}

@@ -87,7 +87,7 @@ export function KpiConfigFormInner({ kpiId }: KpiConfigFormProps) {
 
     return (
         <main className="flex flex-1 flex-col gap-6 p-6 lg:p-8 w-full mx-auto">
-            <div className="flex flex-row gap-6">
+            <div className="flex flex-row gap-2">
                 <h1 className="text-2xl">KPI Configuration</h1>
                 <Button
                     variant={"default"}
