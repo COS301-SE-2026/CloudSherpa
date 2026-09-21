@@ -47,12 +47,23 @@ export const fetchWebhookEvents = async (): Promise<WebhookEvent[]> => {
 
 export const fetchWebhookDeliveries = async (
     page: number,
-    pageSize: number
+    pageSize: number,
+    search?: string,
+    webhookId?: string,
+    status?: "DELIVERED" | "FAILED"
 ): Promise<WebhookDeliveryPagedResult> => {
-    return apiClient<WebhookDeliveryPagedResult>(
-        `/webhooks/deliveries?page=${page}&pageSize=${pageSize}`,
-        { method: "GET" }
-    );
+    const params = new URLSearchParams({
+        page: String(page),
+        pageSize: String(pageSize),
+    });
+
+    if (search?.trim()) params.set("search", search.trim());
+    if (webhookId) params.set("webhook", webhookId);
+    if (status) params.set("status", status);
+
+    return apiClient<WebhookDeliveryPagedResult>(`/webhooks/deliveries?${params.toString()}`, {
+        method: "GET",
+    });
 };
 
 export const addWebhook = async (payload: CreateWebhookPayload): Promise<{ secret: string }> => {

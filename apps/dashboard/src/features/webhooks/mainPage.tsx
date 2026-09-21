@@ -40,6 +40,7 @@ import {
 } from "@/components/atoms/table";
 import { Label } from "@/components/atoms/label";
 import { DeletePopup } from "@/features/webhooks/components/deletePopup";
+import { Spinner } from "@/components/atoms/spinner";
 
 //moved to outside to correct sonarqube errors
 const helperForWebhookColumns = (
@@ -205,22 +206,20 @@ export const Webhooks = () => {
 
     const [webhookToDelete, setWebhookToDelete] = useState<Webhook | null>(null);
 
+    const [deliveryLoading, setDeliveryLoading] = useState(false);
+    const [deliveryError, setDeliveryError] = useState<string | null>(null);
+
     useEffect(() => {
         const loadingData = async () => {
             try {
-                const [webhooks, events, deliveries, accounts] = await Promise.all([
+                const [webhooks, events, accounts] = await Promise.all([
                     fetchWebhooks(),
                     fetchWebhookEvents(),
-                    fetchWebhookDeliveries(
-                        paginationForDelivery.pageIndex,
-                        paginationForDelivery.pageSize
-                    ),
                     getAwsAccountConnections(),
                 ]);
 
                 setWebhooks(webhooks);
                 setEventsAvailable(events);
-                setDelivery(deliveries.deliveries);
                 setCloudAccounts(accounts);
 
                 if (events.length > 0) {
@@ -278,49 +277,66 @@ export const Webhooks = () => {
         );
     }, [webhooks, webhookSearch, filterForStatus]);
 
-    const filteredDeliveries = useMemo(() => {
-        return delivery.filter((forDelivery) => {
-            const searchMatches = forDelivery.eventType
-                .toLowerCase()
-                .includes(deliverySearch.toLowerCase());
-
-            const statusesMatch =
-                filterForDeliveryStatus === "all" || forDelivery.result === filterForDeliveryStatus;
-
-            const webhooksMatch =
-                filterForDeliveryWebhook === "all" ||
-                forDelivery.webhookId === filterForDeliveryWebhook;
-
-            return searchMatches && statusesMatch && webhooksMatch;
-        });
-    }, [delivery, deliverySearch, filterForDeliveryStatus, filterForDeliveryWebhook]);
-
     useEffect(() => {
-        setPaginationForDelivery((previous) => ({ ...previous, pageIndex: 0 }));
-    }, [deliverySearch, filterForDeliveryStatus, filterForDeliveryWebhook]);
+        let ignore = false;
 
-    useEffect(() => {
-        setPaginationForWebhook((previous) => ({ ...previous, pageIndex: 0 }));
-    }, [webhookSearch, filterForStatus]);
-
-    useEffect(() => {
         const loadDeliveries = async () => {
-            const result = await fetchWebhookDeliveries(
-                paginationForDelivery.pageIndex,
-                paginationForDelivery.pageSize
-            );
+            setDeliveryLoading(true);
+            setDeliveryError(null);
 
-            setDelivery(result.deliveries);
-            setTotalDeliveryElements(result.totalElements);
+            const status =
+                filterForDeliveryStatus === "DELIVERED" || filterForDeliveryStatus === "FAILED"
+                    ? filterForDeliveryStatus
+                    : undefined;
+
+            try {
+                const result = await fetchWebhookDeliveries(
+                    paginationForDelivery.pageIndex,
+                    paginationForDelivery.pageSize,
+                    deliverySearch,
+                    filterForDeliveryWebhook === "all" ? undefined : filterForDeliveryWebhook,
+                    status
+                );
+
+                if (!ignore) {
+                    setDelivery(result.deliveries);
+                    setTotalDeliveryElements(result.totalElements);
+                }
+            } catch {
+                if (!ignore) {
+                    setDeliveryError("Could not load deliveries.");
+                }
+            } finally {
+                if (!ignore) {
+                    setDeliveryLoading(false);
+                }
+            }
         };
 
         loadDeliveries();
-    }, [paginationForDelivery.pageIndex, paginationForDelivery.pageSize]);
+
+        return () => {
+            ignore = true;
+        };
+    }, [
+        paginationForDelivery.pageIndex,
+        paginationForDelivery.pageSize,
+        deliverySearch,
+        filterForDeliveryWebhook,
+        filterForDeliveryStatus,
+    ]);
 
     const webhookColumns = useMemo(
         () => helperForWebhookColumns(handlingEdit, handlingDelete),
         [handlingEdit, handlingDelete]
     );
+
+    const resetDeliveryPage = () => {
+        setPaginationForDelivery((previous) => ({
+            ...previous,
+            pageIndex: 0,
+        }));
+    };
 
     const deliveryColumns = useMemo(() => helperForDeliveryColumns(webhooks), [webhooks]);
 
@@ -334,15 +350,52 @@ export const Webhooks = () => {
     });
 
     const tableForDelivery = useReactTable({
-        data: filteredDeliveries,
+        data: delivery,
         columns: deliveryColumns,
         getCoreRowModel: getCoreRowModel(),
         manualPagination: true,
         rowCount: totalDeliveryElements,
-
         state: { pagination: paginationForDelivery },
         onPaginationChange: setPaginationForDelivery,
     });
+
+    let deliveryTableBody;
+
+    if (deliveryLoading) {
+        deliveryTableBody = (
+            <TableRow>
+                <TableCell
+                    colSpan={tableForDelivery.getVisibleLeafColumns().length}
+                    className="h-24 text-center"
+                >
+                    <span>
+                        <Spinner /> Loading deliveries…
+                    </span>
+                </TableCell>
+            </TableRow>
+        );
+    } else if (deliveryError) {
+        deliveryTableBody = (
+            <TableRow>
+                <TableCell
+                    colSpan={tableForDelivery.getVisibleLeafColumns().length}
+                    className="h-24 text-center text-destructive"
+                >
+                    <span role="alert">{deliveryError}</span>
+                </TableCell>
+            </TableRow>
+        );
+    } else {
+        deliveryTableBody = tableForDelivery.getRowModel().rows.map((forRow) => (
+            <TableRow key={forRow.id}>
+                {forRow.getVisibleCells().map((forCells) => (
+                    <TableCell key={forCells.id}>
+                        {flexRender(forCells.column.columnDef.cell, forCells.getContext())}
+                    </TableCell>
+                ))}
+            </TableRow>
+        ));
+    }
 
     return (
         <div className="p-6 max-w-7xl mx-auto space-y-8 bg-background text-foreground">
@@ -517,14 +570,20 @@ export const Webhooks = () => {
                             <Input
                                 placeholder="Search deliveries"
                                 value={deliverySearch}
-                                onChange={(change) => setDeliverySearch(change.target.value)}
+                                onChange={(change) => {
+                                    setDeliverySearch(change.target.value);
+                                    resetDeliveryPage();
+                                }}
                                 className="pl-8"
                             />
                         </div>
 
                         <Select
                             value={filterForDeliveryWebhook}
-                            onValueChange={setFilterForDeliveryWebhook}
+                            onValueChange={(value) => {
+                                setFilterForDeliveryWebhook(value);
+                                resetDeliveryPage();
+                            }}
                         >
                             <SelectTrigger className="w-[220px]">
                                 {" "}
@@ -545,7 +604,10 @@ export const Webhooks = () => {
 
                         <Select
                             value={filterForDeliveryStatus}
-                            onValueChange={setFilterForDeliveryStatus}
+                            onValueChange={(value) => {
+                                setFilterForDeliveryStatus(value);
+                                resetDeliveryPage();
+                            }}
                         >
                             <SelectTrigger className="w-[180px]">
                                 {" "}
@@ -577,20 +639,7 @@ export const Webhooks = () => {
                                 ))}
                             </TableHeader>
 
-                            <TableBody>
-                                {tableForDelivery.getRowModel().rows.map((forRow) => (
-                                    <TableRow key={forRow.id}>
-                                        {forRow.getVisibleCells().map((forCells) => (
-                                            <TableCell key={forCells.id}>
-                                                {flexRender(
-                                                    forCells.column.columnDef.cell,
-                                                    forCells.getContext()
-                                                )}
-                                            </TableCell>
-                                        ))}
-                                    </TableRow>
-                                ))}
-                            </TableBody>
+                            <TableBody>{deliveryTableBody}</TableBody>
                         </Table>
                     </div>
 
@@ -605,9 +654,9 @@ export const Webhooks = () => {
                             {Math.min(
                                 (tableForDelivery.getState().pagination.pageIndex + 1) *
                                     tableForDelivery.getState().pagination.pageSize,
-                                filteredDeliveries.length
+                                delivery.length
                             )}{" "}
-                            of {filteredDeliveries.length} deliveries{" "}
+                            of {delivery.length} deliveries{" "}
                         </span>
 
                         <div className="flex items-center justify-center gap-2">
