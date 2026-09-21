@@ -31,17 +31,17 @@ public interface WebhookDeliveryRepository extends JpaRepository<WebhookDelivery
       LEFT JOIN d.webhook w
       LEFT JOIN d.cloudAccount a
       WHERE (
-          :search IS NULL
-          OR LOWER(w.webhookName) LIKE LOWER(CONCAT('%', :search, '%'))
-          OR LOWER(d.eventType) LIKE LOWER(CONCAT('%', :search, '%'))
-          OR LOWER(a.displayName) LIKE LOWER(CONCAT('%', :search, '%'))
+          CAST(:search AS string) IS NULL
+          OR LOWER(w.webhookName) LIKE LOWER(CONCAT('%', CAST(:search AS string), '%'))
+          OR LOWER(d.eventType) LIKE LOWER(CONCAT('%', CAST(:search AS string), '%'))
+          OR LOWER(a.displayName) LIKE LOWER(CONCAT('%', CAST(:search AS string), '%'))
           OR LOWER(CAST(d.deliveryStatus AS string))
-              LIKE LOWER(CONCAT('%', :search, '%'))
+              LIKE LOWER(CONCAT('%', CAST(:search AS string), '%'))
           OR CAST(d.responseCode AS string)
-              LIKE CONCAT('%', :search, '%')
+              LIKE CONCAT('%', CAST(:search AS string), '%')
       )
       AND (:webhookId IS NULL OR w.webhookId = :webhookId)
-      AND (:deliveryStatus IS NULL OR d.deliveryStatus = :deliveryStatus)
+      AND (CAST(:deliveryStatus AS string) IS NULL OR d.deliveryStatus = :deliveryStatus)
       """)
   Page<WebhookDelivery> findDeliveries(
       @Param("search") String search,
