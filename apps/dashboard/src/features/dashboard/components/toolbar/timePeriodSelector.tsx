@@ -68,7 +68,7 @@ export function TimePeriodSelector({
                 <PopoverTrigger asChild aria-label="window selector">
                     <Button
                         variant="outline"
-                        className="group flex justify-between "
+                        className="group flex justify-between bg-card"
                         aria-label="window selector button"
                     >
                         {/* Mobile View */}

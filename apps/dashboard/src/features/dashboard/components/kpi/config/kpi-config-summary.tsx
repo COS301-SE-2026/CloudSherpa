@@ -7,7 +7,7 @@ interface KpiConfigSummaryProps {
 
 export function KpiConfigSummary({ numResources, aggregationWindowDays }: KpiConfigSummaryProps) {
     return (
-        <Card className="bg-muted/40">
+        <Card className="bg-muted/30">
             <CardHeader className="flex flex-row justify-start">
                 <CardTitle className="text-lg font-bold">Configuration Summary</CardTitle>
             </CardHeader>

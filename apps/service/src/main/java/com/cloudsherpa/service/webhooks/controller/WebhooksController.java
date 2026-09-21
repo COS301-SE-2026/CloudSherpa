@@ -76,7 +76,7 @@ public class WebhooksController {
                               "name": "General alerts",
                               "endpointUrl": "https://example.com/webhooks/general",
                               "eventTypes": ["usage.threshold", "resource.discovery"],
-                              "status": "ACTIVE",
+                              "webhookStatus": "ACTIVE",
                               "cloudAccounts": [
                                 "c2a49b36-55d2-4233-96dd-cc4e3ae97672"
                               ]
@@ -86,7 +86,7 @@ public class WebhooksController {
                               "name": "Billing update",
                               "endpointUrl": "https://example.com/webhooks/billing-update",
                               "eventTypes": ["billing.ingestion"],
-                              "status": "PAUSED",
+                              "webhookStatus": "PAUSED",
                               "cloudAccounts": [
                                 "c2a49b36-55d2-4233-96dd-cc4e3ae97672"
                               ]

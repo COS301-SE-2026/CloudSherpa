@@ -8,11 +8,24 @@ import com.cloudsherpa.service.webhooks.model.DeliveryAttempt;
 import com.cloudsherpa.service.webhooks.model.DeliveryHeaders;
 import com.cloudsherpa.service.webhooks.model.DeliveryTask;
 import jakarta.transaction.Transactional;
+import java.time.Instant;
+import java.util.Map;
 import org.springframework.stereotype.Service;
 
 @Service
 public class WebhookDeliveryStateService {
   private final WebhookDeliveryRepository deliveryRepository;
+
+  private static final Map<Integer, Integer> RETRY_SCHEDULE =
+      Map.ofEntries(
+          Map.entry(2, 5),
+          Map.entry(3, 300),
+          Map.entry(4, 1_800),
+          Map.entry(5, 7_200),
+          Map.entry(6, 18_000),
+          Map.entry(7, 36_000),
+          Map.entry(8, 50_400),
+          Map.entry(9, 72_000));
 
   public WebhookDeliveryStateService(WebhookDeliveryRepository deliveryRepository) {
     this.deliveryRepository = deliveryRepository;
@@ -34,7 +47,7 @@ public class WebhookDeliveryStateService {
   }
 
   @Transactional
-  public void recordOutcome(DeliveryTask task, Integer responseCode) {
+  public void recordOutcome(DeliveryTask task, int responseCode, int attemptsMade) {
     WebhookDelivery delivery =
         deliveryRepository
             .findDeliveryForUpdate(task.deliveryId(), WebhookDeliveryStatusEnum.PROCESSING)
@@ -44,13 +57,19 @@ public class WebhookDeliveryStateService {
       return;
     }
 
-    delivery.setAttemptCount(delivery.getAttemptCount() + 1);
+    delivery.setAttemptCount(delivery.getAttemptCount() + attemptsMade);
     delivery.setResponseCode(responseCode);
+
+    delivery.setNextAttemptAt(null);
 
     if (responseCode >= 200 && responseCode <= 299) {
       delivery.setDeliveryStatus(WebhookDeliveryStatusEnum.DELIVERED);
     } else {
       delivery.setDeliveryStatus(WebhookDeliveryStatusEnum.FAILED);
+      Integer nextAttemptSeconds = RETRY_SCHEDULE.get(delivery.getAttemptCount());
+      if (nextAttemptSeconds != null) {
+        delivery.setNextAttemptAt(Instant.now().plusSeconds(nextAttemptSeconds));
+      }
     }
 
     deliveryRepository.save(delivery);
@@ -69,6 +88,7 @@ public class WebhookDeliveryStateService {
             delivery.getCloudAccount().getDisplayName(),
             delivery.getCloudAccount().getConnection().getProvider()),
         delivery.getPayload(),
-        delivery.getWebhook().getSigningKey());
+        delivery.getWebhook().getSigningKey(),
+        delivery.getAttemptCount());
   }
 }

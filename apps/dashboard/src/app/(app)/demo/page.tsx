@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Widget from "@/features/dashboard/components/widgetGrid/widgets/widget";
 import { WidgetConfig } from "@/features/dashboard/types/widgets";
 import { useMetricStore } from "@/features/dashboard/stores/metric-store";
