@@ -33,12 +33,12 @@
             "accent-foreground": { "$type": "color", "$value": "{color.neutral.900}" },
 
             "destructive": { "$type": "color", "$value": "{color.red.500}" },
-            "destructive-foreground": { "$type": "color", "$value": "{color.red.800}" },
+            "destructive-foreground": { "$type": "color", "$value": "{color.red.50}" },
 
-            "success": { "$type": "color", "$value": "{color.green.500}" },
-            "success-foreground": { "$type": "color", "$value": "{color.green.800}" },
+            "success": { "$type": "color", "$value": "{color.green.400}" },
+            "success-foreground": { "$type": "color", "$value": "{color.green.900}" },
 
-            "warning": { "$type": "color", "$value": "{color.orange.500}" },
+            "warning": { "$type": "color", "$value": "{color.orange.200}" },
             "warning-foreground": { "$type": "color", "$value": "{color.orange.800}" },
 
             "border": { "$type": "color", "$value": "{color.neutral.300}" },

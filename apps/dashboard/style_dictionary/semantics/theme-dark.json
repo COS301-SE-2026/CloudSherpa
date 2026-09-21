@@ -35,7 +35,7 @@
             "destructive": { "$type": "color", "$value": "{color.red.400}" },
             "destructive-foreground": { "$type": "color", "$value": "{color.red.50}" },
 
-            "success": { "$type": "color", "$value": "{color.green.600}" },
+            "success": { "$type": "color", "$value": "{color.green.700}" },
             "success-foreground": { "$type": "color", "$value": "{color.green.50}" },
 
             "warning": { "$type": "color", "$value": "{color.orange.500}" },

@@ -29,7 +29,7 @@
     --accent-foreground: var(--color-neutral-50);
     --destructive: var(--color-red-400);
     --destructive-foreground: var(--color-red-50);
-    --success: var(--color-green-600);
+    --success: var(--color-green-700);
     --success-foreground: var(--color-green-50);
     --warning: var(--color-orange-500);
     --warning-foreground: var(--color-orange-50);
