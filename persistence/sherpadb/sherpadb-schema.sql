@@ -236,6 +236,131 @@ CREATE TABLE IF NOT EXISTS public.widget_kpi (
   aggregation integer NOT NULL
 );
 
+-- Agentic dashboard construction tables
+CREATE TABLE IF NOT EXISTS public.ai_session (
+    session_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id uuid NOT NULL
+        REFERENCES public.users(user_id)
+        ON DELETE CASCADE,
+    created_at timestamptz NOT NULL DEFAULT NOW(),
+    last_activity timestamptz NOT NULL DEFAULT NOW(),
+    current_version_id uuid
+);
+
+CREATE TABLE IF NOT EXISTS public.ai_message (
+    message_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    session_id uuid NOT NULL
+        REFERENCES public.ai_session(session_id)
+        ON DELETE CASCADE,
+    role varchar(20) NOT NULL,
+    content text NOT NULL,
+    created_at timestamptz NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT chk_ai_message_role
+        CHECK (role IN ('USER', 'ASSISTANT'))
+);
+
+CREATE INDEX IF NOT EXISTS ix_ai_message_session_created
+    ON public.ai_message (session_id, created_at);
+
+CREATE TABLE IF NOT EXISTS public.ai_dashboard_version (
+    version_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    session_id uuid NOT NULL
+        REFERENCES public.ai_session(session_id)
+        ON DELETE CASCADE,
+
+    version_number integer NOT NULL,
+
+    parent_version_id uuid
+        REFERENCES public.ai_dashboard_version(version_id)
+        ON DELETE SET NULL,
+
+    title varchar(80) NOT NULL,
+    description text,
+    time_from timestamptz,
+    time_to timestamptz,
+    predefined_time public.predefined_time_enum,
+    current boolean DEFAULT false,
+
+    created_at timestamptz NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT uq_ai_version_number
+        UNIQUE (session_id, version_number)
+);
+
+ALTER TABLE public.ai_session
+    ADD CONSTRAINT fk_ai_session_current_version
+    FOREIGN KEY (current_version_id)
+    REFERENCES public.ai_dashboard_version(version_id)
+    ON DELETE SET NULL;
+
+CREATE TABLE IF NOT EXISTS public.ai_dashboard_widget (
+    widget_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    dashboard_version_id uuid NOT NULL
+        REFERENCES public.ai_dashboard_version(version_id)
+        ON DELETE CASCADE,
+
+    widget_type public.type_enum NOT NULL,
+
+    start_x integer NOT NULL,
+    start_y integer NOT NULL,
+    width integer NOT NULL,
+    height integer NOT NULL,
+
+    display_name varchar(80),
+
+    CONSTRAINT chk_ai_widget_width
+        CHECK (width > 0),
+
+    CONSTRAINT chk_ai_widget_height
+        CHECK (height > 0),
+
+    CONSTRAINT chk_ai_widget_start_x
+        CHECK (start_x >= 0),
+
+    CONSTRAINT chk_ai_widget_start_y
+        CHECK (start_y >= 0)
+);
+
+CREATE TABLE IF NOT EXISTS public.ai_chart_widget (
+    widget_id uuid PRIMARY KEY
+        REFERENCES public.ai_dashboard_widget(widget_id)
+        ON DELETE CASCADE,
+
+    chart_type public.chart_type_enum NOT NULL,
+
+    chart_colour public.chart_colour_enum,
+
+    provider public.provider_enum NOT NULL,
+
+    account_id uuid NOT NULL,
+
+    resource_id uuid NOT NULL,
+
+    metric_type varchar(50) NOT NULL,
+
+    metric_name varchar(100) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS public.ai_kpi_widget (
+    widget_id uuid PRIMARY KEY
+        REFERENCES public.ai_dashboard_widget(widget_id)
+        ON DELETE CASCADE,
+
+    charge_ids varchar(2128)[] NOT NULL,
+
+    aggregation_window_days integer NOT NULL,
+
+    CONSTRAINT chk_ai_kpi_aggregation_window
+        CHECK (aggregation_window_days > 0)
+);
+
+CREATE INDEX IF NOT EXISTS ix_ai_version_session
+    ON public.ai_dashboard_version (session_id, version_number DESC);
+
+-- CloudSherpa supported metrics
 INSERT INTO public.offered_metric (
     provider,
     service_type,
