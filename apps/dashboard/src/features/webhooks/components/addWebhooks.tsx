@@ -53,7 +53,7 @@ export const AddWebhook = ({
     initialData,
     onSuccess,
 }: PropsForAddingWebhooks) => {
-    const [name, setName] = useState(initialData?.name ?? "");
+    const [name, setName] = useState(initialData?.webhookName ?? "");
 
     const [endpointUrl, setEndpointUrl] = useState(initialData?.endpointUrl ?? "");
 
@@ -157,7 +157,10 @@ export const AddWebhook = ({
             };
 
             if (initialData) {
-                await editWebhook(initialData.id, { ...payload, status: initialData.status });
+                await editWebhook(initialData.webhookId, {
+                    ...payload,
+                    status: initialData.webhookStatus,
+                });
                 onSuccess("");
             } else {
                 const result = await addWebhook(payload);
@@ -374,13 +377,7 @@ export const AddWebhook = ({
                                     onValueChange={(value) => {
                                         const selected = value as "all" | "specific";
                                         setAccountDropdown(selected);
-                                        if (selected === "all") {
-                                            setAccountsSelected(
-                                                cloudAccounts.map((account) => account.id)
-                                            );
-                                        } else {
-                                            setAccountsSelected([]);
-                                        }
+                                        setAccountsSelected([]);
                                     }}
                                 >
                                     <SelectTrigger className="w-[180px] h-9 text-xs">

@@ -47,7 +47,7 @@ const helperForWebhookColumns = (
     onDelete: (webhook: Webhook) => void
 ): ColumnDef<Webhook>[] => [
     {
-        accessorKey: "name",
+        accessorKey: "webhookName",
         header: "Name",
         cell: (info) => (
             <span className="font-medium text-foreground"> {info.getValue() as string} </span>
@@ -69,11 +69,19 @@ const helperForWebhookColumns = (
     {
         accessorKey: "cloudAccounts",
         header: "Accounts",
-        cell: (info) => `${(info.getValue() as string[]).length} accounts`,
+        cell: (info) => {
+            const numCloudAccounts = (info.getValue() as string[]).length;
+
+            if (numCloudAccounts == 0) {
+                return "All accounts";
+            }
+
+            return `${numCloudAccounts} accounts`;
+        },
     },
 
     {
-        accessorKey: "status",
+        accessorKey: "webhookStatus",
         header: "Status",
         cell: (info) => {
             const status = info.getValue() as string;
@@ -127,13 +135,17 @@ const helperForDeliveryColumns = (webhooks: Webhook[]): ColumnDef<WebhookDeliver
         accessorKey: "webhookId",
         header: "Webhook",
         cell: (info) =>
-            webhooks.find((webhook) => webhook.id === info.getValue())?.name ??
-            (info.getValue() as string),
+            webhooks.find((webhook) => webhook.webhookId === info.getValue())?.webhookName ??
+            "Deleted Webhook",
     },
 
     { accessorKey: "eventType", header: "Event" },
 
-    { accessorKey: "cloudAccountName", header: "Account" },
+    {
+        accessorKey: "cloudAccountName",
+        header: "Account",
+        cell: (info) => info.getValue() ?? "Deleted Account",
+    },
 
     {
         accessorKey: "result",
@@ -227,10 +239,10 @@ export const Webhooks = () => {
         }
 
         try {
-            await deleteWebhook(webhookToDelete.id);
+            await deleteWebhook(webhookToDelete.webhookId);
 
             setWebhooks((previous) =>
-                previous.filter((webhook) => webhook.id !== webhookToDelete.id)
+                previous.filter((webhook) => webhook.webhookId !== webhookToDelete.webhookId)
             );
         } catch {
             alert("Failed to delete webhook");
@@ -256,8 +268,8 @@ export const Webhooks = () => {
     const filteredWebhooks = useMemo(() => {
         return webhooks.filter(
             (webhook) =>
-                webhook.name.toLowerCase().includes(webhookSearch.toLowerCase()) &&
-                (filterForStatus === "all" || webhook.status === filterForStatus)
+                webhook.webhookName.toLowerCase().includes(webhookSearch.toLowerCase()) &&
+                (filterForStatus === "all" || webhook.webhookStatus === filterForStatus)
         );
     }, [webhooks, webhookSearch, filterForStatus]);
 
@@ -502,9 +514,9 @@ export const Webhooks = () => {
                                 <SelectItem value="all"> All webhooks </SelectItem>
 
                                 {webhooks.map((webhook) => (
-                                    <SelectItem key={webhook.id} value={webhook.id}>
+                                    <SelectItem key={webhook.webhookId} value={webhook.webhookId}>
                                         {" "}
-                                        {webhook.name}{" "}
+                                        {webhook.webhookName}{" "}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
@@ -696,7 +708,7 @@ export const Webhooks = () => {
 
             {addWebhookOpen && (
                 <AddWebhook
-                    key={editWebhook?.id ?? "new"}
+                    key={editWebhook?.webhookId ?? "new"}
                     isOpen={addWebhookOpen}
                     onClose={() => setAddWebhookOpen(false)}
                     eventsAvailable={eventsAvailable}
@@ -711,7 +723,7 @@ export const Webhooks = () => {
             {webhookToDelete && (
                 <DeletePopup
                     isOpen={true}
-                    webhookName={webhookToDelete.name}
+                    webhookName={webhookToDelete.webhookName}
                     onCancel={() => setWebhookToDelete(null)}
                     onConfirm={confirmDelete}
                 />

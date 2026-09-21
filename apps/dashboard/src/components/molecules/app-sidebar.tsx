@@ -9,6 +9,7 @@ import {
     Telescope,
     ServerPlus,
     Lightbulb,
+    Webhook,
     LogOut,
 } from "lucide-react";
 import { useTheme } from "next-themes";
@@ -222,6 +223,22 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                             {(summary?.active ?? 0) > 0 && (
                                                 <Badge>{`${summary?.active} active`}</Badge>
                                             )}{" "}
+                                        </Link>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            </SidebarMenu>
+                        </SidebarGroupContent>
+                    </SidebarGroup>
+
+                    <SidebarGroup>
+                        <SidebarGroupLabel>Integrations</SidebarGroupLabel>
+                        <SidebarGroupContent>
+                            <SidebarMenu>
+                                <SidebarMenuItem>
+                                    <SidebarMenuButton asChild tooltip="Webhooks">
+                                        <Link href="/webhooks">
+                                            <Webhook />
+                                            <span>Webhooks</span>
                                         </Link>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
