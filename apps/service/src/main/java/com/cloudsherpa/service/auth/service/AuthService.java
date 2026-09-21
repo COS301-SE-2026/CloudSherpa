@@ -2,9 +2,11 @@ package com.cloudsherpa.service.auth.service;
 
 import com.cloudsherpa.lib.entities.User;
 import com.cloudsherpa.lib.repositories.UserRepository;
+import com.cloudsherpa.service.auth.dto.AuthSession;
 import com.cloudsherpa.service.auth.dto.AuthUserResponse;
 import com.cloudsherpa.service.auth.dto.LoginRequest;
 import com.cloudsherpa.service.auth.dto.RegisterRequest;
+import com.cloudsherpa.service.auth.dto.RotatedToken;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -17,13 +19,18 @@ public class AuthService {
 
   private final UserRepository userRepository;
   private final JwtService jwtService;
+  private final RefreshTokenService refreshTokenService;
 
   // uses a strong hashing algorithm and automatic salting
   private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder(12);
 
-  public AuthService(UserRepository userRepository, JwtService jwtService) {
+  public AuthService(
+      UserRepository userRepository,
+      JwtService jwtService,
+      RefreshTokenService refreshTokenService) {
     this.userRepository = userRepository;
     this.jwtService = jwtService;
+    this.refreshTokenService = refreshTokenService;
   }
 
   // REGISTER
@@ -67,7 +74,7 @@ public class AuthService {
   }
 
   // LOGIN
-  public AuthUserResponse login(LoginRequest request) {
+  public AuthSession login(LoginRequest request) {
     String email = normalizeEmail(request.getEmail());
     String password = request.getPassword();
 
@@ -84,7 +91,12 @@ public class AuthService {
     }
 
     String token = jwtService.generateToken(user);
-    return new AuthUserResponse(user.getId(), user.getEmail(), user.getUsername(), token);
+    String refreshToken = refreshTokenService.create(user);
+
+    AuthUserResponse userResponse =
+        new AuthUserResponse(user.getId(), user.getEmail(), user.getUsername());
+
+    return new AuthSession(userResponse, token, refreshToken);
   }
 
   private String normalizeEmail(String email) {
@@ -118,5 +130,23 @@ public class AuthService {
       return false;
     }
     return password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^a-zA-Z0-9\\s])(?!.*\\s).{8,}$");
+  }
+
+  @Transactional
+  public AuthSession refresh(String rawRefreshToken) {
+    RotatedToken rotated = refreshTokenService.rotate(rawRefreshToken);
+    User user = rotated.getUser();
+
+    String accessToken = jwtService.generateToken(user);
+
+    AuthUserResponse userResponse =
+        new AuthUserResponse(user.getId(), user.getEmail(), user.getUsername());
+
+    return new AuthSession(userResponse, accessToken, rotated.getRawToken());
+  }
+
+  @Transactional
+  public void logout(String rawRefreshToken) {
+    refreshTokenService.revoke(rawRefreshToken);
   }
 }

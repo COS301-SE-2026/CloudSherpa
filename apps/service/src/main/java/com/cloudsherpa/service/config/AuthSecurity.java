@@ -28,6 +28,7 @@ public class AuthSecurity {
           .securityMatcher(
               "/auth/register",
               "/auth/login",
+              "/auth/refresh",
               "/auth/logout",
               "/swagger/**",
               "/v3/**",
@@ -39,7 +40,8 @@ public class AuthSecurity {
           .build();
     } else {
       return http.cors(cors -> cors.configurationSource(corsConfigurationSource))
-          .securityMatcher("/auth/register", "/auth/login", "/auth/logout", "/actuator/health")
+          .securityMatcher(
+              "/auth/register", "/auth/login", "auth/refresh", "/auth/logout", "/actuator/health")
           .csrf(csrf -> csrf.disable())
           .sessionManagement(
               session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
