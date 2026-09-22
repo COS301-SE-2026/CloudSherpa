@@ -48,8 +48,11 @@ public class WebhookEventProcessor {
         webhookRepository.findSubscribed(
             pendingWebhookEvent.getEventType(), pendingWebhookEvent.getCloudAccountId());
 
-    CloudAccount cloudAccount =
-        entityManager.getReference(CloudAccount.class, pendingWebhookEvent.getCloudAccountId());
+    CloudAccount cloudAccount = null;
+
+    if (pendingWebhookEvent.getCloudAccountId() != null) {
+      entityManager.getReference(CloudAccount.class, pendingWebhookEvent.getCloudAccountId());
+    }
 
     List<DeliveryTask> deliveryTasks = new ArrayList<>();
     for (Webhook webhook : subscribedWebhooks) {
@@ -71,7 +74,7 @@ public class WebhookEventProcessor {
         .webhook(webhook)
         .eventId(pendingWebhookEvent.getEventId())
         .cloudAccount(cloudAccount)
-        .cloudAccountName(cloudAccount.getDisplayName())
+        .cloudAccountName(cloudAccount != null ? cloudAccount.getDisplayName() : null)
         .eventType(pendingWebhookEvent.getEventType())
         .eventTimestamp(pendingWebhookEvent.getEventTimestamp())
         .payload(pendingWebhookEvent.getPayload())

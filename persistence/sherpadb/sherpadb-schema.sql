@@ -643,7 +643,7 @@ CREATE TABLE IF NOT EXISTS public.chart_resource (
 CREATE TABLE IF NOT EXISTS public.pending_webhook_events (
   event_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id uuid NOT NULL,
-  cloud_account uuid NOT NULL REFERENCES public.cloud_account(account_id) ON DELETE CASCADE,
+  cloud_account uuid REFERENCES public.cloud_account(account_id) ON DELETE CASCADE,
   event_type text NOT NULL,
   event_timestamp timestamptz NOT NULL,
   payload jsonb NOT NULL

@@ -325,10 +325,7 @@ public class WebhooksController {
     DevPayload payload = new DevPayload("Test", BigDecimal.valueOf(2), Instant.now());
 
     producerService.produceEvent(
-        UUID.fromString("5ebe4340-c5ec-4833-ad93-06abf4609f03"),
-        UUID.fromString("a0000000-0000-0000-0000-000000000001"),
-        "dev.event",
-        payload);
+        UUID.fromString("5ebe4340-c5ec-4833-ad93-06abf4609f03"), null, "dev.event", payload);
     return ResponseEntity.ok().build();
   }
 }
