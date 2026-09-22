@@ -9,6 +9,8 @@ import {
     Telescope,
     ServerPlus,
     Lightbulb,
+    Webhook,
+    LogOut,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
@@ -229,6 +231,22 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     </SidebarGroup>
 
                     <SidebarGroup>
+                        <SidebarGroupLabel>Integrations</SidebarGroupLabel>
+                        <SidebarGroupContent>
+                            <SidebarMenu>
+                                <SidebarMenuItem>
+                                    <SidebarMenuButton asChild tooltip="Webhooks">
+                                        <Link href="/webhooks">
+                                            <Webhook />
+                                            <span>Webhooks</span>
+                                        </Link>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            </SidebarMenu>
+                        </SidebarGroupContent>
+                    </SidebarGroup>
+
+                    <SidebarGroup>
                         <SidebarGroupLabel> Support </SidebarGroupLabel>
 
                         <SidebarGroupContent>
@@ -268,6 +286,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                 tooltip="Logout"
                                 aria-label="logout button"
                             >
+                                <LogOut />
                                 <span>Logout</span>
                             </SidebarMenuButton>
                         </SidebarMenuItem>

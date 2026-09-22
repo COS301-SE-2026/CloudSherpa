@@ -162,7 +162,7 @@ export default function Recommendations() {
                         </div>
                         {/* sort highest to lowest */}
                         <Button
-                            variant="secondary"
+                            variant="ghost"
                             onClick={() =>
                                 setSortOrder((prev) => (prev === "desc" ? "asc" : "desc"))
                             }

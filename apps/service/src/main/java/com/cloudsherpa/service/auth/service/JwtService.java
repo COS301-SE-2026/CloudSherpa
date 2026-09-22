@@ -18,7 +18,7 @@ public class JwtService {
 
   public JwtService(
       @Value("${auth.jwt.secret}") String secret,
-      @Value("${auth.jwt.exp-minutes:60}") long expirationMinutes) {
+      @Value("${auth.access-token.exp-minutes:15}") long expirationMinutes) {
     // Build an HMAC key from the configured secret.
     this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     this.expirationMinutes = expirationMinutes;

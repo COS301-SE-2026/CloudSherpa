@@ -57,6 +57,7 @@ CREATE TYPE public.webhook_status_enum AS ENUM (
 
 CREATE TYPE public.webhook_delivery_status_enum AS ENUM (
   'PENDING',
+  'PROCESSING',
   'DELIVERED',
   'FAILED'
 );
@@ -194,6 +195,20 @@ CREATE TABLE IF NOT EXISTS public.billing_export_execution (
   error_message text
 );
 
+CREATE OR REPLACE FUNCTION public.notify_billing_execution_completed()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.status = 'completed' AND OLD.status IS DISTINCT FROM NEW.status THEN
+        PERFORM pg_notify('billing_execution_completed', row_to_json(NEW)::text);
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER billing_execution_completed_trigger
+AFTER UPDATE ON public.billing_export_execution
+FOR EACH ROW EXECUTE FUNCTION public.notify_billing_execution_completed();
+
 CREATE TABLE IF NOT EXISTS public.dashboard (
   dashboard_id uuid PRIMARY KEY,
   display_name varchar(80) NOT NULL,
@@ -221,6 +236,143 @@ CREATE TABLE IF NOT EXISTS public.widget_kpi (
   aggregation integer NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS public.refresh_tokens (
+  token_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL REFERENCES public.users(user_id) ON DELETE CASCADE,
+  token_hash varchar(64) NOT NULL UNIQUE,
+  expires_at timestamptz NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT NOW(),
+  revoked_at timestamptz
+);
+
+CREATE INDEX IF NOT EXISTS refresh_tokens_user_id_idx
+  ON public.refresh_tokens(user_id);
+
+-- Agentic dashboard construction tables
+CREATE TABLE IF NOT EXISTS public.ai_session (
+    session_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id uuid NOT NULL
+        REFERENCES public.users(user_id)
+        ON DELETE CASCADE,
+    created_at timestamptz NOT NULL DEFAULT NOW(),
+    last_activity timestamptz NOT NULL DEFAULT NOW(),
+    current_version_id uuid
+);
+
+CREATE TABLE IF NOT EXISTS public.ai_message (
+    message_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    session_id uuid NOT NULL
+        REFERENCES public.ai_session(session_id)
+        ON DELETE CASCADE,
+    role varchar(20) NOT NULL,
+    content text NOT NULL,
+    created_at timestamptz NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT chk_ai_message_role
+        CHECK (role IN ('USER', 'ASSISTANT'))
+);
+
+CREATE INDEX IF NOT EXISTS ix_ai_message_session_created
+    ON public.ai_message (session_id, created_at);
+
+CREATE TABLE IF NOT EXISTS public.ai_dashboard_version (
+    version_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    session_id uuid NOT NULL
+        REFERENCES public.ai_session(session_id)
+        ON DELETE CASCADE,
+
+    version_number integer NOT NULL,
+
+    parent_version_id uuid
+        REFERENCES public.ai_dashboard_version(version_id)
+        ON DELETE SET NULL,
+
+    title varchar(80) NOT NULL,
+    description text,
+    time_from timestamptz,
+    time_to timestamptz,
+    predefined_time public.predefined_time_enum,
+    current boolean DEFAULT false,
+
+    created_at timestamptz NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT uq_ai_version_number
+        UNIQUE (session_id, version_number)
+);
+
+ALTER TABLE public.ai_session
+    ADD CONSTRAINT fk_ai_session_current_version
+    FOREIGN KEY (current_version_id)
+    REFERENCES public.ai_dashboard_version(version_id)
+    ON DELETE SET NULL;
+
+CREATE TABLE IF NOT EXISTS public.ai_dashboard_widget (
+    widget_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    dashboard_version_id uuid NOT NULL
+        REFERENCES public.ai_dashboard_version(version_id)
+        ON DELETE CASCADE,
+
+    widget_type public.type_enum NOT NULL,
+
+    start_x integer NOT NULL,
+    start_y integer NOT NULL,
+    width integer NOT NULL,
+    height integer NOT NULL,
+
+    display_name varchar(80),
+
+    CONSTRAINT chk_ai_widget_width
+        CHECK (width > 0),
+
+    CONSTRAINT chk_ai_widget_height
+        CHECK (height > 0),
+
+    CONSTRAINT chk_ai_widget_start_x
+        CHECK (start_x >= 0),
+
+    CONSTRAINT chk_ai_widget_start_y
+        CHECK (start_y >= 0)
+);
+
+CREATE TABLE IF NOT EXISTS public.ai_chart_widget (
+    widget_id uuid PRIMARY KEY
+        REFERENCES public.ai_dashboard_widget(widget_id)
+        ON DELETE CASCADE,
+
+    chart_type public.chart_type_enum NOT NULL,
+
+    chart_colour public.chart_colour_enum,
+
+    provider public.provider_enum NOT NULL,
+
+    account_id uuid NOT NULL,
+
+    resource_id uuid NOT NULL,
+
+    metric_type varchar(50) NOT NULL,
+
+    metric_name varchar(100) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS public.ai_kpi_widget (
+    widget_id uuid PRIMARY KEY
+        REFERENCES public.ai_dashboard_widget(widget_id)
+        ON DELETE CASCADE,
+
+    charge_ids varchar(2128)[] NOT NULL,
+
+    aggregation_window_days integer NOT NULL,
+
+    CONSTRAINT chk_ai_kpi_aggregation_window
+        CHECK (aggregation_window_days > 0)
+);
+
+CREATE INDEX IF NOT EXISTS ix_ai_version_session
+    ON public.ai_dashboard_version (session_id, version_number DESC);
+
+-- CloudSherpa supported metrics
 INSERT INTO public.offered_metric (
     provider,
     service_type,
@@ -712,7 +864,10 @@ BEGIN
             window_end timestamptz NOT NULL,
             calculated_at timestamptz DEFAULT NOW()
         );
-    $sql$, schema_name, schema_name);
+
+        CREATE INDEX IF NOT EXISTS ix_%1$s_opt_metric_stats_resource_metric
+        ON %1$I.optimization_metric_statistics (resource_id, metric_name, window_end DESC);
+    $sql$, schema_name, schema_name, schema_name);
 
     EXECUTE format($sql$
         CREATE TABLE IF NOT EXISTS %I.optimization_recommendation (
@@ -766,19 +921,19 @@ BEGIN
     $sql$, schema_name);
 
     EXECUTE format($sql$
-      CREATE TABLE IF NOT EXISTS %I.widget_thresholds (
-        threshold_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        widget_id UUID REFERENCES public.widget(widget_id) ON DELETE CASCADE,
-        user_id UUID REFERENCES public.users(user_id) ON DELETE CASCADE,
-        metric_name TEXT NOT NULL,
-        operator TEXT NOT NULL,
-        value DOUBLE PRECISION NOT NULL,
-        severity TEXT,
-        enabled BOOLEAN DEFAULT TRUE,
-        created_at TIMESTAMPTZ DEFAULT now(),
-        updated_at TIMESTAMPTZ DEFAULT now()
-      );
-    $sql$, schema_name);
+      CREATE TABLE IF NOT EXISTS %I.threshold (
+      threshold_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      resource_id uuid NOT NULL REFERENCES %I.resource(resource_id) ON DELETE CASCADE,
+      user_id uuid NOT NULL REFERENCES public.users(user_id) ON DELETE CASCADE,
+      metric_name text NOT NULL,
+      operator text NOT NULL,
+      value double precision NOT NULL,
+      severity text NOT NULL DEFAULT 'WARNING',
+      enabled boolean NOT NULL DEFAULT true,
+      created_at timestamptz DEFAULT now(),
+      updated_at timestamptz DEFAULT now()
+    );
+    $sql$, schema_name, schema_name);
 
     -- --------------------------------------------------------------------------
     -- Webhook Tables
@@ -789,8 +944,9 @@ BEGIN
         webhook_name text NOT NULL,
         endpoint_url text NOT NULL,
         event_types text[] NOT NULL,
-        cloud_accounts uuid[] NOT NULL,
-        webhook_status public.webhook_status_enum NOT NULL
+        cloud_accounts uuid[] NOT NULL DEFAULT '{}',
+        webhook_status public.webhook_status_enum NOT NULL,
+        webhook_signing_key text NOT NULL
       );
     $sql$, schema_name);
 
@@ -805,7 +961,8 @@ BEGIN
         payload jsonb NOT NULL,
         delivery_status public.webhook_delivery_status_enum NOT NULL DEFAULT 'PENDING',
         response_code int,
-        attempt_count int NOT NULL DEFAULT 0
+        attempt_count int NOT NULL DEFAULT 0,
+        next_attempt_at timestamptz
       );
     $sql$, schema_name, schema_name);
 END;

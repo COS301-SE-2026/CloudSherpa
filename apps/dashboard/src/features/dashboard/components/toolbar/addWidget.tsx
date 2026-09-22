@@ -10,13 +10,22 @@ import { ChevronDown, Plus } from "lucide-react";
 interface ToolbarProps {
     handleAddWidget: () => void;
     handleAddKpi: () => void;
+    isEditMode: boolean;
 }
 
-export default function AddWidget({ handleAddWidget, handleAddKpi }: Readonly<ToolbarProps>) {
+export default function AddWidget({
+    handleAddWidget,
+    handleAddKpi,
+    isEditMode,
+}: Readonly<ToolbarProps>) {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button aria-label="add widget" className="group p-0 h-auto flex items-stretch">
+                <Button
+                    aria-label="add widget"
+                    className="group p-0 h-auto flex items-stretch"
+                    disabled={isEditMode}
+                >
                     <span className="flex items-center gap-1.5 px-3 py-1.5">
                         <span>Add Widget</span>
                     </span>

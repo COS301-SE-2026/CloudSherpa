@@ -15,6 +15,7 @@ import com.cloudsherpa.service.metrics.MetricDisplayNameMapper;
 import com.cloudsherpa.service.metrics.ResourceProviderResolver;
 import java.math.BigDecimal;
 import java.util.List;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -32,7 +33,7 @@ public class UsageForecastingService extends ForecastingService {
       ResourceProviderResolver resourceProviderResolver,
       MetricDisplayNameMapper metricDisplayNameMapper,
       Sampler sampler,
-      RestClient restClient) {
+      @Qualifier("intelligenceRestClient") RestClient restClient) {
     super(restClient, sampler);
     this.normalizedMetricsRepository = normalizedMetricsRepository;
     this.resourceProviderResolver = resourceProviderResolver;

@@ -200,13 +200,21 @@ export default function StepTwoAzure({
                 exportName={exportName}
                 setExportName={setExportName}
             />
-            <ServicesList
-                servicesAvailable={servicesAvailable}
-                selectedServices={selectedService}
-                onServiceToggle={checkingServices}
-                onSelectAll={handlingSelectedAll}
-                heading="Services we offer"
-            />
+            <div className="rounded-lg border border-border bg-background p-4">
+                <div className="mb-4 rounded-md  p-3 text-sm bg-warning/40 text-warning-foreground border border-warning">
+                    Billing ingestion is account-wide and not limited by selected services. Select
+                    services to discover resources and monitor usage metrics alongside billing
+                    trends.
+                </div>
+
+                <ServicesList
+                    servicesAvailable={servicesAvailable}
+                    selectedServices={selectedService}
+                    onServiceToggle={checkingServices}
+                    onSelectAll={handlingSelectedAll}
+                    heading="Services we offer"
+                />
+            </div>
 
             <PermissionsList permissions={permissions} />
 

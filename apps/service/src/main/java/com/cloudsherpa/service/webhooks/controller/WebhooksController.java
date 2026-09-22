@@ -1,12 +1,17 @@
 package com.cloudsherpa.service.webhooks.controller;
 
+import com.cloudsherpa.lib.entities.WebhookDeliveryStatusEnum;
 import com.cloudsherpa.service.webhooks.WebhookEventDefinitionRegistry;
 import com.cloudsherpa.service.webhooks.dto.AddWebhookDto;
 import com.cloudsherpa.service.webhooks.dto.AddWebhookResponseDto;
 import com.cloudsherpa.service.webhooks.dto.EditWebhookDto;
+import com.cloudsherpa.service.webhooks.dto.PagedWebhookDeliveryResponse;
 import com.cloudsherpa.service.webhooks.dto.WebhookEventDto;
-import com.cloudsherpa.service.webhooks.model.Webhook;
-import com.cloudsherpa.service.webhooks.model.WebhookDelivery;
+import com.cloudsherpa.service.webhooks.dto.WebhookResponse;
+import com.cloudsherpa.service.webhooks.events.devevent.DevPayload;
+import com.cloudsherpa.service.webhooks.exceptions.WebhookNotFoundException;
+import com.cloudsherpa.service.webhooks.producers.WebhookProducerService;
+import com.cloudsherpa.service.webhooks.service.WebhookService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -15,9 +20,13 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.core.env.Environment;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,6 +34,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -33,9 +43,19 @@ import org.springframework.web.bind.annotation.RestController;
 public class WebhooksController {
 
   private final WebhookEventDefinitionRegistry definitionRegistry;
+  private final WebhookService webhookService;
+  private final WebhookProducerService producerService;
+  private final Environment environment;
 
-  public WebhooksController(WebhookEventDefinitionRegistry definitionRegistry) {
+  public WebhooksController(
+      WebhookEventDefinitionRegistry definitionRegistry,
+      WebhookService webhookService,
+      WebhookProducerService producerService,
+      Environment environment) {
     this.definitionRegistry = definitionRegistry;
+    this.webhookService = webhookService;
+    this.producerService = producerService;
+    this.environment = environment;
   }
 
   @Operation(summary = "Get all webhooks for the current user")
@@ -46,7 +66,7 @@ public class WebhooksController {
             description = "Succesfully returned all webhooks",
             content =
                 @Content(
-                    array = @ArraySchema(schema = @Schema(implementation = Webhook.class)),
+                    array = @ArraySchema(schema = @Schema(implementation = WebhookResponse.class)),
                     examples =
                         @ExampleObject(
                             name = "Webhook list",
@@ -58,7 +78,7 @@ public class WebhooksController {
                               "name": "General alerts",
                               "endpointUrl": "https://example.com/webhooks/general",
                               "eventTypes": ["usage.threshold", "resource.discovery"],
-                              "status": "ACTIVE",
+                              "webhookStatus": "ACTIVE",
                               "cloudAccounts": [
                                 "c2a49b36-55d2-4233-96dd-cc4e3ae97672"
                               ]
@@ -68,7 +88,7 @@ public class WebhooksController {
                               "name": "Billing update",
                               "endpointUrl": "https://example.com/webhooks/billing-update",
                               "eventTypes": ["billing.ingestion"],
-                              "status": "PAUSED",
+                              "webhookStatus": "PAUSED",
                               "cloudAccounts": [
                                 "c2a49b36-55d2-4233-96dd-cc4e3ae97672"
                               ]
@@ -77,8 +97,8 @@ public class WebhooksController {
                           """)))
       })
   @GetMapping()
-  public List<Webhook> getWebhooks() {
-    return List.of();
+  public List<WebhookResponse> getWebhooks() {
+    return webhookService.getWebhooks();
   }
 
   @Operation(summary = "Get all webhook deliveries for the current user")
@@ -89,37 +109,50 @@ public class WebhooksController {
             description = "Succesfully returned all webhook deliveries",
             content =
                 @Content(
-                    array = @ArraySchema(schema = @Schema(implementation = WebhookDelivery.class)),
+                    schema = @Schema(implementation = PagedWebhookDeliveryResponse.class),
                     examples =
                         @ExampleObject(
                             name = "Webhook delivery list",
                             value =
                                 """
-                          [
-                            {
-                              "deliveryId": "7d5905cf-3518-42c0-8f23-7a71a7cc5d58",
-                              "timestamp": "2026-09-16T08:32:15Z",
-                              "webhookId": "c2a49b36-55d2-4233-96dd-cc4e3ae97671",
-                              "eventType": "usage.threshold",
-                              "cloudAccount": "c2a49b36-55d2-4233-96dd-cc4e3ae97672",
-                              "result": "DELIVERED",
-                              "responseCode": 200
-                            },
-                            {
-                              "deliveryId": "8c307a33-6d4a-4c35-bf14-c643d6b1f3c6",
-                              "timestamp": "2026-09-16T08:45:02Z",
-                              "webhookId": "c2a49b36-55d2-4233-96dd-cc4e3ae97673",
-                              "eventType": "billing.ingestion",
-                              "cloudAccount": "c2a49b36-55d2-4233-96dd-cc4e3ae97672",
-                              "result": "FAILED",
-                              "responseCode": 503
-                            }
-                          ]
+                          {
+                            "deliveries": [
+                              {
+                                "deliveryId": "7d5905cf-3518-42c0-8f23-7a71a7cc5d58",
+                                "timestamp": "2026-09-16T08:32:15Z",
+                                "webhookId": "c2a49b36-55d2-4233-96dd-cc4e3ae97671",
+                                "eventType": "usage.threshold",
+                                "cloudAccountId": "c2a49b36-55d2-4233-96dd-cc4e3ae97672",
+                                "cloudAccountName": "Some Account",
+                                "result": "DELIVERED",
+                                "responseCode": 200
+                              },
+                              {
+                                "deliveryId": "8c307a33-6d4a-4c35-bf14-c643d6b1f3c6",
+                                "timestamp": "2026-09-16T08:45:02Z",
+                                "webhookId": "c2a49b36-55d2-4233-96dd-cc4e3ae97673",
+                                "eventType": "billing.ingestion",
+                                "cloudAccountId": "c2a49b36-55d2-4233-96dd-cc4e3ae97672",
+                                "cloudAccountName": "Some Account",
+                                "result": "FAILED",
+                                "responseCode": 503
+                              }
+                            ],
+                            "page": 0,
+                            "size": 10,
+                            "totalElements": 2,
+                            "totalPages": 1
+                          }
                           """)))
       })
   @GetMapping("deliveries")
-  public List<WebhookDelivery> getDeliveries() {
-    return List.of();
+  public PagedWebhookDeliveryResponse getDeliveries(
+      @RequestParam int page,
+      @RequestParam int pageSize,
+      @RequestParam(required = false) String search,
+      @RequestParam(required = false) UUID webhook,
+      @RequestParam(required = false) WebhookDeliveryStatusEnum status) {
+    return webhookService.getWebhookDeliveries(page, pageSize, search, webhook, status);
   }
 
   @Operation(summary = "Get all supported webhook events")
@@ -138,7 +171,6 @@ public class WebhooksController {
                           {
                             "Dev": {
                               "Dev Event": {
-                                "id": "msg_demo_dev_event",
                                 "type": "dev.event",
                                 "timestamp": "1970-01-01T00:00:00Z",
                                 "account": {
@@ -154,7 +186,6 @@ public class WebhooksController {
                             },
                             "Usage": {
                               "Usage Threshold Alert": {
-                                "id": "msg_demo_usage_threshold",
                                 "type": "usage.threshold",
                                 "timestamp": "2026-09-16T08:32:15Z",
                                 "account": {
@@ -223,7 +254,8 @@ public class WebhooksController {
                             """)))
           @RequestBody
           AddWebhookDto request) {
-    return ResponseEntity.ok().build();
+    AddWebhookResponseDto response = webhookService.addWebhook(request);
+    return ResponseEntity.ok(response);
   }
 
   @Operation(summary = "Edit existing webhook")
@@ -261,7 +293,13 @@ public class WebhooksController {
                         """)))
           @RequestBody
           EditWebhookDto request) {
-    return ResponseEntity.ok().build();
+
+    try {
+      webhookService.editWebhook(id, request);
+      return ResponseEntity.ok().build();
+    } catch (WebhookNotFoundException e) {
+      return ResponseEntity.notFound().build();
+    }
   }
 
   @Operation(summary = "Delete webhook")
@@ -272,8 +310,25 @@ public class WebhooksController {
             description =
                 "Deleted webhook / not, generic response code protects against information gathering via response codes")
       })
-  @DeleteMapping("delete/webhookId")
-  public ResponseEntity<Void> deleteWebhook() {
+  @DeleteMapping("delete/{webhookId}")
+  public ResponseEntity<Void> deleteWebhook(@PathVariable("webhookId") UUID webhookId) {
+    webhookService.deleteWebhook(webhookId);
     return ResponseEntity.noContent().build();
+  }
+
+  @PostMapping("dev")
+  public ResponseEntity<Void> triggerDevEvent() {
+    if (!environment.matchesProfiles("dev")) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
+    DevPayload payload = new DevPayload("Test", BigDecimal.valueOf(2), Instant.now());
+
+    producerService.produceEvent(
+        UUID.fromString("5ebe4340-c5ec-4833-ad93-06abf4609f03"),
+        UUID.fromString("a0000000-0000-0000-0000-000000000001"),
+        "dev.event",
+        payload);
+    return ResponseEntity.ok().build();
   }
 }

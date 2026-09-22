@@ -235,7 +235,7 @@ export default function StepTwoAws({ credentials, onNext, onBack }: Readonly<Pro
             />
 
             <div className="rounded-lg border border-border bg-background p-4">
-                <div className="mb-4 rounded-md border border-amber-300/60 bg-amber-50 p-3 text-sm text-amber-900">
+                <div className="mb-4 rounded-md  p-3 text-sm bg-warning/40 text-warning-foreground border border-warning">
                     Billing ingestion is account-wide and not limited by selected services. Select
                     services to discover resources and monitor usage metrics alongside billing
                     trends.
@@ -259,7 +259,7 @@ export default function StepTwoAws({ credentials, onNext, onBack }: Readonly<Pro
                         Add this IAM policy to your user. It includes selected-service discovery
                         permissions and billing export S3 read access.
                     </p>
-                    <pre className="bg-card p-4 rounded-lg overflow-x-auto text-xs font-mono text-foreground whitespace-pre-wrap">
+                    <pre className="h-80 max-h-120 bg-card p-4 rounded-lg overflow-x-auto text-xs font-mono text-foreground whitespace-pre-wrap">
                         {displayPermissions ? JSON.stringify(displayPermissions, null, 2) : "{}"}
                     </pre>
 

@@ -8,6 +8,7 @@ import { Badge } from "@/components/atoms/badge";
 import { Separator } from "@/components/atoms/separator";
 import { toast } from "sonner";
 import RecommendationReasoning, { formatValue } from "@/features/optimization/utils/recDictionary";
+import { cn } from "@/lib/utils";
 
 interface RecommendationCardProps {
     recommendation: Recommendation;
@@ -60,11 +61,11 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
     const getStatusBadgeClass = () => {
         switch (recommendation.status) {
             case "ACTIVE":
-                return "bg-success text-white";
+                return "bg-success text-success-foreground";
             case "APPLIED":
-                return "bg-primary text-white";
+                return "bg-primary text-primary-foreground";
             case "DISMISSED":
-                return "bg-destructive text-white";
+                return "bg-destructive text-destructive-foreground";
             default:
                 return "variant-secondary";
         }
@@ -196,7 +197,7 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
     };
 
     return (
-        <Card onClick={() => setOpen(!open)} className="cursor-pointer">
+        <Card onClick={() => setOpen(!open)} className={cn("cursor-pointer", "hover:bg-muted/30")}>
             <CardHeader className="flex flex-row justify-between items-center gap-2">
                 <div className="flex flex-row items-center gap-2">
                     <span className={`font-bold text-lg ${getActionTextColor()}`}>

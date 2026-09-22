@@ -159,6 +159,77 @@ Table pending_webhook_events {
   payload jsonb [not null]
 }
 
+Table ai_session {
+  session_id uuid [pk]
+  user_id uuid [not null, ref: > users.user_id]
+  created_at timestamptz [not null]
+  last_activity timestamptz [not null]
+  current_version_id uuid [ref: - ai_dashboard_version.version_id]
+}
+
+Table ai_message {
+  message_id uuid [pk]
+  session_id uuid [not null, ref: > ai_session.session_id]
+  role varchar(20) [not null]
+  content text [not null]
+  created_at timestamptz [not null]
+
+  Indexes {
+    (session_id, created_at) [name: "ix_ai_message_session_created"]
+  }
+}
+
+Table ai_dashboard_version {
+  version_id uuid [pk]
+  session_id uuid [not null, ref: > ai_session.session_id]
+  version_number integer [not null]
+  parent_version_id uuid [ref: > ai_dashboard_version.version_id]
+  title varchar(80) [not null]
+  description text
+  time_from timestamptz
+  time_to timestamptz
+  predefined_time predefined_time_enum
+  current boolean
+  created_at timestamptz [not null]
+
+  Indexes {
+    (session_id, version_number) [unique, name: "uq_ai_version_number"]
+    (session_id, version_number) [name: "ix_ai_version_session"]
+  }
+}
+
+Table ai_dashboard_widget {
+  widget_id uuid [pk]
+  dashboard_version_id uuid [not null, ref: > ai_dashboard_version.version_id]
+  widget_type type_enum [not null]
+  start_x integer [not null]
+  start_y integer [not null]
+  width integer [not null]
+  height integer [not null]
+  display_name varchar(80)
+
+  Indexes {
+    dashboard_version_id [name: "ix_ai_dashboard_widget_version"]
+  }
+}
+
+Table ai_chart_widget {
+  widget_id uuid [pk, ref: - ai_dashboard_widget.widget_id]
+  chart_type chart_type_enum [not null]
+  chart_colour chart_colour_enum
+  provider provider_enum [not null]
+  account_id uuid [not null]
+  resource_id uuid [not null]
+  metric_type varchar(50) [not null]
+  metric_name varchar(100) [not null]
+}
+
+Table ai_kpi_widget {
+  widget_id uuid [pk, ref: - ai_dashboard_widget.widget_id]
+  charge_ids varchar(2128)[] [not null]
+  aggregation_window_days integer [not null]
+}
+
 // ==========================================
 // TENANT SCHEMA TEMPLATE (e.g. tenant_xxxx)
 // ==========================================
@@ -307,17 +378,21 @@ Table budgets {
   updated_at timestamptz
 }
 
-Table widget_thresholds {
+Table threshold {
   threshold_id uuid [pk]
-  widget_id uuid [ref: > widget.widget_id]
-  user_id uuid [ref: > users.user_id]
-  metric_name text
-  operator text
+  resource_id uuid [not null, ref: > resource.resource_id]
+  user_id uuid [not null, ref: > users.user_id]
+  metric_name text [not null]
+  operator text [not null]
   value double
-  severity text
-  enabled boolean
+  severity text [not null]
+  enabled boolean [not null]
   created_at timestamptz
   updated_at timestamptz
+
+  indexes {
+    (resource_id, metric_name, enabled) [name: "ix_threshold_resource_metric"]
+  }
 }
 
 Table webhooks {
