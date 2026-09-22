@@ -138,9 +138,7 @@ public class WebhookService {
         webhookDelivery.getCloudAccount() != null
             ? webhookDelivery.getCloudAccount().getId()
             : null,
-        webhookDelivery.getCloudAccount() != null
-            ? webhookDelivery.getCloudAccount().getDisplayName()
-            : null,
+        webhookDelivery.getCoudAccountName(),
         webhookDelivery.getDeliveryStatus(),
         webhookDelivery.getResponseCode());
   }

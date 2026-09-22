@@ -145,7 +145,10 @@ const helperForDeliveryColumns = (webhooks: Webhook[]): ColumnDef<WebhookDeliver
     {
         accessorKey: "cloudAccountName",
         header: "Account",
-        cell: (info) => info.getValue() ?? "Deleted Account",
+        // This is set to N/A since even when a cloud account is deleted the name of the cloud account is snapshotted
+        // alongside the webhook delivery, hence cloudAccountName should only ever be null if a cloud accounts are not
+        // applicable to a delivery
+        cell: (info) => info.getValue() ?? "N/A",
     },
 
     {
