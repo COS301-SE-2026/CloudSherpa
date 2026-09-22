@@ -29,6 +29,7 @@ import {
     SelectValue,
 } from "@/components/atoms/select";
 import { AccountType } from "@/lib/fetch/dto/cloud-account";
+import {toast} from "sonner";
 
 const ACCOUNT_TYPES: Record<AccountType, string> = {
     [AccountType.AWS_ACCOUNT]: "AWS",
@@ -161,16 +162,18 @@ export const AddWebhook = ({
                     ...payload,
                     status: initialData.webhookStatus,
                 });
+                toast.success("Webhook has been successfully updated");
                 onSuccess("");
             } else {
                 const result = await addWebhook(payload);
+                toast.success("Webhook has been successfully created");
                 onSuccess(result.secret);
             }
             onClose();
         } catch (error) {
             const errorMessage =
                 error instanceof Error ? error.message : "Failed to save the webhook";
-            alert(errorMessage);
+            toast.error(errorMessage);
         } finally {
             setSubmit(false);
         }

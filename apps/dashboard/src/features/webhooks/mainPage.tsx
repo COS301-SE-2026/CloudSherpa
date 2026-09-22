@@ -41,6 +41,7 @@ import {
 import { Label } from "@/components/atoms/label";
 import { DeletePopup } from "@/features/webhooks/components/deletePopup";
 import { ButtonGroup } from "@/components/atoms/button-group";
+import {toast} from "sonner";
 
 //moved to outside to correct sonarqube errors
 const helperForWebhookColumns = (
@@ -249,8 +250,10 @@ export const Webhooks = () => {
             setWebhooks((previous) =>
                 previous.filter((webhook) => webhook.webhookId !== webhookToDelete.webhookId)
             );
+
+            toast.success("Webhook has been successfully deleted")
         } catch {
-            alert("Failed to delete webhook");
+            toast.error("Failed to delete webhook");
         } finally {
             setWebhookToDelete(null);
         }
