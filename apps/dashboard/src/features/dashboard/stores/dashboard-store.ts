@@ -5,6 +5,8 @@ import {
     WidgetConfig,
     ChartWidgetConfig,
     KpiWidgetConfig,
+    ChartType,
+    ChartColour,
 } from "@/features/dashboard/types/widgets";
 import {
     deleteWidget,
@@ -18,6 +20,21 @@ import { persist } from "zustand/middleware";
 import { getPresetRange } from "../components/toolbar/timePeriodSelector";
 import { timeMs } from "@/lib/timeUtils";
 import { toast } from "sonner";
+import {
+    AiVersionSummary,
+    DashboardPlan,
+    DashboardPlanWidget,
+} from "@/features/dashboard/types/agentic";
+import {
+    createAiSession,
+    deleteAiSession,
+    generateDashboardPlan,
+    getAiDashboardVersions,
+    getAiDashboardVersion,
+    applyAiDashboardVersion,
+} from "@/lib/fetch/api-agentic-dashboard";
+import { MetricType } from "../types/metric";
+import { CloudProviderEnum } from "@/features/dashboard/types/provider";
 
 const tickIntervalMs = 60_000;
 
@@ -30,6 +47,27 @@ function getDefaultWindow() {
         selectedPreset: "T_7_DAYS" as TimeWindowPreset,
     };
 }
+
+export interface AgenticActions {
+    startSessionAndGenerate: (prompt: string) => Promise<void>;
+    sendPrompt: (prompt: string) => Promise<void>;
+    switchVersion: (versionId: string) => Promise<void>;
+    fetchVersions: () => Promise<void>;
+    acceptDashboard: () => Promise<void>;
+    cancelSession: () => Promise<void>;
+}
+
+export type AgenticSlice = {
+    sessionId: string | null;
+    currentVersionId: string | null;
+    isSessionActive: boolean;
+    isGenerating: boolean;
+    assistantMessage: string | null;
+    versions: AiVersionSummary[];
+    stagedLayouts: Record<string, LayoutItem>;
+    stagedWidgets: Record<string, WidgetConfig>;
+    agenticActions: AgenticActions;
+};
 
 interface DashboardActions {
     createSnapshot: () => void;
@@ -86,7 +124,7 @@ type WindowSlice = {
     clear: () => void;
 };
 
-export type DashboardStore = DashboardSlice & WindowSlice;
+export type DashboardStore = DashboardSlice & WindowSlice & AgenticSlice;
 
 const createDashboardSlice: StateCreator<DashboardStore, [], [], DashboardSlice> = (set, get) => ({
     activeDashboardId: null,
@@ -413,12 +451,87 @@ const createWindowSlice: StateCreator<DashboardStore, [], [], WindowSlice> = (se
     },
 });
 
+function adaptState(dashboardPlan: DashboardPlan) {
+    const layoutsMap: Record<string, LayoutItem> = {};
+    const widgetsMap: Record<string, WidgetConfig> = {};
+
+    dashboardPlan.widgets.forEach((w) => {
+        const layoutId = w.widgetId;
+
+        layoutsMap[layoutId] = {
+            id: layoutId,
+            x: w.startX,
+            y: w.startY,
+            w: w.width,
+            h: w.height,
+            autoPosition: false,
+        };
+
+        if (w.widgetType === "CHART") {
+            widgetsMap[w.widgetId] = {
+                id: w.widgetId,
+                widgetType: "CHART",
+                displayName: w.displayName || "AI Chart Widget",
+                chartType: (w.chartType as ChartType) || "line_chart",
+                chartColour: (w.chartColour as ChartColour) || "chart_1",
+                provider: w.provider || null,
+                accountId: w.accountId || null,
+                resourceId: w.resourceId || null,
+                metricName: w.metricName || null,
+                metricType: null,
+            };
+        } else if (w.widgetType === "KPI") {
+            widgetsMap[w.widgetId] = {
+                id: w.widgetId,
+                widgetType: "KPI",
+                displayName: w.displayName || "AI KPI Widget",
+                aggregationWindowDays: w.aggregationWindowDays || 7,
+                chargeIds: w.chargeIds || [],
+            };
+        }
+    });
+
+    return { layoutsMap, widgetsMap };
+}
+
+const createAgenticSlice: StateCreator<DashboardStore, [], [], AgenticSlice> = (set, get) => ({
+    sessionId: null,
+    currentVersionId: null,
+    isSessionActive: false,
+    isGenerating: false,
+    assistantMessage: null,
+    versions: [],
+    stagedLayouts: {},
+    stagedWidgets: {},
+
+    agenticActions: {
+        //create new temp session, send first prompt, translate response and populate store so dash can be viewed
+        startSessionAndGenerate: async (prompt: string) => {},
+
+        // while in session, send prompt to update current generated dash
+        sendPrompt: async (prompt: string) => {},
+
+        //jmp 2 previous version, swap it into preview
+        switchVersion: async (versionId: string) => {},
+
+        //retrieve list of dash drafts during session for version history
+        fetchVersions: async () => {},
+
+        //persist current ai dash and cleanup state
+        acceptDashboard: async () => {},
+
+        //abort session and cleanup state
+        cancelSession: async () => {},
+    },
+});
+
 // Wrapping in persist instructs zustand to persist the fields specified in the partialize object to local storage
 export const useDashboardStore = create<DashboardStore>()(
     persist(
         (...args) => ({
             ...createDashboardSlice(...args),
             ...createWindowSlice(...args),
+            ...createAgenticSlice(...args),
         }),
         {
             name: "dashboard-store",
