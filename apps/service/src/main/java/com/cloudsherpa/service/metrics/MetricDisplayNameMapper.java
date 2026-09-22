@@ -13,7 +13,7 @@ public class MetricDisplayNameMapper {
   public static final String NETWORK_OUT = "Network Out";
   public static final String DISK_READ_BYTES = "Disk Read Bytes";
   public static final String DISK_WRITE_BYTES = "Disk Write Bytes";
-  public static final String STATUS_CHECK_FAILED = "Status Check Failed";
+  public static final String STATUS_CHECK_FAILED = "Health Check Status";
   public static final String MEMORY_UTILIZATION = "Memory Utilization";
   public static final String CPU_RESERVATION = "CPU Reservation";
   public static final String MEMORY_RESERVATION = "Memory Reservation";
