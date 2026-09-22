@@ -6,7 +6,8 @@ import {
     WebhookEvent,
     CreateWebhookPayload,
     Webhook,
-    CloudAccount, WebhookStatus
+    CloudAccount,
+    WebhookStatus,
 } from "@/features/webhooks/types";
 import { addWebhook, editWebhook } from "@/features/webhooks/webhooks";
 import { Button } from "@/components/atoms/button";
@@ -29,7 +30,7 @@ import {
     SelectValue,
 } from "@/components/atoms/select";
 import { AccountType } from "@/lib/fetch/dto/cloud-account";
-import {toast} from "sonner";
+import { toast } from "sonner";
 
 const ACCOUNT_TYPES: Record<AccountType, string> = {
     [AccountType.AWS_ACCOUNT]: "AWS",
@@ -76,7 +77,9 @@ export const AddWebhook = ({
 
     const [accountSearch, setAccountSearch] = useState("");
 
-    const [webhookStatus, setWebhookStatus] = useState<WebhookStatus>(initialData?.webhookStatus ?? "ACTIVE");
+    const [webhookStatus, setWebhookStatus] = useState<WebhookStatus>(
+        initialData?.webhookStatus ?? "ACTIVE"
+    );
 
     const groupEvents = useMemo(() => {
         const filteredEvents = eventsAvailable.filter((event) => {
@@ -234,16 +237,24 @@ export const AddWebhook = ({
                     </div>
 
                     {initialData && (
-                        <div className = "space-y-1.5">
-                            <Label htmlFor = "webhook-status"> Status </Label>
+                        <div className="space-y-1.5">
+                            <Label htmlFor="webhook-status"> Status </Label>
 
-                            <Select value = {webhookStatus} onValueChange = {(change) => setWebhookStatus(change as WebhookStatus)}>
-                                <SelectTrigger id = "webhook-status" className = "w-[200px]"> <SelectValue/> </SelectTrigger>
+                            <Select
+                                value={webhookStatus}
+                                onValueChange={(change) =>
+                                    setWebhookStatus(change as WebhookStatus)
+                                }
+                            >
+                                <SelectTrigger id="webhook-status" className="w-[200px]">
+                                    {" "}
+                                    <SelectValue />{" "}
+                                </SelectTrigger>
 
                                 <SelectContent>
-                                    <SelectItem value = "ACTIVE"> Active </SelectItem>
+                                    <SelectItem value="ACTIVE"> Active </SelectItem>
 
-                                    <SelectItem value = "PAUSED"> Paused </SelectItem>
+                                    <SelectItem value="PAUSED"> Paused </SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
