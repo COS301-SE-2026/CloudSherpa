@@ -10,7 +10,7 @@ import {
     ServerPlus,
     Lightbulb,
     Webhook,
-    LogOut,
+    LogOut, ShieldAlert
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
@@ -239,6 +239,22 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                         <Link href="/webhooks">
                                             <Webhook />
                                             <span>Webhooks</span>
+                                        </Link>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            </SidebarMenu>
+                        </SidebarGroupContent>
+                    </SidebarGroup>
+
+                    <SidebarGroup>
+                        <SidebarGroupLabel>Wow factor</SidebarGroupLabel>
+                        <SidebarGroupContent>
+                            <SidebarMenu>
+                                <SidebarMenuItem>
+                                    <SidebarMenuButton asChild tooltip="Alert & Thresholds">
+                                        <Link href="/thresholds">
+                                            <ShieldAlert />
+                                            <span>Alerts & Thresholds</span>
                                         </Link>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
