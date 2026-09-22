@@ -24,7 +24,6 @@ function DashboardContent() {
 
     const dashboards = useDashboardStore((state: DashboardStore) => state.dashboards);
     const activeDashboardId = useDashboardStore((state: DashboardStore) => state.activeDashboardId);
-    const layoutsMap = useDashboardStore((state: DashboardStore) => state.layouts);
 
     const fetchRecGroups = useRecStore((state) => state.fetchRecGroups);
     const fetchSummary = useRecStore((state) => state.fetchSummary);
@@ -52,14 +51,6 @@ function DashboardContent() {
 
     // computes the layouts array for the active dashboard
     const activeDashboard = activeDashboardId ? dashboards[activeDashboardId] : undefined;
-
-    const widgetLayouts = useMemo(() => {
-        return (
-            activeDashboard?.layoutItemIds
-                ?.map((id: string) => layoutsMap[id])
-                .filter((l): l is LayoutItem => !!l) ?? []
-        );
-    }, [activeDashboard, layoutsMap]);
 
     const handleLayoutChange = useCallback(
         (newLayout: LayoutItem[]) => {
