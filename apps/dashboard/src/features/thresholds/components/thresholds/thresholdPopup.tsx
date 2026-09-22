@@ -47,6 +47,7 @@ interface PropsForThresholds {
     open: boolean;
     initial?: Threshold | null;
     resourceId?: string;
+    initialMetricName?: string; 
     userId: string;
     onClose: () => void;
     onSubmit: (thresholdPayload: CreateThresholdRequest) => Promise<void>;
@@ -56,11 +57,12 @@ export function ThresholdPopup({
     open,
     initial,
     resourceId: resourceIdPreset,
+    initialMetricName,
     userId,
     onClose,
     onSubmit,
 }: Readonly<PropsForThresholds>) {
-    const [metricName, setMetricName] = useState(initial?.metricName ?? "");
+    const [metricName, setMetricName] = useState(initial?.metricName ?? initialMetricName ?? "");
 
     const [operator, setOperator] = useState<OperatorsForThreshold>(initial?.operator ?? "GT");
 

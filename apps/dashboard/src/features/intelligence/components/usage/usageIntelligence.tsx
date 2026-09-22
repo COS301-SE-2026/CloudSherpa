@@ -21,6 +21,7 @@ import {toast} from "sonner";
 import { ThresholdPopup } from "@/features/thresholds/components/thresholds/thresholdPopup";
 import { addThreshold } from "@/features/thresholds/thresholds";
 import type { CreateThresholdRequest } from "@/features/thresholds/types/thresholdTypes";
+import { useAuthContext } from "@/features/authentication/providers/AuthContext";
 
 function generateMockForecast(days: number): UsageForecastData {
     const hours = days * 24;
@@ -54,6 +55,10 @@ export default function UsageIntelligence() {
     useFetchMetrics();
     const resourceId = useUsageIntelligenceConfigStore((state) => state.resourceId);
     const metricName = useUsageIntelligenceConfigStore((state) => state.metricName);
+
+    const {user, isAuthReady} = useAuthContext();
+
+    const userId = user?.userId;
 
     // const currentUnit = getMetricUnit(metricType);
 
@@ -217,6 +222,11 @@ export default function UsageIntelligence() {
                         <Button onClick = {handlingAddThreshold}> <Plus className = "h-4 w-4"/> Add threshold </Button>
                     </div>
                 )}
+
+                {isAuthReady && userId && (
+                    <ThresholdPopup key = "new-threshold" open = {popupOpen} initial = {null} resourceId = {resourceId ?? undefined} initialMetricName = {metricName ?? undefined} userId = {userId} onClose = {() => setPopupOpen(false)} onSubmit = {handlingThresholdSubmit}/>
+                )}
+
             </div>
         </div>
     );
