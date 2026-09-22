@@ -20,11 +20,7 @@ import { persist } from "zustand/middleware";
 import { getPresetRange } from "../components/toolbar/timePeriodSelector";
 import { timeMs } from "@/lib/timeUtils";
 import { toast } from "sonner";
-import {
-    AiVersionSummary,
-    DashboardPlan,
-    DashboardPlanWidget,
-} from "@/features/dashboard/types/agentic";
+import { AiVersionSummary, DashboardPlan } from "@/features/dashboard/types/agentic";
 import {
     createAiSession,
     deleteAiSession,
@@ -33,8 +29,6 @@ import {
     getAiDashboardVersion,
     applyAiDashboardVersion,
 } from "@/lib/fetch/api-agentic-dashboard";
-import { MetricType } from "../types/metric";
-import { CloudProviderEnum } from "@/features/dashboard/types/provider";
 
 const tickIntervalMs = 60_000;
 
@@ -371,9 +365,8 @@ const createDashboardSlice: StateCreator<DashboardStore, [], [], DashboardSlice>
         },
 
         getWidget: (id) => {
-            const currentWidgets = get().widgets;
-
-            return currentWidgets[id];
+            const state = get();
+            return state.isSessionActive ? state.stagedWidgets[id] : state.widgets[id];
         },
 
         getDashboardNameByID: (id) => {

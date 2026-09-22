@@ -29,6 +29,16 @@ function DashboardContent() {
     const fetchRecGroups = useRecStore((state) => state.fetchRecGroups);
     const fetchSummary = useRecStore((state) => state.fetchSummary);
 
+    const isSessionActive = useDashboardStore((state) => state.isSessionActive);
+    const standardLayouts = useDashboardStore((state) => state.layouts);
+    const stagedLayouts = useDashboardStore((state) => state.stagedLayouts);
+
+    //acitve layouts
+    const activeLayoutsMap = isSessionActive ? stagedLayouts : standardLayouts;
+    const layoutItems = useMemo(() => Object.values(activeLayoutsMap), [activeLayoutsMap]);
+
+    const effectiveEditMode = isEditMode && !isSessionActive;
+
     const { updateLayouts, setActiveDashboard } = useDashboardStore(
         (state: DashboardStore) => state.actions
     );
@@ -111,14 +121,14 @@ function DashboardContent() {
             );
         }
 
-        if (activeDashboard) {
+        if (activeDashboard || isSessionActive) {
             return (
                 <Grid
                     ref={gridApiRef}
-                    isEditMode={isEditMode}
-                    dashboardId={activeDashboardId || ""}
+                    isEditMode={effectiveEditMode}
+                    dashboardId={activeDashboardId || "ai-preview-session"}
                     onLayoutChange={handleLayoutChange}
-                    layouts={widgetLayouts}
+                    layouts={layoutItems}
                 />
             );
         }
@@ -165,8 +175,7 @@ function DashboardContent() {
 }
 
 // this part of the page depends on runtime info (like searchparams) that isn't available during the static build.
-// still prerender the static parts of your dashboard
-// fixes lighthouse issues hopefully
+// still prerender the static parts of dashboard
 export default function DashboardPage() {
     return (
         <Suspense
