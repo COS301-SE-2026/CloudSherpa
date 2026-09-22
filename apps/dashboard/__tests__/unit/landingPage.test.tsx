@@ -2,7 +2,7 @@ import { expect, test } from "vitest";
 import { render, screen } from "@testing-library/react";
 import LandingPage from "@/features/landingPage/components/landingPage";
 
-test("renders get started button", () => {
+test("renders get started link", () => {
     render(<LandingPage />);
-    expect(screen.getByRole("button", { name: "Get Started" })).toBeDefined();
+    expect(screen.getByRole("link", { name: "Get Started" })).toBeDefined();
 });

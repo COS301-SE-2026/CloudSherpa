@@ -32,7 +32,7 @@ test.describe("authentication", () => {
 
         await page.goto("http://localhost:3000/login");
 
-        await page.getByRole("button", { name: "Get Started" }).click();
+        await page.getByRole("link", { name: "Get Started" }).click();
 
         // fill in form
         await page.locator('input[name="email"]').fill(email);

@@ -1,5 +1,6 @@
 package com.cloudsherpa.service.auth.controller;
 
+import com.cloudsherpa.service.auth.dto.AuthSession;
 import com.cloudsherpa.service.auth.dto.AuthUserResponse;
 import com.cloudsherpa.service.auth.dto.LoginRequest;
 import com.cloudsherpa.service.auth.dto.RegisterRequest;
@@ -19,6 +20,7 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,18 +32,21 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Authentication", description = "Endpoints for user registration and login")
 public class AuthController {
   private final AuthService authService;
-  private final Duration tokenExpiryMinutes;
-  private static final Duration DEFAULT_EXPIRY = Duration.ofMinutes(60);
-
+  private final Duration accessTokenExpiry;
+  private final Duration refreshTokenExpiry;
   private final boolean authCookieSecure;
+
+  private static final String STRICT = "strict";
 
   public AuthController(
       AuthService authService,
-      @Value("${auth.jwt.exp-minutes:60}") long tokenExpiryMinutes,
+      @Value("${auth.access-token.exp-minutes:15}") long accessTokenExpiryMinutes,
+      @Value("${auth.refresh-token.exp-days:30}") long refreshTokenExpiryDays,
       @Value("${auth.cookie.secure:true}") boolean authCookieSecure) {
+
     this.authService = authService;
-    this.tokenExpiryMinutes =
-        tokenExpiryMinutes > 0 ? Duration.ofMinutes(tokenExpiryMinutes) : DEFAULT_EXPIRY;
+    this.accessTokenExpiry = Duration.ofMinutes(accessTokenExpiryMinutes);
+    this.refreshTokenExpiry = Duration.ofDays(refreshTokenExpiryDays);
     this.authCookieSecure = authCookieSecure;
   }
 
@@ -73,18 +78,30 @@ public class AuthController {
       })
   @PostMapping("/login")
   public ResponseEntity<AuthUserResponse> login(@RequestBody LoginRequest request) {
-    AuthUserResponse response = authService.login(request);
+    AuthSession session = authService.login(request);
 
-    ResponseCookie cookie =
-        ResponseCookie.from("auth_token", response.getToken())
-            .httpOnly(true)
-            .secure(authCookieSecure) // ! true in production HTTPS
-            .sameSite("Strict")
-            .path("/")
-            .maxAge(tokenExpiryMinutes.toSeconds())
-            .build();
+    return ResponseEntity.ok()
+        .header(HttpHeaders.SET_COOKIE, createAccessCookie(session.accessToken()).toString())
+        .header(HttpHeaders.SET_COOKIE, createRefreshCookie(session.refreshToken()).toString())
+        .body(session.user());
+  }
 
-    return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).body(response);
+  @Operation(summary = "Refresh authentication tokens")
+  @ApiResponses(
+      value = {
+        @ApiResponse(responseCode = "200", description = "Tokens successfully refreshed"),
+        @ApiResponse(responseCode = "401", description = "Invalid or expired refresh token")
+      })
+  @PostMapping("/refresh")
+  public ResponseEntity<AuthUserResponse> refresh(
+      @CookieValue(name = "refresh_token", required = false) String refreshToken) {
+
+    AuthSession session = authService.refresh(refreshToken);
+
+    return ResponseEntity.ok()
+        .header(HttpHeaders.SET_COOKIE, createAccessCookie(session.accessToken()).toString())
+        .header(HttpHeaders.SET_COOKIE, createRefreshCookie(session.refreshToken()).toString())
+        .body(session.user());
   }
 
   @Operation(summary = "Logout user")
@@ -93,17 +110,15 @@ public class AuthController {
         @ApiResponse(responseCode = "200", description = "Successfully logged out"),
       })
   @PostMapping("/logout")
-  public ResponseEntity<Void> logout() {
-    ResponseCookie cookie =
-        ResponseCookie.from("auth_token")
-            .httpOnly(true)
-            .secure(authCookieSecure)
-            .sameSite("Strict")
-            .path("/")
-            .maxAge(0)
-            .build();
+  public ResponseEntity<Void> logout(
+      @CookieValue(name = "refresh_token", required = false) String refreshToken) {
 
-    return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).build();
+    authService.logout(refreshToken);
+
+    return ResponseEntity.ok()
+        .header(HttpHeaders.SET_COOKIE, clearAccessCookie().toString())
+        .header(HttpHeaders.SET_COOKIE, clearRefreshCookie().toString())
+        .build();
   }
 
   @Operation(summary = "Get current authenticated user")
@@ -122,7 +137,46 @@ public class AuthController {
     return new AuthUserResponse(
         UUID.fromString(jwt.getSubject()),
         jwt.getClaimAsString("email"),
-        jwt.getClaimAsString("userId"),
-        "");
+        jwt.getClaimAsString("username"));
+  }
+
+  private ResponseCookie createAccessCookie(String token) {
+    return ResponseCookie.from("auth_token", token)
+        .httpOnly(true)
+        .secure(authCookieSecure)
+        .sameSite(STRICT)
+        .path("/")
+        .maxAge(accessTokenExpiry)
+        .build();
+  }
+
+  private ResponseCookie createRefreshCookie(String token) {
+    return ResponseCookie.from("refresh_token", token)
+        .httpOnly(true)
+        .secure(authCookieSecure)
+        .sameSite(STRICT)
+        .path("/")
+        .maxAge(refreshTokenExpiry)
+        .build();
+  }
+
+  private ResponseCookie clearAccessCookie() {
+    return ResponseCookie.from("auth_token")
+        .httpOnly(true)
+        .secure(authCookieSecure)
+        .sameSite(STRICT)
+        .path("/")
+        .maxAge(Duration.ZERO)
+        .build();
+  }
+
+  private ResponseCookie clearRefreshCookie() {
+    return ResponseCookie.from("refresh_token")
+        .httpOnly(true)
+        .secure(authCookieSecure)
+        .sameSite("Strict")
+        .path("/")
+        .maxAge(Duration.ZERO)
+        .build();
   }
 }

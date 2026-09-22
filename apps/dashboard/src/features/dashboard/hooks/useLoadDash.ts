@@ -89,13 +89,13 @@ export function useLoadDashboardData() {
 
     useEffect(() => {
         const loadDashboardData = async () => {
-            // If we already have dashboards in the store, no need to refetch
-            if (Object.keys(dashboards).length > 0) {
-                setIsLoading(false);
+            if (!isAuthReady || !isAuthenticated) {
                 return;
             }
 
-            if (!isAuthReady || !isAuthenticated) {
+            // If we already have dashboards in the store, no need to refetch
+            if (Object.keys(dashboards).length > 0) {
+                setIsLoading(false);
                 return;
             }
 

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ChevronDown, Menu } from "lucide-react";
-import { Button } from "@/components/atoms/button";
+import { Button, buttonVariants } from "@/components/atoms/button";
 import { Sheet, SheetContent } from "@/components/atoms/sheet";
 import {
     NavigationMenu,
@@ -112,11 +112,14 @@ export function HeroAndNavBar({ scrolled }: Readonly<PropsForNavBarHero>) {
                         across all your clouds before the bill shock hits{" "}
                     </p>
 
-                    <Button asChild className="mb-10 transition-transform hover:scale-[1.03]">
-                        <Link href="/login" role="button">
-                            Get Started
-                        </Link>
-                    </Button>
+                    <Link
+                        href="/login"
+                        className={buttonVariants({
+                            className: "mb-10 transition-transform hover:scale-[1.03]",
+                        })}
+                    >
+                        Get Started
+                    </Link>
 
                     <a
                         href="#problem"

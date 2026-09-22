@@ -7,11 +7,12 @@ import static org.mockito.Mockito.when;
 
 import com.cloudsherpa.lib.entities.User;
 import com.cloudsherpa.lib.repositories.UserRepository;
-import com.cloudsherpa.service.auth.dto.AuthUserResponse;
+import com.cloudsherpa.service.auth.dto.AuthSession;
 import com.cloudsherpa.service.auth.dto.LoginRequest;
 import com.cloudsherpa.service.auth.dto.RegisterRequest;
 import com.cloudsherpa.service.auth.service.AuthService;
 import com.cloudsherpa.service.auth.service.JwtService;
+import com.cloudsherpa.service.auth.service.RefreshTokenService;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,6 +31,8 @@ class AuthServiceTest {
 
   @Mock JwtService jwtService;
 
+  @Mock RefreshTokenService refreshTokenService;
+
   private String validEmail;
   private String validPassword;
   private String validUsername;
@@ -38,7 +41,7 @@ class AuthServiceTest {
 
   @BeforeEach
   void setUp() {
-    authService = new AuthService(userRepository, jwtService);
+    authService = new AuthService(userRepository, jwtService, refreshTokenService);
 
     this.validEmail = "test@gmail.com";
     this.validUsername = "TestUser";
@@ -165,25 +168,25 @@ class AuthServiceTest {
   }
 
   @Test
-  void loginShouldReturnUserWhenValidCredentials() {
-    // Arrange
+  void loginShouldReturnSessionWhenValidCredentials() {
     UUID userId = UUID.randomUUID();
-    String token = "valid.jwt.token";
+    String accessToken = "valid.jwt.token";
+    String refreshToken = "valid.refresh.token";
     String passwordHash = new BCryptPasswordEncoder(12).encode(validPassword);
     User user = new User(userId, validEmail, validUsername, passwordHash);
     LoginRequest validLoginRequest = loginRequest(validEmail, validPassword);
 
     when(userRepository.findByEmailIgnoreCase(validEmail)).thenReturn(user);
-    when(jwtService.generateToken(user)).thenReturn(token);
+    when(jwtService.generateToken(user)).thenReturn(accessToken);
+    when(refreshTokenService.create(user)).thenReturn(refreshToken);
 
-    // Act
-    AuthUserResponse response = this.authService.login(validLoginRequest);
+    AuthSession response = this.authService.login(validLoginRequest);
 
-    // Assert
-    assertEquals(userId, response.getUserId());
-    assertEquals(validEmail, response.getEmail());
-    assertEquals(validUsername, response.getUsername());
-    assertEquals(token, response.getToken());
+    assertEquals(userId, response.user().getUserId());
+    assertEquals(validEmail, response.user().getEmail());
+    assertEquals(validUsername, response.user().getUsername());
+    assertEquals(accessToken, response.accessToken());
+    assertEquals(refreshToken, response.refreshToken());
   }
 
   private void assertBadRequest(ResponseStatusException exception) {

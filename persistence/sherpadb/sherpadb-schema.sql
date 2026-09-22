@@ -236,6 +236,18 @@ CREATE TABLE IF NOT EXISTS public.widget_kpi (
   aggregation integer NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS public.refresh_tokens (
+  token_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL REFERENCES public.users(user_id) ON DELETE CASCADE,
+  token_hash varchar(64) NOT NULL UNIQUE,
+  expires_at timestamptz NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT NOW(),
+  revoked_at timestamptz
+);
+
+CREATE INDEX IF NOT EXISTS refresh_tokens_user_id_idx
+  ON public.refresh_tokens(user_id);
+
 -- Agentic dashboard construction tables
 CREATE TABLE IF NOT EXISTS public.ai_session (
     session_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
