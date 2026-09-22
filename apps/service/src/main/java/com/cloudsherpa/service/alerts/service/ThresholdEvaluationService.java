@@ -6,6 +6,8 @@ import com.cloudsherpa.lib.repositories.AlertRepository;
 import com.cloudsherpa.lib.repositories.ThresholdRepository;
 import com.cloudsherpa.service.listener.dto.MetricStreamEventDto;
 import com.cloudsherpa.service.sse.SseService;
+import com.cloudsherpa.service.webhooks.events.alert.threshold.ThresholdAlertPayload;
+import com.cloudsherpa.service.webhooks.producers.WebhookProducerService;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -27,14 +29,17 @@ public class ThresholdEvaluationService {
   private final ThresholdRepository thresholdRepository;
   private final AlertRepository alertRepository;
   private final SseService sseService;
+  private final WebhookProducerService webhookProducerService;
 
   public ThresholdEvaluationService(
       ThresholdRepository thresholdRepository,
       AlertRepository alertRepository,
-      SseService sseService) {
+      SseService sseService,
+      WebhookProducerService webhookProducerService) {
     this.thresholdRepository = thresholdRepository;
     this.alertRepository = alertRepository;
     this.sseService = sseService;
+    this.webhookProducerService = webhookProducerService;
   }
 
   // resource-1 reports CPUUtilization, so matching resource thresholds are evaluated.
@@ -83,6 +88,13 @@ public class ThresholdEvaluationService {
 
     // Example SSE event: name="alert", data=the saved Alert object.
     sseService.broadcast(userId, "alert", alert);
+
+    // Construct and submit webhook event
+    webhookProducerService.produceEvent(
+        userId,
+        threshold.getResource().getAccountId(),
+        "alert.threshold",
+        buildWebhookEventPayload(threshold, event, alert));
   }
 
   private Alert buildNewAlert(
@@ -150,5 +162,21 @@ public class ThresholdEvaluationService {
         + threshold.getValue()
         + ") for resource "
         + event.resourceId();
+  }
+
+  private ThresholdAlertPayload buildWebhookEventPayload(
+      Threshold threshold, MetricStreamEventDto event, Alert alert) {
+
+    return new ThresholdAlertPayload(
+        threshold.getResource().getResourceIdentifier(),
+        threshold.getResource().getResourceName(),
+        event.metricName(),
+        event.metricValue(),
+        event.unit(),
+        threshold.getOperator(),
+        threshold.getValue(),
+        alert.getSeverity(),
+        alert.getCreatedAt(),
+        alert.getLastSeen());
   }
 }
