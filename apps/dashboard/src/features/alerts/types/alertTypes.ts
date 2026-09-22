@@ -2,7 +2,7 @@ export type TypeForAlerts = "THRESHOLD" | "ANOMALY" | "BILLING";
 
 export type SeverityForAlerts = "INFO" | "WARNING" | "CRITICAL";
 
-export type StatusForAlerts = "ACTIVE" | "ACKNOWLEDGED" | "DISMISSED";
+export type StatusForAlerts = "ACTIVE" | "ACKNOWLEDGED" | "DISMISSED" | "RESOLVED";
 
 export interface ThresholdAlertPayload{
     metric_name : string;
