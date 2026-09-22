@@ -6,7 +6,7 @@ import {
     WebhookEvent,
     CreateWebhookPayload,
     Webhook,
-    CloudAccount,
+    CloudAccount, WebhookStatus
 } from "@/features/webhooks/types";
 import { addWebhook, editWebhook } from "@/features/webhooks/webhooks";
 import { Button } from "@/components/atoms/button";
@@ -75,6 +75,8 @@ export const AddWebhook = ({
     );
 
     const [accountSearch, setAccountSearch] = useState("");
+
+    const [webhookStatus, setWebhookStatus] = useState<WebhookStatus>(initialData?.webhookStatus ?? "ACTIVE");
 
     const groupEvents = useMemo(() => {
         const filteredEvents = eventsAvailable.filter((event) => {
@@ -160,7 +162,7 @@ export const AddWebhook = ({
             if (initialData) {
                 await editWebhook(initialData.webhookId, {
                     ...payload,
-                    status: initialData.webhookStatus,
+                    status: webhookStatus,
                 });
                 toast.success("Webhook has been successfully updated");
                 onSuccess("");
@@ -230,6 +232,22 @@ export const AddWebhook = ({
                             placeholder="https://example.com/webhooks"
                         />
                     </div>
+
+                    {initialData && (
+                        <div className = "space-y-1.5">
+                            <Label htmlFor = "webhook-status"> Status </Label>
+
+                            <Select value = {webhookStatus} onValueChange = {(change) => setWebhookStatus(change as WebhookStatus)}>
+                                <SelectTrigger id = "webhook-status" className = "w-[200px]"> <SelectValue/> </SelectTrigger>
+
+                                <SelectContent>
+                                    <SelectItem value = "ACTIVE"> Active </SelectItem>
+
+                                    <SelectItem value = "PAUSED"> Paused </SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 min-h-0">
