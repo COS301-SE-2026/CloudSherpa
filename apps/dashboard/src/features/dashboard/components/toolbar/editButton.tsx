@@ -54,13 +54,8 @@ export default function EditButton({
                     <TooltipTrigger asChild>
                         <Button
                             aria-label="editbtn"
-                            variant="outline"
+                            variant={isEditMode ? "destructive" : "outline"}
                             onClick={isEditMode ? handleCancelEdit : handleStartEditing}
-                            className={cn(
-                                "bg-card border-border text-foreground hover:text-foreground transition-all duration-200",
-                                isEditMode &&
-                                    "bg-destructive/10 border-destructive text-destructive hover:bg-destructive/20 hover:text-destructive hover:border-destructive"
-                            )}
                         >
                             {isEditMode ? (
                                 "Cancel"

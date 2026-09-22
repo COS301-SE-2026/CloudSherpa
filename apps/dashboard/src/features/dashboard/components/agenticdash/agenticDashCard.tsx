@@ -12,11 +12,13 @@ import {
     TooltipTrigger,
 } from "@/components/atoms/tooltip";
 import { Kbd, KbdGroup } from "@/components/atoms/kbd";
+import { useToolbar } from "../toolbar/toolbarProvider";
 
 export default function AgenticDashCard() {
     const [open, setOpen] = useState(false);
     const popupRef = useRef<HTMLDivElement>(null);
     const buttonRef = useRef<HTMLButtonElement>(null);
+    const { isEditMode } = useToolbar();
 
     const handleClick = () => {
         setOpen(!open);
@@ -54,7 +56,12 @@ export default function AgenticDashCard() {
             <TooltipProvider>
                 <Tooltip>
                     <TooltipTrigger asChild>
-                        <Button ref={buttonRef} variant="default" onClick={handleClick}>
+                        <Button
+                            ref={buttonRef}
+                            variant="default"
+                            onClick={handleClick}
+                            disabled={isEditMode}
+                        >
                             <Sparkles className="text-primary-foreground" />
                         </Button>
                     </TooltipTrigger>

@@ -357,10 +357,7 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
                         <AlertDialogCancel onClick={() => setDashboardToDelete(null)}>
                             Cancel
                         </AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={confirmDeleteDashboard}
-                            className="bg-red-600 hover:bg-red-700 text-white"
-                        >
+                        <AlertDialogAction onClick={confirmDeleteDashboard} variant="destructive">
                             Delete Dashboard
                         </AlertDialogAction>
                     </AlertDialogFooter>
