@@ -166,7 +166,11 @@ const helperForDeliveryColumns = (webhooks: Webhook[]): ColumnDef<WebhookDeliver
         },
     },
 
-    { accessorKey: "responseCode", header: "HTTP" },
+    {
+        accessorKey: "responseCode",
+        header: "HTTP",
+        cell: (info) => (info.getValue() == -1 ? "Endpoint unreachable" : info.getValue()),
+    },
 ];
 
 export const Webhooks = () => {
