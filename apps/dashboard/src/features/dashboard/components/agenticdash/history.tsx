@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import {
     createColumnHelper,
     flexRender,
@@ -15,28 +15,26 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/atoms/table";
+import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
+import { AiVersionSummary } from "@/features/dashboard/types/agentic";
 
-type generatedHistory = {
-    id: string;
-    date: string;
-    time: string;
-};
-
-const mockPastDashboards: generatedHistory[] = [
-    { id: "dash-aws-cost-opt", date: "2026-09-18", time: "14:32:10" },
-    { id: "dash-aws-cost-opt", date: "2026-09-18", time: "14:32:10" },
-    { id: "dash-aws-cost-opt", date: "2026-09-18", time: "14:32:10" },
-    { id: "dash-aws-cost-opt", date: "2026-09-18", time: "14:32:10" },
-    { id: "dash-aws-cost-opt", date: "2026-09-18", time: "14:32:10" },
-    { id: "dash-aws-cost-opt", date: "2026-09-18", time: "14:32:10" },
-];
-
-const colHelper = createColumnHelper<generatedHistory>();
+const colHelper = createColumnHelper<AiVersionSummary>();
 
 export default function History() {
+    const sessionId = useDashboardStore((state) => state.sessionId);
+    const versions = useDashboardStore((state) => state.versions);
+    const currentVersionId = useDashboardStore((state) => state.currentVersionId);
+    const { fetchVersions, switchVersion } = useDashboardStore((state) => state.agenticActions);
+
+    useEffect(() => {
+        if (sessionId) {
+            fetchVersions();
+        }
+    }, [sessionId, fetchVersions]);
+
     const columns = useMemo(
         () => [
-            colHelper.accessor("id", {
+            colHelper.accessor("version", {
                 header: "Dashboard",
                 cell: (info) => (
                     <span className="font-medium text-muted-foreground truncate max-w-[150px] block">
@@ -44,13 +42,18 @@ export default function History() {
                     </span>
                 ),
             }),
-            colHelper.accessor("date", {
+            colHelper.accessor("createdAt", {
                 header: "Date",
-                cell: (info) => info.getValue(),
-            }),
-            colHelper.accessor("time", {
-                header: () => <div className="text-right">Time</div>,
-                cell: (info) => <div className="text-right">{info.getValue()}</div>,
+                cell: (info) => {
+                    const val = info.getValue();
+                    if (!val) return <span className="text-muted-foreground">-</span>;
+                    const date = new Date(val);
+                    return (
+                        <span className="text-muted-foreground text-xs">
+                            {date.toLocaleDateString()} {date.toLocaleTimeString()}
+                        </span>
+                    );
+                },
             }),
         ],
         []
@@ -58,10 +61,18 @@ export default function History() {
 
     //init
     const table = useReactTable({
-        data: mockPastDashboards,
+        data: versions,
         columns,
         getCoreRowModel: getCoreRowModel(),
     });
+
+    if (!sessionId) {
+        return (
+            <div className="h-full w-full flex items-center justify-center border rounded-lg text-center text-muted-foreground text-sm">
+                Start an AI session to view version history and drafts.
+            </div>
+        );
+    }
 
     return (
         <div className="h-full w-full overflow-y-auto border rounded-lg">
@@ -84,19 +95,28 @@ export default function History() {
                 </TableHeader>
                 <TableBody>
                     {table.getRowModel().rows?.length ? (
-                        table.getRowModel().rows.map((row) => (
-                            <TableRow
-                                key={row.id}
-                                data-state={row.getIsSelected() && "selected"}
-                                className="cursor-pointer hover:bg-muted/50 transition-colors"
-                            >
-                                {row.getVisibleCells().map((cell) => (
-                                    <TableCell key={cell.id}>
-                                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                    </TableCell>
-                                ))}
-                            </TableRow>
-                        ))
+                        table.getRowModel().rows.map((row) => {
+                            const isSelected = row.original.versionId === currentVersionId;
+                            return (
+                                <TableRow
+                                    key={row.id}
+                                    data-state={isSelected && "selected"}
+                                    className={`cursor-pointer transition-colors ${
+                                        isSelected ? "bg-muted/80 font-semibold" : ""
+                                    }`}
+                                    onClick={() => switchVersion(row.original.versionId)}
+                                >
+                                    {row.getVisibleCells().map((cell) => (
+                                        <TableCell key={cell.id}>
+                                            {flexRender(
+                                                cell.column.columnDef.cell,
+                                                cell.getContext()
+                                            )}
+                                        </TableCell>
+                                    ))}
+                                </TableRow>
+                            );
+                        })
                     ) : (
                         <TableRow>
                             <TableCell colSpan={columns.length} className="h-24 text-center">
