@@ -506,22 +506,160 @@ const createAgenticSlice: StateCreator<DashboardStore, [], [], AgenticSlice> = (
 
     agenticActions: {
         //create new temp session, send first prompt, translate response and populate store so dash can be viewed
-        startSessionAndGenerate: async (prompt: string) => {},
+        startSessionAndGenerate: async (prompt: string) => {
+            set({ isGenerating: true });
+            try {
+                //create session
+                const sessionRes = await createAiSession();
+                const sessionId = sessionRes.sessionId;
+
+                //send initial prompt
+                const planRes = await generateDashboardPlan({
+                    sessionId,
+                    message: prompt,
+                });
+
+                const { layoutsMap, widgetsMap } = adaptState(planRes.dashboard);
+
+                set({
+                    sessionId,
+                    currentVersionId: planRes.versionId,
+                    isSessionActive: true,
+                    isGenerating: false,
+                    assistantMessage: planRes.assistantMessage,
+                    stagedLayouts: layoutsMap,
+                    stagedWidgets: widgetsMap,
+                });
+
+                //refresh version history list
+                await get().agenticActions.fetchVersions();
+                toast.success("AI session started and draft generated!");
+            } catch (error) {
+                console.error("Failed to start session:", error);
+                toast.error("Failed to generate AI dashboard plan.");
+                set({ isGenerating: false });
+            }
+        },
 
         // while in session, send prompt to update current generated dash
-        sendPrompt: async (prompt: string) => {},
+        sendPrompt: async (prompt: string) => {
+            const { sessionId } = get();
+            if (!sessionId) return;
+
+            set({ isGenerating: true });
+            try {
+                const planRes = await generateDashboardPlan({
+                    sessionId,
+                    message: prompt,
+                });
+
+                const { layoutsMap, widgetsMap } = adaptState(planRes.dashboard);
+
+                set({
+                    currentVersionId: planRes.versionId,
+                    isGenerating: false,
+                    assistantMessage: planRes.assistantMessage,
+                    stagedLayouts: layoutsMap,
+                    stagedWidgets: widgetsMap,
+                });
+
+                await get().agenticActions.fetchVersions();
+                toast.success("Dashboard draft updated!");
+            } catch (error) {
+                console.error("Failed to update plan:", error);
+                toast.error("Failed to update AI dashboard draft.");
+                set({ isGenerating: false });
+            }
+        },
 
         //jmp 2 previous version, swap it into preview
-        switchVersion: async (versionId: string) => {},
+        switchVersion: async (versionId: string) => {
+            const { sessionId } = get();
+            if (!sessionId) return;
+
+            try {
+                const versionRes = await getAiDashboardVersion(sessionId, versionId);
+                const { layoutsMap, widgetsMap } = adaptState(versionRes.dashboard);
+
+                set({
+                    currentVersionId: versionRes.versionId,
+                    stagedLayouts: layoutsMap,
+                    stagedWidgets: widgetsMap,
+                });
+                toast.success(`Switched to version v${versionRes.version}`);
+            } catch (error) {
+                console.error("Failed to fetch version:", error);
+                toast.error("Failed to load selected version.");
+            }
+        },
 
         //retrieve list of dash drafts during session for version history
-        fetchVersions: async () => {},
+        fetchVersions: async () => {
+            const { sessionId } = get();
+            if (!sessionId) return;
+
+            try {
+                const versions = await getAiDashboardVersions(sessionId);
+                set({ versions });
+            } catch (error) {
+                console.error("Failed to fetch version history:", error);
+            }
+        },
 
         //persist current ai dash and cleanup state
-        acceptDashboard: async () => {},
+        acceptDashboard: async () => {
+            const { sessionId, currentVersionId } = get();
+            if (!sessionId || !currentVersionId) return;
+
+            try {
+                //apply version
+                await applyAiDashboardVersion(sessionId, currentVersionId);
+
+                //clean up session
+                await deleteAiSession(sessionId);
+
+                //reset local
+                set({
+                    sessionId: null,
+                    currentVersionId: null,
+                    isSessionActive: false,
+                    assistantMessage: null,
+                    versions: [],
+                    stagedLayouts: {},
+                    stagedWidgets: {},
+                });
+
+                toast.success("Successfully applied AI dashboard!");
+            } catch (error) {
+                console.error("Failed to apply dashboard version:", error);
+                toast.error("Failed to apply AI dashboard.");
+            }
+        },
 
         //abort session and cleanup state
-        cancelSession: async () => {},
+        cancelSession: async () => {
+            const { sessionId } = get();
+            if (sessionId) {
+                try {
+                    await deleteAiSession(sessionId);
+                } catch (error) {
+                    console.error("Failed to delete session on cancel:", error);
+                }
+            }
+
+            //reset local
+            set({
+                sessionId: null,
+                currentVersionId: null,
+                isSessionActive: false,
+                assistantMessage: null,
+                versions: [],
+                stagedLayouts: {},
+                stagedWidgets: {},
+            });
+
+            toast.info("AI session discarded.");
+        },
     },
 });
 
