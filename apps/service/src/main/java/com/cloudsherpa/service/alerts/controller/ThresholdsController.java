@@ -76,7 +76,11 @@ public class ThresholdsController {
             request.severity() == null ? "WARNING" : request.severity(),
             request.enabled() == null || request.enabled());
 
-    ThresholdResponse response = ThresholdResponse.from(thresholdRepository.save(threshold));
+    Threshold savedThreshold = thresholdRepository.save(threshold);
+
+    ThresholdResponse response =
+        ThresholdResponse.from(
+            savedThreshold, metricMapper.toDisplayName(savedThreshold.getMetricName()));
 
     return ResponseEntity.status(201).body(response);
   }
@@ -102,7 +106,13 @@ public class ThresholdsController {
             ? thresholdRepository.findAll()
             : thresholdRepository.findByResourceId(resourceId);
 
-    return ResponseEntity.ok(thresholds.stream().map(ThresholdResponse::from).toList());
+    return ResponseEntity.ok(
+        thresholds.stream()
+            .map(
+                threshold ->
+                    ThresholdResponse.from(
+                        threshold, metricMapper.toDisplayName(threshold.getMetricName())))
+            .toList());
   }
 
   @Operation(summary = "Update threshold", description = "Update an existing threshold.")

@@ -16,12 +16,12 @@ public record ThresholdResponse(
     OffsetDateTime createdAt,
     OffsetDateTime updatedAt) {
 
-  public static ThresholdResponse from(Threshold threshold) {
+  public static ThresholdResponse from(Threshold threshold, String displayMetricName) {
     return new ThresholdResponse(
         threshold.getThresholdId(),
         threshold.getResourceId(),
         threshold.getUserId(),
-        threshold.getMetricName(),
+        displayMetricName,
         threshold.getOperator(),
         threshold.getValue(),
         threshold.getSeverity(),
