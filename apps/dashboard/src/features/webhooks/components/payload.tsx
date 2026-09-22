@@ -6,9 +6,10 @@ import { Button } from "@/components/atoms/button";
 
 interface PropsForPayload {
     event: WebhookEvent;
+    signingKey: string;
 }
 
-export const ExampleForPayload = ({ event }: PropsForPayload) => {
+export const ExampleForPayload = ({ event, signingKey }: PropsForPayload) => {
     const [copyHeaders, setCopyHeaders] = useState(false);
 
     const [copyBody, setCopyBody] = useState(false);
@@ -18,16 +19,16 @@ export const ExampleForPayload = ({ event }: PropsForPayload) => {
     useEffect(() => {
         const calculateDemoHash = async (payload?: Record<string, unknown>) => {
             const encoder = new TextEncoder();
-            const key = await window.crypto.subtle.importKey(
+            const importedKey = await window.crypto.subtle.importKey(
                 "raw",
-                encoder.encode("test"),
+                encoder.encode(signingKey),
                 { name: "HMAC", hash: "SHA-256" },
                 false,
                 ["sign"]
             );
             const signature = await window.crypto.subtle.sign(
                 "HMAC",
-                key,
+                importedKey,
                 encoder.encode(JSON.stringify(payload))
             );
 
@@ -37,7 +38,7 @@ export const ExampleForPayload = ({ event }: PropsForPayload) => {
         };
 
         void calculateDemoHash(event.jsonBody).then(setDemoHash);
-    }, [event.jsonBody]);
+    }, [event.jsonBody, signingKey]);
 
     const headers: Record<string, string> = {
         //copied

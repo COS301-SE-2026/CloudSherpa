@@ -173,6 +173,8 @@ const helperForDeliveryColumns = (webhooks: Webhook[]): ColumnDef<WebhookDeliver
     },
 ];
 
+const demoKey = "099ed656f13b66253f1005800b89f7";
+
 export const Webhooks = () => {
     const [webhooks, setWebhooks] = useState<Webhook[]>([]);
 
@@ -786,15 +788,20 @@ export const Webhooks = () => {
 
                                 <p className="text-xs text-muted-foreground mb-2">
                                     {" "}
-                                    Sign webhook-id.webhook-timestamp.raw_body with
-                                    HMAC-SHA256.{" "}
+                                    Sign webhook-id.webhook-timestamp.raw_body with HMAC-SHA256.
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                    Demo signing key: {demoKey}
                                 </p>
                             </div>
                         </div>
 
                         <div className="md:col-span-2">
                             {eventSelectedForPayload && (
-                                <ExampleForPayload event={eventSelectedForPayload} />
+                                <ExampleForPayload
+                                    event={eventSelectedForPayload}
+                                    signingKey={demoKey}
+                                />
                             )}
                         </div>
                     </div>
