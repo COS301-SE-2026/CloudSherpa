@@ -99,7 +99,12 @@ interface KeyboardShortcuts {
     function: string;
 }
 
-const SHORTCUT: KeyboardShortcuts[] = [{ key: ["ENTER"], function: "Submit form" }];
+const SHORTCUT: KeyboardShortcuts[] = [
+    { key: ["enter"], function: "Submit form" },
+    { key: ["shift + E"], function: "Edit dashboard layout" },
+    { key: ["shift + C"], function: "Chart widget" },
+    { key: ["shift + K"], function: "KPI widget" },
+];
 
 export function HelpMenu() {
     const router = useRouter();

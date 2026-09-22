@@ -46,7 +46,7 @@ export default function AddWidget({
                     <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded flex flex-row gap-1">
                         <span>shift</span>
                         <Plus className="h-2 w-2" />
-                        <span>c</span>
+                        <span>C</span>
                     </span>
                 </DropdownMenuItem>
 
@@ -59,7 +59,7 @@ export default function AddWidget({
                     <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded flex flex-row gap-1">
                         <span>shift</span>
                         <Plus className="h-2 w-2" />
-                        <span>k</span>
+                        <span>K</span>
                     </span>
                 </DropdownMenuItem>
             </DropdownMenuContent>
