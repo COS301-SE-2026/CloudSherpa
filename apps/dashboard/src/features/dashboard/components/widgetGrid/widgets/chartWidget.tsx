@@ -3,11 +3,11 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/atoms/car
 import { LineChart } from "@/features/dashboard/components/widgetGrid/widgets/charts/LineChart";
 import { GaugeChart } from "@/features/dashboard/components/widgetGrid/widgets/charts/GaugeChart";
 import { Button } from "@/components/atoms/button";
-import { ChartType, ChartWidgetConfig } from "@/features/dashboard/types/widgets";
+import { ChartType, ChartWidgetConfig, ChartColour } from "@/features/dashboard/types/widgets";
 import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
 import { WidgetMenu } from "@/features/dashboard/components/widgetMenu";
 import { WidgetDropdown } from "@/features/dashboard/components/widgetDropdown";
-import { CircleAlert, Sparkles } from "lucide-react";
+import { CircleAlert, Lightbulb } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
     Tooltip,
@@ -22,6 +22,7 @@ interface BaseChartProps {
     resourceId: string;
     metricType: string;
     onDataStatusChange?: (hasData: boolean) => void;
+    chartColour?: ChartColour;
 }
 
 const CHART_COMPONENTS: Record<ChartType, React.ComponentType<BaseChartProps>> = {
@@ -40,7 +41,7 @@ export function ChartWidget({
     preview = false,
     isEditMode = false,
 }: Readonly<WidgetProps>) {
-    const { chartType, displayName, resourceId, metricName, id } = config;
+    const { chartType, chartColour, displayName, resourceId, metricName, id } = config;
     const ChartComponent = CHART_COMPONENTS[chartType];
     const [hasNoData, setHasNoData] = useState(false);
     const router = useRouter();
@@ -124,18 +125,12 @@ export function ChartWidget({
         if (!resourceId || !metricName) {
             return (
                 <div className="flex flex-col  h-full items-center justify-center gap-2">
-                    {isEditMode ? (
-                        <p className="text-xs text-muted-foreground italic">
-                            Save dashboard changes before configuring this widget.
-                        </p>
-                    ) : (
-                        <div className="flex flex-col items-center justify-center gap-2">
-                            <span className="text-base">This widget is not configured.</span>
-                            <Button onClick={openConfig} aria-label="configure new widget button">
-                                Configure Widget
-                            </Button>
-                        </div>
-                    )}
+                    <div className="flex flex-col items-center justify-center gap-2">
+                        <span className="text-base">This widget is not configured.</span>
+                        <Button onClick={openConfig} aria-label="configure new widget button">
+                            Configure Widget
+                        </Button>
+                    </div>
                 </div>
             );
         }
@@ -145,6 +140,7 @@ export function ChartWidget({
                 resourceId={resourceId}
                 metricType={metricName}
                 onDataStatusChange={(hasData) => setHasNoData(!hasData)}
+                chartColour={chartColour}
             />
         );
     };
@@ -190,7 +186,7 @@ export function ChartWidget({
                                             className="cursor-pointer flex items-center"
                                             onClick={() => handleClickRecommendation()}
                                         >
-                                            <Sparkles className="h-5 w-5 text-primary cursor-pointer" />
+                                            <Lightbulb className="h-5 w-5 text-primary cursor-pointer" />
                                         </button>
                                     </TooltipTrigger>
                                     <TooltipContent

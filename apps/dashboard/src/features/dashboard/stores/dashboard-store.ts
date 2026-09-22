@@ -51,6 +51,7 @@ interface DashboardActions {
     ) => void;
     getDashboardNameByID: (id: string) => string | undefined;
     getWidgetNameById: (id: string) => string | undefined;
+    setIsCompacting: (value: boolean) => void;
     reset: () => void;
 }
 
@@ -67,6 +68,7 @@ type DashboardSlice = {
     widgets: Record<string, WidgetConfig>;
     snapshot: DashboardSnapshot | null;
     actions: DashboardActions;
+    isCompacting: boolean;
 };
 
 type WindowSlice = {
@@ -92,8 +94,11 @@ const createDashboardSlice: StateCreator<DashboardStore, [], [], DashboardSlice>
     layouts: {},
     widgets: {},
     snapshot: null,
+    isCompacting: false,
 
     actions: {
+        setIsCompacting: (value) => set({ isCompacting: value }),
+
         createSnapshot: () =>
             set((state) => {
                 const cleanLayouts: Record<string, LayoutItem> = {};
@@ -192,6 +197,7 @@ const createDashboardSlice: StateCreator<DashboardStore, [], [], DashboardSlice>
                     id: widget.id,
                     widgetType: "CHART",
                     chartType: widget.chartType,
+                    chartColour: widget.chartColour,
                     displayName: widget.displayName,
                     provider: widget.provider,
                     accountId: widget.accountId,

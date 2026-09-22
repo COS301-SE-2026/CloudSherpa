@@ -5,7 +5,10 @@ import { useState } from "react";
 import { Button } from "@/components/atoms/button";
 import { useRecStore } from "@/features/optimization/stores/useRecStore";
 import { Badge } from "@/components/atoms/badge";
+import { Separator } from "@/components/atoms/separator";
 import { toast } from "sonner";
+import RecommendationReasoning, { formatValue } from "@/features/optimization/utils/recDictionary";
+import { cn } from "@/lib/utils";
 
 interface RecommendationCardProps {
     recommendation: Recommendation;
@@ -58,11 +61,11 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
     const getStatusBadgeClass = () => {
         switch (recommendation.status) {
             case "ACTIVE":
-                return "bg-green-600 text-white";
+                return "bg-success text-success-foreground";
             case "APPLIED":
-                return "bg-blue-600 text-white";
+                return "bg-primary text-primary-foreground";
             case "DISMISSED":
-                return "bg-red-600 text-white";
+                return "bg-destructive text-destructive-foreground";
             default:
                 return "variant-secondary";
         }
@@ -71,13 +74,13 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
     const getActionTextColor = () => {
         switch (recommendation.actionType) {
             case "TERMINATE":
-                return "text-red-600";
-            case "MODERNIZE":
-                return "text-blue-600";
+                return "text-destructive";
             case "DOWNSIZE":
-                return "text-orange-600";
+                return "text-chart-3";
             case "SUSPEND":
-                return "text-yellow-600";
+                return "text-yellow-500";
+            case "UPSCALE":
+                return "text-warning";
             default:
                 return "";
         }
@@ -98,19 +101,47 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
         return { metricName, aggregation, timeframe };
     };
 
-    const isPercentageMetric = (metricName: string): boolean => {
-        const nameLower = metricName.toLowerCase();
-        return (
-            nameLower.includes("utilization") ||
-            nameLower.includes("percentage") ||
-            nameLower.includes("pressure")
-        );
+    const formatMetricLabel = (metricName: string, aggregation: string) => {
+        const titleCasedName = metricName
+            .split(" ")
+            .map((word) => {
+                const lower = word.toLowerCase();
+                if (lower === "cpu") return "CPU";
+                if (lower === "io") return "I/O";
+                if (lower === "iops") return "IOPS";
+                if (lower === "http") return "HTTP";
+                if (lower === "db") return "DB";
+                return lower.charAt(0).toUpperCase() + lower.slice(1);
+            })
+            .join(" ");
+
+        const aggDisplay =
+            aggregation.toLowerCase() === "p95"
+                ? "P95"
+                : aggregation.charAt(0).toUpperCase() + aggregation.slice(1).toLowerCase();
+
+        return `${titleCasedName} (${aggDisplay})`;
     };
+
+    const getPeriod = () => {
+        if (!recommendation?.evidence) return "4";
+        const keys = Object.keys(recommendation.evidence);
+        if (keys.length === 0) return "4";
+
+        const parsed = parseEvidenceKey(keys[0]);
+        return parsed ? parsed.timeframe.replace("d", "") : "4";
+    };
+
+    const period = getPeriod();
 
     const getEvidenceCards = () => {
         if (!recommendation?.evidence) return [];
 
-        const cards: Array<{ label: string; value: string; subtitle: string }> = [];
+        const cards: Array<{
+            label: string;
+            value: string;
+            subtitle: string;
+        }> = [];
 
         for (const [key, value] of Object.entries(recommendation.evidence)) {
             const parsed = parseEvidenceKey(key);
@@ -118,13 +149,8 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
 
             const { metricName, aggregation, timeframe } = parsed;
 
-            const formattedValue = typeof value === "number" ? value.toFixed(2) : String(value);
-            const displayValue = isPercentageMetric(metricName)
-                ? `${formattedValue}%`
-                : formattedValue;
-
-            const aggDisplay = aggregation.charAt(0).toUpperCase() + aggregation.slice(1);
-            const label = `${metricName} (${aggDisplay})`;
+            const displayValue = formatValue(metricName, value as number);
+            const label = formatMetricLabel(metricName, aggregation);
 
             const days = timeframe.replace("d", "");
             const subtitle = `Over the last ${days} day${days === "1" ? "" : "s"}`;
@@ -155,6 +181,9 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
 
         return (
             <>
+                <Button type="button" onClick={handleApply} className="cursor-pointer">
+                    Apply
+                </Button>
                 <Button
                     type="button"
                     variant="destructive"
@@ -163,15 +192,12 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
                 >
                     Dismiss
                 </Button>
-                <Button type="button" onClick={handleApply} className="cursor-pointer">
-                    Apply
-                </Button>
             </>
         );
     };
 
     return (
-        <Card onClick={() => setOpen(!open)} className="cursor-pointer">
+        <Card onClick={() => setOpen(!open)} className={cn("cursor-pointer", "hover:bg-muted/30")}>
             <CardHeader className="flex flex-row justify-between items-center gap-2">
                 <div className="flex flex-row items-center gap-2">
                     <span className={`font-bold text-lg ${getActionTextColor()}`}>
@@ -186,30 +212,37 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
                 </Badge>
             </CardHeader>
             {open && (
-                <CardContent className="space-y-4">
-                    <div>
-                        <h3 className="text-sm font-semibold text-muted-foreground mb-3">
-                            Monitored Evidence
-                        </h3>
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-                            {getEvidenceCards().map((card, index) => (
-                                <div
-                                    key={card.label}
-                                    className="bg-muted/80 dark:bg-muted/60 rounded-lg p-4"
-                                >
-                                    <p className="text-sm font-bold text-foreground mb-1">
-                                        {card.label}
-                                    </p>
-                                    <p className="text-2xl font-bold mb-1">{card.value}</p>
-                                    <p className="text-xs text-muted-foreground">{card.subtitle}</p>
-                                </div>
-                            ))}
+                <div className="h-full w-full space-y-6">
+                    <CardContent className="h-full flex flex-col lg:flex-row gap-6">
+                        <div className="flex flex-col ">
+                            <h3 className="text-sm font-semibold text-muted-foreground mb-2">
+                                Monitored Evidence over {period} day
+                                {period === "1" ? "" : "s"}
+                            </h3>
+                            <div className="flex flex-col w-70 gap-3">
+                                {getEvidenceCards().map((card) => (
+                                    <div key={card.label} className="flex flex-col gap-4">
+                                        <div>
+                                            <div className="text-2xl font-bold">{card.value}</div>
+                                            <div className="text-sm font-semibold text-muted-foreground mb-1">
+                                                {card.label}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
-                    </div>
-                    <div className="flex flex-row gap-4 justify-start items-center">
-                        {renderActionButtons()}
-                    </div>
-                </CardContent>
+                        <Separator orientation="vertical" />
+                        <div className="flex flex-col justify-between gap-4">
+                            <p className="text-base text-foreground leading-relaxed">
+                                <RecommendationReasoning recommendation={recommendation} />
+                            </p>
+                            <div className="flex flex-row justify-start gap-2">
+                                {renderActionButtons()}
+                            </div>
+                        </div>
+                    </CardContent>
+                </div>
             )}
         </Card>
     );

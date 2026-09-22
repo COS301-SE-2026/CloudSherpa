@@ -128,7 +128,7 @@ const FEATURES: Features[] = [
     {
         icons: Cloud,
         name: "Multi-cloud environments",
-        subDescription: "Manages AWS",
+        subDescription: "Manages AWS, GCP and Azure",
         description:
             "CloudSherpa collapses multiple dashboards and cloud bills into one uniform picture",
         benefit: [
@@ -151,7 +151,7 @@ const FEATURES: Features[] = [
             {
                 label: "Simplify multiple cloud platforms",
                 details:
-                    "Instead of haveing multiple platforms to be monitored, all can be replaced with CloudSherpa",
+                    "Instead of having multiple platforms to be monitored, all can be replaced with CloudSherpa",
             },
         ],
     },

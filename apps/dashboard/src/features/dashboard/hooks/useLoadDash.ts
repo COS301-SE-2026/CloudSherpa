@@ -10,6 +10,7 @@ import {
     LayoutItem,
     WidgetConfig,
     ChartType,
+    ChartColour,
 } from "@/features/dashboard/types/widgets";
 import { MetricType } from "@/features/dashboard/types/metric";
 
@@ -44,6 +45,7 @@ export function processFetchedDashboards(fetchedData: DashboardDTO[]) {
                 configsArray.push({
                     id: w.id,
                     chartType: w.chartType as ChartType,
+                    chartColour: w.chartColour as ChartColour,
                     widgetType: "CHART",
                     displayName: w.displayName,
                     provider: w.provider,
@@ -87,13 +89,13 @@ export function useLoadDashboardData() {
 
     useEffect(() => {
         const loadDashboardData = async () => {
-            // If we already have dashboards in the store, no need to refetch
-            if (Object.keys(dashboards).length > 0) {
-                setIsLoading(false);
+            if (!isAuthReady || !isAuthenticated) {
                 return;
             }
 
-            if (!isAuthReady || !isAuthenticated) {
+            // If we already have dashboards in the store, no need to refetch
+            if (Object.keys(dashboards).length > 0) {
+                setIsLoading(false);
                 return;
             }
 

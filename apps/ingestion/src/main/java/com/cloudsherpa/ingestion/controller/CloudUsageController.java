@@ -2,6 +2,7 @@ package com.cloudsherpa.ingestion.controller;
 
 import com.cloudsherpa.ingestion.billing.provider.aws.cur.AwsCurIngestionService;
 import com.cloudsherpa.ingestion.billing.provider.aws.cur.pipeline.AwsCurContext;
+import com.cloudsherpa.ingestion.billing.provider.azure.AzureBillingIngestionService;
 import com.cloudsherpa.ingestion.billing.provider.gcp.bigquery.GcpBillingIngestionService;
 import com.cloudsherpa.ingestion.models.IngestionRequestEvent;
 import com.cloudsherpa.ingestion.models.IngestionResult;
@@ -12,10 +13,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,6 +34,9 @@ public class CloudUsageController {
   private final AwsCurIngestionService awsCurIngestionService;
   private final Environment environment;
   private final GcpBillingIngestionService gcpBillingIngestionService;
+  private final AzureBillingIngestionService azureBillingIngestionService;
+
+  private static final String DEV_USER_ID = "5ebe4340-c5ec-4833-ad93-06abf4609f03";
 
   @Value("${dev.gcp.billing_config_id:}")
   private String devGcpBillingConfigId;
@@ -40,11 +46,13 @@ public class CloudUsageController {
       CloudUsageService cloudUsageService,
       AwsCurIngestionService awsCurIngestionService,
       Environment environment,
-      GcpBillingIngestionService gcpBillingIngestionService) {
+      GcpBillingIngestionService gcpBillingIngestionService,
+      AzureBillingIngestionService azureBillingIngestionService) {
     this.cloudUsageService = cloudUsageService;
     this.awsCurIngestionService = awsCurIngestionService;
     this.environment = environment;
     this.gcpBillingIngestionService = gcpBillingIngestionService;
+    this.azureBillingIngestionService = azureBillingIngestionService;
   }
 
   @Operation(
@@ -143,8 +151,7 @@ public class CloudUsageController {
       })
   @PostMapping("/ingest/aws/billing/cur")
   public ResponseEntity<Void> ingestAwsBillingCur() {
-    awsCurIngestionService.execute(
-        "5ebe4340-c5ec-4833-ad93-06abf4609f03", "e0000000-0000-0000-0000-000000000001");
+    awsCurIngestionService.execute(DEV_USER_ID, "e0000000-0000-0000-0000-000000000001");
 
     return ResponseEntity.ok().build();
   }
@@ -167,7 +174,7 @@ public class CloudUsageController {
       })
   @PostMapping("ingest/gcp/billing/bigquery")
   public ResponseEntity<String> ingestGcpBigqueryBilling() {
-    if (!environment.matchesProfiles("dev")) {
+    if (!isDevActive()) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
@@ -175,9 +182,32 @@ public class CloudUsageController {
       return ResponseEntity.badRequest().body("Environment misconfigured");
     }
 
-    gcpBillingIngestionService.execute(
-        "5ebe4340-c5ec-4833-ad93-06abf4609f03", devGcpBillingConfigId);
+    gcpBillingIngestionService.execute(DEV_USER_ID, devGcpBillingConfigId);
 
     return ResponseEntity.ok().build();
+  }
+
+  @Operation(
+      summary = "Trigger Azure billing ingestion manually for a particular user",
+      description =
+          "Runs Azure billing ingestion for testing and development. "
+              + "This endpoint is only available when the dev Spring profile is active.")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "GCP BigQuery billing ingestion ran successfully",
+            content = @Content)
+      })
+  @PostMapping("ingest/azure/billing/{configId}")
+  public ResponseEntity<Void> ingestAzureBilling(@PathVariable UUID configId) {
+
+    azureBillingIngestionService.execute(DEV_USER_ID, configId.toString());
+
+    return ResponseEntity.ok().build();
+  }
+
+  private boolean isDevActive() {
+    return environment.matchesProfiles("dev");
   }
 }

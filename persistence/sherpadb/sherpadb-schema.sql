@@ -29,6 +29,7 @@ CREATE TYPE public.predefined_time_enum AS ENUM (
 CREATE TYPE public.type_enum AS ENUM ('KPI', 'CHART');
 CREATE TYPE public.execution_status_enum AS ENUM ('pending', 'processing', 'completed', 'failed');
 CREATE TYPE PUBLIC.chart_type_enum AS ENUM ('gauge_chart', 'line_chart');
+CREATE TYPE public.chart_colour_enum AS ENUM ('chart_1', 'chart_2', 'chart_3', 'chart_4', 'chart_5');
 -- Differentiates actual compute usage from other types.
 -- Maps to CUR: line_item_line_item_type
 CREATE TYPE public.charge_type_enum AS ENUM ('Usage', 'Other', 'Credit'); 
@@ -45,7 +46,20 @@ CREATE TYPE public.optimization_status_enum AS ENUM (
 CREATE TYPE public.optimization_action_type_enum AS ENUM (
   'DOWNSIZE',
   'TERMINATE',
-  'SUSPEND'
+  'SUSPEND',
+  'UPSCALE'
+);
+
+CREATE TYPE public.webhook_status_enum AS ENUM (
+  'ACTIVE',
+  'PAUSED'
+);
+
+CREATE TYPE public.webhook_delivery_status_enum AS ENUM (
+  'PENDING',
+  'PROCESSING',
+  'DELIVERED',
+  'FAILED'
 );
 
 -- ----------------------------------------------------------------
@@ -93,7 +107,7 @@ CREATE TABLE IF NOT EXISTS public.cloud_account (
   connection_id uuid REFERENCES public.cloud_connection(connection_id) ON DELETE CASCADE,
   account_type public.account_type_enum NOT NULL,
   ingestion_period public.ingestion_period_enum,
-  display_name varchar(255),
+  display_name varchar(80),
   created_at timestamptz DEFAULT NOW(),
   last_usage_ingestion timestamptz DEFAULT NOW(),
   next_usage_ingestion timestamptz DEFAULT NOW(),
@@ -163,6 +177,14 @@ CREATE TABLE IF NOT EXISTS public.gcp_billing_export_config (
   billing_account_id char(20) NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS public.azure_billing_export_config (
+  config_id uuid PRIMARY KEY REFERENCES public.billing_export_config(config_id) ON DELETE CASCADE,
+  storage_account_name varchar(24) NOT NULL CONSTRAINT storage_account_name_length_check CHECK (length(storage_account_name) >= 3), -- must be between 3 and 24 characters long https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/resource-name-rules#microsoftstorage
+  storage_container varchar(63) NOT NULL CONSTRAINT storage_container_length_check CHECK ((length(storage_container) >= 3)), -- must be between 3 and 63 characters long https://learn.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata
+  billing_export_directory varchar(255) NOT NULL, -- https://learn.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-shares--directories--files--and-metadata#directory-and-file-names
+  export_name text NOT NULL -- was unable to determine naming restrictions, hence liberal with size, NOTE the assumption is thatN th this is the full export name not export prefix
+);
+
 CREATE TABLE IF NOT EXISTS public.billing_export_execution (
   execution_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   config_id uuid REFERENCES public.billing_export_config(config_id) ON DELETE CASCADE,
@@ -173,9 +195,23 @@ CREATE TABLE IF NOT EXISTS public.billing_export_execution (
   error_message text
 );
 
+CREATE OR REPLACE FUNCTION public.notify_billing_execution_completed()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.status = 'completed' AND OLD.status IS DISTINCT FROM NEW.status THEN
+        PERFORM pg_notify('billing_execution_completed', row_to_json(NEW)::text);
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER billing_execution_completed_trigger
+AFTER UPDATE ON public.billing_export_execution
+FOR EACH ROW EXECUTE FUNCTION public.notify_billing_execution_completed();
+
 CREATE TABLE IF NOT EXISTS public.dashboard (
   dashboard_id uuid PRIMARY KEY,
-  display_name varchar(255) NOT NULL,
+  display_name varchar(80) NOT NULL,
   user_id uuid REFERENCES public.users(user_id) ON DELETE CASCADE,
   time_from timestamptz,
   time_to timestamptz,
@@ -191,7 +227,7 @@ CREATE TABLE IF NOT EXISTS public.widget (
   start_y integer NOT NULL, 
   width integer NOT NULL,   
   height integer NOT NULL,  
-  display_name varchar(100)
+  display_name varchar(80)
 );
 
 CREATE TABLE IF NOT EXISTS public.widget_kpi (
@@ -200,6 +236,143 @@ CREATE TABLE IF NOT EXISTS public.widget_kpi (
   aggregation integer NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS public.refresh_tokens (
+  token_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL REFERENCES public.users(user_id) ON DELETE CASCADE,
+  token_hash varchar(64) NOT NULL UNIQUE,
+  expires_at timestamptz NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT NOW(),
+  revoked_at timestamptz
+);
+
+CREATE INDEX IF NOT EXISTS refresh_tokens_user_id_idx
+  ON public.refresh_tokens(user_id);
+
+-- Agentic dashboard construction tables
+CREATE TABLE IF NOT EXISTS public.ai_session (
+    session_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id uuid NOT NULL
+        REFERENCES public.users(user_id)
+        ON DELETE CASCADE,
+    created_at timestamptz NOT NULL DEFAULT NOW(),
+    last_activity timestamptz NOT NULL DEFAULT NOW(),
+    current_version_id uuid
+);
+
+CREATE TABLE IF NOT EXISTS public.ai_message (
+    message_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    session_id uuid NOT NULL
+        REFERENCES public.ai_session(session_id)
+        ON DELETE CASCADE,
+    role varchar(20) NOT NULL,
+    content text NOT NULL,
+    created_at timestamptz NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT chk_ai_message_role
+        CHECK (role IN ('USER', 'ASSISTANT'))
+);
+
+CREATE INDEX IF NOT EXISTS ix_ai_message_session_created
+    ON public.ai_message (session_id, created_at);
+
+CREATE TABLE IF NOT EXISTS public.ai_dashboard_version (
+    version_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    session_id uuid NOT NULL
+        REFERENCES public.ai_session(session_id)
+        ON DELETE CASCADE,
+
+    version_number integer NOT NULL,
+
+    parent_version_id uuid
+        REFERENCES public.ai_dashboard_version(version_id)
+        ON DELETE SET NULL,
+
+    title varchar(80) NOT NULL,
+    description text,
+    time_from timestamptz,
+    time_to timestamptz,
+    predefined_time public.predefined_time_enum,
+    current boolean DEFAULT false,
+
+    created_at timestamptz NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT uq_ai_version_number
+        UNIQUE (session_id, version_number)
+);
+
+ALTER TABLE public.ai_session
+    ADD CONSTRAINT fk_ai_session_current_version
+    FOREIGN KEY (current_version_id)
+    REFERENCES public.ai_dashboard_version(version_id)
+    ON DELETE SET NULL;
+
+CREATE TABLE IF NOT EXISTS public.ai_dashboard_widget (
+    widget_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    dashboard_version_id uuid NOT NULL
+        REFERENCES public.ai_dashboard_version(version_id)
+        ON DELETE CASCADE,
+
+    widget_type public.type_enum NOT NULL,
+
+    start_x integer NOT NULL,
+    start_y integer NOT NULL,
+    width integer NOT NULL,
+    height integer NOT NULL,
+
+    display_name varchar(80),
+
+    CONSTRAINT chk_ai_widget_width
+        CHECK (width > 0),
+
+    CONSTRAINT chk_ai_widget_height
+        CHECK (height > 0),
+
+    CONSTRAINT chk_ai_widget_start_x
+        CHECK (start_x >= 0),
+
+    CONSTRAINT chk_ai_widget_start_y
+        CHECK (start_y >= 0)
+);
+
+CREATE TABLE IF NOT EXISTS public.ai_chart_widget (
+    widget_id uuid PRIMARY KEY
+        REFERENCES public.ai_dashboard_widget(widget_id)
+        ON DELETE CASCADE,
+
+    chart_type public.chart_type_enum NOT NULL,
+
+    chart_colour public.chart_colour_enum,
+
+    provider public.provider_enum NOT NULL,
+
+    account_id uuid NOT NULL,
+
+    resource_id uuid NOT NULL,
+
+    metric_type varchar(50) NOT NULL,
+
+    metric_name varchar(100) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS public.ai_kpi_widget (
+    widget_id uuid PRIMARY KEY
+        REFERENCES public.ai_dashboard_widget(widget_id)
+        ON DELETE CASCADE,
+
+    charge_ids varchar(2128)[] NOT NULL,
+
+    aggregation_window_days integer NOT NULL,
+
+    CONSTRAINT chk_ai_kpi_aggregation_window
+        CHECK (aggregation_window_days > 0)
+);
+
+CREATE INDEX IF NOT EXISTS ix_ai_version_session
+    ON public.ai_dashboard_version (session_id, version_number DESC);
+
+-- CloudSherpa supported metrics
 INSERT INTO public.offered_metric (
     provider,
     service_type,
@@ -274,8 +447,9 @@ DECLARE
     c_gcp_gce_service CONSTANT varchar(255) := 'gce_instance';
     c_gcp_gke_service CONSTANT varchar(255) := 'gke_cluster';
     c_gcp_cloud_function_service CONSTANT varchar(255) := 'cloud_function';
-    c_gcp_cloud_run_service CONSTANT varchar(255) := 'cloud_run_service';
+    c_gcp_cloud_run_service CONSTANT varchar(255) := 'cloud_run_revision';
     c_gcp_gcs_service CONSTANT varchar(255) := 'gcs_bucket';
+    c_gcp_gar_service CONSTANT varchar(255) := 'artifactregistry.googleapis.com/Repository';
 
     -- GCP identifier fields
     c_gcp_instance_id CONSTANT varchar(100) := 'instance_id';
@@ -283,6 +457,7 @@ DECLARE
     c_gcp_function_name CONSTANT varchar(100) := 'function_name';
     c_gcp_service_name CONSTANT varchar(100) := 'service_name';
     c_gcp_bucket_name CONSTANT varchar(100) := 'bucket_name';
+    c_gcp_artifact_id CONSTANT varchar(100) := 'repository_id';
 
     -- GCP metrics
     c_gcp_network_bytes_received CONSTANT varchar(255) := 'Network bytes received';
@@ -307,6 +482,10 @@ DECLARE
 
     -- Azure service types
     c_azure_virtual_machine_service CONSTANT varchar(255) := 'Microsoft.Compute/virtualMachines';
+    c_azure_container_registry_service CONSTANT varchar(255) := 'Microsoft.ContainerRegistry/registries';
+    c_azure_kubernetes_service CONSTANT varchar(255) := 'Microsoft.ContainerService/managedClusters';
+    c_azure_functions_service CONSTANT varchar(255) := 'Microsoft.Web/sites';
+    c_azure_postgresql_service CONSTANT varchar(255) := 'Microsoft.DBforPostgreSQL/flexibleServers';
 BEGIN
 
     INSERT INTO public.offered_metric (
@@ -367,15 +546,6 @@ BEGIN
  'run.googleapis.com/request_count',
  c_gcp_service_name, c_gcp_count_unit, 'HTTP requests'),
 ('GCP', c_gcp_cloud_run_service,
- 'run.googleapis.com/request_latencies',
- c_gcp_service_name, c_gcp_milliseconds_unit, 'Request latency'),
-('GCP', c_gcp_cloud_run_service,
- 'run.googleapis.com/container/cpu/utilizations',
- c_gcp_service_name, c_gcp_percent_unit, 'CPU utilization'),
-('GCP', c_gcp_cloud_run_service,
- 'run.googleapis.com/container/memory/utilizations',
- c_gcp_service_name, c_gcp_percent_unit, 'Memory utilization'),
-('GCP', c_gcp_cloud_run_service,
  'run.googleapis.com/container/instance_count',
  c_gcp_service_name, c_gcp_count_unit, 'Running instances'),
 
@@ -393,6 +563,12 @@ BEGIN
  'storage.googleapis.com/network/sent_bytes_count',
  c_gcp_bucket_name, c_gcp_bytes_unit, 'Bytes downloaded'),
 
+ -- Google Artifact Registry
+('GCP', c_gcp_gar_service,
+ 'artifactregistry.googleapis.com/repository/size',
+ c_gcp_artifact_id, 'GiB', 'Gibibytes stored'),
+
+
  -- Azure Virtual Machines
 (c_azure_provider_enum, c_azure_virtual_machine_service, 'Percentage CPU', c_azure_resource_id, NULL, 'CPU utilization'),
 (c_azure_provider_enum, c_azure_virtual_machine_service, 'Network In Total', c_azure_resource_id, NULL, c_azure_network_bytes_received),
@@ -403,7 +579,39 @@ BEGIN
 (c_azure_provider_enum, c_azure_virtual_machine_service, 'Disk Write Operations/Sec', c_azure_resource_id, NULL, 'Disk write IOPS'),
 (c_azure_provider_enum, c_azure_virtual_machine_service, 'OS Disk Latency', c_azure_resource_id, NULL, 'OS disk latency'),
 (c_azure_provider_enum, c_azure_virtual_machine_service, 'Inbound Flows', c_azure_resource_id, NULL, 'Inbound network flows'),
-(c_azure_provider_enum, c_azure_virtual_machine_service, 'Outbound Flows', c_azure_resource_id, NULL, 'Outbound network flows')
+(c_azure_provider_enum, c_azure_virtual_machine_service, 'Outbound Flows', c_azure_resource_id, NULL, 'Outbound network flows'),
+
+-- Azure Container Registry
+(c_azure_provider_enum, c_azure_container_registry_service, 'StorageUsed', c_azure_resource_id, NULL, 'Container registry storage used'),
+
+-- Azure Kubernetes Service
+(c_azure_provider_enum, c_azure_kubernetes_service, 'node_cpu_usage_percentage', c_azure_resource_id, NULL, 'Aggregated CPU utilization percentage'),
+(c_azure_provider_enum, c_azure_kubernetes_service, 'node_cpu_usage_millicores', c_azure_resource_id, NULL, 'Aggregated CPU utilization in millicores'),
+(c_azure_provider_enum, c_azure_kubernetes_service, 'node_memory_rss_bytes', c_azure_resource_id, NULL, 'Container RSS memory used'),
+(c_azure_provider_enum, c_azure_kubernetes_service, 'node_memory_rss_percentage', c_azure_resource_id, NULL, 'Container RSS memory used percentage'),
+(c_azure_provider_enum, c_azure_kubernetes_service, 'node_memory_working_set_bytes', c_azure_resource_id, NULL, 'Container working set memory used'),
+(c_azure_provider_enum, c_azure_kubernetes_service, 'node_memory_working_set_percentage', c_azure_resource_id, NULL, 'Container working set memory used percentage'),
+(c_azure_provider_enum, c_azure_kubernetes_service, 'node_disk_usage_bytes', c_azure_resource_id, NULL, 'Node disk space used'),
+(c_azure_provider_enum, c_azure_kubernetes_service, 'node_disk_usage_percentage', c_azure_resource_id, NULL, 'Node disk space used percentage'),
+(c_azure_provider_enum, c_azure_kubernetes_service, 'node_network_in_bytes', c_azure_resource_id, NULL, 'Node network bytes received'),
+(c_azure_provider_enum, c_azure_kubernetes_service, 'node_network_out_bytes', c_azure_resource_id, NULL, 'Node network bytes transmitted'),
+
+-- Azure Functions
+(c_azure_provider_enum, c_azure_functions_service, 'AverageMemoryWorkingSet', c_azure_resource_id, NULL, 'Average memory working set'),
+(c_azure_provider_enum, c_azure_functions_service, 'MemoryWorkingSet', c_azure_resource_id, NULL, 'Memory working set'),
+(c_azure_provider_enum, c_azure_functions_service, 'AppConnections', c_azure_resource_id, NULL, 'Number of bound sockets'),
+(c_azure_provider_enum, c_azure_functions_service, 'CurrentAssemblies', c_azure_resource_id, NULL, 'Current assemblies loaded'),
+(c_azure_provider_enum, c_azure_functions_service, 'Handles', c_azure_resource_id, NULL, 'Number of handles currently open'),
+(c_azure_provider_enum, c_azure_functions_service, 'HealthCheckStatus', c_azure_resource_id, NULL, 'Function app health check status'),
+(c_azure_provider_enum, c_azure_functions_service, 'PrivateBytes', c_azure_resource_id, NULL, 'Private memory allocated by the function app'),
+
+-- Azure PostgreSQL Flexible Server
+(c_azure_provider_enum, c_azure_postgresql_service, 'active_connections', c_azure_resource_id, NULL, 'Active database connections'),
+(c_azure_provider_enum, c_azure_postgresql_service, 'cpu_percent', c_azure_resource_id, NULL, 'CPU utilization percentage'),
+(c_azure_provider_enum, c_azure_postgresql_service, 'memory_percent', c_azure_resource_id, NULL, 'Memory utilization percentage'),
+(c_azure_provider_enum, c_azure_postgresql_service, 'storage_percent', c_azure_resource_id, NULL, 'Storage utilization percentage'),
+(c_azure_provider_enum, c_azure_postgresql_service, 'storage_used', c_azure_resource_id, NULL, 'Storage used'),
+(c_azure_provider_enum, c_azure_postgresql_service, 'iops', c_azure_resource_id, NULL, 'Input/output operations per second')
     ON CONFLICT DO NOTHING;
 END $$;
 
@@ -418,7 +626,8 @@ CREATE TABLE IF NOT EXISTS public.kpi_charges (
 CREATE TABLE IF NOT EXISTS public.widget_chart (
   chart_id uuid PRIMARY KEY,
   widget_id uuid REFERENCES public.widget(widget_id) ON DELETE CASCADE,
-  chart_type public.chart_type_enum NOT NULL
+  chart_type public.chart_type_enum NOT NULL,
+  chart_colour public.chart_colour_enum NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS public.chart_resource (
@@ -429,6 +638,15 @@ CREATE TABLE IF NOT EXISTS public.chart_resource (
   resource_id uuid, 
   metric_type varchar(50),
   metric_name varchar(100)
+);
+
+CREATE TABLE IF NOT EXISTS public.pending_webhook_events (
+  event_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  cloud_account uuid NOT NULL REFERENCES public.cloud_account(account_id) ON DELETE CASCADE,
+  event_type text NOT NULL,
+  event_timestamp timestamptz NOT NULL,
+  payload jsonb NOT NULL
 );
 
 -- ----------------------------------------------------------------
@@ -646,7 +864,10 @@ BEGIN
             window_end timestamptz NOT NULL,
             calculated_at timestamptz DEFAULT NOW()
         );
-    $sql$, schema_name, schema_name);
+
+        CREATE INDEX IF NOT EXISTS ix_%1$s_opt_metric_stats_resource_metric
+        ON %1$I.optimization_metric_statistics (resource_id, metric_name, window_end DESC);
+    $sql$, schema_name, schema_name, schema_name);
 
     EXECUTE format($sql$
         CREATE TABLE IF NOT EXISTS %I.optimization_recommendation (
@@ -661,6 +882,88 @@ BEGIN
             updated_at timestamptz DEFAULT NOW(),
             expires_at timestamptz
         );
+    $sql$, schema_name, schema_name);
+
+    EXECUTE format($sql$
+      CREATE TABLE IF NOT EXISTS %I.alerts (
+        alert_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id uuid REFERENCES public.users(user_id) ON DELETE CASCADE,
+        widget_id uuid REFERENCES public.widget(widget_id) ON DELETE CASCADE,
+        alert_type varchar(20) NOT NULL,
+        severity varchar(20) NOT NULL,
+        title text NOT NULL,
+        message text,
+        payload jsonb DEFAULT '{}'::jsonb,
+        status varchar(20) NOT NULL DEFAULT 'ACTIVE',
+        canonical_key text,
+        created_at timestamptz DEFAULT NOW(),
+        last_seen timestamptz DEFAULT NOW(),
+        resolved_at timestamptz
+      );
+      CREATE INDEX IF NOT EXISTS ix_%1$s_alerts_canonical_key ON %1$I.alerts (canonical_key);
+      CREATE INDEX IF NOT EXISTS ix_%1$s_alerts_status_created_at ON %1$I.alerts (status, created_at DESC);
+    $sql$, schema_name);
+
+    EXECUTE format($sql$
+      CREATE TABLE IF NOT EXISTS %I.budgets (
+        budget_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id uuid REFERENCES public.users(user_id) ON DELETE CASCADE,
+        scope varchar(20) NOT NULL,
+        scope_id uuid,
+        amount numeric NOT NULL,
+        currency public.currency_enum DEFAULT 'USD',
+        window_days integer NOT NULL DEFAULT 30,
+        enabled boolean NOT NULL DEFAULT true,
+        created_at timestamptz DEFAULT NOW(),
+        updated_at timestamptz DEFAULT NOW()
+      );
+      CREATE INDEX IF NOT EXISTS ix_%1$s_budgets_scope ON %1$I.budgets (scope, scope_id);
+    $sql$, schema_name);
+
+    EXECUTE format($sql$
+      CREATE TABLE IF NOT EXISTS %I.threshold (
+      threshold_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      resource_id uuid NOT NULL REFERENCES %I.resource(resource_id) ON DELETE CASCADE,
+      user_id uuid NOT NULL REFERENCES public.users(user_id) ON DELETE CASCADE,
+      metric_name text NOT NULL,
+      operator text NOT NULL,
+      value double precision NOT NULL,
+      severity text NOT NULL DEFAULT 'WARNING',
+      enabled boolean NOT NULL DEFAULT true,
+      created_at timestamptz DEFAULT now(),
+      updated_at timestamptz DEFAULT now()
+    );
+    $sql$, schema_name, schema_name);
+
+    -- --------------------------------------------------------------------------
+    -- Webhook Tables
+    -- --------------------------------------------------------------------------
+    EXECUTE format($sql$
+      CREATE TABLE IF NOT EXISTS %I.webhooks (
+        webhook_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+        webhook_name text NOT NULL,
+        endpoint_url text NOT NULL,
+        event_types text[] NOT NULL,
+        cloud_accounts uuid[] NOT NULL DEFAULT '{}',
+        webhook_status public.webhook_status_enum NOT NULL,
+        webhook_signing_key text NOT NULL
+      );
+    $sql$, schema_name);
+
+    EXECUTE format($sql$
+      CREATE TABLE IF NOT EXISTS %I.webhook_deliveries (
+        webhook_delivery_id uuid PRIMARY KEY,
+        webhook_id uuid REFERENCES %I.webhooks(webhook_id) ON DELETE SET NULL,
+        event_id uuid NOT NULL,
+        cloud_account uuid REFERENCES public.cloud_account(account_id) ON DELETE SET NULL,
+        event_type text NOT NULL,
+        event_timestamp timestamptz NOT NULL,
+        payload jsonb NOT NULL,
+        delivery_status public.webhook_delivery_status_enum NOT NULL DEFAULT 'PENDING',
+        response_code int,
+        attempt_count int NOT NULL DEFAULT 0,
+        next_attempt_at timestamptz
+      );
     $sql$, schema_name, schema_name);
 END;
 $$ LANGUAGE plpgsql;

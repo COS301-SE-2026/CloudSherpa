@@ -5,9 +5,9 @@
             "shades": [
                 {
                     "position": 50,
-                    "hex": "#eff6ff",
-                    "rgb": "rgb(239 246 255)",
-                    "hsl": "hsl(213.75deg 100% 96.86%)"
+                    "hex": "#FFFFFF",
+                    "rgb": "rgb(255 255 255)",
+                    "hsl": "hsl(0deg 0% 100%)"
                 },
                 {
                     "position": 100,
@@ -76,33 +76,33 @@
             "shades": [
                 {
                     "position": 50,
-                    "hex": "#e3e9ef",
-                    "rgb": "rgb(227 233 239)",
-                    "hsl": "hsl(210deg 27.27% 91.37%)"
+                    "hex": "#FFFFFF",
+                    "rgb": "rgb(255 255 255)",
+                    "hsl": "hsl(0deg 0% 100%)"
                 },
                 {
                     "position": 100,
-                    "hex": "#d8dee4",
-                    "rgb": "rgb(216 222 228)",
-                    "hsl": "hsl(210deg 18.18% 87.06%)"
+                    "hex": "#f1f4f8",
+                    "rgb": "rgb(241 244 248)",
+                    "hsl": "hsl(214.29deg 33.33% 95.88%)"
                 },
                 {
                     "position": 200,
-                    "hex": "#c0c6cc",
-                    "rgb": "rgb(192 198 204)",
-                    "hsl": "hsl(210deg 10.53% 77.65%)"
+                    "hex": "#e1e6eb",
+                    "rgb": "rgb(225 230 235)",
+                    "hsl": "hsl(210deg 20% 90.2%)"
                 },
                 {
                     "position": 300,
-                    "hex": "#a9afb5",
-                    "rgb": "rgb(169 175 181)",
-                    "hsl": "hsl(210deg 7.5% 68.63%)"
+                    "hex": "#c2c9d1",
+                    "rgb": "rgb(194 201 209)",
+                    "hsl": "hsl(212deg 14.02% 79.02%)"
                 },
                 {
                     "position": 400,
-                    "hex": "#91979d",
-                    "rgb": "rgb(145 151 157)",
-                    "hsl": "hsl(210deg 5.77% 59.22%)"
+                    "hex": "#9fa7b0",
+                    "rgb": "rgb(159 167 176)",
+                    "hsl": "hsl(211.76deg 9.71% 65.69%)"
                 },
                 {
                     "position": 500,
@@ -147,9 +147,9 @@
             "shades": [
                 {
                     "position": 50,
-                    "hex": "#fbe9e9",
-                    "rgb": "rgb(251 233 233)",
-                    "hsl": "hsl(0deg 69.23% 94.9%)"
+                    "hex": "#FFFFFF",
+                    "rgb": "rgb(255 255 255)",
+                    "hsl": "hsl(0deg 0% 100%)"
                 },
                 {
                     "position": 100,
@@ -218,69 +218,69 @@
             "shades": [
                 {
                     "position": 50,
-                    "hex": "#fbf3e9",
-                    "rgb": "rgb(251 243 233)",
-                    "hsl": "hsl(33.33deg 69.23% 94.9%)"
+                    "hex": "#fffbeb",
+                    "rgb": "rgb(255 251 235)",
+                    "hsl": "hsl(48deg 100% 96.08%)"
                 },
                 {
                     "position": 100,
-                    "hex": "#f7e6d4",
-                    "rgb": "rgb(247 230 212)",
-                    "hsl": "hsl(30.86deg 68.63% 90%)"
+                    "hex": "#fef3c7",
+                    "rgb": "rgb(254 243 199)",
+                    "hsl": "hsl(48deg 96.49% 88.82%)"
                 },
                 {
                     "position": 200,
-                    "hex": "#f0cda8",
-                    "rgb": "rgb(240 205 168)",
-                    "hsl": "hsl(30.83deg 70.59% 80%)"
+                    "hex": "#fde68a",
+                    "rgb": "rgb(253 230 138)",
+                    "hsl": "hsl(48deg 96.64% 76.67%)"
                 },
                 {
                     "position": 300,
-                    "hex": "#e8b47d",
-                    "rgb": "rgb(232 180 125)",
-                    "hsl": "hsl(30.84deg 69.93% 70%)"
+                    "hex": "#fcd34d",
+                    "rgb": "rgb(252 211 77)",
+                    "hsl": "hsl(45.94deg 96.69% 64.51%)"
                 },
                 {
                     "position": 400,
-                    "hex": "#e09b52",
-                    "rgb": "rgb(224 155 82)",
-                    "hsl": "hsl(30.85deg 69.61% 60%)"
+                    "hex": "#fbbf24",
+                    "rgb": "rgb(251 191 36)",
+                    "hsl": "hsl(43.26deg 96.41% 56.27%)"
                 },
                 {
                     "position": 500,
-                    "hex": "#d98226",
-                    "rgb": "rgb(217 130 38)",
-                    "hsl": "hsl(30.84deg 70.2% 50%)"
+                    "hex": "#f59e0b",
+                    "rgb": "rgb(245 158 11)",
+                    "hsl": "hsl(37.69deg 92.13% 50.2%)"
                 },
                 {
                     "position": 600,
-                    "hex": "#ad681f",
-                    "rgb": "rgb(173 104 31)",
-                    "hsl": "hsl(30.85deg 69.61% 40%)"
+                    "hex": "#d97706",
+                    "rgb": "rgb(217 119 6)",
+                    "hsl": "hsl(32.13deg 94.62% 43.73%)"
                 },
                 {
                     "position": 700,
-                    "hex": "#824e17",
-                    "rgb": "rgb(130 78 23)",
-                    "hsl": "hsl(30.84deg 69.93% 30%)"
+                    "hex": "#b45309",
+                    "rgb": "rgb(180 83 9)",
+                    "hsl": "hsl(25.96deg 90.48% 37.06%)"
                 },
                 {
                     "position": 800,
-                    "hex": "#57340f",
-                    "rgb": "rgb(87 52 15)",
-                    "hsl": "hsl(30.83deg 70.59% 20%)"
+                    "hex": "#92400e",
+                    "rgb": "rgb(146 64 14)",
+                    "hsl": "hsl(22.73deg 82.5% 31.37%)"
                 },
                 {
                     "position": 900,
-                    "hex": "#2b1a08",
-                    "rgb": "rgb(43 26 8)",
-                    "hsl": "hsl(30.86deg 68.63% 10%)"
+                    "hex": "#78350f",
+                    "rgb": "rgb(120 53 15)",
+                    "hsl": "hsl(21.71deg 77.78% 26.47%)"
                 },
                 {
                     "position": 950,
-                    "hex": "#1e1205",
-                    "rgb": "rgb(30 18 5)",
-                    "hsl": "hsl(31.2deg 71.43% 6.86%)"
+                    "hex": "#451a03",
+                    "rgb": "rgb(69 26 3)",
+                    "hsl": "hsl(20.91deg 91.67% 14.12%)"
                 }
             ]
         },
@@ -289,9 +289,9 @@
             "shades": [
                 {
                     "position": 50,
-                    "hex": "#ebfbea",
-                    "rgb": "rgb(235 251 234)",
-                    "hsl": "hsl(116.47deg 68% 95.1%)"
+                    "hex": "#FFFFFF",
+                    "rgb": "rgb(255 255 255)",
+                    "hsl": "hsl(0deg 0% 100%)"
                 },
                 {
                     "position": 100,

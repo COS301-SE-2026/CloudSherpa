@@ -7,8 +7,9 @@ import com.cloudsherpa.ingestion.connector.Metric;
 import com.cloudsherpa.ingestion.connector.ServiceScope;
 import com.cloudsherpa.ingestion.models.IngestionRequestEvent;
 import com.cloudsherpa.ingestion.models.UsageRecordModel;
+import com.cloudsherpa.ingestion.normalization.normalizers.Normalizer;
 import com.cloudsherpa.ingestion.provider.monitoring.CloudMonitoringMetricProvider;
-import java.time.Duration;
+import com.cloudsherpa.ingestion.service.IngestionPersistenceService;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,73 +28,126 @@ import software.amazon.awssdk.services.cloudwatch.model.Statistic;
 
 @Component
 public class AwsCloudWatchMetricProvider implements CloudMonitoringMetricProvider {
+  private record TimeWindow(Instant from, Instant to) {}
+
+  private final IngestionPersistenceService persistenceService;
+
+  public AwsCloudWatchMetricProvider(IngestionPersistenceService persistenceService) {
+    this.persistenceService = persistenceService;
+  }
+
   private final CloudWatchClient defaultClient =
       CloudWatchClient.builder()
           .credentialsProvider(DefaultCredentialsProvider.create())
           .region(Region.EU_NORTH_1)
           .build();
 
-  public List<UsageRecordModel> collectMetrics(
-      AccountScope accountScope, IngestionRequestEvent request) {
-    UUID ingestionID = UUID.randomUUID();
-    int period =
-        request
-            .getPeriod(); // contract: ensure that the request does not return over 1000 datapoints
-    // ((to-from)/period)
-    validatePeriod(request, period);
-    CloudWatchClient client = defaultClient;
+  public void collectMetrics(
+      AccountScope accountScope, IngestionRequestEvent request, Normalizer normalizer) {
 
-    List<UsageRecordModel> result = new ArrayList<>();
-    for (ServiceScope serviceScope :
-        accountScope.getServiceScopes()) { // these are for services such as EC2, RDS
-      // etc.
+    UUID ingestionId = UUID.randomUUID();
+    int period = request.getPeriod();
+    // Split timewindows into acceptable AWS request limit for API: 1440 datapoints
+    // per request
+    List<TimeWindow> timeWindows = createTimeWindows(request.getFrom(), request.getTo(), period);
 
-      for (InstanceScope instance :
-          serviceScope.getInstances()) { // instances within a service with a name and
-        // value
-        // list e.g. i-23xxxxxxx
-        for (Instance instanceValue : instance.getInstances()) { // the specific instance
-          Dimension dimension =
-              Dimension.builder()
-                  .name(instance.getIdentifierName())
-                  .value(instanceValue.getIdentifier())
-                  .build();
-          if (request.getCredentials() != null) {
-            client = createClient(request, instanceValue.getRegion());
-          }
+    for (ServiceScope serviceScope : accountScope.getServiceScopes()) { // EC2, RDS etc.
 
-          for (Metric metric :
-              serviceScope.getMetrics()) { // the metrics requested, e.g. CPUUtilisation,
-            // NetworkIn,
-            // NetworkOut etc.
-            GetMetricStatisticsRequest req =
-                GetMetricStatisticsRequest.builder()
-                    .namespace(serviceScope.getName())
-                    .metricName(metric.getName())
-                    .startTime(request.getFrom())
-                    .endTime(request.getTo())
-                    .period(period)
-                    .dimensions(dimension)
-                    .statistics(Statistic.AVERAGE)
-                    .build();
-
-            AwsMetricRequestContext context =
-                new AwsMetricRequestContext(
-                    accountScope,
-                    serviceScope,
-                    instance,
-                    instanceValue.getIdentifier(),
-                    metric.getName(),
-                    period,
-                    ingestionID);
-
-            result.addAll(buildRequestResult(client, req, context));
-          }
-        }
-      }
+      collectServiceMetrics(
+          accountScope, request, serviceScope, timeWindows, ingestionId, period, normalizer);
     }
+  }
 
-    return result;
+  private void collectServiceMetrics(
+      AccountScope accountScope,
+      IngestionRequestEvent request,
+      ServiceScope serviceScope,
+      List<TimeWindow> timeWindows,
+      UUID ingestionId,
+      int period,
+      Normalizer normalizer) {
+
+    for (InstanceScope instance : serviceScope.getInstances()) {
+      IngestionScope ingestionScope = new IngestionScope(ingestionId, period);
+      collectInstanceScopeMetrics(
+          accountScope, request, serviceScope, instance, timeWindows, ingestionScope, normalizer);
+    }
+  }
+
+  private void collectInstanceScopeMetrics(
+      AccountScope accountScope,
+      IngestionRequestEvent request,
+      ServiceScope serviceScope,
+      InstanceScope instance,
+      List<TimeWindow> timeWindows,
+      IngestionScope ingestionScope,
+      Normalizer normalizer) {
+
+    for (Instance instanceValue : instance.getInstances()) {
+      CloudWatchClient instanceClient = createClient(request, instanceValue.getRegion());
+
+      Dimension dimension =
+          Dimension.builder()
+              .name(instance.getIdentifierName())
+              .value(instanceValue.getIdentifier())
+              .build();
+
+      AwsInstanceContext context =
+          new AwsInstanceContext(
+              request.getUserId(),
+              accountScope,
+              serviceScope,
+              instance,
+              instanceValue,
+              dimension,
+              timeWindows,
+              instanceClient,
+              ingestionScope.ingestionId(),
+              ingestionScope.period());
+
+      collectInstanceMetrics(context, normalizer);
+    }
+  }
+
+  private void collectInstanceMetrics(AwsInstanceContext context, Normalizer normalizer) {
+
+    for (Metric metric : context.serviceScope().getMetrics()) { // metrics such as CPU Utilization
+
+      AwsMetricRequestContext metricContext =
+          new AwsMetricRequestContext(
+              context.accountScope(),
+              context.serviceScope(),
+              context.instanceScope(),
+              context.instance().getIdentifier(),
+              metric.getName(),
+              context.period(),
+              context.ingestionId(),
+              context.userId(),
+              context.dimension(),
+              context.timeWindows(),
+              context.client());
+
+      collectMetric(metricContext, normalizer);
+    }
+  }
+
+  private void collectMetric(AwsMetricRequestContext context, Normalizer normalizer) {
+
+    for (TimeWindow window : context.timeWindows()) { // AWS batching windows of 1440 datapoints
+
+      GetMetricStatisticsRequest request =
+          GetMetricStatisticsRequest.builder()
+              .namespace(context.serviceScope().getName())
+              .metricName(context.metric())
+              .startTime(window.from())
+              .endTime(window.to())
+              .period(context.period())
+              .dimensions(context.dimension())
+              .statistics(Statistic.AVERAGE)
+              .build();
+
+      buildRequestResult(context.client(), request, context, normalizer);
+    }
   }
 
   private record AwsMetricRequestContext(
@@ -103,12 +157,33 @@ public class AwsCloudWatchMetricProvider implements CloudMonitoringMetricProvide
       String instanceValue,
       String metric,
       int period,
-      UUID ingestionId) {}
+      UUID ingestionId,
+      UUID userId,
+      Dimension dimension,
+      List<TimeWindow> timeWindows,
+      CloudWatchClient client) {}
 
-  private List<UsageRecordModel> buildRequestResult(
-      CloudWatchClient client, GetMetricStatisticsRequest req, AwsMetricRequestContext context) {
+  private record IngestionScope(UUID ingestionId, int period) {}
 
-    List<UsageRecordModel> records = new ArrayList<>();
+  private record AwsInstanceContext(
+      UUID userId,
+      AccountScope accountScope,
+      ServiceScope serviceScope,
+      InstanceScope instanceScope,
+      Instance instance,
+      Dimension dimension,
+      List<TimeWindow> timeWindows,
+      CloudWatchClient client,
+      UUID ingestionId,
+      int period) {}
+
+  private void buildRequestResult(
+      CloudWatchClient client,
+      GetMetricStatisticsRequest req,
+      AwsMetricRequestContext context,
+      Normalizer normalizer) {
+
+    List<UsageRecordModel> usageRecords = new ArrayList<>();
 
     for (Datapoint dp : client.getMetricStatistics(req).datapoints()) {
 
@@ -132,10 +207,9 @@ public class AwsCloudWatchMetricProvider implements CloudMonitoringMetricProvide
       r.setPeriodStart(dp.timestamp().minusSeconds(context.period()));
       r.setPeriodEnd(dp.timestamp());
 
-      records.add(r);
+      usageRecords.add(r);
     }
-
-    return records;
+    persistenceService.normalizeAndPersistUsage(usageRecords, context.userId(), normalizer);
   }
 
   private CloudWatchClient createClient(IngestionRequestEvent request, String region) {
@@ -155,13 +229,37 @@ public class AwsCloudWatchMetricProvider implements CloudMonitoringMetricProvide
         .build();
   }
 
-  private void validatePeriod(IngestionRequestEvent request, int period) {
+  private List<TimeWindow> createTimeWindows(Instant from, Instant to, int period) {
+
     if (period <= 0) {
       throw new IllegalArgumentException("Period must be > 0");
     }
 
-    if (Duration.between(request.getFrom(), request.getTo()).getSeconds() / period > 1440) {
-      throw new IllegalArgumentException("AWS will not return over 1440 datapoints per metric");
+    if (from == null || to == null) {
+      throw new IllegalArgumentException("From and to must not be null");
     }
+
+    if (!to.isAfter(from)) {
+      throw new IllegalArgumentException("To must be after from");
+    }
+
+    long maxWindowSeconds = (long) period * 1440;
+
+    List<TimeWindow> windows = new ArrayList<>();
+
+    Instant windowStart = from;
+
+    while (windowStart.isBefore(to)) {
+      Instant windowEnd = windowStart.plusSeconds(maxWindowSeconds);
+
+      if (windowEnd.isAfter(to)) {
+        windowEnd = to;
+      }
+
+      windows.add(new TimeWindow(windowStart, windowEnd));
+      windowStart = windowEnd;
+    }
+
+    return windows;
   }
 }

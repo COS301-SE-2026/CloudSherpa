@@ -8,11 +8,12 @@ import com.cloudsherpa.ingestion.connector.UsageCapable;
 import com.cloudsherpa.ingestion.models.BillingRecordModel;
 import com.cloudsherpa.ingestion.models.IngestionRequestEvent;
 import com.cloudsherpa.ingestion.models.ResourceDetail;
-import com.cloudsherpa.ingestion.models.UsageRecordModel;
+import com.cloudsherpa.ingestion.normalization.normalizers.Normalizer;
 import com.cloudsherpa.ingestion.provider.gcp.monitoring.GcpCloudMonitoringMetricProvider;
 import com.cloudsherpa.ingestion.provider.gcp.monitoring.MockCloudMonitoringMetricProvider;
 import com.cloudsherpa.ingestion.provider.gcp.scanner.GcpResourceDiscoveryService;
 import com.cloudsherpa.ingestion.provider.monitoring.CloudMonitoringMetricProvider;
+import com.cloudsherpa.ingestion.service.IngestionPersistenceService;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -28,8 +29,9 @@ public class GcpCloudConnector implements CloudConnector, UsageCapable, BillingC
 
   public GcpCloudConnector(
       GcpResourceDiscoveryService discoveryService,
-      MockCloudMonitoringMetricProvider mockMetricProvider) {
-    metricProvider = new GcpCloudMonitoringMetricProvider();
+      MockCloudMonitoringMetricProvider mockMetricProvider,
+      IngestionPersistenceService persistenceService) {
+    metricProvider = new GcpCloudMonitoringMetricProvider(persistenceService);
     this.mockMetricProvider = mockMetricProvider;
 
     this.discoveryService = discoveryService;
@@ -48,15 +50,15 @@ public class GcpCloudConnector implements CloudConnector, UsageCapable, BillingC
   }
 
   @Override
-  public List<UsageRecordModel> fetchUsage(
-      AccountScope accountScope, IngestionRequestEvent request) {
-    return metricProvider.collectMetrics(accountScope, request);
+  public void fetchUsage(
+      AccountScope accountScope, IngestionRequestEvent request, Normalizer normalizer) {
+    metricProvider.collectMetrics(accountScope, request, normalizer);
   }
 
   @Override
-  public List<UsageRecordModel> fetchMockUsage(
-      AccountScope accountScope, IngestionRequestEvent request) {
-    return mockMetricProvider.collectMetrics(accountScope, request);
+  public void fetchMockUsage(
+      AccountScope accountScope, IngestionRequestEvent request, Normalizer normalizer) {
+    mockMetricProvider.collectMetrics(accountScope, request, normalizer);
   }
 
   @Override

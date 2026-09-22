@@ -1,15 +1,7 @@
 "use client";
 
-import { useMemo, useState, type ComponentType } from "react";
-import {
-    HelpCircle,
-    Search,
-    BookOpen,
-    PlayCircle,
-    Command,
-    Laptop,
-    ArrowUpRight,
-} from "lucide-react";
+import { useMemo, useState, type ComponentType, useRef } from "react";
+import { HelpCircle, Search, BookOpen, PlayCircle, Command, ArrowUpRight, X } from "lucide-react";
 import { Button } from "@/components/atoms/button";
 import { Input } from "@/components/atoms/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/atoms/popover";
@@ -107,7 +99,12 @@ interface KeyboardShortcuts {
     function: string;
 }
 
-const SHORTCUT: KeyboardShortcuts[] = [{ key: ["ENTER"], function: "Submit form" }];
+const SHORTCUT: KeyboardShortcuts[] = [
+    { key: ["enter"], function: "Submit form" },
+    { key: ["shift + E"], function: "Edit dashboard layout" },
+    { key: ["shift + C"], function: "Chart widget" },
+    { key: ["shift + K"], function: "KPI widget" },
+];
 
 export function HelpMenu() {
     const router = useRouter();
@@ -117,6 +114,8 @@ export function HelpMenu() {
     const [search, setSearch] = useState("");
 
     const [keyboardShortcutOpen, setKeyboardShortcutOpen] = useState(false);
+
+    const input = useRef<HTMLInputElement>(null);
 
     const searchLinks = useMemo(() => {
         if (!search.trim()) {
@@ -167,6 +166,12 @@ export function HelpMenu() {
         }
     }
 
+    function clearingSearch() {
+        setSearch("");
+
+        input.current?.focus();
+    }
+
     return (
         <>
             <Popover open={open} onOpenChange={setOpen}>
@@ -201,11 +206,23 @@ export function HelpMenu() {
                             />
 
                             <Input
+                                ref={input}
                                 value={search}
                                 onChange={(change) => setSearch(change.target.value)}
                                 placeholder="Search help"
-                                className="h-8 border-border bg-background pl-8 text-[13px]"
+                                className="h-8 border-border bg-background pl-8 pr-8 text-[13px]"
                             />
+
+                            {search && (
+                                <button
+                                    type="button"
+                                    onClick={clearingSearch}
+                                    className="absolute right-2 top-1/2 flex h-4 w-4 -translate-y-1/2 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:text-foreground"
+                                >
+                                    {" "}
+                                    <X className="h-3 w-3" strokeWidth={2} />{" "}
+                                </button>
+                            )}
                         </div>
                     </div>
 
@@ -235,7 +252,7 @@ export function HelpMenu() {
                                         </span>
                                     </span>
 
-                                    {link.href && (
+                                    {(link.href || link.action === "tutorials") && (
                                         <ArrowUpRight
                                             className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
                                             strokeWidth={1.75}

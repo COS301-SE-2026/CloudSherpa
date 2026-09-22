@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Widget from "@/features/dashboard/components/widgetGrid/widgets/widget";
 import { WidgetConfig } from "@/features/dashboard/types/widgets";
 import { useMetricStore } from "@/features/dashboard/stores/metric-store";
@@ -12,6 +12,7 @@ const MOCK_CHART_WIDGETS: WidgetConfig[] = [
         id: "mock-widget-1",
         widgetType: "CHART",
         chartType: "line_chart",
+        chartColour: "chart_1",
         displayName: "Server CPU Load (Mock)",
         provider: "AWS",
         accountId: "stuff",
@@ -23,6 +24,7 @@ const MOCK_CHART_WIDGETS: WidgetConfig[] = [
         id: "mock-widget-2",
         widgetType: "CHART",
         chartType: "gauge_chart",
+        chartColour: "chart_1",
         displayName: "Memory Utilization (Mock)",
         provider: "AWS",
         accountId: "stuff",

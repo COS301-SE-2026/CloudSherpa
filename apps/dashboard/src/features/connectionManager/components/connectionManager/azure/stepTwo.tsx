@@ -12,10 +12,20 @@ import { CloudCredentials } from "@/lib/fetch/dto/cloud-credentials";
 import { ServicesList } from "@/components/molecules/services-list";
 import { PermissionsList } from "@/components/molecules/permissions-list";
 import { ScanProgress } from "@/components/molecules/scan-progress";
+import { AzureBillingForm } from "./billingForm";
+import {
+    AzureBillingConfig,
+    AzureBillingConfigSafeParseType,
+    AzureBillingConfigType,
+} from "./validTypes";
 
 interface StepTwoPropsForAzure {
     credentials: CloudCredentials | null;
-    onNext: (forData: { servicesSelected: string[]; resources: ResourceDetail[] }) => void;
+    onNext: (forData: {
+        servicesSelected: string[];
+        resources: ResourceDetail[];
+        billingConfig: AzureBillingConfigType | null;
+    }) => void;
 
     onBack?: () => void;
 }
@@ -38,6 +48,12 @@ export default function StepTwoAzure({
     const [currentScanningService, setCurrentScanningService] = useState("");
 
     const [permissions, setPermissions] = useState<string[]>([]);
+
+    const [optedInToBilling, setOptedInToBilling] = useState(false);
+    const [storageAccountName, setStorageAccountName] = useState("");
+    const [blobContainerName, setBlobContainerName] = useState("");
+    const [exportDirectory, setExportDirectory] = useState("");
+    const [exportName, setExportName] = useState("");
 
     React.useEffect(() => {
         const loadPermissions = async () => {
@@ -75,6 +91,15 @@ export default function StepTwoAzure({
 
     const handlingSubmit = async (forHandlingSubmit: React.SubmitEvent<HTMLFormElement>) => {
         forHandlingSubmit.preventDefault();
+
+        const validatedBillingConfig: AzureBillingConfigSafeParseType | null =
+            validateBillingConfig();
+
+        if (optedInToBilling && validatedBillingConfig != null && !validatedBillingConfig.success) {
+            setForErrors("Please enter a valid billing configuration");
+            return;
+        }
+
         try {
             setForLoading(true);
             setForErrors("");
@@ -108,7 +133,11 @@ export default function StepTwoAzure({
                 return;
             }
 
-            onNext({ servicesSelected: selectedService, resources: discoveredResources });
+            onNext({
+                servicesSelected: selectedService,
+                resources: discoveredResources,
+                billingConfig: validatedBillingConfig?.data ?? null,
+            });
         } catch (err) {
             console.error(err);
 
@@ -134,6 +163,19 @@ export default function StepTwoAzure({
         }
     };
 
+    function validateBillingConfig(): AzureBillingConfigSafeParseType | null {
+        if (!optedInToBilling) {
+            return null;
+        }
+
+        return AzureBillingConfig.safeParse({
+            storageAccountName: storageAccountName,
+            blobContainerName: blobContainerName,
+            exportDirectory: exportDirectory,
+            exportName: exportName,
+        });
+    }
+
     return (
         <StepTwo
             heading="Select service"
@@ -142,14 +184,37 @@ export default function StepTwoAzure({
             onBack={onBack || (() => {})}
             forLoading={forLoading}
             forErrors={forErrors}
+            cloudProvider="azure"
         >
-            <ServicesList
-                servicesAvailable={servicesAvailable}
-                selectedServices={selectedService}
-                onServiceToggle={checkingServices}
-                onSelectAll={handlingSelectedAll}
-                heading="Services we offer"
+            <AzureBillingForm
+                optedInToBilling={optedInToBilling}
+                handleOptedInToBillingChange={(checked: boolean) => {
+                    setOptedInToBilling(checked);
+                }}
+                storageAccountName={storageAccountName}
+                setStorageAccountName={setStorageAccountName}
+                blobContainerName={blobContainerName}
+                setBlobContainerName={setBlobContainerName}
+                exportDirectory={exportDirectory}
+                setExportDirectory={setExportDirectory}
+                exportName={exportName}
+                setExportName={setExportName}
             />
+            <div className="rounded-lg border border-border bg-background p-4">
+                <div className="mb-4 rounded-md  p-3 text-sm bg-warning/40 text-warning-foreground border border-warning">
+                    Billing ingestion is account-wide and not limited by selected services. Select
+                    services to discover resources and monitor usage metrics alongside billing
+                    trends.
+                </div>
+
+                <ServicesList
+                    servicesAvailable={servicesAvailable}
+                    selectedServices={selectedService}
+                    onServiceToggle={checkingServices}
+                    onSelectAll={handlingSelectedAll}
+                    heading="Services we offer"
+                />
+            </div>
 
             <PermissionsList permissions={permissions} />
 

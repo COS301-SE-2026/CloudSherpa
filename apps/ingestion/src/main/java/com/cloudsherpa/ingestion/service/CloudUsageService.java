@@ -42,7 +42,6 @@ public class CloudUsageService {
 
     List<UsageRecordModel> usageResults = new ArrayList<>();
     List<BillingRecordModel> billingResults = new ArrayList<>();
-    UUID userId = request.getUserId();
 
     for (AccountScope scope : request.getScopes()) {
 
@@ -50,9 +49,7 @@ public class CloudUsageService {
       Normalizer normalizer = normalizerFactory.getNormalizer(scope.getProvider());
 
       if (request.isIncludeUsage() && connector instanceof UsageCapable usageCapable) {
-        List<UsageRecordModel> usageRecords = usageCapable.fetchUsage(scope, request);
-        usageResults.addAll(usageRecords);
-        normalizeAndPersistUsage(usageRecords, userId, normalizer);
+        usageCapable.fetchUsage(scope, request, normalizer);
       }
 
       if (request.isIncludeBilling() && connector instanceof BillingCapable billingCapable) {
@@ -67,7 +64,6 @@ public class CloudUsageService {
 
     List<UsageRecordModel> usageResults = new ArrayList<>();
     List<BillingRecordModel> billingResults = new ArrayList<>();
-    UUID userId = request.getUserId();
 
     for (AccountScope scope : request.getScopes()) {
 
@@ -75,9 +71,7 @@ public class CloudUsageService {
 
       if (request.isIncludeUsage() && connector instanceof UsageCapable usageCapable) {
         Normalizer normalizer = normalizerFactory.getNormalizer(scope.getProvider());
-        List<UsageRecordModel> usageRecords = usageCapable.fetchMockUsage(scope, request);
-        usageResults.addAll(usageRecords);
-        normalizeAndPersistUsage(usageRecords, userId, normalizer);
+        usageCapable.fetchMockUsage(scope, request, normalizer);
       }
 
       if (request.isIncludeBilling() && connector instanceof BillingCapable billingCapable) {

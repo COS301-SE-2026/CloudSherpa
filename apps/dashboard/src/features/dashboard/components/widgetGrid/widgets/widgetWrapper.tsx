@@ -1,4 +1,3 @@
-import { GripVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LayoutItem } from "@/features/dashboard/types/widgets";
 import { useDashboardStore, DashboardStore } from "@/features/dashboard/stores/dashboard-store";
@@ -21,19 +20,28 @@ export const WidgetWrapper = ({ layout, isEditMode }: WidgetWrapperProps) => {
         "gs-y": y,
         "gs-w": w,
         "gs-h": h,
+        "gs-min-w": 3,
+        "gs-min-h": 3,
         "data-widget-id": id,
         ...(autoPosition ? { "gs-auto-position": "true" } : {}),
+    };
+
+    const renderPlaceholderWidget = () => {
+        return (
+            <div className="h-full w-full py-7 px-6 flex flex-col justify-start items-start">
+                <span className="text-base text-muted-foreground">{config.displayName}</span>
+                <div className="w-full h-full flex flex-col justify-center items-center">
+                    <p className="text-xs text-muted-foreground">Drag to move widget.</p>
+                </div>
+            </div>
+        );
     };
 
     return (
         <div className="grid-stack-item" {...gridStackAttributes}>
             <div className="grid-stack-item-content relative overflow-visible! rounded-md group">
                 {isEditMode && (
-                    <div className="absolute top-2 right-2 z-50 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                        <div className="drag-handle cursor-grab active:cursor-grabbing bg-background border border-border shadow-md p-1 rounded-md text-muted-foreground hover:text-primary transition-all">
-                            <GripVertical className="h-3.5 w-3.5" />
-                        </div>
-                    </div>
+                    <div className="drag-handle absolute inset-0 z-40 cursor-grab active:cursor-grabbing rounded-xl hover:bg-muted/30" />
                 )}
 
                 <div
@@ -43,7 +51,7 @@ export const WidgetWrapper = ({ layout, isEditMode }: WidgetWrapperProps) => {
                             "pointer-events-none ring-2 ring-primary/20 rounded-xl transition-all"
                     )}
                 >
-                    <Widget config={config} />
+                    {isEditMode ? renderPlaceholderWidget() : <Widget config={config} />}
                 </div>
             </div>
         </div>

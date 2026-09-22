@@ -1,6 +1,17 @@
 "use client";
 import * as React from "react";
-import { LayoutDashboard, Network, Moon, Sun, HelpCircle, Telescope } from "lucide-react";
+import {
+    LayoutDashboard,
+    Network,
+    Moon,
+    Sun,
+    HelpCircle,
+    Telescope,
+    ServerPlus,
+    Lightbulb,
+    Webhook,
+    LogOut,
+} from "lucide-react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { useAuthContext } from "@/features/authentication/providers/AuthContext";
@@ -26,6 +37,7 @@ import {
     SidebarMenuItem,
     SidebarTrigger,
 } from "@/components/atoms/sidebar";
+import { ScrollArea } from "@/components/atoms/scroll-area";
 
 const navItems = [{ title: "Dashboard", icon: LayoutDashboard, url: "/dashboard" }];
 
@@ -107,131 +119,151 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 </div>
             </SidebarHeader>
 
-            <SidebarContent>
-                <SidebarGroup>
-                    <SidebarGroupLabel>Analytics</SidebarGroupLabel>
-                    <SidebarGroupContent>
-                        <SidebarMenu>
-                            {navItems.map((item) => (
-                                <SidebarMenuItem key={item.title}>
-                                    <SidebarMenuButton asChild tooltip={item.title}>
-                                        <Link href={item.url}>
-                                            <item.icon />
-                                            <span>{item.title}</span>
+            <SidebarContent className="overflow-hidden">
+                <ScrollArea className="h-full">
+                    <SidebarGroup>
+                        <SidebarGroupLabel>Analytics</SidebarGroupLabel>
+                        <SidebarGroupContent>
+                            <SidebarMenu>
+                                {navItems.map((item) => (
+                                    <SidebarMenuItem key={item.title}>
+                                        <SidebarMenuButton asChild tooltip={item.title}>
+                                            <Link href={item.url}>
+                                                <item.icon />
+                                                <span>{item.title}</span>
+                                            </Link>
+                                        </SidebarMenuButton>
+                                    </SidebarMenuItem>
+                                ))}
+                            </SidebarMenu>
+                        </SidebarGroupContent>
+                    </SidebarGroup>
+                    <SidebarGroup>
+                        <SidebarGroupLabel>Add Connection</SidebarGroupLabel>
+                        <SidebarGroupContent>
+                            <SidebarMenu>
+                                <SidebarMenuItem>
+                                    <SidebarMenuButton asChild tooltip="Add AWS connection">
+                                        <Link href="/addConnection/aws">
+                                            <ServerPlus />
+                                            <span>AWS</span>
                                         </Link>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
-                            ))}
-                        </SidebarMenu>
-                    </SidebarGroupContent>
-                </SidebarGroup>
-                <SidebarGroup>
-                    <SidebarGroupLabel>Add Connection</SidebarGroupLabel>
-                    <SidebarGroupContent>
-                        <SidebarMenu>
-                            <SidebarMenuItem>
-                                <SidebarMenuButton asChild tooltip="Add AWS connection">
-                                    <Link href="/addConnection/aws">
-                                        <Network />
-                                        <span>AWS</span>
-                                    </Link>
-                                </SidebarMenuButton>
-                            </SidebarMenuItem>
-                            <SidebarMenuItem>
-                                <SidebarMenuButton asChild tooltip="Add GCP connection">
-                                    <Link href="/addConnection/gcp">
-                                        <Network />
-                                        <span>GCP</span>
-                                    </Link>
-                                </SidebarMenuButton>
-                            </SidebarMenuItem>
-                            <SidebarMenuItem>
-                                <SidebarMenuButton asChild tooltip="Add Azure connection">
-                                    <Link href="/addConnection/azure">
-                                        <Network />
-                                        <span>Azure</span>
-                                    </Link>
-                                </SidebarMenuButton>
-                            </SidebarMenuItem>
-                        </SidebarMenu>
-                    </SidebarGroupContent>
-                </SidebarGroup>
-                <SidebarGroup>
-                    <SidebarGroupLabel>Manage Connections</SidebarGroupLabel>
-                    <SidebarGroupContent>
-                        <SidebarMenu>
-                            <SidebarMenuItem>
-                                <SidebarMenuButton asChild tooltip="Manage Connections">
-                                    <Link href="/manageConnections">
-                                        <Network />
-                                        <span>Connections</span>
-                                    </Link>
-                                </SidebarMenuButton>
-                            </SidebarMenuItem>
-                        </SidebarMenu>
-                    </SidebarGroupContent>
-                </SidebarGroup>
-
-                <SidebarGroup>
-                    <SidebarGroupLabel>Intelligence</SidebarGroupLabel>
-                    <SidebarGroupContent>
-                        <SidebarMenu>
-                            <SidebarMenuItem>
-                                <SidebarMenuButton asChild tooltip="Usage Forecasts">
-                                    <Link href="/intelligence/usage">
-                                        <Telescope />
-                                        <span>Usage Forecasts</span>
-                                    </Link>
-                                </SidebarMenuButton>
-                            </SidebarMenuItem>
-                            <SidebarMenuItem>
-                                <SidebarMenuButton asChild tooltip="Billing Forecasts">
-                                    <Link href="/intelligence/billing">
-                                        <Telescope />
-                                        <span>Billing Forecasts</span>
-                                    </Link>
-                                </SidebarMenuButton>
-                            </SidebarMenuItem>
-                        </SidebarMenu>
-                    </SidebarGroupContent>
-                </SidebarGroup>
-
-                <SidebarGroup>
-                    <SidebarGroupLabel>Optimization</SidebarGroupLabel>
-                    <SidebarGroupContent>
-                        <SidebarMenu>
-                            <SidebarMenuItem>
-                                <SidebarMenuButton asChild tooltip="Recommendations">
-                                    <Link href="/recommendations">
-                                        <div className="flex flex-row gap-2">
+                                <SidebarMenuItem>
+                                    <SidebarMenuButton asChild tooltip="Add GCP connection">
+                                        <Link href="/addConnection/gcp">
+                                            <ServerPlus />
+                                            <span>GCP</span>
+                                        </Link>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                                <SidebarMenuItem>
+                                    <SidebarMenuButton asChild tooltip="Add Azure connection">
+                                        <Link href="/addConnection/azure">
+                                            <ServerPlus />
+                                            <span>Azure</span>
+                                        </Link>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            </SidebarMenu>
+                        </SidebarGroupContent>
+                    </SidebarGroup>
+                    <SidebarGroup>
+                        <SidebarGroupLabel>Manage Connections</SidebarGroupLabel>
+                        <SidebarGroupContent>
+                            <SidebarMenu>
+                                <SidebarMenuItem>
+                                    <SidebarMenuButton asChild tooltip="Manage Connections">
+                                        <Link href="/manageConnections">
                                             <Network />
-                                            <span>Recommendations</span>
-                                        </div>
-                                        {summary && <Badge>{`${summary.active} active`}</Badge>}
-                                    </Link>
-                                </SidebarMenuButton>
-                            </SidebarMenuItem>
-                        </SidebarMenu>
-                    </SidebarGroupContent>
-                </SidebarGroup>
+                                            <span>Connections</span>
+                                        </Link>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            </SidebarMenu>
+                        </SidebarGroupContent>
+                    </SidebarGroup>
 
-                <SidebarGroup>
-                    <SidebarGroupLabel> Support </SidebarGroupLabel>
+                    <SidebarGroup>
+                        <SidebarGroupLabel>Intelligence</SidebarGroupLabel>
+                        <SidebarGroupContent>
+                            <SidebarMenu>
+                                <SidebarMenuItem>
+                                    <SidebarMenuButton asChild tooltip="Usage Forecasts">
+                                        <Link href="/intelligence/usage">
+                                            <Telescope />
+                                            <span>Usage Forecasts</span>
+                                        </Link>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                                <SidebarMenuItem>
+                                    <SidebarMenuButton asChild tooltip="Billing Forecasts">
+                                        <Link href="/intelligence/billing">
+                                            <Telescope />
+                                            <span>Billing Forecasts</span>
+                                        </Link>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            </SidebarMenu>
+                        </SidebarGroupContent>
+                    </SidebarGroup>
 
-                    <SidebarGroupContent>
-                        <SidebarMenu>
-                            <SidebarMenuItem>
-                                <SidebarMenuButton asChild tooltip="Help Center">
-                                    <Link href="/helpMenu/documentsAndTutorials">
-                                        {" "}
-                                        <HelpCircle />
-                                        <span> Help Center </span>
-                                    </Link>
-                                </SidebarMenuButton>
-                            </SidebarMenuItem>
-                        </SidebarMenu>
-                    </SidebarGroupContent>
-                </SidebarGroup>
+                    <SidebarGroup>
+                        <SidebarGroupLabel>Optimization</SidebarGroupLabel>
+                        <SidebarGroupContent>
+                            <SidebarMenu>
+                                <SidebarMenuItem>
+                                    <SidebarMenuButton asChild tooltip="Recommendations">
+                                        <Link href="/recommendations">
+                                            <div className="flex flex-row gap-2">
+                                                <Lightbulb />
+                                                <span>Recommendations</span>
+                                            </div>
+                                            {(summary?.active ?? 0) > 0 && (
+                                                <Badge>{`${summary?.active} active`}</Badge>
+                                            )}{" "}
+                                        </Link>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            </SidebarMenu>
+                        </SidebarGroupContent>
+                    </SidebarGroup>
+
+                    <SidebarGroup>
+                        <SidebarGroupLabel>Integrations</SidebarGroupLabel>
+                        <SidebarGroupContent>
+                            <SidebarMenu>
+                                <SidebarMenuItem>
+                                    <SidebarMenuButton asChild tooltip="Webhooks">
+                                        <Link href="/webhooks">
+                                            <Webhook />
+                                            <span>Webhooks</span>
+                                        </Link>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            </SidebarMenu>
+                        </SidebarGroupContent>
+                    </SidebarGroup>
+
+                    <SidebarGroup>
+                        <SidebarGroupLabel> Support </SidebarGroupLabel>
+
+                        <SidebarGroupContent>
+                            <SidebarMenu>
+                                <SidebarMenuItem>
+                                    <SidebarMenuButton asChild tooltip="Help Center">
+                                        <Link href="/helpMenu/documentsAndTutorials">
+                                            {" "}
+                                            <HelpCircle />
+                                            <span> Help Center </span>
+                                        </Link>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            </SidebarMenu>
+                        </SidebarGroupContent>
+                    </SidebarGroup>
+                </ScrollArea>
             </SidebarContent>
 
             <SidebarFooter>
@@ -254,6 +286,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                 tooltip="Logout"
                                 aria-label="logout button"
                             >
+                                <LogOut />
                                 <span>Logout</span>
                             </SidebarMenuButton>
                         </SidebarMenuItem>

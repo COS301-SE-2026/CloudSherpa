@@ -13,7 +13,7 @@ export function PermissionsList({
                 {heading}
             </h3>
 
-            <div className="rounded-lg border border-border bg-background p-4 space-y-3">
+            <div className="h-80 max-h-120 overflow-x-auto rounded-lg border border-border bg-background p-4 space-y-3">
                 {permissions.length === 0 ? (
                     <p className="text-sm text-muted-foreground/70">
                         Select a service to view the permissions
@@ -22,9 +22,9 @@ export function PermissionsList({
                     permissions.map((permission) => (
                         <div
                             key={permission}
-                            className="rounded-md bg-card px-4 py-3 text-sm text-foreground"
+                            className="rounded-md bg-card px-4 py-3 text-sm text-foreground border border-border"
                         >
-                            - {permission}
+                            {permission}
                         </div>
                     ))
                 )}

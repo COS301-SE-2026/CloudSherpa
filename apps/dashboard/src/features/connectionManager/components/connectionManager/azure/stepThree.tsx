@@ -16,6 +16,7 @@ import {
 } from "@/lib/fetch/azure-connection-api";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { AzureBillingConfigType } from "./validTypes";
 
 interface StepThreePropsForAzure {
     displayName: string;
@@ -24,6 +25,7 @@ interface StepThreePropsForAzure {
     onComplete: (ingestionPeriod: number) => void;
     onBack?: () => void;
     ingestionPeriod?: number;
+    billingConfig: AzureBillingConfigType | null;
 }
 
 export default function StepThreeAzure({
@@ -32,6 +34,7 @@ export default function StepThreeAzure({
     resources = [],
     onComplete,
     onBack,
+    billingConfig,
 }: Readonly<StepThreePropsForAzure>) {
     const [forSaving, setForSaving] = useState(false);
 
@@ -86,6 +89,7 @@ export default function StepThreeAzure({
                     tags: resource.tags,
                     active: resource.active,
                 })),
+                billingConfig,
             };
 
             await createAzureConnection(request);

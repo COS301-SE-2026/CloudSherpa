@@ -1,9 +1,11 @@
 package com.cloudsherpa.ingestion.billing;
 
 import com.cloudsherpa.lib.entities.AwsBillingExportConfig;
+import com.cloudsherpa.lib.entities.AzureBillingExportConfig;
 import com.cloudsherpa.lib.entities.BillingExportConfig;
 import com.cloudsherpa.lib.entities.GcpBillingExportConfig;
 import com.cloudsherpa.lib.repositories.AwsBillingExportConfigRepository;
+import com.cloudsherpa.lib.repositories.AzureBillingExportConfigRepository;
 import com.cloudsherpa.lib.repositories.BillingExportConfigRepository;
 import com.cloudsherpa.lib.repositories.GcpBillingExportConfigRepository;
 import java.util.UUID;
@@ -14,14 +16,17 @@ public class BillingExportConfigService {
   private final BillingExportConfigRepository billingExportConfigRepository;
   private final AwsBillingExportConfigRepository awsBillingExportConfigRepository;
   private final GcpBillingExportConfigRepository gcpBillingExportConfigRepository;
+  private final AzureBillingExportConfigRepository azureBillingExportConfigRepository;
 
   public BillingExportConfigService(
       BillingExportConfigRepository billingExportConfigRepository,
       AwsBillingExportConfigRepository awsBillingExportConfigRepository,
-      GcpBillingExportConfigRepository gcpBillingExportConfigRepository) {
+      GcpBillingExportConfigRepository gcpBillingExportConfigRepository,
+      AzureBillingExportConfigRepository azureBillingExportConfigRepository) {
     this.billingExportConfigRepository = billingExportConfigRepository;
     this.awsBillingExportConfigRepository = awsBillingExportConfigRepository;
     this.gcpBillingExportConfigRepository = gcpBillingExportConfigRepository;
+    this.azureBillingExportConfigRepository = azureBillingExportConfigRepository;
   }
 
   public BillingExportConfig getBillingExportConfig(UUID configId) {
@@ -36,6 +41,10 @@ public class BillingExportConfigService {
   public GcpBillingExportConfig getGcpBillingExportConfig(UUID configId) {
     BillingExportConfig config = getBillingExportConfig(configId);
     return gcpBillingExportConfigRepository.findById(config.getId()).orElseThrow();
+  }
+
+  public AzureBillingExportConfig getAzureBillingExportConfig(UUID configId) {
+    return azureBillingExportConfigRepository.findById(configId).orElseThrow();
   }
 
   // Allow dev runs to save configs to repos idempotently

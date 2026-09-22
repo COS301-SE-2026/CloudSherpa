@@ -20,9 +20,7 @@ import com.cloudsherpa.lib.repositories.OfferedMetricRepository;
 import com.cloudsherpa.lib.repositories.ResourceRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.transaction.Transactional;
 import java.time.Instant;
-import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +36,10 @@ public class UsageIngestionService {
   private final OfferedMetricRepository offeredMetricRepository;
   private final CredentialEncryptionService encryptionService;
   private final TenantSchemaService tenantSchemaService;
+  private final UsageIngestionCheckpointService checkpointService;
   private final ObjectMapper mapper;
+
+  private static final int SECONDS_IN_DAY = 86400;
 
   public UsageIngestionService(
       UsageIngestionClient client,
@@ -48,6 +49,7 @@ public class UsageIngestionService {
       OfferedMetricRepository offeredMetricRepository,
       CredentialEncryptionService encryptionService,
       TenantSchemaService tenantSchemaService,
+      UsageIngestionCheckpointService checkpointService,
       ObjectMapper mapper) {
     this.client = client;
     this.cloudAccountRepository = cloudAccountRepository;
@@ -56,10 +58,10 @@ public class UsageIngestionService {
     this.offeredMetricRepository = offeredMetricRepository;
     this.encryptionService = encryptionService;
     this.tenantSchemaService = tenantSchemaService;
+    this.checkpointService = checkpointService;
     this.mapper = mapper;
   }
 
-  @Transactional
   public void ingest(UUID accountId) {
     CloudAccount account =
         cloudAccountRepository
@@ -68,7 +70,7 @@ public class UsageIngestionService {
                 () -> new IllegalArgumentException("Cloud account not found: " + accountId));
     CloudCredential credential = cloudCredentialRepository.findByAccountId(accountId).getFirst();
     String decryptedCredential = encryptionService.decrypt(credential.getCredentialValue());
-    Instant ingestionEndTime = Instant.now().truncatedTo(ChronoUnit.MINUTES);
+    Instant ingestionEndTime = getIngestionEndTime(account.getLastUsageIngestion().toInstant());
     try {
       IngestionRequestEvent request = new IngestionRequestEvent();
       request.setFrom(account.getLastUsageIngestion().toInstant());
@@ -146,18 +148,28 @@ public class UsageIngestionService {
       request.setCredentials(credentials);
       tenantSchemaService.usePublicSchema();
       client.ingest(request);
-      account.setLastUsageIngestion(ingestionEndTime.atOffset(ZoneOffset.UTC));
-
-      account.setNextUsageIngestion(
-          ingestionEndTime
-              .atOffset(ZoneOffset.UTC)
-              .plusSeconds(Long.parseLong(account.getIngestionPeriod())));
-
-      cloudAccountRepository.save(account);
-
+      Instant nextIngestionStartTime =
+          Instant.now()
+              .truncatedTo(ChronoUnit.MINUTES)
+              .plusSeconds(Integer.valueOf(account.getIngestionPeriod()));
+      checkpointService.updateCheckpoint(accountId, ingestionEndTime, nextIngestionStartTime);
     } catch (JsonProcessingException jsonProcessingException) {
       throw new IllegalStateException(
           "Stored credentials for account " + account.getId().toString() + " are invalid");
+    }
+  }
+
+  /*
+   * the purpose here is to keep ingestions to a reasonable size to limit memory
+   * usage whilst still saving on API calls for the user
+   */
+  private Instant getIngestionEndTime(Instant databaseIngestionStartTime) {
+    Instant proposedEndTime = Instant.now().truncatedTo(ChronoUnit.MINUTES);
+    Instant maximumEndTime = databaseIngestionStartTime.plusSeconds((long) SECONDS_IN_DAY * 5);
+    if (maximumEndTime.isBefore(proposedEndTime)) {
+      return maximumEndTime;
+    } else {
+      return proposedEndTime;
     }
   }
 }

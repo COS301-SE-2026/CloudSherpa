@@ -1,6 +1,6 @@
 "use client";
 
-import React, { ReactNode } from "react";
+import { ReactNode } from "react";
 import { Pencil, Trash } from "lucide-react";
 import {
     ContextMenu,

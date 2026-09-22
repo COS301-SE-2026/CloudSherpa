@@ -7,6 +7,7 @@ import static org.mockito.Mockito.*;
 import com.cloudsherpa.ingestion.connector.CloudCredentials;
 import com.cloudsherpa.ingestion.models.IngestionRequestEvent;
 import com.cloudsherpa.ingestion.scheduler.encryption.CredentialEncryptionService;
+import com.cloudsherpa.ingestion.scheduler.usage.UsageIngestionCheckpointService;
 import com.cloudsherpa.ingestion.scheduler.usage.UsageIngestionClient;
 import com.cloudsherpa.ingestion.scheduler.usage.UsageIngestionService;
 import com.cloudsherpa.ingestion.service.TenantSchemaService;
@@ -55,7 +56,11 @@ class UsageIngestionServiceTest {
 
   @Mock private ObjectMapper mapper;
 
+  @Mock private UsageIngestionCheckpointService checkpointService;
+
   @InjectMocks private UsageIngestionService service;
+
+  @InjectMocks private UsageIngestionService usageIngestionService;
 
   private UUID accountId;
   private UUID userId;
@@ -363,17 +368,6 @@ class UsageIngestionServiceTest {
 
     assertFalse(
         instances.stream().anyMatch(instance -> "i-disabled".equals(instance.getIdentifier())));
-  }
-
-  @Test
-  void ingest_shouldUpdateLastAndNextUsageIngestionAfterSuccessfulIngestion() throws Exception {
-    setupSuccessfulIngestion();
-    service.ingest(accountId);
-
-    verify(cloudAccountRepository).save(account);
-
-    verify(account).setLastUsageIngestion(any());
-    verify(account).setNextUsageIngestion(any());
   }
 
   private Resource resource(String type, String identifierType, String identifier, String region) {

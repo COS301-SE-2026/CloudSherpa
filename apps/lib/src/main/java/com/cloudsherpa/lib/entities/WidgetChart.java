@@ -33,12 +33,18 @@ public class WidgetChart {
   @JdbcTypeCode(SqlTypes.NAMED_ENUM)
   private ChartTypeEnum chartType;
 
+  @Column(name = "chart_colour", nullable = false, length = 50)
+  @Enumerated(EnumType.STRING)
+  @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+  private ChartColourEnum chartColour;
+
   protected WidgetChart() {}
 
-  public WidgetChart(UUID id, UUID widgetId, ChartTypeEnum chartType) {
+  public WidgetChart(UUID id, UUID widgetId, ChartTypeEnum chartType, ChartColourEnum chartColour) {
     this.id = id;
     this.widgetId = widgetId;
     this.chartType = chartType;
+    this.chartColour = chartColour; 
   }
 
   public UUID getId() {
@@ -59,5 +65,13 @@ public class WidgetChart {
 
   public void setChartType(ChartTypeEnum chartType) {
     this.chartType = chartType;
+  }
+
+  public ChartColourEnum getChartColour() {
+    return chartColour; 
+  }
+
+  public void setChartColour(ChartColourEnum chartColour) {
+    this.chartColour = chartColour; 
   }
 }

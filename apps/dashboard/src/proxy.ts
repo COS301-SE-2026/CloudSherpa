@@ -1,9 +1,11 @@
 import { NextResponse, NextRequest } from "next/server";
 
 export function proxy(request: NextRequest) {
-    // If the token is present or dev, continue as normal
+    const hasSessionCookie =
+        request.cookies.get("auth_token") || request.cookies.get("refresh_token");
+
     if (
-        request.cookies.get("auth_token") ||
+        hasSessionCookie ||
         (process.env["NODE_ENV"] !== "production" && process.env["DISABLE_AUTH"] === "true")
     ) {
         return NextResponse.next();

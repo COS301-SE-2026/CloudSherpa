@@ -54,6 +54,13 @@ export default function StepOneGcp({ onNext }: Readonly<StepOnePropsForGcp>) {
     const handlingSubmit = async (submittingFile: React.SubmitEvent<HTMLFormElement>) => {
         submittingFile.preventDefault();
 
+        const cleanDisplayName = displayName.trim();
+
+        if (!cleanDisplayName) {
+            setErrors("Display name field cannot be empty or just spaces.");
+            return;
+        }
+
         if (!accountKey) {
             setErrors("Please upload a service account key before continuing");
 
@@ -108,6 +115,7 @@ export default function StepOneGcp({ onNext }: Readonly<StepOnePropsForGcp>) {
                     onChange={(changing) => setDisplayName(changing.target.value)}
                     className="bg-background border-border rounded-md px-4 py-3 text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all w-full"
                     required
+                    maxLength={80}
                 />
             </div>
 

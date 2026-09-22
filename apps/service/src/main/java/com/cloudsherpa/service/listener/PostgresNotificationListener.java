@@ -1,5 +1,14 @@
 package com.cloudsherpa.service.listener;
 
+import com.cloudsherpa.lib.entities.BillingExportConfig;
+import com.cloudsherpa.lib.entities.CloudAccount;
+import com.cloudsherpa.lib.repositories.BillingExportConfigRepository;
+import com.cloudsherpa.lib.repositories.CloudAccountRepository;
+import com.cloudsherpa.service.alerts.service.AnomalyEvaluationService;
+import com.cloudsherpa.service.alerts.service.BudgetEvaluationService;
+import com.cloudsherpa.service.alerts.service.ThresholdEvaluationService;
+import com.cloudsherpa.service.config.TenantContext;
+import com.cloudsherpa.service.listener.dto.BillingExecutionCompletedEventDto;
 import com.cloudsherpa.service.listener.dto.MetricStreamEventDto;
 import com.cloudsherpa.service.metrics.MetricDisplayNameMapper;
 import com.cloudsherpa.service.sse.SseService;
@@ -8,6 +17,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Optional;
 import java.util.UUID;
 import org.postgresql.PGConnection;
 import org.postgresql.PGNotification;
@@ -43,6 +53,11 @@ public class PostgresNotificationListener implements SmartLifecycle {
   private final SseService sseService;
   private final MetricDisplayNameMapper metricDisplayNameMapper;
   private final ActiveListeners activeListeners;
+  private final ThresholdEvaluationService thresholdEvaluationService;
+  private final AnomalyEvaluationService anomalyEvaluationService;
+  private final BudgetEvaluationService budgetEvaluationService;
+  private final BillingExportConfigRepository billingExportConfigRepository;
+  private final CloudAccountRepository cloudAccountRepository;
 
   private volatile boolean running;
 
@@ -52,11 +67,21 @@ public class PostgresNotificationListener implements SmartLifecycle {
       SseService sseService,
       ActiveListeners activeListeners,
       ObjectMapper objectMapper,
-      MetricDisplayNameMapper metricDisplayNameMapper) {
+      MetricDisplayNameMapper metricDisplayNameMapper,
+      ThresholdEvaluationService thresholdEvaluationService,
+      AnomalyEvaluationService anomalyEvaluationService,
+      BudgetEvaluationService budgetEvaluationService,
+      BillingExportConfigRepository billingExportConfigRepository,
+      CloudAccountRepository cloudAccountRepository) {
     this.sseService = sseService;
     this.activeListeners = activeListeners;
     this.objectMapper = objectMapper;
     this.metricDisplayNameMapper = metricDisplayNameMapper;
+    this.thresholdEvaluationService = thresholdEvaluationService;
+    this.anomalyEvaluationService = anomalyEvaluationService;
+    this.budgetEvaluationService = budgetEvaluationService;
+    this.billingExportConfigRepository = billingExportConfigRepository;
+    this.cloudAccountRepository = cloudAccountRepository;
   }
 
   // Creates a long-lived connection and registers the LISTEN channel.
@@ -90,6 +115,11 @@ public class PostgresNotificationListener implements SmartLifecycle {
       // connection.
 
       loadAndListenTenantMetricEvents();
+
+      // one-time static listen (this channel isn't tenant scoped, so only needs to be issued once)
+      try (Statement stmt = connection.createStatement()) {
+        stmt.execute("LISTEN billing_execution_completed");
+      }
     } catch (SQLException e) {
       logger.warn("Failed to initialize Postgres notification listener", e);
     }
@@ -119,47 +149,104 @@ public class PostgresNotificationListener implements SmartLifecycle {
       // This prevents our Spring scheduling thread from freezing up.
       PGNotification[] notifications = pgConnection.getNotifications(0);
 
-      if (notifications != null && notifications.length > 0) {
-        for (PGNotification notification : notifications) {
-          // This retrieves the actual text payload we sent from the database trigger
-          // Thanks to row_to_json(NEW), it should be a JSON string representing a
-          // database row.
-          String eventName = notification.getName();
-          logger.info("NOTIFIED {}", eventName);
+      if (notifications == null) {
+        return;
+      }
 
-          UUID userId = activeListeners.getUserIdForChannel(eventName);
-          if (userId == null) {
-            activeListeners.refreshTenantMetricEvents();
-            loadAndListenTenantMetricEvents();
-            userId = activeListeners.getUserIdForChannel(eventName);
-          }
-
-          if (userId == null) {
-            logger.warn("No tenant mapping found for Postgres notification channel {}", eventName);
-            continue;
-          }
-
-          String payload = notification.getParameter();
-          processMetricForAnalytics(payload, userId);
-        }
+      for (PGNotification notification : notifications) {
+        handleNotification(notification);
       }
     } catch (SQLException e) {
       logger.warn("Failed to poll Postgres notifications", e);
     }
   }
 
+  private void handleNotification(PGNotification notification) throws SQLException {
+    String eventName = notification.getName();
+    logger.info("NOTIFIED {}", eventName);
+
+    String payload = notification.getParameter();
+
+    if ("billing_execution_completed".equals(eventName)) {
+      processBillingExecutionCompleted(payload);
+      return;
+    }
+
+    UUID userId = resolveUserIdForChannel(eventName);
+
+    if (userId == null) {
+      logger.warn("No tenant mapping found for Postgres notification channel {}", eventName);
+      return;
+    }
+
+    processMetricForAnalytics(payload, userId);
+  }
+
+  private UUID resolveUserIdForChannel(String eventName) throws SQLException {
+    UUID userId = activeListeners.getUserIdForChannel(eventName);
+
+    if (userId != null) {
+      return userId;
+    }
+
+    activeListeners.refreshTenantMetricEvents();
+    loadAndListenTenantMetricEvents();
+
+    return activeListeners.getUserIdForChannel(eventName);
+  }
+
   // Parse and forward the metric to any connected SSE clients.
   private void processMetricForAnalytics(String payload, UUID userId) {
     try {
-      // Parse the raw string back into a JSON object
-      MetricStreamEventDto event =
-          objectMapper
-              .readValue(payload, MetricStreamEventDto.class)
-              .withDisplayNameMappedMetric(metricDisplayNameMapper);
+      MetricStreamEventDto rawEvent = objectMapper.readValue(payload, MetricStreamEventDto.class);
+      MetricStreamEventDto event = rawEvent.withDisplayNameMappedMetric(metricDisplayNameMapper);
 
       sseService.broadcast(userId, "metric", event);
+
+      TenantContext.setCurrentTenant(userId.toString());
+      try {
+        thresholdEvaluationService.evaluate(rawEvent, userId);
+        anomalyEvaluationService.evaluate(event, userId);
+      } finally {
+        TenantContext.clear();
+      }
     } catch (Exception e) {
       logger.warn("Failed to parse metric payload: {}", payload, e);
+    }
+  }
+
+  private void processBillingExecutionCompleted(String payload) {
+    try {
+      BillingExecutionCompletedEventDto event =
+          objectMapper.readValue(payload, BillingExecutionCompletedEventDto.class);
+
+      Optional<BillingExportConfig> config =
+          billingExportConfigRepository.findById(event.configId());
+
+      if (config.isEmpty()) {
+        logger.warn("No billing export config found for configId={}", event.configId());
+        return;
+      }
+
+      Optional<CloudAccount> account = cloudAccountRepository.findById(config.get().getAccountId());
+
+      if (account.isEmpty()) {
+        logger.warn("No cloud account found for accountId={}", config.get().getAccountId());
+        return;
+      }
+
+      UUID userId = account.get().getConnection().getUser().getId();
+      UUID accountId = account.get().getId();
+
+      TenantContext.setCurrentTenant(userId.toString());
+
+      try {
+        budgetEvaluationService.evaluateForAccount(userId, accountId);
+      } finally {
+        TenantContext.clear();
+      }
+    } catch (Exception e) {
+      logger.warn("Failed to parse billing execution completed payload: {}", payload, e);
     }
   }
 

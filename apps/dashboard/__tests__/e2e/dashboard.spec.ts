@@ -7,7 +7,11 @@ async function registerAndLoginNewUser(page: Page) {
     const password = "SafePassword123!";
 
     await page.goto("http://localhost:3000/login");
-    await page.getByRole("button", { name: "Get Started" }).click();
+    await page.getByLabel("get started button").click();
+
+    const signUpButton = page.getByRole("button", { name: /Sign Up/i });
+
+    await expect(page.getByRole("heading", { name: "Sign Up" })).toBeVisible();
 
     //fill reg form
     await page.locator('input[name="email"]').fill(email);
@@ -15,7 +19,8 @@ async function registerAndLoginNewUser(page: Page) {
     await page.locator('input[name="confirmPassword"]').fill(password);
 
     //register
-    await page.getByRole("button", { name: "Sign up" }).click();
+    await expect(signUpButton).toBeEnabled();
+    await signUpButton.click();
 
     //auto logs in
 
@@ -30,22 +35,20 @@ async function createNewDashboard(page: Page) {
     await page.getByRole("button", { name: "Dashboard Selector" }).click();
     await page.getByLabel("createNewDashOption").click();
     await page.getByLabel("createDashInput").fill(uniqueDashboardName);
-    await page.getByRole("button", { name: "Create Dashboard" }).click();
+    await page.getByLabel("create dashboard").click();
     await expect(page.getByLabel("dashboard selector dropdown")).toContainText(uniqueDashboardName);
     return uniqueDashboardName;
 }
 
 async function createNewChartWidget(page: Page) {
-    await page.getByLabel("editbtn").first().click();
-    await page.getByRole("button", { name: "Add Chart" }).click();
-    await page.getByRole("button", { name: "Save" }).click();
+    await page.getByLabel("add widget").first().click();
+    await page.getByLabel("add chart widget").first().click();
     await expect(page.getByText("New Chart").first()).toBeVisible();
 }
 
 async function createNewKPIWidget(page: Page) {
-    await page.getByLabel("editbtn").first().click();
-    await page.getByRole("button", { name: "Add KPI" }).click();
-    await page.getByRole("button", { name: "Save" }).click();
+    await page.getByLabel("add widget").first().click();
+    await page.getByLabel("add kpi widget").first().click();
     await expect(page.getByText("New KPI").first()).toBeVisible();
 }
 
@@ -83,17 +86,6 @@ test.describe("dashboard", () => {
     });
 
     //still need one for custom time window
-
-    test("don't persist widget", async ({ page }) => {
-        //create dash
-        await createNewDashboard(page);
-        //create chart widget
-        await page.getByLabel("editbtn").first().click();
-        await page.getByRole("button", { name: "Add Chart" }).click();
-        await expect(page.getByText("New Chart")).toBeVisible();
-        await page.getByLabel("editbtn").first().click();
-        await expect(page.getByText("New Chart")).not.toBeVisible();
-    });
 
     test("Create Dash & chart widget", async ({ page }) => {
         //create dash

@@ -2,12 +2,14 @@ package com.cloudsherpa.ingestion.integration.controller;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.cloudsherpa.ingestion.billing.provider.aws.cur.AwsCurIngestionService;
+import com.cloudsherpa.ingestion.billing.provider.azure.AzureBillingIngestionService;
 import com.cloudsherpa.ingestion.billing.provider.gcp.bigquery.GcpBillingIngestionService;
 import com.cloudsherpa.ingestion.connector.CloudConnectorFactory;
 import com.cloudsherpa.ingestion.controller.CloudUsageController;
@@ -17,7 +19,6 @@ import com.cloudsherpa.ingestion.normalization.normalizers.NormalizerFactory;
 import com.cloudsherpa.ingestion.provider.aws.AwsCloudConnector;
 import com.cloudsherpa.ingestion.service.CloudUsageService;
 import com.cloudsherpa.ingestion.service.SherpaDbPersistenceService;
-import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +43,8 @@ class CloudUsageControllerIntegrationTest {
   @MockitoBean private AwsCurIngestionService awsCurIngestionService;
 
   @MockitoBean private GcpBillingIngestionService gcpBillingIngestionService;
+
+  @MockitoBean private AzureBillingIngestionService azureBillingIngestionService;
 
   @MockitoBean private CloudConnectorFactory connectorFactory;
 
@@ -71,8 +74,6 @@ class CloudUsageControllerIntegrationTest {
     usage.setMetricName("CPUUtilization");
     usage.setValue(55.0);
     usage.setResourceId("i-test123");
-
-    when(awsConnector.fetchUsage(any(), any())).thenReturn(List.of(usage));
 
     String requestJson =
         """
@@ -108,15 +109,15 @@ class CloudUsageControllerIntegrationTest {
           ]
         }
         """;
-
     mockMvc
         .perform(
             post("/api/events/ingest").contentType(MediaType.APPLICATION_JSON).content(requestJson))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.usage").isArray())
-        .andExpect(jsonPath("$.usage[0].provider").value("AWS"))
-        .andExpect(jsonPath("$.usage[0].metricName").value("CPUUtilization"))
-        .andExpect(jsonPath("$.usage[0].value").value(55.0))
-        .andExpect(jsonPath("$.usage[0].resourceId").value("i-test123"));
+        .andExpect(jsonPath("$.usage").isEmpty())
+        .andExpect(jsonPath("$.billing").isArray())
+        .andExpect(jsonPath("$.billing").isEmpty());
+
+    verify(awsConnector).fetchUsage(any(), any(), any());
   }
 }

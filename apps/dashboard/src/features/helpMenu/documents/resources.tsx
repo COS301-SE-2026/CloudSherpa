@@ -14,9 +14,9 @@ export default function Resource() {
             name: "Access the Resource Manager",
             description: "Navigate to the Resource Manager from your dashboard",
             details: [
-                "From your dashboard, locate the sidebar on the left",
-                "Select Resource Manager",
-                "Once redirected you will be able to view all your active and inactive resources associated with a specific service",
+                "From your dashboard, locate the sidebar on the left.",
+                "Select Resource Manager.",
+                "Once redirected you will be able to view all your active and inactive resources associated with a specific service.",
             ],
         },
 
@@ -24,8 +24,8 @@ export default function Resource() {
             name: "Filter and search for resources",
             description: "Use filters and search to find a resource",
             details: [
-                "Use the search bar to find a particular resource",
-                "Filter the table to view the resources",
+                "Use the search bar to find a particular resource.",
+                "Filter the table to view the resources.",
             ],
         },
 
@@ -33,7 +33,7 @@ export default function Resource() {
             name: "Active or Inactive resources",
             description: "Manage which resources are being monitored",
             details: [
-                "Toggle on a resource to select which resource should be monitored (active) and which should not (inactive)",
+                "Toggle on a resource to select which resource should be monitored (active) and which should not (inactive).",
             ],
         },
     ]);

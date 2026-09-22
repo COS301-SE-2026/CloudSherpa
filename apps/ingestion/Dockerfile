@@ -9,7 +9,6 @@ COPY apps/lib apps/lib
 RUN chmod +x mvnw
 RUN ./mvnw -f apps/lib/pom.xml clean install -DskipTests
 RUN ./mvnw -f apps/ingestion/pom.xml dependency:go-offline
-RUN mkdir -p /tmp/sherpa/aws/cur
 
 # ==== Dev ====
 FROM base AS dev
@@ -34,7 +33,9 @@ FROM eclipse-temurin:21-jre AS prod
 
 WORKDIR /app
 COPY --from=build /app/apps/ingestion/target/*.jar app.jar
-RUN useradd ingestionuser && mkdir -p /tmp/sherpa/aws/cur && chown -R ingestionuser:ingestionuser /tmp/sherpa
+RUN useradd -U ingestionuser && \
+ mkdir -p /tmp/sherpa/aws/cur /tmp/sherpa/azure && \
+ chown -R ingestionuser:ingestionuser /tmp/sherpa
 USER ingestionuser
 
 EXPOSE 8080
