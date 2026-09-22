@@ -34,6 +34,9 @@ public class WebhookDelivery {
   @JoinColumn(name = "cloud_account")
   private CloudAccount cloudAccount;
 
+  @Column(name = "cloud_account_name", nullable = true)
+  private String cloudAccountName;
+
   @Column(name = "event_type", nullable = false)
   private String eventType;
 
@@ -63,27 +66,102 @@ public class WebhookDelivery {
 
   protected WebhookDelivery() {}
 
-  public WebhookDelivery(
-      UUID webhookDeliveryId,
-      Webhook webhook,
-      UUID eventId,
-      CloudAccount cloudAccount,
-      String eventType,
-      Instant eventTimestamp,
-      JsonNode payload,
-      WebhookDeliveryStatusEnum deliveryStatus,
-      Integer responseCode,
-      Integer attemptCount) {
-    this.webhookDeliveryId = webhookDeliveryId;
-    this.webhook = webhook;
-    this.eventId = eventId;
-    this.cloudAccount = cloudAccount;
-    this.eventType = eventType;
-    this.eventTimestamp = eventTimestamp;
-    this.payload = payload;
-    this.deliveryStatus = deliveryStatus;
-    this.responseCode = responseCode;
-    this.attemptCount = attemptCount;
+  private WebhookDelivery(Builder builder) {
+    this.webhookDeliveryId = builder.webhookDeliveryId;
+    this.webhook = builder.webhook;
+    this.eventId = builder.eventId;
+    this.cloudAccount = builder.cloudAccount;
+    this.cloudAccountName = builder.cloudAccountName;
+    this.eventType = builder.eventType;
+    this.eventTimestamp = builder.eventTimestamp;
+    this.payload = builder.payload;
+    this.deliveryStatus = builder.deliveryStatus;
+    this.responseCode = builder.responseCode;
+    this.attemptCount = builder.attemptCount;
+    this.nextAttemptAt = builder.nextAttemptAt;
+  }
+
+  public static Builder builder() {
+    return new Builder();
+  }
+
+  public static class Builder {
+    private UUID webhookDeliveryId;
+    private Webhook webhook;
+    private UUID eventId;
+    private CloudAccount cloudAccount;
+    private String cloudAccountName;
+    private String eventType;
+    private Instant eventTimestamp;
+    private JsonNode payload;
+    private WebhookDeliveryStatusEnum deliveryStatus;
+    private Integer responseCode;
+    private Integer attemptCount;
+    private Instant nextAttemptAt;
+
+    public Builder webhookDeliveryId(UUID webhookDeliveryId) {
+      this.webhookDeliveryId = webhookDeliveryId;
+      return this;
+    }
+
+    public Builder webhook(Webhook webhook) {
+      this.webhook = webhook;
+      return this;
+    }
+
+    public Builder eventId(UUID eventId) {
+      this.eventId = eventId;
+      return this;
+    }
+
+    public Builder cloudAccount(CloudAccount cloudAccount) {
+      this.cloudAccount = cloudAccount;
+      return this;
+    }
+
+    public Builder cloudAccountName(String cloudAccountName) {
+      this.cloudAccountName = cloudAccountName;
+      return this;
+    }
+
+    public Builder eventType(String eventType) {
+      this.eventType = eventType;
+      return this;
+    }
+
+    public Builder eventTimestamp(Instant eventTimestamp) {
+      this.eventTimestamp = eventTimestamp;
+      return this;
+    }
+
+    public Builder payload(JsonNode payload) {
+      this.payload = payload;
+      return this;
+    }
+
+    public Builder deliveryStatus(WebhookDeliveryStatusEnum deliveryStatus) {
+      this.deliveryStatus = deliveryStatus;
+      return this;
+    }
+
+    public Builder responseCode(Integer responseCode) {
+      this.responseCode = responseCode;
+      return this;
+    }
+
+    public Builder attemptCount(Integer attemptCount) {
+      this.attemptCount = attemptCount;
+      return this;
+    }
+
+    public Builder nextAttemptAt(Instant nextAttemptAt) {
+      this.nextAttemptAt = nextAttemptAt;
+      return this;
+    }
+
+    public WebhookDelivery build() {
+      return new WebhookDelivery(this);
+    }
   }
 
   public UUID getWebhookDeliveryId() {
@@ -100,6 +178,10 @@ public class WebhookDelivery {
 
   public CloudAccount getCloudAccount() {
     return cloudAccount;
+  }
+
+  public String getCoudAccountName() {
+    return cloudAccountName;
   }
 
   public String getEventType() {
@@ -140,6 +222,10 @@ public class WebhookDelivery {
 
   public void setCloudAccount(CloudAccount cloudAccount) {
     this.cloudAccount = cloudAccount;
+  }
+
+  public void setCloudAccountName(String cloudAccountName) {
+    this.cloudAccountName = cloudAccountName;
   }
 
   public void setEventType(String eventType) {

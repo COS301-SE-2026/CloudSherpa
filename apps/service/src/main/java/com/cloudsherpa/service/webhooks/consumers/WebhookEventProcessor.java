@@ -66,16 +66,18 @@ public class WebhookEventProcessor {
 
   private WebhookDelivery fromPendingEvent(
       PendingWebhookEvent pendingWebhookEvent, Webhook webhook, CloudAccount cloudAccount) {
-    return new WebhookDelivery(
-        UUID.randomUUID(),
-        webhook,
-        pendingWebhookEvent.getEventId(),
-        cloudAccount,
-        pendingWebhookEvent.getEventType(),
-        pendingWebhookEvent.getEventTimestamp(),
-        pendingWebhookEvent.getPayload(),
-        WebhookDeliveryStatusEnum.PENDING,
-        null,
-        0);
+    return WebhookDelivery.builder()
+        .webhookDeliveryId(UUID.randomUUID())
+        .webhook(webhook)
+        .eventId(pendingWebhookEvent.getEventId())
+        .cloudAccount(cloudAccount)
+        .cloudAccountName(cloudAccount.getDisplayName())
+        .eventType(pendingWebhookEvent.getEventType())
+        .eventTimestamp(pendingWebhookEvent.getEventTimestamp())
+        .payload(pendingWebhookEvent.getPayload())
+        .deliveryStatus(WebhookDeliveryStatusEnum.PENDING)
+        .responseCode(null)
+        .attemptCount(0)
+        .build();
   }
 }

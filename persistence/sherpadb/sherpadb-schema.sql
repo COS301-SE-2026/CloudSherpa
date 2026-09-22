@@ -956,6 +956,7 @@ BEGIN
         webhook_id uuid REFERENCES %I.webhooks(webhook_id) ON DELETE SET NULL,
         event_id uuid NOT NULL,
         cloud_account uuid REFERENCES public.cloud_account(account_id) ON DELETE SET NULL,
+        cloud_account_name varchar(80),
         event_type text NOT NULL,
         event_timestamp timestamptz NOT NULL,
         payload jsonb NOT NULL,
