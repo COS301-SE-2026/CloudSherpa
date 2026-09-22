@@ -205,7 +205,7 @@ public class PostgresNotificationListener implements SmartLifecycle {
 
       TenantContext.setCurrentTenant(userId.toString());
       try {
-        thresholdEvaluationService.evaluate(event, userId);
+        thresholdEvaluationService.evaluate(rawEvent, userId);
         anomalyEvaluationService.evaluate(event, userId);
       } finally {
         TenantContext.clear();
