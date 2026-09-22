@@ -4,9 +4,9 @@ import UsageToolbar from "@/features/intelligence/components/usage/usageToolbar"
 import UsagePredictionChart from "@/features/intelligence/components/usage/usagePredictionChart";
 import { useUsageIntelligenceConfigStore } from "@/features/intelligence/stores/useUsageIntelligenceConfigStore";
 import { useUsageIntelligenceStore } from "@/features/intelligence/stores/useUsageIntelligenceStore";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { UsageForecastData } from "@/features/intelligence/types/dtos";
-import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, Plus } from "lucide-react";
 import { useFetchMetrics } from "@/features/dashboard/hooks/useFetchMetrics";
 import { Card, CardContent } from "@/components/atoms/card";
 import { getArraySummary } from "@/features/intelligence/utils/getUsageSummaries";
@@ -16,6 +16,11 @@ import { useUsageHistoricalData } from "../../hooks/useUsageHistoricalData";
 import { UsageErrorAlert } from "./usageError";
 import { UsageError } from "../../types/errors";
 import { Spinner } from "@/components/atoms/spinner";
+import {Button} from "@/components/atoms/button";
+import {toast} from "sonner";
+import { ThresholdPopup } from "@/features/thresholds/components/thresholds/thresholdPopup";
+import { addThreshold } from "@/features/thresholds/thresholds";
+import type { CreateThresholdRequest } from "@/features/thresholds/types/thresholdTypes";
 
 function generateMockForecast(days: number): UsageForecastData {
     const hours = days * 24;
@@ -65,6 +70,20 @@ export default function UsageIntelligence() {
 
     const { historicalUsageSeries, historicalUsageError, isHistoricalUsageLoading } =
         useUsageHistoricalData();
+
+    const [popupOpen, setPopupOpen] = useState(false);
+
+    const handlingAddThreshold = () => setPopupOpen(true);
+
+    const handlingThresholdSubmit = async (forPayload : CreateThresholdRequest) => {
+        try{
+            await addThreshold(forPayload);
+
+            toast.success("Threshold added");
+        }catch{
+            toast.error("Failed to add threshold");
+        }
+    };
 
     const pastSummary = useMemo(() => {
         if (!historicalUsageSeries?.values?.length) {
@@ -192,6 +211,12 @@ export default function UsageIntelligence() {
                     />
                 </section>
                 <section className="w-full flex-1 min-h-0 flex flex-col">{renderChart()}</section>
+
+                {resourceId && (
+                    <div className = "flex justify-end">
+                        <Button onClick = {handlingAddThreshold}> <Plus className = "h-4 w-4"/> Add threshold </Button>
+                    </div>
+                )}
             </div>
         </div>
     );
