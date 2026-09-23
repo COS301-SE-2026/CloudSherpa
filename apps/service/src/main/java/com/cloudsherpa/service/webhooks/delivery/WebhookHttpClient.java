@@ -47,6 +47,6 @@ public class WebhookHttpClient {
 
   private DeliveryHttpBody requestBody(DeliveryAttempt attempt) {
     return new DeliveryHttpBody(
-        attempt.type(), attempt.timestamp().toString(), attempt.account(), attempt.data());
+        attempt.type(), attempt.timestamp().toEpochMilli(), attempt.account(), attempt.data());
   }
 }
