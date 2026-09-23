@@ -1,18 +1,19 @@
-package com.cloudsherpa.service.webhooks.events.threshold;
+package com.cloudsherpa.service.webhooks.events.alert.threshold;
 
+import com.cloudsherpa.lib.entities.AlertSeverityEnum;
 import com.cloudsherpa.service.webhooks.events.WebhookPayload;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
-import java.util.UUID;
 
 public record ThresholdAlertPayload(
-    UUID resourceId,
+    String resourceId,
+    String resourceName,
     String metricName,
     BigDecimal observedValue,
     String unit,
     String operator,
-    BigDecimal thresholdValue,
-    String severity,
+    double thresholdValue,
+    AlertSeverityEnum severity,
     OffsetDateTime periodStart,
     OffsetDateTime periodEnd)
     implements WebhookPayload {}

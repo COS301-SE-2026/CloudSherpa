@@ -1,26 +1,51 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { WebhookEvent } from "@/features/webhooks/types";
 import { Button } from "@/components/atoms/button";
 
 interface PropsForPayload {
     event: WebhookEvent;
+    signingKey: string;
 }
 
-export const ExampleForPayload = ({ event }: PropsForPayload) => {
+export const ExampleForPayload = ({ event, signingKey }: PropsForPayload) => {
     const [copyHeaders, setCopyHeaders] = useState(false);
 
     const [copyBody, setCopyBody] = useState(false);
 
-    const headers: Record<string, string> = event.requestHeaders ?? {
+    const [demoHash, setDemoHash] = useState("");
+
+    useEffect(() => {
+        const calculateDemoHash = async (payload?: Record<string, unknown>) => {
+            const encoder = new TextEncoder();
+            const importedKey = await window.crypto.subtle.importKey(
+                "raw",
+                encoder.encode(signingKey),
+                { name: "HMAC", hash: "SHA-256" },
+                false,
+                ["sign"]
+            );
+            const signature = await window.crypto.subtle.sign(
+                "HMAC",
+                importedKey,
+                encoder.encode(JSON.stringify(payload))
+            );
+
+            return Array.from(new Uint8Array(signature))
+                .map((byte) => byte.toString(16).padStart(2, "0"))
+                .join("");
+        };
+
+        void calculateDemoHash(event.jsonBody).then(setDemoHash);
+    }, [event.jsonBody, signingKey]);
+
+    const headers: Record<string, string> = {
         //copied
         "Content-Type": "application/json",
-        "webhook-id": "msg_demo_cost_threshold_exceeded",
+        "webhook-id": "msg_demo_" + event.type.replace(".", "_"),
         "webhook-timestamp": "1789468938",
-        "webhook-signature": "v1,Nev4L7n7f0Qa7Q/E55lY4Sm/mgOr2alOEQavuSeXtVg=",
-
-        "Demo signing key": "",
+        "webhook-signature": demoHash,
     };
 
     const body: Record<string, unknown> = event.jsonBody ?? {

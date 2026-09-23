@@ -86,7 +86,8 @@ public interface NormalizedMetricsRepository extends JpaRepository<NormalizedMet
               WITHIN GROUP (ORDER BY nm.metric_value) AS p95Value,
           PERCENTILE_CONT(0.99)
               WITHIN GROUP (ORDER BY nm.metric_value) AS p99Value,
-          STDDEV_POP(nm.metric_value) AS standardDeviation
+          STDDEV_POP(nm.metric_value) AS standardDeviation,
+          COUNT(*) AS sampleCount
       FROM normalized_metrics nm
       JOIN resource r ON r.resource_id = nm.resource_id
       JOIN public.cloud_account ca ON ca.account_id = r.account_id

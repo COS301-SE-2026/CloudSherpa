@@ -48,13 +48,41 @@ jobs:
             cache: 'npm'
             cache-dependency-path: apps/dashboard/package-lock.json
 
+        - name: Select AWS Build IAM Role
+          if: github.event_name == 'push'
+          run: |
+            if [ "${{ github.ref_name }}" = "main" ]; then
+              echo "AWS_BUILD_ROLE_ARN=${{ vars.AWS_ACTIONS_PROD_ROLE_ARN }}" >> "$GITHUB_ENV"
+            else
+              echo "AWS_BUILD_ROLE_ARN=${{ vars.AWS_ACTIONS_ECR_ROLE_ARN }}" >> "$GITHUB_ENV"
+            fi
         
+        - name: Select AWS Region
+          if: github.event_name == 'push'
+          run: |
+            if [ "${{ github.ref_name }}" = "main" ]; then
+              echo "AWS_REGION=${{ vars.AWS_PROD_REGION }}" >> "$GITHUB_ENV"
+            else
+              echo "AWS_REGION=${{ vars.AWS_STAGING_REGION }}" >> "$GITHUB_ENV"
+            fi 
+
+        - name: Validate AWS Role and Region
+          if: github.event_name == 'push'
+          run: |
+            if [ -z "$AWS_BUILD_ROLE_ARN" ]; then
+              echo "AWS role ARN for the build step is not configured"
+              exit 1
+            elif [ -z "$AWS_REGION" ]; then
+              echo "AWS Region for the build step is not configured"
+              exit 1
+            fi
+
         - name: Configure AWS Credentials
           if: github.event_name == 'push'
           uses: aws-actions/configure-aws-credentials@e004cdcd2873919dbd2e62aa51128bedb3181599 # Version 6.1.0
           with:
-            role-to-assume: ${{ vars.AWS_ACTIONS_ECR_ROLE_ARN }}
-            aws-region: eu-north-1
+            role-to-assume: ${{ env.AWS_BUILD_ROLE_ARN }}
+            aws-region: ${{ env.AWS_REGION }}
         
         - name: Login to Amazon ECR Private
           if: github.event_name == 'push'
@@ -211,11 +239,40 @@ jobs:
             - name: Checkout repo
               uses: actions/checkout@b9e0990d219a03df7633c93f6f005a8fecbcab22 # Version 7
 
+            - name: Select AWS Deploy IAM Role
+              if: github.event_name == 'push'
+              run: |
+                if [ "${{ github.ref_name }}" = "main" ]; then
+                  echo "AWS_DEPLOY_ROLE_ARN=${{ vars.AWS_ACTIONS_PROD_ROLE_ARN }}" >> "$GITHUB_ENV"
+                else
+                  echo "AWS_DEPLOY_ROLE_ARN=${{ vars.AWS_ACTIONS_DEPLOY_ROLE_ARN }}" >> "$GITHUB_ENV"
+                fi
+            
+            - name: Select AWS Region
+              if: github.event_name == 'push'
+              run: |
+                if [ "${{ github.ref_name }}" = "main" ]; then
+                  echo "AWS_REGION=${{ vars.AWS_PROD_REGION }}" >> "$GITHUB_ENV"
+                else
+                  echo "AWS_REGION=${{ vars.AWS_STAGING_REGION }}" >> "$GITHUB_ENV"
+                fi 
+
+            - name: Validate AWS Role and Region
+              if: github.event_name == 'push'
+              run: |
+                if [ -z "$AWS_DEPLOY_ROLE_ARN" ]; then
+                  echo "AWS role ARN for the deploy step is not configured"
+                  exit 1
+                elif [ -z "$AWS_REGION" ]; then
+                  echo "AWS Region for the deploy step is not configured"
+                  exit 1
+                fi
+
             - name: Configure AWS Credentials
               uses: aws-actions/configure-aws-credentials@e004cdcd2873919dbd2e62aa51128bedb3181599 # Version 6.1.0
               with:
-                role-to-assume: ${{ vars.AWS_ACTIONS_DEPLOY_ROLE_ARN }}
-                aws-region: eu-north-1
+                role-to-assume: ${{ env.AWS_DEPLOY_ROLE_ARN }}
+                aws-region: ${{ env.AWS_REGION }}
 
             - name: Deploy via AWS SSM
               env:

@@ -7,6 +7,7 @@ import {
     CreateWebhookPayload,
     Webhook,
     CloudAccount,
+    WebhookStatus,
 } from "@/features/webhooks/types";
 import { addWebhook, editWebhook } from "@/features/webhooks/webhooks";
 import { Button } from "@/components/atoms/button";
@@ -29,6 +30,7 @@ import {
     SelectValue,
 } from "@/components/atoms/select";
 import { AccountType } from "@/lib/fetch/dto/cloud-account";
+import { toast } from "sonner";
 
 const ACCOUNT_TYPES: Record<AccountType, string> = {
     [AccountType.AWS_ACCOUNT]: "AWS",
@@ -74,6 +76,10 @@ export const AddWebhook = ({
     );
 
     const [accountSearch, setAccountSearch] = useState("");
+
+    const [webhookStatus, setWebhookStatus] = useState<WebhookStatus>(
+        initialData?.webhookStatus ?? "ACTIVE"
+    );
 
     const groupEvents = useMemo(() => {
         const filteredEvents = eventsAvailable.filter((event) => {
@@ -159,18 +165,20 @@ export const AddWebhook = ({
             if (initialData) {
                 await editWebhook(initialData.webhookId, {
                     ...payload,
-                    status: initialData.webhookStatus,
+                    status: webhookStatus,
                 });
+                toast.success("Webhook has been successfully updated");
                 onSuccess("");
             } else {
                 const result = await addWebhook(payload);
+                toast.success("Webhook has been successfully created");
                 onSuccess(result.secret);
             }
             onClose();
         } catch (error) {
             const errorMessage =
                 error instanceof Error ? error.message : "Failed to save the webhook";
-            alert(errorMessage);
+            toast.error(errorMessage);
         } finally {
             setSubmit(false);
         }
@@ -227,6 +235,30 @@ export const AddWebhook = ({
                             placeholder="https://example.com/webhooks"
                         />
                     </div>
+
+                    {initialData && (
+                        <div className="space-y-1.5">
+                            <Label htmlFor="webhook-status"> Status </Label>
+
+                            <Select
+                                value={webhookStatus}
+                                onValueChange={(change) =>
+                                    setWebhookStatus(change as WebhookStatus)
+                                }
+                            >
+                                <SelectTrigger id="webhook-status" className="w-[200px]">
+                                    {" "}
+                                    <SelectValue />{" "}
+                                </SelectTrigger>
+
+                                <SelectContent>
+                                    <SelectItem value="ACTIVE"> Active </SelectItem>
+
+                                    <SelectItem value="PAUSED"> Paused </SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 min-h-0">

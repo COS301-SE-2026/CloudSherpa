@@ -62,6 +62,28 @@ CREATE TYPE public.webhook_delivery_status_enum AS ENUM (
   'FAILED'
 );
 
+CREATE TYPE public.billing_forecast_execution_status AS ENUM (
+  'PROCESSING',
+  'COMPLETED',
+  'FAILED'
+);
+
+CREATE TYPE public.alert_status_enum AS ENUM (
+  'ACTIVE',
+  'DISABLED'
+);
+
+CREATE TYPE public.alert_type_enum AS ENUM (
+  'THRESHOLD',
+  'BUDGET',
+  'ANOMALY'
+);
+
+CREATE TYPE public.alert_severity_enum AS ENUM (
+  'WARNING',
+  'CRITICAL'
+);
+
 -- ----------------------------------------------------------------
 -- PUBLIC TABLES 
 -- ----------------------------------------------------------------
@@ -643,7 +665,7 @@ CREATE TABLE IF NOT EXISTS public.chart_resource (
 CREATE TABLE IF NOT EXISTS public.pending_webhook_events (
   event_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id uuid NOT NULL,
-  cloud_account uuid NOT NULL REFERENCES public.cloud_account(account_id) ON DELETE CASCADE,
+  cloud_account uuid REFERENCES public.cloud_account(account_id) ON DELETE CASCADE,
   event_type text NOT NULL,
   event_timestamp timestamptz NOT NULL,
   payload jsonb NOT NULL
@@ -838,6 +860,38 @@ BEGIN
     $sql$, schema_name);
 
     -- --------------------------------------------------------------------------
+    -- Billing Forecast Table
+    -- --------------------------------------------------------------------------
+
+    EXECUTE format($sql$
+        CREATE TABLE IF NOT EXISTS %I.billing_forecasts (
+          forecast_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+          execution_id uuid NOT NULL REFERENCES public.billing_export_execution(execution_id) ON DELETE CASCADE,  
+          forecast_timestamp timestamptz NOT NULL,
+          forecast_window int NOT NULL, -- Number of days that were forecast
+          cumulative_forecast_value numeric NOT NULL,
+          cumulative_past_forecast_value numeric NOT NULL,
+          forecast_series JSONB NOT NULL,
+          failed_charges text[] NOT NULL DEFAULT '{}',
+          past_variance numeric NOT NULL,
+          daily_burn_rate numeric NOT NULL,
+          highest_cost_driver text NOT NULL,
+          highest_cost_acceleration text NOT NULL,
+          acceleration_rate numeric -- allows null when insufficient data available to calculate the acceleration rate
+        );
+    $sql$, schema_name);
+
+    -- This table considers a forecast execution to be complete only once all of the forecast windows have been computed
+    EXECUTE format($sql$
+      CREATE TABLE IF NOT EXISTS %I.billing_forecast_execution_logs (
+        log_id uuid PRIMARY KEY, 
+        execution_id uuid REFERENCES public.billing_export_execution(execution_id) ON DELETE SET NULL,
+        forecast_execution_status public.billing_forecast_execution_status NOT NULL,
+        forecast_execution_log_timestamp timestamptz NOT NULL
+      );
+    $sql$, schema_name);
+
+    -- --------------------------------------------------------------------------
     -- Optimization Tables
     -- --------------------------------------------------------------------------
 
@@ -859,6 +913,7 @@ BEGIN
             spike_count integer DEFAULT 0,
             peak_duration_seconds integer DEFAULT 0,
             completeness_ratio numeric,
+            sample_count integer,
 
             window_start timestamptz NOT NULL,
             window_end timestamptz NOT NULL,
@@ -889,12 +944,12 @@ BEGIN
         alert_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         user_id uuid REFERENCES public.users(user_id) ON DELETE CASCADE,
         widget_id uuid REFERENCES public.widget(widget_id) ON DELETE CASCADE,
-        alert_type varchar(20) NOT NULL,
-        severity varchar(20) NOT NULL,
+        alert_type public.alert_type_enum NOT NULL,
+        severity public.alert_severity_enum NOT NULL,
         title text NOT NULL,
         message text,
         payload jsonb DEFAULT '{}'::jsonb,
-        status varchar(20) NOT NULL DEFAULT 'ACTIVE',
+        status public.alert_status_enum NOT NULL DEFAULT 'ACTIVE',
         canonical_key text,
         created_at timestamptz DEFAULT NOW(),
         last_seen timestamptz DEFAULT NOW(),
@@ -928,7 +983,7 @@ BEGIN
       metric_name text NOT NULL,
       operator text NOT NULL,
       value double precision NOT NULL,
-      severity text NOT NULL DEFAULT 'WARNING',
+      severity public.alert_severity_enum NOT NULL DEFAULT 'WARNING',
       enabled boolean NOT NULL DEFAULT true,
       created_at timestamptz DEFAULT now(),
       updated_at timestamptz DEFAULT now()
@@ -956,6 +1011,7 @@ BEGIN
         webhook_id uuid REFERENCES %I.webhooks(webhook_id) ON DELETE SET NULL,
         event_id uuid NOT NULL,
         cloud_account uuid REFERENCES public.cloud_account(account_id) ON DELETE SET NULL,
+        cloud_account_name varchar(80),
         event_type text NOT NULL,
         event_timestamp timestamptz NOT NULL,
         payload jsonb NOT NULL,

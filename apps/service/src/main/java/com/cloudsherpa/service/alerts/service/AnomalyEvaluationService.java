@@ -1,11 +1,18 @@
 package com.cloudsherpa.service.alerts.service;
 
 import com.cloudsherpa.lib.entities.Alert;
+import com.cloudsherpa.lib.entities.AlertSeverityEnum;
+import com.cloudsherpa.lib.entities.AlertStatusEnum;
+import com.cloudsherpa.lib.entities.AlertTypeEnum;
 import com.cloudsherpa.lib.entities.OptimizationMetricStatistics;
+import com.cloudsherpa.lib.entities.Resource;
 import com.cloudsherpa.lib.repositories.AlertRepository;
 import com.cloudsherpa.lib.repositories.OptimizationMetricStatisticsRepository;
+import com.cloudsherpa.lib.repositories.ResourceRepository;
 import com.cloudsherpa.service.listener.dto.MetricStreamEventDto;
 import com.cloudsherpa.service.sse.SseService;
+import com.cloudsherpa.service.webhooks.events.alert.anomaly.AnomalyAlertPayload;
+import com.cloudsherpa.service.webhooks.producers.WebhookProducerService;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -21,23 +28,27 @@ public class AnomalyEvaluationService {
 
   private static final Logger logger = LoggerFactory.getLogger(AnomalyEvaluationService.class);
 
-  private static final String ALERT_STATUS_ACTIVE = "ACTIVE";
-  private static final String ALERT_TYPE_ANOMALY = "ANOMALY";
-
-  private static final double CRITICAL_Z_SCORE = 3.0;
-  private static final double WARNING_Z_SCORE = 2.0;
+  private static final double CRITICAL_Z_SCORE = 4.0;
+  private static final double WARNING_Z_SCORE = 2.5;
+  private static final int MIN_SAMPLE_SIZE = 30;
 
   private final OptimizationMetricStatisticsRepository statisticsRepository;
   private final AlertRepository alertRepository;
   private final SseService sseService;
+  private final WebhookProducerService webhookProducerService;
+  private final ResourceRepository resourceRepository;
 
   public AnomalyEvaluationService(
       OptimizationMetricStatisticsRepository statisticsRepository,
       AlertRepository alertRepository,
-      SseService sseService) {
+      SseService sseService,
+      WebhookProducerService webhookProducerService,
+      ResourceRepository resourceRepository) {
     this.statisticsRepository = statisticsRepository;
     this.alertRepository = alertRepository;
     this.sseService = sseService;
+    this.webhookProducerService = webhookProducerService;
+    this.resourceRepository = resourceRepository;
   }
 
   public void evaluate(MetricStreamEventDto event, UUID userId) {
@@ -71,7 +82,9 @@ public class AnomalyEvaluationService {
 
     if (standardDeviation == null
         || average == null
-        || standardDeviation.compareTo(BigDecimal.ZERO) <= 0) {
+        || standardDeviation.compareTo(BigDecimal.ZERO) <= 0
+        || baseline.getSampleCount() == null
+        || baseline.getSampleCount() < MIN_SAMPLE_SIZE) {
       return;
     }
 
@@ -85,7 +98,7 @@ public class AnomalyEvaluationService {
         (event.metricValue().doubleValue() - average.doubleValue())
             / standardDeviation.doubleValue();
 
-    String severity = resolveSeverity(zScore);
+    AlertSeverityEnum severity = resolveSeverity(zScore);
 
     if (severity == null) {
       return;
@@ -94,7 +107,15 @@ public class AnomalyEvaluationService {
     String canonicalKey = buildCanonicalKey(event);
 
     Optional<Alert> existing =
-        alertRepository.findByCanonicalKeyAndStatus(canonicalKey, ALERT_STATUS_ACTIVE);
+        alertRepository.findByCanonicalKeyAndStatus(canonicalKey, AlertStatusEnum.ACTIVE);
+
+    if (existing.isEmpty()
+        && alertRepository
+            .findByCanonicalKeyAndStatus(canonicalKey, AlertStatusEnum.DISABLED)
+            .isPresent()) {
+      // User disabled anomaly alerts for this metric+resource; don't recreate one.
+      return;
+    }
 
     Alert alert;
     if (existing.isPresent()) {
@@ -109,9 +130,17 @@ public class AnomalyEvaluationService {
 
     alertRepository.save(alert);
     sseService.broadcast(userId, "alert", alert);
+
+    // Build & submit webhook event
+    Resource resource = resourceRepository.findById(event.resourceId()).orElseThrow();
+    webhookProducerService.produceEvent(
+        userId,
+        resource.getAccountId(),
+        "alert.anomaly",
+        buildWebhookEventPayload(resource, baseline, event, zScore, severity, alert));
   }
 
-  private String resolveSeverity(double zScore) {
+  private AlertSeverityEnum resolveSeverity(double zScore) {
     double magnitude = Math.abs(zScore);
 
     // Taken from
@@ -127,10 +156,10 @@ public class AnomalyEvaluationService {
     // reserved for identifying extreme outliers.
 
     if (magnitude >= CRITICAL_Z_SCORE) {
-      return "CRITICAL";
+      return AlertSeverityEnum.CRITICAL;
     }
     if (magnitude >= WARNING_Z_SCORE) {
-      return "WARNING";
+      return AlertSeverityEnum.WARNING;
     }
     return null;
   }
@@ -140,7 +169,7 @@ public class AnomalyEvaluationService {
       MetricStreamEventDto event,
       UUID userId,
       String canonicalKey,
-      String severity,
+      AlertSeverityEnum severity,
       double zScore) {
     OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
 
@@ -158,12 +187,12 @@ public class AnomalyEvaluationService {
     return Alert.builder()
         .userId(userId)
         .widgetId(null)
-        .alertType(ALERT_TYPE_ANOMALY)
+        .alertType(AlertTypeEnum.ANOMALY)
         .severity(severity)
         .title(buildTitle(event, zScore))
         .message(buildMessage(event, baseline, zScore))
         .payload(payload)
-        .status(ALERT_STATUS_ACTIVE)
+        .status(AlertStatusEnum.ACTIVE)
         .canonicalKey(canonicalKey)
         .createdAt(now)
         .lastSeen(now)
@@ -191,5 +220,25 @@ public class AnomalyEvaluationService {
         + String.format("%.2f", zScore)
         + ") for resource "
         + event.resourceId();
+  }
+
+  private AnomalyAlertPayload buildWebhookEventPayload(
+      Resource resource,
+      OptimizationMetricStatistics baseline,
+      MetricStreamEventDto event,
+      double zScore,
+      AlertSeverityEnum severity,
+      Alert alert) {
+
+    return new AnomalyAlertPayload(
+        resource.getResourceIdentifier(),
+        resource.getResourceName(),
+        event.metricName(),
+        baseline.getAverageValue(),
+        baseline.getStandardDeviation(),
+        zScore,
+        severity,
+        alert.getCreatedAt(),
+        alert.getLastSeen());
   }
 }

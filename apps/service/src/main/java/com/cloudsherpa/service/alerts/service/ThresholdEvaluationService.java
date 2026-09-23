@@ -1,11 +1,16 @@
 package com.cloudsherpa.service.alerts.service;
 
 import com.cloudsherpa.lib.entities.Alert;
+import com.cloudsherpa.lib.entities.AlertSeverityEnum;
+import com.cloudsherpa.lib.entities.AlertStatusEnum;
+import com.cloudsherpa.lib.entities.AlertTypeEnum;
 import com.cloudsherpa.lib.entities.Threshold;
 import com.cloudsherpa.lib.repositories.AlertRepository;
 import com.cloudsherpa.lib.repositories.ThresholdRepository;
 import com.cloudsherpa.service.listener.dto.MetricStreamEventDto;
 import com.cloudsherpa.service.sse.SseService;
+import com.cloudsherpa.service.webhooks.events.alert.threshold.ThresholdAlertPayload;
+import com.cloudsherpa.service.webhooks.producers.WebhookProducerService;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -21,20 +26,21 @@ import org.springframework.stereotype.Service;
 public class ThresholdEvaluationService {
 
   private static final Logger logger = LoggerFactory.getLogger(ThresholdEvaluationService.class);
-  private static final String ALERT_STATUS_ACTIVE = "ACTIVE";
-  private static final String ALERT_TYPE_THRESHOLD = "THRESHOLD";
 
   private final ThresholdRepository thresholdRepository;
   private final AlertRepository alertRepository;
   private final SseService sseService;
+  private final WebhookProducerService webhookProducerService;
 
   public ThresholdEvaluationService(
       ThresholdRepository thresholdRepository,
       AlertRepository alertRepository,
-      SseService sseService) {
+      SseService sseService,
+      WebhookProducerService webhookProducerService) {
     this.thresholdRepository = thresholdRepository;
     this.alertRepository = alertRepository;
     this.sseService = sseService;
+    this.webhookProducerService = webhookProducerService;
   }
 
   // resource-1 reports CPUUtilization, so matching resource thresholds are evaluated.
@@ -67,7 +73,15 @@ public class ThresholdEvaluationService {
     String canonicalKey = buildCanonicalKey(threshold, event);
 
     Optional<Alert> existing =
-        alertRepository.findByCanonicalKeyAndStatus(canonicalKey, ALERT_STATUS_ACTIVE);
+        alertRepository.findByCanonicalKeyAndStatus(canonicalKey, AlertStatusEnum.ACTIVE);
+
+    if (existing.isEmpty()
+        && alertRepository
+            .findByCanonicalKeyAndStatus(canonicalKey, AlertStatusEnum.DISABLED)
+            .isPresent()) {
+      // User disabled alerts for this exact metric+resource; don't recreate one.
+      return;
+    }
 
     Alert alert;
     if (existing.isPresent()) {
@@ -83,6 +97,13 @@ public class ThresholdEvaluationService {
 
     // Example SSE event: name="alert", data=the saved Alert object.
     sseService.broadcast(userId, "alert", alert);
+
+    // Construct and submit webhook event
+    webhookProducerService.produceEvent(
+        userId,
+        threshold.getResource().getAccountId(),
+        "alert.threshold",
+        buildWebhookEventPayload(threshold, event, alert));
   }
 
   private Alert buildNewAlert(
@@ -103,12 +124,12 @@ public class ThresholdEvaluationService {
     return Alert.builder()
         .userId(userId)
         .widgetId(null)
-        .alertType(ALERT_TYPE_THRESHOLD)
-        .severity(Optional.ofNullable(threshold.getSeverity()).orElse("WARNING"))
+        .alertType(AlertTypeEnum.THRESHOLD)
+        .severity(Optional.ofNullable(threshold.getSeverity()).orElse(AlertSeverityEnum.WARNING))
         .title(buildTitle(threshold, event))
         .message(buildMessage(threshold, event))
         .payload(payload)
-        .status(ALERT_STATUS_ACTIVE)
+        .status(AlertStatusEnum.ACTIVE)
         .canonicalKey(canonicalKey)
         .createdAt(now)
         .lastSeen(now)
@@ -150,5 +171,21 @@ public class ThresholdEvaluationService {
         + threshold.getValue()
         + ") for resource "
         + event.resourceId();
+  }
+
+  private ThresholdAlertPayload buildWebhookEventPayload(
+      Threshold threshold, MetricStreamEventDto event, Alert alert) {
+
+    return new ThresholdAlertPayload(
+        threshold.getResource().getResourceIdentifier(),
+        threshold.getResource().getResourceName(),
+        event.metricName(),
+        event.metricValue(),
+        event.unit(),
+        threshold.getOperator(),
+        threshold.getValue(),
+        alert.getSeverity(),
+        alert.getCreatedAt(),
+        alert.getLastSeen());
   }
 }
