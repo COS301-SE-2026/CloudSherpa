@@ -293,6 +293,29 @@ Table normalized_costs {
   }
 }
 
+Table billing_forecasts {
+  forecast_id uuid [pk]
+  execution_id uuid [not null, ref: > billing_export_execution.execution_id]
+  forecast_timestamp timestamptz [not null]
+  forecast_window integer [not null, note: "Number of days forecast"]
+  cumulative_forecast_value numeric [not null]
+  cumulative_past_forecast_value numeric [not null]
+  forecast_series jsonb [not null]
+  failed_charges text[] [not null, default: '{}']
+  past_variance numeric [not null]
+  daily_burn_rate numeric [not null]
+  highest_cost_driver text [not null]
+  highest_cost_acceleration text [not null]
+  acceleration_rate numeric
+}
+
+Table billing_forecast_execution_logs {
+  log_id uuid [pk]
+  execution_id uuid [ref: > billing_export_execution.execution_id]
+  forecast_execution_status billing_forecast_execution_status [not null]
+  forecast_execution_log_timestamp timestamptz [not null]
+}
+
 Table optimization_metric_statistics {
   statistics_id uuid [pk]
   resource_id uuid [ref: > resource.resource_id]
