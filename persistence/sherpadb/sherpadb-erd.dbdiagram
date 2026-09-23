@@ -1,6 +1,6 @@
 {
   "version": "3.0.0",
-  "darkMode": true,
+  "darkMode": false,
   "gridEnabling": false,
   "currentViewName": null,
   "defaultView": {
@@ -10,182 +10,230 @@
       {
         "name": "users",
         "schemaName": "public",
-        "x": 1176,
-        "y": 1584
+        "x": 2320,
+        "y": 1384
       },
       {
         "name": "preferences",
         "schemaName": "public",
-        "x": 456,
-        "y": 1176
+        "x": 2592,
+        "y": 656
       },
       {
         "name": "cloud_connection",
         "schemaName": "public",
-        "x": 1992,
-        "y": 1672
+        "x": 3160,
+        "y": 1592
       },
       {
         "name": "cloud_account",
         "schemaName": "public",
-        "x": 1696,
-        "y": 1960
+        "x": 2480,
+        "y": 1912
       },
       {
         "name": "cloud_credential",
         "schemaName": "public",
-        "x": 2176,
-        "y": 2736
+        "x": 2864,
+        "y": 2840
       },
       {
         "name": "dashboard",
         "schemaName": "public",
-        "x": 1080,
-        "y": 464
+        "x": 2104,
+        "y": 1712
       },
       {
         "name": "widget",
         "schemaName": "public",
-        "x": 960,
-        "y": 1256
+        "x": 1088,
+        "y": 1624
       },
       {
         "name": "resource",
         "schemaName": "public",
-        "x": 1400,
-        "y": 1144
+        "x": 1760,
+        "y": 1056
       },
       {
         "name": "normalized_metrics",
         "schemaName": "public",
-        "x": 1048,
-        "y": 2696
+        "x": 624,
+        "y": 1408
       },
       {
         "name": "normalized_costs",
         "schemaName": "public",
-        "x": 1472,
-        "y": 2856
+        "x": 1456,
+        "y": 2472
       },
       {
         "name": "billing_export_config",
         "schemaName": "public",
-        "x": 712,
-        "y": 2704
+        "x": 1384,
+        "y": 1832
       },
       {
         "name": "billing_export_execution",
         "schemaName": "public",
-        "x": 904,
-        "y": 1808
+        "x": 1312,
+        "y": 1352
       },
       {
         "name": "widget_kpi",
         "schemaName": "public",
-        "x": 1848,
-        "y": 1120
+        "x": 824,
+        "y": 832
       },
       {
         "name": "kpi_charges",
         "schemaName": "public",
-        "x": 2360,
-        "y": 1240
+        "x": 272,
+        "y": 752
       },
       {
         "name": "widget_chart",
         "schemaName": "public",
-        "x": 536,
-        "y": 1904
+        "x": 528,
+        "y": 1976
       },
       {
         "name": "chart_resource",
         "schemaName": "public",
-        "x": 1528,
-        "y": 1640
+        "x": 696,
+        "y": 2784
       },
       {
         "name": "offered_metric",
         "schemaName": "public",
-        "x": 2880,
+        "x": 4104,
         "y": 48
       },
       {
         "name": "optimization_metric_statistics",
         "schemaName": "public",
-        "x": 1824,
-        "y": 328
+        "x": 864,
+        "y": 48
       },
       {
         "name": "optimization_recommendation",
         "schemaName": "public",
-        "x": 1368,
-        "y": 48
+        "x": 1680,
+        "y": 1928
       },
       {
         "name": "recommendation_history",
         "schemaName": "public",
-        "x": 648,
-        "y": 608
+        "x": 2688,
+        "y": 1424
       },
       {
         "name": "processing_watermark",
         "schemaName": "public",
-        "x": 2592,
+        "x": 3808,
         "y": 48
       },
       {
         "name": "aws_billing_export_config",
         "schemaName": "public",
-        "x": 808,
-        "y": 3320
+        "x": 784,
+        "y": 2344
       },
       {
         "name": "gcp_billing_export_config",
         "schemaName": "public",
-        "x": 520,
-        "y": 3256
+        "x": 488,
+        "y": 2288
       },
       {
         "name": "azure_billing_export_config",
         "schemaName": "public",
-        "x": 48,
-        "y": 2264
+        "x": 1376,
+        "y": 1000
       },
       {
         "name": "alerts",
         "schemaName": "public",
-        "x": 1432,
-        "y": 2304
+        "x": 2152,
+        "y": 2200
       },
       {
         "name": "budgets",
         "schemaName": "public",
-        "x": 1296,
-        "y": 1912
-      },
-      {
-        "name": "widget_thresholds",
-        "schemaName": "public",
-        "x": 1104,
-        "y": 832
+        "x": 3416,
+        "y": 1200
       },
       {
         "name": "pending_webhook_events",
         "schemaName": "public",
-        "x": 624,
-        "y": 1504
+        "x": 2272,
+        "y": 2984
       },
       {
         "name": "webhooks",
         "schemaName": "public",
-        "x": 2160,
-        "y": 2248
+        "x": 3504,
+        "y": 264
       },
       {
         "name": "webhook_deliveries",
         "schemaName": "public",
-        "x": 824,
-        "y": 2216
+        "x": 2952,
+        "y": 904
+      },
+      {
+        "name": "ai_session",
+        "schemaName": "public",
+        "x": 1776,
+        "y": 1560
+      },
+      {
+        "name": "ai_message",
+        "schemaName": "public",
+        "x": 2416,
+        "y": 992
+      },
+      {
+        "name": "ai_dashboard_version",
+        "schemaName": "public",
+        "x": 1160,
+        "y": 2064
+      },
+      {
+        "name": "ai_dashboard_widget",
+        "schemaName": "public",
+        "x": 944,
+        "y": 1192
+      },
+      {
+        "name": "ai_chart_widget",
+        "schemaName": "public",
+        "x": 1328,
+        "y": 480
+      },
+      {
+        "name": "ai_kpi_widget",
+        "schemaName": "public",
+        "x": 176,
+        "y": 1784
+      },
+      {
+        "name": "billing_forecasts",
+        "schemaName": "public",
+        "x": 48,
+        "y": 1072
+      },
+      {
+        "name": "billing_forecast_execution_logs",
+        "schemaName": "public",
+        "x": 1688,
+        "y": 360
+      },
+      {
+        "name": "threshold",
+        "schemaName": "public",
+        "x": 2160,
+        "y": 616
       }
     ],
     "tableGroupCollapseStates": [],
@@ -583,36 +631,6 @@
       },
       {
         "firstFieldNames": [
-          "widget_id"
-        ],
-        "firstTableName": "widget",
-        "firstSchemaName": "public",
-        "firstRelation": "1",
-        "secondFieldNames": [
-          "widget_id"
-        ],
-        "secondTableName": "widget_thresholds",
-        "secondSchemaName": "public",
-        "secondRelation": "*",
-        "checkPoints": []
-      },
-      {
-        "firstFieldNames": [
-          "user_id"
-        ],
-        "firstTableName": "users",
-        "firstSchemaName": "public",
-        "firstRelation": "1",
-        "secondFieldNames": [
-          "user_id"
-        ],
-        "secondTableName": "widget_thresholds",
-        "secondSchemaName": "public",
-        "secondRelation": "*",
-        "checkPoints": []
-      },
-      {
-        "firstFieldNames": [
           "user_id"
         ],
         "firstTableName": "users",
@@ -637,6 +655,186 @@
           "cloud_account"
         ],
         "secondTableName": "webhook_deliveries",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "user_id"
+        ],
+        "firstTableName": "users",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "user_id"
+        ],
+        "secondTableName": "ai_session",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "version_id"
+        ],
+        "firstTableName": "ai_dashboard_version",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "current_version_id"
+        ],
+        "secondTableName": "ai_session",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "session_id"
+        ],
+        "firstTableName": "ai_session",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "session_id"
+        ],
+        "secondTableName": "ai_message",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "session_id"
+        ],
+        "firstTableName": "ai_session",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "session_id"
+        ],
+        "secondTableName": "ai_dashboard_version",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "version_id"
+        ],
+        "firstTableName": "ai_dashboard_version",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "parent_version_id"
+        ],
+        "secondTableName": "ai_dashboard_version",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "version_id"
+        ],
+        "firstTableName": "ai_dashboard_version",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "dashboard_version_id"
+        ],
+        "secondTableName": "ai_dashboard_widget",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "widget_id"
+        ],
+        "firstTableName": "ai_dashboard_widget",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "widget_id"
+        ],
+        "secondTableName": "ai_chart_widget",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "widget_id"
+        ],
+        "firstTableName": "ai_dashboard_widget",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "widget_id"
+        ],
+        "secondTableName": "ai_kpi_widget",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "execution_id"
+        ],
+        "firstTableName": "billing_export_execution",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "execution_id"
+        ],
+        "secondTableName": "billing_forecasts",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "execution_id"
+        ],
+        "firstTableName": "billing_export_execution",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "execution_id"
+        ],
+        "secondTableName": "billing_forecast_execution_logs",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "resource_id"
+        ],
+        "firstTableName": "resource",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "resource_id"
+        ],
+        "secondTableName": "threshold",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "user_id"
+        ],
+        "firstTableName": "users",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "user_id"
+        ],
+        "secondTableName": "threshold",
         "secondSchemaName": "public",
         "secondRelation": "*",
         "checkPoints": []
