@@ -165,7 +165,10 @@ public class PostgresNotificationListener implements SmartLifecycle {
       }
 
       batchedEventsByUser.forEach(
-          (userId, events) -> sseService.broadcastBatch(userId, "metric-batch", events));
+          (userId, events) -> {
+            logger.info("BROADCASTING BATCH OF {} EVENTS TO USER {}", events.size(), userId);
+            sseService.broadcastBatch(userId, "metric-batch", events);
+          });
 
     } catch (SQLException e) {
       logger.warn("Failed to poll Postgres notifications", e);
@@ -176,7 +179,7 @@ public class PostgresNotificationListener implements SmartLifecycle {
       PGNotification notification, Map<UUID, List<MetricStreamEventDto>> batchedEventsByUser)
       throws SQLException {
     String eventName = notification.getName();
-    logger.info("NOTIFIED {}", eventName);
+    // logger.info("NOTIFIED {}", eventName)
 
     String payload = notification.getParameter();
 
