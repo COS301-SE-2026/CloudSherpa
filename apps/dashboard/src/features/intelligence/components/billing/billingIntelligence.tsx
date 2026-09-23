@@ -6,11 +6,16 @@ import CostBreakdownList from "@/features/intelligence/components/billing/costBr
 import BillingForecastChart from "@/features/intelligence/components/billing/billingForecastChart";
 import BillingStatisticsCard from "@/features/intelligence/components/billing/billingStatisticsCard";
 import BillingSummaryCard from "@/features/intelligence/components/billing/billingSummaryCard";
-import { TrendingUp } from "lucide-react";
-import { useEffect } from "react";
+import { TrendingUp, Plus } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useMakeBillingForecast } from "../../hooks/useMakeBillingForecast";
 import { getCurrencySymbol } from "@/lib/utils";
 import { Spinner } from "@/components/atoms/spinner";
+import {toast} from "sonner";
+import {Button} from "@/components/atoms/button";
+import {BudgetPopup} from "@/features/budgets/components/budgetPopup";
+import {useBudget} from "@/features/budgets/hooks/useBudget";
+import type { CreateBudgetRequest } from "@/features/budgets/types/budgetTypes";
 
 export default function BillingIntelligence() {
     const {
@@ -28,6 +33,10 @@ export default function BillingIntelligence() {
     } = useBillingIntelligenceStore();
 
     const { makeBillingForecast, billingForecastLoading } = useMakeBillingForecast();
+
+    const {createBudget} = useBudget();
+
+    const [budgetPopupOpen, setBudgetPopupOpen] = useState(false);
 
     const selected = disableFilters || (provider && accountId && resourceId);
 
@@ -57,10 +66,26 @@ export default function BillingIntelligence() {
         (item) => item.chargeId === forSummary?.highestCostAccelerationId
     )?.cost;
 
+    const handlingCreateBudget = async (payload : CreateBudgetRequest) => {
+        try{
+            await createBudget(payload);
+
+            toast.success("Budget added");
+
+            setBudgetPopupOpen(false);
+        }catch{
+            toast.error("Failed to add budget");
+        }
+    };
+
+    const addButton = (<Button size = "sm" onClick = {() => setBudgetPopupOpen(true)}> <Plus className = "h-4 w-4"/> Add budget </Button>);
+
+    const budgetPopup = (<BudgetPopup open = {budgetPopupOpen} onClose = {() => setBudgetPopupOpen(false)} onSubmit = {handlingCreateBudget}/>);
+
     if (!selected) {
         return (
             <div className="h-full w-full p-6 flex flex-col gap-4">
-                <BillingToolbar />
+                <BillingToolbar actions = {addButton} />
 
                 <div className="flex-1 flex items-center justify-center">
                     <div className="text-center max-w-md">
@@ -77,6 +102,7 @@ export default function BillingIntelligence() {
                         </p>
                     </div>
                 </div>
+                {budgetPopup}
             </div>
         );
     }
@@ -84,18 +110,20 @@ export default function BillingIntelligence() {
     if (loading) {
         return (
             <div className="h-full w-full p-6 flex flex-col gap-4">
-                <BillingToolbar />
+                <BillingToolbar actions = {addButton} />
 
                 <div className="h-full w-full flex flex-col justify-center items-center ">
                     <Spinner className="h-10 w-10" />
                 </div>
+
+                {budgetPopup}
             </div>
         );
     }
 
     return (
         <div className="h-full w-full p-6 flex flex-col gap-4">
-            <BillingToolbar />
+            <BillingToolbar actions = {addButton} />
 
             <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <BillingSummaryCard
@@ -197,6 +225,8 @@ export default function BillingIntelligence() {
                     onSearchChange={setBreakdownSearch}
                 />
             </section>
+
+            {budgetPopup}
         </div>
     );
 }

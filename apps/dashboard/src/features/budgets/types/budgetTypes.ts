@@ -2,10 +2,13 @@ import type { CurrencyEnum } from "@/features/dashboard/types/currency";
 
 export type ScopeForBudget = "TENANT" | "ACCOUNT" | "RESOURCE";
 
+export type BudgetCurrency = CurrencyEnum;
+
 export interface Budget{
     budget_id : string;
     user_id : string;
     scope : ScopeForBudget;
+    scope_id : string | null;
     amount : number;
     currency : CurrencyEnum;
     window_days : number;
