@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import ChartFormConnection from "./chart-form-connection";
 import { Spinner } from "@/components/atoms/spinner";
 import { useLoadDashboardData } from "@/features/dashboard/hooks/useLoadDash";
+import { is } from "date-fns/locale";
 
 interface ChartConfigFormProps {
     ChartId: string;
@@ -18,6 +19,7 @@ interface ChartConfigFormProps {
 
 export function ChartConfigFormInner({ ChartId }: Readonly<ChartConfigFormProps>) {
     const [isSaving, setIsSaving] = useState(false);
+    const [isError, setIsError] = useState("");
     const updateWidget = useDashboardStore((state) => state.actions.updateChartWidgetConfig);
     const getWidget = useDashboardStore((state) => state.actions.getWidget);
 
@@ -44,6 +46,10 @@ export function ChartConfigFormInner({ ChartId }: Readonly<ChartConfigFormProps>
     const router = useRouter();
 
     const handleSave = async () => {
+        if (!config.displayName || config.displayName.trim() === "") {
+            setIsError("Enter a dispaly name to save changes");
+            return;
+        }
         setIsSaving(true);
         try {
             await updateWidget(config);
@@ -78,6 +84,11 @@ export function ChartConfigFormInner({ ChartId }: Readonly<ChartConfigFormProps>
             <div className="flex flex-row gap-6 h-full">
                 <Card className="w-2/3">
                     <CardContent className="flex flex-col gap-6">
+                        {isError.length > 0 && (
+                            <div className="w-full p-3 bg-destructive/10 border border-destructive/80 rounded-md text-destructive text-xs">
+                                {isError}
+                            </div>
+                        )}
                         <ChartFormDetails configuration={config} setConfiguration={setConfig} />
                         <ChartFormConnection configuration={config} setConfiguration={setConfig} />
                         <ChartFormResource
