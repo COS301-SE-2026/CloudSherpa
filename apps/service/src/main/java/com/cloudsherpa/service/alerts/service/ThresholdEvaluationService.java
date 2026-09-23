@@ -1,6 +1,9 @@
 package com.cloudsherpa.service.alerts.service;
 
 import com.cloudsherpa.lib.entities.Alert;
+import com.cloudsherpa.lib.entities.AlertSeverityEnum;
+import com.cloudsherpa.lib.entities.AlertStatusEnum;
+import com.cloudsherpa.lib.entities.AlertTypeEnum;
 import com.cloudsherpa.lib.entities.Threshold;
 import com.cloudsherpa.lib.repositories.AlertRepository;
 import com.cloudsherpa.lib.repositories.ThresholdRepository;
@@ -23,8 +26,6 @@ import org.springframework.stereotype.Service;
 public class ThresholdEvaluationService {
 
   private static final Logger logger = LoggerFactory.getLogger(ThresholdEvaluationService.class);
-  private static final String ALERT_STATUS_ACTIVE = "ACTIVE";
-  private static final String ALERT_TYPE_THRESHOLD = "THRESHOLD";
 
   private final ThresholdRepository thresholdRepository;
   private final AlertRepository alertRepository;
@@ -72,7 +73,15 @@ public class ThresholdEvaluationService {
     String canonicalKey = buildCanonicalKey(threshold, event);
 
     Optional<Alert> existing =
-        alertRepository.findByCanonicalKeyAndStatus(canonicalKey, ALERT_STATUS_ACTIVE);
+        alertRepository.findByCanonicalKeyAndStatus(canonicalKey, AlertStatusEnum.ACTIVE);
+
+    if (existing.isEmpty()
+        && alertRepository
+            .findByCanonicalKeyAndStatus(canonicalKey, AlertStatusEnum.DISABLED)
+            .isPresent()) {
+      // User disabled alerts for this exact metric+resource; don't recreate one.
+      return;
+    }
 
     Alert alert;
     if (existing.isPresent()) {
@@ -115,12 +124,12 @@ public class ThresholdEvaluationService {
     return Alert.builder()
         .userId(userId)
         .widgetId(null)
-        .alertType(ALERT_TYPE_THRESHOLD)
-        .severity(Optional.ofNullable(threshold.getSeverity()).orElse("WARNING"))
+        .alertType(AlertTypeEnum.THRESHOLD)
+        .severity(Optional.ofNullable(threshold.getSeverity()).orElse(AlertSeverityEnum.WARNING))
         .title(buildTitle(threshold, event))
         .message(buildMessage(threshold, event))
         .payload(payload)
-        .status(ALERT_STATUS_ACTIVE)
+        .status(AlertStatusEnum.ACTIVE)
         .canonicalKey(canonicalKey)
         .createdAt(now)
         .lastSeen(now)

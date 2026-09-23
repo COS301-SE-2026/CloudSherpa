@@ -1,5 +1,6 @@
 package com.cloudsherpa.service.alerts.dto;
 
+import com.cloudsherpa.lib.entities.AlertSeverityEnum;
 import com.cloudsherpa.lib.entities.Threshold;
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -11,7 +12,7 @@ public record ThresholdResponse(
     String metricName,
     String operator,
     double value,
-    String severity,
+    AlertSeverityEnum severity,
     boolean enabled,
     OffsetDateTime createdAt,
     OffsetDateTime updatedAt) {

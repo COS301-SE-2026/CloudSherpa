@@ -48,8 +48,11 @@ public class WebhookEventProcessor {
         webhookRepository.findSubscribed(
             pendingWebhookEvent.getEventType(), pendingWebhookEvent.getCloudAccountId());
 
-    CloudAccount cloudAccount =
-        entityManager.getReference(CloudAccount.class, pendingWebhookEvent.getCloudAccountId());
+    CloudAccount cloudAccount = null;
+
+    if (pendingWebhookEvent.getCloudAccountId() != null) {
+      entityManager.getReference(CloudAccount.class, pendingWebhookEvent.getCloudAccountId());
+    }
 
     List<DeliveryTask> deliveryTasks = new ArrayList<>();
     for (Webhook webhook : subscribedWebhooks) {
@@ -66,16 +69,18 @@ public class WebhookEventProcessor {
 
   private WebhookDelivery fromPendingEvent(
       PendingWebhookEvent pendingWebhookEvent, Webhook webhook, CloudAccount cloudAccount) {
-    return new WebhookDelivery(
-        UUID.randomUUID(),
-        webhook,
-        pendingWebhookEvent.getEventId(),
-        cloudAccount,
-        pendingWebhookEvent.getEventType(),
-        pendingWebhookEvent.getEventTimestamp(),
-        pendingWebhookEvent.getPayload(),
-        WebhookDeliveryStatusEnum.PENDING,
-        null,
-        0);
+    return WebhookDelivery.builder()
+        .webhookDeliveryId(UUID.randomUUID())
+        .webhook(webhook)
+        .eventId(pendingWebhookEvent.getEventId())
+        .cloudAccount(cloudAccount)
+        .cloudAccountName(cloudAccount != null ? cloudAccount.getDisplayName() : null)
+        .eventType(pendingWebhookEvent.getEventType())
+        .eventTimestamp(pendingWebhookEvent.getEventTimestamp())
+        .payload(pendingWebhookEvent.getPayload())
+        .deliveryStatus(WebhookDeliveryStatusEnum.PENDING)
+        .responseCode(null)
+        .attemptCount(0)
+        .build();
   }
 }

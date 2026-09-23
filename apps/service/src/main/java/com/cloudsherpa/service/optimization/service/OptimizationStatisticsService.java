@@ -125,6 +125,7 @@ public class OptimizationStatisticsService {
         .p95Value(aggregate.getP95Value())
         .p99Value(aggregate.getP99Value())
         .standardDeviation(aggregate.getStandardDeviation())
+        .sampleCount(aggregate.getSampleCount())
         .spikeCount(0)
         .peakDurationSeconds(0)
         .windowStart(windowStart)
