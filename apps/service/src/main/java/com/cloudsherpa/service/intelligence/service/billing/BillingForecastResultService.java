@@ -2,8 +2,10 @@ package com.cloudsherpa.service.intelligence.service.billing;
 
 import com.cloudsherpa.lib.entities.BillingForecast;
 import com.cloudsherpa.service.intelligence.dto.BillingForecastResponseDto;
-import com.cloudsherpa.service.intelligence.model.ForecastSeries;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Map;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -31,12 +33,21 @@ public class BillingForecastResultService {
     return new BillingForecastResponseDto(
         forecast.getCumulativeForecastValue(),
         forecast.getCumulativePastForecastValue(),
-        objectMapper.convertValue(forecast.getForecastSeries(), ForecastSeries.class),
+        toForecastSeries(forecast.getForecastSeries()),
         forecast.getFailedCharges(),
         forecast.getPastVariance(),
         forecast.getDailyBurnRate(),
         forecast.getHighestCostDriver(),
         forecast.getHighestCostAcceleration(),
         forecast.getAccelerationRate());
+  }
+
+  private Map<String, BillingForecastValue> toForecastSeries(JsonNode storedSeries) {
+    JsonNode series =
+        storedSeries.has("billingForecastSeries")
+            ? storedSeries.get("billingForecastSeries")
+            : storedSeries;
+    return objectMapper.convertValue(
+        series, new TypeReference<Map<String, BillingForecastValue>>() {});
   }
 }

@@ -25,9 +25,9 @@ export interface BillingForecastDto {
     failedForecastCharges: string[];
     pastVariance: number;
     dailyBurnRate: number;
-    highestCostDriver: string;
-    highestCostAcceleration: string;
-    accelerationRate: number;
+    highestCostDriver: string | null;
+    highestCostAcceleration: string | null;
+    accelerationRate: number | null;
 }
 
 export interface BillingSummaryDto {
@@ -36,13 +36,13 @@ export interface BillingSummaryDto {
     forecastVariance: number;
 
     dailyBurnRate: number;
-    primaryCostDriverId: string;
+    primaryCostDriverId: string | null;
     primaryCostDriverLabel: string;
 
-    highestCostAccelerationId: string;
+    highestCostAccelerationId: string | null;
     highestCostAccelerationLabel: string;
     currency: CurrencyEnum;
-    accelerationRate: number;
+    accelerationRate: number | null;
 }
 
 export interface CostBreakdownItem {

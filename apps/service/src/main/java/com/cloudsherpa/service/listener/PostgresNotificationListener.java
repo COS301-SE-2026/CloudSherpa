@@ -257,7 +257,7 @@ public class PostgresNotificationListener implements SmartLifecycle {
       }
 
       // Non blocking, submits to thread pool
-      submitStartBillingForecast(accountId);
+      submitStartBillingForecast(userId);
     } catch (Exception e) {
       logger.warn("Failed to parse billing execution completed payload: {}", payload, e);
     }

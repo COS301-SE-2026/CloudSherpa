@@ -35,6 +35,9 @@ public class BillingForecastStateService {
 
   public BillingForecast readLatestForecast(Integer forecastWindow) {
     BillingForecastRun latestCompletedRun = worker.latestCompletedForecastRun();
+    if (latestCompletedRun == null) {
+      return null;
+    }
     return worker.getForecastForRunAndWindow(latestCompletedRun.getForecastRunId(), forecastWindow);
   }
 }

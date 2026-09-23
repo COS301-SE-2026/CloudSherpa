@@ -3,10 +3,8 @@ package com.cloudsherpa.service.intelligence.service.billing;
 import com.cloudsherpa.service.intelligence.dto.BillingForecastIndividualChargesRequestDto;
 import com.cloudsherpa.service.intelligence.dto.BillingForecastRequest;
 import com.cloudsherpa.service.intelligence.dto.BillingForecastResponseDto;
-import com.cloudsherpa.service.intelligence.model.ForecastSeries;
 import java.time.Instant;
 import java.util.UUID;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -22,7 +20,6 @@ public class BillingIntelligenceService {
     this.billingAnalyticsService = billingAnalyticsService;
   }
 
-  @Cacheable(value = "billing-forecast", key = "#request +':'+#userId")
   public BillingForecastResponseDto processAllCharges(
       BillingForecastRequest request, Instant timeOfRequest, UUID userId) {
     BillingForecastResult billingForecastResult =
@@ -50,7 +47,7 @@ public class BillingIntelligenceService {
     return new BillingForecastResponseDto(
         forecastResult.cumalativeForecastResult(),
         analyticsResult.cumalitivePastForecastValue(),
-        new ForecastSeries(analyticsResult.billingForecastSeries()),
+        analyticsResult.billingForecastSeries(),
         forecastResult.failedForecastCharges(),
         analyticsResult.pastVariance(),
         analyticsResult.dailyBurnRate(),

@@ -5,7 +5,6 @@ import com.cloudsherpa.service.intelligence.dto.BillingForecastRequest;
 import com.cloudsherpa.service.intelligence.dto.BillingForecastResponseDto;
 import com.cloudsherpa.service.intelligence.dto.ResourceUsageForecastRequestDto;
 import com.cloudsherpa.service.intelligence.dto.ResourceUsageForecastResponseDto;
-import com.cloudsherpa.service.intelligence.model.ForecastSeries;
 import com.cloudsherpa.service.intelligence.service.billing.BillingForecastResultService;
 import com.cloudsherpa.service.intelligence.service.billing.BillingForecastValue;
 import com.cloudsherpa.service.intelligence.service.billing.BillingIntelligenceService;
@@ -134,11 +133,10 @@ public class IntelligenceForecastingController {
           new BillingForecastResponseDto(
               BigDecimal.valueOf(42.50),
               BigDecimal.ZERO,
-              new ForecastSeries(
-                  Map.of(
-                      mockChargeId,
-                      new BillingForecastValue(
-                          BigDecimal.valueOf(42.5), BigDecimal.valueOf(100), mockChargeId))),
+              Map.of(
+                  mockChargeId,
+                  new BillingForecastValue(
+                      BigDecimal.valueOf(42.5), BigDecimal.valueOf(100), mockChargeId)),
               List.of(),
               BigDecimal.ZERO,
               BigDecimal.valueOf(42.5),

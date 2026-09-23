@@ -10,12 +10,15 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class BillingForecastWorker {
   private final BillingForecastStateService stateService;
   private final BillingIntelligenceService billingIntelligenceService;
+  private final Logger logger = LoggerFactory.getLogger(BillingForecastWorker.class);
 
   private static final List<Integer> SUPPORTED_FORECAST_WINDOWS = List.of(7, 14, 30, 60);
 
@@ -51,6 +54,7 @@ public class BillingForecastWorker {
         stateService.updateForecastRun(run);
 
       } catch (RuntimeException e) {
+        logger.error("Billing forecast failed for tenant {}", tenantId, e);
         run.setForecastExecutionStatus(ForecastExecutionStatusEnum.FAILED);
         stateService.updateForecastRun(run);
       }
