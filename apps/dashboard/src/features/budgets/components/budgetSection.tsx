@@ -1,6 +1,6 @@
 "use client";
 
-import {useState} from "react";
+import {useState, useMemo} from "react";
 import {Plus} from "lucide-react";
 import {toast} from "sonner";
 import {Button} from "@/components/atoms/button";
@@ -10,6 +10,7 @@ import {useBudget} from "@/features/budgets/hooks/useBudget";
 import {BudgetTable} from "@/features/budgets/components/budgetTable";
 import {BudgetPopup} from "@/features/budgets/components/budgetPopup";
 import type{Budget, CreateBudgetRequest} from "@/features/budgets/types/budgetTypes";
+import {Input} from "@/components/atoms/input";
 
 export function BudgetSection(){
     const {budgets, loading, forError, createBudget, updateBudget, removeBudget} = useBudget();
@@ -19,6 +20,18 @@ export function BudgetSection(){
     const [editing, setEditing] = useState<Budget | null>(null);
 
     const [deleteBudget, setDeleteBudget] = useState<Budget | null>(null);
+
+    const [search, setSearch] = useState("");
+
+    const forFilters = useMemo(() => budgets.filter((budget) => {
+        const wordSearched = search.toLowerCase();
+
+        return(budget.scope.toLowerCase().includes(wordSearched) || (budget.scope_id?.toLowerCase().includes(wordSearched) ?? false));
+    }), [budgets, search]);
+
+    const countForEnabled = budgets.filter((budget) => budget.enabled).length;
+
+    const forTotalCount = budgets.length;
 
     const handlingNew = () => {
         setEditing(null);
@@ -77,10 +90,12 @@ export function BudgetSection(){
 
     return(
         <>
-            <div className = "mb-3 flex items-center justify-between">
-                <div>
-                    <h2 className = "text-lg font-medium"> Budgets </h2>
-                </div>
+            <div className = "mb-4 flex items-center gap-2">
+                <Input className = "h-9 w-64" placeholder = "Search budgets" value = {search} onChange = {(change) => setSearch(change.target.value)}/>
+            </div>
+
+            <div className = "mb-4 flex items-center justify-between">
+                <span className = "text-sm text-muted-foreground"> {countForEnabled} of {forTotalCount} budgets enabled </span>
 
                 <Button onClick = {handlingNew}> <Plus className = "h-4 w-4"/> Add budget </Button>
             </div>
@@ -98,7 +113,7 @@ export function BudgetSection(){
             )}
 
             {!loading && !forError && (
-                <BudgetTable budgets = {budgets} edit = {handlingEdit} toggleEnabled = {handlingToggle} onDelete = {setDeleteBudget}/>
+                <BudgetTable budgets = {forFilters} edit = {handlingEdit} toggleEnabled = {handlingToggle} onDelete = {setDeleteBudget}/>
             )}
 
             <BudgetPopup key = {editing?.budget_id ?? "new"} open = {popupOpen} initial = {editing} onClose = {() => setPopupOpen(false)} onSubmit = {handlingSubmit}/>
