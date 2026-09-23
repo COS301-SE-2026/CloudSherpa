@@ -57,6 +57,13 @@ public class ForecastReadWriteWorker {
     return runRepository.latestForecastRun(ForecastExecutionStatusEnum.COMPLETED).orElse(null);
   }
 
+  @Transactional
+  public BillingForecast getForecastForRunAndWindow(UUID forecastRunId, int forecastWindow) {
+    return forecastRepository
+        .findByForecastRunIdAndForecastWindow(forecastRunId, forecastWindow)
+        .orElse(null);
+  }
+
   private BillingForecast toForecast(
       UUID forecastRunId,
       BillingForecastResponseDto forecast,

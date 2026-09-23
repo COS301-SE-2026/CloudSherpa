@@ -1,5 +1,6 @@
 package com.cloudsherpa.service.intelligence.service.billing;
 
+import com.cloudsherpa.lib.entities.BillingForecast;
 import com.cloudsherpa.lib.entities.BillingForecastRun;
 import com.cloudsherpa.service.config.TenantContext;
 import com.cloudsherpa.service.intelligence.dto.BillingForecastResponseDto;
@@ -10,9 +11,9 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class BillingForecastStateService {
-  private final ForecastWriteWorker worker;
+  private final ForecastReadWriteWorker worker;
 
-  public BillingForecastStateService(ForecastWriteWorker worker) {
+  public BillingForecastStateService(ForecastReadWriteWorker worker) {
     this.worker = worker;
   }
 
@@ -43,6 +44,17 @@ public class BillingForecastStateService {
     try {
       TenantContext.setCurrentTenant(tenantId.toString());
       worker.updateForecastRun(forecastRun);
+    } finally {
+      TenantContext.clear();
+    }
+  }
+
+  public BillingForecast readLatestForecast(UUID tenantId, Integer forecastWindow) {
+    try {
+      TenantContext.setCurrentTenant(tenantId.toString());
+      BillingForecastRun latestCompletedRun = worker.latestCompletedForecastRun();
+      return worker.getForecastForRunAndWindow(
+          latestCompletedRun.getForecastRunId(), forecastWindow);
     } finally {
       TenantContext.clear();
     }
