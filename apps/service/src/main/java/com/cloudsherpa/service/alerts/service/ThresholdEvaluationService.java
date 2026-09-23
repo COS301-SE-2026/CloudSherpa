@@ -2,6 +2,7 @@ package com.cloudsherpa.service.alerts.service;
 
 import com.cloudsherpa.lib.entities.Alert;
 import com.cloudsherpa.lib.entities.AlertStatusEnum;
+import com.cloudsherpa.lib.entities.AlertTypeEnum;
 import com.cloudsherpa.lib.entities.Threshold;
 import com.cloudsherpa.lib.repositories.AlertRepository;
 import com.cloudsherpa.lib.repositories.ThresholdRepository;
@@ -24,7 +25,6 @@ import org.springframework.stereotype.Service;
 public class ThresholdEvaluationService {
 
   private static final Logger logger = LoggerFactory.getLogger(ThresholdEvaluationService.class);
-  private static final String ALERT_TYPE_THRESHOLD = "THRESHOLD";
 
   private final ThresholdRepository thresholdRepository;
   private final AlertRepository alertRepository;
@@ -123,7 +123,7 @@ public class ThresholdEvaluationService {
     return Alert.builder()
         .userId(userId)
         .widgetId(null)
-        .alertType(ALERT_TYPE_THRESHOLD)
+        .alertType(AlertTypeEnum.THRESHOLD)
         .severity(Optional.ofNullable(threshold.getSeverity()).orElse("WARNING"))
         .title(buildTitle(threshold, event))
         .message(buildMessage(threshold, event))

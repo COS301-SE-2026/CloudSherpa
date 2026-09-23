@@ -2,6 +2,7 @@ package com.cloudsherpa.service.alerts.controller;
 
 import com.cloudsherpa.lib.entities.Alert;
 import com.cloudsherpa.lib.entities.AlertStatusEnum;
+import com.cloudsherpa.lib.entities.AlertTypeEnum;
 import com.cloudsherpa.lib.repositories.AlertRepository;
 import com.cloudsherpa.service.alerts.dto.AlertResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -44,7 +45,8 @@ public class AlertsController {
     List<Alert> alerts =
         alertType == null
             ? alertRepository.findAll()
-            : alertRepository.findByAlertTypeOrderByCreatedAtDesc(alertType);
+            : alertRepository.findByAlertTypeOrderByCreatedAtDesc(
+                AlertTypeEnum.valueOf(alertType.toUpperCase()));
 
     return ResponseEntity.ok(alerts.stream().map(AlertResponse::from).toList());
   }

@@ -2,6 +2,7 @@ package com.cloudsherpa.service.alerts.service;
 
 import com.cloudsherpa.lib.entities.Alert;
 import com.cloudsherpa.lib.entities.AlertStatusEnum;
+import com.cloudsherpa.lib.entities.AlertTypeEnum;
 import com.cloudsherpa.lib.entities.OptimizationMetricStatistics;
 import com.cloudsherpa.lib.entities.Resource;
 import com.cloudsherpa.lib.repositories.AlertRepository;
@@ -25,8 +26,6 @@ import org.springframework.stereotype.Service;
 public class AnomalyEvaluationService {
 
   private static final Logger logger = LoggerFactory.getLogger(AnomalyEvaluationService.class);
-
-  private static final String ALERT_TYPE_ANOMALY = "ANOMALY";
 
   private static final double CRITICAL_Z_SCORE = 3.0;
   private static final double WARNING_Z_SCORE = 2.0;
@@ -184,7 +183,7 @@ public class AnomalyEvaluationService {
     return Alert.builder()
         .userId(userId)
         .widgetId(null)
-        .alertType(ALERT_TYPE_ANOMALY)
+        .alertType(AlertTypeEnum.ANOMALY)
         .severity(severity)
         .title(buildTitle(event, zScore))
         .message(buildMessage(event, baseline, zScore))

@@ -36,8 +36,10 @@ public class Alert {
   @JoinColumn(name = "widget_id", insertable = false, updatable = false)
   private Widget widget;
 
-  @Column(name = "alert_type", nullable = false, length = 20)
-  private String alertType;
+  @Enumerated(EnumType.STRING)
+  @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+  @Column(name = "alert_type", nullable = false, columnDefinition = "public.alert_type_enum")
+  private AlertTypeEnum alertType;
 
   @Column(name = "severity", nullable = false, length = 20)
   private String severity;
@@ -95,7 +97,7 @@ public class Alert {
     private UUID alertId = UUID.randomUUID();
     private UUID userId;
     private UUID widgetId;
-    private String alertType;
+    private AlertTypeEnum alertType;
     private String severity;
     private String title;
     private String message;
@@ -121,7 +123,7 @@ public class Alert {
       return this;
     }
 
-    public Builder alertType(String alertType) {
+    public Builder alertType(AlertTypeEnum alertType) {
       this.alertType = alertType;
       return this;
     }
@@ -208,11 +210,11 @@ public class Alert {
     return widget;
   }
 
-  public String getAlertType() {
+  public AlertTypeEnum getAlertType() {
     return alertType;
   }
 
-  public void setAlertType(String alertType) {
+  public void setAlertType(AlertTypeEnum alertType) {
     this.alertType = alertType;
   }
 

@@ -67,6 +67,12 @@ CREATE TYPE public.alert_status_enum AS ENUM (
   'DISABLED'
 );
 
+CREATE TYPE public.alert_type_enum AS ENUM (
+  'THRESHOLD',
+  'BUDGET',
+  'ANOMALY'
+);
+
 -- ----------------------------------------------------------------
 -- PUBLIC TABLES 
 -- ----------------------------------------------------------------
@@ -894,7 +900,7 @@ BEGIN
         alert_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         user_id uuid REFERENCES public.users(user_id) ON DELETE CASCADE,
         widget_id uuid REFERENCES public.widget(widget_id) ON DELETE CASCADE,
-        alert_type varchar(20) NOT NULL,
+        alert_type public.alert_type_enum NOT NULL,
         severity varchar(20) NOT NULL,
         title text NOT NULL,
         message text,

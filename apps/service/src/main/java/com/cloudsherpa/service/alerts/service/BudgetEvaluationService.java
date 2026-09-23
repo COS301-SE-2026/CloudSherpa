@@ -2,6 +2,7 @@ package com.cloudsherpa.service.alerts.service;
 
 import com.cloudsherpa.lib.entities.Alert;
 import com.cloudsherpa.lib.entities.AlertStatusEnum;
+import com.cloudsherpa.lib.entities.AlertTypeEnum;
 import com.cloudsherpa.lib.entities.Budget;
 import com.cloudsherpa.lib.entities.Resource;
 import com.cloudsherpa.lib.repositories.AlertRepository;
@@ -24,7 +25,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class BudgetEvaluationService {
-  private static final String ALERT_TYPE_BUDGET = "BUDGET";
 
   private final NormalizedCostsRepository normalizedCostsRepository;
   private final AlertRepository alertRepository;
@@ -143,7 +143,7 @@ public class BudgetEvaluationService {
     return Alert.builder()
         .userId(budget.getUserId())
         .widgetId(null)
-        .alertType(ALERT_TYPE_BUDGET)
+        .alertType(AlertTypeEnum.BUDGET)
         .severity("WARNING")
         .title(buildTitle(budget))
         .message(buildMessage(budget, value))
