@@ -104,7 +104,7 @@ function helperForColumns({ edit, toggleEnabled, onDelete }: Columns): ColumnDef
                 return (
                     <Truncation
                         text={forThreshold.metricName}
-                        className={mutedThreshold ? "text-muted-foreground" : "text-foreground"}
+                        className={`w-[100px] flex-shrink-0 ${mutedThreshold ? "text-muted-foreground" : "text-foreground"}`}
                     />
                 );
             },
@@ -177,7 +177,12 @@ function helperForColumns({ edit, toggleEnabled, onDelete }: Columns): ColumnDef
             id: "currentValue",
             header: () => "CURRENT VALUE",
             enableSorting: false,
-            cell: () => <Truncation text="-" className="text-muted-foreground cursor-help" />,
+            cell: () => (
+                <Truncation
+                    text="-"
+                    className="w-[100px] flex-shrink-0 text-muted-foreground cursor-help"
+                />
+            ),
         },
 
         {
