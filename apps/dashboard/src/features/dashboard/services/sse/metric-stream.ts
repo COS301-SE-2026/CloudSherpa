@@ -77,7 +77,7 @@ function createMockMetrics(): Metric[] {
 
 export function useMetricStream() {
     const addMetric = useMetricStore((state) => state.addMetric);
-    const addMetricFromDto = useMetricStore((state) => state.addMetricFromDto);
+    const addMetricsFromDtos = useMetricStore((state) => state.addMetricsFromDtos);
     // String or bool?
     const [error, setError] = useState<Error | null>(null);
 
@@ -93,9 +93,9 @@ export function useMetricStream() {
             setError(null);
         };
 
-        const handleMetric = (event: MessageEvent<string>) => {
-            const metricDto = toMetricDto(JSON.parse(event.data) as MetricStreamEvent);
-            addMetricFromDto(metricDto);
+        const handleMetricBatch = (event: MessageEvent<string>) => {
+            const metricEvents = JSON.parse(event.data) as MetricStreamEvent[];
+            addMetricsFromDtos(metricEvents.map(toMetricDto));
         };
 
         eventSource.onerror = () => {
@@ -103,13 +103,13 @@ export function useMetricStream() {
             eventSource.close();
         };
 
-        eventSource.addEventListener("metric", handleMetric);
+        eventSource.addEventListener("metric-batch", handleMetricBatch);
 
         return () => {
-            eventSource.removeEventListener("metric", handleMetric);
+            eventSource.removeEventListener("metric-batch", handleMetricBatch);
             eventSource.close();
         };
-    }, [addMetric, addMetricFromDto]);
+    }, [addMetric, addMetricsFromDtos]);
 
     return { error };
 }

@@ -116,6 +116,29 @@ export const useMetricStore = create<MetricStore>((set, get) => ({
         }));
     },
 
+    addMetricsFromDtos: (metricDtos) => {
+        // Applies a whole batch in one set() call so SSE bursts cause a single re-render.
+        set((state) => {
+            let seriesByKey = state.seriesByKey;
+
+            for (const metricDto of metricDtos) {
+                const metricType = toMetricType(metricDto.metricName);
+
+                const metric: Metric = {
+                    resource_id: metricDto.resourceId,
+                    metricName: metricDto.metricName,
+                    metricType,
+                    timestamp: metricDto.periodStart,
+                    value: metricDto.metricValue,
+                };
+
+                seriesByKey = upsertMetric(seriesByKey, metric);
+            }
+
+            return { seriesByKey };
+        });
+    },
+
     initializeMetricSeries: (availableMetrics) => {
         set((state) => {
             const seriesByKey = {

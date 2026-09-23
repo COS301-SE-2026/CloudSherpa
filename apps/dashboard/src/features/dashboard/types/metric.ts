@@ -47,6 +47,7 @@ export type MetricStore = {
 
     addMetric: (metric: Metric) => void;
     addMetricFromDto: (metricDto: MetricDTO) => void;
+    addMetricsFromDtos: (metricDtos: MetricDTO[]) => void;
 
     initializeMetricSeries: (availableMetrics: AvailableMetric[]) => void;
 
