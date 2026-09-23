@@ -31,11 +31,11 @@ public class ForecastWriteWorker {
   // The tenant context has to have been set within the scope where these methods are called
   @Transactional
   public void writeForecast(
-      UUID forecsatRunId,
+      UUID forecastRunId,
       BillingForecastResponseDto forecast,
       OffsetDateTime timestamp,
-      Integer forecastWindow) {
-    BillingForecast newForecast = toForecast(forecsatRunId, forecast, timestamp, forecastWindow);
+      int forecastWindow) {
+    BillingForecast newForecast = toForecast(forecastRunId, forecast, timestamp, forecastWindow);
     forecastRepository.save(newForecast);
   }
 
@@ -56,7 +56,7 @@ public class ForecastWriteWorker {
       UUID forecastRunId,
       BillingForecastResponseDto forecast,
       OffsetDateTime timestamp,
-      Integer forecastWindow) {
+      int forecastWindow) {
     return BillingForecast.builder()
         .accelerationRate(forecast.accelerationRate())
         .cumulativeForecastValue(forecast.cumalativeBillingForecastValue())

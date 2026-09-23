@@ -1,20 +1,50 @@
 package com.cloudsherpa.service.intelligence.service.billing;
 
-import com.cloudsherpa.lib.repositories.BillingForecastRepository;
+import com.cloudsherpa.lib.entities.BillingForecastRun;
+import com.cloudsherpa.service.config.TenantContext;
 import com.cloudsherpa.service.intelligence.dto.BillingForecastResponseDto;
+import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 @Service
 public class BillingForecastStateService {
-  private final BillingForecastRepository billingForecastRepository;
+  private final ForecastWriteWorker worker;
 
-  public BillingForecastStateService(BillingForecastRepository billingForecastRepository) {
-    this.billingForecastRepository = billingForecastRepository;
+  public BillingForecastStateService(ForecastWriteWorker worker) {
+    this.worker = worker;
   }
 
   public void writeForecast(
-      UUID tenantId, UUID forecastRunId, BillingForecastResponseDto forecast) {
-    // write
+      UUID tenantId,
+      UUID forecastRunId,
+      BillingForecastResponseDto forecast,
+      OffsetDateTime timestamp,
+      int forecastWindow) {
+    try {
+      TenantContext.setCurrentTenant(tenantId.toString());
+      worker.writeForecast(forecastRunId, forecast, timestamp, forecastWindow);
+    } finally {
+      TenantContext.clear();
+    }
+  }
+
+  public BillingForecastRun intializeForecastRun(UUID tenantId, Instant timestamp) {
+    try {
+      TenantContext.setCurrentTenant(tenantId.toString());
+      return worker.intializeForecastRun(timestamp);
+    } finally {
+      TenantContext.clear();
+    }
+  }
+
+  public void updateForecastRun(UUID tenantId, BillingForecastRun forecastRun) {
+    try {
+      TenantContext.setCurrentTenant(tenantId.toString());
+      worker.updateForecastRun(forecastRun);
+    } finally {
+      TenantContext.clear();
+    }
   }
 }
