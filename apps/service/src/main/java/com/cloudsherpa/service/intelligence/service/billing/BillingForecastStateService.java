@@ -2,7 +2,6 @@ package com.cloudsherpa.service.intelligence.service.billing;
 
 import com.cloudsherpa.lib.entities.BillingForecast;
 import com.cloudsherpa.lib.entities.BillingForecastRun;
-import com.cloudsherpa.service.config.TenantContext;
 import com.cloudsherpa.service.intelligence.dto.BillingForecastResponseDto;
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -11,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class BillingForecastStateService {
+  // Callers must establish tenant context before invoking this service.
   private final ForecastReadWriteWorker worker;
 
   public BillingForecastStateService(ForecastReadWriteWorker worker) {
@@ -18,45 +18,23 @@ public class BillingForecastStateService {
   }
 
   public void writeForecast(
-      UUID tenantId,
       UUID forecastRunId,
       BillingForecastResponseDto forecast,
       OffsetDateTime timestamp,
       int forecastWindow) {
-    try {
-      TenantContext.setCurrentTenant(tenantId.toString());
-      worker.writeForecast(forecastRunId, forecast, timestamp, forecastWindow);
-    } finally {
-      TenantContext.clear();
-    }
+    worker.writeForecast(forecastRunId, forecast, timestamp, forecastWindow);
   }
 
-  public BillingForecastRun intializeForecastRun(UUID tenantId, Instant timestamp) {
-    try {
-      TenantContext.setCurrentTenant(tenantId.toString());
-      return worker.intializeForecastRun(timestamp);
-    } finally {
-      TenantContext.clear();
-    }
+  public BillingForecastRun intializeForecastRun(Instant timestamp) {
+    return worker.intializeForecastRun(timestamp);
   }
 
-  public void updateForecastRun(UUID tenantId, BillingForecastRun forecastRun) {
-    try {
-      TenantContext.setCurrentTenant(tenantId.toString());
-      worker.updateForecastRun(forecastRun);
-    } finally {
-      TenantContext.clear();
-    }
+  public void updateForecastRun(BillingForecastRun forecastRun) {
+    worker.updateForecastRun(forecastRun);
   }
 
-  public BillingForecast readLatestForecast(UUID tenantId, Integer forecastWindow) {
-    try {
-      TenantContext.setCurrentTenant(tenantId.toString());
-      BillingForecastRun latestCompletedRun = worker.latestCompletedForecastRun();
-      return worker.getForecastForRunAndWindow(
-          latestCompletedRun.getForecastRunId(), forecastWindow);
-    } finally {
-      TenantContext.clear();
-    }
+  public BillingForecast readLatestForecast(Integer forecastWindow) {
+    BillingForecastRun latestCompletedRun = worker.latestCompletedForecastRun();
+    return worker.getForecastForRunAndWindow(latestCompletedRun.getForecastRunId(), forecastWindow);
   }
 }

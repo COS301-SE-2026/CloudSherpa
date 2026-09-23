@@ -26,14 +26,14 @@ public class BillingForecastWorker {
     this.billingIntelligenceService = billingIntelligenceService;
   }
 
-  public void submit(UUID tenantId) {
+  public void executeForecastRun(UUID tenantId) {
 
     BillingForecastRun run = null;
 
     try {
       TenantContext.setCurrentTenant(tenantId.toString());
 
-      run = stateService.intializeForecastRun(tenantId, Instant.now());
+      run = stateService.intializeForecastRun(Instant.now());
 
       try {
         for (int forecastWindow : SUPPORTED_FORECAST_WINDOWS) {
@@ -41,7 +41,6 @@ public class BillingForecastWorker {
           BillingForecastResponseDto forecast =
               billingIntelligenceService.processAllCharges(request, Instant.now(), tenantId);
           stateService.writeForecast(
-              tenantId,
               run.getForecastRunId(),
               forecast,
               OffsetDateTime.now(ZoneId.of("UTC")),
@@ -49,11 +48,11 @@ public class BillingForecastWorker {
         }
 
         run.setForecastExecutionStatus(ForecastExecutionStatusEnum.COMPLETED);
-        stateService.updateForecastRun(tenantId, run);
+        stateService.updateForecastRun(run);
 
       } catch (RuntimeException e) {
         run.setForecastExecutionStatus(ForecastExecutionStatusEnum.FAILED);
-        stateService.updateForecastRun(tenantId, run);
+        stateService.updateForecastRun(run);
       }
 
     } finally {
