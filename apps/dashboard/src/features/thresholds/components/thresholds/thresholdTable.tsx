@@ -22,31 +22,39 @@ import { Button } from "@/components/atoms/button";
 import type { OperatorsForThreshold, Threshold } from "@/features/thresholds/types/thresholdTypes";
 import { OPERATOR_LABEL, SEVERITY_COLOURS } from "@/features/thresholds/types/thresholdTypes";
 import { ArrowUp, ArrowDown, Pencil, Trash2 } from "lucide-react";
-import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/atoms/tooltip";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/atoms/tooltip";
 
-const CONDITION_VERBS : Record<OperatorsForThreshold, string> = {
-    GT : "More than",
-    GTE : "More than or equal to",
-    LT : "Less than",
-    LTE : "Less than or equal to",
-    EQ : "Equal to",
+const CONDITION_VERBS: Record<OperatorsForThreshold, string> = {
+    GT: "More than",
+    GTE: "More than or equal to",
+    LT: "Less than",
+    LTE: "Less than or equal to",
+    EQ: "Equal to",
 };
 
-interface PropsForTruncation{
-    text : string;
+interface PropsForTruncation {
+    text: string;
     className?: string;
     tooltipText?: string;
 }
 
-function Truncation({text, className = "", tooltipText} : Readonly<PropsForTruncation>){
-    return(
+function Truncation({ text, className = "", tooltipText }: Readonly<PropsForTruncation>) {
+    return (
         <TooltipProvider>
             <Tooltip>
                 <TooltipTrigger asChild>
-                    <span className = {`block truncate ${className}`}> {text} </span>
+                    <span className={`block truncate ${className}`}> {text} </span>
                 </TooltipTrigger>
 
-                <TooltipContent> <p className = "max-w-xs break-all"> {tooltipText ?? text} </p></TooltipContent>
+                <TooltipContent>
+                    {" "}
+                    <p className="max-w-xs break-all"> {tooltipText ?? text} </p>
+                </TooltipContent>
             </Tooltip>
         </TooltipProvider>
     );
@@ -94,7 +102,10 @@ function helperForColumns({ edit, toggleEnabled, onDelete }: Columns): ColumnDef
                 const mutedThreshold = !forThreshold.enabled;
 
                 return (
-                    <Truncation text = {forThreshold.metricName} className = {mutedThreshold ? "text-muted-foreground" : "text-foreground"}/>
+                    <Truncation
+                        text={forThreshold.metricName}
+                        className={mutedThreshold ? "text-muted-foreground" : "text-foreground"}
+                    />
                 );
             },
         },
@@ -113,8 +124,11 @@ function helperForColumns({ edit, toggleEnabled, onDelete }: Columns): ColumnDef
                 const tooltip = `${CONDITION_VERBS[forThreshold.operator]} ${forThreshold.value}`;
 
                 return (
-                    <Truncation text = {visibleCondition} tooltipText = {tooltip} className = {
-                        mutedThreshold ? "text-muted-foreground" : "text-foreground"}/>
+                    <Truncation
+                        text={visibleCondition}
+                        tooltipText={tooltip}
+                        className={mutedThreshold ? "text-muted-foreground" : "text-foreground"}
+                    />
                 );
             },
         },
@@ -163,9 +177,7 @@ function helperForColumns({ edit, toggleEnabled, onDelete }: Columns): ColumnDef
             id: "currentValue",
             header: () => "CURRENT VALUE",
             enableSorting: false,
-            cell: () => (
-                <Truncation text = "-" className = "text-muted-foreground cursor-help"/>
-            ),
+            cell: () => <Truncation text="-" className="text-muted-foreground cursor-help" />,
         },
 
         {
