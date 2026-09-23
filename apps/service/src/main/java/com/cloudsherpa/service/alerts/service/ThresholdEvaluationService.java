@@ -1,6 +1,7 @@
 package com.cloudsherpa.service.alerts.service;
 
 import com.cloudsherpa.lib.entities.Alert;
+import com.cloudsherpa.lib.entities.AlertSeverityEnum;
 import com.cloudsherpa.lib.entities.AlertStatusEnum;
 import com.cloudsherpa.lib.entities.AlertTypeEnum;
 import com.cloudsherpa.lib.entities.Threshold;
@@ -124,7 +125,7 @@ public class ThresholdEvaluationService {
         .userId(userId)
         .widgetId(null)
         .alertType(AlertTypeEnum.THRESHOLD)
-        .severity(Optional.ofNullable(threshold.getSeverity()).orElse("WARNING"))
+        .severity(Optional.ofNullable(threshold.getSeverity()).orElse(AlertSeverityEnum.WARNING))
         .title(buildTitle(threshold, event))
         .message(buildMessage(threshold, event))
         .payload(payload)

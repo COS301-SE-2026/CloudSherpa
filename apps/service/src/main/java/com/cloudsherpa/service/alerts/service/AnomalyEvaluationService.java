@@ -1,6 +1,7 @@
 package com.cloudsherpa.service.alerts.service;
 
 import com.cloudsherpa.lib.entities.Alert;
+import com.cloudsherpa.lib.entities.AlertSeverityEnum;
 import com.cloudsherpa.lib.entities.AlertStatusEnum;
 import com.cloudsherpa.lib.entities.AlertTypeEnum;
 import com.cloudsherpa.lib.entities.OptimizationMetricStatistics;
@@ -94,7 +95,7 @@ public class AnomalyEvaluationService {
         (event.metricValue().doubleValue() - average.doubleValue())
             / standardDeviation.doubleValue();
 
-    String severity = resolveSeverity(zScore);
+    AlertSeverityEnum severity = resolveSeverity(zScore);
 
     if (severity == null) {
       return;
@@ -136,7 +137,7 @@ public class AnomalyEvaluationService {
         buildWebhookEventPayload(resource, baseline, event, zScore, severity, alert));
   }
 
-  private String resolveSeverity(double zScore) {
+  private AlertSeverityEnum resolveSeverity(double zScore) {
     double magnitude = Math.abs(zScore);
 
     // Taken from
@@ -152,10 +153,10 @@ public class AnomalyEvaluationService {
     // reserved for identifying extreme outliers.
 
     if (magnitude >= CRITICAL_Z_SCORE) {
-      return "CRITICAL";
+      return AlertSeverityEnum.CRITICAL;
     }
     if (magnitude >= WARNING_Z_SCORE) {
-      return "WARNING";
+      return AlertSeverityEnum.WARNING;
     }
     return null;
   }
@@ -165,7 +166,7 @@ public class AnomalyEvaluationService {
       MetricStreamEventDto event,
       UUID userId,
       String canonicalKey,
-      String severity,
+      AlertSeverityEnum severity,
       double zScore) {
     OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
 
@@ -223,7 +224,7 @@ public class AnomalyEvaluationService {
       OptimizationMetricStatistics baseline,
       MetricStreamEventDto event,
       double zScore,
-      String severity,
+      AlertSeverityEnum severity,
       Alert alert) {
 
     return new AnomalyAlertPayload(

@@ -41,8 +41,10 @@ public class Alert {
   @Column(name = "alert_type", nullable = false, columnDefinition = "public.alert_type_enum")
   private AlertTypeEnum alertType;
 
-  @Column(name = "severity", nullable = false, length = 20)
-  private String severity;
+  @Enumerated(EnumType.STRING)
+  @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+  @Column(name = "severity", nullable = false, columnDefinition = "public.alert_severity_enum")
+  private AlertSeverityEnum severity;
 
   @Column(name = "title", nullable = false)
   private String title;
@@ -98,7 +100,7 @@ public class Alert {
     private UUID userId;
     private UUID widgetId;
     private AlertTypeEnum alertType;
-    private String severity;
+    private AlertSeverityEnum severity;
     private String title;
     private String message;
     private Map<String, Object> payload;
@@ -128,7 +130,7 @@ public class Alert {
       return this;
     }
 
-    public Builder severity(String severity) {
+    public Builder severity(AlertSeverityEnum severity) {
       this.severity = severity;
       return this;
     }
@@ -218,11 +220,11 @@ public class Alert {
     this.alertType = alertType;
   }
 
-  public String getSeverity() {
+  public AlertSeverityEnum getSeverity() {
     return severity;
   }
 
-  public void setSeverity(String severity) {
+  public void setSeverity(AlertSeverityEnum severity) {
     this.severity = severity;
   }
 

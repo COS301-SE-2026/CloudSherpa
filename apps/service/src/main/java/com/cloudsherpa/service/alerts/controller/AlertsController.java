@@ -40,13 +40,12 @@ public class AlertsController {
               array = @ArraySchema(schema = @Schema(implementation = AlertResponse.class))))
   @GetMapping
   public ResponseEntity<List<AlertResponse>> getAlerts(
-      @RequestParam(name = "alertType", required = false) String alertType) {
+      @RequestParam(name = "alertType", required = false) AlertTypeEnum alertType) {
 
     List<Alert> alerts =
         alertType == null
             ? alertRepository.findAll()
-            : alertRepository.findByAlertTypeOrderByCreatedAtDesc(
-                AlertTypeEnum.valueOf(alertType.toUpperCase()));
+            : alertRepository.findByAlertTypeOrderByCreatedAtDesc(alertType);
 
     return ResponseEntity.ok(alerts.stream().map(AlertResponse::from).toList());
   }

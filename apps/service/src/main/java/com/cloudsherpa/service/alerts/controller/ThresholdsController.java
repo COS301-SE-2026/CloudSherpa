@@ -1,5 +1,6 @@
 package com.cloudsherpa.service.alerts.controller;
 
+import com.cloudsherpa.lib.entities.AlertSeverityEnum;
 import com.cloudsherpa.lib.entities.ProviderEnum;
 import com.cloudsherpa.lib.entities.Threshold;
 import com.cloudsherpa.lib.repositories.ResourceRepository;
@@ -73,7 +74,7 @@ public class ThresholdsController {
             canonicalMetricName,
             request.operator(),
             request.value(),
-            request.severity() == null ? "WARNING" : request.severity(),
+            request.severity() == null ? AlertSeverityEnum.WARNING : request.severity(),
             request.enabled() == null || request.enabled());
 
     Threshold savedThreshold = thresholdRepository.save(threshold);

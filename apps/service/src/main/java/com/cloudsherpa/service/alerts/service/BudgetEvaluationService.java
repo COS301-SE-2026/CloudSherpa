@@ -1,6 +1,7 @@
 package com.cloudsherpa.service.alerts.service;
 
 import com.cloudsherpa.lib.entities.Alert;
+import com.cloudsherpa.lib.entities.AlertSeverityEnum;
 import com.cloudsherpa.lib.entities.AlertStatusEnum;
 import com.cloudsherpa.lib.entities.AlertTypeEnum;
 import com.cloudsherpa.lib.entities.Budget;
@@ -144,7 +145,7 @@ public class BudgetEvaluationService {
         .userId(budget.getUserId())
         .widgetId(null)
         .alertType(AlertTypeEnum.BUDGET)
-        .severity("WARNING")
+        .severity(AlertSeverityEnum.WARNING)
         .title(buildTitle(budget))
         .message(buildMessage(budget, value))
         .payload(buildPayload(budget, value))

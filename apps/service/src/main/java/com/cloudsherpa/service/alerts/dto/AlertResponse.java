@@ -1,6 +1,7 @@
 package com.cloudsherpa.service.alerts.dto;
 
 import com.cloudsherpa.lib.entities.Alert;
+import com.cloudsherpa.lib.entities.AlertSeverityEnum;
 import com.cloudsherpa.lib.entities.AlertStatusEnum;
 import com.cloudsherpa.lib.entities.AlertTypeEnum;
 import java.time.OffsetDateTime;
@@ -11,7 +12,7 @@ public record AlertResponse(
     UUID alertId,
     UUID userId,
     AlertTypeEnum alertType,
-    String severity,
+    AlertSeverityEnum severity,
     String title,
     String message,
     Map<String, Object> payload,

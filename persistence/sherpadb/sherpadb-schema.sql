@@ -73,6 +73,11 @@ CREATE TYPE public.alert_type_enum AS ENUM (
   'ANOMALY'
 );
 
+CREATE TYPE public.alert_severity_enum AS ENUM (
+  'WARNING',
+  'CRITICAL'
+);
+
 -- ----------------------------------------------------------------
 -- PUBLIC TABLES 
 -- ----------------------------------------------------------------
@@ -901,7 +906,7 @@ BEGIN
         user_id uuid REFERENCES public.users(user_id) ON DELETE CASCADE,
         widget_id uuid REFERENCES public.widget(widget_id) ON DELETE CASCADE,
         alert_type public.alert_type_enum NOT NULL,
-        severity varchar(20) NOT NULL,
+        severity public.alert_severity_enum NOT NULL,
         title text NOT NULL,
         message text,
         payload jsonb DEFAULT '{}'::jsonb,
@@ -939,7 +944,7 @@ BEGIN
       metric_name text NOT NULL,
       operator text NOT NULL,
       value double precision NOT NULL,
-      severity text NOT NULL DEFAULT 'WARNING',
+      severity public.alert_severity_enum NOT NULL DEFAULT 'WARNING',
       enabled boolean NOT NULL DEFAULT true,
       created_at timestamptz DEFAULT now(),
       updated_at timestamptz DEFAULT now()
