@@ -884,7 +884,7 @@ BEGIN
     -- This table considers a forecast execution to be complete only once all of the forecast windows have been computed
     EXECUTE format($sql$
       CREATE TABLE IF NOT EXISTS %I.billing_forecast_execution_logs (
-        log_id uuid PRIMARY KEY 
+        log_id uuid PRIMARY KEY, 
         execution_id uuid REFERENCES public.billing_export_execution(execution_id) ON DELETE SET NULL,
         forecast_execution_status public.billing_forecast_execution_status NOT NULL,
         forecast_execution_log_timestamp timestamptz NOT NULL
