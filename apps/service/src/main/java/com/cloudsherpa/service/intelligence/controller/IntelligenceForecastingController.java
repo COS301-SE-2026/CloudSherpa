@@ -6,6 +6,7 @@ import com.cloudsherpa.service.intelligence.dto.BillingForecastResponseDto;
 import com.cloudsherpa.service.intelligence.dto.ResourceUsageForecastRequestDto;
 import com.cloudsherpa.service.intelligence.dto.ResourceUsageForecastResponseDto;
 import com.cloudsherpa.service.intelligence.model.ForecastSeries;
+import com.cloudsherpa.service.intelligence.service.billing.BillingForecastResultService;
 import com.cloudsherpa.service.intelligence.service.billing.BillingForecastValue;
 import com.cloudsherpa.service.intelligence.service.billing.BillingIntelligenceService;
 import com.cloudsherpa.service.intelligence.service.usage.UsageForecastingService;
@@ -20,12 +21,9 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,15 +36,18 @@ public class IntelligenceForecastingController {
 
   private final BillingIntelligenceService billingIntelligenceService;
   private final UsageForecastingService usageForecastingService;
+  private final BillingForecastResultService billingForecastResultService;
   private final boolean useMockForecasting;
 
   public IntelligenceForecastingController(
       UsageForecastingService usageForecastingService,
       @Value("${intelligence.forecasting.mock:false}") boolean useMockForecasting,
-      BillingIntelligenceService billingIntelligenceService) {
+      BillingIntelligenceService billingIntelligenceService,
+      BillingForecastResultService billingForecastResultService) {
     this.usageForecastingService = usageForecastingService;
     this.useMockForecasting = useMockForecasting;
     this.billingIntelligenceService = billingIntelligenceService;
+    this.billingForecastResultService = billingForecastResultService;
   }
 
   @Operation(
@@ -177,12 +178,9 @@ public class IntelligenceForecastingController {
       })
   @PostMapping("/billing")
   public ResponseEntity<BillingForecastResponseDto> billingForecast(
-      @RequestBody BillingForecastRequest request, JwtAuthenticationToken token) {
-    Jwt jwt = token.getToken();
+      @RequestBody BillingForecastRequest request) {
     return ResponseEntity.ok()
-        .body(
-            billingIntelligenceService.processAllCharges(
-                request, Instant.now(), UUID.fromString(jwt.getSubject())));
+        .body(billingForecastResultService.latestForecast(request.forecastSteps()));
   }
 
   private ResourceUsageForecastResponseDto mockResourceUsageForecast() {
