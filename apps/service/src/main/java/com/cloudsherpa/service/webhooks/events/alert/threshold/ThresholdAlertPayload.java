@@ -1,5 +1,6 @@
 package com.cloudsherpa.service.webhooks.events.alert.threshold;
 
+import com.cloudsherpa.lib.entities.AlertSeverityEnum;
 import com.cloudsherpa.service.webhooks.events.WebhookPayload;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -12,7 +13,7 @@ public record ThresholdAlertPayload(
     String unit,
     String operator,
     double thresholdValue,
-    String severity,
+    AlertSeverityEnum severity,
     OffsetDateTime periodStart,
     OffsetDateTime periodEnd)
     implements WebhookPayload {}

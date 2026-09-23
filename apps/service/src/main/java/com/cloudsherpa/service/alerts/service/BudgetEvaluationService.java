@@ -1,6 +1,9 @@
 package com.cloudsherpa.service.alerts.service;
 
 import com.cloudsherpa.lib.entities.Alert;
+import com.cloudsherpa.lib.entities.AlertSeverityEnum;
+import com.cloudsherpa.lib.entities.AlertStatusEnum;
+import com.cloudsherpa.lib.entities.AlertTypeEnum;
 import com.cloudsherpa.lib.entities.Budget;
 import com.cloudsherpa.lib.entities.Resource;
 import com.cloudsherpa.lib.repositories.AlertRepository;
@@ -23,8 +26,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class BudgetEvaluationService {
-  private static final String ALERT_STATUS_ACTIVE = "ACTIVE";
-  private static final String ALERT_TYPE_BUDGET = "BUDGET";
 
   private final NormalizedCostsRepository normalizedCostsRepository;
   private final AlertRepository alertRepository;
@@ -105,7 +106,15 @@ public class BudgetEvaluationService {
     String canonicalKey = buildCanonicalKey(budget);
 
     Optional<Alert> existing =
-        alertRepository.findByCanonicalKeyAndStatus(canonicalKey, ALERT_STATUS_ACTIVE);
+        alertRepository.findByCanonicalKeyAndStatus(canonicalKey, AlertStatusEnum.ACTIVE);
+
+    if (existing.isEmpty()
+        && alertRepository
+            .findByCanonicalKeyAndStatus(canonicalKey, AlertStatusEnum.DISABLED)
+            .isPresent()) {
+      // User disabled alerts for this budget; don't recreate one.
+      return;
+    }
 
     Alert alert;
     if (existing.isPresent()) {
@@ -135,12 +144,12 @@ public class BudgetEvaluationService {
     return Alert.builder()
         .userId(budget.getUserId())
         .widgetId(null)
-        .alertType(ALERT_TYPE_BUDGET)
-        .severity("WARNING")
+        .alertType(AlertTypeEnum.BUDGET)
+        .severity(AlertSeverityEnum.WARNING)
         .title(buildTitle(budget))
         .message(buildMessage(budget, value))
         .payload(buildPayload(budget, value))
-        .status(ALERT_STATUS_ACTIVE)
+        .status(AlertStatusEnum.ACTIVE)
         .canonicalKey(canonicalKey)
         .createdAt(now)
         .lastSeen(now)

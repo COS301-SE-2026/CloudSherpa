@@ -1,5 +1,6 @@
 package com.cloudsherpa.service.webhooks.events.alert.anomaly;
 
+import com.cloudsherpa.lib.entities.AlertSeverityEnum;
 import com.cloudsherpa.service.webhooks.events.WebhookPayload;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -11,7 +12,7 @@ public record AnomalyAlertPayload(
     BigDecimal averageValue,
     BigDecimal standardDeviation,
     double zScore,
-    String severity,
+    AlertSeverityEnum severity,
     OffsetDateTime periodStart,
     OffsetDateTime periodEnd)
     implements WebhookPayload {}
