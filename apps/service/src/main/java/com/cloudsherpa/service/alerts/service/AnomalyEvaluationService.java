@@ -1,6 +1,7 @@
 package com.cloudsherpa.service.alerts.service;
 
 import com.cloudsherpa.lib.entities.Alert;
+import com.cloudsherpa.lib.entities.AlertStatusEnum;
 import com.cloudsherpa.lib.entities.OptimizationMetricStatistics;
 import com.cloudsherpa.lib.entities.Resource;
 import com.cloudsherpa.lib.repositories.AlertRepository;
@@ -25,7 +26,6 @@ public class AnomalyEvaluationService {
 
   private static final Logger logger = LoggerFactory.getLogger(AnomalyEvaluationService.class);
 
-  private static final String ALERT_STATUS_ACTIVE = "ACTIVE";
   private static final String ALERT_TYPE_ANOMALY = "ANOMALY";
 
   private static final double CRITICAL_Z_SCORE = 3.0;
@@ -104,7 +104,15 @@ public class AnomalyEvaluationService {
     String canonicalKey = buildCanonicalKey(event);
 
     Optional<Alert> existing =
-        alertRepository.findByCanonicalKeyAndStatus(canonicalKey, ALERT_STATUS_ACTIVE);
+        alertRepository.findByCanonicalKeyAndStatus(canonicalKey, AlertStatusEnum.ACTIVE);
+
+    if (existing.isEmpty()
+        && alertRepository
+            .findByCanonicalKeyAndStatus(canonicalKey, AlertStatusEnum.DISABLED)
+            .isPresent()) {
+      // User disabled anomaly alerts for this metric+resource; don't recreate one.
+      return;
+    }
 
     Alert alert;
     if (existing.isPresent()) {
@@ -181,7 +189,7 @@ public class AnomalyEvaluationService {
         .title(buildTitle(event, zScore))
         .message(buildMessage(event, baseline, zScore))
         .payload(payload)
-        .status(ALERT_STATUS_ACTIVE)
+        .status(AlertStatusEnum.ACTIVE)
         .canonicalKey(canonicalKey)
         .createdAt(now)
         .lastSeen(now)

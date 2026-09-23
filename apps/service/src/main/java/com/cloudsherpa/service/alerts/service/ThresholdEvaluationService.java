@@ -1,6 +1,7 @@
 package com.cloudsherpa.service.alerts.service;
 
 import com.cloudsherpa.lib.entities.Alert;
+import com.cloudsherpa.lib.entities.AlertStatusEnum;
 import com.cloudsherpa.lib.entities.Threshold;
 import com.cloudsherpa.lib.repositories.AlertRepository;
 import com.cloudsherpa.lib.repositories.ThresholdRepository;
@@ -23,7 +24,6 @@ import org.springframework.stereotype.Service;
 public class ThresholdEvaluationService {
 
   private static final Logger logger = LoggerFactory.getLogger(ThresholdEvaluationService.class);
-  private static final String ALERT_STATUS_ACTIVE = "ACTIVE";
   private static final String ALERT_TYPE_THRESHOLD = "THRESHOLD";
 
   private final ThresholdRepository thresholdRepository;
@@ -72,7 +72,15 @@ public class ThresholdEvaluationService {
     String canonicalKey = buildCanonicalKey(threshold, event);
 
     Optional<Alert> existing =
-        alertRepository.findByCanonicalKeyAndStatus(canonicalKey, ALERT_STATUS_ACTIVE);
+        alertRepository.findByCanonicalKeyAndStatus(canonicalKey, AlertStatusEnum.ACTIVE);
+
+    if (existing.isEmpty()
+        && alertRepository
+            .findByCanonicalKeyAndStatus(canonicalKey, AlertStatusEnum.DISABLED)
+            .isPresent()) {
+      // User disabled alerts for this exact metric+resource; don't recreate one.
+      return;
+    }
 
     Alert alert;
     if (existing.isPresent()) {
@@ -120,7 +128,7 @@ public class ThresholdEvaluationService {
         .title(buildTitle(threshold, event))
         .message(buildMessage(threshold, event))
         .payload(payload)
-        .status(ALERT_STATUS_ACTIVE)
+        .status(AlertStatusEnum.ACTIVE)
         .canonicalKey(canonicalKey)
         .createdAt(now)
         .lastSeen(now)
