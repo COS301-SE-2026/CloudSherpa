@@ -19,6 +19,8 @@ public class IngestionRequestEvent {
   private boolean includeBilling;
   private boolean includeUsage;
 
+  private boolean isBackfill;
+
   private UUID userId;
 
   public UUID getUserId() {
@@ -75,6 +77,14 @@ public class IngestionRequestEvent {
 
   public void setIncludeBilling(boolean includeBilling) {
     this.includeBilling = includeBilling;
+  }
+
+  public boolean isBackfill() {
+    return isBackfill;
+  }
+
+  public void setBackfill(boolean isBackfill) {
+    this.isBackfill = isBackfill;
   }
 
   public boolean isIncludeUsage() {

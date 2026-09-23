@@ -16,6 +16,7 @@ public class NormalizedMetric {
   private String currency;
   private long periodStart;
   private long periodEnd;
+  private boolean isBackfill;
 
   private NormalizedMetric(Builder builder) {
     this.metricId = builder.metricId;
@@ -28,6 +29,7 @@ public class NormalizedMetric {
     this.currency = builder.currency;
     this.periodStart = builder.periodStart;
     this.periodEnd = builder.periodEnd;
+    this.isBackfill = builder.isBackfill;
   }
 
   public String getMetricId() {
@@ -70,6 +72,10 @@ public class NormalizedMetric {
     return periodEnd;
   }
 
+  public boolean isBackfill() {
+    return isBackfill;
+  }
+
   public static class Builder {
     private String metricId;
     private String resourceId;
@@ -81,6 +87,7 @@ public class NormalizedMetric {
     private String currency;
     private long periodStart;
     private long periodEnd;
+    private boolean isBackfill;
 
     public Builder metricId(String metricId) {
       this.metricId = metricId;
@@ -129,6 +136,11 @@ public class NormalizedMetric {
 
     public Builder periodEnd(long periodEnd) {
       this.periodEnd = periodEnd;
+      return this;
+    }
+
+    public Builder isBackfill(boolean isBackfill) {
+      this.isBackfill = isBackfill;
       return this;
     }
 

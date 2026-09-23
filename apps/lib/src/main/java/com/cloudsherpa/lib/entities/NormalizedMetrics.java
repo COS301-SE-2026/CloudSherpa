@@ -51,6 +51,9 @@ public class NormalizedMetrics {
   @Column(name = "period_end")
   private OffsetDateTime periodEnd;
 
+  @Column(name = "is_backfill", nullable = false)
+  private boolean isBackfill;
+
   public NormalizedMetrics() {
     // Default constructor
   }
@@ -65,6 +68,7 @@ public class NormalizedMetrics {
     this.currency = builder.currency;
     this.periodStart = builder.periodStart;
     this.periodEnd = builder.periodEnd;
+    this.isBackfill = builder.isBackfill;
   }
 
   public UUID getMetricId() {
@@ -111,6 +115,10 @@ public class NormalizedMetrics {
       this.metricName = metricName;
   }
 
+  public boolean isBackfill() {
+    return isBackfill;
+  }
+
   public static class Builder {
     private UUID resourceId;
     private OffsetDateTime recordedAt;
@@ -121,6 +129,7 @@ public class NormalizedMetrics {
     private String currency;
     private OffsetDateTime periodStart;
     private OffsetDateTime periodEnd;
+    private boolean isBackfill;
 
     public Builder resourceId(UUID resourceId) {
       this.resourceId = resourceId;
@@ -164,6 +173,11 @@ public class NormalizedMetrics {
 
     public Builder periodEnd(OffsetDateTime periodEnd) {
       this.periodEnd = periodEnd;
+      return this;
+    }
+
+    public Builder isBackfill(boolean isBackfill) {
+      this.isBackfill = isBackfill;
       return this;
     }
 

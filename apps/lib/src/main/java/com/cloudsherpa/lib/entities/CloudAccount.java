@@ -53,6 +53,9 @@ public class CloudAccount {
 
   @Column(name = "next_billing_ingestion")
   private OffsetDateTime nextBillingIngestion;
+
+  @Column(name = "backfill_completed", nullable = false)
+  private boolean backfillCompleted;
     
   protected CloudAccount() {}
 
@@ -66,7 +69,8 @@ public class CloudAccount {
       OffsetDateTime lastUsageIngestion,
       OffsetDateTime nextUsageIngestion,
       OffsetDateTime lastBillingIngestion,
-      OffsetDateTime nextBillingIngestion) {
+      OffsetDateTime nextBillingIngestion,
+      boolean backfillCompleted) {
     this.id = id;
     this.connectionId = connectionId;
     this.accountType = accountType;
@@ -77,6 +81,7 @@ public class CloudAccount {
     this.nextUsageIngestion = nextUsageIngestion;
     this.lastBillingIngestion = lastBillingIngestion;
     this.nextBillingIngestion = nextBillingIngestion;
+    this.backfillCompleted = backfillCompleted;
   }
 public static Builder builder() {
   return new Builder();
@@ -93,6 +98,7 @@ public static class Builder {
   private OffsetDateTime nextUsageIngestion;
   private OffsetDateTime lastBillingIngestion;
   private OffsetDateTime nextBillingIngestion;
+  private boolean backfillCompleted;
 
   public Builder id(UUID id) {
     this.id = id;
@@ -144,6 +150,11 @@ public static class Builder {
     return this;
   }
 
+  public Builder backfillCompleted(boolean backfillCompleted) {
+    this.backfillCompleted = backfillCompleted;
+    return this;
+  }
+
   public CloudAccount build() {
     return new CloudAccount(
         id,
@@ -155,7 +166,8 @@ public static class Builder {
         lastUsageIngestion,
         nextUsageIngestion,
         lastBillingIngestion,
-        nextBillingIngestion);
+        nextBillingIngestion,
+        backfillCompleted);
     }
   }
   public UUID getId() {
@@ -220,5 +232,13 @@ public static class Builder {
 
   public void setNextBillingIngestion(OffsetDateTime nextIngestion) {
     this.nextBillingIngestion = nextIngestion;
+  }
+
+  public boolean isBackfillCompleted() {
+    return backfillCompleted;
+  }
+
+  public void setBackfillCompleted(boolean backfillCompleted) {
+    this.backfillCompleted = backfillCompleted;
   }
 }
