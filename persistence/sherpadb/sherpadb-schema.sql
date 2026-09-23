@@ -848,7 +848,7 @@ BEGIN
     -- --------------------------------------------------------------------------
 
     EXECUTE format($sql$
-        CREATE TABLE IF NOT EXISTS %I.billing_forecast (
+        CREATE TABLE IF NOT EXISTS %I.billing_forecasts (
           forecast_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
           execution_id uuid NOT NULL REFERENCES public.billing_export_execution(execution_id) ON DELETE CASCADE,  
           forecast_timestamp timestamptz NOT NULL,
@@ -867,7 +867,7 @@ BEGIN
 
     -- This table considers a forecast execution to be complete only once all of the forecast windows have been computed
     EXECUTE format($sql$
-      CREATE TABLE IF NOT EXISTS %I.billing_forecast_execution_log (
+      CREATE TABLE IF NOT EXISTS %I.billing_forecast_execution_logs (
         log_id uuid PRIMARY KEY 
         execution_id uuid REFERENCES public.billing_export_execution(execution_id) ON DELETE SET NULL,
         forecast_execution_status public.billing_forecast_execution_status NOT NULL,
