@@ -1,25 +1,34 @@
 package com.cloudsherpa.service.intelligence.service.billing;
 
 import com.cloudsherpa.lib.entities.BillingForecast;
+import com.cloudsherpa.lib.entities.BillingForecastRun;
+import com.cloudsherpa.lib.entities.ForecastExecutionStatusEnum;
 import com.cloudsherpa.lib.repositories.BillingForecastRepository;
+import com.cloudsherpa.lib.repositories.BillingForecastRunRepository;
 import com.cloudsherpa.service.intelligence.dto.BillingForecastResponseDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ForecastWriteWorker {
-  private final BillingForecastRepository repository;
+  private final BillingForecastRepository forecastRepository;
+  private final BillingForecastRunRepository runRepository;
   private final ObjectMapper objectMapper;
 
-  ForecastWriteWorker(BillingForecastRepository repository, ObjectMapper objectMapper) {
-    this.repository = repository;
+  ForecastWriteWorker(
+      BillingForecastRepository forecastRepository,
+      BillingForecastRunRepository runRepository,
+      ObjectMapper objectMapper) {
+    this.forecastRepository = forecastRepository;
+    this.runRepository = runRepository;
     this.objectMapper = objectMapper;
   }
 
-  // The tenant context has to have been set within the scope where this method is called
+  // The tenant context has to have been set within the scope where these methods are called
   @Transactional
   public void writeForecast(
       UUID forecsatRunId,
@@ -27,7 +36,20 @@ public class ForecastWriteWorker {
       OffsetDateTime timestamp,
       Integer forecastWindow) {
     BillingForecast newForecast = toForecast(forecsatRunId, forecast, timestamp, forecastWindow);
-    repository.save(newForecast);
+    forecastRepository.save(newForecast);
+  }
+
+  @Transactional
+  public BillingForecastRun intializeForecastRun(Instant timestamp) {
+    BillingForecastRun newRun =
+        new BillingForecastRun(
+            UUID.randomUUID(), ForecastExecutionStatusEnum.PROCESSING, timestamp);
+    return runRepository.save(newRun);
+  }
+
+  @Transactional
+  public void updateForecastRun(BillingForecastRun forecastRun) {
+    runRepository.save(forecastRun);
   }
 
   private BillingForecast toForecast(
