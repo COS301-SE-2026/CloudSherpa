@@ -22,12 +22,12 @@ public class BillingForecast {
   @Column(name = "forecast_id")
   private UUID forecastId;
 
-  @Column(name = "execution_id", nullable = false)
-  private UUID executionId;
+  @Column(name = "forecast_run_id", nullable = false)
+  private UUID forecastRunId;
 
   @ManyToOne
-  @JoinColumn(name = "execution_id", insertable = false, updatable = false)
-  private BillingExportExecution execution;
+  @JoinColumn(name = "forecast_run_id", insertable = false, updatable = false)
+  private BillingForecastRun forecastRun;
 
   @Column(name = "forecast_timestamp", nullable = false)
   private OffsetDateTime forecastTimestamp;
@@ -68,8 +68,8 @@ public class BillingForecast {
 
   private BillingForecast(Builder builder) {
     this.forecastId = builder.forecastId;
-    this.executionId = builder.executionId;
-    this.execution = builder.execution;
+    this.forecastRunId = builder.forecastRunId;
+    this.forecastRun = builder.forecastRun;
     this.forecastTimestamp = builder.forecastTimestamp;
     this.forecastWindow = builder.forecastWindow;
     this.cumulativeForecastValue = builder.cumulativeForecastValue;
@@ -90,8 +90,8 @@ public class BillingForecast {
   public static class Builder {
 
     private UUID forecastId;
-    private UUID executionId;
-    private BillingExportExecution execution;
+    private UUID forecastRunId;
+    private BillingForecastRun forecastRun;
     private OffsetDateTime forecastTimestamp;
     private Integer forecastWindow;
     private BigDecimal cumulativeForecastValue;
@@ -109,13 +109,13 @@ public class BillingForecast {
       return this;
     }
 
-    public Builder executionId(UUID executionId) {
-      this.executionId = executionId;
+    public Builder forecastRunId(UUID forecastRunId) {
+      this.forecastRunId = forecastRunId;
       return this;
     }
 
-    public Builder execution(BillingExportExecution execution) {
-      this.execution = execution;
+    public Builder forecastRun(BillingForecastRun forecastRun) {
+      this.forecastRun = forecastRun;
       return this;
     }
 
@@ -183,12 +183,12 @@ public class BillingForecast {
     return forecastId;
   }
 
-  public UUID getExecutionId() {
-    return executionId;
+  public UUID getForecastRunId() {
+    return forecastRunId;
   }
 
-  public BillingExportExecution getExecution() {
-    return execution;
+  public BillingForecastRun getForecastRun() {
+    return forecastRun;
   }
 
   public OffsetDateTime getForecastTimestamp() {
@@ -235,12 +235,12 @@ public class BillingForecast {
     return accelerationRate;
   }
 
-  public void setExecutionId(UUID executionId) {
-    this.executionId = executionId;
+  public void setForecastRunId(UUID forecastRunId) {
+    this.forecastRunId = forecastRunId;
   }
 
-  public void setExecution(BillingExportExecution execution) {
-    this.execution = execution;
+  public void setForecastRun(BillingForecastRun forecastRun) {
+    this.forecastRun = forecastRun;
   }
 
   public void setForecastTimestamp(OffsetDateTime forecastTimestamp) {

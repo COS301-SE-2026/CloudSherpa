@@ -224,12 +224,6 @@
         "y": 1072
       },
       {
-        "name": "billing_forecast_execution_logs",
-        "schemaName": "public",
-        "x": 1688,
-        "y": 360
-      },
-      {
         "name": "threshold",
         "schemaName": "public",
         "x": 2160,
@@ -790,21 +784,6 @@
           "execution_id"
         ],
         "secondTableName": "billing_forecasts",
-        "secondSchemaName": "public",
-        "secondRelation": "*",
-        "checkPoints": []
-      },
-      {
-        "firstFieldNames": [
-          "execution_id"
-        ],
-        "firstTableName": "billing_export_execution",
-        "firstSchemaName": "public",
-        "firstRelation": "1",
-        "secondFieldNames": [
-          "execution_id"
-        ],
-        "secondTableName": "billing_forecast_execution_logs",
         "secondSchemaName": "public",
         "secondRelation": "*",
         "checkPoints": []
