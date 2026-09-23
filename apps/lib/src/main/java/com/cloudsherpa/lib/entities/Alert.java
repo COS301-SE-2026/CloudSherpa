@@ -2,6 +2,8 @@ package com.cloudsherpa.lib.entities;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -50,8 +52,10 @@ public class Alert {
   @Column(name = "payload", columnDefinition = "jsonb")
   private Map<String, Object> payload;
 
-  @Column(name = "status", nullable = false, length = 20)
-  private String status;
+ @Enumerated(EnumType.STRING)
+  @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+  @Column(name = "status", nullable = false, columnDefinition = "public.alert_status_enum")
+  private AlertStatusEnum status;
 
   @Column(name = "canonical_key")
   private String canonicalKey;
@@ -96,7 +100,7 @@ public class Alert {
     private String title;
     private String message;
     private Map<String, Object> payload;
-    private String status;
+    private AlertStatusEnum status;
     private String canonicalKey;
     private OffsetDateTime createdAt;
     private OffsetDateTime lastSeen;
@@ -142,7 +146,7 @@ public class Alert {
       return this;
     }
 
-    public Builder status(String status) {
+    public Builder status(AlertStatusEnum status) {
       this.status = status;
       return this;
     }
@@ -244,11 +248,11 @@ public class Alert {
     this.payload = payload;
   }
 
-  public String getStatus() {
+  public AlertStatusEnum getStatus() {
     return status;
   }
 
-  public void setStatus(String status) {
+  public void setStatus(AlertStatusEnum status) {
     this.status = status;
   }
 

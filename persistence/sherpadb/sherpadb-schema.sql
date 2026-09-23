@@ -62,6 +62,11 @@ CREATE TYPE public.webhook_delivery_status_enum AS ENUM (
   'FAILED'
 );
 
+CREATE TYPE public.alert_status_enum AS ENUM (
+  'ACTIVE',
+  'DISABLED'
+);
+
 -- ----------------------------------------------------------------
 -- PUBLIC TABLES 
 -- ----------------------------------------------------------------
@@ -894,7 +899,7 @@ BEGIN
         title text NOT NULL,
         message text,
         payload jsonb DEFAULT '{}'::jsonb,
-        status varchar(20) NOT NULL DEFAULT 'ACTIVE',
+        status public.alert_status_enum NOT NULL DEFAULT 'ACTIVE',
         canonical_key text,
         created_at timestamptz DEFAULT NOW(),
         last_seen timestamptz DEFAULT NOW(),
