@@ -267,7 +267,8 @@ public class AzureCloudMonitorMetricProvider implements CloudMonitoringMetricPro
               queryContext);
       addIfPresent(results, usage);
     }
-    persistenceService.normalizeAndPersistUsage(results, queryContext.userId(), normalizer);
+    persistenceService.normalizeAndPersistUsage(
+        results, queryContext.userId(), queryContext.isBackfill(), normalizer);
   }
 
   private void addIfPresent(List<UsageRecordModel> results, UsageRecordModel usage) {
@@ -407,7 +408,8 @@ public class AzureCloudMonitorMetricProvider implements CloudMonitoringMetricPro
         request.getTo(),
         request.getPeriod(),
         UUID.randomUUID().toString(),
-        Collections.emptyList());
+        Collections.emptyList(),
+        request.isBackfill());
   }
 
   // Converts an Instant to the OffsetDateTime expected by Azure.
@@ -519,7 +521,8 @@ public class AzureCloudMonitorMetricProvider implements CloudMonitoringMetricPro
       Instant to,
       int period,
       String ingestionId,
-      List<Metric> metrics) {}
+      List<Metric> metrics,
+      boolean isBackfill) {}
 
   private record QueryBatch(
       List<AzureResource> resources, List<Metric> metrics, String metricNamespace, String region) {}

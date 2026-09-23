@@ -238,7 +238,8 @@ public class GcpCloudMonitoringMetricProvider implements CloudMonitoringMetricPr
                         metricFilter.resourceType(),
                         metricFilter.region(),
                         accountContext)));
-        persistenceService.normalizeAndPersistUsage(results, request.getUserId(), normalizer);
+        persistenceService.normalizeAndPersistUsage(
+            results, request.getUserId(), request.isBackfill(), normalizer);
         results.clear();
       }
     } catch (IOException e) {

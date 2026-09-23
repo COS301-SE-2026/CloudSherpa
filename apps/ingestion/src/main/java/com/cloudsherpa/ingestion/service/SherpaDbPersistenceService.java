@@ -50,7 +50,8 @@ public class SherpaDbPersistenceService {
   // So that if 1 step succeeds and the other one fails, the data doesn't end up
   // half-written
   @Transactional
-  public void recordMetric(NormalizedMetric metric, UsageRecordModel r, UUID userId) {
+  public void recordMetric(
+      NormalizedMetric metric, UsageRecordModel r, UUID userId, boolean isBackfill) {
 
     setTenantSchema(userId);
 
@@ -85,6 +86,7 @@ public class SherpaDbPersistenceService {
             .currency(metric.getCurrency())
             .periodStart(periodStart)
             .periodEnd(periodEnd)
+            .isBackfill(isBackfill)
             .build();
 
     // SQL insert statement

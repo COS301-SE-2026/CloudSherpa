@@ -27,6 +27,7 @@ public class MockCloudMonitoringMetricProvider implements CloudMonitoringMetricP
       AccountScope accountScope, IngestionRequestEvent request, Normalizer normalizer) {
 
     List<UsageRecordModel> usageRecords = metricEngine.collectMetrics(request);
-    persistenceService.normalizeAndPersistUsage(usageRecords, request.getUserId(), normalizer);
+    persistenceService.normalizeAndPersistUsage(
+        usageRecords, request.getUserId(), request.isBackfill(), normalizer);
   }
 }

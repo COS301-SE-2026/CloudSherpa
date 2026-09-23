@@ -62,7 +62,7 @@ class CloudUsageControllerIntegrationTest {
     when(connectorFactory.getConnector("AWS")).thenReturn(awsConnector);
     when(normalizerFactory.getNormalizer("AWS")).thenReturn(normalizer);
 
-    doNothing().when(sherpaDbPersistenceService).recordMetric(any(), any(), any());
+    doNothing().when(sherpaDbPersistenceService).recordMetric(any(), any(), any(), any());
   }
 
   @Test

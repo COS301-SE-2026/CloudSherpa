@@ -103,7 +103,8 @@ public class AwsCloudWatchMetricProvider implements CloudMonitoringMetricProvide
               timeWindows,
               instanceClient,
               ingestionScope.ingestionId(),
-              ingestionScope.period());
+              ingestionScope.period(),
+              request.isBackfill());
 
       collectInstanceMetrics(context, normalizer);
     }
@@ -125,7 +126,8 @@ public class AwsCloudWatchMetricProvider implements CloudMonitoringMetricProvide
               context.userId(),
               context.dimension(),
               context.timeWindows(),
-              context.client());
+              context.client(),
+              context.isBackfill());
 
       collectMetric(metricContext, normalizer);
     }
@@ -161,7 +163,8 @@ public class AwsCloudWatchMetricProvider implements CloudMonitoringMetricProvide
       UUID userId,
       Dimension dimension,
       List<TimeWindow> timeWindows,
-      CloudWatchClient client) {}
+      CloudWatchClient client,
+      boolean isBackfill) {}
 
   private record IngestionScope(UUID ingestionId, int period) {}
 
@@ -175,7 +178,8 @@ public class AwsCloudWatchMetricProvider implements CloudMonitoringMetricProvide
       List<TimeWindow> timeWindows,
       CloudWatchClient client,
       UUID ingestionId,
-      int period) {}
+      int period,
+      boolean isBackfill) {}
 
   private void buildRequestResult(
       CloudWatchClient client,
@@ -209,7 +213,8 @@ public class AwsCloudWatchMetricProvider implements CloudMonitoringMetricProvide
 
       usageRecords.add(r);
     }
-    persistenceService.normalizeAndPersistUsage(usageRecords, context.userId(), normalizer);
+    persistenceService.normalizeAndPersistUsage(
+        usageRecords, context.userId(), context.isBackfill(), normalizer);
   }
 
   private CloudWatchClient createClient(IngestionRequestEvent request, String region) {

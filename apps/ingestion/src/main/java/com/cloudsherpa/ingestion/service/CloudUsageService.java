@@ -92,7 +92,7 @@ public class CloudUsageService {
         Normalizer normalizer = normalizerFactory.getNormalizer(scope.getProvider());
         List<UsageRecordModel> usageRecords = buildMockUsage(scope, request);
         usageResults.addAll(usageRecords);
-        normalizeAndPersistUsage(usageRecords, userId, normalizer);
+        normalizeAndPersistUsage(usageRecords, userId, request.isBackfill(), normalizer);
       }
     }
 
@@ -100,7 +100,7 @@ public class CloudUsageService {
   }
 
   private void normalizeAndPersistUsage(
-      List<UsageRecordModel> usageRecords, UUID userId, Normalizer normalizer) {
+      List<UsageRecordModel> usageRecords, UUID userId, boolean isBackfill, Normalizer normalizer) {
     if (usageRecords == null || usageRecords.isEmpty()) {
       return;
     }
@@ -109,7 +109,7 @@ public class CloudUsageService {
       NormalizedMetric normalized = normalizer.normalize(r);
       if (normalized != null) {
         try {
-          writeToSherpaDb(normalized, r, userId);
+          writeToSherpaDb(normalized, r, userId, isBackfill);
         } catch (RuntimeException ex) {
           logger.warning("Failed to persist normalized metric: " + ex.getMessage());
         }
@@ -179,7 +179,8 @@ public class CloudUsageService {
     return results;
   }
 
-  private void writeToSherpaDb(NormalizedMetric metric, UsageRecordModel r, UUID userId) {
-    sherpaDbPersistenceService.recordMetric(metric, r, userId);
+  private void writeToSherpaDb(
+      NormalizedMetric metric, UsageRecordModel r, UUID userId, boolean isBackfill) {
+    sherpaDbPersistenceService.recordMetric(metric, r, userId, isBackfill);
   }
 }

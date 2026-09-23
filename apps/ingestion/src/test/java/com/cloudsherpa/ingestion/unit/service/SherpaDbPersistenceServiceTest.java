@@ -58,7 +58,8 @@ class SherpaDbPersistenceServiceTest {
     UsageRecordModel r = mock(UsageRecordModel.class);
 
     IllegalArgumentException exception =
-        assertThrows(IllegalArgumentException.class, () -> service.recordMetric(metric, r, null));
+        assertThrows(
+            IllegalArgumentException.class, () -> service.recordMetric(metric, r, null, false));
 
     assertEquals("userId is required", exception.getMessage());
   }
@@ -140,7 +141,7 @@ class SherpaDbPersistenceServiceTest {
     when(metric.getUnit()).thenReturn("Percent");
     when(metric.getCurrency()).thenReturn("USD");
 
-    service.recordMetric(metric, r, userId);
+    service.recordMetric(metric, r, userId, false);
 
     verify(entityManager).createNativeQuery("SET search_path TO " + expectedSchema + ", public");
 
@@ -180,7 +181,7 @@ class SherpaDbPersistenceServiceTest {
     when(metric.getMetricType()).thenReturn(null);
     when(metric.getMetricValue()).thenReturn(10.0);
 
-    service.recordMetric(metric, r, userId);
+    service.recordMetric(metric, r, userId, false);
 
     verify(metricsRepo).save(metricsCaptor.capture());
     NormalizedMetrics savedEntity = metricsCaptor.getValue();

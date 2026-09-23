@@ -19,7 +19,7 @@ public class IngestionPersistenceService {
   }
 
   public void normalizeAndPersistUsage(
-      List<UsageRecordModel> usageRecords, UUID userId, Normalizer normalizer) {
+      List<UsageRecordModel> usageRecords, UUID userId, boolean isBackfill, Normalizer normalizer) {
     if (usageRecords == null || usageRecords.isEmpty()) {
       return;
     }
@@ -28,7 +28,7 @@ public class IngestionPersistenceService {
       NormalizedMetric normalized = normalizer.normalize(r);
       if (normalized != null) {
         try {
-          writeToSherpaDb(normalized, r, userId);
+          writeToSherpaDb(normalized, r, userId, isBackfill);
         } catch (RuntimeException ex) {
           logger.warning("Failed to persist normalized metric: " + ex.getMessage());
         }
@@ -36,7 +36,8 @@ public class IngestionPersistenceService {
     }
   }
 
-  private void writeToSherpaDb(NormalizedMetric metric, UsageRecordModel r, UUID userId) {
-    sherpaDbPersistenceService.recordMetric(metric, r, userId);
+  private void writeToSherpaDb(
+      NormalizedMetric metric, UsageRecordModel r, UUID userId, boolean isBackfill) {
+    sherpaDbPersistenceService.recordMetric(metric, r, userId, isBackfill);
   }
 }
