@@ -3,6 +3,7 @@ package com.cloudsherpa.service.intelligence.service.billing;
 import com.cloudsherpa.service.intelligence.dto.BillingForecastIndividualChargesRequestDto;
 import com.cloudsherpa.service.intelligence.dto.BillingForecastRequest;
 import com.cloudsherpa.service.intelligence.dto.BillingForecastResponseDto;
+import com.cloudsherpa.service.intelligence.model.ForecastSeries;
 import java.time.Instant;
 import java.util.UUID;
 import org.springframework.cache.annotation.Cacheable;
@@ -49,7 +50,7 @@ public class BillingIntelligenceService {
     return new BillingForecastResponseDto(
         forecastResult.cumalativeForecastResult(),
         analyticsResult.cumalitivePastForecastValue(),
-        analyticsResult.billingForecastSeries(),
+        new ForecastSeries(analyticsResult.billingForecastSeries()),
         forecastResult.failedForecastCharges(),
         analyticsResult.pastVariance(),
         analyticsResult.dailyBurnRate(),
