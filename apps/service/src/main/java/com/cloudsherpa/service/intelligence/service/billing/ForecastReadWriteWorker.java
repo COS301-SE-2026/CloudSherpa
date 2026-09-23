@@ -14,12 +14,12 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ForecastWriteWorker {
+public class ForecastReadWriteWorker {
   private final BillingForecastRepository forecastRepository;
   private final BillingForecastRunRepository runRepository;
   private final ObjectMapper objectMapper;
 
-  ForecastWriteWorker(
+  ForecastReadWriteWorker(
       BillingForecastRepository forecastRepository,
       BillingForecastRunRepository runRepository,
       ObjectMapper objectMapper) {
@@ -50,6 +50,11 @@ public class ForecastWriteWorker {
   @Transactional
   public void updateForecastRun(BillingForecastRun forecastRun) {
     runRepository.save(forecastRun);
+  }
+
+  @Transactional
+  public BillingForecastRun latestCompletedForecastRun() {
+    return runRepository.latestForecastRun(ForecastExecutionStatusEnum.COMPLETED).orElse(null);
   }
 
   private BillingForecast toForecast(
