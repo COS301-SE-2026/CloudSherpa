@@ -860,13 +860,22 @@ BEGIN
     $sql$, schema_name);
 
     -- --------------------------------------------------------------------------
-    -- Billing Forecast Table
+    -- Billing Forecast Tables
     -- --------------------------------------------------------------------------
 
+    -- One tenant-wide run can produce forecasts for multiple windows.
     EXECUTE format($sql$
-        CREATE TABLE IF NOT EXISTS %I.billing_forecasts (
+        CREATE TABLE IF NOT EXISTS %I.billing_forecast_runs (
+          forecast_run_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+          forecast_execution_status public.billing_forecast_execution_status NOT NULL,
+          forecast_execution_log_timestamp timestamptz NOT NULL
+        );
+    $sql$, schema_name);
+
+    EXECUTE format($sql$
+        CREATE TABLE IF NOT EXISTS %1$I.billing_forecasts (
           forecast_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-          execution_id uuid NOT NULL REFERENCES public.billing_export_execution(execution_id) ON DELETE CASCADE,  
+          forecast_run_id uuid NOT NULL REFERENCES %1$I.billing_forecast_runs(forecast_run_id) ON DELETE CASCADE,
           forecast_timestamp timestamptz NOT NULL,
           forecast_window int NOT NULL, -- Number of days that were forecast
           cumulative_forecast_value numeric NOT NULL,
@@ -877,18 +886,9 @@ BEGIN
           daily_burn_rate numeric NOT NULL,
           highest_cost_driver text NOT NULL,
           highest_cost_acceleration text NOT NULL,
-          acceleration_rate numeric -- allows null when insufficient data available to calculate the acceleration rate
+          acceleration_rate numeric, -- allows null when insufficient data available to calculate the acceleration rate
+          UNIQUE (forecast_run_id, forecast_window)
         );
-    $sql$, schema_name);
-
-    -- This table considers a forecast execution to be complete only once all of the forecast windows have been computed
-    EXECUTE format($sql$
-      CREATE TABLE IF NOT EXISTS %I.billing_forecast_execution_logs (
-        log_id uuid PRIMARY KEY, 
-        execution_id uuid REFERENCES public.billing_export_execution(execution_id) ON DELETE SET NULL,
-        forecast_execution_status public.billing_forecast_execution_status NOT NULL,
-        forecast_execution_log_timestamp timestamptz NOT NULL
-      );
     $sql$, schema_name);
 
     -- --------------------------------------------------------------------------
