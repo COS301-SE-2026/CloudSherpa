@@ -96,9 +96,10 @@ public class AwsConnectionPersistenceService extends ConnectionPersistenceServic
             .ingestionPeriod(request.ingestionPeriod().toString())
             .createdAt(now)
             .lastBillingIngestion(now)
-            .lastUsageIngestion(now.minusDays(1))
+            .lastUsageIngestion(now.minusDays(14))
             .nextUsageIngestion(OffsetDateTime.now(ZoneOffset.UTC).plusMinutes(1))
             .nextBillingIngestion(OffsetDateTime.now(ZoneOffset.UTC).plusMinutes(1))
+            .backfillCompleted(false)
             .build();
 
     return cloudAccountRepository.save(account);

@@ -78,6 +78,7 @@ public class UsageIngestionService {
       request.setPeriod(60);
       request.setIncludeUsage(true);
       request.setUserId(account.getConnection().getUser().getId());
+      request.setBackfill(!account.isBackfillCompleted());
 
       AccountScope accountScope = new AccountScope();
       accountScope.setAccountId(accountId.toString());

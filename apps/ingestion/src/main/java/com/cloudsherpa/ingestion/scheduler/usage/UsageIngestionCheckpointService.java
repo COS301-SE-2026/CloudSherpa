@@ -30,6 +30,11 @@ public class UsageIngestionCheckpointService {
 
     account.setNextUsageIngestion(nextIngestionStartTime.atOffset(ZoneOffset.UTC));
 
+    // The first successful ingestion run for an account is the backfill.
+    if (!account.isBackfillCompleted()) {
+      account.setBackfillCompleted(true);
+    }
+
     cloudAccountRepository.save(account);
   }
 }
