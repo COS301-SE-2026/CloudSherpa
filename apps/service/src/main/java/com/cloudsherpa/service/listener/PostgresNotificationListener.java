@@ -8,6 +8,7 @@ import com.cloudsherpa.service.alerts.service.AnomalyEvaluationService;
 import com.cloudsherpa.service.alerts.service.BudgetEvaluationService;
 import com.cloudsherpa.service.alerts.service.ThresholdEvaluationService;
 import com.cloudsherpa.service.config.TenantContext;
+import com.cloudsherpa.service.intelligence.service.billing.BillingForecastWorker;
 import com.cloudsherpa.service.listener.dto.BillingExecutionCompletedEventDto;
 import com.cloudsherpa.service.listener.dto.MetricStreamEventDto;
 import com.cloudsherpa.service.metrics.MetricDisplayNameMapper;
@@ -19,13 +20,16 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.RejectedExecutionException;
 import org.postgresql.PGConnection;
 import org.postgresql.PGNotification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
 // Listens for Postgres NOTIFY events and forwards them to SSE clients.
@@ -58,6 +62,8 @@ public class PostgresNotificationListener implements SmartLifecycle {
   private final BudgetEvaluationService budgetEvaluationService;
   private final BillingExportConfigRepository billingExportConfigRepository;
   private final CloudAccountRepository cloudAccountRepository;
+  private final ThreadPoolTaskExecutor billingForecastExecutor;
+  private final BillingForecastWorker billingForecastWorker;
 
   private volatile boolean running;
 
@@ -72,7 +78,9 @@ public class PostgresNotificationListener implements SmartLifecycle {
       AnomalyEvaluationService anomalyEvaluationService,
       BudgetEvaluationService budgetEvaluationService,
       BillingExportConfigRepository billingExportConfigRepository,
-      CloudAccountRepository cloudAccountRepository) {
+      CloudAccountRepository cloudAccountRepository,
+      @Qualifier("billingForecastExecutor") ThreadPoolTaskExecutor billingForecastExecutor,
+      BillingForecastWorker billingForecastWorker) {
     this.sseService = sseService;
     this.activeListeners = activeListeners;
     this.objectMapper = objectMapper;
@@ -82,6 +90,8 @@ public class PostgresNotificationListener implements SmartLifecycle {
     this.budgetEvaluationService = budgetEvaluationService;
     this.billingExportConfigRepository = billingExportConfigRepository;
     this.cloudAccountRepository = cloudAccountRepository;
+    this.billingForecastExecutor = billingForecastExecutor;
+    this.billingForecastWorker = billingForecastWorker;
   }
 
   // Creates a long-lived connection and registers the LISTEN channel.
@@ -245,6 +255,9 @@ public class PostgresNotificationListener implements SmartLifecycle {
       } finally {
         TenantContext.clear();
       }
+
+      // Non blocking, submits to thread pool
+      submitStartBillingForecast(accountId);
     } catch (Exception e) {
       logger.warn("Failed to parse billing execution completed payload: {}", payload, e);
     }
@@ -276,6 +289,21 @@ public class PostgresNotificationListener implements SmartLifecycle {
     }
 
     return true;
+  }
+
+  private void submitStartBillingForecast(UUID tenantId) {
+    try {
+      billingForecastExecutor.execute(
+          () -> {
+            try {
+              billingForecastWorker.executeForecastRun(tenantId);
+            } catch (RuntimeException e) {
+              logger.error("Billing Forecasting task failed for tenant {}", tenantId, e);
+            }
+          });
+    } catch (RejectedExecutionException e) {
+      logger.warn("Billing forecast task rejection for tenant {}", tenantId, e);
+    }
   }
 
   // SmartLifecycle: called by Spring when the context starts.
