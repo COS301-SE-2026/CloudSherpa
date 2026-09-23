@@ -1,6 +1,7 @@
 package com.cloudsherpa.service.sse;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -43,6 +44,25 @@ public class SseService implements SmartLifecycle {
         logger.error(
             String.format(
                 "SSE emitter error. Closing emitter. Error message:%n%s", e.getMessage()));
+        emitter.complete();
+        sseRegistry.removeEmitter(userId, emitter);
+      }
+    }
+  }
+
+  public void broadcastBatch(UUID userId, String eventName, List<?> events) {
+    if (!running || events.isEmpty()) {
+      return;
+    }
+
+    for (SseEmitter emitter : sseRegistry.getUserEmitters(userId)) {
+      try {
+        emitter.send(SseEmitter.event().name(eventName).data(events));
+      } catch (IOException e) {
+        logger.error(
+            String.format(
+                "SSE emitter error. Closing emitter. Error message:%n%s", e.getMessage()));
+
         emitter.complete();
         sseRegistry.removeEmitter(userId, emitter);
       }
