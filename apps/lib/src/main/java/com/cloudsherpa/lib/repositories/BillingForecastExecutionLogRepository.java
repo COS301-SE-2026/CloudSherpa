@@ -6,4 +6,4 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.cloudsherpa.lib.entities.BillingForecastExecutionLog;
 
-public interface BillingForecastExecutionLogRepository extends JpaRepository<UUID, BillingForecastExecutionLog> {}
+public interface BillingForecastExecutionLogRepository extends JpaRepository<BillingForecastExecutionLog, UUID> {}
