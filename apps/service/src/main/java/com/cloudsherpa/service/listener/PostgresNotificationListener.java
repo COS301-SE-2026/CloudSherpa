@@ -17,6 +17,10 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.postgresql.PGConnection;
@@ -153,15 +157,24 @@ public class PostgresNotificationListener implements SmartLifecycle {
         return;
       }
 
+      // Collect parsed metric events per tenant so we can send one SSE message per user per poll.
+      Map<UUID, List<MetricStreamEventDto>> batchedEventsByUser = new HashMap<>();
+
       for (PGNotification notification : notifications) {
-        handleNotification(notification);
+        handleNotification(notification, batchedEventsByUser);
       }
+
+      batchedEventsByUser.forEach(
+          (userId, events) -> sseService.broadcastBatch(userId, "metric-batch", events));
+
     } catch (SQLException e) {
       logger.warn("Failed to poll Postgres notifications", e);
     }
   }
 
-  private void handleNotification(PGNotification notification) throws SQLException {
+  private void handleNotification(
+      PGNotification notification, Map<UUID, List<MetricStreamEventDto>> batchedEventsByUser)
+      throws SQLException {
     String eventName = notification.getName();
     logger.info("NOTIFIED {}", eventName);
 
@@ -179,7 +192,28 @@ public class PostgresNotificationListener implements SmartLifecycle {
       return;
     }
 
-    processMetricForAnalytics(payload, userId);
+    processMetricForAnalytics(payload, userId, batchedEventsByUser);
+  }
+
+  // Parse the metric, run evaluations immediately, but queue the SSE push for batching.
+  private void processMetricForAnalytics(
+      String payload, UUID userId, Map<UUID, List<MetricStreamEventDto>> batchedEventsByUser) {
+    try {
+      MetricStreamEventDto rawEvent = objectMapper.readValue(payload, MetricStreamEventDto.class);
+      MetricStreamEventDto event = rawEvent.withDisplayNameMappedMetric(metricDisplayNameMapper);
+
+      batchedEventsByUser.computeIfAbsent(userId, key -> new ArrayList<>()).add(event);
+
+      TenantContext.setCurrentTenant(userId.toString());
+      try {
+        thresholdEvaluationService.evaluate(rawEvent, userId);
+        anomalyEvaluationService.evaluate(event, userId);
+      } finally {
+        TenantContext.clear();
+      }
+    } catch (Exception e) {
+      logger.warn("Failed to parse metric payload: {}", payload, e);
+    }
   }
 
   private UUID resolveUserIdForChannel(String eventName) throws SQLException {
@@ -193,26 +227,6 @@ public class PostgresNotificationListener implements SmartLifecycle {
     loadAndListenTenantMetricEvents();
 
     return activeListeners.getUserIdForChannel(eventName);
-  }
-
-  // Parse and forward the metric to any connected SSE clients.
-  private void processMetricForAnalytics(String payload, UUID userId) {
-    try {
-      MetricStreamEventDto rawEvent = objectMapper.readValue(payload, MetricStreamEventDto.class);
-      MetricStreamEventDto event = rawEvent.withDisplayNameMappedMetric(metricDisplayNameMapper);
-
-      sseService.broadcast(userId, "metric", event);
-
-      TenantContext.setCurrentTenant(userId.toString());
-      try {
-        thresholdEvaluationService.evaluate(rawEvent, userId);
-        anomalyEvaluationService.evaluate(event, userId);
-      } finally {
-        TenantContext.clear();
-      }
-    } catch (Exception e) {
-      logger.warn("Failed to parse metric payload: {}", payload, e);
-    }
   }
 
   private void processBillingExecutionCompleted(String payload) {
