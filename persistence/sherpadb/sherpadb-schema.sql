@@ -128,7 +128,8 @@ CREATE TABLE IF NOT EXISTS public.cloud_account (
   last_usage_ingestion timestamptz DEFAULT NOW(),
   next_usage_ingestion timestamptz DEFAULT NOW(),
   last_billing_ingestion timestamptz DEFAULT NOW(),
-  next_billing_ingestion timestamptz DEFAULT NOW()
+  next_billing_ingestion timestamptz DEFAULT NOW(),
+  backfill_completed boolean NOT NULL DEFAULT false
 );
 CREATE TABLE IF NOT EXISTS public.offered_metric (
     offered_metric_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -674,6 +675,10 @@ DECLARE
     source_schema text := TG_TABLE_SCHEMA;
     tenant_channel text;
 BEGIN
+    IF NEW.is_backfill THEN
+      RETURN NEW;
+    END IF;
+
     SELECT h.hypertable_schema
     INTO source_schema
     FROM timescaledb_information.chunks c
@@ -754,6 +759,7 @@ BEGIN
             currency varchar(10),
             period_start timestamptz NOT NULL,
             period_end timestamptz NOT NULL,
+            is_backfill boolean NOT NULL DEFAULT false,
             PRIMARY KEY (metric_id, period_start)
         );
     $sql$, schema_name, schema_name);
