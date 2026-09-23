@@ -74,6 +74,7 @@ export function KPIConfigTable<TValue>({
     const table = useReactTable({
         data,
         columns,
+        columnResizeMode: "onChange",
         getCoreRowModel: getCoreRowModel(),
         onColumnFiltersChange: setColumnFilters,
         getFilteredRowModel: getFilteredRowModel(),
@@ -212,6 +213,7 @@ export function KPIConfigTable<TValue>({
                                     return (
                                         <TableHead
                                             key={header.id}
+                                            className="relative group select-none"
                                             style={{ width: header.getSize() }}
                                         >
                                             {header.isPlaceholder
@@ -220,6 +222,17 @@ export function KPIConfigTable<TValue>({
                                                       header.column.columnDef.header,
                                                       header.getContext()
                                                   )}
+                                            {header.column.getCanResize() && (
+                                                <div
+                                                    onMouseDown={header.getResizeHandler()}
+                                                    onTouchStart={header.getResizeHandler()}
+                                                    className={`absolute right-0 top-0 h-full w-1.5 cursor-col-resize select-none touch-none hover:bg-primary ${
+                                                        header.column.getIsResizing()
+                                                            ? "bg-primary"
+                                                            : "bg-muted-foreground/40 bg-border opacity-0 group-hover:opacity-100"
+                                                    }`}
+                                                />
+                                            )}
                                         </TableHead>
                                     );
                                 })}
