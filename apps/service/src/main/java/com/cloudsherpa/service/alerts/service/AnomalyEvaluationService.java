@@ -28,8 +28,9 @@ public class AnomalyEvaluationService {
 
   private static final Logger logger = LoggerFactory.getLogger(AnomalyEvaluationService.class);
 
-  private static final double CRITICAL_Z_SCORE = 3.0;
-  private static final double WARNING_Z_SCORE = 2.0;
+  private static final double CRITICAL_Z_SCORE = 4.0;
+  private static final double WARNING_Z_SCORE = 2.5;
+  private static final int MIN_SAMPLE_SIZE = 30;
 
   private final OptimizationMetricStatisticsRepository statisticsRepository;
   private final AlertRepository alertRepository;
@@ -81,7 +82,9 @@ public class AnomalyEvaluationService {
 
     if (standardDeviation == null
         || average == null
-        || standardDeviation.compareTo(BigDecimal.ZERO) <= 0) {
+        || standardDeviation.compareTo(BigDecimal.ZERO) <= 0
+        || baseline.getSampleCount() == null
+        || baseline.getSampleCount() < MIN_SAMPLE_SIZE) {
       return;
     }
 

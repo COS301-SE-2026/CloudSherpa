@@ -875,6 +875,7 @@ BEGIN
             spike_count integer DEFAULT 0,
             peak_duration_seconds integer DEFAULT 0,
             completeness_ratio numeric,
+            sample_count integer,
 
             window_start timestamptz NOT NULL,
             window_end timestamptz NOT NULL,
