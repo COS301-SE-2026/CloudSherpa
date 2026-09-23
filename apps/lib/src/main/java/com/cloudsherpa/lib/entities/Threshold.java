@@ -2,12 +2,17 @@ package com.cloudsherpa.lib.entities;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.OffsetDateTime;
 import java.util.UUID;
+
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "threshold")
@@ -40,8 +45,10 @@ public class Threshold {
   @Column(name = "value", nullable = false)
   private double value;
 
-  @Column(name = "severity")
-  private String severity;
+  @Enumerated(EnumType.STRING)
+  @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+  @Column(name = "severity", columnDefinition = "public.alert_severity_enum")
+  private AlertSeverityEnum severity;
 
   @Column(name = "enabled", nullable = false)
   private boolean enabled;
@@ -60,7 +67,7 @@ public class Threshold {
       String metricName,
       String operator,
       double value,
-      String severity,
+      AlertSeverityEnum severity,
       boolean enabled) {
     this.thresholdId = UUID.randomUUID();
     this.resourceId = resourceId;
@@ -128,11 +135,11 @@ public class Threshold {
     this.value = value;
   }
 
-  public String getSeverity() {
+  public AlertSeverityEnum getSeverity() {
     return severity;
   }
 
-  public void setSeverity(String severity) {
+  public void setSeverity(AlertSeverityEnum severity) {
     this.severity = severity;
   }
 
