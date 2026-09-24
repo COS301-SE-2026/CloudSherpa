@@ -258,7 +258,7 @@ export function BudgetPopup({
                             onValueChange={(value) => handlingScopeChange(value as ScopeForBudget)}
                         >
                             <SelectTrigger id="scope">
-                                <span> {LABELS_FOR_SCOPE[scope]} </span>
+                                <SelectValue/>
                             </SelectTrigger>
 
                             <SelectContent>
@@ -269,10 +269,6 @@ export function BudgetPopup({
                                 ))}
                             </SelectContent>
                         </Select>
-
-                        <Label> Applies to </Label>
-
-                        <p className = "text-sm text-muted-foreground"> {resolvedTarget} </p>
                     </div>
 
                     {(scope === "ACCOUNT" || scope === "RESOURCE") && (
@@ -338,6 +334,12 @@ export function BudgetPopup({
                             </Select>
                         </div>
                     )}
+
+                    <div className = "space-y-2">
+                        <Label> Applies to </Label>
+
+                        <p className = "text-sm text-muted-foreground"> {resolvedTarget} </p>
+                    </div>
 
                     {scopeError && <p className="text-xs text-destructive"> {scopeError} </p>}
 
