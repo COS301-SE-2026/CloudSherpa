@@ -1,29 +1,8 @@
-export type TypeForAlerts = "THRESHOLD" | "ANOMALY" | "BILLING";
+export type TypeForAlerts = "THRESHOLD" | "ANOMALY" | "BUDGET";
 
-export type SeverityForAlerts = "INFO" | "WARNING" | "CRITICAL";
+export type SeverityForAlerts = "WARNING" | "CRITICAL";
 
-export type StatusForAlerts = "ACTIVE" | "ACKNOWLEDGED" | "DISMISSED" | "RESOLVED";
-
-export interface ThresholdAlertPayload{
-    metric_name : string;
-    metric_value : number;
-    threshold_value : number;
-    threshold_operator : "GT" | "GTE" | "LT" | "LTE" | "EQ";
-    resource_id : string;
-    period_start : number;
-    period_end : number;
-}
-
-export interface AnomalyAlertPayload{
-    metric_name : string;
-    metric_value : number;
-    average_value : number;
-    standard_deviation : number;
-    z_score : number;
-    resource_id : string;
-    period_start : number;
-    period_end : number;
-}
+export type StatusForAlerts = "ACTIVE" | "DISABLED";
 
 export interface Alert{
     alertId : string;
@@ -32,7 +11,7 @@ export interface Alert{
     severity : SeverityForAlerts;
     title : string;
     message : string | null;
-    payload : ThresholdAlertPayload | AnomalyAlertPayload | Record<string, unknown>;
+    payload : Record<string, unknown>;
     status : StatusForAlerts;
     canonicalKey : string | null;
     createdAt : string | null;
@@ -41,7 +20,17 @@ export interface Alert{
 }
 
 export const SEVERITY_COLOURS : Record<SeverityForAlerts, string> = {
-    INFO : "text-primary",
     WARNING : "text-warning",
     CRITICAL : "text-destructive"
+};
+
+export const TYPE : Record<TypeForAlerts, string> = {
+    THRESHOLD : "Threshold",
+    ANOMALY : "Anomaly",
+    BUDGET : "Budget",
+};
+
+export const STATUS_LABELS : Record<StatusForAlerts, string> = {
+    ACTIVE : "Active",
+    DISABLED : "Disabled",
 };

@@ -2,9 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import {
-  acknowledgeAlert,
-  fetchAlerts,
-  dismissAlert,
+  disableAlert, enableAlert, fetchAlerts
 } from "@/features/alerts/alerts";
 import type { Alert, TypeForAlerts } from "@/features/alerts/types/alertTypes";
 
@@ -13,8 +11,8 @@ interface AlertsResult {
   loading: boolean;
   forError: string | null;
   refreshing: () => Promise<void>;
-  acknowledge: (alertId: string) => Promise<void>;
-  dismiss: (alertId: string) => Promise<void>;
+  disable: (alertId: string) => Promise<void>;
+  enable: (alertId: string) => Promise<void>;
 }
 
 export function useAlerts(typeForAlert?: TypeForAlerts): AlertsResult {
@@ -57,20 +55,20 @@ export function useAlerts(typeForAlert?: TypeForAlerts): AlertsResult {
     };
   }, [typeForAlert]);
 
-  const acknowledge = useCallback(async (alertId: string) => {
-    await acknowledgeAlert(alertId);
+  const disable = useCallback(async (alertId: string) => {
+    await disableAlert(alertId);
     setAlerts((previous) =>
       previous.map((alert) =>
-        alert.alertId === alertId ? { ...alert, acknowledged: true } : alert
+        alert.alertId === alertId ? { ...alert, status: "DISABLED" } : alert
       )
     );
   }, []);
 
-  const dismiss = useCallback(async (alertId: string) => {
-    await dismissAlert(alertId);
+  const enable = useCallback(async (alertId: string) => {
+    await enableAlert(alertId);
     setAlerts((previous) =>
       previous.map((alert) =>
-        alert.alertId === alertId ? { ...alert, dismissed: true } : alert
+        alert.alertId === alertId ? { ...alert, status: "ACTIVE" } : alert
       )
     );
   }, []);
@@ -80,7 +78,7 @@ export function useAlerts(typeForAlert?: TypeForAlerts): AlertsResult {
     loading,
     forError,
     refreshing,
-    acknowledge,
-    dismiss
+    disable,
+    enable
   };
 }

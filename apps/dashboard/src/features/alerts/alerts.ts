@@ -8,10 +8,10 @@ export const fetchAlerts = async (typeForAlert?: TypeForAlerts) : Promise<Alert[
     return apiClient<Alert[]>(forPath, {method : "GET"});
 };
 
-export const acknowledgeAlert = async (alertId : string) : Promise<void> => {
-    return apiClient<void>(`/alerts/${alertId}/acknowledge`, {method : "POST"});
+export const disableAlert = async (alertId : string) : Promise<void> => {
+    return apiClient<void>(`/alerts/${alertId}/disable`, {method : "POST"});
 };
 
-export const dismissAlert = async (alertId : string) : Promise<void> => {
-    return apiClient<void>(`/alerts/${alertId}/dismiss`, {method : "POST"});
+export const enableAlert = async (alertId : string) : Promise<void> => {
+    return apiClient<void>(`/alerts/${alertId}/enable`, {method : "POST"});
 };
