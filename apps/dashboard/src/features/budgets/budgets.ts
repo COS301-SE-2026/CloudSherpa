@@ -18,7 +18,9 @@ export const fetchBudgets = async (scope?: string, scopeId?: string): Promise<Bu
 
     const forQuery = forParameters.toString();
 
-    return apiClient<Budget[]>(`/budgets${forQuery ? `?${forQuery}` : ""}`, { method: "GET" });
+    const forSuffix = forQuery ? "?" + `${forQuery}` : "";
+
+    return apiClient<Budget[]>(`/budgets${forSuffix}`, { method: "GET" });
 };
 
 export const addBudget = async (forPayload: CreateBudgetRequest): Promise<Budget> =>

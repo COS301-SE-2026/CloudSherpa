@@ -182,21 +182,22 @@ export function BudgetPopup({ open, initial, userId, onClose, onSubmit }: Readon
 
         setScopeError(null);
 
-        const resolvedScopeId =
-            scope === "TENANT"
-                ? (user?.userId ?? null)
-                : scope === "ACCOUNT"
-                  ? selectedAccountId
-                  : selectedResourceId;
+        const forScopeId: Record<ScopeForBudget, string | null> = {
+            TENANT: user?.userId ?? null,
+            ACCOUNT: selectedAccountId,
+            RESOURCE: selectedResourceId,
+        };
+
+        const resolvedScopeId = forScopeId[scope];
+
+        const scopeErrorMessage: Record<ScopeForBudget, string> = {
+            TENANT: "Not signed in",
+            ACCOUNT: "Select an account",
+            RESOURCE: "Select an account and a resource",
+        };
 
         if (!resolvedScopeId) {
-            setScopeError(
-                scope === "TENANT"
-                    ? "Not signed in"
-                    : scope === "ACCOUNT"
-                      ? "Select an account"
-                      : "Select an account and a resource"
-            );
+            setScopeError(scopeErrorMessage[scope]);
 
             hasError = true;
         }
@@ -237,6 +238,16 @@ export function BudgetPopup({ open, initial, userId, onClose, onSubmit }: Readon
             setSubmitting(false);
         }
     };
+
+    let forPlaceholder: string;
+
+    if (!selectedAccountId) {
+        forPlaceholder = "Select an account first";
+    } else if (loadingResources) {
+        forPlaceholder = "Loading resources";
+    } else {
+        forPlaceholder = "Select resource";
+    }
 
     return (
         <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
@@ -308,15 +319,7 @@ export function BudgetPopup({ open, initial, userId, onClose, onSubmit }: Readon
                                 disabled={!selectedAccountId}
                             >
                                 <SelectTrigger id="resource">
-                                    <SelectValue
-                                        placeholder={
-                                            !selectedAccountId
-                                                ? "Select an account first"
-                                                : loadingResources
-                                                  ? "Loading resources"
-                                                  : "Select resource"
-                                        }
-                                    />
+                                    <SelectValue placeholder={forPlaceholder} />
                                 </SelectTrigger>
 
                                 <SelectContent>
