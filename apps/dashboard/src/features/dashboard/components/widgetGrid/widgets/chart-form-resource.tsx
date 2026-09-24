@@ -60,9 +60,11 @@ export default function ChartFormResource({
                             setConfiguration({
                                 ...configuration,
                                 resourceId: currentValue,
-                                metricName: metricType,
+                                metricName: "",
+                                metricType: null,
                             });
                         }}
+                        disabled={!configuration.accountId}
                         widthVariant="full"
                         placeholder="Select Resource"
                         emptyMessage="No resources found"
