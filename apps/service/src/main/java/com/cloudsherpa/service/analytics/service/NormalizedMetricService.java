@@ -1,6 +1,7 @@
 package com.cloudsherpa.service.analytics.service;
 
 import com.cloudsherpa.lib.dtos.ResourceMetricEntry;
+import com.cloudsherpa.lib.dtos.SegmentedMetricSeries;
 import com.cloudsherpa.lib.dtos.TimestampedNumericDataPoint;
 import com.cloudsherpa.lib.entities.NormalizedMetrics;
 import com.cloudsherpa.lib.entities.ProviderEnum;
@@ -165,6 +166,23 @@ public class NormalizedMetricService {
         metric -> metric.setMetricName(metricMapper.toDisplayName(metric.getMetricName())));
 
     return response;
+  }
+
+  public List<NormalizedMetrics> fetchSegmentedDownsampledSeries(
+      DownsampledSeriesRequestDto request) {
+    ProviderEnum provider = resourceRepository.findProviderByResourceId(request.resourceId());
+    String canonMetricName =
+        metricMapper.toCanonicalName(provider.toString(), request.metricName());
+
+    // TEMP, view segmented downsampling query performance
+    List<SegmentedMetricSeries> segmentedSeries =
+        normalizedMetricsRepository.getSegmentedDownsampledNormalizedMetrics(
+            request.resourceId(), canonMetricName, request.from(), request.to(), 900, 100);
+    for (SegmentedMetricSeries series : segmentedSeries) {
+      logger.info("Segmented series {}", series);
+    }
+
+    return List.of();
   }
 
   public List<ResourceMetricsGroupDto> fetchResourceMetrics() {

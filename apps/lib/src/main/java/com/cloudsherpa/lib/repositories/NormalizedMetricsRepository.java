@@ -164,7 +164,7 @@ public interface NormalizedMetricsRepository extends JpaRepository<NormalizedMet
                   ) OVER (ORDER BY ts ROWS UNBOUNDED PRECEDING) AS segment_id
               FROM with_previous
           ),
-          -- Hold each segment's number of points and duration.
+          -- Hold each segments number of points and duration.
           segment_sizes AS (
               SELECT
                   segment_id,
@@ -224,16 +224,34 @@ public interface NormalizedMetricsRepository extends JpaRepository<NormalizedMet
                   p.value
               FROM sampled_segments s
               CROSS JOIN LATERAL unnest(s.sampled) AS p(time, value)
-          )
+          ),
+          joined_result AS (
+	SELECT *
+	FROM result r
+	INNER JOIN normalized_metrics nm
+	    ON r.ts = nm.period_start
+	WHERE nm.resource_id = :resourceId
+	  AND nm.metric_name = :metricName
+	  AND nm.period_start >= :windowStart
+	  AND nm.period_end <= :windowEnd
+  )
           SELECT
               segment_id AS segmentId,
-              ts,
-              value
-          FROM result
-          ORDER BY ts, segment_id
+              metric_id AS metricId,
+              resource_id AS resourceId,
+              recorded_at AS recordedAt,
+              metric_type AS metricType,
+              metric_name AS metricName,
+              metric_value AS metricValue,
+              unit AS unit,
+              currency AS currency,
+              period_start AS periodStart,
+              period_end AS periodEnd
+          FROM joined_result
+          ORDER BY period_start, segment_id
           """,
       nativeQuery = true)
-  List<SegmentedMetricSeries[]> getSegmentedDownsampledNormalizedMetrics(
+  List<SegmentedMetricSeries> getSegmentedDownsampledNormalizedMetrics(
       @Param("resourceId") UUID resourceId,
       @Param("metricName") String metricName,
       @Param("windowStart") Instant windowStart,
