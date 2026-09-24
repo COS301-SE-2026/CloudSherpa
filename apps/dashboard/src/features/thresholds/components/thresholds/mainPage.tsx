@@ -159,7 +159,7 @@ export function MainPage({ resourceId, userId }: Readonly<PropsForMainPage>) {
 
                                 <Button onClick={handlingNewThreshold}>
                                     {" "}
-                                    <Plus className="h-4 w-4" /> New rule{" "}
+                                    <Plus className="h-4 w-4" /> New threshold{" "}
                                 </Button>
                             </div>
 
