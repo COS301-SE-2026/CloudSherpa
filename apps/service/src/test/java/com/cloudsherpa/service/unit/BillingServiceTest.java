@@ -16,6 +16,7 @@ import com.cloudsherpa.lib.entities.NormalizedCosts;
 import com.cloudsherpa.lib.entities.ProviderEnum;
 import com.cloudsherpa.lib.repositories.CloudAccountRepository;
 import com.cloudsherpa.lib.repositories.NormalizedCostsRepository;
+import com.cloudsherpa.lib.repositories.ResourceRepository;
 import com.cloudsherpa.service.billing.dto.BillingChargeResponse;
 import com.cloudsherpa.service.billing.dto.BillingKpiRequest;
 import com.cloudsherpa.service.billing.dto.BillingKpiResponse;
@@ -26,6 +27,7 @@ import jakarta.persistence.Query;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,7 +49,7 @@ class BillingServiceTest {
 
   @Mock private NormalizedCostsRepository normalizedCostsRepository;
   @Mock private CloudAccountRepository cloudAccountRepository;
-
+  @Mock private ResourceRepository resourceRepository;
   @Mock private EntityManager entityManager;
   @Mock private Query query;
 
@@ -231,15 +233,25 @@ class BillingServiceTest {
     when(charge.getChargeId()).thenReturn("charge-1");
     when(charge.getServiceName()).thenReturn("EC2");
     when(charge.getProvider()).thenReturn(ProviderEnum.AWS);
+    when(charge.getProvider()).thenReturn(ProviderEnum.AWS);
+    when(charge.getCostAmount()).thenReturn(BigDecimal.valueOf(1));
+    when(charge.getMetadata()).thenReturn(null);
 
     when(normalizedCostsRepository.findDistinctByChargeId()).thenReturn(List.of(charge));
+    when(resourceRepository.findByResourceIdentifier("resource-1")).thenReturn(Optional.empty());
 
     List<BillingChargeResponse> response = billingService.getCharges();
 
     assertEquals(
         List.of(
             new BillingChargeResponse(
-                "resource-1", "charge-1", "EC2", ProviderEnum.AWS, null, null, null)),
+                "resource-1",
+                "charge-1",
+                "EC2",
+                ProviderEnum.AWS,
+                null,
+                BigDecimal.valueOf(1),
+                null)),
         response);
 
     verify(normalizedCostsRepository).findDistinctByChargeId();
