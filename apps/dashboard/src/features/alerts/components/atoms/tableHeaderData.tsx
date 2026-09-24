@@ -1,18 +1,16 @@
 "use client";
 
-import type {HeaderGroup} from "@tanstack/react-table";
-import {flexRender} from "@tanstack/react-table";
-import {ArrowUp, ArrowDown} from "lucide-react";
-import {TableHead, TableHeader, TableRow} from "@/components/atoms/table";
+import type { HeaderGroup } from "@tanstack/react-table";
+import { flexRender } from "@tanstack/react-table";
+import { ArrowUp, ArrowDown } from "lucide-react";
+import { TableHead, TableHeader, TableRow } from "@/components/atoms/table";
 
-interface PropsForTableHeader<TData>{
-    headerGroups : HeaderGroup<TData>[];
+interface PropsForTableHeader<TData> {
+    headerGroups: HeaderGroup<TData>[];
 }
 
-export function TableHeaderData<TData>({
-    headerGroups,
-} : Readonly<PropsForTableHeader<TData>>){
-    return(
+export function TableHeaderData<TData>({ headerGroups }: Readonly<PropsForTableHeader<TData>>) {
+    return (
         //copied from other files
         <TableHeader>
             {headerGroups.map((forHeaderGroups) => (
@@ -38,19 +36,12 @@ export function TableHeaderData<TData>({
                                             header.getContext()
                                         )}
 
-                                        {sorted === "asc" && (
-                                            <ArrowUp className="h-3.5 w-3.5" />
-                                        )}
+                                        {sorted === "asc" && <ArrowUp className="h-3.5 w-3.5" />}
 
-                                        {sorted === "desc" && (
-                                            <ArrowDown className="h-3.5 w-3.5" />
-                                        )}
+                                        {sorted === "desc" && <ArrowDown className="h-3.5 w-3.5" />}
                                     </button>
                                 ) : (
-                                    flexRender(
-                                        header.column.columnDef.header,
-                                        header.getContext()
-                                    )
+                                    flexRender(header.column.columnDef.header, header.getContext())
                                 )}
                             </TableHead>
                         );

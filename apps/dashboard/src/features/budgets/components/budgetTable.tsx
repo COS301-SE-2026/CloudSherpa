@@ -11,16 +11,11 @@ import {
 } from "@tanstack/react-table";
 import { Button } from "@/components/atoms/button";
 import { Switch } from "@/components/atoms/switch";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableRow,
-} from "@/components/atoms/table";
-import {Pencil, Trash2 } from "lucide-react";
+import { Table, TableBody, TableCell, TableRow } from "@/components/atoms/table";
+import { Pencil, Trash2 } from "lucide-react";
 import type { Budget } from "@/features/budgets/types/budgetTypes";
 import { LABELS_FOR_SCOPE } from "@/features/budgets/types/budgetTypes";
-import {TableHeaderData} from "@/features/alerts/components/atoms/tableHeaderData";
+import { TableHeaderData } from "@/features/alerts/components/atoms/tableHeaderData";
 
 interface PropsForBudget {
     budgets: Budget[];
@@ -141,7 +136,7 @@ export function BudgetTable({ budgets, edit, toggleEnabled, onDelete }: Readonly
     return (
         <div className="overflow-hidden rounded-lg border border-border bg-card text-card-foreground">
             <Table>
-                <TableHeaderData headerGroups = {tableForBudgets.getHeaderGroups()}/>
+                <TableHeaderData headerGroups={tableForBudgets.getHeaderGroups()} />
 
                 <TableBody>
                     {tableForBudgets.getRowModel().rows.length === 0 ? (

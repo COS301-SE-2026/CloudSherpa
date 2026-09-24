@@ -39,18 +39,14 @@ interface PropsForPopup {
     onSubmit: (payload: CreateBudgetRequest) => Promise<void>;
 }
 
-export function BudgetPopup({
-    open,
-    initial,
-    userId,
-    onClose,
-    onSubmit,
-}: Readonly<PropsForPopup>) {
+export function BudgetPopup({ open, initial, userId, onClose, onSubmit }: Readonly<PropsForPopup>) {
     const { user } = useAuthContext();
 
     const [scope, setScope] = useState<ScopeForBudget>(initial?.scope ?? "TENANT");
 
-    const [amount, setAmount] = useState<string>(initial?.amount !== undefined ? String(initial.amount) : "");
+    const [amount, setAmount] = useState<string>(
+        initial?.amount !== undefined ? String(initial.amount) : ""
+    );
 
     const [windowDays, setWindowDays] = useState<number>(initial?.window_days ?? 30);
 
@@ -156,12 +152,12 @@ export function BudgetPopup({
     };
 
     const resolvedTarget = (() => {
-        if(scope === "TENANT"){
+        if (scope === "TENANT") {
             return "All cloud accounts";
         }
 
-        if(scope === "ACCOUNT"){
-            if(!selectedAccountId){
+        if (scope === "ACCOUNT") {
+            if (!selectedAccountId) {
                 return "No accounts selected";
             }
 
@@ -170,7 +166,7 @@ export function BudgetPopup({
             return `${account?.displayName ?? selectedAccountId} - all resources`;
         }
 
-        if(!selectedAccountId){
+        if (!selectedAccountId) {
             return "No account selected";
         }
 
@@ -231,7 +227,7 @@ export function BudgetPopup({
                 scope,
                 scope_id: resolvedScopeId!,
                 amount: amountParsed,
-                currency : "USD",
+                currency: "USD",
                 window_days: Number(windowDays),
                 enabled,
             });
@@ -258,7 +254,7 @@ export function BudgetPopup({
                             onValueChange={(value) => handlingScopeChange(value as ScopeForBudget)}
                         >
                             <SelectTrigger id="scope">
-                                <SelectValue/>
+                                <SelectValue />
                             </SelectTrigger>
 
                             <SelectContent>
@@ -335,10 +331,10 @@ export function BudgetPopup({
                         </div>
                     )}
 
-                    <div className = "space-y-2">
+                    <div className="space-y-2">
                         <Label> Applies to </Label>
 
-                        <p className = "text-sm text-muted-foreground"> {resolvedTarget} </p>
+                        <p className="text-sm text-muted-foreground"> {resolvedTarget} </p>
                     </div>
 
                     {scopeError && <p className="text-xs text-destructive"> {scopeError} </p>}

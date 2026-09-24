@@ -6,8 +6,8 @@ import CostBreakdownList from "@/features/intelligence/components/billing/costBr
 import BillingForecastChart from "@/features/intelligence/components/billing/billingForecastChart";
 import BillingStatisticsCard from "@/features/intelligence/components/billing/billingStatisticsCard";
 import BillingSummaryCard from "@/features/intelligence/components/billing/billingSummaryCard";
-import { TrendingUp} from "lucide-react";
-import { useEffect} from "react";
+import { TrendingUp } from "lucide-react";
+import { useEffect } from "react";
 import { useMakeBillingForecast } from "../../hooks/useMakeBillingForecast";
 import { getCurrencySymbol } from "@/lib/utils";
 import { Spinner } from "@/components/atoms/spinner";
@@ -89,7 +89,6 @@ export default function BillingIntelligence() {
                 <div className="h-full w-full flex flex-col justify-center items-center ">
                     <Spinner className="h-10 w-10" />
                 </div>
-
             </div>
         );
     }
@@ -198,7 +197,6 @@ export default function BillingIntelligence() {
                     onSearchChange={setBreakdownSearch}
                 />
             </section>
-
         </div>
     );
 }

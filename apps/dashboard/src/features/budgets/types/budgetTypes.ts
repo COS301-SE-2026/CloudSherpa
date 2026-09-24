@@ -38,8 +38,8 @@ export const BUDGET_SCOPES: ScopeForBudget[] = ["TENANT", "ACCOUNT", "RESOURCE"]
 
 export const BUDGET_CURRENCY: CurrencyEnum[] = ["USD"];
 
-export const LABELS_FOR_SCOPE : Record<ScopeForBudget, string> = {
-    TENANT : "Cross-account",
-    ACCOUNT : "Account",
-    RESOURCE : "Resource",
+export const LABELS_FOR_SCOPE: Record<ScopeForBudget, string> = {
+    TENANT: "Cross-account",
+    ACCOUNT: "Account",
+    RESOURCE: "Resource",
 };

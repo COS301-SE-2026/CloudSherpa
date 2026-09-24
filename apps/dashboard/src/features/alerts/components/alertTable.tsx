@@ -11,17 +11,12 @@ import {
 } from "@tanstack/react-table";
 import { Button } from "@/components/atoms/button";
 import { Switch } from "@/components/atoms/switch";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableRow,
-} from "@/components/atoms/table";
-import {Info } from "lucide-react";
+import { Table, TableBody, TableCell, TableRow } from "@/components/atoms/table";
+import { Info } from "lucide-react";
 import { SEVERITY_COLOURS, STATUS_LABELS, TYPE } from "@/features/alerts/types/alertTypes";
 import type { Alert } from "@/features/alerts/types/alertTypes";
 import { toast } from "sonner";
-import {TableHeaderData} from "@/features/alerts/components/atoms/tableHeaderData";
+import { TableHeaderData } from "@/features/alerts/components/atoms/tableHeaderData";
 
 interface PropsForAlertsTable {
     alerts: Alert[];
@@ -160,7 +155,7 @@ export function AlertTable({ alerts, onToggle, info }: Readonly<PropsForAlertsTa
     return (
         <div className="overflow-hidden rounded-lg border border-border bg-card text-card-foreground">
             <Table>
-                <TableHeaderData headerGroups = {tableForAlerts.getHeaderGroups()}/>
+                <TableHeaderData headerGroups={tableForAlerts.getHeaderGroups()} />
 
                 <TableBody>
                     {tableForAlerts.getRowModel().rows.length === 0 ? (
