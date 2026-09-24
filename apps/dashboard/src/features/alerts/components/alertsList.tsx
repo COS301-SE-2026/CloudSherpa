@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { AlertDialog } from "@/features/alerts/components/alertDialog";
 import type { Alert } from "@/features/alerts/types/alertTypes";
-import {AlertTable} from "@/features/alerts/components/alertTable";
+import { AlertTable } from "@/features/alerts/components/alertTable";
 
 interface PropsForAlerts {
     alerts: Alert[];
@@ -16,7 +16,13 @@ export function AlertsList({ alerts, disable, enable }: Readonly<PropsForAlerts>
 
     return (
         <>
-            <AlertTable alerts = {alerts} onToggle = {(alert, checked) => checked ? enable(alert.alertId) : disable(alert.alertId)} info = {setSelected}/>
+            <AlertTable
+                alerts={alerts}
+                onToggle={(alert, checked) =>
+                    checked ? enable(alert.alertId) : disable(alert.alertId)
+                }
+                info={setSelected}
+            />
 
             <AlertDialog
                 alert={selected}
