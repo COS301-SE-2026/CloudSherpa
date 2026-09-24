@@ -226,10 +226,10 @@ export function KPIConfigTable<TValue>({
                                                 <div
                                                     onMouseDown={header.getResizeHandler()}
                                                     onTouchStart={header.getResizeHandler()}
-                                                    className={`absolute right-0 top-0 h-full w-1.5 cursor-col-resize select-none touch-none hover:bg-primary ${
+                                                    className={`absolute right-0 top-0 h-full w-1 cursor-col-resize select-none touch-none hover:bg-primary ${
                                                         header.column.getIsResizing()
                                                             ? "bg-primary"
-                                                            : "bg-muted-foreground/40 bg-border opacity-0 group-hover:opacity-100"
+                                                            : "bg-muted-foreground bg-border opacity-0 group-hover:opacity-100"
                                                     }`}
                                                 />
                                             )}
