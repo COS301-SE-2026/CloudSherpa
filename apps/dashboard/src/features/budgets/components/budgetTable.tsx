@@ -21,6 +21,7 @@ import {
 } from "@/components/atoms/table";
 import { ArrowUp, ArrowDown, Pencil, Trash2 } from "lucide-react";
 import type { Budget } from "@/features/budgets/types/budgetTypes";
+import { LABELS_FOR_SCOPE } from "@/features/budgets/types/budgetTypes";
 
 interface PropsForBudget {
     budgets: Budget[];
@@ -57,8 +58,7 @@ function helperForColumns({ edit, toggleEnabled, onDelete }: Columns): ColumnDef
 
                 return (
                     <span className={mutedBudget ? "text-muted-foreground" : "text-foreground"}>
-                        {" "}
-                        {row.original.scope}{" "}
+                        {LABELS_FOR_SCOPE[row.original.scope]}
                     </span>
                 );
             },
@@ -86,8 +86,7 @@ function helperForColumns({ edit, toggleEnabled, onDelete }: Columns): ColumnDef
             header: () => "WINDOW",
             cell: ({ row }) => (
                 <span className={!row.original.enabled ? "text-muted-foreground" : ""}>
-                    {" "}
-                    {row.original.window_days}{" "}
+                    {row.original.window_days} {row.original.window_days === 1 ? "day" : "days"}
                 </span>
             ),
         },

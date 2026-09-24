@@ -20,11 +20,10 @@ import {
 } from "@/components/atoms/select";
 import { Checkbox } from "@/components/atoms/checkbox";
 import {
-    BUDGET_CURRENCY,
     BUDGET_SCOPES,
+    LABELS_FOR_SCOPE,
     Budget,
     ScopeForBudget,
-    BudgetCurrency,
     CreateBudgetRequest,
 } from "@/features/budgets/types/budgetTypes";
 import { useAuthContext } from "@/features/authentication/providers/AuthContext";
@@ -43,7 +42,7 @@ interface PropsForPopup {
 export function BudgetPopup({
     open,
     initial,
-    userId: string,
+    userId,
     onClose,
     onSubmit,
 }: Readonly<PropsForPopup>) {
@@ -51,9 +50,7 @@ export function BudgetPopup({
 
     const [scope, setScope] = useState<ScopeForBudget>(initial?.scope ?? "TENANT");
 
-    const [amount, setAmount] = useState<number>(initial?.amount ?? 0);
-
-    const [currency, setCurrency] = useState<BudgetCurrency>(initial?.currency ?? "USD");
+    const [amount, setAmount] = useState<string>(initial?.amount !== undefined ? String(initial.amount) : "");
 
     const [windowDays, setWindowDays] = useState<number>(initial?.window_days ?? 30);
 
@@ -158,6 +155,30 @@ export function BudgetPopup({
         setScopeError(null);
     };
 
+    const resolvedTarget = (() => {
+        if(scope === "TENANT"){
+            return "All cloud accounts";
+        }
+
+        if(scope === "ACCOUNT"){
+            if(!selectedAccountId){
+                return "No accounts selected";
+            }
+
+            const account = accounts.find((forAcc) => forAcc.id === selectedAccountId);
+
+            return `${account?.displayName ?? selectedAccountId} - all resources`;
+        }
+
+        if(!selectedAccountId){
+            return "No account selected";
+        }
+
+        const resource = resources.find((forRes) => forRes.id === selectedResourceId);
+
+        return resource?.resourceName ?? selectedResourceId;
+    })();
+
     const handlingSubmit = async (submit: React.FormEvent) => {
         submit.preventDefault();
 
@@ -184,7 +205,9 @@ export function BudgetPopup({
             hasError = true;
         }
 
-        if (!Number.isFinite(amount) || amount <= 0) {
+        const amountParsed = Number(amount);
+
+        if (!Number.isFinite(amountParsed) || amountParsed <= 0) {
             setAmountError("Amount must be greater than 0");
 
             hasError = true;
@@ -207,8 +230,8 @@ export function BudgetPopup({
                 userId: user!.userId,
                 scope,
                 scope_id: resolvedScopeId!,
-                amount: Number(amount),
-                currency,
+                amount: amountParsed,
+                currency : "USD",
                 window_days: Number(windowDays),
                 enabled,
             });
@@ -235,19 +258,21 @@ export function BudgetPopup({
                             onValueChange={(value) => handlingScopeChange(value as ScopeForBudget)}
                         >
                             <SelectTrigger id="scope">
-                                {" "}
-                                <SelectValue />{" "}
+                                <span> {LABELS_FOR_SCOPE[scope]} </span>
                             </SelectTrigger>
 
                             <SelectContent>
                                 {BUDGET_SCOPES.map((scoping) => (
                                     <SelectItem key={scoping} value={scoping}>
-                                        {" "}
-                                        {scoping}{" "}
+                                        {LABELS_FOR_SCOPE[scoping]}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
+
+                        <Label> Applies to </Label>
+
+                        <p className = "text-sm text-muted-foreground"> {resolvedTarget} </p>
                     </div>
 
                     {(scope === "ACCOUNT" || scope === "RESOURCE") && (
@@ -317,7 +342,7 @@ export function BudgetPopup({
                     {scopeError && <p className="text-xs text-destructive"> {scopeError} </p>}
 
                     <div className="space-y-2">
-                        <Label htmlFor="amount"> Amount </Label>
+                        <Label htmlFor="amount"> Amount (USD) </Label>
 
                         <Input
                             id="amount"
@@ -325,7 +350,7 @@ export function BudgetPopup({
                             step="any"
                             value={amount}
                             onChange={(change) => {
-                                setAmount(Number(change.target.value));
+                                setAmount(change.target.value);
                                 if (amountError) {
                                     setAmountError(null);
                                 }
@@ -333,29 +358,6 @@ export function BudgetPopup({
                         />
 
                         {amountError && <p className="text-xs text-destructive"> {amountError} </p>}
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label htmlFor="currency"> Currency </Label>
-
-                        <Select
-                            value={currency}
-                            onValueChange={(value) => setCurrency(value as BudgetCurrency)}
-                        >
-                            <SelectTrigger id="currency">
-                                {" "}
-                                <SelectValue />{" "}
-                            </SelectTrigger>
-
-                            <SelectContent>
-                                {BUDGET_CURRENCY.map((currencies) => (
-                                    <SelectItem key={currencies} value={currencies}>
-                                        {" "}
-                                        {currencies}{" "}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
                     </div>
 
                     <div className="space-y-2">
