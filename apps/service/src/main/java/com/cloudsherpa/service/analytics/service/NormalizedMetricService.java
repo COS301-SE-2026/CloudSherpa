@@ -1,7 +1,7 @@
 package com.cloudsherpa.service.analytics.service;
 
 import com.cloudsherpa.lib.dtos.ResourceMetricEntry;
-import com.cloudsherpa.lib.dtos.SegmentedMetricSeries;
+import com.cloudsherpa.lib.dtos.SegmentedMetric;
 import com.cloudsherpa.lib.dtos.TimestampedNumericDataPoint;
 import com.cloudsherpa.lib.entities.NormalizedMetrics;
 import com.cloudsherpa.lib.entities.ProviderEnum;
@@ -174,15 +174,24 @@ public class NormalizedMetricService {
     String canonMetricName =
         metricMapper.toCanonicalName(provider.toString(), request.metricName());
 
-    // TEMP, view segmented downsampling query performance
-    List<SegmentedMetricSeries> segmentedSeries =
+    List<NormalizedMetrics> result = new ArrayList<>();
+
+    List<SegmentedMetric> segmentedSeries =
         normalizedMetricsRepository.getSegmentedDownsampledNormalizedMetrics(
-            request.resourceId(), canonMetricName, request.from(), request.to(), 900, 100);
-    for (SegmentedMetricSeries series : segmentedSeries) {
-      logger.info("Segmented series {}", series);
+            request.resourceId(), canonMetricName, request.from(), request.to(), 900, 300);
+
+    long currentSegment = segmentedSeries.get(0).segmentId();
+
+    for (SegmentedMetric series : segmentedSeries) {
+      if (series.segmentId() != currentSegment) {
+        logger.info("Segment changed");
+        currentSegment = series.segmentId();
+      }
+
+      result.addLast(toNormalizedMetric(series));
     }
 
-    return List.of();
+    return result;
   }
 
   public List<ResourceMetricsGroupDto> fetchResourceMetrics() {
@@ -207,5 +216,20 @@ public class NormalizedMetricService {
         (resourceId, metrics) ->
             groupedResourceMetrics.add(new ResourceMetricsGroupDto(resourceId, metrics)));
     return groupedResourceMetrics;
+  }
+
+  private NormalizedMetrics toNormalizedMetric(SegmentedMetric metric) {
+    return new NormalizedMetrics.Builder()
+        .metricId(metric.metricId())
+        .resourceId(metric.resourceId())
+        .recordedAt(metric.recordedAt().atOffset(ZoneOffset.UTC))
+        .metricType(metric.metricType())
+        .metricName(metric.metricName())
+        .metricValue(metric.metricValue())
+        .unit(metric.unit())
+        .currency(metric.currency())
+        .periodStart(metric.periodStart().atOffset(ZoneOffset.UTC))
+        .periodEnd(metric.periodEnd().atOffset(ZoneOffset.UTC))
+        .build();
   }
 }

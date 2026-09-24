@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
-public record SegmentedMetricSeries(
+public record SegmentedMetric(
     long segmentId,
     UUID metricId,
     UUID resourceId,

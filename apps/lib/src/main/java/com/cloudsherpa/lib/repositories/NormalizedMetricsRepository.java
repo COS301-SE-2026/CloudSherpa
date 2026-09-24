@@ -11,7 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.cloudsherpa.lib.dtos.ResourceMetricEntry;
-import com.cloudsherpa.lib.dtos.SegmentedMetricSeries;
+import com.cloudsherpa.lib.dtos.SegmentedMetric;
 import com.cloudsherpa.lib.dtos.TimestampedNumericDataPoint;
 import com.cloudsherpa.lib.entities.NormalizedMetrics;
 import com.cloudsherpa.lib.projections.AggregatedMetric;
@@ -226,15 +226,15 @@ public interface NormalizedMetricsRepository extends JpaRepository<NormalizedMet
               CROSS JOIN LATERAL unnest(s.sampled) AS p(time, value)
           ),
           joined_result AS (
-	SELECT *
-	FROM result r
-	INNER JOIN normalized_metrics nm
-	    ON r.ts = nm.period_start
-	WHERE nm.resource_id = :resourceId
-	  AND nm.metric_name = :metricName
-	  AND nm.period_start >= :windowStart
-	  AND nm.period_end <= :windowEnd
-  )
+            SELECT *
+            FROM result r
+            INNER JOIN normalized_metrics nm
+                ON r.ts = nm.period_start
+            WHERE nm.resource_id = :resourceId
+                AND nm.metric_name = :metricName
+                AND nm.period_start >= :windowStart
+                AND nm.period_end <= :windowEnd
+            )
           SELECT
               segment_id AS segmentId,
               metric_id AS metricId,
@@ -251,7 +251,7 @@ public interface NormalizedMetricsRepository extends JpaRepository<NormalizedMet
           ORDER BY period_start, segment_id
           """,
       nativeQuery = true)
-  List<SegmentedMetricSeries> getSegmentedDownsampledNormalizedMetrics(
+  List<SegmentedMetric> getSegmentedDownsampledNormalizedMetrics(
       @Param("resourceId") UUID resourceId,
       @Param("metricName") String metricName,
       @Param("windowStart") Instant windowStart,
