@@ -293,9 +293,21 @@ Table normalized_costs {
   }
 }
 
+Enum billing_forecast_execution_status {
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+Table billing_forecast_runs {
+  forecast_run_id uuid [pk, default: `gen_random_uuid()`]
+  forecast_execution_status billing_forecast_execution_status [not null]
+  forecast_execution_log_timestamp timestamptz [not null]
+}
+
 Table billing_forecasts {
-  forecast_id uuid [pk]
-  execution_id uuid [not null, ref: > billing_export_execution.execution_id]
+  forecast_id uuid [pk, default: `gen_random_uuid()`]
+  forecast_run_id uuid [not null]
   forecast_timestamp timestamptz [not null]
   forecast_window integer [not null, note: "Number of days forecast"]
   cumulative_forecast_value numeric [not null]
@@ -307,14 +319,13 @@ Table billing_forecasts {
   highest_cost_driver text [not null]
   highest_cost_acceleration text [not null]
   acceleration_rate numeric
+
+  Indexes {
+    (forecast_run_id, forecast_window) [unique]
+  }
 }
 
-Table billing_forecast_execution_logs {
-  log_id uuid [pk]
-  execution_id uuid [ref: > billing_export_execution.execution_id]
-  forecast_execution_status billing_forecast_execution_status [not null]
-  forecast_execution_log_timestamp timestamptz [not null]
-}
+Ref: billing_forecasts.forecast_run_id > billing_forecast_runs.forecast_run_id [delete: cascade]
 
 Table optimization_metric_statistics {
   statistics_id uuid [pk]
