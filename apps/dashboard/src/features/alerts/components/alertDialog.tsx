@@ -1,22 +1,32 @@
 "use client";
 
-import {Button} from "@/components/atoms/button";
-import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from "@/components/atoms/dialog";
-import {SEVERITY_COLOURS, STATUS_LABELS, TYPE} from "@/features/alerts/types/alertTypes";
-import type {Alert} from "@/features/alerts/types/alertTypes";
+import { Button } from "@/components/atoms/button";
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/atoms/dialog";
+import { SEVERITY_COLOURS, STATUS_LABELS, TYPE } from "@/features/alerts/types/alertTypes";
+import type { Alert } from "@/features/alerts/types/alertTypes";
 
-interface PropsForAlertDialog{
-    alert : Alert | null;
-    open : boolean;
-    onClose : () => void;
-    disable : (alertId : string) => Promise<void>;
-    enable : (alertId : string) => Promise<void>;
+interface PropsForAlertDialog {
+    alert: Alert | null;
+    open: boolean;
+    onClose: () => void;
+    disable: (alertId: string) => Promise<void>;
+    enable: (alertId: string) => Promise<void>;
 }
 
 export function AlertDialog({
-    alert, open, onClose, disable, enable,
-} : Readonly<PropsForAlertDialog>){
-    if(!alert){
+    alert,
+    open,
+    onClose,
+    disable,
+    enable,
+}: Readonly<PropsForAlertDialog>) {
+    if (!alert) {
         return null;
     }
 
@@ -36,54 +46,80 @@ export function AlertDialog({
         onClose();
     };
 
-    return(
-        <Dialog open = {open} onOpenChange = {(change) => !change && onClose()}>
-            <DialogContent className = "sm:max-w-lg">
+    return (
+        <Dialog open={open} onOpenChange={(change) => !change && onClose()}>
+            <DialogContent className="sm:max-w-lg">
                 <DialogHeader>
-                    <DialogTitle className = "text-foreground"> {alert.title} </DialogTitle>
+                    <DialogTitle className="text-foreground"> {alert.title} </DialogTitle>
                 </DialogHeader>
 
-                <div className = "space-y-4 text-sm">
-                    <div className = "flex flex-wrap items-center gap-2">
-                        <span className = {"text-sm font-semibold uppercase tracking-wider" + severityClass}> {alert.severity} </span>
+                <div className="space-y-4 text-sm">
+                    <div className="flex flex-wrap items-center gap-2">
+                        <span
+                            className={
+                                "text-sm font-semibold uppercase tracking-wider" + severityClass
+                            }
+                        >
+                            {" "}
+                            {alert.severity}{" "}
+                        </span>
 
-                        <span className = "rounded-sm border border-border px-2 py-0.5 text-xs text-muted-foreground"> {TYPE[alert.alertType]} </span>
+                        <span className="rounded-sm border border-border px-2 py-0.5 text-xs text-muted-foreground">
+                            {" "}
+                            {TYPE[alert.alertType]}{" "}
+                        </span>
 
-                        <span className = "rounded-sm border border-border px-2 py-0.5 text-xs text-muted-foreground"> {STATUS_LABELS[alert.status]} </span>
+                        <span className="rounded-sm border border-border px-2 py-0.5 text-xs text-muted-foreground">
+                            {" "}
+                            {STATUS_LABELS[alert.status]}{" "}
+                        </span>
                     </div>
 
-                    <div className = "space-y-2">
-                        <div className = "flex gap-2">
-                        <span className = "text-muted-foreground"> Created </span>
+                    <div className="space-y-2">
+                        <div className="flex gap-2">
+                            <span className="text-muted-foreground"> Created </span>
 
-                        <span className = "text-foreground"> {alert.createdAt ? new Date(alert.createdAt).toLocaleString() : "-"} </span>
+                            <span className="text-foreground">
+                                {" "}
+                                {alert.createdAt
+                                    ? new Date(alert.createdAt).toLocaleString()
+                                    : "-"}{" "}
+                            </span>
                         </div>
                         {alert.resolvedAt && (
                             <>
-                                <span className = "text-muted-foreground"> Resolved </span>
+                                <span className="text-muted-foreground"> Resolved </span>
 
-                                <span className = "text-foreground"> {new Date(alert.resolvedAt).toLocaleString()} </span>
+                                <span className="text-foreground">
+                                    {" "}
+                                    {new Date(alert.resolvedAt).toLocaleString()}{" "}
+                                </span>
                             </>
                         )}
                     </div>
 
                     {alert.message && (
                         <div>
-                            <p className = "mb-1 text-muted-foreground"> Message </p>
+                            <p className="mb-1 text-muted-foreground"> Message </p>
 
-                            <p className = "text-foreground"> {alert.message} </p>
+                            <p className="text-foreground"> {alert.message} </p>
                         </div>
                     )}
-
                 </div>
 
-                <DialogFooter className = "pt-2">
-                    <Button variant = "outline" onClick = {onClose}> Close </Button>
+                <DialogFooter className="pt-2">
+                    <Button variant="outline" onClick={onClose}>
+                        {" "}
+                        Close{" "}
+                    </Button>
 
                     {active ? (
-                        <Button variant = "destructive" onClick = {handlingDisable}> Disable </Button>
+                        <Button variant="destructive" onClick={handlingDisable}>
+                            {" "}
+                            Disable{" "}
+                        </Button>
                     ) : (
-                        <Button onClick = {handlingEnable}> Enable </Button>
+                        <Button onClick={handlingEnable}> Enable </Button>
                     )}
                 </DialogFooter>
             </DialogContent>

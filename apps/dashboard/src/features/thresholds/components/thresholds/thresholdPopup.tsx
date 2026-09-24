@@ -47,7 +47,7 @@ interface PropsForThresholds {
     open: boolean;
     initial?: Threshold | null;
     resourceId?: string;
-    initialMetricName?: string; 
+    initialMetricName?: string;
     userId: string;
     onClose: () => void;
     onSubmit: (thresholdPayload: CreateThresholdRequest) => Promise<void>;

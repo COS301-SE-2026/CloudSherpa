@@ -16,8 +16,8 @@ import { useUsageHistoricalData } from "../../hooks/useUsageHistoricalData";
 import { UsageErrorAlert } from "./usageError";
 import { UsageError } from "../../types/errors";
 import { Spinner } from "@/components/atoms/spinner";
-import {Button} from "@/components/atoms/button";
-import {toast} from "sonner";
+import { Button } from "@/components/atoms/button";
+import { toast } from "sonner";
 import { ThresholdPopup } from "@/features/thresholds/components/thresholds/thresholdPopup";
 import { addThreshold } from "@/features/thresholds/thresholds";
 import type { CreateThresholdRequest } from "@/features/thresholds/types/thresholdTypes";
@@ -56,7 +56,7 @@ export default function UsageIntelligence() {
     const resourceId = useUsageIntelligenceConfigStore((state) => state.resourceId);
     const metricName = useUsageIntelligenceConfigStore((state) => state.metricName);
 
-    const {user, isAuthReady} = useAuthContext();
+    const { user, isAuthReady } = useAuthContext();
 
     const userId = user?.userId;
 
@@ -80,12 +80,12 @@ export default function UsageIntelligence() {
 
     const handlingAddThreshold = () => setPopupOpen(true);
 
-    const handlingThresholdSubmit = async (forPayload : CreateThresholdRequest) => {
-        try{
+    const handlingThresholdSubmit = async (forPayload: CreateThresholdRequest) => {
+        try {
             await addThreshold(forPayload);
 
             toast.success("Threshold added");
-        }catch{
+        } catch {
             toast.error("Failed to add threshold");
         }
     };
@@ -218,15 +218,26 @@ export default function UsageIntelligence() {
                 <section className="w-full flex-1 min-h-0 flex flex-col">{renderChart()}</section>
 
                 {resourceId && (
-                    <div className = "flex justify-end">
-                        <Button onClick = {handlingAddThreshold}> <Plus className = "h-4 w-4"/> Add threshold </Button>
+                    <div className="flex justify-end">
+                        <Button onClick={handlingAddThreshold}>
+                            {" "}
+                            <Plus className="h-4 w-4" /> Add threshold{" "}
+                        </Button>
                     </div>
                 )}
 
                 {isAuthReady && userId && (
-                    <ThresholdPopup key = "new-threshold" open = {popupOpen} initial = {null} resourceId = {resourceId ?? undefined} initialMetricName = {metricName ?? undefined} userId = {userId} onClose = {() => setPopupOpen(false)} onSubmit = {handlingThresholdSubmit}/>
+                    <ThresholdPopup
+                        key="new-threshold"
+                        open={popupOpen}
+                        initial={null}
+                        resourceId={resourceId ?? undefined}
+                        initialMetricName={metricName ?? undefined}
+                        userId={userId}
+                        onClose={() => setPopupOpen(false)}
+                        onSubmit={handlingThresholdSubmit}
+                    />
                 )}
-
             </div>
         </div>
     );

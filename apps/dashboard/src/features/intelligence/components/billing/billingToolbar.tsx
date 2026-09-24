@@ -5,7 +5,7 @@ import Dropdown from "@/components/molecules/dropdown";
 
 const PROVIDERS = ["AWS", "GCP"];
 
-interface PropsForBillingToolbar{
+interface PropsForBillingToolbar {
     actions?: React.ReactNode;
 }
 
@@ -23,7 +23,7 @@ const FORECAST_TIME_PERIODS = [
     { value: "30", label: "Next 30 days" },
 ];
 
-export default function BillingToolbar({actions} : Readonly<PropsForBillingToolbar>) {
+export default function BillingToolbar({ actions }: Readonly<PropsForBillingToolbar>) {
     const {
         provider,
         setProvider,
@@ -103,7 +103,7 @@ export default function BillingToolbar({actions} : Readonly<PropsForBillingToolb
             )}
             <div className={`${disableFilters ? "ml-auto" : ""} flex flex-row gap-2`}>
                 {actions}
-                
+
                 {!singleTimeSelector && (
                     <Dropdown
                         options={PAST_TIME_PERIODS}

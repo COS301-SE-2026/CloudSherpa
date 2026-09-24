@@ -21,7 +21,7 @@ import {
 } from "@/components/atoms/alert-dialog";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
-import {BudgetSection} from "@/features/budgets/components/budgetSection";
+import { BudgetSection } from "@/features/budgets/components/budgetSection";
 
 interface PropsForMainPage {
     resourceId?: string;
@@ -191,7 +191,10 @@ export function MainPage({ resourceId, userId }: Readonly<PropsForMainPage>) {
                             )}
                         </TabsContent>
 
-                        <TabsContent value = "budgets" className = "mt-6"> <BudgetSection/> </TabsContent>
+                        <TabsContent value="budgets" className="mt-6">
+                            {" "}
+                            <BudgetSection />{" "}
+                        </TabsContent>
                     </Tabs>
                 </header>
 

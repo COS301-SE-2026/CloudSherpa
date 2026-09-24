@@ -10,7 +10,8 @@ import {
     ServerPlus,
     Lightbulb,
     Webhook,
-    LogOut, ShieldAlert
+    LogOut,
+    ShieldAlert,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
