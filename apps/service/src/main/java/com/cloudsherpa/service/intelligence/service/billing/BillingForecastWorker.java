@@ -42,7 +42,7 @@ public class BillingForecastWorker {
         for (int forecastWindow : SUPPORTED_FORECAST_WINDOWS) {
           BillingForecastRequest request = new BillingForecastRequest(forecastWindow);
           BillingForecastResponseDto forecast =
-              billingIntelligenceService.processAllCharges(request, Instant.now(), tenantId);
+              billingIntelligenceService.processAllCharges(request, Instant.now());
           stateService.writeForecast(
               run.getForecastRunId(),
               forecast,
