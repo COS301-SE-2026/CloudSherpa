@@ -62,6 +62,12 @@ CREATE TYPE public.webhook_delivery_status_enum AS ENUM (
   'FAILED'
 );
 
+CREATE TYPE public.billing_forecast_execution_status AS ENUM (
+  'PROCESSING',
+  'COMPLETED',
+  'FAILED'
+);
+
 CREATE TYPE public.alert_status_enum AS ENUM (
   'ACTIVE',
   'DISABLED'
@@ -851,6 +857,38 @@ BEGIN
     EXECUTE format($sql$
         CREATE INDEX IF NOT EXISTS ix_%1$s_costs_service_time 
         ON %1$I.normalized_costs (service_name, usage_start_time DESC);
+    $sql$, schema_name);
+
+    -- --------------------------------------------------------------------------
+    -- Billing Forecast Tables
+    -- --------------------------------------------------------------------------
+
+    -- One tenant-wide run can produce forecasts for multiple windows.
+    EXECUTE format($sql$
+        CREATE TABLE IF NOT EXISTS %I.billing_forecast_runs (
+          forecast_run_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+          forecast_execution_status public.billing_forecast_execution_status NOT NULL,
+          forecast_execution_log_timestamp timestamptz NOT NULL
+        );
+    $sql$, schema_name);
+
+    EXECUTE format($sql$
+        CREATE TABLE IF NOT EXISTS %1$I.billing_forecasts (
+          forecast_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+          forecast_run_id uuid NOT NULL REFERENCES %1$I.billing_forecast_runs(forecast_run_id) ON DELETE CASCADE,
+          forecast_timestamp timestamptz NOT NULL,
+          forecast_window int NOT NULL, -- Number of days that were forecast
+          cumulative_forecast_value numeric NOT NULL,
+          cumulative_past_forecast_value numeric NOT NULL,
+          forecast_series JSONB NOT NULL,
+          failed_charges text[] NOT NULL DEFAULT '{}',
+          past_variance numeric NOT NULL,
+          daily_burn_rate numeric NOT NULL,
+          highest_cost_driver text NOT NULL,
+          highest_cost_acceleration text NOT NULL,
+          acceleration_rate numeric, -- allows null when insufficient data available to calculate the acceleration rate
+          UNIQUE (forecast_run_id, forecast_window)
+        );
     $sql$, schema_name);
 
     -- --------------------------------------------------------------------------

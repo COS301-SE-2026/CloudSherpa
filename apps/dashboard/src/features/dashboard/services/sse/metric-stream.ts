@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMetricStore } from "@/features/dashboard/stores/metric-store";
 import { MetricDTO } from "@/features/dashboard/types/dtos/metrics/MetricDto";
 import { Metric, MetricType } from "@/features/dashboard/types/metric";
@@ -75,11 +75,26 @@ function createMockMetrics(): Metric[] {
     return metrics;
 }
 
+async function refreshAuthSession(): Promise<boolean> {
+    if (!API_BASE) return false;
+
+    try {
+        const response = await fetch(`${API_BASE}/auth/refresh`, {
+            method: "POST",
+            credentials: "include",
+        });
+        return response.ok;
+    } catch {
+        return false;
+    }
+}
+
 export function useMetricStream() {
     const addMetric = useMetricStore((state) => state.addMetric);
     const addMetricFromDto = useMetricStore((state) => state.addMetricFromDto);
     // String or bool?
     const [error, setError] = useState<Error | null>(null);
+    const hasRetriedRef = useRef(false);
 
     useEffect(() => {
         if (!hasSeededMockMetrics) {
@@ -87,10 +102,42 @@ export function useMetricStream() {
             hasSeededMockMetrics = true;
         }
 
-        const eventSource = new EventSource(sseUrl, { withCredentials: true });
+        let isCleaningUp = false;
+        let eventSource: EventSource;
 
-        eventSource.onopen = () => {
-            setError(null);
+        const connect = () => {
+            eventSource = new EventSource(sseUrl, { withCredentials: true });
+
+            eventSource.onopen = () => {
+                hasRetriedRef.current = false;
+                setError(null);
+            };
+
+            eventSource.addEventListener("metric", handleMetric);
+
+            eventSource.onerror = () => {
+                if (isCleaningUp) return;
+                eventSource.close();
+                eventSource.removeEventListener("metric", handleMetric);
+
+                // the connection may have failed because the auth cookie expired
+                // while the user was on another page; try to refresh once and reconnect
+                if (!hasRetriedRef.current) {
+                    hasRetriedRef.current = true;
+
+                    refreshAuthSession().then((refreshed) => {
+                        if (isCleaningUp) return;
+                        if (refreshed) {
+                            connect();
+                        } else {
+                            setError(new Error(`Failed to open metric stream connection`));
+                        }
+                    });
+                    return;
+                }
+
+                setError(new Error(`Failed to open metric stream connection`));
+            };
         };
 
         const handleMetric = (event: MessageEvent<string>) => {
@@ -98,14 +145,10 @@ export function useMetricStream() {
             addMetricFromDto(metricDto);
         };
 
-        eventSource.onerror = () => {
-            setError(new Error(`Failed to open metric stream connection`));
-            eventSource.close();
-        };
-
-        eventSource.addEventListener("metric", handleMetric);
+        connect();
 
         return () => {
+            isCleaningUp = true;
             eventSource.removeEventListener("metric", handleMetric);
             eventSource.close();
         };

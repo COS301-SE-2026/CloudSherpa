@@ -293,6 +293,40 @@ Table normalized_costs {
   }
 }
 
+Enum billing_forecast_execution_status {
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+Table billing_forecast_runs {
+  forecast_run_id uuid [pk, default: `gen_random_uuid()`]
+  forecast_execution_status billing_forecast_execution_status [not null]
+  forecast_execution_log_timestamp timestamptz [not null]
+}
+
+Table billing_forecasts {
+  forecast_id uuid [pk, default: `gen_random_uuid()`]
+  forecast_run_id uuid [not null]
+  forecast_timestamp timestamptz [not null]
+  forecast_window integer [not null, note: "Number of days forecast"]
+  cumulative_forecast_value numeric [not null]
+  cumulative_past_forecast_value numeric [not null]
+  forecast_series jsonb [not null]
+  failed_charges text[] [not null, default: '{}']
+  past_variance numeric [not null]
+  daily_burn_rate numeric [not null]
+  highest_cost_driver text [not null]
+  highest_cost_acceleration text [not null]
+  acceleration_rate numeric
+
+  Indexes {
+    (forecast_run_id, forecast_window) [unique]
+  }
+}
+
+Ref: billing_forecasts.forecast_run_id > billing_forecast_runs.forecast_run_id [delete: cascade]
+
 Table optimization_metric_statistics {
   statistics_id uuid [pk]
   resource_id uuid [ref: > resource.resource_id]
