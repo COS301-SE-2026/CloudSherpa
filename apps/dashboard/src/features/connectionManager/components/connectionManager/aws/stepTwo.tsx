@@ -42,6 +42,7 @@ export default function StepTwoAws({ credentials, onNext, onBack }: Readonly<Pro
     const [exportName, setExportName] = useState("");
     const [savedBillingConfig, setSavedBillingConfig] = useState<BillingConfig | null>(null);
     const [optedInToBilling, setOptedInToBilling] = useState(false);
+    const [copied, setCopied] = useState(false);
 
     //f progress bar
     const [progress, setProgress] = useState(0);
@@ -200,6 +201,17 @@ export default function StepTwoAws({ credentials, onNext, onBack }: Readonly<Pro
         }
     };
 
+    const handleCopyJson = async () => {
+        const jsonContent = displayPermissions ? JSON.stringify(displayPermissions, null, 2) : "{}";
+
+        await navigator.clipboard.writeText(jsonContent);
+        setCopied(true);
+
+        setTimeout(() => {
+            setCopied(false);
+        }, 2000);
+    };
+
     return (
         <StepTwo
             heading="Configure Billing & Services"
@@ -265,16 +277,10 @@ export default function StepTwoAws({ credentials, onNext, onBack }: Readonly<Pro
 
                     <button
                         type="button"
-                        onClick={() => {
-                            navigator.clipboard.writeText(
-                                displayPermissions
-                                    ? JSON.stringify(displayPermissions, null, 2)
-                                    : "{}"
-                            );
-                        }}
+                        onClick={handleCopyJson}
                         className="mt-3 text-primary hover:text-accent text-sm transition-colors"
                     >
-                        Copy to clipboard
+                        {copied ? "Copied" : "Copy to clipboard"}{" "}
                     </button>
                 </div>
             </div>
