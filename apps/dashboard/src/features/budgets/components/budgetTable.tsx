@@ -15,13 +15,12 @@ import {
     Table,
     TableBody,
     TableCell,
-    TableHead,
-    TableHeader,
     TableRow,
 } from "@/components/atoms/table";
-import { ArrowUp, ArrowDown, Pencil, Trash2 } from "lucide-react";
+import {Pencil, Trash2 } from "lucide-react";
 import type { Budget } from "@/features/budgets/types/budgetTypes";
 import { LABELS_FOR_SCOPE } from "@/features/budgets/types/budgetTypes";
+import {TableHeaderData} from "@/features/alerts/components/atoms/tableHeaderData";
 
 interface PropsForBudget {
     budgets: Budget[];
@@ -142,50 +141,7 @@ export function BudgetTable({ budgets, edit, toggleEnabled, onDelete }: Readonly
     return (
         <div className="overflow-hidden rounded-lg border border-border bg-card text-card-foreground">
             <Table>
-                <TableHeader>
-                    {tableForBudgets.getHeaderGroups().map((forHeaderGroups) => (
-                        <TableRow key={forHeaderGroups.id} className="hover:bg-transparent">
-                            {forHeaderGroups.headers.map((header) => {
-                                const ableToSort = header.column.getCanSort();
-
-                                const sorted = header.column.getIsSorted();
-
-                                return (
-                                    <TableHead
-                                        key={header.id}
-                                        className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
-                                    >
-                                        {ableToSort ? (
-                                            <button
-                                                type="button"
-                                                onClick={header.column.getToggleSortingHandler()}
-                                                className="inline-flex items-center gap-1 rounded-sm uppercase tracking-wider hover:text-foreground"
-                                            >
-                                                {flexRender(
-                                                    header.column.columnDef.header,
-                                                    header.getContext()
-                                                )}
-
-                                                {sorted === "asc" && (
-                                                    <ArrowUp className="h-3.5 w-3.5" />
-                                                )}
-
-                                                {sorted === "desc" && (
-                                                    <ArrowDown className="h-3.5 w-3.5" />
-                                                )}
-                                            </button>
-                                        ) : (
-                                            flexRender(
-                                                header.column.columnDef.header,
-                                                header.getContext()
-                                            )
-                                        )}
-                                    </TableHead>
-                                );
-                            })}
-                        </TableRow>
-                    ))}
-                </TableHeader>
+                <TableHeaderData headerGroups = {tableForBudgets.getHeaderGroups()}/>
 
                 <TableBody>
                     {tableForBudgets.getRowModel().rows.length === 0 ? (
