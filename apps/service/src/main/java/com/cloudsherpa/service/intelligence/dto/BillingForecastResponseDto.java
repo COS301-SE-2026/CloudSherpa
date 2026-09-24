@@ -1,13 +1,14 @@
 package com.cloudsherpa.service.intelligence.dto;
 
-import com.cloudsherpa.service.intelligence.model.ForecastSeries;
+import com.cloudsherpa.service.intelligence.service.billing.BillingForecastValue;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 public record BillingForecastResponseDto(
     BigDecimal cumalativeBillingForecastValue,
     BigDecimal cumalitivePastForecastingValue,
-    ForecastSeries billingForecastSeries,
+    Map<String, BillingForecastValue> billingForecastSeries,
     List<String> failedForecastCharges,
     BigDecimal pastVariance,
     BigDecimal dailyBurnRate,
