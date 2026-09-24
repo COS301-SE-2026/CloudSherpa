@@ -51,7 +51,8 @@ public class WebhookEventProcessor {
     CloudAccount cloudAccount = null;
 
     if (pendingWebhookEvent.getCloudAccountId() != null) {
-      entityManager.getReference(CloudAccount.class, pendingWebhookEvent.getCloudAccountId());
+      cloudAccount =
+          entityManager.getReference(CloudAccount.class, pendingWebhookEvent.getCloudAccountId());
     }
 
     List<DeliveryTask> deliveryTasks = new ArrayList<>();
