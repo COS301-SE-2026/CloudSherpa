@@ -18,7 +18,6 @@ export function AlertsPage() {
     const { alerts, loading, forError, disable, enable } = useAlerts();
 
     const [search, setSearch] = useState("");
-
     const [filterType, setFilterType] = useState<"ALL" | TypeForAlerts>("ALL");
 
     const forFilters = useMemo(() => {
@@ -36,69 +35,70 @@ export function AlertsPage() {
     }, [alerts, search, filterType]);
 
     const activeCount = alerts.filter((alert) => alert.status === "ACTIVE").length;
+    const forTotalCount = alerts.length;
 
     return (
-        <div className="mx-auto max-w-6xl px-6 py-8">
-            <header className="mb-6">
-                <h1 className="mb-4 text-2xl font-semibold tracking-tight text-foreground">
-                    {" "}
-                    Alerts{" "}
-                </h1>
+        <div className="min-h-screen bg-background text-foreground">
+            <div className="mx-auto max-w-6xl px-6 py-8">
+                <header className="mb-6">
+                    <h1 className="mb-4 text-2xl font-semibold tracking-tight text-foreground">
+                        Alerts
+                    </h1>
 
-                <div className="mb-4 flex flex-wrap items-center gap-3">
-                    <Input
-                        className="h-9 w-64"
-                        placeholder="Search alerts"
-                        value={search}
-                        onChange={(change) => setSearch(change.target.value)}
-                    />
+                    <div className="mb-4 flex items-center gap-2">
+                        <Input
+                            className="h-9 w-64"
+                            placeholder="Search alerts"
+                            value={search}
+                            onChange={(change) => setSearch(change.target.value)}
+                        />
 
-                    <div className="inline-flex rounded-md border border-border bg-muted p-1">
-                        {FILTERS.map((filter) => (
-                            <button
-                                key={filter.value}
-                                type="button"
-                                onClick={() => setFilterType(filter.value)}
-                                className={
-                                    "rounded-sm px-3 py-1.5 text-sm font-medium transition-colors " +
-                                    (filterType === filter.value
-                                        ? "bg-primary text-foreground shadow-sm"
-                                        : "text-muted-foreground hover:text-foreground")
-                                }
-                            >
-                                {filter.label}
-                            </button>
-                        ))}
+                        <div className="inline-flex rounded-md border border-border bg-muted p-1">
+                            {FILTERS.map((filter) => (
+                                <button
+                                    key={filter.value}
+                                    type="button"
+                                    onClick={() => setFilterType(filter.value)}
+                                    className={
+                                        "rounded-sm px-3 py-1.5 text-sm font-medium transition-colors " +
+                                        (filterType === filter.value
+                                            ? "bg-primary text-primary-foreground shadow-sm"
+                                            : "text-muted-foreground hover:text-foreground")
+                                    }
+                                >
+                                    {filter.label}
+                                </button>
+                            ))}
+                        </div>
                     </div>
-                </div>
 
-                <p className="text-sm text-muted-foreground">
-                    {" "}
-                    {activeCount} active of {alerts.length} alerts{" "}
-                </p>
-            </header>
+                    <div className="mb-4 flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">
+                            {activeCount} active of {forTotalCount} alerts
+                        </span>
+                    </div>
+                </header>
 
-            {loading && (
-                <Card>
-                    <CardContent className="py-8 text-center text-sm text-muted-foreground">
-                        {" "}
-                        Loading alerts{" "}
-                    </CardContent>
-                </Card>
-            )}
+                {loading && (
+                    <Card>
+                        <CardContent className="py-8 text-center text-sm text-muted-foreground">
+                            Loading alerts
+                        </CardContent>
+                    </Card>
+                )}
 
-            {forError && (
-                <Card>
-                    <CardContent className="py-8 text-center text-sm text-destructive">
-                        {" "}
-                        {forError}{" "}
-                    </CardContent>
-                </Card>
-            )}
+                {forError && (
+                    <Card>
+                        <CardContent className="py-8 text-center text-sm text-destructive">
+                            {forError}
+                        </CardContent>
+                    </Card>
+                )}
 
-            {!loading && !forError && (
-                <AlertsList alerts={forFilters} disable={disable} enable={enable} />
-            )}
+                {!loading && !forError && (
+                    <AlertsList alerts={forFilters} disable={disable} enable={enable} />
+                )}
+            </div>
         </div>
     );
 }
