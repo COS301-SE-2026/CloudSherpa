@@ -21,6 +21,7 @@ import {
 } from "@/components/atoms/alert-dialog";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
+import { BudgetSection } from "@/features/budgets/components/budgetSection";
 
 interface PropsForMainPage {
     resourceId?: string;
@@ -33,7 +34,7 @@ export function MainPage({ resourceId, userId }: Readonly<PropsForMainPage>) {
 
     const [search, setSearch] = useState("");
 
-    const [selectedTab, setSelectedTab] = useState<"rules" | "thresholds">("thresholds");
+    const [selectedTab, setSelectedTab] = useState<"budgets" | "thresholds">("thresholds");
 
     const [popupOpen, setPopupOpen] = useState(false);
 
@@ -127,17 +128,17 @@ export function MainPage({ resourceId, userId }: Readonly<PropsForMainPage>) {
                 <header className="mb-6">
                     <h1 className="mb-4 text-2xl font-semibold tracking-tight text-foreground">
                         {" "}
-                        Alerts &amp; Thresholds{" "}
+                        Thresholds &amp; Budgets{" "}
                     </h1>
 
                     <Tabs
                         value={selectedTab}
-                        onValueChange={(value) => setSelectedTab(value as "rules" | "thresholds")}
+                        onValueChange={(value) => setSelectedTab(value as "budgets" | "thresholds")}
                     >
                         <TabsList>
-                            <TabsTrigger value="rules"> Alert Rules </TabsTrigger>
-
                             <TabsTrigger value="thresholds"> Thresholds </TabsTrigger>
+
+                            <TabsTrigger value="budgets"> Budgets </TabsTrigger>
                         </TabsList>
 
                         <TabsContent value="thresholds" className="mt-6">
@@ -158,7 +159,7 @@ export function MainPage({ resourceId, userId }: Readonly<PropsForMainPage>) {
 
                                 <Button onClick={handlingNewThreshold}>
                                     {" "}
-                                    <Plus className="h-4 w-4" /> New rule{" "}
+                                    <Plus className="h-4 w-4" /> New threshold{" "}
                                 </Button>
                             </div>
 
@@ -188,6 +189,11 @@ export function MainPage({ resourceId, userId }: Readonly<PropsForMainPage>) {
                                     onDelete={handlingDelete}
                                 />
                             )}
+                        </TabsContent>
+
+                        <TabsContent value="budgets" className="mt-6">
+                            {" "}
+                            <BudgetSection />{" "}
                         </TabsContent>
                     </Tabs>
                 </header>
