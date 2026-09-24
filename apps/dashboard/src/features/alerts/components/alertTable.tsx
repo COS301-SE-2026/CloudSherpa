@@ -8,27 +8,42 @@ import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/c
 import {ArrowUp, ArrowDown, Info} from "lucide-react";
 import { SEVERITY_COLOURS, STATUS_LABELS, TYPE } from "@/features/alerts/types/alertTypes";
 import type {Alert} from "@/features/alerts/types/alertTypes";
+import {toast} from "sonner";
 
 interface PropsForAlertsTable{
     alerts : Alert[];
-    onToggle : (alert : Alert, enabled : boolean) => void;
+    onToggle : (alert : Alert, enabled : boolean) => Promise<void>;
     info : (alert : Alert) => void;
 }
 
 interface ForColumns{
-    onToggle : (alert : Alert, enabled : boolean) => void;
+    onToggle : (alert : Alert, enabled : boolean) => Promise<void>;
     info : (alert : Alert) => void;
 }
 
 function helperForColumns({onToggle, info} : ForColumns) : ColumnDef<Alert>[]{
     return[
-        {id : "enabled", header : () => "STATUS", enableSorting : false, cell : ({row}) => (
-            <div className = "flex items-center gap-2">
-                <Switch checked = {row.original.status === "ACTIVE"} onCheckedChange = {(checked) => onToggle(row.original, checked)}/>
+        {id : "enabled", header : () => "STATUS", enableSorting : false, cell : ({row}) => {
+            const active = row.original.status === "ACTIVE";
 
-                <span className = "text-xs text-muted-foreground"> {STATUS_LABELS[row.original.status]} </span>
-            </div>
-        ),},
+            const handlingToggle = async (checked : boolean) => {
+                try{
+                    await onToggle(row.original, checked);
+
+                    toast.success(checked ? "Alert enabled" : "Alert disabled");
+                }catch{
+                    toast.error(checked ? "Failed to enable alert" : "Failed to disable alert");
+                }
+            };
+
+            return(
+                <div className = "flex items-center gap-2">
+                    <Switch checked = {active} onCheckedChange = {handlingToggle}/>
+
+                    <span className = "text-xs text-muted-foreground"> {STATUS_LABELS[row.original.status]} </span>
+                </div>
+            );
+        },},
 
         {accessorKey : "severity", header : () => "SEVERITY", cell : ({row}) => {
             const inactive = row.original.status !== "ACTIVE";
