@@ -1,8 +1,10 @@
 package com.cloudsherpa.service.billing.service;
 
 import com.cloudsherpa.lib.entities.NormalizedCosts;
+import com.cloudsherpa.lib.entities.Resource;
 import com.cloudsherpa.lib.repositories.CloudAccountRepository;
 import com.cloudsherpa.lib.repositories.NormalizedCostsRepository;
+import com.cloudsherpa.lib.repositories.ResourceRepository;
 import com.cloudsherpa.service.billing.dto.BillingChargeResponse;
 import com.cloudsherpa.service.billing.dto.BillingKpiRequest;
 import com.cloudsherpa.service.billing.dto.BillingKpiResponse;
@@ -27,15 +29,18 @@ public class BillingService {
 
   private final NormalizedCostsRepository normalizedCostsRepository;
   private final CloudAccountRepository cloudAccountRepository;
+  private final ResourceRepository resourceRepository;
   private static final Pattern TENANT_SCHEMA_PATTERN = Pattern.compile("^tenant_[a-f0-9_]{36}$");
 
   @PersistenceContext private EntityManager entityManager;
 
   public BillingService(
       NormalizedCostsRepository normalizedCostsRepository,
-      CloudAccountRepository cloudAccountRepository) {
+      CloudAccountRepository cloudAccountRepository,
+      ResourceRepository resourceRepository) {
     this.normalizedCostsRepository = normalizedCostsRepository;
     this.cloudAccountRepository = cloudAccountRepository;
+    this.resourceRepository = resourceRepository;
   }
 
   @Transactional
@@ -106,12 +111,7 @@ public class BillingService {
     List<BillingChargeResponse> response = new ArrayList<>();
 
     for (NormalizedCosts charge : charges) {
-      response.add(
-          new BillingChargeResponse(
-              charge.getResourceId(),
-              charge.getChargeId(),
-              charge.getServiceName(),
-              charge.getProvider()));
+      response.add(toBillingChargeResponse(charge));
     }
 
     return response;
@@ -166,5 +166,21 @@ public class BillingService {
       case "monthly" -> "Last 30 days";
       default -> "Custom range";
     };
+  }
+
+  private BillingChargeResponse toBillingChargeResponse(NormalizedCosts charge) {
+
+    Resource resource =
+        resourceRepository.findByResourceIdentifier(charge.getResourceId()).orElse(null);
+    String resourceName = resource != null ? resource.getResourceName() : null;
+
+    return new BillingChargeResponse(
+        charge.getResourceId(),
+        charge.getChargeId(),
+        charge.getServiceName(),
+        charge.getProvider(),
+        resourceName,
+        charge.getCostAmount(),
+        charge.getMetadata());
   }
 }

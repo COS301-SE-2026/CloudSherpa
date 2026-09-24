@@ -237,7 +237,9 @@ class BillingServiceTest {
     List<BillingChargeResponse> response = billingService.getCharges();
 
     assertEquals(
-        List.of(new BillingChargeResponse("resource-1", "charge-1", "EC2", ProviderEnum.AWS)),
+        List.of(
+            new BillingChargeResponse(
+                "resource-1", "charge-1", "EC2", ProviderEnum.AWS, null, null, null)),
         response);
 
     verify(normalizedCostsRepository).findDistinctByChargeId();
