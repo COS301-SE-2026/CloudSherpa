@@ -11,6 +11,16 @@ import { useEffect } from "react";
 import { useMakeBillingForecast } from "../../hooks/useMakeBillingForecast";
 import { getCurrencySymbol } from "@/lib/utils";
 import { Spinner } from "@/components/atoms/spinner";
+import { BillingSummaryDto } from "../../types/dtos";
+
+const getAccelerationFromSummary = (
+    summary: BillingSummaryDto | undefined,
+    currency: string,
+    highestAccelerationCost: number | undefined
+) =>
+    highestAccelerationCost !== undefined && summary?.accelerationRate
+        ? `${currency}${summary?.accelerationRate.toFixed(4)}/day\u00B2`
+        : "-";
 
 export default function BillingIntelligence() {
     const {
@@ -165,11 +175,11 @@ export default function BillingIntelligence() {
 
                 <BillingStatisticsCard
                     name="Highest cost acceleration"
-                    value={
-                        highestAccelerationCost !== undefined && forSummary?.accelerationRate
-                            ? `${currency}${forSummary?.accelerationRate.toFixed(4)}/day\u00B2`
-                            : "-"
-                    }
+                    value={getAccelerationFromSummary(
+                        forSummary,
+                        currency,
+                        highestAccelerationCost
+                    )}
                     description={
                         forSummary
                             ? `Charge: ${forSummary?.highestCostAccelerationLabel || "-"}`
