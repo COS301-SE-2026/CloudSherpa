@@ -80,7 +80,7 @@ export default function BillingIntelligence() {
 
     const addButton = (<Button size = "sm" onClick = {() => setBudgetPopupOpen(true)}> <Plus className = "h-4 w-4"/> Add budget </Button>);
 
-    const budgetPopup = (<BudgetPopup open = {budgetPopupOpen} onClose = {() => setBudgetPopupOpen(false)} onSubmit = {handlingCreateBudget}/>);
+    const budgetPopup = (<BudgetPopup open = {budgetPopupOpen} userId="user-1" onClose = {() => setBudgetPopupOpen(false)} onSubmit = {handlingCreateBudget}/>);
 
     if (!selected) {
         return (

@@ -24,11 +24,11 @@ export function useBudget(scope?: string, scopeId?: string) : BudegtResult{
     useEffect(() => {
         let cancelled = false;
 
-        setLoading(true);
-
-        setForError(null);
-
         (async () => {
+            setLoading(true);
+
+            setForError(null);
+            
             try{
                 const forData = await fetchBudgets(scope, scopeId);
 

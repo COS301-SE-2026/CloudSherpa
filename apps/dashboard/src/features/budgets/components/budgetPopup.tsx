@@ -16,11 +16,12 @@ import type {CloudResource} from "@/lib/fetch/dto/cloud-resource";
 interface PropsForPopup{
     open : boolean;
     initial?: Budget | null;
+    userId: string; 
     onClose : () => void;
     onSubmit : (payload : CreateBudgetRequest) => Promise<void>;
 }
 
-export function BudgetPopup({open, initial, onClose, onSubmit} : Readonly<PropsForPopup>){
+export function BudgetPopup({open, initial, userId: string, onClose, onSubmit} : Readonly<PropsForPopup>){
     const {user} = useAuthContext();
 
     const [scope, setScope] = useState<ScopeForBudget>(initial?.scope ?? "TENANT");
@@ -54,30 +55,6 @@ export function BudgetPopup({open, initial, onClose, onSubmit} : Readonly<PropsF
     const [scopeError, setScopeError] = useState<string | null>(null);
 
     useEffect(() => {
-        if(initial){
-            setScope(initial.scope);
-            setAmount(initial.amount);
-            setCurrency(initial.currency);
-            setWindowDays(initial.window_days);
-            setEnabled(initial.enabled);
-            setSelectedAccountId(initial.scope === "ACCOUNT" || initial.scope === "RESOURCE" ? initial.scope_id : null);
-            setSelectedResourceId(initial.scope === "RESOURCE" ? initial.scope_id : null);
-        }else{
-            setScope("TENANT");
-            setAmount(0);
-            setCurrency("USD");
-            setWindowDays(30);
-            setEnabled(true);
-            setSelectedAccountId(null);
-            setSelectedResourceId(null);
-        }
-
-        setAmountError(null);
-        setWindowError(null);
-        setScopeError(null);
-    }, [initial, open]);
-
-    useEffect(() => {
         if(!open){
             return;
         }
@@ -88,39 +65,55 @@ export function BudgetPopup({open, initial, onClose, onSubmit} : Readonly<PropsF
 
         let cancelled = false;
 
-        setLoadingAccounts(true);
+        (async () => {
+            setLoadingAccounts(true);
 
-        getAwsAccountConnections().then((forData) => {if(!cancelled){
-            setAccounts(forData);
-        }}).catch(() => {if(!cancelled){
-            setLoadingAccounts(false);
-        }}).finally(() => {if(cancelled){
-            setLoadingAccounts(false);
-        }});
+            try{
+                const forData = await getAwsAccountConnections();
+
+                if(!cancelled){
+                    setAccounts(forData);
+                }
+            }catch{
+                if(!cancelled){
+                    setAccounts([]);
+                }
+            }finally{
+                if(!cancelled){
+                    setLoadingAccounts(false);
+                }
+            }
+        })();
 
         return () => {cancelled = true};
     }, [open, scope]);
 
     useEffect(() => {
         if(scope !== "RESOURCE" || !selectedAccountId){
-            setResources([]);
-
             return;
         }
 
         let cancelled = false;
 
-        setLoadingResources(true);
+        (async () => {
+            setLoadingResources(true);
 
-        getAwsAccountResources(selectedAccountId).then((forData) => {
-            if(!cancelled){
-                setResources(forData);
+            try{
+                const forData = await getAwsAccountResources(selectedAccountId);
+
+                if(!cancelled){
+                    setResources(forData);
+                }
+            }catch{
+                if(!cancelled){
+                    setResources([]);
+                }
+            }finally{
+                if(!cancelled){
+                    setLoadingResources(false);
+                }
             }
-        }).catch(() => {if(!cancelled){
-            setResources([]);
-        }}).finally(() => {if(!cancelled){
-            setLoadingResources(false);
-        }});
+        })();
 
         return () => {cancelled = true;};
     }, [scope, selectedAccountId]);
@@ -139,7 +132,7 @@ export function BudgetPopup({open, initial, onClose, onSubmit} : Readonly<PropsF
 
         setScopeError(null);
 
-        const resolvedScopeId = scope === "TENANT" ? user?.userId ?? null : scope === "ACCOUNT" ? selectedResourceId : selectedResourceId;
+        const resolvedScopeId = scope === "TENANT" ? user?.userId ?? null : scope === "ACCOUNT" ? selectedAccountId : selectedResourceId;
 
         if(!resolvedScopeId){
             setScopeError(scope === "TENANT" ? "Not signed in" : scope === "ACCOUNT" ? "Select an account" : "Select an account and a resource");

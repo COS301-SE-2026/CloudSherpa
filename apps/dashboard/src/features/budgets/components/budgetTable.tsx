@@ -5,7 +5,7 @@ import {ColumnDef, flexRender, getCoreRowModel, getSortedRowModel, SortingState,
 import {Button} from "@/components/atoms/button";
 import {Switch} from "@/components/atoms/switch";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/atoms/table";
-import {ArrowUp, ArrowDown, Pencil, Trash2, Currency} from "lucide-react";
+import {ArrowUp, ArrowDown, Pencil, Trash2} from "lucide-react";
 import type {Budget} from "@/features/budgets/types/budgetTypes";
 
 interface PropsForBudget{

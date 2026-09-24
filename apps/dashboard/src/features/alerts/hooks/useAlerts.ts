@@ -1,52 +1,86 @@
-import {useCallback, useEffect, useState} from "react";
-import type {Alert, TypeForAlerts} from "@/features/alerts/types/alertTypes";
-import {acknowledgeAlert, dismissAlert, fetchAlerts} from "@/features/alerts/alerts";
+"use client";
 
-interface AlertsRequest{
-    alerts : Alert[];
-    loading : boolean;
-    forError : string | null;
-    refreshing : () => Promise<void>;
-    acknowledge : (alertId : string) => Promise<void>;
-    dismiss : (alertId : string) => Promise<void>;
+import { useCallback, useEffect, useState } from "react";
+import {
+  acknowledgeAlert,
+  fetchAlerts,
+  dismissAlert,
+} from "@/features/alerts/alerts";
+import type { Alert, TypeForAlerts } from "@/features/alerts/types/alertTypes";
+
+interface AlertsResult {
+  alerts: Alert[];
+  loading: boolean;
+  forError: string | null;
+  refreshing: () => Promise<void>;
+  acknowledge: (alertId: string) => Promise<void>;
+  dismiss: (alertId: string) => Promise<void>;
 }
 
-export function useAlerts(typeForAlert?: TypeForAlerts) : AlertsRequest{
-    const [alerts, setAlerts] = useState<Alert[]>([]);
+export function useAlerts(typeForAlert?: TypeForAlerts): AlertsResult {
+  const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [forError, setForError] = useState<string | null>(null);
 
-    const [loading, setLoading] = useState(false);
+  const refreshing = useCallback(async () => {
+    setLoading(true);
+    setForError(null);
 
-    const [forError, setForError] = useState<string | null>(null);
+    try {
+      const forData = await fetchAlerts(typeForAlert);
+      setAlerts(forData);
+    } catch (error) {
+      setForError(error instanceof Error ? error.message : "Failed to load alerts");
+    } finally {
+      setLoading(false);
+    }
+  }, [typeForAlert]);
 
-    const refreshing = useCallback(async () => {
-        setLoading(true);
+  useEffect(() => {
+    let cancelled = false;
 
-        setForError(null);
-
-        try{
-            setAlerts(await fetchAlerts(typeForAlert));
-        }catch(error){
-            setForError(error instanceof Error ? error.message : "Failed to load alerts.");
-        }finally{
-            setLoading(false);
+    (async () => {
+      try {
+        const forData = await fetchAlerts(typeForAlert);
+        if (!cancelled) setAlerts(forData);
+      } catch (error) {
+        if (!cancelled) {
+          setForError(error instanceof Error ? error.message : "Failed to load alerts");
         }
-    }, [typeForAlert]);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
 
-    useEffect(() => {
-        void refreshing();
-    }, [refreshing]);
+    return () => {
+      cancelled = true;
+    };
+  }, [typeForAlert]);
 
-    const acknowledge = useCallback(async (alertId : string) => {
-        await acknowledgeAlert(alertId);
+  const acknowledge = useCallback(async (alertId: string) => {
+    await acknowledgeAlert(alertId);
+    setAlerts((previous) =>
+      previous.map((alert) =>
+        alert.alertId === alertId ? { ...alert, acknowledged: true } : alert
+      )
+    );
+  }, []);
 
-        setAlerts((previous) => previous.map((forAlerts) => forAlerts.alertId === alertId ? {...forAlerts, status : "ACKNOWLEDGED"} : forAlerts,),);
-    }, []);
+  const dismiss = useCallback(async (alertId: string) => {
+    await dismissAlert(alertId);
+    setAlerts((previous) =>
+      previous.map((alert) =>
+        alert.alertId === alertId ? { ...alert, dismissed: true } : alert
+      )
+    );
+  }, []);
 
-    const dismiss = useCallback(async (alertId : string) => {
-        await dismissAlert(alertId);
-
-        setAlerts((previous) => previous.map((forAlerts) => forAlerts.alertId === alertId ? {...forAlerts, status : "DISMISSED"} : forAlerts),);
-    }, []);
-
-    return {alerts, loading, forError, refreshing, acknowledge, dismiss};
+  return {
+    alerts,
+    loading,
+    forError,
+    refreshing,
+    acknowledge,
+    dismiss
+  };
 }

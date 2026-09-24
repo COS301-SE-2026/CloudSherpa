@@ -116,7 +116,7 @@ export function BudgetSection(){
                 <BudgetTable budgets = {forFilters} edit = {handlingEdit} toggleEnabled = {handlingToggle} onDelete = {setDeleteBudget}/>
             )}
 
-            <BudgetPopup key = {editing?.budget_id ?? "new"} open = {popupOpen} initial = {editing} onClose = {() => setPopupOpen(false)} onSubmit = {handlingSubmit}/>
+            <BudgetPopup key = {editing?.budget_id ?? "new"} open = {popupOpen} initial = {editing} userId="user-1" onClose = {() => setPopupOpen(false)} onSubmit = {handlingSubmit}/>
 
             <AlertDialog open = {deleteBudget !== null} onOpenChange = {(change) => !change && setDeleteBudget(null)}>
                 <AlertDialogContent>
