@@ -166,7 +166,7 @@ export default function BillingIntelligence() {
                 <BillingStatisticsCard
                     name="Highest cost acceleration"
                     value={
-                        highestAccelerationCost !== undefined
+                        highestAccelerationCost !== undefined && forSummary?.accelerationRate
                             ? `${currency}${forSummary?.accelerationRate.toFixed(4)}/day\u00B2`
                             : "-"
                     }
