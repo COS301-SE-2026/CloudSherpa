@@ -52,11 +52,12 @@ export function AlertDialog({
                         <span className = "rounded-sm border border-border px-2 py-0.5 text-xs text-muted-foreground"> {STATUS_LABELS[alert.status]} </span>
                     </div>
 
-                    <div className = "grid grid-cols-2 gap-2">
+                    <div className = "space-y-2">
+                        <div className = "flex gap-2">
                         <span className = "text-muted-foreground"> Created </span>
 
                         <span className = "text-foreground"> {alert.createdAt ? new Date(alert.createdAt).toLocaleString() : "-"} </span>
-
+                        </div>
                         {alert.resolvedAt && (
                             <>
                                 <span className = "text-muted-foreground"> Resolved </span>

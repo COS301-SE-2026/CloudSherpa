@@ -46,8 +46,8 @@ export function AlertsPage(){
                     <div className = "inline-flex rounded-md border border-border bg-muted p-1">
                         {FILTERS.map((filter) => (
                             <button key = {filter.value} type = "button" onClick = {() => setFilterType(filter.value)}
-                                    className = {"rounded-sm px-3 py-1.5 text-sm font-medium transition-colors" + 
-                                    (filterType === filter.value ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}>
+                                    className = {"rounded-sm px-3 py-1.5 text-sm font-medium transition-colors " + 
+                                    (filterType === filter.value ? "bg-primary text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}>
 
                                         {filter.label}
                             </button>

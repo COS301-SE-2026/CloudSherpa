@@ -18,7 +18,7 @@ export function AlertCard({alert, open} : Readonly<PropsForAlertCard>){
             <CardHeader className = "pb-2">
                 <div className = "flex items-start justify-between gap-4">
                     <div className = "flex flex-wrap items-center gap-2">
-                        <span className = {"text-xs font-semibold uppercase tracking-wider" + classForSeverity}> {alert.severity} </span>
+                        <span className = {"text-xs font-semibold uppercase tracking-wider " + classForSeverity}> {alert.severity} </span>
 
                         <span className = "rounded-sm border border-border px-2 py-0.5 text-xs text-muted-foreground"> {TYPE[alert.alertType]} </span>
                     </div>

@@ -251,10 +251,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         <SidebarGroupContent>
                             <SidebarMenu>
                                 <SidebarMenuItem>
-                                    <SidebarMenuButton asChild tooltip="Alert & Thresholds">
+                                    <SidebarMenuButton asChild tooltip="Alerts">
+                                        <Link href="/alerts">
+                                            <ShieldAlert />
+                                            <span>Alerts</span>
+                                        </Link>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                                <SidebarMenuItem>
+                                    <SidebarMenuButton asChild tooltip="Thresholds & Budgets">
                                         <Link href="/thresholds">
                                             <ShieldAlert />
-                                            <span>Alerts & Thresholds</span>
+                                            <span>Thresholds & Budgets </span>
                                         </Link>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
