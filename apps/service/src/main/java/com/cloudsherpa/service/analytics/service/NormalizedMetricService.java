@@ -19,6 +19,7 @@ import com.cloudsherpa.service.metrics.ResourceProviderResolver;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -182,13 +183,16 @@ public class NormalizedMetricService {
 
     long currentSegment = segmentedSeries.get(0).segmentId();
 
-    for (SegmentedMetric series : segmentedSeries) {
-      if (series.segmentId() != currentSegment) {
-        logger.info("Segment changed");
-        currentSegment = series.segmentId();
+    SegmentedMetric previous = null;
+
+    for (SegmentedMetric metric : segmentedSeries) {
+      if (previous != null && metric.segmentId() != currentSegment) {
+        result.addLast(psuedoMetric(previous));
+        currentSegment = metric.segmentId();
       }
 
-      result.addLast(toNormalizedMetric(series));
+      result.addLast(toNormalizedMetric(metric));
+      previous = metric;
     }
 
     return result;
@@ -231,5 +235,16 @@ public class NormalizedMetricService {
         .periodStart(metric.periodStart().atOffset(ZoneOffset.UTC))
         .periodEnd(metric.periodEnd().atOffset(ZoneOffset.UTC))
         .build();
+  }
+
+  private NormalizedMetrics psuedoMetric(SegmentedMetric metric) {
+    NormalizedMetrics normalizedMetrics = toNormalizedMetric(metric);
+    normalizedMetrics.setMetricValue(null);
+    normalizedMetrics.setMetricPeriodStart(
+        OffsetDateTime.ofInstant(metric.periodStart().plusMillis(1), ZoneId.of("UTC")));
+    normalizedMetrics.setMetricPeriodEnd(
+        OffsetDateTime.ofInstant(metric.periodEnd().plusMillis(1), ZoneId.of("UTC")));
+
+    return normalizedMetrics;
   }
 }

@@ -112,6 +112,18 @@ public class NormalizedMetrics {
       this.metricName = metricName;
   }
 
+  public void setMetricValue(BigDecimal metricValue) {
+    this.metricValue = metricValue;
+  }
+
+  public void setMetricPeriodStart(OffsetDateTime periodStart) {
+    this.periodStart = periodStart;
+  }
+
+  public void setMetricPeriodEnd(OffsetDateTime periodEnd) {
+    this.periodEnd = periodEnd;
+  }
+
   public static class Builder {
     private UUID metricId;
     private UUID resourceId;
