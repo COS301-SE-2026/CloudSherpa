@@ -16,6 +16,7 @@ import { useUsageHistoricalData } from "../../hooks/useUsageHistoricalData";
 import { UsageErrorAlert } from "./usageError";
 import { UsageError } from "../../types/errors";
 import { Spinner } from "@/components/atoms/spinner";
+import { AccountType } from "@/lib/fetch/dto/cloud-account";
 
 function generateMockForecast(days: number): UsageForecastData {
     const hours = days * 24;
@@ -49,7 +50,7 @@ export default function UsageIntelligence() {
     useFetchMetrics();
     const resourceId = useUsageIntelligenceConfigStore((state) => state.resourceId);
     const metricName = useUsageIntelligenceConfigStore((state) => state.metricName);
-
+    const provider = useUsageIntelligenceConfigStore((state) => state.provider);
     // const currentUnit = getMetricUnit(metricType);
 
     const setUsageForecast = useUsageIntelligenceStore((state) => state.setUsageForecast);
@@ -100,6 +101,10 @@ export default function UsageIntelligence() {
         void loadForecast();
     }, [resourceId, metricName, requestUsageForecast, setUsageForecast]);
 
+    // Determines whether the t
+    const aggregatedHistory =
+        provider === AccountType.AZURE_SUBSCRIPTION || provider === AccountType.GCP_PROJECT;
+
     // Loading state
     const loading: boolean = isUsageForecastResponseLoading || isHistoricalUsageLoading;
 
@@ -128,6 +133,7 @@ export default function UsageIntelligence() {
                     historicalUsageSeries={historicalUsageSeries}
                     usageError={usageError}
                     loading={loading}
+                    aggregatedHistory={aggregatedHistory}
                 />
             );
         } else {
