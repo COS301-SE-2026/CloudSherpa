@@ -189,8 +189,7 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
                         </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                        Acknowledge that you have applied the recommendation to the specified
-                        resource
+                        Acknowledge that the recommendation for this resource has been applied
                     </TooltipContent>
                 </Tooltip>
                 <Tooltip>
@@ -205,7 +204,7 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
                         </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                        Dismiss to not receive more notifications for this specific recommendation
+                        Hide this recommendation <br /> You can re-enable it at any time
                     </TooltipContent>
                 </Tooltip>
             </>
