@@ -47,7 +47,7 @@ export function ChartConfigFormInner({ ChartId }: Readonly<ChartConfigFormProps>
 
     const handleSave = async () => {
         if (!config.displayName || config.displayName.trim() === "") {
-            setIsError("Enter a dispaly name to save changes");
+            setIsError("Enter a widget title to save changes");
             return;
         }
         setIsSaving(true);
@@ -89,7 +89,11 @@ export function ChartConfigFormInner({ ChartId }: Readonly<ChartConfigFormProps>
                                 {isError}
                             </div>
                         )}
-                        <ChartFormDetails configuration={config} setConfiguration={setConfig} />
+                        <ChartFormDetails
+                            configuration={config}
+                            setConfiguration={setConfig}
+                            error={isError}
+                        />
                         <ChartFormConnection configuration={config} setConfiguration={setConfig} />
                         <ChartFormResource
                             key={config.accountId || "empty-connection"}
