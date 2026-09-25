@@ -25,7 +25,7 @@ public class AiDashboardWidget {
 
   @Enumerated(EnumType.STRING)
   @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-  @Column(name = "type", nullable = false, columnDefinition = "public.type_enum")
+  @Column(name = "widget_type", nullable = false, columnDefinition = "public.type_enum")
   private TypeEnum widgetType;
 
   @Column(name = "start_x", nullable = false)

@@ -3,6 +3,7 @@ package com.cloudsherpa.lib.entities;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.MapsId;
@@ -19,8 +20,9 @@ public class AiKpiWidget {
 
   @OneToOne
   @MapsId
-  private AiDashboardWidget widget;
+  @JoinColumn(name = "widget_id", referencedColumnName = "widget_id")
 
+  private AiDashboardWidget widget;
   @Column(name = "charge_ids", nullable = false, columnDefinition = "varchar(2128)[]")
   private String[] chargeIds;
 

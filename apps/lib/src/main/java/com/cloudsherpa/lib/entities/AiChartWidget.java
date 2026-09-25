@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.MapsId;
@@ -24,6 +25,7 @@ public class AiChartWidget {
 
   @OneToOne
   @MapsId
+  @JoinColumn(name = "widget_id", referencedColumnName = "widget_id")
   private AiDashboardWidget widget;
 
   @Column(name = "chart_type", nullable = false, length = 50)
