@@ -121,13 +121,22 @@ export function KPIConfigTable<TValue>({
         );
     } else if (table.getRowModel().rows?.length) {
         tableBodyContent = table.getRowModel().rows.map((row) => (
-            <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+            <TableRow
+                key={row.id}
+                data-state={row.getIsSelected() && "selected"}
+                onClick={row.getToggleExpandedHandler()}
+            >
                 {row.getVisibleCells().map((cell) => (
                     <TableCell
                         key={cell.id}
                         style={{
                             width: cell.column.getSize(),
                             maxWidth: cell.column.getSize(),
+                        }}
+                        onClick={(e) => {
+                            if (cell.column.id === "select") {
+                                e.stopPropagation();
+                            }
                         }}
                     >
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
