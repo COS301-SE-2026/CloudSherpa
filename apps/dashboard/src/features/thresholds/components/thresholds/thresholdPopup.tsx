@@ -43,6 +43,12 @@ const PROVIDER_MAP: Record<string, string> = {
     GCP: "GCP_PROJECT",
 };
 
+const REVERSE_PROVIDER_MAP : Record<string, string> = {
+    AWS_ACCOUNT : "AWS",
+    AZURE_SUBSCRIPTION : "AZURE",
+    GCP_PROJECT : "GCP",
+};
+
 interface PropsForThresholds {
     open: boolean;
     initial?: Threshold | null;
@@ -88,38 +94,6 @@ export function ThresholdPopup({
 
     const [activeResource, setActiveResource] = useState<CloudResource[]>([]);
 
-    const needsResourceSelection = !resourceIdPreset;
-
-    useEffect(() => {
-        if (!needsResourceSelection || !provider) {
-            return;
-        }
-
-        getAwsAccountConnections().then((retrievedConnections) => {
-            const target = PROVIDER_MAP[provider];
-
-            const filtered = retrievedConnections.filter(
-                (connection) => (connection.accountType || "").toUpperCase() === target
-            );
-
-            setConnection(filtered);
-        });
-    }, [needsResourceSelection, provider]);
-
-    useEffect(() => {
-        if (!needsResourceSelection || !accountId) {
-            return;
-        }
-
-        getAwsAccountResources(accountId).then((resources) => {
-            const active = resources.filter(
-                (forResources) => forResources.status === ResourceStatus.ACTIVE
-            );
-
-            setActiveResource(active);
-        });
-    }, [needsResourceSelection, accountId]);
-
     const allAvailableMetrics = useMetricStore((store: MetricStore) => store.getMetricList);
 
     const availableMetrics = resourceId ? (allAvailableMetrics()[resourceId] ?? []) : [];
@@ -128,16 +102,106 @@ export function ThresholdPopup({
 
     const resolvedResourceId = resourceIdPreset ?? resourceId;
 
+    useEffect(() => {
+        if(!open){
+            return;
+        }
+
+        if(!initial?.resourceId){
+            return;
+        }
+
+        if(provider){
+            return;
+        }
+
+        let cancelled = false;
+
+        (async () => {
+            const allConnections = await getAwsAccountConnections();
+
+            for(const connect of allConnections){
+                if(cancelled){
+                    return;
+                }
+
+                const resources = await getAwsAccountResources(connect.id);
+
+                if(cancelled){
+                    return;
+                }
+
+                if(resources.some((res) => res.id === initial.resourceId)){
+                    const providerKey = REVERSE_PROVIDER_MAP[(connect.accountType || "").toUpperCase()];
+
+                    if(providerKey){
+                        setProvider(providerKey);
+                        setAccountId(connect.id);
+                        setResourceId(initial.resourceId);
+                    }
+
+                    return;
+                }
+            }
+        })();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [open, initial?.resourceId, provider]);
+
+    useEffect(() => {
+        if(!provider){
+            return;
+        }
+
+        getAwsAccountConnections().then((gettingConnections) => {
+            const forTarget = PROVIDER_MAP[provider];
+
+            const forFiltered = gettingConnections.filter((conn) => (conn.accountType || "").toUpperCase() === forTarget);
+
+            setConnection(forFiltered);
+        });
+    }, [provider]);
+
+    useEffect(() => {
+        if(!accountId){
+            return;
+        }
+
+        getAwsAccountResources(accountId).then((resources) => {
+            const active = resources.filter((forResources) => forResources.status === ResourceStatus.ACTIVE);
+
+            setActiveResource(active);
+        });
+    }, [accountId]);
+
+    const handlingProviderChange = (current : string) => {
+        setProvider(current.toUpperCase());
+        setAccountId(null);
+        setResourceId(null);
+        setMetricName("");
+    };
+
+    const handlingAccountChange = (current : string) => {
+        setAccountId(current);
+        setResourceId(null);
+        setMetricName("");
+    };
+
+    const handlingResourceChange = (current : string) => {
+        setResourceId(current);
+        setMetricName("");
+
+        if(resourceError){
+            setResourceError(null);
+        }
+    };
+
     const handlingSubmit = async (submitting: React.FormEvent) => {
         submitting.preventDefault();
 
         let hasError = false;
-
-        if (needsResourceSelection && !resolvedResourceId) {
-            setResourceError("Please select a resource");
-
-            hasError = true;
-        }
 
         if (metricName.trim() === "") {
             setMetricError("Please fill out this field");
@@ -186,78 +250,59 @@ export function ThresholdPopup({
                 </DialogHeader>
 
                 <form onSubmit={handlingSubmit} className="space-y-4">
-                    {needsResourceSelection && (
-                        <>
-                            <div className="grid gap-2">
-                                <Label> Provider </Label>
+                    <div className="grid gap-2">
+                        <Label> Provider </Label>
 
-                                <Dropdown
-                                    value={provider}
-                                    options={PROVIDERS.map((provider) => ({
-                                        value: provider,
-                                        label: provider,
-                                    }))}
-                                    onSelect={(current) => {
-                                        setProvider(current.toUpperCase());
-                                        setAccountId(null);
-                                        setResourceId(null);
-                                        setMetricName("");
-                                    }}
-                                    disableSearch={true}
-                                    widthVariant="full"
-                                    placeholder="Select provider"
-                                />
-                            </div>
+                        <Dropdown
+                            value={provider}
+                            options={PROVIDERS.map((provider) => ({
+                                value: provider,
+                                label: provider,
+                            }))}
+                            onSelect={handlingProviderChange}
+                            disableSearch={true}
+                            widthVariant="full"
+                            placeholder="Select provider"
+                        />
+                    </div>
 
-                            <div className="grid gap-2">
-                                <Label> Connection </Label>
+                    <div className="grid gap-2">
+                        <Label> Connection </Label>
 
-                                <Dropdown
-                                    value={accountId}
-                                    options={connection.map((connections) => ({
-                                        value: connections.id,
-                                        label: connections.displayName,
-                                    }))}
-                                    onSelect={(current) => {
-                                        setAccountId(current);
-                                        setResourceId(null);
-                                        setMetricName("");
-                                    }}
-                                    disabled={!provider}
-                                    widthVariant="full"
-                                    placeholder="Select connection"
-                                    emptyMessage="No connections found"
-                                />
-                            </div>
+                        <Dropdown
+                            value={accountId}
+                            options={connection.map((connections) => ({
+                                value: connections.id,
+                                label: connections.displayName,
+                            }))}
+                            onSelect={handlingAccountChange}
+                            disabled={!provider}
+                            widthVariant="full"
+                            placeholder="Select connection"
+                            emptyMessage="No connections found"
+                        />
+                    </div>
 
-                            <div className="grid gap-2">
-                                <Label> Resource </Label>
+                    <div className="grid gap-2">
+                        <Label> Resource </Label>
 
-                                <Dropdown
-                                    value={resourceId}
-                                    options={activeResource.map((resource) => ({
-                                        value: resource.id,
-                                        label: resource.resourceName,
-                                    }))}
-                                    onSelect={(current) => {
-                                        setResourceId(current);
-                                        setMetricName("");
-                                        if (resourceError) {
-                                            setResourceError(null);
-                                        }
-                                    }}
-                                    disabled={!accountId}
-                                    widthVariant="full"
-                                    placeholder="Select resource"
-                                    emptyMessage="No resources found"
-                                />
+                        <Dropdown
+                            value={resourceId}
+                            options={activeResource.map((resource) => ({
+                                value: resource.id,
+                                label: resource.resourceName,
+                            }))}
+                            onSelect={handlingResourceChange}
+                            disabled={!accountId}
+                            widthVariant="full"
+                            placeholder="Select resource"
+                            emptyMessage="No resources found"
+                        />
 
-                                {resourceError && (
-                                    <p className="text-xs text-destructive"> {resourceError} </p>
-                                )}
-                            </div>
-                        </>
-                    )}
+                        {resourceError && (
+                            <p className="text-xs text-destructive"> {resourceError} </p>
+                        )}
+                    </div>
 
                     <div className="space-y-2">
                         <Label htmlFor="metricName"> Metric </Label>
