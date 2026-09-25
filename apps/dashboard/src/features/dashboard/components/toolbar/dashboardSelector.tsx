@@ -137,43 +137,45 @@ export function DashboardSelector({
                                         {dashboards.map((d) => (
                                             <Tooltip key={d.id}>
                                                 <TooltipTrigger className="w-full" asChild>
-                                                    <CommandItem
-                                                        value={d.id}
-                                                        keywords={[d.displayName]}
-                                                        className="group flex items-center justify-between cursor-pointer"
-                                                        onSelect={() => {
-                                                            onSelect(d.id);
-                                                            setOpen(false);
-                                                        }}
-                                                    >
-                                                        <div className="flex items-center flex-1 overflow-hidden w-full gap-2">
-                                                            <Check
-                                                                className={cn(
-                                                                    " h-4 w-4 shrink-0",
-                                                                    selectedId === d.id
-                                                                        ? "opacity-100"
-                                                                        : "opacity-0"
-                                                                )}
-                                                            />
-                                                            <span className="truncate">
-                                                                {d.displayName}
-                                                            </span>
-                                                        </div>
-
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            className={cn(
-                                                                "h-6 w-6 shrink-0 opacity-0 group-hover:opacity-100"
-                                                            )}
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                onDelete(d.id);
+                                                    <div className="w-full ">
+                                                        <CommandItem
+                                                            value={d.id}
+                                                            keywords={[d.displayName]}
+                                                            className="group flex items-center justify-between cursor-pointer z-100"
+                                                            onSelect={() => {
+                                                                onSelect(d.id);
+                                                                setOpen(false);
                                                             }}
                                                         >
-                                                            <Trash className="h-3.5 w-3.5" />
-                                                        </Button>
-                                                    </CommandItem>
+                                                            <div className="flex items-center flex-1 overflow-hidden w-full gap-2">
+                                                                <Check
+                                                                    className={cn(
+                                                                        " h-4 w-4 shrink-0",
+                                                                        selectedId === d.id
+                                                                            ? "opacity-100"
+                                                                            : "opacity-0"
+                                                                    )}
+                                                                />
+                                                                <span className="truncate">
+                                                                    {d.displayName}
+                                                                </span>
+                                                            </div>
+
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className={cn(
+                                                                    "h-6 w-6 shrink-0 opacity-0 group-hover:opacity-100"
+                                                                )}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    onDelete(d.id);
+                                                                }}
+                                                            >
+                                                                <Trash className="h-3.5 w-3.5" />
+                                                            </Button>
+                                                        </CommandItem>
+                                                    </div>
                                                 </TooltipTrigger>
                                                 <TooltipContent side="right" align="start">
                                                     {d.displayName}
