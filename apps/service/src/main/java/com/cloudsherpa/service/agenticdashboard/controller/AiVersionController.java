@@ -1,7 +1,9 @@
 package com.cloudsherpa.service.agenticdashboard.controller;
 
+import com.cloudsherpa.lib.entities.AiDashboardVersion;
 import com.cloudsherpa.service.agenticdashboard.dto.AiVersionResponseDto;
 import com.cloudsherpa.service.agenticdashboard.dto.AiVersionSummaryDto;
+import com.cloudsherpa.service.agenticdashboard.service.AiDashboardVersionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -22,6 +24,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/ai/sessions/{sessionId}/versions")
 @Tag(name = "AI Dashboard", description = "Agentic Dashboard Construction Operations")
 public class AiVersionController {
+
+  private final AiDashboardVersionService versionService;
+
+  public AiVersionController(AiDashboardVersionService versionService) {
+    this.versionService = versionService;
+  }
 
   @Operation(
       summary = "Get AI dashboard versions",
@@ -45,7 +53,12 @@ public class AiVersionController {
   public ResponseEntity<List<AiVersionSummaryDto>> getVersions(
       @AuthenticationPrincipal Jwt jwt, @PathVariable UUID sessionId) {
 
-    return ResponseEntity.ok().build();
+    UUID userId = UUID.fromString(jwt.getSubject());
+
+    List<AiVersionSummaryDto> response =
+        versionService.getVersions(userId, sessionId).stream().map(this::toSummary).toList();
+
+    return ResponseEntity.ok(response);
   }
 
   @Operation(
@@ -73,6 +86,18 @@ public class AiVersionController {
       @PathVariable UUID sessionId,
       @PathVariable UUID versionId) {
 
-    return ResponseEntity.ok().build();
+    UUID userId = UUID.fromString(jwt.getSubject());
+
+    return ResponseEntity.ok(versionService.getVersionResponse(userId, sessionId, versionId));
+  }
+
+  private AiVersionSummaryDto toSummary(AiDashboardVersion version) {
+    return new AiVersionSummaryDto(
+        version.getVersionId(),
+        version.getVersionNumber(),
+        version.getParentVersionId(),
+        version.getTitle(),
+        version.getCreatedAt(),
+        version.getCurrent());
   }
 }
