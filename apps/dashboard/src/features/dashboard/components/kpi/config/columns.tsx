@@ -9,6 +9,7 @@ export type KPIConfigTableRow = {
     resourceId: string;
     service: string;
     provider: string;
+    resourceName: string;
 };
 
 export const kpiConfigColumns: ColumnDef<KPIConfigTableRow>[] = [

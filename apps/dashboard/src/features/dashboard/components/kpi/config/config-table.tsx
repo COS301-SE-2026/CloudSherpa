@@ -7,6 +7,7 @@ import {
     getFilteredRowModel,
     getPaginationRowModel,
     RowSelectionState,
+    getExpandedRowModel,
 } from "@tanstack/react-table";
 
 import {
@@ -35,11 +36,12 @@ import {
 } from "@/components/atoms/table";
 import { SearchIcon } from "lucide-react";
 import { FormCountCircle } from "@/components/atoms/form-count-circle";
-import React, { useMemo } from "react";
+import React, { useMemo, Fragment } from "react";
 import { DataTablePagination } from "./config-table-pagination";
 import { CloudProviderEnum } from "@/features/dashboard/types/provider";
 import { Spinner } from "@/components/atoms/spinner";
 import { KPIConfigTableRow } from "./columns";
+import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/atoms/card";
 
 interface KPIConfigTableProps<TValue> {
     readonly columns: ColumnDef<KPIConfigTableRow, TValue>[];
@@ -78,6 +80,8 @@ export function KPIConfigTable<TValue>({
         onColumnFiltersChange: setColumnFilters,
         getFilteredRowModel: getFilteredRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
+        getExpandedRowModel: getExpandedRowModel(),
+        getRowCanExpand: () => true,
         onRowSelectionChange: (updater) => {
             // tanstack behaviour: updater takes old RowSelectionState as argument and returns the new RowSelectionState based on
             // what was now selected
@@ -121,28 +125,91 @@ export function KPIConfigTable<TValue>({
         );
     } else if (table.getRowModel().rows?.length) {
         tableBodyContent = table.getRowModel().rows.map((row) => (
-            <TableRow
-                key={row.id}
-                data-state={row.getIsSelected() && "selected"}
-                onClick={row.getToggleExpandedHandler()}
-            >
-                {row.getVisibleCells().map((cell) => (
-                    <TableCell
-                        key={cell.id}
-                        style={{
-                            width: cell.column.getSize(),
-                            maxWidth: cell.column.getSize(),
-                        }}
-                        onClick={(e) => {
-                            if (cell.column.id === "select") {
-                                e.stopPropagation();
-                            }
-                        }}
-                    >
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                ))}
-            </TableRow>
+            <Fragment key={row.id}>
+                <TableRow
+                    data-state={row.getIsSelected() && "selected"}
+                    onClick={row.getToggleExpandedHandler()}
+                    className="cursor-pointer select-none [&_*]:cursor-pointer" // [&_*] tailwind class modifier adds specified class to component and all it's children
+                >
+                    {row.getVisibleCells().map((cell) => (
+                        <TableCell
+                            key={cell.id}
+                            style={{
+                                width: cell.column.getSize(),
+                                maxWidth: cell.column.getSize(),
+                            }}
+                            onClick={(e) => {
+                                if (cell.column.id === "select") {
+                                    e.stopPropagation();
+                                }
+                            }}
+                            className="cursor-pointer"
+                        >
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </TableCell>
+                    ))}
+                </TableRow>
+                {row.getIsExpanded() && (
+                    <TableRow className="bg-muted hover:bg-muted">
+                        <TableCell colSpan={row.getVisibleCells().length}>
+                            <Card>
+                                <CardHeader>
+                                    <div className="flex items-center justify-between">
+                                        <div className="space-y-1">
+                                            <CardTitle className="text-sm font-semibold">
+                                                Resource Details
+                                            </CardTitle>
+                                            <CardDescription className="text-xs">
+                                                Extended metadata for this resource
+                                            </CardDescription>
+                                        </div>
+                                    </div>
+                                </CardHeader>
+                                <CardContent className="flex flex-col gap-4 w-full font-medium text-foreground">
+                                    <div className="grid grid-cols-2 gap-4 text-sm">
+                                        <div className="flex flex-col gap-1">
+                                            <span>Cloud Provider</span>
+                                            <span>{row.original.provider}</span>
+                                        </div>
+                                        <div className="flex flex-col gap-1">
+                                            <span className="text-xs font-medium text-muted-foreground">
+                                                Service Type
+                                            </span>
+                                            <span className="font-medium text-foreground">
+                                                {row.original.service}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col gap-4  font-mono text-xs text-foreground">
+                                        <div className="flex flex-col gap-1">
+                                            <span className="text-xs font-medium text-muted-foreground">
+                                                Resource ID
+                                            </span>
+                                            <span
+                                                className="text-wrap"
+                                                title={row.original.resourceId}
+                                            >
+                                                {row.original.resourceId}
+                                            </span>
+                                        </div>
+                                        <div className="flex flex-col gap-1">
+                                            <span className="text-xs font-medium text-muted-foreground">
+                                                Charge ID
+                                            </span>
+                                            <span
+                                                className="text-wrap"
+                                                title={row.original.chargeId}
+                                            >
+                                                {row.original.chargeId}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </TableCell>
+                    </TableRow>
+                )}
+            </Fragment>
         ));
     } else {
         tableBodyContent = (
