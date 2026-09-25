@@ -9,6 +9,7 @@ import { Separator } from "@/components/atoms/separator";
 import { toast } from "sonner";
 import RecommendationReasoning, { formatValue } from "@/features/optimization/utils/recDictionary";
 import { cn } from "@/lib/utils";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/atoms/tooltip";
 
 interface RecommendationCardProps {
     recommendation: Recommendation;
@@ -181,17 +182,32 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
 
         return (
             <>
-                <Button type="button" onClick={handleApply} className="cursor-pointer">
-                    Apply
-                </Button>
-                <Button
-                    type="button"
-                    variant="destructive"
-                    onClick={handleDismiss}
-                    className="cursor-pointer"
-                >
-                    Dismiss
-                </Button>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button type="button" onClick={handleApply} className="cursor-pointer">
+                            Applied
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        Acknowledge that you have applied the recommendation to the specified
+                        resource
+                    </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button
+                            type="button"
+                            variant="destructive"
+                            onClick={handleDismiss}
+                            className="cursor-pointer"
+                        >
+                            Dismiss
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        Dismiss to not receive more notifications for this specific recommendation
+                    </TooltipContent>
+                </Tooltip>
             </>
         );
     };
