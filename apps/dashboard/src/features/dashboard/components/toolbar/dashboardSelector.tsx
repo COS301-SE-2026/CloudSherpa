@@ -48,6 +48,7 @@ export function DashboardSelector({
         setIsSelectorOpen: setOpen,
         selectorView: view,
         setSelectorView: setView,
+        isEditMode,
     } = useToolbar();
 
     const [newDashboardName, setNewDashboardName] = useState("");
@@ -97,6 +98,7 @@ export function DashboardSelector({
                                         variant="outline"
                                         className="group flex justify-between lg:w-70 lg:truncate bg-card"
                                         aria-label="dashboard selector dropdown"
+                                        disabled={isEditMode}
                                     >
                                         <span className="min-w-0 truncate">
                                             {selectedDashboard?.displayName || "Select Dashboard"}

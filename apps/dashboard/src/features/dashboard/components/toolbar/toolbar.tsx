@@ -7,6 +7,8 @@ import { DashboardStub } from "@/features/dashboard/types/widgets";
 import EditButton from "@/features/dashboard/components/toolbar/editButton";
 import { HelpMenu } from "@/features/helpMenu/helpMenu";
 import AddWidget from "@/features/dashboard/components/toolbar/addWidget";
+import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
+import AgenticDashCard from "@/features/dashboard/components/agenticdash/agenticDashCard";
 
 interface ToolbarProps {
     dashboards: DashboardStub[];
@@ -41,6 +43,8 @@ export default function Toolbar({
     dateRange,
     onDateRangeChange,
 }: Readonly<ToolbarProps>) {
+    const isSessionActive = useDashboardStore((state) => state.isSessionActive);
+    const hideTools = hasActiveDashboard || isSessionActive;
     return (
         <header className="sticky top-0 z-50 w-full flex flex-col items-center group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 pt-3 pb-2 relative">
             <div
@@ -52,19 +56,24 @@ export default function Toolbar({
             />
             <div className="h-16 w-full flex flex-row items-center justify-between  px-6">
                 <div className="flex flex-row gap-2">
-                    <DashboardSelector
-                        dashboards={dashboards}
-                        selectedId={selectedDashboardId}
-                        onSelect={onDashboardChange}
-                        onCreate={onCreateDashboard}
-                        onDelete={onDeleteDashboard}
-                    />
+                    {!isSessionActive ? (
+                        <DashboardSelector
+                            dashboards={dashboards}
+                            selectedId={selectedDashboardId}
+                            onSelect={onDashboardChange}
+                            onCreate={onCreateDashboard}
+                            onDelete={onDeleteDashboard}
+                        />
+                    ) : (
+                        <div>ai preview session acitve</div>
+                    )}
                 </div>
 
-                {hasActiveDashboard && (
+                {hideTools && (
                     <div className="flex flex-row items-center gap-2">
-                        {hasActiveDashboard && (
+                        {!isSessionActive && (
                             <>
+                                <AgenticDashCard />
                                 <div className="hidden sm:block">
                                     <EditButton
                                         isEditMode={isEditMode}
@@ -86,7 +95,7 @@ export default function Toolbar({
                 )}
             </div>
             <div className="w-full flex flex-row items-center justify-start  px-6 sm:hidden">
-                {hasActiveDashboard && (
+                {hasActiveDashboard && !isSessionActive && (
                     <EditButton
                         isEditMode={isEditMode}
                         handleStartEditing={handleStartEditing}

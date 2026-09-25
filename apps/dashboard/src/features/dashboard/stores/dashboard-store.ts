@@ -5,6 +5,8 @@ import {
     WidgetConfig,
     ChartWidgetConfig,
     KpiWidgetConfig,
+    ChartType,
+    ChartColour,
 } from "@/features/dashboard/types/widgets";
 import {
     deleteWidget,
@@ -18,6 +20,15 @@ import { persist } from "zustand/middleware";
 import { getPresetRange } from "../components/toolbar/timePeriodSelector";
 import { timeMs } from "@/lib/timeUtils";
 import { toast } from "sonner";
+import { AiVersionSummary, DashboardPlan } from "@/features/dashboard/types/agentic";
+import {
+    createAiSession,
+    deleteAiSession,
+    generateDashboardPlan,
+    getAiDashboardVersions,
+    getAiDashboardVersion,
+    applyAiDashboardVersion,
+} from "@/lib/fetch/api-agentic-dashboard";
 
 const tickIntervalMs = 60_000;
 
@@ -30,6 +41,27 @@ function getDefaultWindow() {
         selectedPreset: "T_7_DAYS" as TimeWindowPreset,
     };
 }
+
+export interface AgenticActions {
+    startSessionAndGenerate: (prompt: string) => Promise<void>;
+    sendPrompt: (prompt: string) => Promise<void>;
+    switchVersion: (versionId: string) => Promise<void>;
+    fetchVersions: () => Promise<void>;
+    acceptDashboard: () => Promise<void>;
+    cancelSession: () => Promise<void>;
+}
+
+export type AgenticSlice = {
+    sessionId: string | null;
+    currentVersionId: string | null;
+    isSessionActive: boolean;
+    isGenerating: boolean;
+    assistantMessage: string | null;
+    versions: AiVersionSummary[];
+    stagedLayouts: Record<string, LayoutItem>;
+    stagedWidgets: Record<string, WidgetConfig>;
+    agenticActions: AgenticActions;
+};
 
 interface DashboardActions {
     createSnapshot: () => void;
@@ -86,7 +118,7 @@ type WindowSlice = {
     clear: () => void;
 };
 
-export type DashboardStore = DashboardSlice & WindowSlice;
+export type DashboardStore = DashboardSlice & WindowSlice & AgenticSlice;
 
 const createDashboardSlice: StateCreator<DashboardStore, [], [], DashboardSlice> = (set, get) => ({
     activeDashboardId: null,
@@ -333,9 +365,8 @@ const createDashboardSlice: StateCreator<DashboardStore, [], [], DashboardSlice>
         },
 
         getWidget: (id) => {
-            const currentWidgets = get().widgets;
-
-            return currentWidgets[id];
+            const state = get();
+            return state.isSessionActive ? state.stagedWidgets[id] : state.widgets[id];
         },
 
         getDashboardNameByID: (id) => {
@@ -413,12 +444,225 @@ const createWindowSlice: StateCreator<DashboardStore, [], [], WindowSlice> = (se
     },
 });
 
+function adaptState(dashboardPlan: DashboardPlan) {
+    const layoutsMap: Record<string, LayoutItem> = {};
+    const widgetsMap: Record<string, WidgetConfig> = {};
+
+    dashboardPlan.widgets.forEach((w) => {
+        const layoutId = w.widgetId;
+
+        layoutsMap[layoutId] = {
+            id: layoutId,
+            x: w.startX,
+            y: w.startY,
+            w: w.width,
+            h: w.height,
+            autoPosition: false,
+        };
+
+        if (w.widgetType === "CHART") {
+            widgetsMap[w.widgetId] = {
+                id: w.widgetId,
+                widgetType: "CHART",
+                displayName: w.displayName || "AI Chart Widget",
+                chartType: (w.chartType as ChartType) || "line_chart",
+                chartColour: (w.chartColour as ChartColour) || "chart_1",
+                provider: w.provider || null,
+                accountId: w.accountId || null,
+                resourceId: w.resourceId || null,
+                metricName: w.metricName || null,
+                metricType: null,
+            };
+        } else if (w.widgetType === "KPI") {
+            widgetsMap[w.widgetId] = {
+                id: w.widgetId,
+                widgetType: "KPI",
+                displayName: w.displayName || "AI KPI Widget",
+                aggregationWindowDays: w.aggregationWindowDays || 7,
+                chargeIds: w.chargeIds || [],
+            };
+        }
+    });
+
+    return { layoutsMap, widgetsMap };
+}
+
+const createAgenticSlice: StateCreator<DashboardStore, [], [], AgenticSlice> = (set, get) => ({
+    sessionId: null,
+    currentVersionId: null,
+    isSessionActive: false,
+    isGenerating: false,
+    assistantMessage: null,
+    versions: [],
+    stagedLayouts: {},
+    stagedWidgets: {},
+
+    agenticActions: {
+        //create new temp session, send first prompt, translate response and populate store so dash can be viewed
+        startSessionAndGenerate: async (prompt: string) => {
+            set({ isGenerating: true });
+            try {
+                //create session
+                const sessionRes = await createAiSession();
+                const sessionId = sessionRes.sessionId;
+
+                //send initial prompt
+                const planRes = await generateDashboardPlan({
+                    sessionId,
+                    message: prompt,
+                });
+
+                const { layoutsMap, widgetsMap } = adaptState(planRes.dashboard);
+
+                set({
+                    sessionId,
+                    currentVersionId: planRes.versionId,
+                    isSessionActive: true,
+                    isGenerating: false,
+                    assistantMessage: planRes.assistantMessage,
+                    stagedLayouts: layoutsMap,
+                    stagedWidgets: widgetsMap,
+                });
+
+                //refresh version history list
+                await get().agenticActions.fetchVersions();
+                toast.success("AI session started and draft generated!");
+            } catch (error) {
+                console.error("Failed to start session:", error);
+                toast.error("Failed to generate AI dashboard plan.");
+                set({ isGenerating: false });
+            }
+        },
+
+        // while in session, send prompt to update current generated dash
+        sendPrompt: async (prompt: string) => {
+            const { sessionId } = get();
+            if (!sessionId) return;
+
+            set({ isGenerating: true });
+            try {
+                const planRes = await generateDashboardPlan({
+                    sessionId,
+                    message: prompt,
+                });
+
+                const { layoutsMap, widgetsMap } = adaptState(planRes.dashboard);
+
+                set({
+                    currentVersionId: planRes.versionId,
+                    isGenerating: false,
+                    assistantMessage: planRes.assistantMessage,
+                    stagedLayouts: layoutsMap,
+                    stagedWidgets: widgetsMap,
+                });
+
+                await get().agenticActions.fetchVersions();
+                toast.success("Dashboard draft updated!");
+            } catch (error) {
+                console.error("Failed to update plan:", error);
+                toast.error("Failed to update AI dashboard draft.");
+                set({ isGenerating: false });
+            }
+        },
+
+        //jmp 2 previous version, swap it into preview
+        switchVersion: async (versionId: string) => {
+            const { sessionId } = get();
+            if (!sessionId) return;
+
+            try {
+                const versionRes = await getAiDashboardVersion(sessionId, versionId);
+                const { layoutsMap, widgetsMap } = adaptState(versionRes.dashboard);
+
+                set({
+                    currentVersionId: versionRes.versionId,
+                    stagedLayouts: layoutsMap,
+                    stagedWidgets: widgetsMap,
+                });
+                toast.success(`Switched to version v${versionRes.version}`);
+            } catch (error) {
+                console.error("Failed to fetch version:", error);
+                toast.error("Failed to load selected version.");
+            }
+        },
+
+        //retrieve list of dash drafts during session for version history
+        fetchVersions: async () => {
+            const { sessionId } = get();
+            if (!sessionId) return;
+
+            try {
+                const versions = await getAiDashboardVersions(sessionId);
+                set({ versions });
+            } catch (error) {
+                console.error("Failed to fetch version history:", error);
+            }
+        },
+
+        //persist current ai dash and cleanup state
+        acceptDashboard: async () => {
+            const { sessionId, currentVersionId } = get();
+            if (!sessionId || !currentVersionId) return;
+
+            try {
+                //apply version
+                await applyAiDashboardVersion(sessionId, currentVersionId);
+
+                //clean up session
+                await deleteAiSession(sessionId);
+
+                //reset local
+                set({
+                    sessionId: null,
+                    currentVersionId: null,
+                    isSessionActive: false,
+                    assistantMessage: null,
+                    versions: [],
+                    stagedLayouts: {},
+                    stagedWidgets: {},
+                });
+
+                toast.success("Successfully applied AI dashboard!");
+            } catch (error) {
+                console.error("Failed to apply dashboard version:", error);
+                toast.error("Failed to apply AI dashboard.");
+            }
+        },
+
+        //abort session and cleanup state
+        cancelSession: async () => {
+            const { sessionId } = get();
+            if (sessionId) {
+                try {
+                    await deleteAiSession(sessionId);
+                } catch (error) {
+                    console.error("Failed to delete session on cancel:", error);
+                }
+            }
+
+            //reset local
+            set({
+                sessionId: null,
+                currentVersionId: null,
+                isSessionActive: false,
+                assistantMessage: null,
+                versions: [],
+                stagedLayouts: {},
+                stagedWidgets: {},
+            });
+
+            toast.info("AI session discarded.");
+        },
+    },
+});
+
 // Wrapping in persist instructs zustand to persist the fields specified in the partialize object to local storage
 export const useDashboardStore = create<DashboardStore>()(
     persist(
         (...args) => ({
             ...createDashboardSlice(...args),
             ...createWindowSlice(...args),
+            ...createAgenticSlice(...args),
         }),
         {
             name: "dashboard-store",
