@@ -2,6 +2,7 @@ package com.cloudsherpa.service.webhooks.service;
 
 import com.cloudsherpa.lib.entities.Webhook;
 import com.cloudsherpa.lib.entities.WebhookDelivery;
+import com.cloudsherpa.lib.entities.WebhookDeliveryStatusEnum;
 import com.cloudsherpa.lib.entities.WebhookStatusEnum;
 import com.cloudsherpa.lib.repositories.WebhookDeliveryRepository;
 import com.cloudsherpa.lib.repositories.WebhookRepository;
@@ -9,6 +10,7 @@ import com.cloudsherpa.service.persistconnection.service.CredentialEncryptionSer
 import com.cloudsherpa.service.webhooks.dto.AddWebhookDto;
 import com.cloudsherpa.service.webhooks.dto.AddWebhookResponseDto;
 import com.cloudsherpa.service.webhooks.dto.EditWebhookDto;
+import com.cloudsherpa.service.webhooks.dto.PagedWebhookDeliveryResponse;
 import com.cloudsherpa.service.webhooks.dto.WebhookDeliveryResponse;
 import com.cloudsherpa.service.webhooks.dto.WebhookResponse;
 import com.cloudsherpa.service.webhooks.exceptions.WebhookNotFoundException;
@@ -21,6 +23,9 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,10 +53,25 @@ public class WebhookService {
 
   // Need to be part of transaction since webhook & cloud account entities loaded lazily
   @Transactional(readOnly = true)
-  public List<WebhookDeliveryResponse> getWebhookDeliveries() {
-    List<WebhookDelivery> webhookDeliveries =
-        webhookDeliveryRepository.findAll(Sort.by(Sort.Direction.DESC, "eventTimestamp"));
-    return webhookDeliveries.stream().map(this::fromWebhookDelivery).toList();
+  public PagedWebhookDeliveryResponse getWebhookDeliveries(
+      int page, int pageSize, String search, UUID webhookId, WebhookDeliveryStatusEnum status) {
+
+    Pageable pageable =
+        PageRequest.of(
+            page,
+            pageSize,
+            Sort.by(Sort.Order.desc("eventTimestamp"), Sort.Order.desc("webhookDeliveryId")));
+
+    String normalizedSearch = search == null || search.isBlank() ? null : search.strip();
+
+    Page<WebhookDelivery> result =
+        webhookDeliveryRepository.findDeliveries(normalizedSearch, webhookId, status, pageable);
+    return new PagedWebhookDeliveryResponse(
+        result.stream().map(this::fromWebhookDelivery).toList(),
+        result.getNumber(),
+        result.getSize(),
+        result.getTotalElements(),
+        result.getTotalPages());
   }
 
   public AddWebhookResponseDto addWebhook(AddWebhookDto request) {
@@ -118,9 +138,7 @@ public class WebhookService {
         webhookDelivery.getCloudAccount() != null
             ? webhookDelivery.getCloudAccount().getId()
             : null,
-        webhookDelivery.getCloudAccount() != null
-            ? webhookDelivery.getCloudAccount().getDisplayName()
-            : null,
+        webhookDelivery.getCoudAccountName(),
         webhookDelivery.getDeliveryStatus(),
         webhookDelivery.getResponseCode());
   }

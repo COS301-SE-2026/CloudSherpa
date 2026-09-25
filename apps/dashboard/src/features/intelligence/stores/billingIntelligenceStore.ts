@@ -191,12 +191,15 @@ export const useBillingIntelligenceStore = create<BillingIntelligenceStore>((set
             forecastVariance: responseData.pastVariance,
             dailyBurnRate: responseData.dailyBurnRate,
             primaryCostDriverId: responseData.highestCostDriver,
-            primaryCostDriverLabel:
-                responseData.billingForecastSeries[responseData.highestCostDriver].chargeLabel,
+            primaryCostDriverLabel: responseData.highestCostDriver
+                ? (responseData.billingForecastSeries[responseData.highestCostDriver]
+                      ?.chargeLabel ?? "-")
+                : "-",
             highestCostAccelerationId: responseData.highestCostAcceleration,
-            highestCostAccelerationLabel:
-                responseData.billingForecastSeries[responseData.highestCostAcceleration]
-                    .chargeLabel,
+            highestCostAccelerationLabel: responseData.highestCostAcceleration
+                ? (responseData.billingForecastSeries[responseData.highestCostAcceleration]
+                      ?.chargeLabel ?? "-")
+                : "-",
             currency: "USD",
             accelerationRate: responseData.accelerationRate,
         };

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, useCallback } from "react";
-import { Plus, Search, Edit, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Search, Edit, Trash2, ChevronLeft, ChevronRight, RefreshCcw } from "lucide-react";
 import {
     useReactTable,
     getCoreRowModel,
@@ -40,6 +40,8 @@ import {
 } from "@/components/atoms/table";
 import { Label } from "@/components/atoms/label";
 import { DeletePopup } from "@/features/webhooks/components/deletePopup";
+import { ButtonGroup } from "@/components/atoms/button-group";
+import { toast } from "sonner";
 
 //moved to outside to correct sonarqube errors
 const helperForWebhookColumns = (
@@ -144,7 +146,10 @@ const helperForDeliveryColumns = (webhooks: Webhook[]): ColumnDef<WebhookDeliver
     {
         accessorKey: "cloudAccountName",
         header: "Account",
-        cell: (info) => info.getValue() ?? "Deleted Account",
+        // This is set to N/A since even when a cloud account is deleted the name of the cloud account is snapshotted
+        // alongside the webhook delivery, hence cloudAccountName should only ever be null if a cloud accounts are not
+        // applicable to a delivery
+        cell: (info) => info.getValue() ?? "N/A",
     },
 
     {
@@ -162,13 +167,21 @@ const helperForDeliveryColumns = (webhooks: Webhook[]): ColumnDef<WebhookDeliver
         },
     },
 
-    { accessorKey: "responseCode", header: "HTTP" },
+    {
+        accessorKey: "responseCode",
+        header: "HTTP",
+        cell: (info) => (info.getValue() == -1 ? "Endpoint unreachable" : info.getValue()),
+    },
 ];
+
+const demoKey = "099ed656f13b66253f1005800b89f7";
 
 export const Webhooks = () => {
     const [webhooks, setWebhooks] = useState<Webhook[]>([]);
 
     const [delivery, setDelivery] = useState<WebhookDelivery[]>([]);
+
+    const [totalDeliveryElements, setTotalDeliveryElements] = useState(0);
 
     const [eventsAvailable, setEventsAvailable] = useState<WebhookEvent[]>([]);
 
@@ -187,6 +200,7 @@ export const Webhooks = () => {
     const [webhookSearch, setWebhookSearch] = useState("");
 
     const [deliverySearch, setDeliverySearch] = useState("");
+    const [submittedDeliverySearch, setSubmittedDeliverySearch] = useState("");
 
     const [filterForStatus, setFilterForStatus] = useState<string>("all");
 
@@ -203,19 +217,20 @@ export const Webhooks = () => {
 
     const [webhookToDelete, setWebhookToDelete] = useState<Webhook | null>(null);
 
+    const [deliveryLoading, setDeliveryLoading] = useState(false);
+    const [deliveryError, setDeliveryError] = useState<string | null>(null);
+
     useEffect(() => {
         const loadingData = async () => {
             try {
-                const [webhooks, events, deliveries, accounts] = await Promise.all([
+                const [webhooks, events, accounts] = await Promise.all([
                     fetchWebhooks(),
                     fetchWebhookEvents(),
-                    fetchWebhookDeliveries(),
                     getAwsAccountConnections(),
                 ]);
 
                 setWebhooks(webhooks);
                 setEventsAvailable(events);
-                setDelivery(deliveries);
                 setCloudAccounts(accounts);
 
                 if (events.length > 0) {
@@ -244,8 +259,10 @@ export const Webhooks = () => {
             setWebhooks((previous) =>
                 previous.filter((webhook) => webhook.webhookId !== webhookToDelete.webhookId)
             );
+
+            toast.success("Webhook has been successfully deleted");
         } catch {
-            alert("Failed to delete webhook");
+            toast.error("Failed to delete webhook");
         } finally {
             setWebhookToDelete(null);
         }
@@ -273,35 +290,80 @@ export const Webhooks = () => {
         );
     }, [webhooks, webhookSearch, filterForStatus]);
 
-    const filteredDeliveries = useMemo(() => {
-        return delivery.filter((forDelivery) => {
-            const searchMatches = forDelivery.eventType
-                .toLowerCase()
-                .includes(deliverySearch.toLowerCase());
-
-            const statusesMatch =
-                filterForDeliveryStatus === "all" || forDelivery.result === filterForDeliveryStatus;
-
-            const webhooksMatch =
-                filterForDeliveryWebhook === "all" ||
-                forDelivery.webhookId === filterForDeliveryWebhook;
-
-            return searchMatches && statusesMatch && webhooksMatch;
-        });
-    }, [delivery, deliverySearch, filterForDeliveryStatus, filterForDeliveryWebhook]);
+    const [deliveryRefreshKey, setDeliveryRefreshKey] = useState(0);
 
     useEffect(() => {
-        setPaginationForDelivery((previous) => ({ ...previous, pageIndex: 0 }));
-    }, [deliverySearch, filterForDeliveryStatus, filterForDeliveryWebhook]);
+        let ignore = false;
 
-    useEffect(() => {
-        setPaginationForWebhook((previous) => ({ ...previous, pageIndex: 0 }));
-    }, [webhookSearch, filterForStatus]);
+        const loadDeliveries = async () => {
+            setDeliveryLoading(true);
+            setDeliveryError(null);
+
+            const status =
+                filterForDeliveryStatus === "DELIVERED" || filterForDeliveryStatus === "FAILED"
+                    ? filterForDeliveryStatus
+                    : undefined;
+
+            try {
+                const result = await fetchWebhookDeliveries(
+                    paginationForDelivery.pageIndex,
+                    paginationForDelivery.pageSize,
+                    submittedDeliverySearch,
+                    filterForDeliveryWebhook === "all" ? undefined : filterForDeliveryWebhook,
+                    status
+                );
+
+                if (!ignore) {
+                    setDelivery(result.deliveries);
+                    setTotalDeliveryElements(result.totalElements);
+                }
+            } catch {
+                if (!ignore) {
+                    setDeliveryError("Could not load deliveries.");
+                }
+            } finally {
+                if (!ignore) {
+                    setDeliveryLoading(false);
+                }
+            }
+        };
+
+        loadDeliveries();
+
+        return () => {
+            ignore = true;
+        };
+    }, [
+        paginationForDelivery.pageIndex,
+        paginationForDelivery.pageSize,
+        submittedDeliverySearch,
+        filterForDeliveryWebhook,
+        filterForDeliveryStatus,
+        deliveryRefreshKey,
+    ]);
 
     const webhookColumns = useMemo(
         () => helperForWebhookColumns(handlingEdit, handlingDelete),
         [handlingEdit, handlingDelete]
     );
+
+    const resetDeliveryPage = () => {
+        setPaginationForDelivery((previous) => ({
+            ...previous,
+            pageIndex: 0,
+        }));
+    };
+
+    const handleDeliverySearch = () => {
+        setSubmittedDeliverySearch(deliverySearch.trim());
+        resetDeliveryPage();
+    };
+
+    const handleDeliverySearchReset = () => {
+        setDeliverySearch("");
+        setSubmittedDeliverySearch("");
+        resetDeliveryPage();
+    };
 
     const deliveryColumns = useMemo(() => helperForDeliveryColumns(webhooks), [webhooks]);
 
@@ -315,13 +377,39 @@ export const Webhooks = () => {
     });
 
     const tableForDelivery = useReactTable({
-        data: filteredDeliveries,
+        data: delivery,
         columns: deliveryColumns,
         getCoreRowModel: getCoreRowModel(),
-        getPaginationRowModel: getPaginationRowModel(),
+        manualPagination: true,
+        rowCount: totalDeliveryElements,
         state: { pagination: paginationForDelivery },
         onPaginationChange: setPaginationForDelivery,
     });
+
+    let deliveryTableBody;
+
+    if (deliveryError) {
+        deliveryTableBody = (
+            <TableRow>
+                <TableCell
+                    colSpan={tableForDelivery.getVisibleLeafColumns().length}
+                    className="h-24 text-center text-destructive"
+                >
+                    <span role="alert">{deliveryError}</span>
+                </TableCell>
+            </TableRow>
+        );
+    } else {
+        deliveryTableBody = tableForDelivery.getRowModel().rows.map((forRow) => (
+            <TableRow key={forRow.id}>
+                {forRow.getVisibleCells().map((forCells) => (
+                    <TableCell key={forCells.id}>
+                        {flexRender(forCells.column.columnDef.cell, forCells.getContext())}
+                    </TableCell>
+                ))}
+            </TableRow>
+        ));
+    }
 
     return (
         <div className="p-6 max-w-7xl mx-auto space-y-8 bg-background text-foreground">
@@ -452,7 +540,7 @@ export const Webhooks = () => {
                                 size="icon"
                                 className="h-8 w-8"
                                 onClick={() => tableForWebhook.nextPage()}
-                                disabled={!tableForWebhook.getCanNextPage()}
+                                disabled={!tableForWebhook.getCanNextPage() || deliveryLoading}
                             >
                                 {" "}
                                 <ChevronRight size={16} />{" "}
@@ -492,18 +580,31 @@ export const Webhooks = () => {
                     <div className="flex gap-4">
                         <div className="relative flex-1 max-w-sm">
                             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <ButtonGroup>
+                                <Input
+                                    placeholder="Search deliveries"
+                                    value={deliverySearch}
+                                    onChange={(change) => {
+                                        setDeliverySearch(change.target.value);
+                                    }}
+                                    className="pl-8"
+                                />
 
-                            <Input
-                                placeholder="Search deliveries"
-                                value={deliverySearch}
-                                onChange={(change) => setDeliverySearch(change.target.value)}
-                                className="pl-8"
-                            />
+                                <Button variant={"outline"} onClick={handleDeliverySearch}>
+                                    Search
+                                </Button>
+                                <Button variant={"outline"} onClick={handleDeliverySearchReset}>
+                                    Reset
+                                </Button>
+                            </ButtonGroup>
                         </div>
 
                         <Select
                             value={filterForDeliveryWebhook}
-                            onValueChange={setFilterForDeliveryWebhook}
+                            onValueChange={(value) => {
+                                setFilterForDeliveryWebhook(value);
+                                resetDeliveryPage();
+                            }}
                         >
                             <SelectTrigger className="w-[220px]">
                                 {" "}
@@ -524,7 +625,10 @@ export const Webhooks = () => {
 
                         <Select
                             value={filterForDeliveryStatus}
-                            onValueChange={setFilterForDeliveryStatus}
+                            onValueChange={(value) => {
+                                setFilterForDeliveryStatus(value);
+                                resetDeliveryPage();
+                            }}
                         >
                             <SelectTrigger className="w-[180px]">
                                 {" "}
@@ -537,6 +641,15 @@ export const Webhooks = () => {
                                 <SelectItem value="FAILED"> Failed </SelectItem>
                             </SelectContent>
                         </Select>
+                        <div className="ml-auto">
+                            <Button
+                                onClick={() => setDeliveryRefreshKey((current) => current + 1)}
+                                disabled={deliveryLoading}
+                            >
+                                <RefreshCcw />
+                                Refresh
+                            </Button>
+                        </div>
                     </div>
 
                     <div className="rounded-md border border-border">
@@ -556,20 +669,7 @@ export const Webhooks = () => {
                                 ))}
                             </TableHeader>
 
-                            <TableBody>
-                                {tableForDelivery.getRowModel().rows.map((forRow) => (
-                                    <TableRow key={forRow.id}>
-                                        {forRow.getVisibleCells().map((forCells) => (
-                                            <TableCell key={forCells.id}>
-                                                {flexRender(
-                                                    forCells.column.columnDef.cell,
-                                                    forCells.getContext()
-                                                )}
-                                            </TableCell>
-                                        ))}
-                                    </TableRow>
-                                ))}
-                            </TableBody>
+                            <TableBody>{deliveryTableBody}</TableBody>
                         </Table>
                     </div>
 
@@ -584,9 +684,9 @@ export const Webhooks = () => {
                             {Math.min(
                                 (tableForDelivery.getState().pagination.pageIndex + 1) *
                                     tableForDelivery.getState().pagination.pageSize,
-                                filteredDeliveries.length
+                                totalDeliveryElements
                             )}{" "}
-                            of {filteredDeliveries.length} deliveries{" "}
+                            of {totalDeliveryElements} deliveries{" "}
                         </span>
 
                         <div className="flex items-center justify-center gap-2">
@@ -595,7 +695,7 @@ export const Webhooks = () => {
                                 size="icon"
                                 className="h-8 w-8"
                                 onClick={() => tableForDelivery.previousPage()}
-                                disabled={!tableForDelivery.getCanPreviousPage()}
+                                disabled={!tableForDelivery.getCanPreviousPage() || deliveryLoading}
                             >
                                 {" "}
                                 <ChevronLeft size={16} />{" "}
@@ -691,15 +791,20 @@ export const Webhooks = () => {
 
                                 <p className="text-xs text-muted-foreground mb-2">
                                     {" "}
-                                    Sign webhook-id.webhook-timestamp.raw_body with
-                                    HMAC-SHA256.{" "}
+                                    Sign webhook-id.webhook-timestamp.raw_body with HMAC-SHA256.
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                    Demo signing key: {demoKey}
                                 </p>
                             </div>
                         </div>
 
                         <div className="md:col-span-2">
                             {eventSelectedForPayload && (
-                                <ExampleForPayload event={eventSelectedForPayload} />
+                                <ExampleForPayload
+                                    event={eventSelectedForPayload}
+                                    signingKey={demoKey}
+                                />
                             )}
                         </div>
                     </div>

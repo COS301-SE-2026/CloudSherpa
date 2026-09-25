@@ -3,10 +3,15 @@
 import dynamic from "next/dynamic";
 import { useEffect, useRef } from "react";
 import type { EChartsOption, ECharts } from "echarts";
+import { Spinner } from "@/components/atoms/spinner";
 
 const ReactECharts = dynamic(() => import("echarts-for-react"), {
     ssr: false,
-    loading: () => <div className="h-full w-full animate-pulse bg-muted rounded-md" />,
+    loading: () => (
+        <div className="h-full w-full flex flex-col justify-center items-center gap-2">
+            <Spinner className="w-10 h-10" />
+        </div>
+    ),
 });
 
 export function BaseChart({ option, theme }: Readonly<{ option: EChartsOption; theme?: string }>) {

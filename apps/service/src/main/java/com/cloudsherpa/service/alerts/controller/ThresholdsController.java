@@ -1,10 +1,14 @@
 package com.cloudsherpa.service.alerts.controller;
 
+import com.cloudsherpa.lib.entities.AlertSeverityEnum;
+import com.cloudsherpa.lib.entities.ProviderEnum;
 import com.cloudsherpa.lib.entities.Threshold;
+import com.cloudsherpa.lib.repositories.ResourceRepository;
 import com.cloudsherpa.lib.repositories.ThresholdRepository;
 import com.cloudsherpa.service.alerts.dto.CreateThresholdRequest;
 import com.cloudsherpa.service.alerts.dto.ThresholdResponse;
 import com.cloudsherpa.service.alerts.dto.UpdateThresholdRequest;
+import com.cloudsherpa.service.metrics.MetricDisplayNameMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -25,9 +29,16 @@ import org.springframework.web.bind.annotation.*;
 public class ThresholdsController {
 
   private final ThresholdRepository thresholdRepository;
+  private final ResourceRepository resourceRepository;
+  private final MetricDisplayNameMapper metricMapper;
 
-  public ThresholdsController(ThresholdRepository thresholdRepository) {
+  public ThresholdsController(
+      ThresholdRepository thresholdRepository,
+      ResourceRepository resourceRepository,
+      MetricDisplayNameMapper metricMapper) {
     this.thresholdRepository = thresholdRepository;
+    this.resourceRepository = resourceRepository;
+    this.metricMapper = metricMapper;
   }
 
   @Operation(summary = "Create threshold", description = "Create a resource-level threshold.")
@@ -54,17 +65,23 @@ public class ThresholdsController {
       return ResponseEntity.badRequest().build();
     }
 
+    String canonicalMetricName = toCanonicalMetricName(request.resourceId(), request.metricName());
+
     Threshold threshold =
         new Threshold(
             request.resourceId(),
             request.userId(),
-            request.metricName(),
+            canonicalMetricName,
             request.operator(),
             request.value(),
-            request.severity() == null ? "WARNING" : request.severity(),
+            request.severity() == null ? AlertSeverityEnum.WARNING : request.severity(),
             request.enabled() == null || request.enabled());
 
-    ThresholdResponse response = ThresholdResponse.from(thresholdRepository.save(threshold));
+    Threshold savedThreshold = thresholdRepository.save(threshold);
+
+    ThresholdResponse response =
+        ThresholdResponse.from(
+            savedThreshold, metricMapper.toDisplayName(savedThreshold.getMetricName()));
 
     return ResponseEntity.status(201).body(response);
   }
@@ -90,7 +107,13 @@ public class ThresholdsController {
             ? thresholdRepository.findAll()
             : thresholdRepository.findByResourceId(resourceId);
 
-    return ResponseEntity.ok(thresholds.stream().map(ThresholdResponse::from).toList());
+    return ResponseEntity.ok(
+        thresholds.stream()
+            .map(
+                threshold ->
+                    ThresholdResponse.from(
+                        threshold, metricMapper.toDisplayName(threshold.getMetricName())))
+            .toList());
   }
 
   @Operation(summary = "Update threshold", description = "Update an existing threshold.")
@@ -128,7 +151,9 @@ public class ThresholdsController {
     Threshold threshold = optionalThreshold.get();
 
     String metricName =
-        request.metricName() != null ? request.metricName() : threshold.getMetricName();
+        request.metricName() != null
+            ? toCanonicalMetricName(threshold.getResourceId(), request.metricName())
+            : threshold.getMetricName();
 
     String operator = request.operator() != null ? request.operator() : threshold.getOperator();
 
@@ -170,6 +195,16 @@ public class ThresholdsController {
 
     thresholdRepository.deleteById(id);
     return ResponseEntity.noContent().build();
+  }
+
+  private String toCanonicalMetricName(UUID resourceId, String metricName) {
+    ProviderEnum provider = resourceRepository.findProviderByResourceId(resourceId);
+
+    if (provider == null) {
+      throw new IllegalArgumentException("No provider found for resource: " + resourceId);
+    }
+
+    return metricMapper.toCanonicalName(provider.toString(), metricName);
   }
 
   private void validateThreshold(String metricName, String operator) {

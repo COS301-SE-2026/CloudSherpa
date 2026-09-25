@@ -9,6 +9,7 @@ import { WidgetMenu } from "@/features/dashboard/components/widgetMenu";
 import { WidgetDropdown } from "@/features/dashboard/components/widgetDropdown";
 import { CircleAlert, Lightbulb } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { Spinner } from "@/components/atoms/spinner";
 import {
     Tooltip,
     TooltipContent,
@@ -56,7 +57,7 @@ export function ChartWidget({
     const setFocusedRecommendation = useRecStore((state) => state.setFocusedRecommendation);
     const recommendationGroups = useRecStore((state) => state.recommendationGroups);
 
-    useFetchMetricHistoricalData({
+    const { isLoading } = useFetchMetricHistoricalData({
         resourceId: resourceId ?? "",
         fromMs: fromMs,
         toMs: toMs,
@@ -214,10 +215,12 @@ export function ChartWidget({
                 </CardHeader>
 
                 <CardContent ref={contentRef} className="flex-1 w-full relative overflow-hidden">
-                    {isLayoutReady ? (
+                    {isLayoutReady && !isLoading ? (
                         renderChartContent()
                     ) : (
-                        <div className="w-full h-full bg-muted/20 animate-pulse rounded" />
+                        <div className="h-full w-full flex flex-col justify-center items-center gap-2">
+                            <Spinner className="w-10 h-10" />
+                        </div>
                     )}
                 </CardContent>
             </Card>
