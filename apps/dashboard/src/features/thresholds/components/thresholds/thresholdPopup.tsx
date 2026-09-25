@@ -241,8 +241,7 @@ export function ThresholdPopup({
                                     }))}
                                     onSelect={(current) => {
                                         setResourceId(current);
-                                        const nextOption = allAvailableMetrics()[current] ?? [];
-                                        setMetricName(nextOption[0] ?? "");
+                                        setMetricName("");
                                         if (resourceError) {
                                             setResourceError(null);
                                         }
