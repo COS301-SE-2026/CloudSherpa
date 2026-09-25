@@ -20,6 +20,30 @@ import { AiVersionSummary } from "@/features/dashboard/types/agentic";
 
 const colHelper = createColumnHelper<AiVersionSummary>();
 
+const columns = [
+    colHelper.accessor("version", {
+        header: "Dashboard",
+        cell: (info) => (
+            <span className="font-medium text-muted-foreground truncate max-w-[150px] block">
+                {info.getValue()}
+            </span>
+        ),
+    }),
+    colHelper.accessor("createdAt", {
+        header: "Date",
+        cell: (info) => {
+            const val = info.getValue();
+            if (!val) return <span className="text-muted-foreground">-</span>;
+            const date = new Date(val);
+            return (
+                <span className="text-muted-foreground text-xs">
+                    {date.toLocaleDateString()} {date.toLocaleTimeString()}
+                </span>
+            );
+        },
+    }),
+];
+
 export default function History() {
     const sessionId = useDashboardStore((state) => state.sessionId);
     const versions = useDashboardStore((state) => state.versions);
@@ -31,33 +55,6 @@ export default function History() {
             fetchVersions();
         }
     }, [sessionId, fetchVersions]);
-
-    const columns = useMemo(
-        () => [
-            colHelper.accessor("version", {
-                header: "Dashboard",
-                cell: (info) => (
-                    <span className="font-medium text-muted-foreground truncate max-w-[150px] block">
-                        {info.getValue()}
-                    </span>
-                ),
-            }),
-            colHelper.accessor("createdAt", {
-                header: "Date",
-                cell: (info) => {
-                    const val = info.getValue();
-                    if (!val) return <span className="text-muted-foreground">-</span>;
-                    const date = new Date(val);
-                    return (
-                        <span className="text-muted-foreground text-xs">
-                            {date.toLocaleDateString()} {date.toLocaleTimeString()}
-                        </span>
-                    );
-                },
-            }),
-        ],
-        []
-    );
 
     //init
     const table = useReactTable({

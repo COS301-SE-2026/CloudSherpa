@@ -70,14 +70,6 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
     const isInteractingRef = useRef(false);
 
     const isSessionActive = useDashboardStore((state) => state.isSessionActive);
-    const stagedWidgets = useDashboardStore((state) => state.stagedWidgets);
-    const standardWidgets = useDashboardStore((state) => state.widgets);
-
-    //helper to get widgets based on if ai session is active or not
-    const getActiveWidgetsMap = () =>
-        useDashboardStore.getState().isSessionActive
-            ? useDashboardStore.getState().stagedWidgets
-            : useDashboardStore.getState().widgets;
 
     const cancelPendingCompact = () => {
         if (compactTimerRef.current) {
