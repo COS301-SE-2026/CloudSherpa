@@ -22,12 +22,12 @@ import {
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { BudgetSection } from "@/features/budgets/components/budgetSection";
-import {useAuthContext} from "@/features/authentication/providers/AuthContext";
-import {useFetchMetrics} from "@/features/dashboard/hooks/useFetchMetrics";
+import { useAuthContext } from "@/features/authentication/providers/AuthContext";
+import { useFetchMetrics } from "@/features/dashboard/hooks/useFetchMetrics";
 
 export function MainPage() {
-    const {user} = useAuthContext();
-    
+    const { user } = useAuthContext();
+
     const userId = user?.userId;
 
     useFetchMetrics();

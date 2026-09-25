@@ -43,10 +43,10 @@ const PROVIDER_MAP: Record<string, string> = {
     GCP: "GCP_PROJECT",
 };
 
-const REVERSE_PROVIDER_MAP : Record<string, string> = {
-    AWS_ACCOUNT : "AWS",
-    AZURE_SUBSCRIPTION : "AZURE",
-    GCP_PROJECT : "GCP",
+const REVERSE_PROVIDER_MAP: Record<string, string> = {
+    AWS_ACCOUNT: "AWS",
+    AZURE_SUBSCRIPTION: "AZURE",
+    GCP_PROJECT: "GCP",
 };
 
 interface PropsForThresholds {
@@ -103,15 +103,15 @@ export function ThresholdPopup({
     const resolvedResourceId = resourceIdPreset ?? resourceId;
 
     useEffect(() => {
-        if(!open){
+        if (!open) {
             return;
         }
 
-        if(!initial?.resourceId){
+        if (!initial?.resourceId) {
             return;
         }
 
-        if(provider){
+        if (provider) {
             return;
         }
 
@@ -120,21 +120,22 @@ export function ThresholdPopup({
         (async () => {
             const allConnections = await getAwsAccountConnections();
 
-            for(const connect of allConnections){
-                if(cancelled){
+            for (const connect of allConnections) {
+                if (cancelled) {
                     return;
                 }
 
                 const resources = await getAwsAccountResources(connect.id);
 
-                if(cancelled){
+                if (cancelled) {
                     return;
                 }
 
-                if(resources.some((res) => res.id === initial.resourceId)){
-                    const providerKey = REVERSE_PROVIDER_MAP[(connect.accountType || "").toUpperCase()];
+                if (resources.some((res) => res.id === initial.resourceId)) {
+                    const providerKey =
+                        REVERSE_PROVIDER_MAP[(connect.accountType || "").toUpperCase()];
 
-                    if(providerKey){
+                    if (providerKey) {
                         setProvider(providerKey);
                         setAccountId(connect.id);
                         setResourceId(initial.resourceId);
@@ -151,49 +152,53 @@ export function ThresholdPopup({
     }, [open, initial?.resourceId, provider]);
 
     useEffect(() => {
-        if(!provider){
+        if (!provider) {
             return;
         }
 
         getAwsAccountConnections().then((gettingConnections) => {
             const forTarget = PROVIDER_MAP[provider];
 
-            const forFiltered = gettingConnections.filter((conn) => (conn.accountType || "").toUpperCase() === forTarget);
+            const forFiltered = gettingConnections.filter(
+                (conn) => (conn.accountType || "").toUpperCase() === forTarget
+            );
 
             setConnection(forFiltered);
         });
     }, [provider]);
 
     useEffect(() => {
-        if(!accountId){
+        if (!accountId) {
             return;
         }
 
         getAwsAccountResources(accountId).then((resources) => {
-            const active = resources.filter((forResources) => forResources.status === ResourceStatus.ACTIVE);
+            const active = resources.filter(
+                (forResources) => forResources.status === ResourceStatus.ACTIVE
+            );
 
             setActiveResource(active);
         });
     }, [accountId]);
 
-    const handlingProviderChange = (current : string) => {
+    const handlingProviderChange = (current: string) => {
         setProvider(current.toUpperCase());
         setAccountId(null);
         setResourceId(null);
         setMetricName("");
     };
 
-    const handlingAccountChange = (current : string) => {
+    const handlingAccountChange = (current: string) => {
         setAccountId(current);
         setResourceId(null);
         setMetricName("");
     };
 
-    const handlingResourceChange = (current : string) => {
+    const handlingResourceChange = (current: string) => {
         setResourceId(current);
         setMetricName("");
 
-        if(resourceError){
+        if (resourceError) {
             setResourceError(null);
         }
     };
