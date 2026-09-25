@@ -179,7 +179,7 @@ public class NormalizedMetricService {
 
     List<SegmentedMetric> segmentedSeries =
         normalizedMetricsRepository.getSegmentedDownsampledNormalizedMetrics(
-            request.resourceId(), canonMetricName, request.from(), request.to(), 900, 300);
+            request.resourceId(), canonMetricName, request.from(), request.to(), 1800, 300);
 
     long currentSegment = segmentedSeries.get(0).segmentId();
 
