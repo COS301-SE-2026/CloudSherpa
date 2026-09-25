@@ -9,7 +9,7 @@ export interface PersistAwsConnectionRequest {
     ingestionPeriod: string;
     credentials: AwsCredentialsDto;
     resources: ResourceSelectionDto[];
-    billingConfig: BillingConfigDto;
+    billingConfig: BillingConfigDto | null;
 }
 
 export async function createAwsConnection(request: PersistAwsConnectionRequest): Promise<void> {
