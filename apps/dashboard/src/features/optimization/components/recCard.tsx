@@ -200,7 +200,7 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
                             onClick={handleDismiss}
                             className="cursor-pointer"
                         >
-                            Dismiss
+                            Disable
                         </Button>
                     </TooltipTrigger>
                     <TooltipContent>
