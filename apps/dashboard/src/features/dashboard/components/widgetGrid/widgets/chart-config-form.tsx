@@ -11,7 +11,6 @@ import { useRouter } from "next/navigation";
 import ChartFormConnection from "./chart-form-connection";
 import { Spinner } from "@/components/atoms/spinner";
 import { useLoadDashboardData } from "@/features/dashboard/hooks/useLoadDash";
-import { is } from "date-fns/locale";
 
 interface ChartConfigFormProps {
     ChartId: string;
