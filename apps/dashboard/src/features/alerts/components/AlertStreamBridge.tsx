@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import type { Alert } from "@/features/alerts/types/alertTypes";
 import { useAlertStream } from "@/features/alerts/services/sse/alert-stream";
@@ -20,6 +20,10 @@ function findExistingAlert(previous: Alert[], incoming: Alert): Alert | undefine
 }
 
 function shouldShowAlertToast(existing: Alert | undefined, incoming: Alert): boolean {
+    if (existing?.status === "DISABLED") {
+        return false;
+    }
+
     if (incoming.status !== "ACTIVE") {
         return false;
     }
@@ -33,6 +37,7 @@ function shouldShowAlertToast(existing: Alert | undefined, incoming: Alert): boo
 
 export function AlertStreamBridge() {
     const router = useRouter();
+    const pathname = usePathname();
     const { isAuthReady, isAuthenticated } = useAuthContext();
     const upsertAlert = useAlertStore((state) => state.upsertAlert);
     const setAlerts = useAlertStore((state) => state.setAlerts);
@@ -44,14 +49,15 @@ export function AlertStreamBridge() {
             const showToast = shouldShowAlertToast(existing, incoming);
 
             upsertAlert(incoming);
+            if (pathname.startsWith("/alerts")) {
+                return;
+            }
 
             if (!showToast) {
                 return;
             }
 
-            const escalated = Boolean(
-                existing && existing.severity === "WARNING" && incoming.severity === "CRITICAL"
-            );
+            const escalated = existing?.severity === "WARNING" && incoming.severity === "CRITICAL";
 
             const toastTitle = escalated ? "Alert severity CRITICAL" : "New alert";
             const toastDescription = incoming.title || "A new alert needs your attention.";
@@ -67,7 +73,7 @@ export function AlertStreamBridge() {
                 id: `alert-${incoming.alertId}-${incoming.severity}-${incoming.lastSeen ?? incoming.createdAt ?? ""}`,
             });
         },
-        [router, upsertAlert]
+        [pathname, router, upsertAlert]
     );
 
     useAlertStream(onAlert);
