@@ -29,6 +29,26 @@ interface ForColumns {
     info: (alert: Alert) => void;
 }
 
+function cleanAlertTitle(title: string): string {
+    const cleaned = title.trim();
+
+    if (!cleaned.endsWith(")")) {
+        return cleaned;
+    }
+
+    const tagStartIndex = cleaned.toLowerCase().lastIndexOf("(z=");
+
+    if (tagStartIndex !== -1) {
+        const insideTag = cleaned.slice(tagStartIndex + 3, -1);
+
+        if (insideTag.length > 0 && !insideTag.includes(")")) {
+            return cleaned.slice(0, tagStartIndex).trim();
+        }
+    }
+
+    return cleaned;
+}
+
 function helperForColumns({ onToggle, info }: ForColumns): ColumnDef<Alert>[] {
     return [
         {
@@ -96,27 +116,29 @@ function helperForColumns({ onToggle, info }: ForColumns): ColumnDef<Alert>[] {
             header: () => "ALERT",
             cell: ({ row }) => {
                 const inactive = row.original.status !== "ACTIVE";
+                const displayTitle = cleanAlertTitle(row.original.title);
 
                 return (
                     <span className={inactive ? "text-muted-foreground" : "text-foreground"}>
                         {" "}
-                        {row.original.title}{" "}
+                        {displayTitle}{" "}
                     </span>
                 );
             },
         },
 
         {
-            accessorKey: "createdAt",
-            header: () => "CREATED",
-            cell: ({ row }) => (
-                <span className="text-xs text-muted-foreground">
-                    {" "}
-                    {row.original.createdAt
-                        ? new Date(row.original.createdAt).toLocaleString()
-                        : "-"}{" "}
-                </span>
-            ),
+            accessorKey: "lastSeen",
+            header: () => "UPDATED AT",
+            cell: ({ row }) => {
+                const updatedAt = row.original.lastSeen ?? row.original.createdAt;
+                return (
+                    <span className="text-xs text-muted-foreground">
+                        {" "}
+                        {updatedAt ? new Date(updatedAt).toLocaleString() : "-"}{" "}
+                    </span>
+                );
+            },
         },
 
         {
