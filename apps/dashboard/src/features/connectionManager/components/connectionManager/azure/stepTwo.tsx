@@ -163,6 +163,11 @@ export default function StepTwoAzure({
         }
     };
 
+    const handleOptInToBillingChange = (checked: boolean) => {
+        checkingServices("billing");
+        setOptedInToBilling(checked);
+    };
+
     function validateBillingConfig(): AzureBillingConfigSafeParseType | null {
         if (!optedInToBilling) {
             return null;
@@ -188,9 +193,7 @@ export default function StepTwoAzure({
         >
             <AzureBillingForm
                 optedInToBilling={optedInToBilling}
-                handleOptedInToBillingChange={(checked: boolean) => {
-                    setOptedInToBilling(checked);
-                }}
+                handleOptedInToBillingChange={handleOptInToBillingChange}
                 storageAccountName={storageAccountName}
                 setStorageAccountName={setStorageAccountName}
                 blobContainerName={blobContainerName}
