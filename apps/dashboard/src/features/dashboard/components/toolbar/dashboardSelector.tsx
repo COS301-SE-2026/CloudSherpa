@@ -177,7 +177,11 @@ export function DashboardSelector({
                                                         </CommandItem>
                                                     </div>
                                                 </TooltipTrigger>
-                                                <TooltipContent side="right" align="start">
+                                                <TooltipContent
+                                                    className={cn("max-w-2xl")}
+                                                    side="right"
+                                                    align="start"
+                                                >
                                                     {d.displayName}
                                                 </TooltipContent>
                                             </Tooltip>
