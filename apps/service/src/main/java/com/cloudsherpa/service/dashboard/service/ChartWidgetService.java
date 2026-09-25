@@ -43,6 +43,8 @@ public class ChartWidgetService {
             chartWidgetDto.resourceId(),
             chartWidgetDto.metricType());
 
+    chartResource.setMetricName(chartWidgetDto.metricName());
+
     widgetChartRepository.save(newWidgetChart);
     chartResourceRepository.save(chartResource);
   }

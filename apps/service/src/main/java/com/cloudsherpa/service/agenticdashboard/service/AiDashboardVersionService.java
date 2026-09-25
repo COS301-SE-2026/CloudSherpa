@@ -9,9 +9,12 @@ import com.cloudsherpa.lib.repositories.AiChartWidgetRepository;
 import com.cloudsherpa.lib.repositories.AiDashboardVersionRepository;
 import com.cloudsherpa.lib.repositories.AiDashboardWidgetRepository;
 import com.cloudsherpa.lib.repositories.AiKpiWidgetRepository;
+import com.cloudsherpa.service.agenticdashboard.dto.AiVersionResponseDto;
 import com.cloudsherpa.service.agenticdashboard.dto.DashboardPlanDto;
 import com.cloudsherpa.service.agenticdashboard.dto.DashboardPlanWidgetDto;
+import jakarta.persistence.EntityManager;
 import java.time.OffsetDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
@@ -21,7 +24,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class AiDashboardVersionService {
-
+  private final EntityManager entityManager;
   private final AiDashboardVersionRepository versionRepository;
   private final AiDashboardWidgetRepository widgetRepository;
   private final AiChartWidgetRepository chartWidgetRepository;
@@ -33,16 +36,21 @@ public class AiDashboardVersionService {
       AiDashboardWidgetRepository widgetRepository,
       AiChartWidgetRepository chartWidgetRepository,
       AiKpiWidgetRepository kpiWidgetRepository,
-      AiSessionService sessionService) {
+      AiSessionService sessionService,
+      EntityManager entityManager) {
+
     this.versionRepository = versionRepository;
     this.widgetRepository = widgetRepository;
     this.chartWidgetRepository = chartWidgetRepository;
     this.kpiWidgetRepository = kpiWidgetRepository;
     this.sessionService = sessionService;
+    this.entityManager = entityManager;
   }
 
   @Transactional
   public AiDashboardVersion createVersion(UUID userId, UUID sessionId, DashboardPlanDto plan) {
+
+    sessionService.getSession(userId, sessionId);
 
     AiDashboardVersion parentVersion =
         versionRepository.findTopBySessionIdOrderByVersionNumberDesc(sessionId).orElse(null);
@@ -66,11 +74,11 @@ public class AiDashboardVersionService {
             .createdAt(OffsetDateTime.now())
             .build();
 
-    versionRepository.save(version);
-
     if (parentVersion != null) {
       unsetCurrentVersion(parentVersion);
     }
+
+    versionRepository.save(version);
 
     for (DashboardPlanWidgetDto widgetDto : plan.widgets()) {
       saveWidget(versionId, widgetDto);
@@ -102,7 +110,126 @@ public class AiDashboardVersionService {
                     HttpStatus.NOT_FOUND, "AI dashboard version not found"));
   }
 
+  /**
+   * Returns a complete DTO representation of a staged dashboard version.
+   *
+   * <p>This is used by the AI response and by the frontend when displaying an individual staged
+   * version
+   */
+  @Transactional(readOnly = true)
+  public AiVersionResponseDto getVersionResponse(UUID userId, UUID sessionId, UUID versionId) {
+
+    AiDashboardVersion version = getVersion(userId, sessionId, versionId);
+
+    DashboardPlanDto dashboard = toDashboardPlan(version);
+
+    return new AiVersionResponseDto(
+        version.getVersionId(),
+        version.getSessionId(),
+        version.getVersionNumber(),
+        version.getParentVersionId(),
+        version.getCurrent(),
+        version.getCreatedAt(),
+        dashboard);
+  }
+
+  /**
+   * Returns the dashboard-plan representation of a staged version Used when a user applies a staged
+   * version to a real dashboard
+   */
+  @Transactional(readOnly = true)
+  public DashboardPlanDto getDashboardPlan(UUID userId, UUID sessionId, UUID versionId) {
+
+    AiDashboardVersion version = getVersion(userId, sessionId, versionId);
+
+    return toDashboardPlan(version);
+  }
+
+  private DashboardPlanDto toDashboardPlan(AiDashboardVersion version) {
+
+    List<DashboardPlanWidgetDto> widgets =
+        widgetRepository.findByDashboardVersionId(version.getVersionId()).stream()
+            .map(this::mapWidget)
+            .toList();
+
+    return new DashboardPlanDto(
+        version.getTitle(),
+        version.getDescription(),
+        version.getTimeFrom(),
+        version.getTimeTo(),
+        version.getPredefinedTime(),
+        widgets);
+  }
+
+  private DashboardPlanWidgetDto mapWidget(AiDashboardWidget widget) {
+
+    if (widget.getWidgetType() == TypeEnum.CHART) {
+
+      AiChartWidget chartWidget = chartWidgetRepository.findByWidgetId(widget.getWidgetId());
+
+      if (chartWidget == null) {
+        throw new ResponseStatusException(
+            HttpStatus.INTERNAL_SERVER_ERROR, "Chart configuration not found for AI widget");
+      }
+
+      return new DashboardPlanWidgetDto(
+          widget.getWidgetId(),
+          widget.getWidgetType(),
+          widget.getDisplayName(),
+          widget.getStartX(),
+          widget.getStartY(),
+          widget.getWidth(),
+          widget.getHeight(),
+          chartWidget.getChartType(),
+          chartWidget.getChartColour(),
+          chartWidget.getProvider(),
+          null,
+          chartWidget.getAccountId(),
+          chartWidget.getResourceId(),
+          chartWidget.getMetricType(),
+          chartWidget.getMetricName(),
+          null,
+          null);
+    }
+
+    if (widget.getWidgetType() == TypeEnum.KPI) {
+
+      AiKpiWidget kpiWidget = kpiWidgetRepository.findByWidgetId(widget.getWidgetId());
+
+      if (kpiWidget == null) {
+        throw new ResponseStatusException(
+            HttpStatus.INTERNAL_SERVER_ERROR, "KPI configuration not found for AI widget");
+      }
+
+      List<String> chargeIds =
+          kpiWidget.getChargeIds() == null ? List.of() : Arrays.asList(kpiWidget.getChargeIds());
+
+      return new DashboardPlanWidgetDto(
+          widget.getWidgetId(),
+          widget.getWidgetType(),
+          widget.getDisplayName(),
+          widget.getStartX(),
+          widget.getStartY(),
+          widget.getWidth(),
+          widget.getHeight(),
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          chargeIds,
+          kpiWidget.getAggregationWindowDays());
+    }
+
+    throw new ResponseStatusException(
+        HttpStatus.INTERNAL_SERVER_ERROR, "Unsupported AI widget type: " + widget.getWidgetType());
+  }
+
   private void unsetCurrentVersion(AiDashboardVersion version) {
+
     version.setCurrent(false);
     versionRepository.save(version);
   }
@@ -123,12 +250,13 @@ public class AiDashboardVersionService {
             .displayName(widgetDto.displayName())
             .build();
 
-    widgetRepository.save(widget);
+    AiDashboardWidget managedWidget = widgetRepository.save(widget);
 
     if (widgetDto.widgetType() == TypeEnum.CHART) {
-      saveChartWidget(widgetId, widget, widgetDto);
+      saveChartWidget(widgetId, managedWidget, widgetDto);
+
     } else if (widgetDto.widgetType() == TypeEnum.KPI) {
-      saveKpiWidget(widgetId, widget, widgetDto);
+      saveKpiWidget(widgetId, managedWidget, widgetDto);
     }
   }
 
@@ -148,7 +276,7 @@ public class AiDashboardVersionService {
             .metricName(widgetDto.metricName())
             .build();
 
-    chartWidgetRepository.save(chartWidget);
+    entityManager.persist(chartWidget);
   }
 
   private void saveKpiWidget(
@@ -162,6 +290,6 @@ public class AiDashboardVersionService {
             .aggregationWindowDays(widgetDto.aggregationWindowDays())
             .build();
 
-    kpiWidgetRepository.save(kpiWidget);
+    entityManager.persist(kpiWidget);
   }
 }

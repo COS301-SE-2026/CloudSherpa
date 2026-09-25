@@ -106,25 +106,18 @@ public class AiAgentService {
           String arguments = requiredJsonText(function, "arguments");
 
           AiToolResultDto toolResult = executeTool(context, toolName, arguments);
-          if ("stage_dashboard_version".equals(toolName)
-              && toolResult.success()) {
+          if ("stage_dashboard_version".equals(toolName) && toolResult.success()) {
 
             String assistantMessage = "Dashboard version staged successfully.";
 
-            saveMessage(
-                sessionId,
-                AiMessage.AiMessageRole.ASSISTANT,
-                assistantMessage);
+            saveMessage(sessionId, AiMessage.AiMessageRole.ASSISTANT, assistantMessage);
 
             aiSessionService.updateLastActivity(userId, sessionId);
 
-            return buildResponse(
-                userId,
-                sessionId,
-                assistantMessage);
+            return buildResponse(userId, sessionId, assistantMessage);
           }
-          messages.add(Map.of("role", "tool", "tool_call_id", toolCallId, "content",
-              toJson(toolResult)));
+          messages.add(
+              Map.of("role", "tool", "tool_call_id", toolCallId, "content", toJson(toolResult)));
         }
 
         continue;
@@ -143,35 +136,18 @@ public class AiAgentService {
         String arguments = argumentsNode.isMissingNode() ? "{}" : argumentsNode.toString();
         AiToolResultDto toolResult = executeTool(context, toolName, arguments);
 
-        if ("stage_dashboard_version".equals(toolName)
-            && toolResult.success()) {
+        if ("stage_dashboard_version".equals(toolName) && toolResult.success()) {
           String assistantMessage = "Dashboard version staged successfully.";
-          saveMessage(
-              sessionId,
-              AiMessage.AiMessageRole.ASSISTANT,
-              assistantMessage);
+          saveMessage(sessionId, AiMessage.AiMessageRole.ASSISTANT, assistantMessage);
 
           aiSessionService.updateLastActivity(userId, sessionId);
 
-          return buildResponse(
-              userId,
-              sessionId,
-              assistantMessage);
+          return buildResponse(userId, sessionId, assistantMessage);
         }
 
-        messages.add(
-            Map.of(
-                "role",
-                "assistant",
-                "content",
-                assistantContent));
+        messages.add(Map.of("role", "assistant", "content", assistantContent));
 
-        messages.add(
-            Map.of(
-                "role",
-                "tool",
-                "content",
-                toJson(toolResult)));
+        messages.add(Map.of("role", "tool", "content", toJson(toolResult)));
 
         continue;
       }
@@ -200,44 +176,40 @@ public class AiAgentService {
         throw new IllegalArgumentException("Tool arguments must be a JSON object");
       }
 
-      String result = switch (toolName) {
-        case "list_cloud_accounts" -> objectMapper.writeValueAsString(
-            mcpTools.listCloudAccounts(context));
+      String result =
+          switch (toolName) {
+            case "list_cloud_accounts" -> objectMapper.writeValueAsString(
+                mcpTools.listCloudAccounts(context));
 
-        case "list_resources" -> objectMapper.writeValueAsString(
-            mcpTools.listResources(
-                context, nullableUuid(args, "accountId"), nullableText(args, "resourceType")));
+            case "list_resources" -> objectMapper.writeValueAsString(
+                mcpTools.listResources(
+                    context, nullableUuid(args, "accountId"), nullableText(args, "resourceType")));
 
-        case "list_available_metrics" -> objectMapper.writeValueAsString(
-            mcpTools.listAvailableMetrics(context, requiredUuid(args, "resourceId")));
+            case "list_available_metrics" -> objectMapper.writeValueAsString(
+                mcpTools.listAvailableMetrics(context, requiredUuid(args, "resourceId")));
 
-        case "list_billing_charges" -> objectMapper.writeValueAsString(
-            mcpTools.listBillingCharges(context));
+            case "list_billing_charges" -> objectMapper.writeValueAsString(
+                mcpTools.listBillingCharges(context));
 
-        case "stage_dashboard_version" -> {
-          JsonNode planNode = requiredNode(args, "plan");
+            case "stage_dashboard_version" -> {
+              JsonNode planNode = requiredNode(args, "plan");
 
-          System.out.println("=== AI DASHBOARD PLAN ===");
-          System.out.println(planNode.toPrettyString());
+              System.out.println("=== AI DASHBOARD PLAN ===");
+              System.out.println(planNode.toPrettyString());
 
-          DashboardPlanDto plan = objectMapper.treeToValue(planNode, DashboardPlanDto.class);
+              DashboardPlanDto plan = objectMapper.treeToValue(planNode, DashboardPlanDto.class);
 
-          yield objectMapper.writeValueAsString(
-              mcpTools.stageDashboardVersion(context, plan));
-        }
-        default -> throw new IllegalArgumentException("Unknown AI tool: " + toolName);
-      };
+              yield objectMapper.writeValueAsString(mcpTools.stageDashboardVersion(context, plan));
+            }
+            default -> throw new IllegalArgumentException("Unknown AI tool: " + toolName);
+          };
       return AiToolResultDto.success(toolName, result);
     } catch (Exception exception) {
-      return AiToolResultDto.failure(
-          toolName,
-          buildToolErrorMessage(toolName, exception));
+      return AiToolResultDto.failure(toolName, buildToolErrorMessage(toolName, exception));
     }
   }
 
-  private String buildToolErrorMessage(
-      String toolName,
-      Exception exception) {
+  private String buildToolErrorMessage(String toolName, Exception exception) {
 
     String message = exception.getMessage();
 
@@ -258,7 +230,8 @@ public class AiAgentService {
       return new AiDashboardPlanResponseDto(sessionId, null, null, assistantMessage, null);
     }
 
-    var response = versionService.getVersionResponse(userId, sessionId, session.getCurrentVersionId());
+    var response =
+        versionService.getVersionResponse(userId, sessionId, session.getCurrentVersionId());
 
     return new AiDashboardPlanResponseDto(
         sessionId,
@@ -273,9 +246,7 @@ public class AiAgentService {
     try {
       return objectMapper.writeValueAsString(value);
     } catch (JsonProcessingException exception) {
-      throw new IllegalStateException(
-          "Failed to serialize AI agent message",
-          exception);
+      throw new IllegalStateException("Failed to serialize AI agent message", exception);
     }
   }
 
@@ -398,61 +369,20 @@ public class AiAgentService {
   private List<Map<String, Object>> toolDefinitions() {
 
     Map<String, Object> widgetProperties = new java.util.LinkedHashMap<>();
-    widgetProperties.put(
-        "widgetType",
-        Map.of(
-            "type",
-            "string",
-            "enum",
-            List.of("KPI", "CHART")));
+    widgetProperties.put("widgetType", Map.of("type", "string", "enum", List.of("KPI", "CHART")));
+
+    widgetProperties.put("displayName", Map.of("type", "string"));
+
+    widgetProperties.put("startX", Map.of("type", "integer", "minimum", 0));
+
+    widgetProperties.put("startY", Map.of("type", "integer", "minimum", 0));
+
+    widgetProperties.put("width", Map.of("type", "integer", "minimum", 1, "maximum", 12));
+
+    widgetProperties.put("height", Map.of("type", "integer", "minimum", 1));
 
     widgetProperties.put(
-        "displayName",
-        Map.of("type", "string"));
-
-    widgetProperties.put(
-        "startX",
-        Map.of(
-            "type",
-            "integer",
-            "minimum",
-            0));
-
-    widgetProperties.put(
-        "startY",
-        Map.of(
-            "type",
-            "integer",
-            "minimum",
-            0));
-
-    widgetProperties.put(
-        "width",
-        Map.of(
-            "type",
-            "integer",
-            "minimum",
-            1,
-            "maximum",
-            12));
-
-    widgetProperties.put(
-        "height",
-        Map.of(
-            "type",
-            "integer",
-            "minimum",
-            1));
-
-    widgetProperties.put(
-        "chartType",
-        Map.of(
-            "type",
-            "string",
-            "enum",
-            List.of(
-                "gauge_chart",
-                "line_chart")));
+        "chartType", Map.of("type", "string", "enum", List.of("gauge_chart", "line_chart")));
 
     widgetProperties.put(
         "chartColour",
@@ -460,121 +390,66 @@ public class AiAgentService {
             "type",
             "string",
             "enum",
-            List.of(
-                "chart_1",
-                "chart_2",
-                "chart_3",
-                "chart_4",
-                "chart_5")));
+            List.of("chart_1", "chart_2", "chart_3", "chart_4", "chart_5")));
 
     widgetProperties.put(
-        "provider",
+        "provider", Map.of("type", "string", "enum", List.of("AWS", "AZURE", "GCP")));
+
+    widgetProperties.put("title", Map.of("type", "string"));
+
+    widgetProperties.put("accountId", Map.of("type", "string", "format", "uuid"));
+
+    widgetProperties.put("resourceId", Map.of("type", "string", "format", "uuid"));
+
+    widgetProperties.put("metricType", Map.of("type", "string"));
+
+    widgetProperties.put("metricName", Map.of("type", "string"));
+
+    widgetProperties.put("chargeIds", Map.of("type", "array", "items", Map.of("type", "string")));
+
+    widgetProperties.put("aggregationWindowDays", Map.of("type", "integer", "minimum", 1));
+
+    Map<String, Object> widgetSchema =
         Map.of(
             "type",
-            "string",
-            "enum",
-            List.of(
-                "AWS",
-                "AZURE",
-                "GCP")));
+            "object",
+            "properties",
+            widgetProperties,
+            "required",
+            List.of("widgetType", "displayName", "startX", "startY", "width", "height"));
 
-    widgetProperties.put(
-        "title",
-        Map.of("type", "string"));
-
-    widgetProperties.put(
-        "accountId",
+    Map<String, Object> planProperties =
         Map.of(
-            "type",
-            "string",
-            "format",
-            "uuid"));
-
-    widgetProperties.put(
-        "resourceId",
-        Map.of(
-            "type",
-            "string",
-            "format",
-            "uuid"));
-
-    widgetProperties.put(
-        "metricType",
-        Map.of("type", "string"));
-
-    widgetProperties.put(
-        "metricName",
-        Map.of("type", "string"));
-
-    widgetProperties.put(
-        "chargeIds",
-        Map.of(
-            "type",
-            "array",
-            "items",
-            Map.of(
-                "type",
-                "string")));
-
-    widgetProperties.put(
-        "aggregationWindowDays",
-        Map.of(
-            "type",
-            "integer",
-            "minimum",
-            1));
-
-    Map<String, Object> widgetSchema = Map.of(
-        "type",
-        "object",
-        "properties",
-        widgetProperties,
-        "required",
-        List.of(
-            "widgetType",
-            "displayName",
-            "startX",
-            "startY",
-            "width",
-            "height"));
-
-    Map<String, Object> planProperties = Map.of(
-        "title",
-        Map.of("type", "string"),
-        "description",
-        Map.of("type", "string"),
-        "timeFrom",
-        Map.of("type", "string"),
-        "timeTo",
-        Map.of("type", "string"),
-        "predefinedTime",
-        Map.of("type", "string"),
-        "widgets",
-        Map.of(
-            "type",
-            "array",
-            "items",
-            widgetSchema));
-
-    Map<String, Object> planSchema = Map.of(
-        "type",
-        "object",
-        "properties",
-        planProperties,
-        "required",
-        List.of(
             "title",
-            "widgets"));
+            Map.of("type", "string"),
+            "description",
+            Map.of("type", "string"),
+            "timeFrom",
+            Map.of("type", "string"),
+            "timeTo",
+            Map.of("type", "string"),
+            "predefinedTime",
+            Map.of("type", "string"),
+            "widgets",
+            Map.of("type", "array", "items", widgetSchema));
 
-    Map<String, Object> stageParameters = Map.of(
-        "type",
-        "object",
-        "properties",
+    Map<String, Object> planSchema =
         Map.of(
-            "plan",
-            planSchema),
-        "required",
-        List.of("plan"));
+            "type",
+            "object",
+            "properties",
+            planProperties,
+            "required",
+            List.of("title", "widgets"));
+
+    Map<String, Object> stageParameters =
+        Map.of(
+            "type",
+            "object",
+            "properties",
+            Map.of("plan", planSchema),
+            "required",
+            List.of("plan"));
 
     List<Map<String, Object>> tools = new ArrayList<>();
 
@@ -590,26 +465,14 @@ public class AiAgentService {
             "List all resources belonging to one of the user's cloud accounts. "
                 + "Do not guess or invent resource types.",
             objectSchema(
-                Map.of(
-                    "accountId",
-                    Map.of(
-                        "type",
-                        "string",
-                        "format",
-                        "uuid")),
+                Map.of("accountId", Map.of("type", "string", "format", "uuid")),
                 List.of("accountId"))));
     tools.add(
         tool(
             "list_available_metrics",
             "List metrics available for a specific resource.",
             objectSchema(
-                Map.of(
-                    "resourceId",
-                    Map.of(
-                        "type",
-                        "string",
-                        "format",
-                        "uuid")),
+                Map.of("resourceId", Map.of("type", "string", "format", "uuid")),
                 List.of("resourceId"))));
 
     tools.add(
@@ -673,16 +536,15 @@ public class AiAgentService {
     return tools;
   }
 
-  private Map<String, Object> buildCurrentDashboardContext(
-      UUID userId,
-      UUID sessionId) {
+  private Map<String, Object> buildCurrentDashboardContext(UUID userId, UUID sessionId) {
 
     AiSession session = aiSessionService.getSession(userId, sessionId);
 
     if (session.getCurrentVersionId() == null) {
       return Map.of(
           "role", "system",
-          "content", """
+          "content",
+              """
               CURRENT STAGED DASHBOARD:
               There is currently no staged dashboard for this session.
 
@@ -691,17 +553,17 @@ public class AiAgentService {
               """);
     }
 
-    DashboardPlanDto dashboard = versionService.getDashboardPlan(
-        userId,
-        sessionId,
-        session.getCurrentVersionId());
+    DashboardPlanDto dashboard =
+        versionService.getDashboardPlan(userId, sessionId, session.getCurrentVersionId());
 
     try {
       String dashboardJson = objectMapper.writeValueAsString(dashboard);
 
       return Map.of(
-          "role", "system",
-          "content", """
+          "role",
+          "system",
+          "content",
+          """
               CURRENT STAGED DASHBOARD
 
               The following dashboard is the current staged version for this
@@ -719,10 +581,10 @@ public class AiAgentService {
 
               Current dashboard:
               %s
-              """.formatted(dashboardJson));
+              """
+              .formatted(dashboardJson));
     } catch (JsonProcessingException e) {
-      throw new IllegalStateException(
-          "Failed to serialize current dashboard context", e);
+      throw new IllegalStateException("Failed to serialize current dashboard context", e);
     }
   }
 
@@ -746,7 +608,8 @@ public class AiAgentService {
         Map.of("name", name, "description", description, "parameters", parameters));
   }
 
-  private static final String SYSTEM_PROMPT = """
+  private static final String SYSTEM_PROMPT =
+      """
       You are the CloudSherpa Dashboard Construction Agent.
 
       Construct dashboards only from data discovered through CloudSherpa tools.
