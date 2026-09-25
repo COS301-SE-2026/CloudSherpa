@@ -88,7 +88,7 @@ export function useFetchMetricHistoricalData({
                     resource_id: item.resourceId,
                     metricType: item.metricType as MetricType,
                     timestamp: item.periodStart,
-                    value: item.metricValue || 0,
+                    value: item.metricValue || null,
                     metricName: item.metricName,
                     unit: item.unit,
                     currency: item.currency,

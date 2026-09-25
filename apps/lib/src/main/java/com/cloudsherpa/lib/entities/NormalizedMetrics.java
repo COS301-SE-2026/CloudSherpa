@@ -56,6 +56,7 @@ public class NormalizedMetrics {
   }
 
   private NormalizedMetrics(Builder builder) {
+    this.metricId = builder.metricId;
     this.resourceId = builder.resourceId;
     this.recordedAt = builder.recordedAt;
     this.metricType = builder.metricType;
@@ -111,7 +112,20 @@ public class NormalizedMetrics {
       this.metricName = metricName;
   }
 
+  public void setMetricValue(BigDecimal metricValue) {
+    this.metricValue = metricValue;
+  }
+
+  public void setMetricPeriodStart(OffsetDateTime periodStart) {
+    this.periodStart = periodStart;
+  }
+
+  public void setMetricPeriodEnd(OffsetDateTime periodEnd) {
+    this.periodEnd = periodEnd;
+  }
+
   public static class Builder {
+    private UUID metricId;
     private UUID resourceId;
     private OffsetDateTime recordedAt;
     private String metricType;
@@ -121,6 +135,11 @@ public class NormalizedMetrics {
     private String currency;
     private OffsetDateTime periodStart;
     private OffsetDateTime periodEnd;
+
+    public Builder metricId(UUID metricId) {
+      this.metricId = metricId;
+      return this;
+    }
 
     public Builder resourceId(UUID resourceId) {
       this.resourceId = resourceId;
