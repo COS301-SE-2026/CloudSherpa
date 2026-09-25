@@ -2,6 +2,7 @@ package com.cloudsherpa.service.agenticdashboard.controller;
 
 import com.cloudsherpa.service.agenticdashboard.dto.AiDashboardPlanRequestDto;
 import com.cloudsherpa.service.agenticdashboard.dto.AiDashboardPlanResponseDto;
+import com.cloudsherpa.service.agenticdashboard.service.AiAgentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -10,6 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -21,6 +23,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/ai/dashboard")
 @Tag(name = "AI Dashboard", description = "Agentic Dashboard Construction Operations")
 public class AiDashboardController {
+
+  private final AiAgentService aiAgentService;
+
+  public AiDashboardController(AiAgentService aiAgentService) {
+    this.aiAgentService = aiAgentService;
+  }
 
   @Operation(
       summary = "Generate an AI dashboard plan",
@@ -37,17 +45,12 @@ public class AiDashboardController {
                     schema = @Schema(implementation = AiDashboardPlanResponseDto.class))),
         @ApiResponse(
             responseCode = "400",
-            description = "The dashboard request is malformed or contains invalid values",
+            description = "The dashboard request is malformed",
             content = @Content),
         @ApiResponse(
             responseCode = "404",
             description =
                 "The AI session does not exist or does not belong to the authenticated user",
-            content = @Content),
-        @ApiResponse(
-            responseCode = "422",
-            description =
-                "The requested dashboard cannot be represented using the available CloudSherpa dashboard capabilities",
             content = @Content)
       })
   @PostMapping("/plan")
@@ -65,6 +68,11 @@ public class AiDashboardController {
           @org.springframework.web.bind.annotation.RequestBody
           AiDashboardPlanRequestDto request) {
 
-    return ResponseEntity.ok().build();
+    UUID userId = UUID.fromString(jwt.getSubject());
+
+    AiDashboardPlanResponseDto response =
+        aiAgentService.generateDashboardPlan(userId, request.sessionId(), request.message());
+
+    return ResponseEntity.ok(response);
   }
 }
