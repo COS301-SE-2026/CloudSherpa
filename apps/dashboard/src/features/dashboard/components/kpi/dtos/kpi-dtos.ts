@@ -24,6 +24,9 @@ export type KpiCharge = {
     resourceId: string;
     service: string;
     provider: CloudProviderEnum;
+    resourceName: string | null;
+    chargeCost: number;
+    metadata: Record<string, unknown> | null;
 };
 
 export type KpiResourceResponseDto = KpiCharge[];
