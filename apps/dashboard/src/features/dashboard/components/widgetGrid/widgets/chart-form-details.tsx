@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 interface ChartFormDetailsProps {
     configuration: ChartWidgetConfig;
     setConfiguration: (config: ChartWidgetConfig) => void;
+    error?: string;
 }
 
 const CHART_TYPE_OPTIONS: { value: ChartType; label: string }[] = [
@@ -31,6 +32,7 @@ const CHART_COLOURS: { label: string; value: ChartColour }[] = [
 export default function ChartFormDetails({
     configuration,
     setConfiguration,
+    error,
 }: Readonly<ChartFormDetailsProps>) {
     const currentColour = configuration.chartColour || "chart_1";
     const currentColourLabel =
@@ -57,6 +59,7 @@ export default function ChartFormDetails({
                         }
                         maxLength={80}
                         placeholder="Widget title"
+                        className={cn({ "border border-destructive": error })}
                     />
                 </div>
                 <div className="flex flex-col gap-2">
