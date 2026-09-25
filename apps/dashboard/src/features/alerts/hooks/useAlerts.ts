@@ -2,132 +2,89 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { disableAlert, enableAlert, fetchAlerts } from "@/features/alerts/alerts";
-import { useAlertStream } from "@/features/alerts/services/sse/alert-stream";
-import type { Alert, TypeForAlerts } from "@/features/alerts/types/alertTypes";
+import { useAlertStore } from "@/features/alerts/stores/alert-store";
+import type { TypeForAlerts } from "@/features/alerts/types/alertTypes";
 
 interface AlertsResult {
-    alerts: Alert[];
+    alerts: ReturnType<typeof useAlertStore.getState>["alerts"];
     loading: boolean;
     forError: string | null;
-    streamError: string | null;
     refreshing: () => Promise<void>;
     disable: (alertId: string) => Promise<void>;
     enable: (alertId: string) => Promise<void>;
 }
 
-function upsertAlert(previousAlerts: Alert[], incomingAlert: Alert): Alert[] {
-    const canonicalKey = incomingAlert.canonicalKey?.trim();
-
-    // Try to find the position (index) of the alert in our existing list
-    let existingIndex = -1;
-
-    // If a canonicalKey exists, look for a match using that.
-    // Otherwise, fall back to searching by the standard alertId
-    if (canonicalKey) {
-        existingIndex = previousAlerts.findIndex((alert) => alert.canonicalKey === canonicalKey);
-    } else {
-        existingIndex = previousAlerts.findIndex(
-            (alert) => alert.alertId === incomingAlert.alertId
-        );
-    }
-
-    // The alert is brand new (not found in the list)
-    if (existingIndex === -1) {
-        // Return a new array with the incoming alert placed at the very top,
-        // followed by all the previous alerts after it
-        return [incomingAlert, ...previousAlerts];
-    }
-
-    // The alert already exists, so we must merge the new data into it.
-    const updatedAlerts = [...previousAlerts];
-
-    updatedAlerts[existingIndex] = {
-        ...updatedAlerts[existingIndex],
-        ...incomingAlert,
-    };
-
-    return updatedAlerts;
-}
-
 export function useAlerts(typeForAlert?: TypeForAlerts): AlertsResult {
-    const [alerts, setAlerts] = useState<Alert[]>([]);
+    const allAlerts = useAlertStore((state) => state.alerts);
+    const setAlerts = useAlertStore((state) => state.setAlerts);
+    const setStatus = useAlertStore((state) => state.setStatus);
+
     const [loading, setLoading] = useState<boolean>(true);
     const [forError, setForError] = useState<string | null>(null);
 
-    // This listens for new alerts pushed from the server in real-time.
-    const handleIncomingAlert = useCallback(
-        (incoming: Alert) => {
-            // Ignore alerts that don't match the specific type we are looking for
-            if (typeForAlert && incoming.alertType !== typeForAlert) {
-                return;
-            }
-
-            // Safely merge the new alert into our existing list using our upsert function
-            setAlerts((previous) => upsertAlert(previous, incoming));
-        },
-        [typeForAlert]
-    );
-
-    const { error: streamError } = useAlertStream(handleIncomingAlert);
+    const alerts = typeForAlert
+        ? allAlerts.filter((alert) => alert.alertType === typeForAlert)
+        : allAlerts;
 
     const refreshing = useCallback(async () => {
         setLoading(true);
         setForError(null);
 
         try {
-            const forData = await fetchAlerts(typeForAlert);
-            setAlerts(forData);
+            const data = await fetchAlerts(typeForAlert);
+            setAlerts(data);
         } catch (error) {
             setForError(error instanceof Error ? error.message : "Failed to load alerts");
         } finally {
             setLoading(false);
         }
-    }, [typeForAlert]);
+    }, [setAlerts, typeForAlert]);
 
     useEffect(() => {
         let cancelled = false;
 
         (async () => {
             try {
-                const forData = await fetchAlerts(typeForAlert);
-                if (!cancelled) setAlerts(forData);
+                const data = await fetchAlerts(typeForAlert);
+                if (!cancelled) {
+                    setAlerts(data);
+                }
             } catch (error) {
                 if (!cancelled) {
                     setForError(error instanceof Error ? error.message : "Failed to load alerts");
                 }
             } finally {
-                if (!cancelled) setLoading(false);
+                if (!cancelled) {
+                    setLoading(false);
+                }
             }
         })();
 
         return () => {
             cancelled = true;
         };
-    }, [typeForAlert]);
+    }, [setAlerts, typeForAlert]);
 
-    const disable = useCallback(async (alertId: string) => {
-        await disableAlert(alertId);
-        setAlerts((previous) =>
-            previous.map((alert) =>
-                alert.alertId === alertId ? { ...alert, status: "DISABLED" } : alert
-            )
-        );
-    }, []);
+    const disable = useCallback(
+        async (alertId: string) => {
+            await disableAlert(alertId);
+            setStatus(alertId, "DISABLED");
+        },
+        [setStatus]
+    );
 
-    const enable = useCallback(async (alertId: string) => {
-        await enableAlert(alertId);
-        setAlerts((previous) =>
-            previous.map((alert) =>
-                alert.alertId === alertId ? { ...alert, status: "ACTIVE" } : alert
-            )
-        );
-    }, []);
+    const enable = useCallback(
+        async (alertId: string) => {
+            await enableAlert(alertId);
+            setStatus(alertId, "ACTIVE");
+        },
+        [setStatus]
+    );
 
     return {
         alerts,
         loading,
         forError,
-        streamError: streamError?.message ?? null,
         refreshing,
         disable,
         enable,
