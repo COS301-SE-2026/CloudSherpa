@@ -9,6 +9,7 @@ import { Separator } from "@/components/atoms/separator";
 import { toast } from "sonner";
 import RecommendationReasoning, { formatValue } from "@/features/optimization/utils/recDictionary";
 import { cn } from "@/lib/utils";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/atoms/tooltip";
 
 interface RecommendationCardProps {
     recommendation: Recommendation;
@@ -181,17 +182,31 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
 
         return (
             <>
-                <Button type="button" onClick={handleApply} className="cursor-pointer">
-                    Apply
-                </Button>
-                <Button
-                    type="button"
-                    variant="destructive"
-                    onClick={handleDismiss}
-                    className="cursor-pointer"
-                >
-                    Dismiss
-                </Button>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button type="button" onClick={handleApply} className="cursor-pointer">
+                            Applied
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        Acknowledge that the recommendation for this resource has been applied
+                    </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button
+                            type="button"
+                            variant="destructive"
+                            onClick={handleDismiss}
+                            className="cursor-pointer"
+                        >
+                            Disable
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        Hide this recommendation <br /> You can re-enable it at any time
+                    </TooltipContent>
+                </Tooltip>
             </>
         );
     };
