@@ -160,7 +160,7 @@ class UsageForecastingServiceTest {
 
     IntelligenceForecastResponseDto forecastResponse = getValidForecastResponse();
 
-    when(normalizedMetricsRepository.getAggregatedTimestampedMetricValuesAfterDate(
+    when(normalizedMetricsRepository.getAggregatedTimestampedMetricValues(
             RESOURCE_ID, METRIC_TYPE, PageRequest.of(0, CONTEXT_LENGTH)))
         .thenReturn(usageSeries);
 
@@ -174,7 +174,7 @@ class UsageForecastingServiceTest {
 
     // Assert
     verify(normalizedMetricsRepository)
-        .getAggregatedTimestampedMetricValuesAfterDate(
+        .getAggregatedTimestampedMetricValues(
             RESOURCE_ID, METRIC_TYPE, PageRequest.of(0, CONTEXT_LENGTH));
   }
 
@@ -184,7 +184,7 @@ class UsageForecastingServiceTest {
 
     IntelligenceForecastResponseDto forecastResponse = getValidForecastResponse();
 
-    when(normalizedMetricsRepository.getAggregatedTimestampedMetricValuesAfterDate(
+    when(normalizedMetricsRepository.getAggregatedTimestampedMetricValues(
             RESOURCE_ID, METRIC_TYPE, PageRequest.of(0, CONTEXT_LENGTH)))
         .thenReturn(usageSeries);
 
@@ -198,7 +198,7 @@ class UsageForecastingServiceTest {
 
     // Assert
     verify(normalizedMetricsRepository)
-        .getAggregatedTimestampedMetricValuesAfterDate(
+        .getAggregatedTimestampedMetricValues(
             RESOURCE_ID, METRIC_TYPE, PageRequest.of(0, CONTEXT_LENGTH));
   }
 
