@@ -34,12 +34,11 @@ import type { CloudResource } from "@/lib/fetch/dto/cloud-resource";
 interface PropsForPopup {
     open: boolean;
     initial?: Budget | null;
-    userId: string;
     onClose: () => void;
     onSubmit: (payload: CreateBudgetRequest) => Promise<void>;
 }
 
-export function BudgetPopup({ open, initial, userId, onClose, onSubmit }: Readonly<PropsForPopup>) {
+export function BudgetPopup({ open, initial, onClose, onSubmit }: Readonly<PropsForPopup>) {
     const { user } = useAuthContext();
 
     const [scope, setScope] = useState<ScopeForBudget>(initial?.scope ?? "TENANT");
@@ -53,7 +52,7 @@ export function BudgetPopup({ open, initial, userId, onClose, onSubmit }: Readon
     const [enabled, setEnabled] = useState<boolean>(initial?.enabled ?? true);
 
     const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
-        initial?.scope === "ACCOUNT" || initial?.scope === "RESOURCE" ? initial.scope_id : null
+        initial?.scope === "ACCOUNT" ? initial.scope_id : null
     );
 
     const [selectedResourceId, setSelectedResourceId] = useState<string | null>(
@@ -77,11 +76,60 @@ export function BudgetPopup({ open, initial, userId, onClose, onSubmit }: Readon
     const [scopeError, setScopeError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!open) {
+        if(!open){
             return;
         }
 
-        if (scope !== "ACCOUNT" && scope !== "RESOURCE") {
+        if(initial?.scope !== "RESOURCE"){
+            return;
+        }
+
+        if(!initial.scope_id){
+            return;
+        }
+
+        if(selectedAccountId){
+            return;
+        }
+
+        let cancelled = false;
+
+        (async () => {
+            const allConnections = await getAwsAccountConnections();
+
+            for(const connection of allConnections){
+                if(cancelled){
+                    return;
+                }
+
+                const connectionResources = await getAwsAccountResources(connection.id);
+
+                if(cancelled){
+                    return;
+                }
+
+                if(connectionResources.some((resource) => resource.id === initial.scope_id)){
+                    setSelectedAccountId(connection.id);
+
+                    setSelectedResourceId(initial.scope_id);
+
+                    return;
+                }
+            }
+        })();
+
+        return () => {
+            cancelled = true;
+        };
+
+    }, [open, initial?.scope, initial?.scope_id, selectedAccountId]);
+
+    useEffect(() => {
+        if(!open){
+            return;
+        }
+
+        if(scope !== "ACCOUNT" && scope !== "RESOURCE"){
             return;
         }
 
@@ -90,18 +138,18 @@ export function BudgetPopup({ open, initial, userId, onClose, onSubmit }: Readon
         (async () => {
             setLoadingAccounts(true);
 
-            try {
+            try{
                 const forData = await getAwsAccountConnections();
 
-                if (!cancelled) {
+                if(!cancelled){
                     setAccounts(forData);
                 }
-            } catch {
-                if (!cancelled) {
+            }catch{
+                if(!cancelled){
                     setAccounts([]);
                 }
-            } finally {
-                if (!cancelled) {
+            }finally{
+                if(!cancelled){
                     setLoadingAccounts(false);
                 }
             }
@@ -113,7 +161,7 @@ export function BudgetPopup({ open, initial, userId, onClose, onSubmit }: Readon
     }, [open, scope]);
 
     useEffect(() => {
-        if (scope !== "RESOURCE" || !selectedAccountId) {
+        if(scope !== "RESOURCE" || !selectedAccountId){
             return;
         }
 
@@ -122,18 +170,18 @@ export function BudgetPopup({ open, initial, userId, onClose, onSubmit }: Readon
         (async () => {
             setLoadingResources(true);
 
-            try {
+            try{
                 const forData = await getAwsAccountResources(selectedAccountId);
 
-                if (!cancelled) {
+                if(!cancelled){
                     setResources(forData);
                 }
-            } catch {
-                if (!cancelled) {
+            }catch{
+                if(!cancelled){
                     setResources([]);
                 }
-            } finally {
-                if (!cancelled) {
+            }finally{
+                if(!cancelled){
                     setLoadingResources(false);
                 }
             }
@@ -142,6 +190,7 @@ export function BudgetPopup({ open, initial, userId, onClose, onSubmit }: Readon
         return () => {
             cancelled = true;
         };
+
     }, [scope, selectedAccountId]);
 
     const handlingScopeChange = (next: ScopeForBudget) => {
@@ -183,7 +232,7 @@ export function BudgetPopup({ open, initial, userId, onClose, onSubmit }: Readon
         setScopeError(null);
 
         const forScopeId: Record<ScopeForBudget, string | null> = {
-            TENANT: user?.userId ?? null,
+            TENANT: null,
             ACCOUNT: selectedAccountId,
             RESOURCE: selectedResourceId,
         };
@@ -196,8 +245,16 @@ export function BudgetPopup({ open, initial, userId, onClose, onSubmit }: Readon
             RESOURCE: "Select an account and a resource",
         };
 
-        if (!resolvedScopeId) {
+        const validScope = scope === "TENANT" || (scope === "ACCOUNT" && !!selectedAccountId) || (scope === "RESOURCE" && !!selectedResourceId);
+
+        if (!validScope) {
             setScopeError(scopeErrorMessage[scope]);
+
+            hasError = true;
+        }
+
+        if(!user?.userId){
+            setScopeError("Not signed in");
 
             hasError = true;
         }
