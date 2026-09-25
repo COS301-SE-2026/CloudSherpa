@@ -56,7 +56,7 @@ export default function ChartFormResource({
                         }))}
                         onSelect={(currentValue) => {
                             const nextMetricOptions = allAvailableMetrics()[currentValue] ?? [];
-                            const metricType = nextMetricOptions[0] ?? "anon";
+                            const metricType = nextMetricOptions[0];
                             setConfiguration({
                                 ...configuration,
                                 resourceId: currentValue,
