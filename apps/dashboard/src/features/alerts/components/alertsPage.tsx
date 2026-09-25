@@ -15,7 +15,7 @@ const FILTERS: Array<{ value: "ALL" | TypeForAlerts; label: string }> = [
 ];
 
 export function AlertsPage() {
-    const { alerts, loading, forError, disable, enable } = useAlerts();
+    const { alerts, loading, forError, streamError, disable, enable } = useAlerts();
 
     const [search, setSearch] = useState("");
     const [filterType, setFilterType] = useState<"ALL" | TypeForAlerts>("ALL");
@@ -78,6 +78,14 @@ export function AlertsPage() {
                         </span>
                     </div>
                 </header>
+
+                {streamError && (
+                    <Card className="mb-4 border-destructive/80 bg-destructive/10">
+                        <CardContent className="py-3 text-xs text-destructive">
+                            Stream Error: {streamError}. Real-time alert updates may be paused.
+                        </CardContent>
+                    </Card>
+                )}
 
                 {loading && (
                     <Card>
