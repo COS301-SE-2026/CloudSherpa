@@ -261,8 +261,8 @@ export function BudgetPopup({ open, initial, onClose, onSubmit }: Readonly<Props
 
         const amountParsed = Number(amount);
 
-        if (!Number.isFinite(amountParsed) || amountParsed <= 0) {
-            setAmountError("Amount must be greater than 0");
+        if (!Number.isFinite(amountParsed) || amountParsed < 0) {
+            setAmountError("Amount must be 0 or greater");
 
             hasError = true;
         }
@@ -406,6 +406,7 @@ export function BudgetPopup({ open, initial, onClose, onSubmit }: Readonly<Props
                             id="amount"
                             type="number"
                             step="any"
+                            min={0}
                             value={amount}
                             onChange={(change) => {
                                 setAmount(change.target.value);
@@ -424,6 +425,8 @@ export function BudgetPopup({ open, initial, onClose, onSubmit }: Readonly<Props
                         <Input
                             id="window"
                             type="number"
+                            min={1}
+                            step={1}
                             value={windowDays}
                             onChange={(change) => {
                                 setWindowDays(Number(change.target.value));
