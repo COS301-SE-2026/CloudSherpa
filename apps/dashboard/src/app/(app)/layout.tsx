@@ -2,11 +2,13 @@ import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/atom
 import { TooltipProvider } from "@/components/atoms/tooltip";
 import { AppSidebar } from "@/components/molecules/app-sidebar";
 import Image from "next/image";
+import { AlertStreamBridge } from "@/features/alerts/components/AlertStreamBridge";
 
 export default function AppWrapper({ children }: Readonly<{ children: React.ReactNode }>) {
     return (
         <TooltipProvider>
             <SidebarProvider>
+                <AlertStreamBridge />
                 <AppSidebar />
                 <SidebarInset className="flex flex-col flex-1 overflow-hidden">
                     <header className="flex h-16 shrink-0 items-center gap-3 border-b border-border px-4 md:hidden">

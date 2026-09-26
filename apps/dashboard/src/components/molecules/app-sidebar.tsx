@@ -25,6 +25,8 @@ import { useEffect } from "react";
 
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/atoms/tooltip";
 
+import { useAlertStore } from "@/features/alerts/stores/alert-store";
+
 import {
     Sidebar,
     SidebarContent,
@@ -48,6 +50,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const { logout } = useLogout();
 
     const [mounted, setMounted] = React.useState(false);
+
+    const activeAlerts = useAlertStore(
+        (state) => state.alerts.filter((a) => a.status === "ACTIVE").length
+    );
 
     const handleThemeToggle = async () => {
         const newTheme = theme === "dark" ? "light" : "dark";
@@ -256,6 +262,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                         <Link href="/alerts">
                                             <ShieldAlert />
                                             <span>Alerts</span>
+                                            {activeAlerts > 0 && (
+                                                <Badge>{`${activeAlerts} active`}</Badge>
+                                            )}
                                         </Link>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
