@@ -109,4 +109,24 @@ class AlertsControllerTest {
     verify(alertRepository).save(captor.capture());
     assertEquals(AlertStatusEnum.ACTIVE, captor.getValue().getStatus());
   }
+
+  @Test
+  void deleteAlertShouldReturnNoContentWhenAlertExists() {
+    UUID alertId = UUID.randomUUID();
+    when(alertRepository.existsById(alertId)).thenReturn(true);
+    ResponseEntity<Void> response = controller.deleteAlert(alertId);
+
+    assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+    verify(alertRepository).deleteById(alertId);
+  }
+
+  @Test
+  void deleteAlertShouldReturnNotFoundWhenAlertDoesNotExist() {
+    UUID alertId = UUID.randomUUID();
+    when(alertRepository.existsById(alertId)).thenReturn(false);
+
+    ResponseEntity<Void> response = controller.deleteAlert(alertId);
+
+    assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+  }
 }
