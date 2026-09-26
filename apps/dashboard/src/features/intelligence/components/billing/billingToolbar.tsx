@@ -10,14 +10,12 @@ interface PropsForBillingToolbar {
 }
 
 const PAST_TIME_PERIODS = [
-    { value: "1", label: "Last 24 hours" },
     { value: "7", label: "Last 7 days" },
     { value: "30", label: "Last 30 days" },
     { value: "90", label: "Last 90 days" },
 ];
 
 const FORECAST_TIME_PERIODS = [
-    { value: "1", label: "Next 24 hours" },
     { value: "7", label: "Next 7 days" },
     { value: "14", label: "Next 14 days" },
     { value: "30", label: "Next 30 days" },
@@ -120,7 +118,7 @@ export default function BillingToolbar({ actions }: Readonly<PropsForBillingTool
                     options={FORECAST_TIME_PERIODS}
                     value={forecastTimeWindowDays.toString()}
                     onSelect={(selectedVal) =>
-                        setTimeWindows(pastTimeWindowDays, Number(selectedVal))
+                        setTimeWindows(Number(selectedVal), Number(selectedVal))
                     }
                     placeholder="Select forecast window"
                     disableSearch={true}
