@@ -170,7 +170,7 @@ function Truncation({
 }: Readonly<{ tagsAndName: string; className?: string }>) {
     return (
         <TooltipProvider>
-            <Tooltip>
+            <Tooltip showOnTruncate>
                 <TooltipTrigger asChild>
                     <span className={`block truncate ${className}`}> {tagsAndName} </span>
                 </TooltipTrigger>
