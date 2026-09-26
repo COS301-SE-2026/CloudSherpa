@@ -17,6 +17,7 @@ export type KpiPreviewResponseDto = {
     timeLabel: string;
     updatedAt: string;
     previousValue: number | null;
+    resourceName: string | null;
 };
 
 export type KpiCharge = {

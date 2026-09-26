@@ -165,42 +165,37 @@ export function KPIConfigTable<TValue>({
                                         </div>
                                     </div>
                                 </CardHeader>
-                                <CardContent className="flex flex-col gap-4 w-full font-medium text-foreground">
-                                    <div className="grid grid-cols-2 gap-4 text-sm">
+                                <CardContent className="flex flex-col gap-4 w-full text-xs  font-medium text-foreground">
+                                    <div className="grid grid-cols-2 gap-4 md:grid-cols-3 text-sm">
                                         <div className="flex flex-col gap-1">
-                                            <span>Cloud Provider</span>
+                                            <span className="text-muted-foreground">
+                                                Cloud Provider
+                                            </span>
                                             <span>{row.original.provider}</span>
                                         </div>
                                         <div className="flex flex-col gap-1">
-                                            <span className="text-xs font-medium text-muted-foreground">
+                                            <span className="text-muted-foreground">
                                                 Service Type
                                             </span>
-                                            <span className="font-medium text-foreground">
-                                                {row.original.service}
+                                            <span>{row.original.service}</span>
+                                        </div>
+                                        <div className="flex flex-col gap-1">
+                                            <span className="text-muted-foreground">
+                                                Resource Name
                                             </span>
+                                            <span>{row.original.resourceName || "No Name"}</span>
                                         </div>
                                     </div>
-                                    <div className="flex flex-col gap-4  font-mono text-xs text-foreground">
+                                    <div className="flex flex-col gap-4">
                                         <div className="flex flex-col gap-1">
-                                            <span className="text-xs font-medium text-muted-foreground">
+                                            <span className="text-muted-foreground">
                                                 Resource ID
                                             </span>
                                             <span
-                                                className="text-wrap"
+                                                className="text-wrap font-mono"
                                                 title={row.original.resourceId}
                                             >
                                                 {row.original.resourceId}
-                                            </span>
-                                        </div>
-                                        <div className="flex flex-col gap-1">
-                                            <span className="text-xs font-medium text-muted-foreground">
-                                                Charge ID
-                                            </span>
-                                            <span
-                                                className="text-wrap"
-                                                title={row.original.chargeId}
-                                            >
-                                                {row.original.chargeId}
                                             </span>
                                         </div>
                                     </div>
