@@ -268,7 +268,7 @@ export function BudgetPopup({ open, initial, onClose, onSubmit }: Readonly<Props
         }
 
         if (!Number.isFinite(windowDays) || windowDays <= 0) {
-            setWindowError("Window must be greater than 0");
+            setWindowError("Window must be 0 or greater");
 
             hasError = true;
         }
@@ -313,7 +313,7 @@ export function BudgetPopup({ open, initial, onClose, onSubmit }: Readonly<Props
                     <DialogTitle> {initial ? "Edit budget" : "New budget"} </DialogTitle>
                 </DialogHeader>
 
-                <form onSubmit={handlingSubmit} className="space-y-4">
+                <form onSubmit={handlingSubmit} className="space-y-4" noValidate>
                     <div className="space-y-2">
                         <Label htmlFor="scope"> Scope </Label>
 
