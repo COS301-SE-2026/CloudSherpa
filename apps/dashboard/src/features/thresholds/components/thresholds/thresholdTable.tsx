@@ -64,7 +64,7 @@ function CurrentValue({ resourceId, metricName, enabled }: Readonly<PropsForCurr
 
     const latestValue = metricSeriesToArray(forSeries).at(-1);
 
-    if (latestValue == null || latestValue.value == null) {
+    if (latestValue?.value == null) {
         return (
             <Truncation
                 text="-"
