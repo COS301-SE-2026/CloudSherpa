@@ -1,5 +1,9 @@
+// Observational NFR test: thresholds will be added once an acceptable
+// degradation target has been established.
+
 import { loginSetup } from '../common/utils/login-setup.js';
 import historicalMetricEndpoint from './historical-metric-utils.js';
+import { handleDegradationSummary } from '../common/utils/scalability-utils.js';
 
 export const options = {
     scenarios: {
@@ -12,7 +16,7 @@ export const options = {
         load: {
             executor: 'constant-vus',
             exec: 'historicalMetricScalability',
-            vus: 100,
+            vus: 50,
             duration: '5m',
             startTime: '1m'
         }
@@ -32,18 +36,5 @@ export function historicalMetricScalability(data) {
 }
 
 export function handleSummary(data) {
-    console.log(JSON.stringify(data));
-    const baseline = data.metrics['http_req_duration{scenario:baseline}'];
-    const load = data.metrics['http_req_duration{scenario:load}'];
-
-    const baselineP95 = baseline.values['p(95)'];
-    const loadP95 = load.values['p(95)'];
-
-    const degradation = ((loadP95 - baselineP95) / baselineP95) * 100;
-
-    console.log(`Baseline p95: ${baselineP95} ms`);
-    console.log(`Load p95:     ${loadP95} ms`);
-    console.log(`Degradation:  ${degradation.toFixed(2)}%`);
-
-    return {};
+    return handleDegradationSummary(data, 'http_req_duration{scenario:baseline}', 'http_req_duration{scenario:load}');
 }
