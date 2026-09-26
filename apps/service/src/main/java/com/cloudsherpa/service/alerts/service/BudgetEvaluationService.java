@@ -37,6 +37,10 @@ public class BudgetEvaluationService {
   private final WebhookProducerService producerService;
   private static final Logger logger = LoggerFactory.getLogger(BudgetEvaluationService.class);
 
+  private static final String RESOURCE_SCOPE = "RESOURCE";
+  private static final String ACCOUNT_SCOPE = "ACCOUNT";
+  private static final String TENANT_SCOPE = "TENANT";
+
   public BudgetEvaluationService(
       NormalizedCostsRepository normalizedCostsRepository,
       AlertRepository alertRepository,
@@ -71,14 +75,15 @@ public class BudgetEvaluationService {
   public void evaluateForAccount(UUID userId, UUID accountId) {
     List<Budget> matchingBudgets = new ArrayList<>();
 
-    matchingBudgets.addAll(budgetRepository.findByUserIdAndScopeAndEnabledTrue(userId, "TENANT"));
+    matchingBudgets.addAll(
+        budgetRepository.findByUserIdAndScopeAndEnabledTrue(userId, TENANT_SCOPE));
 
     matchingBudgets.addAll(
-        budgetRepository.findByScopeAndScopeIdAndEnabledTrue("ACCOUNT", accountId));
+        budgetRepository.findByScopeAndScopeIdAndEnabledTrue(ACCOUNT_SCOPE, accountId));
 
     for (Resource resource : resourceRepository.findByAccountId(accountId)) {
       matchingBudgets.addAll(
-          budgetRepository.findByScopeAndScopeIdAndEnabledTrue("RESOURCE", resource.getId()));
+          budgetRepository.findByScopeAndScopeIdAndEnabledTrue(RESOURCE_SCOPE, resource.getId()));
     }
 
     for (Budget budget : matchingBudgets) {
@@ -88,8 +93,8 @@ public class BudgetEvaluationService {
 
   private BigDecimal sumScopedCost(Budget budget, OffsetDateTime from, OffsetDateTime to) {
     return switch (budget.getScope()) {
-      case "RESOURCE" -> sumCostForResourceBudget(budget, from, to);
-      case "ACCOUNT" -> normalizedCostsRepository.sumTotalCostBetweenForAccountId(
+      case RESOURCE_SCOPE -> sumCostForResourceBudget(budget, from, to);
+      case ACCOUNT_SCOPE -> normalizedCostsRepository.sumTotalCostBetweenForAccountId(
           budget.getScopeId(), from, to);
       default -> normalizedCostsRepository.sumTotalCostBetween(from, to);
     };
@@ -199,8 +204,8 @@ public class BudgetEvaluationService {
 
   private UUID getCloudAccountIdForWebhookEvent(Budget budget) {
     return switch (budget.getScope()) {
-      case "RESOURCE" -> getResourceCloudAccount(budget.getScopeId());
-      case "ACCOUNT" -> budget.getScopeId();
+      case RESOURCE_SCOPE -> getResourceCloudAccount(budget.getScopeId());
+      case ACCOUNT_SCOPE -> budget.getScopeId();
       default -> null;
     };
   }
