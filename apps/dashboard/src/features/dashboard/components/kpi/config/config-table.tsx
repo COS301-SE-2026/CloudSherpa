@@ -181,16 +181,6 @@ export function KPIConfigTable<TValue>({
                                             </span>
                                             <span>{row.original.service}</span>
                                         </div>
-                                        {row.original.resourceName && (
-                                            <div className="flex flex-col gap-1">
-                                                <span className="text-muted-foreground">
-                                                    Resource Name
-                                                </span>
-                                                <span>
-                                                    {row.original.resourceName || "No Name"}
-                                                </span>
-                                            </div>
-                                        )}
                                         <div className="flex flex-col gap-1">
                                             <span className="text-muted-foreground">
                                                 Charge Cost
@@ -214,6 +204,16 @@ export function KPIConfigTable<TValue>({
                                                 );
                                             })()}
                                         </div>
+                                        {row.original.resourceName && (
+                                            <div className="flex flex-col gap-1">
+                                                <span className="text-muted-foreground">
+                                                    Resource Name
+                                                </span>
+                                                <span>
+                                                    {row.original.resourceName || "No Name"}
+                                                </span>
+                                            </div>
+                                        )}
                                     </div>
                                     {row.original.resourceId && (
                                         <div className="flex flex-col gap-4">
