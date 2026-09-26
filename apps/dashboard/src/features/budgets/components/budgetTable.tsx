@@ -16,7 +16,12 @@ import { Pencil, Trash2, MoreVertical } from "lucide-react";
 import type { Budget } from "@/features/budgets/types/budgetTypes";
 import { LABELS_FOR_SCOPE } from "@/features/budgets/types/budgetTypes";
 import { TableHeaderData } from "@/features/alerts/components/atoms/tableHeaderData";
-import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/atoms/dropdown-menu";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/atoms/dropdown-menu";
 interface PropsForBudget {
     budgets: Budget[];
     edit: (budget: Budget) => void;
@@ -92,18 +97,32 @@ function helperForColumns({ edit, toggleEnabled, onDelete }: Columns): ColumnDef
             cell: ({ row }) => {
                 const forBudget = row.original;
 
-                return(
+                return (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant = "ghost" size = "sm" className = "h-8 w-8 p-0"> <MoreVertical className = "h-4 w-4"/> </Button>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                {" "}
+                                <MoreVertical className="h-4 w-4" />{" "}
+                            </Button>
                         </DropdownMenuTrigger>
 
-                        <DropdownMenuContent align = "end" className = "w-36">
-                            <DropdownMenuItem onClick = {() => edit(forBudget)} className = "cursor-pointer"> <Pencil className = "mr-2 h-4 w-4"/> Edit </DropdownMenuItem>
+                        <DropdownMenuContent align="end" className="w-36">
+                            <DropdownMenuItem
+                                onClick={() => edit(forBudget)}
+                                className="cursor-pointer"
+                            >
+                                {" "}
+                                <Pencil className="mr-2 h-4 w-4" /> Edit{" "}
+                            </DropdownMenuItem>
 
-                            <DropdownMenuItem onClick = {() => onDelete(forBudget)} className = "cursor-pointer text-destructive focus:text-destructive"> <Trash2 className = "mr-2 h-4 w-4"/> Delete </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={() => onDelete(forBudget)}
+                                className="cursor-pointer text-destructive focus:text-destructive"
+                            >
+                                {" "}
+                                <Trash2 className="mr-2 h-4 w-4" /> Delete{" "}
+                            </DropdownMenuItem>
                         </DropdownMenuContent>
-
                     </DropdownMenu>
                 );
             },

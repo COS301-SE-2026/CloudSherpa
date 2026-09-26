@@ -30,7 +30,12 @@ import {
 } from "@/components/atoms/tooltip";
 import { useMetricStore } from "@/features/dashboard/stores/metric-store";
 import { metricSeriesToArray } from "@/features/dashboard/types/metric";
-import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/atoms/dropdown-menu";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/atoms/dropdown-menu";
 
 const CONDITION_VERBS: Record<OperatorsForThreshold, string> = {
     GT: "More than",
@@ -238,15 +243,29 @@ function helperForColumns({ edit, toggleEnabled, onDelete }: Columns): ColumnDef
                 return (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant = "ghost" size = "sm" className = "h-8 w-8 p-0"> <MoreVertical className = "h-4 w-4"/> </Button>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                {" "}
+                                <MoreVertical className="h-4 w-4" />{" "}
+                            </Button>
                         </DropdownMenuTrigger>
 
-                        <DropdownMenuContent align = "end" className = "w-36">
-                            <DropdownMenuItem onClick = {() => edit(forThreshold)} className = "cursor-pointer"> <Pencil className = "mr-2 h-4 w-4"/> Edit </DropdownMenuItem>
+                        <DropdownMenuContent align="end" className="w-36">
+                            <DropdownMenuItem
+                                onClick={() => edit(forThreshold)}
+                                className="cursor-pointer"
+                            >
+                                {" "}
+                                <Pencil className="mr-2 h-4 w-4" /> Edit{" "}
+                            </DropdownMenuItem>
 
-                            <DropdownMenuItem onClick = {() => onDelete(forThreshold)} className = "cursor-pointer text-destructive focus:text-destructive"> <Trash2 className = "mr-2 h-4 w-4"/> Delete </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={() => onDelete(forThreshold)}
+                                className="cursor-pointer text-destructive focus:text-destructive"
+                            >
+                                {" "}
+                                <Trash2 className="mr-2 h-4 w-4" /> Delete{" "}
+                            </DropdownMenuItem>
                         </DropdownMenuContent>
-
                     </DropdownMenu>
                 );
             },
