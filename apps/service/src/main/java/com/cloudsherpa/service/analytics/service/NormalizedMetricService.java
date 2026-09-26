@@ -131,18 +131,9 @@ public class NormalizedMetricService {
 
     String canonMetricName = metricMapper.toCanonicalName(provider.toString(), metricType);
 
-    List<TimestampedNumericDataPoint> fetchedResourceMetrics = null;
-
-    switch (provider) {
-      case AWS -> fetchedResourceMetrics =
-          normalizedMetricsRepository.getTimestampedMetricValuesAfterDate(
-              resourceId, canonMetricName, fromInstant);
-      case GCP, AZURE -> fetchedResourceMetrics =
-          normalizedMetricsRepository.getAggregatedTimestampedMetricValuesAfterDate(
-              resourceId, canonMetricName, fromInstant);
-      default -> throw new IllegalArgumentException(
-          "Repository method needs to be explicitly set per supported provider");
-    }
+    List<TimestampedNumericDataPoint> fetchedResourceMetrics =
+        normalizedMetricsRepository.getAggregatedTimestampedMetricValuesAfterDate(
+            resourceId, canonMetricName, fromInstant);
 
     if (fetchedResourceMetrics.isEmpty()) {
       logger.info(

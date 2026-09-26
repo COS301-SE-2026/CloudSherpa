@@ -76,7 +76,7 @@ class UsageForecastingServiceTest {
   @Test
   void shouldThrowNotFoundWhenResourceHasNoMetricData() {
     // Arrange
-    when(normalizedMetricsRepository.getTimestampedMetricValues(
+    when(normalizedMetricsRepository.getAggregatedTimestampedMetricValues(
             RESOURCE_ID, METRIC_TYPE, PageRequest.of(0, CONTEXT_LENGTH)))
         .thenReturn(List.of());
 
@@ -98,7 +98,7 @@ class UsageForecastingServiceTest {
             new TimestampedNumericDataPoint(
                 BigDecimal.valueOf(12), Instant.parse("2026-08-02T00:00:00Z")));
 
-    when(normalizedMetricsRepository.getTimestampedMetricValues(
+    when(normalizedMetricsRepository.getAggregatedTimestampedMetricValues(
             RESOURCE_ID, METRIC_TYPE, PageRequest.of(0, CONTEXT_LENGTH)))
         .thenReturn(usageSeries);
     when(sampler.sample(usageSeries, true)).thenReturn(new SanatizedSeries(usageSeries, 86_400));
@@ -117,7 +117,7 @@ class UsageForecastingServiceTest {
 
     List<TimestampedNumericDataPoint> usageSeries = getValidUsageSeries();
 
-    when(normalizedMetricsRepository.getTimestampedMetricValues(
+    when(normalizedMetricsRepository.getAggregatedTimestampedMetricValues(
             RESOURCE_ID, METRIC_TYPE, PageRequest.of(0, CONTEXT_LENGTH)))
         .thenReturn(usageSeries);
     when(sampler.sample(usageSeries, true)).thenReturn(new SanatizedSeries(usageSeries, 86_400));
@@ -137,35 +137,12 @@ class UsageForecastingServiceTest {
 
     IntelligenceForecastResponseDto forecastResponse = getValidForecastResponse();
 
-    when(normalizedMetricsRepository.getTimestampedMetricValues(
-            RESOURCE_ID, METRIC_TYPE, PageRequest.of(0, CONTEXT_LENGTH)))
-        .thenReturn(usageSeries);
-
-    when(sampler.sample(usageSeries, true)).thenReturn(new SanatizedSeries(usageSeries, 86_400));
-    mockResourceMetricMapping();
-
-    mockForecastingServiceResponse(forecastResponse);
-
-    // Act
-    usageForecastingService.forecastUsage(validRequest);
-
-    // Assert
-    verify(normalizedMetricsRepository)
-        .getTimestampedMetricValues(RESOURCE_ID, METRIC_TYPE, PageRequest.of(0, CONTEXT_LENGTH));
-  }
-
-  @Test
-  void shouldCallRepositoryAggregateQueryWhenProviderGCP() {
-    List<TimestampedNumericDataPoint> usageSeries = getValidUsageSeries();
-
-    IntelligenceForecastResponseDto forecastResponse = getValidForecastResponse();
-
     when(normalizedMetricsRepository.getAggregatedTimestampedMetricValues(
             RESOURCE_ID, METRIC_TYPE, PageRequest.of(0, CONTEXT_LENGTH)))
         .thenReturn(usageSeries);
 
     when(sampler.sample(usageSeries, true)).thenReturn(new SanatizedSeries(usageSeries, 86_400));
-    mockProviderMetricMapping(ProviderEnum.GCP);
+    mockResourceMetricMapping();
 
     mockForecastingServiceResponse(forecastResponse);
 
@@ -212,7 +189,7 @@ class UsageForecastingServiceTest {
             new TimestampedNumericDataPoint(
                 BigDecimal.valueOf(12), Instant.parse("2026-08-02T00:00:00Z")));
 
-    when(normalizedMetricsRepository.getTimestampedMetricValues(
+    when(normalizedMetricsRepository.getAggregatedTimestampedMetricValues(
             RESOURCE_ID, METRIC_TYPE, PageRequest.of(0, CONTEXT_LENGTH)))
         .thenReturn(usageSeries);
     when(sampler.sample(usageSeries, true)).thenReturn(new SanatizedSeries(usageSeries, 86_400));
@@ -240,7 +217,7 @@ class UsageForecastingServiceTest {
     IntelligenceForecastResponseDto forecastResponse =
         getForecastResponse(forecast, timestamps, q1, q3);
 
-    when(normalizedMetricsRepository.getTimestampedMetricValues(
+    when(normalizedMetricsRepository.getAggregatedTimestampedMetricValues(
             RESOURCE_ID, METRIC_TYPE, PageRequest.of(0, CONTEXT_LENGTH)))
         .thenReturn(usageSeries);
     when(sampler.sample(usageSeries, true)).thenReturn(new SanatizedSeries(usageSeries, 86_400));
@@ -272,7 +249,7 @@ class UsageForecastingServiceTest {
     IntelligenceForecastResponseDto forecastResponse =
         getForecastResponse(forecast, timestamps, q1, q3);
 
-    when(normalizedMetricsRepository.getTimestampedMetricValues(
+    when(normalizedMetricsRepository.getAggregatedTimestampedMetricValues(
             RESOURCE_ID, METRIC_TYPE, PageRequest.of(0, CONTEXT_LENGTH)))
         .thenReturn(usageSeries);
     when(sampler.sample(usageSeries, true)).thenReturn(new SanatizedSeries(usageSeries, 86_400));
