@@ -17,3 +17,7 @@ export const disableAlert = async (alertId: string): Promise<void> => {
 export const enableAlert = async (alertId: string): Promise<void> => {
     return apiClient<void>(`/api/alerts/${alertId}/enable`, { method: "POST" });
 };
+
+export const deleteAlert = async (alertId : string) : Promise<void> => {
+    return apiClient<void>(`/api/alerts/${alertId}`, {method : "DELETE"});
+}
