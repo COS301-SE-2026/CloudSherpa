@@ -43,9 +43,7 @@ import { DeletePopup } from "@/features/webhooks/components/deletePopup";
 import { ButtonGroup } from "@/components/atoms/button-group";
 import { toast } from "sonner";
 
-const formatRetryDate = (isoString: string): string => {
-    const date = new Date(isoString);
-
+const formatRetryDate = (date: Date): string => {
     const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
     const options: Intl.DateTimeFormatOptions = {
@@ -182,9 +180,19 @@ const helperForDeliveryColumns = (webhooks: Webhook[]): ColumnDef<WebhookDeliver
             } else {
                 let postfix = "";
 
-                if (row.nextRetryAttempt) {
+                const now = new Date();
+                const nextRetryAttempt = row.nextRetryAttempt
+                    ? new Date(row.nextRetryAttempt)
+                    : null;
+
+                if (nextRetryAttempt) {
                     postfix =
-                        ". Next retry attempt at " + formatRetryDate(row.nextRetryAttempt) + ".";
+                        ". " +
+                        (nextRetryAttempt.getMilliseconds() - now.getMilliseconds() > 0
+                            ? "Next retry attempt at "
+                            : "Last retry attempt at ") +
+                        formatRetryDate(nextRetryAttempt) +
+                        ".";
                 }
 
                 columnValue = "Failed" + postfix;
