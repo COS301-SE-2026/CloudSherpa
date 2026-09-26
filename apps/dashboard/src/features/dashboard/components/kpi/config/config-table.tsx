@@ -162,7 +162,7 @@ export function KPIConfigTable<TValue>({
                                                 Resource Details
                                             </CardTitle>
                                             <CardDescription className="text-xs">
-                                                Extended metadata for this resource
+                                                More information on this resource
                                             </CardDescription>
                                         </div>
                                     </div>
@@ -193,8 +193,8 @@ export function KPIConfigTable<TValue>({
                                                 return (
                                                     <span
                                                         className={cn(
-                                                            roundedCost < 0 && "text-destructive",
-                                                            roundedCost > 0 && "text-success"
+                                                            roundedCost > 0 && "text-destructive",
+                                                            roundedCost < 0 && "text-success"
                                                         )}
                                                     >
                                                         {roundedCost < 0
