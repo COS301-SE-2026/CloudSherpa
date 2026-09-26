@@ -1,42 +1,80 @@
 package com.cloudsherpa.service.agenticdashboard.service;
 
+import com.cloudsherpa.lib.entities.AiDashboardVersion;
 import com.cloudsherpa.lib.entities.TypeEnum;
+import com.cloudsherpa.service.agenticdashboard.dto.AiDashboardApplyMode;
 import com.cloudsherpa.service.agenticdashboard.dto.DashboardPlanDto;
 import com.cloudsherpa.service.agenticdashboard.dto.DashboardPlanWidgetDto;
 import com.cloudsherpa.service.dashboard.dto.ChartWidgetDTO;
-import com.cloudsherpa.service.dashboard.dto.DashboardCreateDTO;
+import com.cloudsherpa.service.dashboard.dto.DashboardDTO;
 import com.cloudsherpa.service.dashboard.dto.KpiWidgetDTO;
 import com.cloudsherpa.service.dashboard.service.DashboardService;
+import java.util.List;
 import java.util.UUID;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class AiDashboardApplyService {
 
   private final AiDashboardVersionService versionService;
   private final DashboardService dashboardService;
+  private final AiSessionService sessionService;
 
   public AiDashboardApplyService(
-      AiDashboardVersionService versionService, DashboardService dashboardService) {
+      AiDashboardVersionService versionService,
+      DashboardService dashboardService,
+      AiSessionService sessionService) {
     this.versionService = versionService;
     this.dashboardService = dashboardService;
+    this.sessionService = sessionService;
   }
 
   @Transactional
-  public UUID applyVersion(UUID userId, UUID sessionId, UUID versionId) {
+  public List<DashboardDTO> applyVersion(
+      UUID userId,
+      UUID sessionId,
+      UUID versionId,
+      AiDashboardApplyMode mode,
+      UUID startedDashboardId) {
+
+    if (mode == null) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Apply mode is required");
+    }
+
+    AiDashboardVersion version = versionService.getVersion(userId, sessionId, versionId);
+    if (version.getVersionNumber() == 0) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST, "The original dashboard version cannot be applied");
+    }
 
     DashboardPlanDto plan = versionService.getDashboardPlan(userId, sessionId, versionId);
 
-    UUID dashboardId = UUID.randomUUID();
+    DashboardDTO dashboard;
 
-    dashboardService.createDashboard(new DashboardCreateDTO(userId, dashboardId, plan.title()));
+    if (mode == AiDashboardApplyMode.REPLACE_STARTED_DASHBOARD) {
+      if (startedDashboardId == null) {
+        throw new ResponseStatusException(
+            HttpStatus.BAD_REQUEST,
+            "The started dashboard ID is required when replacing a dashboard");
+      }
 
-    for (DashboardPlanWidgetDto widget : plan.widgets()) {
-      createWidget(userId, dashboardId, widget);
+      dashboard = dashboardService.replaceDashboardFromPlan(userId, startedDashboardId, plan);
+    } else {
+      dashboard = dashboardService.createDashboardFromPlan(userId, UUID.randomUUID(), plan);
     }
 
-    return dashboardId;
+    for (DashboardPlanWidgetDto widget : plan.widgets()) {
+      createWidget(userId, dashboard.id(), widget);
+    }
+
+    List<DashboardDTO> dashboards = dashboardService.getDashboardsByUserId(userId);
+
+    sessionService.deleteSession(userId, sessionId);
+
+    return dashboards;
   }
 
   private void createWidget(UUID userId, UUID dashboardId, DashboardPlanWidgetDto widget) {

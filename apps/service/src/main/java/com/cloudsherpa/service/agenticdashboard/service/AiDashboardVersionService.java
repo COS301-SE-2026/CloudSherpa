@@ -12,6 +12,11 @@ import com.cloudsherpa.lib.repositories.AiKpiWidgetRepository;
 import com.cloudsherpa.service.agenticdashboard.dto.AiVersionResponseDto;
 import com.cloudsherpa.service.agenticdashboard.dto.DashboardPlanDto;
 import com.cloudsherpa.service.agenticdashboard.dto.DashboardPlanWidgetDto;
+import com.cloudsherpa.service.dashboard.dto.ChartWidgetDTO;
+import com.cloudsherpa.service.dashboard.dto.DashboardDTO;
+import com.cloudsherpa.service.dashboard.dto.KpiWidgetDTO;
+import com.cloudsherpa.service.dashboard.dto.WidgetDTO;
+import com.cloudsherpa.service.dashboard.service.DashboardService;
 import jakarta.persistence.EntityManager;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
@@ -24,12 +29,15 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class AiDashboardVersionService {
+  private static final int INITIAL_VERSION_NUMBER = 0;
+
   private final EntityManager entityManager;
   private final AiDashboardVersionRepository versionRepository;
   private final AiDashboardWidgetRepository widgetRepository;
   private final AiChartWidgetRepository chartWidgetRepository;
   private final AiKpiWidgetRepository kpiWidgetRepository;
   private final AiSessionService sessionService;
+  private final DashboardService dashboardService;
 
   public AiDashboardVersionService(
       AiDashboardVersionRepository versionRepository,
@@ -37,6 +45,7 @@ public class AiDashboardVersionService {
       AiChartWidgetRepository chartWidgetRepository,
       AiKpiWidgetRepository kpiWidgetRepository,
       AiSessionService sessionService,
+      DashboardService dashboardService,
       EntityManager entityManager) {
 
     this.versionRepository = versionRepository;
@@ -44,18 +53,71 @@ public class AiDashboardVersionService {
     this.chartWidgetRepository = chartWidgetRepository;
     this.kpiWidgetRepository = kpiWidgetRepository;
     this.sessionService = sessionService;
+    this.dashboardService = dashboardService;
     this.entityManager = entityManager;
+  }
+
+  @Transactional
+  public AiDashboardVersion createInitialVersion(
+      UUID userId, UUID sessionId, UUID sourceDashboardId) {
+
+    var session = sessionService.getSession(userId, sessionId);
+
+    if (session.getCurrentVersionId() != null) {
+      return getVersion(userId, sessionId, session.getCurrentVersionId());
+    }
+
+    DashboardDTO sourceDashboard = dashboardService.getDashboard(userId, sourceDashboardId);
+
+    DashboardPlanDto baselinePlan = toDashboardPlan(sourceDashboard);
+    UUID versionId = UUID.randomUUID();
+
+    AiDashboardVersion version =
+        AiDashboardVersion.builder()
+            .versionId(versionId)
+            .sessionId(sessionId)
+            .versionNumber(INITIAL_VERSION_NUMBER)
+            .parentVersionId(null)
+            .title(sourceDashboard.displayName())
+            .description(null)
+            .timeFrom(baselinePlan.timeFrom())
+            .timeTo(baselinePlan.timeTo())
+            .predefinedTime(baselinePlan.predefinedTime())
+            .current(true)
+            .createdAt(OffsetDateTime.now())
+            .build();
+
+    versionRepository.save(version);
+
+    for (DashboardPlanWidgetDto widgetDto : baselinePlan.widgets()) {
+      saveWidget(versionId, widgetDto);
+    }
+
+    sessionService.updateCurrentVersion(userId, sessionId, versionId);
+
+    return version;
   }
 
   @Transactional
   public AiDashboardVersion createVersion(UUID userId, UUID sessionId, DashboardPlanDto plan) {
 
-    sessionService.getSession(userId, sessionId);
+    var session = sessionService.getSession(userId, sessionId);
 
     AiDashboardVersion parentVersion =
-        versionRepository.findTopBySessionIdOrderByVersionNumberDesc(sessionId).orElse(null);
+        session.getCurrentVersionId() == null
+            ? null
+            : versionRepository
+                .findByVersionIdAndSessionId(session.getCurrentVersionId(), sessionId)
+                .orElseThrow(
+                    () ->
+                        new ResponseStatusException(
+                            HttpStatus.NOT_FOUND, "Active AI dashboard version not found"));
 
-    int versionNumber = parentVersion == null ? 1 : parentVersion.getVersionNumber() + 1;
+    int versionNumber =
+        versionRepository
+            .findTopBySessionIdOrderByVersionNumberDesc(sessionId)
+            .map(version -> version.getVersionNumber() + 1)
+            .orElse(1);
 
     UUID versionId = UUID.randomUUID();
 
@@ -74,8 +136,12 @@ public class AiDashboardVersionService {
             .createdAt(OffsetDateTime.now())
             .build();
 
-    if (parentVersion != null) {
-      unsetCurrentVersion(parentVersion);
+    for (AiDashboardVersion existingVersion :
+        versionRepository.findBySessionIdOrderByVersionNumberDesc(sessionId)) {
+      if (Boolean.TRUE.equals(existingVersion.getCurrent())) {
+        existingVersion.setCurrent(false);
+        versionRepository.save(existingVersion);
+      }
     }
 
     versionRepository.save(version);
@@ -87,6 +153,25 @@ public class AiDashboardVersionService {
     sessionService.updateCurrentVersion(userId, sessionId, versionId);
 
     return version;
+  }
+
+  @Transactional
+  public AiVersionResponseDto activateVersion(UUID userId, UUID sessionId, UUID versionId) {
+
+    AiDashboardVersion target = getVersion(userId, sessionId, versionId);
+
+    for (AiDashboardVersion version :
+        versionRepository.findBySessionIdOrderByVersionNumberDesc(sessionId)) {
+      boolean shouldBeCurrent = version.getVersionId().equals(target.getVersionId());
+      if (Boolean.TRUE.equals(version.getCurrent()) != shouldBeCurrent) {
+        version.setCurrent(shouldBeCurrent);
+        versionRepository.save(version);
+      }
+    }
+
+    sessionService.updateCurrentVersion(userId, sessionId, versionId);
+
+    return getVersionResponse(userId, sessionId, versionId);
   }
 
   @Transactional(readOnly = true)
@@ -110,12 +195,6 @@ public class AiDashboardVersionService {
                     HttpStatus.NOT_FOUND, "AI dashboard version not found"));
   }
 
-  /**
-   * Returns a complete DTO representation of a staged dashboard version.
-   *
-   * <p>This is used by the AI response and by the frontend when displaying an individual staged
-   * version
-   */
   @Transactional(readOnly = true)
   public AiVersionResponseDto getVersionResponse(UUID userId, UUID sessionId, UUID versionId) {
 
@@ -133,10 +212,6 @@ public class AiDashboardVersionService {
         dashboard);
   }
 
-  /**
-   * Returns the dashboard-plan representation of a staged version Used when a user applies a staged
-   * version to a real dashboard
-   */
   @Transactional(readOnly = true)
   public DashboardPlanDto getDashboardPlan(UUID userId, UUID sessionId, UUID versionId) {
 
@@ -159,6 +234,60 @@ public class AiDashboardVersionService {
         version.getTimeTo(),
         version.getPredefinedTime(),
         widgets);
+  }
+
+  private DashboardPlanDto toDashboardPlan(DashboardDTO dashboard) {
+    List<DashboardPlanWidgetDto> widgets =
+        dashboard.widgets().stream().map(this::mapSourceWidget).toList();
+
+    return new DashboardPlanDto(
+        dashboard.displayName(),
+        null,
+        dashboard.timeFrom(),
+        dashboard.timeTo(),
+        dashboard.predefinedTime(),
+        widgets);
+  }
+
+  private DashboardPlanWidgetDto mapSourceWidget(WidgetDTO widget) {
+    return switch (widget) {
+      case ChartWidgetDTO chart -> new DashboardPlanWidgetDto(
+          chart.id(),
+          chart.widgetType(),
+          chart.displayName(),
+          chart.startX(),
+          chart.startY(),
+          chart.width(),
+          chart.height(),
+          chart.chartType(),
+          chart.chartColour(),
+          chart.provider(),
+          null,
+          chart.accountId(),
+          chart.resourceId(),
+          chart.metricType(),
+          chart.metricName(),
+          null,
+          null);
+      case KpiWidgetDTO kpi -> new DashboardPlanWidgetDto(
+          kpi.id(),
+          kpi.widgetType(),
+          kpi.displayName(),
+          kpi.startX(),
+          kpi.startY(),
+          kpi.width(),
+          kpi.height(),
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          kpi.chargeIds(),
+          kpi.aggregationWindowDays());
+    };
   }
 
   private DashboardPlanWidgetDto mapWidget(AiDashboardWidget widget) {
@@ -226,12 +355,6 @@ public class AiDashboardVersionService {
 
     throw new ResponseStatusException(
         HttpStatus.INTERNAL_SERVER_ERROR, "Unsupported AI widget type: " + widget.getWidgetType());
-  }
-
-  private void unsetCurrentVersion(AiDashboardVersion version) {
-
-    version.setCurrent(false);
-    versionRepository.save(version);
   }
 
   private void saveWidget(UUID dashboardVersionId, DashboardPlanWidgetDto widgetDto) {

@@ -53,9 +53,9 @@ public class AiAgentService {
   }
 
   public AiDashboardPlanResponseDto generateDashboardPlan(
-      UUID userId, UUID sessionId, String userMessage) {
+      UUID userId, UUID sessionId, UUID startingDashboardId, String userMessage) {
 
-    aiSessionService.getSession(userId, sessionId);
+    AiSession session = aiSessionService.getSession(userId, sessionId);
 
     if (userMessage == null || userMessage.isBlank()) {
 
@@ -64,9 +64,14 @@ public class AiAgentService {
 
     AiAgentContext context = new AiAgentContext(userId, sessionId);
 
+    if (session.getCurrentVersionId() == null) {
+      versionService.createInitialVersion(userId, sessionId, startingDashboardId);
+    }
+
     saveMessage(sessionId, AiMessage.AiMessageRole.USER, userMessage);
 
     List<Map<String, Object>> messages = new ArrayList<>();
+    boolean stageAttempted = false;
 
     messages.add(Map.of("role", "system", "content", SYSTEM_PROMPT));
     messages.add(buildCurrentDashboardContext(userId, sessionId));
@@ -105,6 +110,10 @@ public class AiAgentService {
 
           String arguments = requiredJsonText(function, "arguments");
 
+          if ("stage_dashboard_version".equals(toolName)) {
+            stageAttempted = true;
+          }
+
           AiToolResultDto toolResult = executeTool(context, toolName, arguments);
           if ("stage_dashboard_version".equals(toolName) && toolResult.success()) {
 
@@ -114,7 +123,7 @@ public class AiAgentService {
 
             aiSessionService.updateLastActivity(userId, sessionId);
 
-            return buildResponse(userId, sessionId, assistantMessage);
+            return buildResponse(userId, sessionId, assistantMessage, stageAttempted, true);
           }
           messages.add(
               Map.of("role", "tool", "tool_call_id", toolCallId, "content", toJson(toolResult)));
@@ -134,6 +143,10 @@ public class AiAgentService {
         JsonNode argumentsNode = textualToolCall.path("arguments");
 
         String arguments = argumentsNode.isMissingNode() ? "{}" : argumentsNode.toString();
+        if ("stage_dashboard_version".equals(toolName)) {
+          stageAttempted = true;
+        }
+
         AiToolResultDto toolResult = executeTool(context, toolName, arguments);
 
         if ("stage_dashboard_version".equals(toolName) && toolResult.success()) {
@@ -142,7 +155,7 @@ public class AiAgentService {
 
           aiSessionService.updateLastActivity(userId, sessionId);
 
-          return buildResponse(userId, sessionId, assistantMessage);
+          return buildResponse(userId, sessionId, assistantMessage, stageAttempted, true);
         }
 
         messages.add(Map.of("role", "assistant", "content", assistantContent));
@@ -161,7 +174,7 @@ public class AiAgentService {
 
       aiSessionService.updateLastActivity(userId, sessionId);
 
-      return buildResponse(userId, sessionId, assistantMessage);
+      return buildResponse(userId, sessionId, assistantMessage, stageAttempted, false);
     }
 
     throw new IllegalStateException("AI agent exceeded maximum tool-call rounds");
@@ -176,33 +189,41 @@ public class AiAgentService {
         throw new IllegalArgumentException("Tool arguments must be a JSON object");
       }
 
-      String result =
-          switch (toolName) {
-            case "list_cloud_accounts" -> objectMapper.writeValueAsString(
-                mcpTools.listCloudAccounts(context));
+      String result = switch (toolName) {
+        case "list_cloud_accounts" -> objectMapper.writeValueAsString(
+            mcpTools.listCloudAccounts(context));
 
-            case "list_resources" -> objectMapper.writeValueAsString(
-                mcpTools.listResources(
-                    context, nullableUuid(args, "accountId"), nullableText(args, "resourceType")));
+        case "list_resources" -> objectMapper.writeValueAsString(
+            mcpTools.listResources(
+                context, nullableUuid(args, "accountId"), nullableText(args, "resourceType")));
 
-            case "list_available_metrics" -> objectMapper.writeValueAsString(
-                mcpTools.listAvailableMetrics(context, requiredUuid(args, "resourceId")));
+        case "list_available_metrics" -> objectMapper.writeValueAsString(
+            mcpTools.listAvailableMetrics(context, requiredUuid(args, "resourceId")));
 
-            case "list_billing_charges" -> objectMapper.writeValueAsString(
-                mcpTools.listBillingCharges(context));
+        case "list_billing_charges" -> objectMapper.writeValueAsString(
+            mcpTools.listBillingCharges(context));
 
-            case "stage_dashboard_version" -> {
-              JsonNode planNode = requiredNode(args, "plan");
+        case "stage_dashboard_version" -> {
+          JsonNode planNode = requiredNode(args, "plan");
 
-              System.out.println("=== AI DASHBOARD PLAN ===");
-              System.out.println(planNode.toPrettyString());
+          System.out.println("=== AI DASHBOARD PLAN ===");
+          System.out.println(planNode.toPrettyString());
 
-              DashboardPlanDto plan = objectMapper.treeToValue(planNode, DashboardPlanDto.class);
+          JsonNode planForStaging = planNode.deepCopy();
 
-              yield objectMapper.writeValueAsString(mcpTools.stageDashboardVersion(context, plan));
+          if (planForStaging.has("widgets") && planForStaging.get("widgets").isArray()) {
+            for (JsonNode widget : planForStaging.get("widgets")) {
+              if (widget.isObject()) {
+                ((com.fasterxml.jackson.databind.node.ObjectNode) widget).remove("widgetId");
+              }
             }
-            default -> throw new IllegalArgumentException("Unknown AI tool: " + toolName);
-          };
+          }
+
+          DashboardPlanDto plan = objectMapper.treeToValue(planForStaging, DashboardPlanDto.class);
+          yield objectMapper.writeValueAsString(mcpTools.stageDashboardVersion(context, plan));
+        }
+        default -> throw new IllegalArgumentException("Unknown AI tool: " + toolName);
+      };
       return AiToolResultDto.success(toolName, result);
     } catch (Exception exception) {
       return AiToolResultDto.failure(toolName, buildToolErrorMessage(toolName, exception));
@@ -221,22 +242,28 @@ public class AiAgentService {
   }
 
   private AiDashboardPlanResponseDto buildResponse(
-      UUID userId, UUID sessionId, String assistantMessage) {
+      UUID userId,
+      UUID sessionId,
+      String assistantMessage,
+      boolean stageAttempted,
+      boolean stageSucceeded) {
 
     var session = aiSessionService.getSession(userId, sessionId);
 
     if (session.getCurrentVersionId() == null) {
 
-      return new AiDashboardPlanResponseDto(sessionId, null, null, assistantMessage, null);
+      return new AiDashboardPlanResponseDto(
+          sessionId, null, null, stageAttempted, stageSucceeded, assistantMessage, null);
     }
 
-    var response =
-        versionService.getVersionResponse(userId, sessionId, session.getCurrentVersionId());
+    var response = versionService.getVersionResponse(userId, sessionId, session.getCurrentVersionId());
 
     return new AiDashboardPlanResponseDto(
         sessionId,
         response.versionId(),
         response.version(),
+        stageAttempted,
+        stageSucceeded,
         assistantMessage,
         response.dashboard());
   }
@@ -409,47 +436,43 @@ public class AiAgentService {
 
     widgetProperties.put("aggregationWindowDays", Map.of("type", "integer", "minimum", 1));
 
-    Map<String, Object> widgetSchema =
-        Map.of(
-            "type",
-            "object",
-            "properties",
-            widgetProperties,
-            "required",
-            List.of("widgetType", "displayName", "startX", "startY", "width", "height"));
+    Map<String, Object> widgetSchema = Map.of(
+        "type",
+        "object",
+        "properties",
+        widgetProperties,
+        "required",
+        List.of("widgetType", "displayName", "startX", "startY", "width", "height"));
 
-    Map<String, Object> planProperties =
-        Map.of(
-            "title",
-            Map.of("type", "string"),
-            "description",
-            Map.of("type", "string"),
-            "timeFrom",
-            Map.of("type", "string"),
-            "timeTo",
-            Map.of("type", "string"),
-            "predefinedTime",
-            Map.of("type", "string"),
-            "widgets",
-            Map.of("type", "array", "items", widgetSchema));
+    Map<String, Object> planProperties = Map.of(
+        "title",
+        Map.of("type", "string"),
+        "description",
+        Map.of("type", "string"),
+        "timeFrom",
+        Map.of("type", "string"),
+        "timeTo",
+        Map.of("type", "string"),
+        "predefinedTime",
+        Map.of("type", "string"),
+        "widgets",
+        Map.of("type", "array", "items", widgetSchema));
 
-    Map<String, Object> planSchema =
-        Map.of(
-            "type",
-            "object",
-            "properties",
-            planProperties,
-            "required",
-            List.of("title", "widgets"));
+    Map<String, Object> planSchema = Map.of(
+        "type",
+        "object",
+        "properties",
+        planProperties,
+        "required",
+        List.of("title", "widgets"));
 
-    Map<String, Object> stageParameters =
-        Map.of(
-            "type",
-            "object",
-            "properties",
-            Map.of("plan", planSchema),
-            "required",
-            List.of("plan"));
+    Map<String, Object> stageParameters = Map.of(
+        "type",
+        "object",
+        "properties",
+        Map.of("plan", planSchema),
+        "required",
+        List.of("plan"));
 
     List<Map<String, Object>> tools = new ArrayList<>();
 
@@ -544,17 +567,16 @@ public class AiAgentService {
       return Map.of(
           "role", "system",
           "content",
-              """
-              CURRENT STAGED DASHBOARD:
-              There is currently no staged dashboard for this session.
+          """
+              CURRENT ACTIVE DASHBOARD:
+              There is currently no active dashboard version for this session.
 
               If the user asks you to create a dashboard, discover the required
               resources/metrics and call stage_dashboard_version.
               """);
     }
 
-    DashboardPlanDto dashboard =
-        versionService.getDashboardPlan(userId, sessionId, session.getCurrentVersionId());
+    DashboardPlanDto dashboard = versionService.getDashboardPlan(userId, sessionId, session.getCurrentVersionId());
 
     try {
       String dashboardJson = objectMapper.writeValueAsString(dashboard);
@@ -564,10 +586,10 @@ public class AiAgentService {
           "system",
           "content",
           """
-              CURRENT STAGED DASHBOARD
+              CURRENT ACTIVE DASHBOARD
 
-              The following dashboard is the current staged version for this
-              session. Treat it as the starting state when the user asks to
+              The following dashboard is the active version for this session.
+              Treat it as the starting state when the user asks to
               modify, update, add to, remove from, resize, rename, recolour,
               or otherwise change the dashboard.
 
@@ -608,8 +630,7 @@ public class AiAgentService {
         Map.of("name", name, "description", description, "parameters", parameters));
   }
 
-  private static final String SYSTEM_PROMPT =
-      """
+  private static final String SYSTEM_PROMPT = """
       You are the CloudSherpa Dashboard Construction Agent.
 
       Construct dashboards only from data discovered through CloudSherpa tools.
@@ -625,6 +646,11 @@ public class AiAgentService {
       5. Use only identifiers returned by CloudSherpa tools.
 
       You may stage a dashboard version.
+
+      If stage_dashboard_version fails, use the returned tool error as feedback,
+      correct the dashboard plan, and try again when a retry can reasonably fix
+      the problem. Never claim that a dashboard was staged unless the staging
+      tool returned success.
 
       You must never apply a dashboard. Applying a dashboard is performed by
       the authenticated human user through a separate endpoint.
