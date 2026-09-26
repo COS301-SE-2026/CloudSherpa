@@ -40,17 +40,26 @@ function Tooltip({
     );
 }
 
+//depth first search on dom tree
 function hasTruncatedChild(element: HTMLElement): boolean {
-    if (element.scrollWidth > element.clientWidth) {
-        //text length vs container width
-        return true;
-    }
-    for (let i = 0; i < element.children.length; i++) {
-        if (hasTruncatedChild(element.children[i] as HTMLElement)) {
-            //recursively cehck if any children components are truncated
+    const stack: HTMLElement[] = [element]; //init stack with root element
+
+    while (stack.length > 0) {
+        //loop til stack empty
+        const current = stack.pop(); //remove and return last element added to stack and move to sibling nodes
+        if (!current) continue;
+
+        if (current.scrollWidth > current.clientWidth) {
+            //clientwidth is visible width of element on screen, scrollwidth is totoal width component actually needs
             return true;
         }
+
+        for (const child of Array.from(current.children)) {
+            //if current not truncated add child elements to stack to be checked in following loops
+            stack.push(child as HTMLElement);
+        }
     }
+
     return false;
 }
 
