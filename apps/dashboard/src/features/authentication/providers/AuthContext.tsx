@@ -4,7 +4,11 @@ import { useState, createContext, useEffect, useContext, useMemo, useCallback } 
 import { SessionState, User } from "../types/Session";
 import { LoginRequestDto } from "../types/dtos/auth/LoginRequestDto";
 import { LoginResponseDto } from "../types/dtos/auth/LoginResponseDto";
-import apiClient, { finishLogin, startLogout } from "@/lib/fetch/api-client";
+import apiClient, {
+    AUTH_SESSION_EXPIRED_EVENT,
+    finishLogin,
+    startLogout,
+} from "@/lib/fetch/api-client";
 
 const DISABLE_AUTH = process.env["NEXT_PUBLIC_DISABLE_AUTH"];
 const NODE_ENV = process.env["NODE_ENV"];
@@ -18,6 +22,19 @@ const AuthContext = createContext<SessionState | null>(null);
 export function AuthProvider({ children }: AuthProps) {
     const [isAuthReady, setIsAuthReady] = useState(false);
     const [user, setUser] = useState<User | null>(null);
+
+    useEffect(() => {
+        const onSessionExpired = () => {
+            setUser(null);
+            setIsAuthReady(true);
+        };
+
+        window.addEventListener(AUTH_SESSION_EXPIRED_EVENT, onSessionExpired);
+
+        return () => {
+            window.removeEventListener(AUTH_SESSION_EXPIRED_EVENT, onSessionExpired);
+        };
+    }, []);
 
     useEffect(() => {
         async function loadAuthState() {
@@ -47,6 +64,7 @@ export function AuthProvider({ children }: AuthProps) {
                     if (error instanceof Error && !error.message.includes("401")) {
                         console.error("Failed to load auth state", error);
                     }
+                    setUser(null);
                 } finally {
                     setIsAuthReady(true);
                 }
@@ -105,11 +123,11 @@ export function AuthProvider({ children }: AuthProps) {
 
     const authContextValue = useMemo<SessionState>(
         () => ({
-            isAuthReady: isAuthReady,
+            isAuthReady,
             isAuthenticated: user !== null,
-            user: user,
-            login: login,
-            logout: logout,
+            user,
+            login,
+            logout,
         }),
         [isAuthReady, user, login, logout]
     );
