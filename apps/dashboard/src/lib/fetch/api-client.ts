@@ -79,7 +79,23 @@ export default async function apiClient<T>(
     }
 
     if (!response.ok) {
-        throw new Error(`Request failed with status code ${response.status}`);
+        const errorText = await response.text();
+        let message = `Request failed with status code ${response.status}`;
+
+        if (errorText) {
+            try {
+                const errorBody = JSON.parse(errorText) as {
+                    message?: string;
+                    detail?: string;
+                    error?: string;
+                };
+                message = errorBody.message ?? errorBody.detail ?? errorBody.error ?? message;
+            } catch {
+                message = errorText;
+            }
+        }
+
+        throw new Error(message);
     }
 
     const text = await response.text();

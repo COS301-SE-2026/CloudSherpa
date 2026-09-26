@@ -1,11 +1,13 @@
 import apiClient from "@/lib/fetch/api-client";
-import {
+import type {
+    AiDashboardApplyRequest,
     AiSessionResponse,
     AiDashboardPlanRequest,
     AiDashboardPlanResponse,
     AiVersionSummary,
     AiVersionResponse,
 } from "@/features/dashboard/types/agentic";
+import type { DashboardDTO } from "@/lib/fetch/api-dashboard";
 
 //create new session.
 export async function createAiSession(): Promise<AiSessionResponse> {
@@ -48,9 +50,30 @@ export async function getAiDashboardVersion(
     });
 }
 
-//add ai dash to actual list of dashboards.
-export async function applyAiDashboardVersion(sessionId: string, versionId: string): Promise<void> {
-    await apiClient<void>(`/ai/sessions/${sessionId}/versions/${versionId}/apply`, {
-        method: "POST",
-    });
+//make a dashboard version the active AI context and parent for the next generated version.
+export async function activateAiDashboardVersion(
+    sessionId: string,
+    versionId: string
+): Promise<AiVersionResponse> {
+    return await apiClient<AiVersionResponse>(
+        `/ai/sessions/${sessionId}/versions/${versionId}/active`,
+        {
+            method: "POST",
+        }
+    );
+}
+
+//apply a dashboard version and close the AI session.
+export async function applyAiDashboardVersion(
+    sessionId: string,
+    versionId: string,
+    request: AiDashboardApplyRequest
+): Promise<DashboardDTO[]> {
+    return await apiClient<DashboardDTO[]>(
+        `/ai/sessions/${sessionId}/versions/${versionId}/apply`,
+        {
+            method: "POST",
+            body: JSON.stringify(request),
+        }
+    );
 }
