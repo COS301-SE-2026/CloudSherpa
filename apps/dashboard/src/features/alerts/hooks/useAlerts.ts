@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { disableAlert, enableAlert, fetchAlerts } from "@/features/alerts/alerts";
+import { disableAlert, enableAlert, fetchAlerts, deleteAlert } from "@/features/alerts/alerts";
 import { useAlertStore } from "@/features/alerts/stores/alert-store";
 import type { TypeForAlerts } from "@/features/alerts/types/alertTypes";
 
@@ -12,12 +12,14 @@ interface AlertsResult {
     refreshing: () => Promise<void>;
     disable: (alertId: string) => Promise<void>;
     enable: (alertId: string) => Promise<void>;
+    removeAlert : (alertId : string) => Promise<void>;
 }
 
 export function useAlerts(typeForAlert?: TypeForAlerts): AlertsResult {
     const allAlerts = useAlertStore((state) => state.alerts);
     const setAlerts = useAlertStore((state) => state.setAlerts);
     const setStatus = useAlertStore((state) => state.setStatus);
+    const removeFromStore = useAlertStore((forState) => forState.removeAlert);
 
     const [loading, setLoading] = useState<boolean>(true);
     const [forError, setForError] = useState<string | null>(null);
@@ -81,12 +83,18 @@ export function useAlerts(typeForAlert?: TypeForAlerts): AlertsResult {
         [setStatus]
     );
 
+    const removeAlert = useCallback(async (alertId : string) => {
+        await deleteAlert(alertId);
+
+        removeFromStore(alertId);
+    }, [removeFromStore]);
+
     return {
         alerts,
         loading,
         forError,
         refreshing,
         disable,
-        enable,
+        enable, removeAlert
     };
 }
