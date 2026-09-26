@@ -5,6 +5,14 @@ import { Tooltip as TooltipPrimitive } from "radix-ui";
 
 import { cn } from "@/lib/utils";
 
+type TooltipContextType = {
+    showOnTruncate?: boolean;
+    isTruncated: boolean;
+    setIsTruncated: React.Dispatch<React.SetStateAction<boolean>>;
+};
+
+const TooltipContext = React.createContext<TooltipContextType | null>(null);
+
 function TooltipProvider({
     delayDuration = 600,
     ...props
@@ -18,13 +26,86 @@ function TooltipProvider({
     );
 }
 
-function Tooltip({ ...props }: React.ComponentProps<typeof TooltipPrimitive.Root>) {
-    return <TooltipPrimitive.Root data-slot="tooltip" {...props} />;
+function Tooltip({
+    showOnTruncate,
+    ...props
+}: React.ComponentProps<typeof TooltipPrimitive.Root> & { showOnTruncate?: boolean }) {
+    const [isTruncated, setIsTruncated] = React.useState(true);
+
+    const open = showOnTruncate && !isTruncated ? false : props.open; // props.open just lets it defaults to normal behavriour as afallback
+    return (
+        <TooltipContext.Provider value={{ showOnTruncate, isTruncated, setIsTruncated }}>
+            <TooltipPrimitive.Root data-slot="tooltip" open={open} {...props} />
+        </TooltipContext.Provider>
+    );
 }
 
-function TooltipTrigger({ ...props }: React.ComponentProps<typeof TooltipPrimitive.Trigger>) {
-    return <TooltipPrimitive.Trigger data-slot="tooltip-trigger" {...props} />;
+//depth first search on dom tree
+function hasTruncatedChild(element: HTMLElement): boolean {
+    const stack: HTMLElement[] = [element]; //init stack with root element
+
+    while (stack.length > 0) {
+        //loop til stack empty
+        const current = stack.pop(); //remove and return last element added to stack and move to sibling nodes
+        if (!current) continue;
+
+        if (current.scrollWidth > current.clientWidth) {
+            //clientwidth is visible width of element on screen, scrollwidth is totoal width component actually needs
+            return true;
+        }
+
+        for (const child of Array.from(current.children)) {
+            //if current not truncated add child elements to stack to be checked in following loops
+            stack.push(child as HTMLElement);
+        }
+    }
+
+    return false;
 }
+
+const TooltipTrigger = React.forwardRef<
+    HTMLButtonElement,
+    React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Trigger>
+>(({ onMouseEnter, onFocus, ...props }, ref) => {
+    const context = React.useContext(TooltipContext);
+
+    const internalRef = React.useRef<HTMLButtonElement | null>(null);
+
+    const mergedRef = React.useCallback(
+        (node: HTMLButtonElement | null) => {
+            internalRef.current = node;
+            if (typeof ref === "function") {
+                ref(node);
+            } else if (ref) {
+                (ref as { current: HTMLButtonElement | null }).current = node;
+            }
+        },
+        [ref]
+    );
+
+    const checkTruncated = () => {
+        if (context?.showOnTruncate && internalRef.current) {
+            context.setIsTruncated(hasTruncatedChild(internalRef.current));
+        }
+    };
+
+    return (
+        <TooltipPrimitive.Trigger
+            ref={mergedRef}
+            data-slot="tooltip-trigger"
+            onPointerEnter={(e) => {
+                checkTruncated();
+                onMouseEnter?.(e);
+            }}
+            onFocus={(e) => {
+                checkTruncated();
+                onFocus?.(e);
+            }}
+            {...props}
+        />
+    );
+});
+TooltipTrigger.displayName = TooltipPrimitive.Trigger.displayName;
 
 function TooltipContent({
     className,
