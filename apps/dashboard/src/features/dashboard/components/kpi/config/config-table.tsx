@@ -55,6 +55,10 @@ interface KPIConfigTableProps<TValue> {
 const ALL_PROVIDERS = "All Providers";
 const providers: CloudProviderEnum[] = ["AWS", "Azure", "GCP"];
 
+function RoundUp(value: number, decimals: number): string {
+    return String(Number(value.toFixed(decimals))); //number strips unnecessary leading 0's, toFixed rounds up and extends to 5 decimals
+}
+
 export function KPIConfigTable<TValue>({
     columns,
     data,
@@ -179,17 +183,21 @@ export function KPIConfigTable<TValue>({
                                             </span>
                                             <span>{row.original.service}</span>
                                         </div>
-                                        <div className="flex flex-col gap-1">
-                                            <span className="text-muted-foreground">
-                                                Resource Name
-                                            </span>
-                                            <span>{row.original.resourceName || "No Name"}</span>
-                                        </div>
+                                        {row.original.resourceName && (
+                                            <div className="flex flex-col gap-1">
+                                                <span className="text-muted-foreground">
+                                                    Resource Name
+                                                </span>
+                                                <span>
+                                                    {row.original.resourceName || "No Name"}
+                                                </span>
+                                            </div>
+                                        )}
                                         <div className="flex flex-col gap-1">
                                             <span className="text-muted-foreground">
                                                 Charge Cost
                                             </span>
-                                            <span>{row.original.chargeCost}</span>
+                                            <span>${RoundUp(row.original.chargeCost, 5)}</span>
                                         </div>
                                     </div>
                                     <div className="flex flex-col gap-4">
