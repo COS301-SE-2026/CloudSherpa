@@ -7,7 +7,6 @@ import type { Alert } from "@/features/alerts/types/alertTypes";
 import { useAlertStream } from "@/features/alerts/services/sse/alert-stream";
 import { useAlertStore } from "@/features/alerts/stores/alert-store";
 import { fetchAlerts } from "@/features/alerts/alerts";
-import { useAuthContext } from "@/features/authentication/providers/AuthContext";
 
 function findExistingAlert(previous: Alert[], incoming: Alert): Alert | undefined {
     const canonical = incoming.canonicalKey?.trim();
@@ -38,7 +37,6 @@ function shouldShowAlertToast(existing: Alert | undefined, incoming: Alert): boo
 export function AlertStreamBridge() {
     const router = useRouter();
     const pathname = usePathname();
-    const { isAuthReady, isAuthenticated } = useAuthContext();
     const upsertAlert = useAlertStore((state) => state.upsertAlert);
     const setAlerts = useAlertStore((state) => state.setAlerts);
 
@@ -79,10 +77,6 @@ export function AlertStreamBridge() {
     useAlertStream(onAlert);
 
     useEffect(() => {
-        if (!isAuthReady || !isAuthenticated) {
-            return;
-        }
-
         queueMicrotask(() => {
             void (async () => {
                 try {
@@ -91,7 +85,7 @@ export function AlertStreamBridge() {
                 } catch {}
             })();
         });
-    }, [isAuthReady, isAuthenticated, setAlerts]);
+    }, [setAlerts]);
 
     return null;
 }
