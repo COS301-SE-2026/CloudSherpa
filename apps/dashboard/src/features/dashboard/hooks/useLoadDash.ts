@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useDashboardStore, DashboardStore } from "@/features/dashboard/stores/dashboard-store";
-import { useAuthContext } from "@/features/authentication/providers/AuthContext";
 import { useResourceNameStore } from "@/features/dashboard/stores/resource-store";
 import { useFetchMetrics } from "@/features/dashboard/hooks/useFetchMetrics";
 import { fetchDashboards, DashboardDTO } from "@/lib/fetch/api-dashboard";
@@ -74,7 +73,6 @@ export function useLoadDashboardData() {
     const searchParams = useSearchParams();
     const urlId = searchParams.get("id");
 
-    const { isAuthReady, isAuthenticated } = useAuthContext();
     const { metricFetchError, metricFetchLoad } = useFetchMetrics();
 
     const dashboards = useDashboardStore((state: DashboardStore) => state.dashboards);
@@ -89,10 +87,6 @@ export function useLoadDashboardData() {
 
     useEffect(() => {
         const loadDashboardData = async () => {
-            if (!isAuthReady || !isAuthenticated) {
-                return;
-            }
-
             // If we already have dashboards in the store, no need to refetch
             if (Object.keys(dashboards).length > 0) {
                 setIsLoading(false);
@@ -151,8 +145,6 @@ export function useLoadDashboardData() {
         fetchResourceNames,
         urlId,
         metricFetchLoad,
-        isAuthReady,
-        isAuthenticated,
         hydrateWindow,
     ]);
 

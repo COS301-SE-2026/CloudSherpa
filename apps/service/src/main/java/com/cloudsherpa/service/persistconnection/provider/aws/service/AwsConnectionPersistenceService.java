@@ -62,7 +62,9 @@ public class AwsConnectionPersistenceService extends ConnectionPersistenceServic
     CloudAccount account = createAccount(connection, request);
     createCredential(account, request.credentials());
     createResources(request.userId(), account, request.resources());
-    createBillingExportConfig(account, request.billingConfig());
+    if (request.billingConfig() != null) {
+      createBillingExportConfig(account, request.billingConfig());
+    }
   }
 
   private CloudConnection getOrCreateConnection(PersistAwsConnectionRequest request) {

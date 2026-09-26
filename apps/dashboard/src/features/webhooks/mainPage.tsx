@@ -43,6 +43,22 @@ import { DeletePopup } from "@/features/webhooks/components/deletePopup";
 import { ButtonGroup } from "@/components/atoms/button-group";
 import { toast } from "sonner";
 
+const formatRetryDate = (isoString: string): string => {
+    const date = new Date(isoString);
+
+    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+    const options: Intl.DateTimeFormatOptions = {
+        day: "2-digit",
+        month: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+        timeZone: timeZone,
+    };
+    return new Intl.DateTimeFormat(navigator.language, options).format(date);
+};
+
 //moved to outside to correct sonarqube errors
 const helperForWebhookColumns = (
     onEdit: (webhook: Webhook) => void,
@@ -156,12 +172,27 @@ const helperForDeliveryColumns = (webhooks: Webhook[]): ColumnDef<WebhookDeliver
         accessorKey: "result",
         header: "Result",
         cell: (info) => {
-            const forResult = info.getValue() as string;
+            const row = info.row.original;
+            const forResult = row.result;
+
+            let columnValue: string;
+
+            if (forResult === "DELIVERED") {
+                columnValue = "Delivered";
+            } else {
+                let postfix = "";
+
+                if (row.nextRetryAttempt) {
+                    postfix =
+                        ". Next retry attempt at " + formatRetryDate(row.nextRetryAttempt) + ".";
+                }
+
+                columnValue = "Failed" + postfix;
+            }
 
             return (
                 <span className={forResult === "DELIVERED" ? "text-success" : "text-destructive"}>
-                    {" "}
-                    {forResult === "DELIVERED" ? "Delivered" : "Failed"}{" "}
+                    {columnValue}
                 </span>
             );
         },

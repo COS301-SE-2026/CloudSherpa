@@ -1,6 +1,7 @@
 package com.cloudsherpa.service.analytics.service;
 
 import com.cloudsherpa.lib.dtos.ResourceMetricEntry;
+import com.cloudsherpa.lib.dtos.SegmentedMetric;
 import com.cloudsherpa.lib.dtos.TimestampedNumericDataPoint;
 import com.cloudsherpa.lib.entities.NormalizedMetrics;
 import com.cloudsherpa.lib.entities.ProviderEnum;
@@ -18,6 +19,7 @@ import com.cloudsherpa.service.metrics.ResourceProviderResolver;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -128,9 +130,18 @@ public class NormalizedMetricService {
 
     String canonMetricName = metricMapper.toCanonicalName(provider.toString(), metricType);
 
-    List<TimestampedNumericDataPoint> fetchedResourceMetrics =
-        normalizedMetricsRepository.getTimestampedMetricValuesAfterDate(
-            resourceId, canonMetricName, fromInstant);
+    List<TimestampedNumericDataPoint> fetchedResourceMetrics = null;
+
+    switch (provider) {
+      case AWS -> fetchedResourceMetrics =
+          normalizedMetricsRepository.getTimestampedMetricValuesAfterDate(
+              resourceId, canonMetricName, fromInstant);
+      case GCP, AZURE -> fetchedResourceMetrics =
+          normalizedMetricsRepository.getAggregatedTimestampedMetricValuesAfterDate(
+              resourceId, canonMetricName, fromInstant);
+      default -> throw new IllegalArgumentException(
+          "Repository method needs to be explicitly set per supported provider");
+    }
 
     if (fetchedResourceMetrics.isEmpty()) {
       logger.info(
@@ -167,6 +178,35 @@ public class NormalizedMetricService {
     return response;
   }
 
+  public List<NormalizedMetrics> fetchSegmentedDownsampledSeries(
+      DownsampledSeriesRequestDto request) {
+    ProviderEnum provider = resourceRepository.findProviderByResourceId(request.resourceId());
+    String canonMetricName =
+        metricMapper.toCanonicalName(provider.toString(), request.metricName());
+
+    List<NormalizedMetrics> result = new ArrayList<>();
+
+    List<SegmentedMetric> segmentedSeries =
+        normalizedMetricsRepository.getSegmentedDownsampledNormalizedMetrics(
+            request.resourceId(), canonMetricName, request.from(), request.to(), 1800, 300);
+
+    long currentSegment = segmentedSeries.get(0).segmentId();
+
+    SegmentedMetric previous = null;
+
+    for (SegmentedMetric metric : segmentedSeries) {
+      if (previous != null && metric.segmentId() != currentSegment) {
+        result.addLast(psuedoMetric(previous));
+        currentSegment = metric.segmentId();
+      }
+
+      result.addLast(toNormalizedMetric(metric));
+      previous = metric;
+    }
+
+    return result;
+  }
+
   public List<ResourceMetricsGroupDto> fetchResourceMetrics() {
 
     List<ResourceMetricEntry> distinctResourceMetrics =
@@ -189,5 +229,31 @@ public class NormalizedMetricService {
         (resourceId, metrics) ->
             groupedResourceMetrics.add(new ResourceMetricsGroupDto(resourceId, metrics)));
     return groupedResourceMetrics;
+  }
+
+  private NormalizedMetrics toNormalizedMetric(SegmentedMetric metric) {
+    return new NormalizedMetrics.Builder()
+        .metricId(metric.metricId())
+        .resourceId(metric.resourceId())
+        .recordedAt(metric.recordedAt().atOffset(ZoneOffset.UTC))
+        .metricType(metric.metricType())
+        .metricName(metric.metricName())
+        .metricValue(metric.metricValue())
+        .unit(metric.unit())
+        .currency(metric.currency())
+        .periodStart(metric.periodStart().atOffset(ZoneOffset.UTC))
+        .periodEnd(metric.periodEnd().atOffset(ZoneOffset.UTC))
+        .build();
+  }
+
+  private NormalizedMetrics psuedoMetric(SegmentedMetric metric) {
+    NormalizedMetrics normalizedMetrics = toNormalizedMetric(metric);
+    normalizedMetrics.setMetricValue(null);
+    normalizedMetrics.setMetricPeriodStart(
+        OffsetDateTime.ofInstant(metric.periodStart().plusMillis(1), ZoneId.of("UTC")));
+    normalizedMetrics.setMetricPeriodEnd(
+        OffsetDateTime.ofInstant(metric.periodEnd().plusMillis(1), ZoneId.of("UTC")));
+
+    return normalizedMetrics;
   }
 }

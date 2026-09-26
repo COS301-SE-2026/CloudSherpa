@@ -140,7 +140,8 @@ public class WebhookService {
             : null,
         webhookDelivery.getCoudAccountName(),
         webhookDelivery.getDeliveryStatus(),
-        webhookDelivery.getResponseCode());
+        webhookDelivery.getResponseCode(),
+        webhookDelivery.getNextAttemptAt());
   }
 
   private String generateHmacSigningSecret() {

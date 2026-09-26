@@ -12,6 +12,7 @@ import { CloudCredentials } from "@/lib/fetch/dto/cloud-credentials";
 import { ResourceDetail } from "@/lib/fetch/dto/cloud-resource";
 import { ServicesList } from "@/components/molecules/services-list";
 import { ScanProgress } from "@/components/molecules/scan-progress";
+import { toast } from "sonner";
 
 export interface BillingConfig {
     prefix: string;
@@ -25,7 +26,7 @@ interface PropsForStepTwo {
     onNext: (
         selectedServices: string[],
         resources: ResourceDetail[],
-        billingConfig: BillingConfig
+        billingConfig: BillingConfig | null
     ) => void;
     onBack: () => void;
 }
@@ -178,12 +179,7 @@ export default function StepTwoAws({ credentials, onNext, onBack }: Readonly<Pro
                 return;
             }
 
-            onNext(servicesSelected, discoveredResources, {
-                prefix,
-                bucketName,
-                bucketRegion,
-                exportName,
-            });
+            onNext(servicesSelected, discoveredResources, savedBillingConfig);
         } catch (err) {
             console.error(err);
 
@@ -242,6 +238,11 @@ export default function StepTwoAws({ credentials, onNext, onBack }: Readonly<Pro
                         setPrefix("");
                         setBucketName("");
                         setBucketRegion("");
+
+                        if (savedBillingConfig) {
+                            setSavedBillingConfig(null);
+                            toast.warning("Opted out of billing. Billing config not saved.");
+                        }
                     }
                 }}
             />

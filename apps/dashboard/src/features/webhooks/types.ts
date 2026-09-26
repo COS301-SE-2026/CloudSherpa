@@ -30,6 +30,7 @@ export interface WebhookDelivery {
     cloudAccountName: string | null;
     result: "DELIVERED" | "FAILED";
     responseCode: number;
+    nextRetryAttempt: string;
 }
 
 export interface WebhookDeliveryPagedResult {

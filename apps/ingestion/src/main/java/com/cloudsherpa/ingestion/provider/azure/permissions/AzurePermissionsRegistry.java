@@ -10,12 +10,16 @@ import org.springframework.stereotype.Component;
 public class AzurePermissionsRegistry extends PermissionsRegistry {
 
   public static final Set<String> COMMON_READ_ONLY = Set.of("Reader", "Monitoring Reader");
+  public static final Set<String> BILLING_INGESTION = Set.of("Storage Blob Data Reader");
 
   private final Map<String, Set<String>> registry;
 
   public AzurePermissionsRegistry(AzureResourceDiscoveryService discoveryRegistryProvider) {
     super(COMMON_READ_ONLY);
-    this.registry = discoveryRegistryProvider.getPermissionsRegistry();
+    this.registry =
+        mergePermissionMaps(
+            discoveryRegistryProvider.getPermissionsRegistry(),
+            Map.of("billing", BILLING_INGESTION));
   }
 
   public Map<String, Set<String>> getRegistry() {
