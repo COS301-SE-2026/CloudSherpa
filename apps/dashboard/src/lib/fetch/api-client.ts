@@ -41,16 +41,16 @@ async function refreshSession(): Promise<boolean> {
     return refreshPromise;
 }
 
-/* params:
- *   - path
- *       expects initial slash, i.e. for path /api/some-endpoint is valid,
- *       api/some-endpoint not valid
- *   - options
- *       of type RequestInit, object with fields: method, headers and body
- *   - throws
- *       callers need to handle exception, this is intentional behavior, lets caller
- *       decide how to handle failed request
- */
+export async function ensureSessionRefreshed(): Promise<boolean> {
+    const refreshed = await refreshSession();
+
+    if (!refreshed) {
+        emitSessionExpired();
+    }
+
+    return refreshed;
+}
+
 export default async function apiClient<T>(
     path: string,
     options?: RequestInit,
@@ -81,9 +81,7 @@ export default async function apiClient<T>(
         normalizedPath !== "/auth/refresh" &&
         normalizedPath !== "/auth/login";
 
-    if (refreshOnUnauthorized && canRefresh && (await refreshSession())) {
-        // If refreshSession() returns true (the token was successfully renewed),
-        // we retry the exact same API request as previously
+    if (refreshOnUnauthorized && canRefresh && (await ensureSessionRefreshed())) {
         response = await fetch(`${API_BASE}${normalizedPath}`, options);
     }
 

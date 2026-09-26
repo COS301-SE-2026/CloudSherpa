@@ -1,22 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import type { Alert } from "@/features/alerts/types/alertTypes";
+import { ensureSessionRefreshed } from "@/lib/fetch/api-client";
 
 const API_BASE = process.env["NEXT_PUBLIC_API_URL"];
 const sseUrl = `${API_BASE}/stream`;
-
-async function refreshAuthSession(): Promise<boolean> {
-    if (!API_BASE) return false;
-
-    try {
-        const response = await fetch(`${API_BASE}/auth/refresh`, {
-            method: "POST",
-            credentials: "include",
-        });
-        return response.ok;
-    } catch {
-        return false;
-    }
-}
 
 interface UseAlertStreamResult {
     error: Error | null;
@@ -56,7 +43,7 @@ export function useAlertStream(onAlert: (alert: Alert) => void): UseAlertStreamR
 
                 if (!hasRetriedRef.current) {
                     hasRetriedRef.current = true;
-                    refreshAuthSession().then((refreshed) => {
+                    ensureSessionRefreshed().then((refreshed) => {
                         if (isCleaningUp) return;
 
                         if (refreshed) {
