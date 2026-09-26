@@ -10,6 +10,7 @@ export type AiSessionResponse = {
 
 export type AiDashboardPlanRequest = {
     sessionId: string;
+    startingDashboardId: string;
     message: string;
 };
 
@@ -22,7 +23,6 @@ export type DashboardPlanWidget = {
     width: number;
     height: number;
 
-    //chart
     chartType?: ChartType;
     chartColour?: ChartColour;
     provider?: string;
@@ -31,7 +31,6 @@ export type DashboardPlanWidget = {
     metricType?: string;
     metricName?: string;
 
-    // kpi
     chargeIds?: string[];
     aggregationWindowDays?: number;
 };
@@ -49,6 +48,8 @@ export type AiDashboardPlanResponse = {
     sessionId: string;
     versionId: string;
     version: number;
+    stageAttempted: boolean;
+    stageSucceeded: boolean;
     assistantMessage: string;
     dashboard: DashboardPlan;
 };
@@ -70,4 +71,11 @@ export type AiVersionResponse = {
     current: boolean;
     createdAt: string;
     dashboard: DashboardPlan;
+};
+
+export type AiDashboardApplyMode = "REPLACE_STARTED_DASHBOARD" | "CREATE_NEW_DASHBOARD";
+
+export type AiDashboardApplyRequest = {
+    mode: AiDashboardApplyMode;
+    startedDashboardId?: string;
 };

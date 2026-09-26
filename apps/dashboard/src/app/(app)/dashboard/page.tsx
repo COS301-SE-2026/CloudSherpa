@@ -64,6 +64,12 @@ function DashboardContent() {
     const authToastHandled = useRef(false);
 
     useEffect(() => {
+        if (!isSessionActive && activeDashboardId && activeDashboardId !== urlId) {
+            router.replace(`${pathname}?id=${activeDashboardId}`, { scroll: false });
+        }
+    }, [activeDashboardId, isSessionActive, pathname, router, urlId]);
+
+    useEffect(() => {
         fetchRecGroups();
         fetchSummary();
     }, [fetchRecGroups, fetchSummary]);
