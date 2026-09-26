@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
@@ -178,6 +179,7 @@ public class NormalizedMetricService {
     return response;
   }
 
+  @Transactional(readOnly = true)
   public List<NormalizedMetrics> fetchSegmentedDownsampledSeries(
       DownsampledSeriesRequestDto request) {
     ProviderEnum provider = resourceRepository.findProviderByResourceId(request.resourceId());
@@ -186,6 +188,7 @@ public class NormalizedMetricService {
 
     List<NormalizedMetrics> result = new ArrayList<>();
 
+    normalizedMetricsRepository.disableJitForCurrentTransaction();
     List<SegmentedMetric> segmentedSeries =
         normalizedMetricsRepository.getSegmentedDownsampledNormalizedMetrics(
             request.resourceId(), canonMetricName, request.from(), request.to(), 1800, 300);
