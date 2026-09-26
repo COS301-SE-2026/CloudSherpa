@@ -74,14 +74,7 @@ public class UsageForecastingService extends ForecastingService {
         metricDisplayNameMapper.toCanonicalName(
             provider.toString(), resourceUsageForecastRequestDto.metricType());
 
-    if (provider.toString().equals("GCP") || provider.toString().equals("AZURE")) {
-      return normalizedMetricsRepository.getAggregatedTimestampedMetricValues(
-          resourceUsageForecastRequestDto.resourceId(),
-          canonicalMetricName,
-          PageRequest.of(0, CONTEXT_LENGTH));
-    }
-
-    return normalizedMetricsRepository.getTimestampedMetricValues(
+    return normalizedMetricsRepository.getAggregatedTimestampedMetricValues(
         resourceUsageForecastRequestDto.resourceId(),
         canonicalMetricName,
         PageRequest.of(0, CONTEXT_LENGTH));
