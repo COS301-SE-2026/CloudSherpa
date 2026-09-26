@@ -11,6 +11,8 @@ import com.cloudsherpa.lib.repositories.BudgetRepository;
 import com.cloudsherpa.lib.repositories.NormalizedCostsRepository;
 import com.cloudsherpa.lib.repositories.ResourceRepository;
 import com.cloudsherpa.service.sse.SseService;
+import com.cloudsherpa.service.webhooks.events.alert.budget.BudgetAlertPayload;
+import com.cloudsherpa.service.webhooks.producers.WebhookProducerService;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -32,6 +34,7 @@ public class BudgetEvaluationService {
   private final SseService sseService;
   private final BudgetRepository budgetRepository;
   private final ResourceRepository resourceRepository;
+  private final WebhookProducerService producerService;
   private static final Logger logger = LoggerFactory.getLogger(BudgetEvaluationService.class);
 
   public BudgetEvaluationService(
@@ -39,12 +42,14 @@ public class BudgetEvaluationService {
       AlertRepository alertRepository,
       SseService sseService,
       BudgetRepository budgetRepository,
-      ResourceRepository resourceRepository) {
+      ResourceRepository resourceRepository,
+      WebhookProducerService producerService) {
     this.normalizedCostsRepository = normalizedCostsRepository;
     this.alertRepository = alertRepository;
     this.sseService = sseService;
     this.budgetRepository = budgetRepository;
     this.resourceRepository = resourceRepository;
+    this.producerService = producerService;
   }
 
   private void evaluateCurrentSpend(Budget budget) {
@@ -135,7 +140,9 @@ public class BudgetEvaluationService {
     sseService.broadcast(budget.getUserId(), "alert", alert);
 
     // Build & submit budget webhook event alert.budget
-
+    UUID cloudAccountId = getCloudAccountIdForWebhookEvent(budget);
+    BudgetAlertPayload payload = buildWebhookEventPayload(budget, alert, value);
+    producerService.produceEvent(budget.getUserId(), cloudAccountId, "alert.budget", payload);
   }
 
   private Alert buildNewAlert(Budget budget, BigDecimal value, String canonicalKey) {
@@ -176,5 +183,35 @@ public class BudgetEvaluationService {
 
   private String buildMessage(Budget budget, BigDecimal value) {
     return "Current spend " + value + " has reached budget amount " + budget.getAmount();
+  }
+
+  private BudgetAlertPayload buildWebhookEventPayload(
+      Budget budget, Alert alert, BigDecimal value) {
+    return new BudgetAlertPayload(
+        alert.getTitle(),
+        alert.getMessage(),
+        budget.getScope(),
+        alert.getSeverity().toString(),
+        budget.getAmount(),
+        value,
+        budget.getWindowDays());
+  }
+
+  private UUID getCloudAccountIdForWebhookEvent(Budget budget) {
+    return switch (budget.getScope()) {
+      case "RESOURCE" -> getResourceCloudAccount(budget.getScopeId());
+      case "ACCOUNT" -> budget.getScopeId();
+      default -> null;
+    };
+  }
+
+  private UUID getResourceCloudAccount(UUID resourceId) {
+    Resource resource = resourceRepository.findById(resourceId).orElse(null);
+
+    if (resource == null) {
+      return null;
+    }
+
+    return resource.getAccountId();
   }
 }

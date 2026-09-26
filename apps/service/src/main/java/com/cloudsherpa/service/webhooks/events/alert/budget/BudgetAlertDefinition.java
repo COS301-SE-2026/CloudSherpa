@@ -2,7 +2,9 @@ package com.cloudsherpa.service.webhooks.events.alert.budget;
 
 import com.cloudsherpa.service.webhooks.events.WebhookEventDefinition;
 import java.math.BigDecimal;
+import org.springframework.stereotype.Component;
 
+@Component
 public class BudgetAlertDefinition implements WebhookEventDefinition<BudgetAlertPayload> {
   @Override
   public String type() {
@@ -34,8 +36,8 @@ public class BudgetAlertDefinition implements WebhookEventDefinition<BudgetAlert
     return new BudgetAlertPayload(
         "Current spend exceeded budget of: 1000.00",
         "Current spend 1250.50 has reached budget amount 1000.00",
+        "RESOURCE",
         "WARNING",
-        "Budget scoped to account AWS Team A",
         new BigDecimal("1000.00"),
         new BigDecimal("1250.50"),
         30);
