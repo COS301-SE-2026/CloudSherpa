@@ -98,4 +98,18 @@ public class AlertsController {
             })
         .orElseGet(() -> ResponseEntity.notFound().build());
   }
+
+  @Operation(summary = "Delete alert", description = "Delete an existing alert.")
+  @ApiResponse(responseCode = "204", description = "Alert deleted")
+  @ApiResponse(responseCode = "404", description = "Alert not found", content = @Content)
+  @DeleteMapping("/{id}")
+  public ResponseEntity<Void> deleteAlert(
+      @Parameter(description = "Alert UUID") @PathVariable UUID id) {
+    if (!alertRepository.existsById(id)) {
+      return ResponseEntity.notFound().build();
+    }
+
+    alertRepository.deleteById(id);
+    return ResponseEntity.noContent().build();
+  }
 }
