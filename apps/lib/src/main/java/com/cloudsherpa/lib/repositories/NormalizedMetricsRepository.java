@@ -271,4 +271,7 @@ public interface NormalizedMetricsRepository extends JpaRepository<NormalizedMet
       @Param("gapSeconds") double gapSeconds,
       @Param("pointBudget") int pointBudget);
 
+  @Query(value = "SELECT set_config('jit', 'off', true)", nativeQuery = true)
+  String disableJitForCurrentTransaction();
+
 }
