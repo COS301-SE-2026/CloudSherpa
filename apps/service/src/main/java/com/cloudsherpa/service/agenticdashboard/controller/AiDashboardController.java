@@ -71,7 +71,8 @@ public class AiDashboardController {
     UUID userId = UUID.fromString(jwt.getSubject());
 
     AiDashboardPlanResponseDto response =
-        aiAgentService.generateDashboardPlan(userId, request.sessionId(), request.message());
+        aiAgentService.generateDashboardPlan(
+            userId, request.sessionId(), request.startingDashboardId(), request.message());
 
     return ResponseEntity.ok(response);
   }
