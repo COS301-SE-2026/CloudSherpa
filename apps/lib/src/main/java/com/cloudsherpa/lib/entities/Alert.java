@@ -73,7 +73,7 @@ public class Alert {
   @Column(name = "resolved_at")
   private OffsetDateTime resolvedAt;
 
-  protected Alert() {}
+  public Alert() {}
 
   private Alert(Builder builder) {
     this.alertId = builder.alertId;
