@@ -1,3 +1,6 @@
+// Observational NFR test: thresholds will be added once an acceptable
+// degradation target has been established.
+
 import { config } from "../common/utils/config.js";
 import { loginSetup } from "../common/utils/login-setup.js";
 import http from 'k6/http';

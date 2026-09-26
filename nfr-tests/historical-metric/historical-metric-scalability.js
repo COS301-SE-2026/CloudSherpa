@@ -1,3 +1,6 @@
+// Observational NFR test: thresholds will be added once an acceptable
+// degradation target has been established.
+
 import { loginSetup } from '../common/utils/login-setup.js';
 import historicalMetricEndpoint from './historical-metric-utils.js';
 
