@@ -20,6 +20,8 @@ export function useFetchTableResources() {
                     resourceId: resource.resourceId,
                     service: resource.service,
                     provider: resource.provider,
+                    resourceName: resource.resourceName,
+                    chargeCost: resource.chargeCost,
                 }))
             );
             setTableResourcesFetchError(false);
