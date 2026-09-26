@@ -254,7 +254,7 @@ export function ThresholdPopup({
                     <DialogTitle> {initial ? "Edit threshold" : "New threshold"} </DialogTitle>
                 </DialogHeader>
 
-                <form onSubmit={handlingSubmit} className="space-y-4">
+                <form onSubmit={handlingSubmit} className="space-y-4" noValidate>
                     <div className="grid gap-2">
                         <Label> Provider </Label>
 
@@ -367,6 +367,7 @@ export function ThresholdPopup({
                                 id="value"
                                 type="number"
                                 step="any"
+                                min={0}
                                 value={value}
                                 onChange={(change) => {
                                     setValue(Number(change.target.value));
