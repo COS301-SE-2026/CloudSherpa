@@ -10,6 +10,8 @@ import {
     getExpandedRowModel,
 } from "@tanstack/react-table";
 
+import { cn } from "@/lib/utils";
+
 import {
     FieldDescription,
     FieldGroup,
@@ -54,10 +56,6 @@ interface KPIConfigTableProps<TValue> {
 
 const ALL_PROVIDERS = "All Providers";
 const providers: CloudProviderEnum[] = ["AWS", "Azure", "GCP"];
-
-function RoundUp(value: number, decimals: number): string {
-    return String(Number(value.toFixed(decimals))); //number strips unnecessary leading 0's, toFixed rounds up and extends to 5 decimals
-}
 
 export function KPIConfigTable<TValue>({
     columns,
@@ -197,22 +195,41 @@ export function KPIConfigTable<TValue>({
                                             <span className="text-muted-foreground">
                                                 Charge Cost
                                             </span>
-                                            <span>${RoundUp(row.original.chargeCost, 5)}</span>
+                                            {(() => {
+                                                const cost = row.original.chargeCost;
+                                                const roundedCost = Number(cost.toFixed(5));
+                                                const absCost = Math.abs(roundedCost);
+
+                                                return (
+                                                    <span
+                                                        className={cn(
+                                                            roundedCost < 0 && "text-destructive",
+                                                            roundedCost > 0 && "text-success"
+                                                        )}
+                                                    >
+                                                        {roundedCost < 0
+                                                            ? `-$${absCost}`
+                                                            : `$${absCost}`}
+                                                    </span>
+                                                );
+                                            })()}
                                         </div>
                                     </div>
-                                    <div className="flex flex-col gap-4">
-                                        <div className="flex flex-col gap-1">
-                                            <span className="text-muted-foreground">
-                                                Resource ID
-                                            </span>
-                                            <span
-                                                className="text-wrap font-mono"
-                                                title={row.original.resourceId}
-                                            >
-                                                {row.original.resourceId}
-                                            </span>
+                                    {row.original.resourceId && (
+                                        <div className="flex flex-col gap-4">
+                                            <div className="flex flex-col gap-1">
+                                                <span className="text-muted-foreground">
+                                                    Resource ID
+                                                </span>
+                                                <span
+                                                    className="text-wrap font-mono"
+                                                    title={row.original.resourceId}
+                                                >
+                                                    {row.original.resourceId}
+                                                </span>
+                                            </div>
                                         </div>
-                                    </div>
+                                    )}
                                 </CardContent>
                             </Card>
                         </TableCell>
