@@ -65,15 +65,15 @@ export default function Toolbar({
                             onDelete={onDeleteDashboard}
                         />
                     ) : (
-                        <div>ai preview session acitve</div>
+                        <div>AI preview session active</div>
                     )}
                 </div>
-
                 {hideTools && (
                     <div className="flex flex-row items-center gap-2">
+                        <AgenticDashCard />
+
                         {!isSessionActive && (
                             <>
-                                <AgenticDashCard />
                                 <div className="hidden sm:block">
                                     <EditButton
                                         isEditMode={isEditMode}
@@ -82,6 +82,7 @@ export default function Toolbar({
                                         handleCancelEdit={handleCancelEdit}
                                     />
                                 </div>
+
                                 <AddWidget
                                     handleAddWidget={handleAddWidget}
                                     handleAddKpi={handleAddKpi}
@@ -89,10 +90,12 @@ export default function Toolbar({
                                 />
                             </>
                         )}
+
                         <TimePeriodSelector date={dateRange} onDateChange={onDateRangeChange} />
+
                         <HelpMenu />
                     </div>
-                )}
+                )}{" "}
             </div>
             <div className="w-full flex flex-row items-center justify-start  px-6 sm:hidden">
                 {hasActiveDashboard && !isSessionActive && (

@@ -10,8 +10,9 @@ interface WidgetWrapperProps {
 
 export const WidgetWrapper = ({ layout, isEditMode }: WidgetWrapperProps) => {
     const { id, x, y, w, h, autoPosition } = layout;
-    const config = useDashboardStore((state: DashboardStore) => state.widgets[id]);
-
+    const config = useDashboardStore((state: DashboardStore) =>
+        state.isSessionActive ? state.stagedWidgets[id] : state.widgets[id]
+    );
     if (!config) return null;
 
     const gridStackAttributes = {
