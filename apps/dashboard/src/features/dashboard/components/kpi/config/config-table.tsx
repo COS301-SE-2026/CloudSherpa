@@ -185,6 +185,12 @@ export function KPIConfigTable<TValue>({
                                             </span>
                                             <span>{row.original.resourceName || "No Name"}</span>
                                         </div>
+                                        <div className="flex flex-col gap-1">
+                                            <span className="text-muted-foreground">
+                                                Charge Cost
+                                            </span>
+                                            <span>{row.original.chargeCost}</span>
+                                        </div>
                                     </div>
                                     <div className="flex flex-col gap-4">
                                         <div className="flex flex-col gap-1">

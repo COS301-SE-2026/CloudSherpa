@@ -14,7 +14,6 @@ export function useFetchTableResources() {
         try {
             const resources: KpiResourceResponseDto =
                 await apiClient<KpiResourceResponseDto>("/billing/charges");
-
             setTableResources(
                 resources.map((resource) => ({
                     chargeId: resource.chargeId,
@@ -22,6 +21,7 @@ export function useFetchTableResources() {
                     service: resource.service,
                     provider: resource.provider,
                     resourceName: resource.resourceName,
+                    chargeCost: resource.chargeCost,
                 }))
             );
             setTableResourcesFetchError(false);
