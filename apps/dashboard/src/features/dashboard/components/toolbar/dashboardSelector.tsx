@@ -89,7 +89,7 @@ export function DashboardSelector({
                         setSearchQuery("");
                     }}
                 >
-                    <Tooltip>
+                    <Tooltip showOnTruncate>
                         <TooltipTrigger asChild>
                             <div className="lg:w-70">
                                 <PopoverTrigger asChild aria-label="Dashboard Selector">
@@ -135,7 +135,7 @@ export function DashboardSelector({
                                     <CommandEmpty>No dashboard found.</CommandEmpty>
                                     <CommandGroup heading="My Dashboards">
                                         {dashboards.map((d) => (
-                                            <Tooltip key={d.id}>
+                                            <Tooltip key={d.id} showOnTruncate>
                                                 <TooltipTrigger className="w-full" asChild>
                                                     <div className="w-full ">
                                                         <CommandItem
