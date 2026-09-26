@@ -21,13 +21,21 @@ import {
 import { Button } from "@/components/atoms/button";
 import type { OperatorsForThreshold, Threshold } from "@/features/thresholds/types/thresholdTypes";
 import { OPERATOR_LABEL, SEVERITY_COLOURS } from "@/features/thresholds/types/thresholdTypes";
-import { ArrowUp, ArrowDown, Pencil, Trash2 } from "lucide-react";
+import { ArrowUp, ArrowDown, Pencil, Trash2, MoreVertical } from "lucide-react";
 import {
     Tooltip,
     TooltipContent,
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/atoms/tooltip";
+import { useMetricStore } from "@/features/dashboard/stores/metric-store";
+import { metricSeriesToArray } from "@/features/dashboard/types/metric";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/atoms/dropdown-menu";
 
 const CONDITION_VERBS: Record<OperatorsForThreshold, string> = {
     GT: "More than",
@@ -41,6 +49,41 @@ interface PropsForTruncation {
     text: string;
     className?: string;
     tooltipText?: string;
+}
+
+interface PropsForCurrentValue {
+    resourceId: string;
+    metricName: string;
+    enabled: boolean;
+}
+
+function CurrentValue({ resourceId, metricName, enabled }: Readonly<PropsForCurrentValue>) {
+    const forSeries = useMetricStore(
+        (forState) => forState.seriesByKey[`${resourceId}:${metricName}`]
+    );
+
+    const latestValue = metricSeriesToArray(forSeries).at(-1);
+
+    if (latestValue?.value == null) {
+        return (
+            <Truncation
+                text="-"
+                className="w-[100px] flex-shrink-0 text-muted-foreground cursor-help"
+            />
+        );
+    }
+
+    const forDisplay = String(latestValue.value);
+
+    const forTooltip = `${metricName} at ${latestValue.timestamp}: ${forDisplay}`;
+
+    return (
+        <Truncation
+            text={forDisplay}
+            tooltipText={forTooltip}
+            className={`w-[100px] flex-shrink-0 ${enabled ? "text-foreground" : "text-muted-foreground"}`}
+        />
+    );
 }
 
 function Truncation({ text, className = "", tooltipText }: Readonly<PropsForTruncation>) {
@@ -177,12 +220,17 @@ function helperForColumns({ edit, toggleEnabled, onDelete }: Columns): ColumnDef
             id: "currentValue",
             header: () => "CURRENT VALUE",
             enableSorting: false,
-            cell: () => (
-                <Truncation
-                    text="-"
-                    className="w-[100px] flex-shrink-0 text-muted-foreground cursor-help"
-                />
-            ),
+            cell: ({ row }) => {
+                const forThreshold = row.original;
+
+                return (
+                    <CurrentValue
+                        resourceId={forThreshold.resourceId}
+                        metricName={forThreshold.metricName}
+                        enabled={forThreshold.enabled}
+                    />
+                );
+            },
         },
 
         {
@@ -193,27 +241,32 @@ function helperForColumns({ edit, toggleEnabled, onDelete }: Columns): ColumnDef
                 const forThreshold = row.original;
 
                 return (
-                    <div className="flex items-center gap-2">
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-auto p-0 text-primary"
-                            onClick={() => edit(forThreshold)}
-                        >
-                            {" "}
-                            <Pencil className="h-4 w-4" />{" "}
-                        </Button>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                {" "}
+                                <MoreVertical className="h-4 w-4" />{" "}
+                            </Button>
+                        </DropdownMenuTrigger>
 
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-auto p-0 text-destructive"
-                            onClick={() => onDelete(forThreshold)}
-                        >
-                            {" "}
-                            <Trash2 className="h-4 w-4" />{" "}
-                        </Button>
-                    </div>
+                        <DropdownMenuContent align="end" className="w-36">
+                            <DropdownMenuItem
+                                onClick={() => edit(forThreshold)}
+                                className="cursor-pointer"
+                            >
+                                {" "}
+                                <Pencil className="mr-2 h-4 w-4" /> Edit{" "}
+                            </DropdownMenuItem>
+
+                            <DropdownMenuItem
+                                onClick={() => onDelete(forThreshold)}
+                                className="cursor-pointer text-destructive focus:text-destructive"
+                            >
+                                {" "}
+                                <Trash2 className="mr-2 h-4 w-4" /> Delete{" "}
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 );
             },
         },
