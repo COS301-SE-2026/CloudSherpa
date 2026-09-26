@@ -49,7 +49,6 @@ export default function UsageIntelligence() {
     useFetchMetrics();
     const resourceId = useUsageIntelligenceConfigStore((state) => state.resourceId);
     const metricName = useUsageIntelligenceConfigStore((state) => state.metricName);
-    const provider = useUsageIntelligenceConfigStore((state) => state.provider);
     // const currentUnit = getMetricUnit(metricType);
 
     const setUsageForecast = useUsageIntelligenceStore((state) => state.setUsageForecast);

@@ -131,10 +131,9 @@ public class NormalizedMetricService {
 
     String canonMetricName = metricMapper.toCanonicalName(provider.toString(), metricType);
 
-    List<TimestampedNumericDataPoint> fetchedResourceMetrics = null;
-
-    normalizedMetricsRepository.getAggregatedTimestampedMetricValuesAfterDate(
-        resourceId, canonMetricName, fromInstant);
+    List<TimestampedNumericDataPoint> fetchedResourceMetrics =
+        normalizedMetricsRepository.getAggregatedTimestampedMetricValuesAfterDate(
+            resourceId, canonMetricName, fromInstant);
 
     if (fetchedResourceMetrics.isEmpty()) {
       logger.info(
