@@ -84,7 +84,7 @@ const TooltipTrigger = React.forwardRef<
         <TooltipPrimitive.Trigger
             ref={mergedRef}
             data-slot="tooltip-trigger"
-            onMouseEnter={(e) => {
+            onPointerEnter={(e) => {
                 checkTruncated();
                 onMouseEnter?.(e);
             }}
