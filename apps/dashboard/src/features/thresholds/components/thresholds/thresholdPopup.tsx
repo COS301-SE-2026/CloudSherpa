@@ -214,8 +214,8 @@ export function ThresholdPopup({
             hasError = true;
         }
 
-        if (!Number.isFinite(value) || value <= 0) {
-            setZeroValue("Value must be greater than 0");
+        if (!Number.isFinite(value) || value < 0) {
+            setZeroValue("Value must be 0 or greater");
 
             hasError = true;
         }
