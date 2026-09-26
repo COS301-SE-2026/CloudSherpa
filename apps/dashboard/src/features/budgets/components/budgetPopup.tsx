@@ -76,19 +76,19 @@ export function BudgetPopup({ open, initial, onClose, onSubmit }: Readonly<Props
     const [scopeError, setScopeError] = useState<string | null>(null);
 
     useEffect(() => {
-        if(!open){
+        if (!open) {
             return;
         }
 
-        if(initial?.scope !== "RESOURCE"){
+        if (initial?.scope !== "RESOURCE") {
             return;
         }
 
-        if(!initial.scope_id){
+        if (!initial.scope_id) {
             return;
         }
 
-        if(selectedAccountId){
+        if (selectedAccountId) {
             return;
         }
 
@@ -97,18 +97,18 @@ export function BudgetPopup({ open, initial, onClose, onSubmit }: Readonly<Props
         (async () => {
             const allConnections = await getAwsAccountConnections();
 
-            for(const connection of allConnections){
-                if(cancelled){
+            for (const connection of allConnections) {
+                if (cancelled) {
                     return;
                 }
 
                 const connectionResources = await getAwsAccountResources(connection.id);
 
-                if(cancelled){
+                if (cancelled) {
                     return;
                 }
 
-                if(connectionResources.some((resource) => resource.id === initial.scope_id)){
+                if (connectionResources.some((resource) => resource.id === initial.scope_id)) {
                     setSelectedAccountId(connection.id);
 
                     setSelectedResourceId(initial.scope_id);
@@ -121,15 +121,14 @@ export function BudgetPopup({ open, initial, onClose, onSubmit }: Readonly<Props
         return () => {
             cancelled = true;
         };
-
     }, [open, initial?.scope, initial?.scope_id, selectedAccountId]);
 
     useEffect(() => {
-        if(!open){
+        if (!open) {
             return;
         }
 
-        if(scope !== "ACCOUNT" && scope !== "RESOURCE"){
+        if (scope !== "ACCOUNT" && scope !== "RESOURCE") {
             return;
         }
 
@@ -138,18 +137,18 @@ export function BudgetPopup({ open, initial, onClose, onSubmit }: Readonly<Props
         (async () => {
             setLoadingAccounts(true);
 
-            try{
+            try {
                 const forData = await getAwsAccountConnections();
 
-                if(!cancelled){
+                if (!cancelled) {
                     setAccounts(forData);
                 }
-            }catch{
-                if(!cancelled){
+            } catch {
+                if (!cancelled) {
                     setAccounts([]);
                 }
-            }finally{
-                if(!cancelled){
+            } finally {
+                if (!cancelled) {
                     setLoadingAccounts(false);
                 }
             }
@@ -161,7 +160,7 @@ export function BudgetPopup({ open, initial, onClose, onSubmit }: Readonly<Props
     }, [open, scope]);
 
     useEffect(() => {
-        if(scope !== "RESOURCE" || !selectedAccountId){
+        if (scope !== "RESOURCE" || !selectedAccountId) {
             return;
         }
 
@@ -170,18 +169,18 @@ export function BudgetPopup({ open, initial, onClose, onSubmit }: Readonly<Props
         (async () => {
             setLoadingResources(true);
 
-            try{
+            try {
                 const forData = await getAwsAccountResources(selectedAccountId);
 
-                if(!cancelled){
+                if (!cancelled) {
                     setResources(forData);
                 }
-            }catch{
-                if(!cancelled){
+            } catch {
+                if (!cancelled) {
                     setResources([]);
                 }
-            }finally{
-                if(!cancelled){
+            } finally {
+                if (!cancelled) {
                     setLoadingResources(false);
                 }
             }
@@ -190,7 +189,6 @@ export function BudgetPopup({ open, initial, onClose, onSubmit }: Readonly<Props
         return () => {
             cancelled = true;
         };
-
     }, [scope, selectedAccountId]);
 
     const handlingScopeChange = (next: ScopeForBudget) => {
@@ -245,7 +243,10 @@ export function BudgetPopup({ open, initial, onClose, onSubmit }: Readonly<Props
             RESOURCE: "Select an account and a resource",
         };
 
-        const validScope = scope === "TENANT" || (scope === "ACCOUNT" && !!selectedAccountId) || (scope === "RESOURCE" && !!selectedResourceId);
+        const validScope =
+            scope === "TENANT" ||
+            (scope === "ACCOUNT" && !!selectedAccountId) ||
+            (scope === "RESOURCE" && !!selectedResourceId);
 
         if (!validScope) {
             setScopeError(scopeErrorMessage[scope]);
@@ -253,7 +254,7 @@ export function BudgetPopup({ open, initial, onClose, onSubmit }: Readonly<Props
             hasError = true;
         }
 
-        if(!user?.userId){
+        if (!user?.userId) {
             setScopeError("Not signed in");
 
             hasError = true;

@@ -30,7 +30,10 @@ export const editBudget = async (
     budgetId: string,
     forPayload: UpdateBudgetRequest
 ): Promise<Budget> =>
-    apiClient<Budget>(`/api/budgets/${budgetId}`, { method: "PUT", body: JSON.stringify(forPayload) });
+    apiClient<Budget>(`/api/budgets/${budgetId}`, {
+        method: "PUT",
+        body: JSON.stringify(forPayload),
+    });
 
 export const deleteBudget = async (budgetId: string): Promise<void> =>
     apiClient<void>(`/api/budgets/${budgetId}`, { method: "DELETE" });
