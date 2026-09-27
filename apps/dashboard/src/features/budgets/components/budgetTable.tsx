@@ -24,6 +24,7 @@ import {
 } from "@/components/atoms/dropdown-menu";
 import { useResourceNames } from "@/features/alerts/hooks/useResourceNames";
 import {TablePagination} from "@/components/molecules/tablePagination";
+import {Truncation} from "@/components/molecules/truncation";
 interface PropsForBudget {
     budgets: Budget[];
     edit: (budget: Budget) => void;
@@ -49,7 +50,7 @@ function helperForColumns({
             id: "enabled",
             header: () => "ENABLED",
             enableSorting: false,
-            size : 120,
+            size : 100,
             cell: ({ row }) => (
                 <Switch
                     checked={row.original.enabled}
@@ -61,7 +62,7 @@ function helperForColumns({
         {
             accessorKey: "scope",
             header: () => "SCOPE",
-            size : 220,
+            size : 160,
             cell: ({ row }) => {
                 const forBudget = row.original;
 
@@ -78,9 +79,9 @@ function helperForColumns({
                     <div
                         className={`flex flex-col text-sm ${mutedBudget ? "text-muted-foreground" : "text-foreground"}`}
                     >
-                        <span> {label} </span>
+                        <Truncation text = {label} />
 
-                        {name && <span className="text-muted-foreground"> {name} </span>}
+                        {name && <Truncation text = {name} className="text-muted-foreground"/>}
                     </div>
                 );
             },
@@ -95,11 +96,10 @@ function helperForColumns({
 
                 const amount = row.original;
 
+                const forDisplay = `${amount.currency} ${amount.amount.toFixed(2)}`;
+
                 return (
-                    <span className={mutedBudget ? "text-muted-foreground" : "text-foreground"}>
-                        {" "}
-                        {amount.currency} {amount.amount.toFixed(2)}{" "}
-                    </span>
+                    <Truncation text = {forDisplay} className = {mutedBudget ? "text-muted-foreground" : "text-foreground"}/>
                 );
             },
         },
@@ -119,7 +119,7 @@ function helperForColumns({
             id: "actions",
             header: () => "ACTIONS",
             enableSorting: false,
-            size : 120,
+            size : 100,
             cell: ({ row }) => {
                 const forBudget = row.original;
 

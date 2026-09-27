@@ -25,6 +25,7 @@ import {
 } from "@/components/atoms/dropdown-menu";
 import { LABELS_FOR_SCOPE, type ScopeForBudget } from "@/features/budgets/types/budgetTypes";
 import {TablePagination} from "@/components/molecules/tablePagination";
+import {Truncation} from "@/components/molecules/truncation";
 
 interface AlertScope {
     scope: ScopeForBudget;
@@ -185,10 +186,7 @@ function helperForColumns({ onToggle, info, onDelete }: ForColumns): ColumnDef<A
                 const displayTitle = cleanAlertTitle(row.original.title);
 
                 return (
-                    <span className={inactive ? "text-muted-foreground" : "text-foreground"}>
-                        {" "}
-                        {displayTitle}{" "}
-                    </span>
+                    <Truncation text = {displayTitle} className = {inactive ? "text-muted-foreground" : "text-foreground"}/>
                 );
             },
         },

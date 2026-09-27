@@ -22,12 +22,6 @@ import { Button } from "@/components/atoms/button";
 import type { OperatorsForThreshold, Threshold } from "@/features/thresholds/types/thresholdTypes";
 import { OPERATOR_LABEL, SEVERITY_COLOURS } from "@/features/thresholds/types/thresholdTypes";
 import { ArrowUp, ArrowDown, Pencil, Trash2, MoreVertical } from "lucide-react";
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-} from "@/components/atoms/tooltip";
 import { useMetricStore } from "@/features/dashboard/stores/metric-store";
 import { metricSeriesToArray } from "@/features/dashboard/types/metric";
 import {
@@ -38,6 +32,7 @@ import {
 } from "@/components/atoms/dropdown-menu";
 import { useResourceNames } from "@/features/alerts/hooks/useResourceNames";
 import {TablePagination} from "@/components/molecules/tablePagination";
+import {Truncation} from "@/components/molecules/truncation";
 
 const CONDITION_VERBS: Record<OperatorsForThreshold, string> = {
     GT: "More than",
@@ -46,12 +41,6 @@ const CONDITION_VERBS: Record<OperatorsForThreshold, string> = {
     LTE: "Less than or equal to",
     EQ: "Equal to",
 };
-
-interface PropsForTruncation {
-    text: string;
-    className?: string;
-    tooltipText?: string;
-}
 
 interface PropsForCurrentValue {
     resourceId: string;
@@ -88,23 +77,6 @@ function CurrentValue({ resourceId, metricName, enabled }: Readonly<PropsForCurr
     );
 }
 
-function Truncation({ text, className = "", tooltipText }: Readonly<PropsForTruncation>) {
-    return (
-        <TooltipProvider>
-            <Tooltip>
-                <TooltipTrigger asChild>
-                    <span className={`block truncate ${className}`}> {text} </span>
-                </TooltipTrigger>
-
-                <TooltipContent>
-                    {" "}
-                    <p className="max-w-xs break-all"> {tooltipText ?? text} </p>
-                </TooltipContent>
-            </Tooltip>
-        </TooltipProvider>
-    );
-}
-
 interface PropsForThresholds {
     thresholds: Threshold[];
     edit: (forThreshold: Threshold) => void;
@@ -131,7 +103,7 @@ function helperForColumns({
             id: "enabled",
             header: () => "ENABLED",
             enableSorting: false,
-            size : 20,
+            size : 100,
             cell: ({ row }) => {
                 const forThreshold = row.original;
 
@@ -350,6 +322,7 @@ export function ThresholdTable({
                                     <TableHead
                                         key={header.id}
                                         className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                                        style = {{width : header.getSize()}}
                                     >
                                         {ableToSort ? (
                                             <button
