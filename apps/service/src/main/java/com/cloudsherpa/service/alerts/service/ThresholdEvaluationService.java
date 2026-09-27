@@ -8,6 +8,7 @@ import com.cloudsherpa.lib.entities.Threshold;
 import com.cloudsherpa.lib.repositories.AlertRepository;
 import com.cloudsherpa.lib.repositories.ThresholdRepository;
 import com.cloudsherpa.service.listener.dto.MetricStreamEventDto;
+import com.cloudsherpa.service.metrics.MetricDisplayNameMapper;
 import com.cloudsherpa.service.sse.SseService;
 import com.cloudsherpa.service.webhooks.events.alert.threshold.ThresholdAlertPayload;
 import com.cloudsherpa.service.webhooks.producers.WebhookProducerService;
@@ -31,16 +32,19 @@ public class ThresholdEvaluationService {
   private final AlertRepository alertRepository;
   private final SseService sseService;
   private final WebhookProducerService webhookProducerService;
+  private final MetricDisplayNameMapper metricDisplayNameMapper;
 
   public ThresholdEvaluationService(
       ThresholdRepository thresholdRepository,
       AlertRepository alertRepository,
       SseService sseService,
-      WebhookProducerService webhookProducerService) {
+      WebhookProducerService webhookProducerService,
+      MetricDisplayNameMapper metricDisplayNameMapper) {
     this.thresholdRepository = thresholdRepository;
     this.alertRepository = alertRepository;
     this.sseService = sseService;
     this.webhookProducerService = webhookProducerService;
+    this.metricDisplayNameMapper = metricDisplayNameMapper;
   }
 
   // resource-1 reports CPUUtilization, so matching resource thresholds are evaluated.
@@ -114,10 +118,13 @@ public class ThresholdEvaluationService {
     Map<String, Object> payload =
         Map.of(
             "metric_name", event.metricName(),
+            "metric_display_name", metricDisplayNameMapper.toDisplayName(event.metricName()),
             "metric_value", event.metricValue(),
             "threshold_operator", threshold.getOperator(),
             "threshold_value", threshold.getValue(),
             "resource_id", event.resourceId(),
+            "resource_name", threshold.getResource().getResourceName(),
+            "provider", resolveProvider(threshold),
             "period_start", event.periodStart(),
             "period_end", event.periodEnd());
 
@@ -126,7 +133,7 @@ public class ThresholdEvaluationService {
         .widgetId(null)
         .alertType(AlertTypeEnum.THRESHOLD)
         .severity(Optional.ofNullable(threshold.getSeverity()).orElse(AlertSeverityEnum.WARNING))
-        .title(buildTitle(threshold, event))
+        .title(buildTitle(event))
         .message(buildMessage(threshold, event))
         .payload(payload)
         .status(AlertStatusEnum.ACTIVE)
@@ -157,20 +164,58 @@ public class ThresholdEvaluationService {
     return "threshold:" + threshold.getThresholdId() + ":" + event.resourceId();
   }
 
-  private String buildTitle(Threshold threshold, MetricStreamEventDto event) {
-    return event.metricName() + " " + threshold.getOperator() + " " + threshold.getValue();
+  private String buildTitle(MetricStreamEventDto event) {
+    String metricDisplayName = metricDisplayNameMapper.toDisplayName(event.metricName());
+
+    return metricDisplayName + " threshold breach";
   }
 
   private String buildMessage(Threshold threshold, MetricStreamEventDto event) {
-    return event.metricName()
+    String metricDisplayName = metricDisplayNameMapper.toDisplayName(event.metricName());
+
+    return metricDisplayName
         + " is "
         + event.metricValue()
-        + " (threshold "
-        + threshold.getOperator()
+        + ", which "
+        + operatorVerb(threshold.getOperator())
+        + " the configured threshold ("
+        + operatorLabel(threshold.getOperator())
         + " "
         + threshold.getValue()
-        + ") for resource "
-        + event.resourceId();
+        + ") on resource "
+        + threshold.getResource().getResourceName()
+        + " ["
+        + resolveProvider(threshold)
+        + "].";
+  }
+
+  private String operatorVerb(String operator) {
+    return switch (operator) {
+      case "GT", "GTE" -> "exceeds";
+      case "LT", "LTE" -> "is below";
+      case "EQ" -> "matches";
+      default -> "breaches";
+    };
+  }
+
+  private String operatorLabel(String operator) {
+    return switch (operator) {
+      case "GT" -> ">";
+      case "GTE" -> ">=";
+      case "LT" -> "<";
+      case "LTE" -> "<=";
+      case "EQ" -> "=";
+      default -> operator;
+    };
+  }
+
+  private String resolveProvider(Threshold threshold) {
+    if (threshold.getResource() == null
+        || threshold.getResource().getAccount() == null
+        || threshold.getResource().getAccount().getConnection() == null) {
+      return "UNKNOWN";
+    }
+    return threshold.getResource().getAccount().getConnection().getProvider().name();
   }
 
   private ThresholdAlertPayload buildWebhookEventPayload(
