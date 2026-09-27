@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useSyncExternalStore } from "react";
+import { useMemo, useRef, useEffect, useState } from "react";
 import ReactECharts from "echarts-for-react";
 import { AlertCircleIcon, CircleAlert, RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
 import type { CallbackDataParams } from "echarts/types/dist/shared";
@@ -19,23 +19,6 @@ import { UsageError } from "../../types/errors";
 import { Spinner } from "@/components/atoms/spinner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/atoms/tooltip";
 
-function subscribe(_onStoreChange: () => void) {
-    return () => {};
-}
-
-function getSnapshot() {
-    return Date.now();
-}
-
-function getServerSnapshot() {
-    //falback
-    return 0;
-}
-
-function useNow() {
-    return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
-}
-
 interface UsagePredictionChartProps {
     readonly historicalUsageSeries: HistoricalUsageSeriesDto | null;
     readonly usageError: UsageError | null;
@@ -49,6 +32,7 @@ export default function UsagePredictionChart({
 }: UsagePredictionChartProps) {
     //styles
     const { themeName, tokens } = useChartTheme();
+    const [now, setNow] = useState(() => Date.now());
 
     //config
     const resourceId = useUsageIntelligenceConfigStore((state) => state.resourceId);
@@ -63,6 +47,10 @@ export default function UsagePredictionChart({
         return state.forecasts[resourceId]?.[metricName] ?? null;
     });
 
+    const setCurrentTime = () => {
+        setNow(Date.now());
+    };
+
     const {
         historicalUsagePoints,
         lowerConfidenceBoundPoints,
@@ -75,8 +63,7 @@ export default function UsagePredictionChart({
 
     // 3. X-AXIS MATH HOOK
     const { currentTime, minXAxisTime, maxXAxisTime } = useMemo(() => {
-        // eslint-disable-next-line react-hooks/purity
-        const now = Date.now();
+        setCurrentTime;
 
         const minTime = now - durationByPreset[pastTimeWindowPreset];
         let maxTime: number;
