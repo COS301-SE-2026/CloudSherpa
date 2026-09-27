@@ -25,8 +25,6 @@ interface UsagePredictionChartProps {
     readonly loading: boolean;
 }
 
-const now = Date.now();
-
 export default function UsagePredictionChart({
     historicalUsageSeries,
     usageError,
@@ -60,7 +58,12 @@ export default function UsagePredictionChart({
 
     // 3. X-AXIS MATH HOOK
     const { currentTime, minXAxisTime, maxXAxisTime } = useMemo(() => {
-        const minTime = now - durationByPreset[pastTimeWindowPreset];
+        const forecastStart =
+            historicalUsagePoints.length > 0
+                ? historicalUsagePoints[historicalUsagePoints.length - 1][0]
+                : 0;
+
+        const minTime = forecastStart - durationByPreset[pastTimeWindowPreset];
         let maxTime: number;
 
         if (usageForecast && usageForecast.horizonTimestamps.length > 0) {
@@ -68,11 +71,11 @@ export default function UsagePredictionChart({
             const lastForecastIso = usageForecast.horizonTimestamps[lastForecastIndex];
             maxTime = toBrowserTimezoneTimestamp(lastForecastIso);
         } else {
-            maxTime = now + timeMs.dayMs;
+            maxTime = forecastStart + timeMs.dayMs;
         }
 
         return {
-            currentTime: now,
+            currentTime: forecastStart,
             minXAxisTime: minTime,
             maxXAxisTime: maxTime,
         };

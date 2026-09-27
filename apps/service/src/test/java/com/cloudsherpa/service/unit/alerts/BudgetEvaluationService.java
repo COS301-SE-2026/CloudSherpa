@@ -19,6 +19,7 @@ import com.cloudsherpa.lib.entities.AlertTypeEnum;
 import com.cloudsherpa.lib.entities.Budget;
 import com.cloudsherpa.lib.repositories.AlertRepository;
 import com.cloudsherpa.lib.repositories.BudgetRepository;
+import com.cloudsherpa.lib.repositories.CloudAccountRepository;
 import com.cloudsherpa.lib.repositories.NormalizedCostsRepository;
 import com.cloudsherpa.lib.repositories.ResourceRepository;
 import com.cloudsherpa.service.alerts.service.BudgetEvaluationService;
@@ -46,6 +47,7 @@ class BudgetEvaluationServiceTest {
   @Mock private BudgetRepository budgetRepository;
   @Mock private ResourceRepository resourceRepository;
   @Mock private WebhookProducerService producerService;
+  @Mock private CloudAccountRepository cloudAccountRepository;
 
   private BudgetEvaluationService service;
   private UUID userId;
@@ -60,7 +62,8 @@ class BudgetEvaluationServiceTest {
             sseService,
             budgetRepository,
             resourceRepository,
-            producerService);
+            producerService,
+            cloudAccountRepository);
 
     userId = UUID.randomUUID();
     accountId = UUID.randomUUID();
@@ -87,8 +90,11 @@ class BudgetEvaluationServiceTest {
     assertEquals(AlertStatusEnum.ACTIVE, saved.getStatus());
     assertEquals(AlertTypeEnum.BUDGET, saved.getAlertType());
     assertEquals(AlertSeverityEnum.WARNING, saved.getSeverity());
-    assertEquals("Current spend exceeded budget of: " + budget.getAmount(), saved.getTitle());
+    assertEquals("Budget exceeded: Multi-cloud spend alert", saved.getTitle());
     assertEquals("budget:" + budget.getBudgetId(), saved.getCanonicalKey());
+    assertEquals("TENANT", saved.getPayload().get("budget_scope"));
+    assertEquals("all connected resources", saved.getPayload().get("scope_name"));
+    assertEquals("MULTI", saved.getPayload().get("provider"));
 
     verify(sseService).broadcast(eq(userId), eq("alert"), same(saved));
     verify(producerService).produceEvent(eq(userId), any(), eq("alert.budget"), any());
