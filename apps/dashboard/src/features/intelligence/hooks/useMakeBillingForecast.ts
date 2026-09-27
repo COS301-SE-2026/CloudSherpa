@@ -4,6 +4,15 @@ import apiClient from "@/lib/fetch/api-client";
 import { useState } from "react";
 import { BillingForecastDto } from "../types/dtos";
 
+function isBillingForecastDto(value: unknown): value is BillingForecastDto {
+    return (
+        typeof value === "object" &&
+        value !== null &&
+        !Array.isArray(value) &&
+        "billingForecastSeries" in value
+    );
+}
+
 export function useMakeBillingForecast() {
     const [billingForecastLoading, setBillingForecastLoading] = useState(false);
     const [billingForecastError, setBillingForecastError] = useState<string | null>(null);
@@ -20,15 +29,16 @@ export function useMakeBillingForecast() {
         }
 
         try {
-            const result: BillingForecastDto = await apiClient(
-                "/intelligence/forecasting/billing",
-                {
-                    method: "POST",
-                    body: JSON.stringify({
-                        forecastSteps: forecastSteps,
-                    }),
-                }
-            );
+            const result = await apiClient<unknown>("/intelligence/forecasting/billing", {
+                method: "POST",
+                body: JSON.stringify({
+                    forecastSteps: forecastSteps,
+                }),
+            });
+
+            if ((Array.isArray(result) && result.length === 0) || !isBillingForecastDto(result)) {
+                return null;
+            }
 
             return result;
         } catch (e) {
