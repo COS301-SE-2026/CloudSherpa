@@ -8,7 +8,8 @@ import {
     getCoreRowModel,
     getSortedRowModel,
     SortingState,
-    useReactTable, getPaginationRowModel
+    useReactTable,
+    getPaginationRowModel,
 } from "@tanstack/react-table";
 import {
     Table,
@@ -31,8 +32,8 @@ import {
     DropdownMenuTrigger,
 } from "@/components/atoms/dropdown-menu";
 import { useResourceNames } from "@/features/alerts/hooks/useResourceNames";
-import {TablePagination} from "@/components/molecules/tablePagination";
-import {Truncation} from "@/components/molecules/truncation";
+import { TablePagination } from "@/components/molecules/tablePagination";
+import { Truncation } from "@/components/molecules/truncation";
 
 const CONDITION_VERBS: Record<OperatorsForThreshold, string> = {
     GT: "More than",
@@ -103,7 +104,7 @@ function helperForColumns({
             id: "enabled",
             header: () => "ENABLED",
             enableSorting: false,
-            size : 100,
+            size: 100,
             cell: ({ row }) => {
                 const forThreshold = row.original;
 
@@ -120,7 +121,7 @@ function helperForColumns({
         {
             id: "resource",
             header: () => "RESOURCE",
-            size : 180,
+            size: 180,
             enableSorting: false,
             cell: ({ row }) => {
                 const forThreshold = row.original;
@@ -141,7 +142,7 @@ function helperForColumns({
         {
             accessorKey: "metricName",
             header: () => "METRIC",
-            size : 180,
+            size: 180,
             cell: ({ row }) => {
                 const forThreshold = row.original;
 
@@ -160,7 +161,7 @@ function helperForColumns({
             id: "condition",
             header: () => "CONDITION",
             enableSorting: false,
-            size : 140,
+            size: 140,
             cell: ({ row }) => {
                 const forThreshold = row.original;
 
@@ -183,7 +184,7 @@ function helperForColumns({
         {
             accessorKey: "severity",
             header: () => "SEVERITY",
-            size : 120,
+            size: 120,
             cell: ({ row }) => {
                 const forThreshold = row.original;
 
@@ -207,7 +208,7 @@ function helperForColumns({
         {
             accessorKey: "value",
             header: () => "VALUE",
-            size : 100,
+            size: 100,
             cell: ({ row }) => {
                 const forThreshold = row.original;
 
@@ -226,7 +227,7 @@ function helperForColumns({
             id: "currentValue",
             header: () => "CURRENT VALUE",
             enableSorting: false,
-            size : 140,
+            size: 140,
             cell: ({ row }) => {
                 const forThreshold = row.original;
 
@@ -244,7 +245,7 @@ function helperForColumns({
             id: "actions",
             header: () => "ACTIONS",
             enableSorting: false,
-            size : 100,
+            size: 100,
             cell: ({ row }) => {
                 const forThreshold = row.original;
 
@@ -303,13 +304,13 @@ export function ThresholdTable({
         onSortingChange: setSorting,
         getCoreRowModel: getCoreRowModel(),
         getSortedRowModel: getSortedRowModel(),
-        getPaginationRowModel : getPaginationRowModel(),
-        initialState : {pagination : {pageSize : 10}},
+        getPaginationRowModel: getPaginationRowModel(),
+        initialState: { pagination: { pageSize: 10 } },
     });
 
     return (
         <div className="overflow-hidden rounded-lg border border-border bg-card text-card-foreground">
-            <Table className = "table-fixed">
+            <Table className="table-fixed">
                 <TableHeader>
                     {forThresholdTable.getHeaderGroups().map((headerGroup) => (
                         <TableRow key={headerGroup.id} className="hover:bg-transparent">
@@ -322,7 +323,7 @@ export function ThresholdTable({
                                     <TableHead
                                         key={header.id}
                                         className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
-                                        style = {{width : header.getSize()}}
+                                        style={{ width: header.getSize() }}
                                     >
                                         {ableToSort ? (
                                             <button
@@ -385,7 +386,7 @@ export function ThresholdTable({
                 </TableBody>
             </Table>
 
-            <TablePagination forTable = {forThresholdTable}/>
+            <TablePagination forTable={forThresholdTable} />
         </div>
     );
 }

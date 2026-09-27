@@ -7,7 +7,8 @@ import {
     getCoreRowModel,
     getSortedRowModel,
     SortingState,
-    useReactTable, getPaginationRowModel
+    useReactTable,
+    getPaginationRowModel,
 } from "@tanstack/react-table";
 import { Button } from "@/components/atoms/button";
 import { Switch } from "@/components/atoms/switch";
@@ -23,8 +24,8 @@ import {
     DropdownMenuTrigger,
 } from "@/components/atoms/dropdown-menu";
 import { useResourceNames } from "@/features/alerts/hooks/useResourceNames";
-import {TablePagination} from "@/components/molecules/tablePagination";
-import {Truncation} from "@/components/molecules/truncation";
+import { TablePagination } from "@/components/molecules/tablePagination";
+import { Truncation } from "@/components/molecules/truncation";
 interface PropsForBudget {
     budgets: Budget[];
     edit: (budget: Budget) => void;
@@ -50,7 +51,7 @@ function helperForColumns({
             id: "enabled",
             header: () => "ENABLED",
             enableSorting: false,
-            size : 100,
+            size: 100,
             cell: ({ row }) => (
                 <Switch
                     checked={row.original.enabled}
@@ -62,7 +63,7 @@ function helperForColumns({
         {
             accessorKey: "scope",
             header: () => "SCOPE",
-            size : 160,
+            size: 160,
             cell: ({ row }) => {
                 const forBudget = row.original;
 
@@ -79,9 +80,9 @@ function helperForColumns({
                     <div
                         className={`flex flex-col text-sm ${mutedBudget ? "text-muted-foreground" : "text-foreground"}`}
                     >
-                        <Truncation text = {label} />
+                        <Truncation text={label} />
 
-                        {name && <Truncation text = {name} className="text-muted-foreground"/>}
+                        {name && <Truncation text={name} className="text-muted-foreground" />}
                     </div>
                 );
             },
@@ -90,7 +91,7 @@ function helperForColumns({
         {
             accessorKey: "budget",
             header: () => "BUDGET",
-            size : 160,
+            size: 160,
             cell: ({ row }) => {
                 const mutedBudget = !row.original.enabled;
 
@@ -99,7 +100,10 @@ function helperForColumns({
                 const forDisplay = `${amount.currency} ${amount.amount.toFixed(2)}`;
 
                 return (
-                    <Truncation text = {forDisplay} className = {mutedBudget ? "text-muted-foreground" : "text-foreground"}/>
+                    <Truncation
+                        text={forDisplay}
+                        className={mutedBudget ? "text-muted-foreground" : "text-foreground"}
+                    />
                 );
             },
         },
@@ -107,7 +111,7 @@ function helperForColumns({
         {
             accessorKey: "window_days",
             header: () => "WINDOW",
-            size : 140,
+            size: 140,
             cell: ({ row }) => (
                 <span className={!row.original.enabled ? "text-muted-foreground" : ""}>
                     {row.original.window_days} {row.original.window_days === 1 ? "day" : "days"}
@@ -119,7 +123,7 @@ function helperForColumns({
             id: "actions",
             header: () => "ACTIONS",
             enableSorting: false,
-            size : 100,
+            size: 100,
             cell: ({ row }) => {
                 const forBudget = row.original;
 
@@ -173,13 +177,13 @@ export function BudgetTable({ budgets, edit, toggleEnabled, onDelete }: Readonly
         onSortingChange: setSorting,
         getCoreRowModel: getCoreRowModel(),
         getSortedRowModel: getSortedRowModel(),
-        getPaginationRowModel : getPaginationRowModel(),
-        initialState : {pagination : {pageSize : 10}},
+        getPaginationRowModel: getPaginationRowModel(),
+        initialState: { pagination: { pageSize: 10 } },
     });
 
     return (
         <div className="overflow-hidden rounded-lg border border-border bg-card text-card-foreground">
-            <Table className = "table-fixed">
+            <Table className="table-fixed">
                 <TableHeaderData headerGroups={tableForBudgets.getHeaderGroups()} />
 
                 <TableBody>
@@ -210,7 +214,7 @@ export function BudgetTable({ budgets, edit, toggleEnabled, onDelete }: Readonly
                 </TableBody>
             </Table>
 
-            <TablePagination forTable = {tableForBudgets} />
+            <TablePagination forTable={tableForBudgets} />
         </div>
     );
 }

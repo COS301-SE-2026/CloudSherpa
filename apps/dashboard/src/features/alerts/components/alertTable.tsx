@@ -7,7 +7,8 @@ import {
     getCoreRowModel,
     getSortedRowModel,
     SortingState,
-    useReactTable, getPaginationRowModel
+    useReactTable,
+    getPaginationRowModel,
 } from "@tanstack/react-table";
 import { Button } from "@/components/atoms/button";
 import { Switch } from "@/components/atoms/switch";
@@ -24,8 +25,8 @@ import {
     DropdownMenuTrigger,
 } from "@/components/atoms/dropdown-menu";
 import { LABELS_FOR_SCOPE, type ScopeForBudget } from "@/features/budgets/types/budgetTypes";
-import {TablePagination} from "@/components/molecules/tablePagination";
-import {Truncation} from "@/components/molecules/truncation";
+import { TablePagination } from "@/components/molecules/tablePagination";
+import { Truncation } from "@/components/molecules/truncation";
 
 interface AlertScope {
     scope: ScopeForBudget;
@@ -92,7 +93,7 @@ function helperForColumns({ onToggle, info, onDelete }: ForColumns): ColumnDef<A
             id: "enabled",
             header: () => "STATUS",
             enableSorting: false,
-            size : 120,
+            size: 120,
             cell: ({ row }) => {
                 const active = row.original.status === "ACTIVE";
 
@@ -122,7 +123,7 @@ function helperForColumns({ onToggle, info, onDelete }: ForColumns): ColumnDef<A
         {
             accessorKey: "severity",
             header: () => "SEVERITY",
-            size : 110,
+            size: 110,
             cell: ({ row }) => {
                 const inactive = row.original.status !== "ACTIVE";
 
@@ -142,7 +143,7 @@ function helperForColumns({ onToggle, info, onDelete }: ForColumns): ColumnDef<A
         {
             accessorKey: "alertType",
             header: () => "TYPE",
-            size : 110,
+            size: 110,
             cell: ({ row }) => (
                 <span className="text-sm text-muted-foreground">
                     {" "}
@@ -155,7 +156,7 @@ function helperForColumns({ onToggle, info, onDelete }: ForColumns): ColumnDef<A
             id: "scope",
             header: () => "SCOPE",
             enableSorting: false,
-            size : 180,
+            size: 180,
             cell: ({ row }) => {
                 const alert = row.original;
 
@@ -169,11 +170,9 @@ function helperForColumns({ onToggle, info, onDelete }: ForColumns): ColumnDef<A
                     <div
                         className={`flex flex-col text-sm ${inactive ? "text-muted-foreground" : "text-foreground"}`}
                     >
-                        <Truncation text = {labelForScope}/>
+                        <Truncation text={labelForScope} />
 
-                        {name && (
-                            <Truncation text = {name} className = "text-muted-foreground"/>
-                        )}
+                        {name && <Truncation text={name} className="text-muted-foreground" />}
                     </div>
                 );
             },
@@ -182,13 +181,16 @@ function helperForColumns({ onToggle, info, onDelete }: ForColumns): ColumnDef<A
         {
             accessorKey: "title",
             header: () => "ALERT",
-            size : 240,
+            size: 240,
             cell: ({ row }) => {
                 const inactive = row.original.status !== "ACTIVE";
                 const displayTitle = cleanAlertTitle(row.original.title);
 
                 return (
-                    <Truncation text = {displayTitle} className = {inactive ? "text-muted-foreground" : "text-foreground"}/>
+                    <Truncation
+                        text={displayTitle}
+                        className={inactive ? "text-muted-foreground" : "text-foreground"}
+                    />
                 );
             },
         },
@@ -196,7 +198,7 @@ function helperForColumns({ onToggle, info, onDelete }: ForColumns): ColumnDef<A
         {
             accessorKey: "lastSeen",
             header: () => "UPDATED AT",
-            size : 160,
+            size: 160,
             cell: ({ row }) => {
                 const updatedAt = row.original.lastSeen ?? row.original.createdAt;
                 return (
@@ -212,7 +214,7 @@ function helperForColumns({ onToggle, info, onDelete }: ForColumns): ColumnDef<A
             id: "info",
             header: () => "",
             enableSorting: false,
-            size : 60,
+            size: 60,
             cell: ({ row }) => {
                 const forAlerts = row.original;
 
@@ -268,13 +270,13 @@ export function AlertTable({ alerts, onToggle, info, onDelete }: Readonly<PropsF
         onSortingChange: setSorting,
         getCoreRowModel: getCoreRowModel(),
         getSortedRowModel: getSortedRowModel(),
-        getPaginationRowModel : getPaginationRowModel(),
-        initialState : {pagination : {pageSize : 10}},
+        getPaginationRowModel: getPaginationRowModel(),
+        initialState: { pagination: { pageSize: 10 } },
     });
 
     return (
         <div className="overflow-hidden rounded-lg border border-border bg-card text-card-foreground">
-            <Table className = "table-fixed">
+            <Table className="table-fixed">
                 <TableHeaderData headerGroups={tableForAlerts.getHeaderGroups()} />
 
                 <TableBody>
@@ -306,7 +308,7 @@ export function AlertTable({ alerts, onToggle, info, onDelete }: Readonly<PropsF
                 </TableBody>
             </Table>
 
-            <TablePagination forTable = {tableForAlerts}/>
+            <TablePagination forTable={tableForAlerts} />
         </div>
     );
 }

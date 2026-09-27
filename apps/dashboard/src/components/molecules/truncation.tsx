@@ -1,6 +1,11 @@
 "use client";
 
-import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/atoms/tooltip";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/atoms/tooltip";
 
 //copied both blocks from thresholds table file
 
@@ -10,8 +15,8 @@ interface PropsForTruncation {
     tooltipText?: string;
 }
 
-export function Truncation({text, className = "", tooltipText} : Readonly<PropsForTruncation>){
-    return(
+export function Truncation({ text, className = "", tooltipText }: Readonly<PropsForTruncation>) {
+    return (
         <TooltipProvider>
             <Tooltip>
                 <TooltipTrigger asChild>

@@ -24,7 +24,7 @@ export function TableHeaderData<TData>({ headerGroups }: Readonly<PropsForTableH
                             <TableHead
                                 key={header.id}
                                 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
-                                style = {{width : header.getSize()}}
+                                style={{ width: header.getSize() }}
                             >
                                 {ableToSort ? (
                                     <button
