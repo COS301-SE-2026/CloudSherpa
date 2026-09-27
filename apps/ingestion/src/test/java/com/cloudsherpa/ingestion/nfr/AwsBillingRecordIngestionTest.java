@@ -1,5 +1,6 @@
 package com.cloudsherpa.ingestion.nfr;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -8,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import com.cloudsherpa.ingestion.billing.BillingExport;
 import com.cloudsherpa.ingestion.billing.BillingExportService;
+import com.cloudsherpa.ingestion.billing.provider.aws.cur.AwsCurIngestionService;
 import com.cloudsherpa.ingestion.billing.provider.aws.cur.pipeline.AwsCurContext;
 import com.cloudsherpa.ingestion.billing.provider.aws.cur.pipeline.AwsCurManifestStep;
 import com.cloudsherpa.ingestion.scheduler.encryption.CredentialEncryptionService;
@@ -32,7 +34,10 @@ import java.util.UUID;
 import java.util.zip.GZIPOutputStream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
@@ -74,8 +79,12 @@ class AwsBillingRecordIngestionTest {
 
   @Autowired BillingExportService awsExportService;
 
+  @Autowired AwsCurIngestionService ingestionService;
+
   @MockitoBean AwsCurManifestStep manifestStep;
 
+  private static final Logger logger = LoggerFactory.getLogger(AwsBillingRecordIngestionTest.class);
+  private static final UUID TENANT_ID = UUID.fromString("a1b6ebb6-2b13-41c2-b4ce-bc6c563ea246");
   private static final UUID ACCOUNT_ID = UUID.fromString("06f744fd-76e5-4845-9780-ced666c26ffe");
   private static final UUID CONFIG_ID = UUID.fromString("c181db1b-e20b-4b34-a606-af13a2d48524");
   private static final UUID CREDENTIAL_ID = UUID.fromString("94df7256-4036-4f56-bc03-74fe93158ee6");
@@ -85,6 +94,8 @@ class AwsBillingRecordIngestionTest {
   private static final String BUCKET_REGION = "eu-north-1";
   private static final String EXPORT_PREFIX = "prefix";
   private static final String EXPORT_NAME = "export";
+  private static final int NUM_RECORDS_TO_SEED = 10000;
+  private static final int RECORD_PER_SECOND_THRESHOLD = 1000;
 
   private MockedStatic<S3Client> mockedS3Client;
 
@@ -202,11 +213,31 @@ class AwsBillingRecordIngestionTest {
     persistConfigs();
     persistCredentials();
     mockManifestStep();
-    mockCsvResponseInputStream(10_000);
+    mockCsvResponseInputStream(NUM_RECORDS_TO_SEED);
   }
 
   @AfterEach
   void tearDown() {
     mockedS3Client.close();
+  }
+
+  @Test
+  void awsCurIngestionMeetsRecordsPerSecondThreshold() {
+
+    long start = System.nanoTime();
+
+    ingestionService.execute(TENANT_ID.toString(), CONFIG_ID.toString());
+
+    long duration = System.nanoTime() - start;
+    double elapsedSeconds = duration / Math.pow(10, 9);
+
+    double recordsPerSecond = NUM_RECORDS_TO_SEED / elapsedSeconds;
+    logger.info(
+        "\nDuration: {}s\nRecords processed: {}\nRecords per second: {}",
+        elapsedSeconds,
+        NUM_RECORDS_TO_SEED,
+        recordsPerSecond);
+
+    assertTrue(recordsPerSecond > RECORD_PER_SECOND_THRESHOLD);
   }
 }
