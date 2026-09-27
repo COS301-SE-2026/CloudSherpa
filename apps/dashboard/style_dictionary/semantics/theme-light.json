@@ -35,10 +35,10 @@
             "destructive": { "$type": "color", "$value": "{color.red.500}" },
             "destructive-foreground": { "$type": "color", "$value": "{color.red.50}" },
 
-            "success": { "$type": "color", "$value": "{color.green.400}" },
+            "success": { "$type": "color", "$value": "{color.green.300}" },
             "success-foreground": { "$type": "color", "$value": "{color.green.900}" },
 
-            "warning": { "$type": "color", "$value": "{color.orange.200}" },
+            "warning": { "$type": "color", "$value": "{color.orange.500}" },
             "warning-foreground": { "$type": "color", "$value": "{color.orange.800}" },
 
             "border": { "$type": "color", "$value": "{color.neutral.300}" },
