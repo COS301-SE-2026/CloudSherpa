@@ -26,6 +26,14 @@ import {
 } from "@/components/atoms/dialog";
 import { Button } from "@/components/atoms/button";
 import { toast } from "sonner";
+import {SEVERITY_COLOURS, STATUS_LABELS, TYPE} from "@/features/alerts/types/alertTypes";
+
+const COLOURS_FOR_STATUS : Record<Alert["status"], string> = {
+    ACTIVE : "text-success",
+    DISABLED : "text-muted-foreground",
+};
+
+const TAG = "rounded-md border border-border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider";
 
 const FILTERS: Array<{ value: "ALL" | TypeForAlerts; label: string }> = [
     { value: "ALL", label: "All" },
@@ -159,9 +167,18 @@ export function AlertsPage() {
                     <DialogHeader>
                         <DialogTitle> {forInfo?.title} </DialogTitle>
 
-                        <DialogDescription>
-                            {" "}
-                            {forInfo?.alertType} {forInfo?.severity} {forInfo?.status}{" "}
+                        <DialogDescription asChild>
+                            <div className = "flex flex-wrap items-center gap-2 pt-1">
+                                {forInfo && (
+                                    <>
+                                        <span className = {`${TAG} text-muted-foreground`}> {TYPE[forInfo.alertType]} </span>
+
+                                        <span className = {`${TAG} ${SEVERITY_COLOURS[forInfo.severity]}`}> {forInfo.severity} </span>
+
+                                        <span className = {`${TAG} ${COLOURS_FOR_STATUS[forInfo.status]}`}> {STATUS_LABELS[forInfo.status]} </span>
+                                    </>
+                                )}
+                            </div>
                         </DialogDescription>
                     </DialogHeader>
 
