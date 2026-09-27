@@ -7,7 +7,7 @@ import {
     getCoreRowModel,
     getSortedRowModel,
     SortingState,
-    useReactTable,
+    useReactTable, getPaginationRowModel
 } from "@tanstack/react-table";
 import { Button } from "@/components/atoms/button";
 import { Switch } from "@/components/atoms/switch";
@@ -23,6 +23,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/atoms/dropdown-menu";
 import { useResourceNames } from "@/features/alerts/hooks/useResourceNames";
+import {TablePagination} from "@/components/molecules/tablePagination";
 interface PropsForBudget {
     budgets: Budget[];
     edit: (budget: Budget) => void;
@@ -167,6 +168,8 @@ export function BudgetTable({ budgets, edit, toggleEnabled, onDelete }: Readonly
         onSortingChange: setSorting,
         getCoreRowModel: getCoreRowModel(),
         getSortedRowModel: getSortedRowModel(),
+        getPaginationRowModel : getPaginationRowModel(),
+        initialState : {pagination : {pageSize : 10}},
     });
 
     return (
@@ -201,6 +204,8 @@ export function BudgetTable({ budgets, edit, toggleEnabled, onDelete }: Readonly
                     )}
                 </TableBody>
             </Table>
+
+            <TablePagination forTable = {tableForBudgets} />
         </div>
     );
 }
