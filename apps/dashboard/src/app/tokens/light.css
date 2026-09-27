@@ -32,7 +32,7 @@
     --success: var(--color-green-300);
     --success-foreground: var(--color-green-900);
     --warning: var(--color-orange-500);
-    --warning-foreground: var(--color-orange-800);
+    --warning-foreground: var(--color-orange-950);
     --border: var(--color-neutral-300);
     --input: var(--color-neutral-200);
     --ring: var(--color-brand-500);

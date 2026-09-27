@@ -39,7 +39,7 @@
             "success-foreground": { "$type": "color", "$value": "{color.green.900}" },
 
             "warning": { "$type": "color", "$value": "{color.orange.500}" },
-            "warning-foreground": { "$type": "color", "$value": "{color.orange.800}" },
+            "warning-foreground": { "$type": "color", "$value": "{color.orange.950}" },
 
             "border": { "$type": "color", "$value": "{color.neutral.300}" },
             "input": { "$type": "color", "$value": "{color.neutral.200}" },
