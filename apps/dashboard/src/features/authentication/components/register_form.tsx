@@ -22,7 +22,7 @@ export default function RegisterForm({ onToggle }: Readonly<RegisterFormProps>) 
     const { email, password, emailError, passwordError, validateEmail, validatePassword } =
         useAuthInputValidation();
 
-    const { register, registrationFailure, isLoading } = useRegistration();
+    const { register, registrationFailure, isLoading, errorMessage } = useRegistration();
 
     const togglePasswordVisibility = () => setIsPasswordVisible(!isPasswordVisible);
     const toggleConfirmPasswordVisibility = () =>
@@ -60,7 +60,7 @@ export default function RegisterForm({ onToggle }: Readonly<RegisterFormProps>) 
                     <Alert variant="destructive">
                         <AlertCircle />
                         <AlertTitle>Failed To Register</AlertTitle>
-                        <AlertDescription>Incorrect Username or Password.</AlertDescription>
+                        <AlertDescription>{errorMessage}</AlertDescription>
                     </Alert>
                 </div>
             )}

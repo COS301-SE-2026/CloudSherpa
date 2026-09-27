@@ -10,6 +10,7 @@ export function useRegistration() {
     const [registrationFailure, setRegistrationFailure] = useState(false);
     const [registrationSuccess, setRegistrationSuccess] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
 
     const router = useRouter();
     const { login, loginFailure } = useLogin();
@@ -42,9 +43,11 @@ export function useRegistration() {
         } catch (error) {
             if (error instanceof Error) {
                 console.warn(`Registration failed: ${error.message}`);
+                setErrorMessage(`${error.message}`);
             }
             if (!(error instanceof Error)) {
                 console.error("Unknown error has occured");
+                setErrorMessage("Unknown error has occurred");
             }
 
             setRegistrationFailure(true);
@@ -52,5 +55,5 @@ export function useRegistration() {
         }
     }
 
-    return { register, registrationFailure, registrationSuccess, isLoading };
+    return { register, registrationFailure, registrationSuccess, isLoading, errorMessage };
 }
