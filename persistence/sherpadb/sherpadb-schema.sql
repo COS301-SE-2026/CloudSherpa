@@ -363,19 +363,19 @@ CREATE TABLE IF NOT EXISTS public.ai_chart_widget (
         REFERENCES public.ai_dashboard_widget(widget_id)
         ON DELETE CASCADE,
 
-    chart_type public.chart_type_enum NOT NULL,
+    chart_type public.chart_type_enum,
 
     chart_colour public.chart_colour_enum,
 
-    provider public.provider_enum NOT NULL,
+    provider public.provider_enum,
 
-    account_id uuid NOT NULL,
+    account_id uuid,
 
-    resource_id uuid NOT NULL,
+    resource_id uuid,
 
-    metric_type varchar(50) NOT NULL,
+    metric_type varchar(50),
 
-    metric_name varchar(100) NOT NULL
+    metric_name varchar(100)
 );
 
 CREATE TABLE IF NOT EXISTS public.ai_kpi_widget (

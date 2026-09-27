@@ -37,7 +37,7 @@ export default function ApplyDashboardDialog({
                 </DialogHeader>
 
                 <div className="grid gap-3 w-full">
-                    {/* <Button
+                    <Button
                         variant="default"
                         disabled={isApplying}
                         onClick={() => onApply("REPLACE_STARTED_DASHBOARD")}
@@ -48,7 +48,7 @@ export default function ApplyDashboardDialog({
                             Replace the dashboard you started the AI session on with this staged
                             dashboard.
                         </span>
-                    </Button> */}
+                    </Button>
 
                     <Button
                         variant="outline"

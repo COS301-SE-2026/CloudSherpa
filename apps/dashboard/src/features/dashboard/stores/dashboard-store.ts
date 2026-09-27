@@ -726,6 +726,8 @@ const createAgenticSlice: StateCreator<DashboardStore, [], [], AgenticSlice> = (
                         mode === "REPLACE_STARTED_DASHBOARD" ? startedDashboardId! : undefined,
                 });
 
+                console.log(mode);
+
                 const { dashboardsMap, layoutsArray, widgetsArray } =
                     adaptFetchedDashboards(appliedDashboards);
 

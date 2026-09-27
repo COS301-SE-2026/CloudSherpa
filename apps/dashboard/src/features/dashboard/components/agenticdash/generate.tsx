@@ -11,10 +11,11 @@ import PresetPrompts from "@/features/dashboard/components/agenticdash/presetPro
 import ApplyDashboardDialog from "@/features/dashboard/components/agenticdash/applyDashboardDialog";
 import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
 import type { AiDashboardApplyMode } from "@/features/dashboard/types/agentic";
+import { useToolbar } from "@/features/dashboard/components/toolbar/toolbarProvider";
 
 export default function GenerateDashInput() {
     const [prompt, setPrompt] = useState("");
-    const [applyDialogOpen, setApplyDialogOpen] = useState(false);
+    const { isApplyDialogOpen, setIsApplyDialogOpen } = useToolbar();
     const [isApplying, setIsApplying] = useState(false);
 
     const isSessionActive = useDashboardStore((state) => state.isSessionActive);
@@ -52,10 +53,12 @@ export default function GenerateDashInput() {
         setIsApplying(true);
 
         try {
+            console.log("is applying ai dashboard");
             const applied = await applyDashboard(currentVersionId, mode);
 
             if (applied) {
-                setApplyDialogOpen(false);
+                console.log("applied dashboard");
+                setIsApplyDialogOpen(false);
             }
         } finally {
             setIsApplying(false);
@@ -97,7 +100,7 @@ export default function GenerateDashInput() {
                                         variant="outline"
                                         size="sm"
                                         className="h-6 px-2 border-primary/30 text-primary hover:bg-primary/10"
-                                        onClick={() => setApplyDialogOpen(true)}
+                                        onClick={() => setIsApplyDialogOpen(true)}
                                         disabled={isGenerating || isApplying}
                                     >
                                         Apply
@@ -149,10 +152,10 @@ export default function GenerateDashInput() {
 
             {canApplyCurrentVersion && currentVersion && (
                 <ApplyDashboardDialog
-                    open={applyDialogOpen}
+                    open={isApplyDialogOpen}
                     dashboardName={currentVersion.title}
                     isApplying={isApplying}
-                    onOpenChange={setApplyDialogOpen}
+                    onOpenChange={setIsApplyDialogOpen}
                     onApply={handleApply}
                 />
             )}

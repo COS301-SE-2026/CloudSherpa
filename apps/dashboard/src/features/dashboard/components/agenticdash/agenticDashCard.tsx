@@ -18,13 +18,14 @@ export default function AgenticDashCard() {
     const [open, setOpen] = useState(false);
     const popupRef = useRef<HTMLDivElement>(null);
     const buttonRef = useRef<HTMLButtonElement>(null);
-    const { isEditMode } = useToolbar();
+    const { isEditMode, isApplyDialogOpen } = useToolbar();
 
     const handleClick = () => {
         setOpen(!open);
     };
 
     const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+        if (isApplyDialogOpen) return;
         //check click outside popup and btn
         if (
             open &&
@@ -33,7 +34,7 @@ export default function AgenticDashCard() {
             buttonRef.current &&
             !buttonRef.current.contains(event.target as Node)
         ) {
-            setOpen(false); // NO SONAR
+            setOpen(false); // NOSONAR
         }
     };
 
