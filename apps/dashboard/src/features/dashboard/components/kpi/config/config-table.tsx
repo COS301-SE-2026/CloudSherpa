@@ -10,6 +10,8 @@ import {
     getExpandedRowModel,
 } from "@tanstack/react-table";
 
+import { Badge } from "@/components/atoms/badge";
+
 import { cn } from "@/lib/utils";
 
 import {
@@ -44,6 +46,7 @@ import { CloudProviderEnum } from "@/features/dashboard/types/provider";
 import { Spinner } from "@/components/atoms/spinner";
 import { KPIConfigTableRow } from "./columns";
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/atoms/card";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/atoms/tooltip";
 
 interface KPIConfigTableProps<TValue> {
     readonly columns: ColumnDef<KPIConfigTableRow, TValue>[];
@@ -165,21 +168,25 @@ export function KPIConfigTable<TValue>({
                                                 More information on this resource
                                             </CardDescription>
                                         </div>
+                                        <Badge className="text-bold text-white">
+                                            {row.original.provider}
+                                        </Badge>
                                     </div>
                                 </CardHeader>
                                 <CardContent className="flex flex-col gap-4 w-full text-xs  font-medium text-foreground">
-                                    <div className="grid grid-cols-2 gap-4 md:grid-cols-3 text-sm">
-                                        <div className="flex flex-col gap-1">
-                                            <span className="text-muted-foreground">
-                                                Cloud Provider
-                                            </span>
-                                            <span>{row.original.provider}</span>
-                                        </div>
-                                        <div className="flex flex-col gap-1">
+                                    <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 text-sm">
+                                        <div className="flex flex-col gap-1 w-full min-w-0">
                                             <span className="text-muted-foreground">
                                                 Service Type
                                             </span>
-                                            <span>{row.original.service}</span>
+                                            <Tooltip showOnTruncate>
+                                                <TooltipTrigger className="w-full min-w-0 truncate text-left">
+                                                    {row.original.service}
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    {row.original.service}
+                                                </TooltipContent>
+                                            </Tooltip>
                                         </div>
                                         <div className="flex flex-col gap-1">
                                             <span className="text-muted-foreground">
@@ -206,30 +213,37 @@ export function KPIConfigTable<TValue>({
                                         </div>
                                         {row.original.resourceName && (
                                             <div className="flex flex-col gap-1">
-                                                <span className="text-muted-foreground">
-                                                    Resource Name
-                                                </span>
+                                                <Tooltip showOnTruncate>
+                                                    <TooltipTrigger className="w-full min-w-0 truncate text-left text-muted-foreground">
+                                                        {" "}
+                                                        Resource Name
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        {row.original.service}
+                                                    </TooltipContent>
+                                                </Tooltip>{" "}
                                                 <span>
                                                     {row.original.resourceName || "No Name"}
                                                 </span>
                                             </div>
                                         )}
                                     </div>
-                                    {row.original.resourceId && (
-                                        <div className="flex flex-col gap-4">
-                                            <div className="flex flex-col gap-1">
-                                                <span className="text-muted-foreground">
-                                                    Resource ID
-                                                </span>
-                                                <span
-                                                    className="text-wrap font-mono"
-                                                    title={row.original.resourceId}
-                                                >
-                                                    {row.original.resourceId}
-                                                </span>
+                                    {row.original.resourceId &&
+                                        row.original.resourceId != "NoResourceId" && (
+                                            <div className="flex flex-col gap-4">
+                                                <div className="flex flex-col gap-1">
+                                                    <span className="text-muted-foreground">
+                                                        Resource ID
+                                                    </span>
+                                                    <span
+                                                        className="text-wrap font-mono"
+                                                        title={row.original.resourceId}
+                                                    >
+                                                        {row.original.resourceId}
+                                                    </span>
+                                                </div>
                                             </div>
-                                        </div>
-                                    )}
+                                        )}
                                 </CardContent>
                             </Card>
                         </TableCell>
