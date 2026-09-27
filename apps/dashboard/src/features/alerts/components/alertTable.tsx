@@ -169,9 +169,11 @@ function helperForColumns({ onToggle, info, onDelete }: ForColumns): ColumnDef<A
                     <div
                         className={`flex flex-col text-sm ${inactive ? "text-muted-foreground" : "text-foreground"}`}
                     >
-                        {" "}
-                        <span> {labelForScope} </span>{" "}
-                        {name && <span className="text-muted-foreground"> {name} </span>}{" "}
+                        <Truncation text = {labelForScope}/>
+
+                        {name && (
+                            <Truncation text = {name} className = "text-muted-foreground"/>
+                        )}
                     </div>
                 );
             },
