@@ -84,7 +84,10 @@ const QUESTION: FaQuestion[] = [
     {
         id: "question4",
         question: "What are the main features of CloudSherpa?",
-        answer: "CloudSherpa is a multi-cloud and usage monitoring platform that connects to AWS, Azure and GCP accounts. This provides a centralized view of cloud resources, usage and spending. CloudSherpa discovers resources with each cloud provider and keeps track of usage metrics. These metrics are displayed through a finOps dashboard. Its Agentic dashboard construction feature allows user to describe what they want to monitor in natural language, which an AI agent uses an MCP server to reason over CloudSherpa's provider-neutral resources, metrics and billing data to automatically construct and validate dashboard." + "\n\n" + "CloudSherpa also provides an active alerting engine with threshold alerts, anomaly detection and billing forecast budgets to help users identify unusual activity and unexpected cost increases. Alerts can be also be delivered using webhooks. Together with rule-based optimization recommendations and forecasting . These features allow CloudSherpa to support both technical and non-technical users",
+        answer:
+            "CloudSherpa is a multi-cloud and usage monitoring platform that connects to AWS, Azure and GCP accounts. This provides a centralized view of cloud resources, usage and spending. CloudSherpa discovers resources with each cloud provider and keeps track of usage metrics. These metrics are displayed through a finOps dashboard. Its Agentic dashboard construction feature allows user to describe what they want to monitor in natural language, which an AI agent uses an MCP server to reason over CloudSherpa's provider-neutral resources, metrics and billing data to automatically construct and validate dashboard." +
+            "\n\n" +
+            "CloudSherpa also provides an active alerting engine with threshold alerts, anomaly detection and billing forecast budgets to help users identify unusual activity and unexpected cost increases. Alerts can be also be delivered using webhooks. Together with rule-based optimization recommendations and forecasting . These features allow CloudSherpa to support both technical and non-technical users",
     },
 
     {
@@ -226,85 +229,88 @@ export function HelpMenu() {
                         </div>
                     </div>
 
-                    <div className = "min-h-0 flex-1 overflow-y-auto">
-                    <div className="px-2 pb-1 pt-2">
-                        {searchLinks.map((link) => {
-                            const Icons = link.icon;
-                            return (
-                                <button
-                                    key={link.id}
-                                    type="button"
-                                    onClick={() => handlingLinks(link)}
-                                    className="flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-left transition-colors hover:bg-accent"
-                                >
-                                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-muted text-primary">
-                                        {" "}
-                                        <Icons className="h-3.5 w-3.5" strokeWidth={1.75} />{" "}
-                                    </span>
-
-                                    <span className="min-w-0 flex-1">
-                                        <span className="block text-[13px] font-medium text-foreground">
-                                            {" "}
-                                            {link.label}{" "}
-                                        </span>
-                                        <span className="block truncate text-[12px] text-muted-foreground">
-                                            {" "}
-                                            {link.description}{" "}
-                                        </span>
-                                    </span>
-
-                                    {(link.href || link.action === "tutorials") && (
-                                        <ArrowUpRight
-                                            className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
-                                            strokeWidth={1.75}
-                                        />
-                                    )}
-                                </button>
-                            );
-                        })}
-
-                        {searchLinks.length === 0 && searchFaQuestion.length === 0 && (
-                            <p className="px-2.5 py-6 text-center text-[12.5px] text-muted-foreground">
-                                {" "}
-                                No results for &quot;{search}&quot;{" "}
-                            </p>
-                        )}
-                    </div>
-
-                    {searchFaQuestion.length > 0 && (
-                        <>
-                            <div className="flex items-center gap-2 px-4 py-1.5">
-                                <span className="h-px flex-1 bg-border" />
-
-                                <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                                    {" "}
-                                    Frequently asked{" "}
-                                </span>
-
-                                <span className="h-px flex-1 bg-border" />
-                            </div>
-
-                            <Accordion type="single" collapsible className="px-2 pb-2">
-                                {searchFaQuestion.map((question) => (
-                                    <AccordionItem
-                                        key={question.id}
-                                        value={question.id}
-                                        className="border-none px-0.5"
+                    <div className="min-h-0 flex-1 overflow-y-auto">
+                        <div className="px-2 pb-1 pt-2">
+                            {searchLinks.map((link) => {
+                                const Icons = link.icon;
+                                return (
+                                    <button
+                                        key={link.id}
+                                        type="button"
+                                        onClick={() => handlingLinks(link)}
+                                        className="flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-left transition-colors hover:bg-accent"
                                     >
-                                        <AccordionTrigger className="rounded-md px-2 py-2 text-[12.5px] font-medium text-foreground hover:bg-accent hover:no-underline">
+                                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-muted text-primary">
                                             {" "}
-                                            {question.question}{" "}
-                                        </AccordionTrigger>
+                                            <Icons
+                                                className="h-3.5 w-3.5"
+                                                strokeWidth={1.75}
+                                            />{" "}
+                                        </span>
 
-                                        <AccordionContent className="whitespace-pre-line px-2 pb-2.5 text-[12px] leading-relaxed text-muted-foreground">
-                                            {" "}
-                                            {question.answer}{" "}
-                                        </AccordionContent>
-                                    </AccordionItem>
-                                ))}
-                            </Accordion>
-                        </>
-                    )}
+                                        <span className="min-w-0 flex-1">
+                                            <span className="block text-[13px] font-medium text-foreground">
+                                                {" "}
+                                                {link.label}{" "}
+                                            </span>
+                                            <span className="block truncate text-[12px] text-muted-foreground">
+                                                {" "}
+                                                {link.description}{" "}
+                                            </span>
+                                        </span>
+
+                                        {(link.href || link.action === "tutorials") && (
+                                            <ArrowUpRight
+                                                className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
+                                                strokeWidth={1.75}
+                                            />
+                                        )}
+                                    </button>
+                                );
+                            })}
+
+                            {searchLinks.length === 0 && searchFaQuestion.length === 0 && (
+                                <p className="px-2.5 py-6 text-center text-[12.5px] text-muted-foreground">
+                                    {" "}
+                                    No results for &quot;{search}&quot;{" "}
+                                </p>
+                            )}
+                        </div>
+
+                        {searchFaQuestion.length > 0 && (
+                            <>
+                                <div className="flex items-center gap-2 px-4 py-1.5">
+                                    <span className="h-px flex-1 bg-border" />
+
+                                    <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                                        {" "}
+                                        Frequently asked{" "}
+                                    </span>
+
+                                    <span className="h-px flex-1 bg-border" />
+                                </div>
+
+                                <Accordion type="single" collapsible className="px-2 pb-2">
+                                    {searchFaQuestion.map((question) => (
+                                        <AccordionItem
+                                            key={question.id}
+                                            value={question.id}
+                                            className="border-none px-0.5"
+                                        >
+                                            <AccordionTrigger className="rounded-md px-2 py-2 text-[12.5px] font-medium text-foreground hover:bg-accent hover:no-underline">
+                                                {" "}
+                                                {question.question}{" "}
+                                            </AccordionTrigger>
+
+                                            <AccordionContent className="whitespace-pre-line px-2 pb-2.5 text-[12px] leading-relaxed text-muted-foreground">
+                                                {" "}
+                                                {question.answer}{" "}
+                                            </AccordionContent>
+                                        </AccordionItem>
+                                    ))}
+                                </Accordion>
+                            </>
+                        )}
                     </div>
                 </PopoverContent>
             </Popover>
