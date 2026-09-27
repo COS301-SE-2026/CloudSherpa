@@ -2,6 +2,7 @@ package com.cloudsherpa.lib.repositories;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -24,36 +25,47 @@ public interface CloudAccountRepository extends JpaRepository<CloudAccount, UUID
 
   // Find by CloudConnection object
   List<CloudAccount> findByConnection(CloudConnection connection);
-  
+
   // Find all active accounts due for usage ingestion
-   @Query("""
-    SELECT a
-    FROM CloudAccount a
-    JOIN FETCH a.connection c
-    WHERE c.status = :status
-      AND a.nextUsageIngestion <= :now
-    """)
-    List<CloudAccount> findAccountsDueForUsageIngestion(
-    @Param("now") OffsetDateTime now,
-    @Param("status") StatusEnum status);  
+  @Query("""
+      SELECT a
+      FROM CloudAccount a
+      JOIN FETCH a.connection c
+      WHERE c.status = :status
+        AND a.nextUsageIngestion <= :now
+      """)
+  List<CloudAccount> findAccountsDueForUsageIngestion(
+      @Param("now") OffsetDateTime now,
+      @Param("status") StatusEnum status);
 
   // Find all active accounts due for billing ingestion
   @Query("""
-    SELECT a
-    FROM CloudAccount a
-    JOIN FETCH a.connection c
-    WHERE c.status = :status
-      AND a.nextBillingIngestion <= :now
-    """)
-    List<CloudAccount> findAccountsDueForBillingIngestion(
-    @Param("now") OffsetDateTime now,
-    @Param("status") StatusEnum status); 
+      SELECT a
+      FROM CloudAccount a
+      JOIN FETCH a.connection c
+      WHERE c.status = :status
+        AND a.nextBillingIngestion <= :now
+      """)
+  List<CloudAccount> findAccountsDueForBillingIngestion(
+      @Param("now") OffsetDateTime now,
+      @Param("status") StatusEnum status);
 
-    @Query("""
+  @Query("""
       SELECT MAX(a.lastBillingIngestion)
       FROM CloudAccount a
       JOIN a.connection c
       WHERE c.userId = :userId
       """)
-    OffsetDateTime findLatestBillingIngestionByUserId(@Param("userId") UUID userId);
-  }
+  OffsetDateTime findLatestBillingIngestionByUserId(@Param("userId") UUID userId);
+
+  @Query("""
+      SELECT a
+      FROM CloudAccount a
+      JOIN a.connection c
+      WHERE a.id = :accountId
+        AND c.userId = :userId
+      """)
+  Optional<CloudAccount> findByIdAndUserId(
+      @Param("accountId") UUID accountId,
+      @Param("userId") UUID userId);
+}

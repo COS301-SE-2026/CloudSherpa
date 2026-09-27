@@ -134,7 +134,12 @@ CREATE TABLE IF NOT EXISTS public.cloud_account (
   last_usage_ingestion timestamptz DEFAULT NOW(),
   next_usage_ingestion timestamptz DEFAULT NOW(),
   last_billing_ingestion timestamptz DEFAULT NOW(),
-  next_billing_ingestion timestamptz DEFAULT NOW()
+  next_billing_ingestion timestamptz DEFAULT NOW(),
+  periodic_resource_discovery boolean NOT NULL DEFAULT false,
+  auto_adjust_ingestion_period boolean NOT NULL DEFAULT false,
+  new_resources_active boolean NOT NULL DEFAULT false,
+
+  next_resource_scan timestamptz DEFAULT NOW()
 );
 CREATE TABLE IF NOT EXISTS public.offered_metric (
     offered_metric_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
