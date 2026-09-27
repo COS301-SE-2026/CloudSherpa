@@ -4,29 +4,81 @@ import { Separator } from "@/components/atoms/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/atoms/tooltip";
 import { MetricType } from "@/features/dashboard/types/metric";
 import { UsageError } from "../../types/errors";
+import { useUsageIntelligenceConfigStore } from "@/features/intelligence/stores/useUsageIntelligenceConfigStore";
 
-export const METRIC_UNITS: Record<MetricType, string> = {
-    cpu: "%",
-    memory: "%",
-    "storage-used": "GB",
-    "storage-available": "GB",
-    "object-count": "objs",
-    duration: "ms",
-    throttles: "events",
-    disk: "GB",
-    network: "B",
-    "read-capacity": "IOPS",
-    "write-capacity": "IOPS",
-    "first-byte-latency": "ms",
-    latency: "ms",
-    errors: "err",
-    requests: "req",
-    connections: "conn",
-    invocations: "inv",
-    anon: "",
+export const METRIC_UNITS: Record<string, string> = {
+    // metricMapper
+    "CPU Utilization": "%",
+    "Memory Utilization": "%",
+    "CPU Reservation": "%",
+    "Memory Reservation": "%",
+    "JVM Memory Pressure": "%",
+    "Percentage Disk Space Used": "%",
+    "DTU Consumption": "%",
+    "Container CPU Utilizations": "%",
+    "CPU Percent": "%",
+
+    "Network In": "B",
+    "Network Out": "B",
+    "Disk Read Bytes": "B",
+    "Disk Write Bytes": "B",
+    "Free Storage Space": "GB",
+    "Network Bytes In": "B",
+    "Network Bytes Out": "B",
+    "Memory used": "B",
+    "Memory usage": "B",
+    "Stored bytes": "B",
+    "Bytes uploaded": "B",
+    "Bytes downloaded": "B",
+    "Allocated Storage": "GB",
+    Ingress: "B",
+    Egress: "B",
+    "Received Bytes Count": "B",
+    "Send Bytes Count": "B",
+    "OS Disk Write Bytes": "B",
+    "OS Disk Read Bytes": "B",
+
+    Duration: "ms",
+    "Read Latency": "ms",
+    "Write Latency": "ms",
+    "Search Latency": "ms",
+    "CPU usage time": "s",
+    "Function execution time": "ms",
+    "Request latency": "ms",
+
+    "Read IOPS": "IOPS",
+    "Write IOPS": "IOPS",
+
+    Throttles: "events",
+    Invocations: "inv",
+    Errors: "err",
+    "Cluster Failed Request Count": "req",
+    "Cluster Request Total": "req",
+    "HTTP requests": "req",
+    "API requests": "req",
+    "HTTP Success 2xx": "req",
+    "HTTP Error 5xx": "err",
+
+    "Database Connections": "conn",
+    "Current Connections": "conn",
+
+    "Cluster Node Count": "nodes",
+    "Concurrent Executions": "exec",
+    "Freeable Memory": "GB",
+    Evictions: "events",
+    "Cluster Index Writes Blocked": "events",
+    "Health Status": "status",
+    "Health Check Failed": "checks",
+    "Reserved CPU cores": "cores",
+    "Pod restart count": "restarts",
+    "Function executions": "exec",
+    "Active instances": "instances",
+    "Running instances": "instances",
+    "Blob Count": "blobs",
+    Deadlocks: "count",
 };
 
-export function getMetricUnit(metricType: MetricType | null): string {
+export function getMetricUnit(metricType: string | null): string {
     if (!metricType) return "%";
     return METRIC_UNITS[metricType] ?? "";
 }
@@ -52,6 +104,18 @@ export default function SummaryCard({
     Icon,
     usageError,
 }: Readonly<SummaryCardProps>) {
+    const { metricName } = useUsageIntelligenceConfigStore();
+
+    const unit = (
+        <span className="text-4xl">
+            {usageError?.item == "forecast" || usageError?.item == "both" ? (
+                "—"
+            ) : (
+                <>{getMetricUnit(metricName)}</>
+            )}
+        </span>
+    );
+
     const cardContent = (
         <>
             {Icon && <Icon className="h-8 w-8 text-primary" />}
@@ -60,7 +124,9 @@ export default function SummaryCard({
                     {usageError?.item == "usage" || usageError?.item == "both" ? (
                         "—"
                     ) : (
-                        <>{pastUsage?.toLocaleString()}</>
+                        <>
+                            {pastUsage?.toLocaleString()} {unit}
+                        </>
                     )}
                 </span>
                 <Separator orientation="vertical" />
@@ -68,7 +134,9 @@ export default function SummaryCard({
                     {usageError?.item == "forecast" || usageError?.item == "both" ? (
                         "—"
                     ) : (
-                        <>{predictedUsage?.toLocaleString()}</>
+                        <>
+                            {predictedUsage?.toLocaleString()} {unit}
+                        </>
                     )}
                 </span>
             </div>
@@ -91,7 +159,7 @@ export default function SummaryCard({
                         </Tooltip>
                     </CardTitle>
                 </CardHeader>
-                <CardContent className="flex flex-row gap-5     justify-start items-center">
+                <CardContent className="flex flex-row gap-5 justify-start items-center">
                     {cardContent}
                 </CardContent>
                 <CardFooter className="text-muted-foreground">{description}</CardFooter>
