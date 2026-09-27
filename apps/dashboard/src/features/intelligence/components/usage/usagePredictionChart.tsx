@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useEffect, useState } from "react";
+import { useMemo, useRef, useEffect } from "react";
 import ReactECharts from "echarts-for-react";
 import { AlertCircleIcon, CircleAlert, RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
 import type { CallbackDataParams } from "echarts/types/dist/shared";
@@ -32,7 +32,6 @@ export default function UsagePredictionChart({
 }: UsagePredictionChartProps) {
     //styles
     const { themeName, tokens } = useChartTheme();
-    const [now, setNow] = useState(() => Date.now());
 
     //config
     const resourceId = useUsageIntelligenceConfigStore((state) => state.resourceId);
@@ -47,10 +46,6 @@ export default function UsagePredictionChart({
         return state.forecasts[resourceId]?.[metricName] ?? null;
     });
 
-    const setCurrentTime = () => {
-        setNow(Date.now());
-    };
-
     const {
         historicalUsagePoints,
         lowerConfidenceBoundPoints,
@@ -63,9 +58,12 @@ export default function UsagePredictionChart({
 
     // 3. X-AXIS MATH HOOK
     const { currentTime, minXAxisTime, maxXAxisTime } = useMemo(() => {
-        setCurrentTime;
+        const forecastStart =
+            historicalUsagePoints.length > 0
+                ? historicalUsagePoints[historicalUsagePoints.length - 1][0]
+                : 0;
 
-        const minTime = now - durationByPreset[pastTimeWindowPreset];
+        const minTime = forecastStart - durationByPreset[pastTimeWindowPreset];
         let maxTime: number;
 
         if (usageForecast && usageForecast.horizonTimestamps.length > 0) {
@@ -73,11 +71,11 @@ export default function UsagePredictionChart({
             const lastForecastIso = usageForecast.horizonTimestamps[lastForecastIndex];
             maxTime = toBrowserTimezoneTimestamp(lastForecastIso);
         } else {
-            maxTime = now + timeMs.dayMs;
+            maxTime = forecastStart + timeMs.dayMs;
         }
 
         return {
-            currentTime: now,
+            currentTime: forecastStart,
             minXAxisTime: minTime,
             maxXAxisTime: maxTime,
         };
