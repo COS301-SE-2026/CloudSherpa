@@ -20,6 +20,8 @@ interface WidgetProps {
 export function KPIWidget({ config, preview = false, isEditMode = false }: Readonly<WidgetProps>) {
     const { kpiPreview, loadingKpiValue } = useFetchKpiValue(config);
     const { id, chargeIds } = config;
+    const isSessionActive = useDashboardStore((state) => state.isSessionActive);
+    const isGenerating = useDashboardStore((state) => state.isGenerating);
 
     const openConfig = () => {
         if (!isEditMode) {
@@ -97,6 +99,7 @@ export function KPIWidget({ config, preview = false, isEditMode = false }: Reado
 
     return (
         <WidgetMenu
+            disabled={isSessionActive || isGenerating}
             onConfigure={openConfig}
             isEditMode={isEditMode}
             preview={preview}
@@ -110,6 +113,7 @@ export function KPIWidget({ config, preview = false, isEditMode = false }: Reado
 
                     {!preview && !showSaveBeforeConfigure && (
                         <WidgetDropdown
+                            disabled={isSessionActive || isGenerating}
                             onConfigure={openConfig}
                             onDelete={() => removeWidget(id, id)}
                             isEditMode={isEditMode}

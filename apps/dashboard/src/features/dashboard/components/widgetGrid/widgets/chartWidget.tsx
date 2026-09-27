@@ -46,6 +46,8 @@ export function ChartWidget({
     const ChartComponent = CHART_COMPONENTS[chartType];
     const [hasNoData, setHasNoData] = useState(false);
     const router = useRouter();
+    const isSessionActive = useDashboardStore((state) => state.isSessionActive);
+    const isGenerating = useDashboardStore((state) => state.isGenerating);
 
     // watch widget content while expanding
     const contentRef = useRef<HTMLDivElement>(null);
@@ -148,6 +150,7 @@ export function ChartWidget({
 
     return (
         <WidgetMenu
+            disabled={isSessionActive || isGenerating}
             onConfigure={openConfig}
             onDelete={() => removeWidget(id, id)}
             isEditMode={isEditMode}
@@ -206,6 +209,7 @@ export function ChartWidget({
 
                         {!preview && !isEditMode && (
                             <WidgetDropdown
+                                disabled={isSessionActive || isGenerating}
                                 onConfigure={openConfig}
                                 onDelete={() => removeWidget(id, id)}
                                 isEditMode={isEditMode}

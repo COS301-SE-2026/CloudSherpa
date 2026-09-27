@@ -4,7 +4,7 @@ import {
     InputGroupButton,
     InputGroupTextarea,
 } from "@/components/atoms/input-group";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/atoms/button";
 import { Loader2, X } from "lucide-react";
 import PresetPrompts from "@/features/dashboard/components/agenticdash/presetPrompts";
@@ -17,6 +17,7 @@ export default function GenerateDashInput() {
     const [prompt, setPrompt] = useState("");
     const { isApplyDialogOpen, setIsApplyDialogOpen } = useToolbar();
     const [isApplying, setIsApplying] = useState(false);
+    const textRef = useRef<HTMLTextAreaElement>(null);
 
     const isSessionActive = useDashboardStore((state) => state.isSessionActive);
     const isGenerating = useDashboardStore((state) => state.isGenerating);
@@ -65,6 +66,13 @@ export default function GenerateDashInput() {
         }
     };
 
+    const handleTextGroupClick = (e: React.MouseEvent<HTMLDivElement>) => {
+        if ((e.target as HTMLElement).closest("button")) {
+            return;
+        }
+        textRef.current?.focus();
+    };
+
     return (
         <>
             <div className="h-full flex flex-col justify-end items-start gap-4">
@@ -110,8 +118,9 @@ export default function GenerateDashInput() {
                     )}
 
                     <div className="shrink-0 bg-background w-full">
-                        <InputGroup>
+                        <InputGroup onClick={handleTextGroupClick}>
                             <InputGroupTextarea
+                                ref={textRef}
                                 placeholder={
                                     isSessionActive
                                         ? "Ask for layout changes (e.g., 'Make the charts wider')..."
@@ -129,11 +138,10 @@ export default function GenerateDashInput() {
                                 disabled={isGenerating || isApplying}
                             />
 
-                            <InputGroupAddon align="block-end">
+                            <InputGroupAddon align="block-end" className="flex justify-end">
                                 <InputGroupButton
                                     variant="default"
                                     size="sm"
-                                    className="ml-auto"
                                     onClick={handleGenerate}
                                     disabled={isGenerating || isApplying || !prompt.trim()}
                                 >
