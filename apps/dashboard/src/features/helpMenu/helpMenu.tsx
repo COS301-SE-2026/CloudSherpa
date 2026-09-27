@@ -84,7 +84,7 @@ const QUESTION: FaQuestion[] = [
     {
         id: "question4",
         question: "What are the main features of CloudSherpa?",
-        answer: "CloudSherpa provides multi-cloud data ingestion, normalization and an interactive finOps dashboard.",
+        answer: "CloudSherpa is a multi-cloud and usage monitoring platform that connects to AWS, Azure and GCP accounts. This provides a centralized view of cloud resources, usage and spending. CloudSherpa discovers resources with each cloud provider and keeps track of usage metrics. These metrics are displayed through a finOps dashboard. Its Agentic dashboard construction feature allows user to describe what they want to monitor in natural language, whcih an AI agent uses an MCP server to reason over CloudSherpa's provider-neutral resources, metrics and billing data to automatically construct and validate dashboard. CloudSherpa also provides an active alerting engine with threshold alerts, anomaly detection and billing forecast budgets to help users identify unusual activity and unexpected cost increases. Alerts can be also be delivered using webhooks. Together with rule-based optimization recommendations and forecasting . These features allow CloudSherpa to support both technical and non-technical users",
     },
 
     {
