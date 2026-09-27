@@ -9,6 +9,8 @@ import RecommendationCardHero from "@/features/optimization/components/recCardHe
 import { Button } from "@/components/atoms/button";
 import { RecommendationErrorAlert } from "@/features/optimization/components/recError";
 import { Spinner } from "@/components/atoms/spinner";
+import { RecommendationGroup } from "../types/recommendations";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/atoms/tooltip";
 
 const FilterOptions = [
     { value: "all", label: "ALL" },
@@ -53,15 +55,28 @@ export default function Recommendations() {
             return matchesProvider && matchesSearch;
         });
 
-        return filtered.sort((a, b) => {
-            const aCount = a.recommendations.length;
-            const bCount = b.recommendations.length;
+        const activeCount = (group: RecommendationGroup) =>
+            group.recommendations.filter((rec) => rec.status === "ACTIVE").length;
 
-            if (sortOrder === "desc") {
-                return bCount - aCount;
-            } else {
-                return aCount - bCount;
+        return filtered.sort((a, b) => {
+            const aActive = activeCount(a);
+            const bActive = activeCount(b);
+
+            if (aActive !== bActive) {
+                return sortOrder === "desc" ? bActive - aActive : aActive - bActive;
             }
+
+            //tiebreak, all statusses
+            const aTotal = a.recommendations.length;
+            const bTotal = b.recommendations.length;
+            if (aTotal !== bTotal) {
+                return sortOrder === "desc" ? bTotal - aTotal : aTotal - bTotal;
+            }
+
+            //triebreak, alphabetical
+            const aName = (a.displayName ?? a.accountId ?? "").toLowerCase(); //assign display name with account as fallback
+            const bName = (b.displayName ?? b.accountId ?? "").toLowerCase();
+            return aName.localeCompare(bName);
         });
     }, [searchQuery, filter, recommendationGroups, sortOrder]);
 
@@ -161,14 +176,28 @@ export default function Recommendations() {
                             )}
                         </div>
                         {/* sort highest to lowest */}
-                        <Button
-                            variant="ghost"
-                            onClick={() =>
-                                setSortOrder((prev) => (prev === "desc" ? "asc" : "desc"))
-                            }
-                        >
-                            <ArrowUpDown />
-                        </Button>
+                        <Tooltip>
+                            <TooltipTrigger>
+                                <Button
+                                    aria-label={
+                                        sortOrder === "desc"
+                                            ? "Sort least to most active recommendations"
+                                            : "Sort most to least active recommendations"
+                                    }
+                                    variant="ghost"
+                                    onClick={() =>
+                                        setSortOrder((prev) => (prev === "desc" ? "asc" : "desc"))
+                                    }
+                                >
+                                    <ArrowUpDown />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                {sortOrder === "desc"
+                                    ? "Sort least to most active recommendations"
+                                    : "Sort most to least active recommendations"}
+                            </TooltipContent>
+                        </Tooltip>
                     </div>
                 </div>
 
