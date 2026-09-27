@@ -22,7 +22,7 @@ if http_status_code=$(curl --fail --silent --show-error --connect-timeout 10 -w 
     fi
 fi
 
-if ! curl --fail --silent --show-error --connect-timeout 10 -o /dev/null "https://${target_host}"; then
+if ! curl --silent --show-error --connect-timeout 10 -o /dev/null "https://${target_host}"; then
     echo "Host unreachable"
     exit 1
 fi

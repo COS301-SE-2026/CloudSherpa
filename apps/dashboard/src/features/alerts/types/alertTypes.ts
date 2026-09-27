@@ -13,6 +13,7 @@ export interface Alert {
     message: string | null;
     payload: Record<string, unknown>;
     status: StatusForAlerts;
+    inAppNotificationsSilenced?: boolean;
     canonicalKey: string | null;
     createdAt: string | null;
     lastSeen: string | null;

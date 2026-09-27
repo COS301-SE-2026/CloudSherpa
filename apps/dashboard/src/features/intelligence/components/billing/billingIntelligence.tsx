@@ -7,11 +7,12 @@ import BillingForecastChart from "@/features/intelligence/components/billing/bil
 import BillingStatisticsCard from "@/features/intelligence/components/billing/billingStatisticsCard";
 import BillingSummaryCard from "@/features/intelligence/components/billing/billingSummaryCard";
 import { TrendingUp } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useMakeBillingForecast } from "../../hooks/useMakeBillingForecast";
 import { getCurrencySymbol } from "@/lib/utils";
 import { Spinner } from "@/components/atoms/spinner";
 import { BillingSummaryDto } from "../../types/dtos";
+import BillingForecastErrorPage from "./billingForecastErrorPage";
 
 const getAccelerationFromSummary = (
     summary: BillingSummaryDto | undefined,
@@ -24,35 +25,34 @@ const getAccelerationFromSummary = (
 
 export default function BillingIntelligence() {
     const {
-        provider,
-        accountId,
-        resourceId,
         breakdownSearch,
         setBreakdownSearch,
         pastTimeWindowDays,
         forecastTimeWindowDays,
         billingData,
         isLoading,
-        disableFilters,
         setBillingData,
     } = useBillingIntelligenceStore();
 
-    const { makeBillingForecast, billingForecastLoading } = useMakeBillingForecast();
+    const { makeBillingForecast, billingForecastLoading, billingForecastError } =
+        useMakeBillingForecast();
 
-    const selected = disableFilters || (provider && accountId && resourceId);
+    const [emptyForecast, setEmptyForecast] = useState(false);
 
     useEffect(() => {
         async function laodForecast() {
+            setEmptyForecast(false);
             const result = await makeBillingForecast(forecastTimeWindowDays);
-            if (result) {
+
+            if (result === null && !billingForecastError) {
+                setEmptyForecast(true);
+            } else if (result) {
                 setBillingData(result);
             }
         }
 
-        if (selected) {
-            void laodForecast();
-        }
-    }, [forecastTimeWindowDays, selected]);
+        void laodForecast();
+    }, [forecastTimeWindowDays]);
 
     const forSummary = billingData?.forSummary;
     const forBreakdown = billingData?.forBreakdown || [];
@@ -67,26 +67,27 @@ export default function BillingIntelligence() {
         (item) => item.chargeId === forSummary?.highestCostAccelerationId
     )?.cost;
 
-    if (!selected) {
+    if (emptyForecast && !billingForecastError) {
+        return (
+            <BillingForecastErrorPage>
+                <h2 className="text-xl font-semibold mb-2">No Forecast Available</h2>
+                <p className="text-muted-foreground mb-6">
+                    This is likely due to insufficient or no billing data.
+                </p>
+            </BillingForecastErrorPage>
+        );
+    }
+
+    if (billingForecastError) {
         return (
             <div className="h-full w-full p-6 flex flex-col gap-4">
                 <BillingToolbar />
-
-                <div className="flex-1 flex items-center justify-center">
-                    <div className="text-center max-w-md">
-                        <div className="mx-auto w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
-                            {" "}
-                            <TrendingUp className="h-8 w-8 text-muted-foreground" />{" "}
-                        </div>
-
-                        <h3 className="text-lg font-semibold mb-2"> No selection made </h3>
-
-                        <p className="text-sm text-muted-foreground">
-                            {" "}
-                            Select a provider, account and resource to view billing data{" "}
-                        </p>
-                    </div>
-                </div>
+                <BillingForecastErrorPage>
+                    <h2 className="text-xl font-semibold mb-2">No Forecast Available</h2>
+                    <p className="text-muted-foreground mb-6">
+                        An error occured while attempting to make a forecast.
+                    </p>
+                </BillingForecastErrorPage>
             </div>
         );
     }
