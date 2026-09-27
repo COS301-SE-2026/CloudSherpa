@@ -83,6 +83,45 @@ export function getMetricUnit(metricType: string | null): string {
     return METRIC_UNITS[metricType] ?? "";
 }
 
+export function formatUsageValue(value: number | null, baseUnit: string) {
+    if (value == null) return { formattedValue: "—", displayUnit: baseUnit };
+
+    //handle data size (only handle bytes because GB is not really a problem)
+    if (baseUnit === "B" && value !== 0) {
+        const k = 1024; //binary multiplier
+        const sizes = ["B", "KB", "MB", "GB", "TB", "PB"];
+        const i = Math.floor(Math.log(Math.abs(value)) / Math.log(k)); //how many time scan be divided by 1024
+
+        const scaledValue = value / Math.pow(k, i); //scale down value
+        //truncate to 1 dec
+        const truncatedValue = Math.trunc(scaledValue * 10) / 10;
+
+        return {
+            formattedValue: truncatedValue.toString(),
+            displayUnit: sizes[i],
+        };
+    }
+
+    //large num formatting
+    if (Math.abs(value) >= 1000 && baseUnit !== "%") {
+        const formatter = new Intl.NumberFormat("en-US", {
+            notation: "compact",
+            maximumFractionDigits: 1,
+        });
+        return {
+            formattedValue: formatter.format(value),
+            displayUnit: baseUnit,
+        };
+    }
+
+    //truncate normal numbers like percentages and smaller metrics ie duration, connections and errors
+    const truncatedValue = Math.trunc(value * 100) / 100; //mult 100 remove trailing decimals and divide again to make num smaller
+    return {
+        formattedValue: truncatedValue.toString(),
+        displayUnit: baseUnit,
+    };
+}
+
 interface SummaryCardProps {
     title: string;
     // unit: string;
@@ -106,15 +145,9 @@ export default function SummaryCard({
 }: Readonly<SummaryCardProps>) {
     const { metricName } = useUsageIntelligenceConfigStore();
 
-    const unit = (
-        <span className="text-4xl">
-            {usageError?.item == "forecast" || usageError?.item == "both" ? (
-                "—"
-            ) : (
-                <>{getMetricUnit(metricName)}</>
-            )}
-        </span>
-    );
+    const baseUnit = getMetricUnit(metricName);
+    const past = formatUsageValue(pastUsage, baseUnit);
+    const predicted = formatUsageValue(predictedUsage, baseUnit);
 
     const cardContent = (
         <>
@@ -125,7 +158,7 @@ export default function SummaryCard({
                         "—"
                     ) : (
                         <>
-                            {pastUsage?.toLocaleString()} {unit}
+                            {past.formattedValue} {past.displayUnit}
                         </>
                     )}
                 </span>
@@ -135,7 +168,7 @@ export default function SummaryCard({
                         "—"
                     ) : (
                         <>
-                            {predictedUsage?.toLocaleString()} {unit}
+                            {predicted.formattedValue} {predicted.displayUnit}
                         </>
                     )}
                 </span>
