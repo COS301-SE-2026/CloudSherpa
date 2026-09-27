@@ -54,6 +54,30 @@ export default function AgenticDashCard() {
         };
     }, [open]);
 
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            const target = e.target as HTMLElement;
+            if (
+                target.tagName === "INPUT" ||
+                target.tagName === "TEXTAREA" ||
+                target.isContentEditable
+            ) {
+                return;
+            }
+
+            if (e.shiftKey && e.key.toLowerCase() === "d" && !isEditMode) {
+                e.preventDefault();
+                setOpen((prev) => !prev);
+            }
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+
+        return () => {
+            window.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [isEditMode]);
+
     return (
         <TooltipProvider>
             <Tooltip>
@@ -70,7 +94,7 @@ export default function AgenticDashCard() {
                 <TooltipContent className="flex flex-row justify-center items-center">
                     <span className="text-sm">Generate a dashboard</span>
                     <KbdGroup>
-                        <Kbd>Ctrl</Kbd>
+                        <Kbd>Shift</Kbd>
                         <span>+</span>
                         <Kbd>D</Kbd>
                     </KbdGroup>

@@ -38,7 +38,7 @@ export default function ApplyDashboardDialog({
 
                 <div className="grid gap-3 w-full">
                     <Button
-                        variant="default"
+                        variant="outline"
                         disabled={isApplying}
                         onClick={() => onApply("REPLACE_STARTED_DASHBOARD")}
                         className="h-auto flex-col items-start gap-1 px-4 py-3 text-left"

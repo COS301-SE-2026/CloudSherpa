@@ -4,9 +4,9 @@ import {
     InputGroupButton,
     InputGroupTextarea,
 } from "@/components/atoms/input-group";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/atoms/button";
-import { Loader2, X } from "lucide-react";
+import { Loader2, X, AlertTriangle } from "lucide-react";
 import PresetPrompts from "@/features/dashboard/components/agenticdash/presetPrompts";
 import ApplyDashboardDialog from "@/features/dashboard/components/agenticdash/applyDashboardDialog";
 import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
@@ -45,6 +45,10 @@ export default function GenerateDashInput() {
 
         setPrompt("");
     };
+
+    useEffect(() => {
+        textRef.current?.focus();
+    }, []);
 
     const handleApply = async (mode: AiDashboardApplyMode): Promise<void> => {
         if (!currentVersionId) {
