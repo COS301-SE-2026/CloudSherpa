@@ -13,6 +13,7 @@ import {
     updateChartWidgetConfig,
     deleteDashboard,
     updateKpiWidgetConfig,
+    fetchDashboards,
 } from "@/lib/fetch/api-dashboard";
 import { TimeWindowPreset } from "../types/timewindow";
 import { MetricType } from "@/features/dashboard/types/metric";
@@ -761,7 +762,7 @@ const createAgenticSlice: StateCreator<DashboardStore, [], [], AgenticSlice> = (
         },
 
         cancelSession: async () => {
-            const { sessionId } = get();
+            const { sessionId, startedDashboardId } = get();
             if (sessionId) {
                 try {
                     await deleteAiSession(sessionId);
@@ -770,6 +771,20 @@ const createAgenticSlice: StateCreator<DashboardStore, [], [], AgenticSlice> = (
                 }
             }
 
+            try {
+                const fetchedData = await fetchDashboards();
+                const { dashboardsMap, layoutsArray, widgetsArray } =
+                    adaptFetchedDashboards(fetchedData);
+
+                get().actions.setInitialState(dashboardsMap, layoutsArray, widgetsArray);
+
+                if (startedDashboardId && dashboardsMap[startedDashboardId]) {
+                    get().actions.setActiveDashboard(startedDashboardId);
+                }
+            } catch (error) {
+                console.error("Failed to fetch dashboards after cancelling session:", error);
+                toast.error("Failed to fetch dashboards. Please reload the page.");
+            }
             set({
                 sessionId: null,
                 startedDashboardId: null,

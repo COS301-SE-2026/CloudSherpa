@@ -44,6 +44,7 @@ export default function Toolbar({
     onDateRangeChange,
 }: Readonly<ToolbarProps>) {
     const isSessionActive = useDashboardStore((state) => state.isSessionActive);
+    const isGenerating = useDashboardStore((state) => state.isGenerating);
     const hideTools = hasActiveDashboard || isSessionActive;
     return (
         <header className="sticky top-0 z-50 w-full flex flex-col items-center group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 pt-3 pb-2 relative">
@@ -56,7 +57,7 @@ export default function Toolbar({
             />
             <div className="h-16 w-full flex flex-row items-center justify-between  px-6">
                 <div className="flex flex-row gap-2">
-                    {!isSessionActive ? (
+                    {!(isSessionActive || isGenerating) ? (
                         <DashboardSelector
                             dashboards={dashboards}
                             selectedId={selectedDashboardId}
@@ -72,7 +73,7 @@ export default function Toolbar({
                     <div className="flex flex-row items-center gap-2">
                         <AgenticDashCard />
 
-                        {!isSessionActive && (
+                        {!(isSessionActive || isGenerating) && (
                             <>
                                 <div className="hidden sm:block">
                                     <EditButton
