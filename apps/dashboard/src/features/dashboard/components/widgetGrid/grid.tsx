@@ -76,6 +76,8 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
     const isInteractingRef = useRef(false);
 
     const isSessionActive = useDashboardStore((state) => state.isSessionActive);
+    const isGenerating = useDashboardStore((state) => state.isGenerating);
+
     // console.log("Layouts: ", layouts);
     const cancelPendingCompact = () => {
         if (compactTimerRef.current) {
@@ -326,7 +328,9 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
     }, [isEditMode, isSessionActive]);
 
     return (
-        <div className="bg-background flex-1 min-h-full pb-40">
+        <div
+            className={`bg-background flex-1 min-h-full pb-40 rounded-lg ${isGenerating ? "animate-pulse" : ""}`}
+        >
             <div ref={gridRef} className="grid-stack">
                 {layouts.map((l) => (
                     <WidgetWrapper key={l.id} layout={l} isEditMode={isEditMode} />

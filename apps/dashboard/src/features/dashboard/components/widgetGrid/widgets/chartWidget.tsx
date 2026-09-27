@@ -49,7 +49,7 @@ export function ChartWidget({
     const isSessionActive = useDashboardStore((state) => state.isSessionActive);
     const isGenerating = useDashboardStore((state) => state.isGenerating);
 
-    const hideOptions = useState(isSessionActive || isGenerating);
+    const hideOptions = useState(isSessionActive);
 
     // watch widget content while expanding
     const contentRef = useRef<HTMLDivElement>(null);
@@ -209,7 +209,7 @@ export function ChartWidget({
                             </TooltipProvider>
                         )}
 
-                        {!preview && !isEditMode && !hideOptions && (
+                        {!preview && !isEditMode && (
                             <WidgetDropdown
                                 disabled={isSessionActive || isGenerating}
                                 onConfigure={openConfig}

@@ -25,7 +25,7 @@ export function WidgetDropdown({
 }: Readonly<WidgetDropdownProps>) {
     return (
         <DropdownMenu>
-            {disabled && (
+            {!disabled && (
                 <DropdownMenuTrigger disabled={disabled} asChild>
                     <Button
                         variant="ghost"

@@ -80,7 +80,7 @@ export default function GenerateDashInput() {
     return (
         <>
             <div className="h-full flex flex-col justify-end items-start gap-4">
-                {!isSessionActive && (
+                {!(isSessionActive || isGenerating) && (
                     <div className="h-full flex-1 overflow-y-auto w-full">
                         <PresetPrompts onSelect={setPrompt} />
                     </div>

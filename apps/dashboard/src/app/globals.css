@@ -67,3 +67,81 @@
         @apply font-sans;
     }
 }
+
+/* test animations */
+
+@keyframes ai-border-spin {
+    0% {
+        --angle: 0deg;
+    }
+    100% {
+        --angle: 360deg;
+    }
+}
+
+@property --angle {
+    syntax: "<angle>";
+    initial-value: 0deg;
+    inherits: false;
+}
+
+.ai-generating-frame {
+    position: relative;
+    isolation: isolate;
+}
+
+.ai-generating-frame::before {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    z-index: -1;
+    border-radius: inherit;
+    padding: 2px;
+    background: conic-gradient(
+        from var(--angle),
+        transparent 0%,
+        var(--primary) 15%,
+        transparent 35%
+    );
+    animation: ai-border-spin 2.4s linear infinite;
+    -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 300ms ease;
+}
+
+.ai-generating-frame.is-generating::before {
+    opacity: 1;
+}
+
+.ai-generating-frame.is-generating {
+    animation: ai-frame-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes ai-frame-pulse {
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 color-mix(in srgb, var(--primary) 15%, transparent);
+    }
+    50% {
+        box-shadow: 0 0 24px 4px color-mix(in srgb, var(--primary) 15%, transparent);
+    }
+}
+
+.widget-enter {
+    animation: widget-fade-in 400ms ease-out;
+}
+
+@keyframes widget-fade-in {
+    from {
+        opacity: 0;
+        transform: scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
