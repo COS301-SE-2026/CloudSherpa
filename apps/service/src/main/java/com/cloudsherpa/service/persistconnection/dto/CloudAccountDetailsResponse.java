@@ -10,4 +10,8 @@ public record CloudAccountDetailsResponse(
     AccountTypeEnum accountType,
     String accountEmail,
     String ingestionPeriod,
-    OffsetDateTime createdAt) {}
+    OffsetDateTime createdAt,
+    boolean periodicResourceDiscovery,
+    boolean autoAdjustIngestionPeriod,
+    boolean newResourcesActive,
+    OffsetDateTime nextResourceScan) {}

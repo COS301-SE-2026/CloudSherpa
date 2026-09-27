@@ -31,26 +31,6 @@ public abstract class ConnectionPersistenceService {
   }
 
   @Transactional
-  public boolean updateAccountName(UUID userId, UUID accountId, String name) {
-    Optional<CloudAccount> accountOpt = cloudAccountRepository.findById(accountId);
-
-    if (accountOpt.isEmpty()) {
-      return false;
-    }
-    CloudAccount account = accountOpt.get();
-
-    UUID accountOwnerId = account.getConnection().getUserId();
-
-    if (!accountOwnerId.equals(userId)) {
-      return false;
-    }
-    account.setDisplayName(name);
-    cloudAccountRepository.save(account);
-
-    return true;
-  }
-
-  @Transactional
   public boolean deleteAccount(UUID userId, UUID accountId) {
     Optional<CloudAccount> accountOpt = cloudAccountRepository.findById(accountId);
 

@@ -56,7 +56,11 @@ public class ConnectionQueryService {
         account.getAccountType(),
         account.getConnection().getUser().getEmail(),
         account.getIngestionPeriod(),
-        account.getCreatedAt());
+        account.getCreatedAt(),
+        account.isPeriodicResourceDiscovery(),
+        account.isAutoAdjustIngestionPeriod(),
+        account.isNewResourcesActive(),
+        account.getNextResourceScan());
   }
 
   public List<Resource> getResourcesForAccount(UUID accountId) {
