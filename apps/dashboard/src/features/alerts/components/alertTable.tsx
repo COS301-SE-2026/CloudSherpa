@@ -26,25 +26,31 @@ import {
 import { LABELS_FOR_SCOPE, type ScopeForBudget } from "@/features/budgets/types/budgetTypes";
 import apiClient from "@/lib/fetch/api-client";
 
-interface AlertScope{
-    scope : ScopeForBudget;
-    resourceId : string | null;
+interface AlertScope {
+    scope: ScopeForBudget;
+    resourceId: string | null;
 }
 
-function getScope(alert : Alert) : AlertScope{
+function getScope(alert: Alert): AlertScope {
     const forPayload = (alert.payload ?? {}) as Record<string, unknown>;
 
-    if(alert.alertType === "BUDGET"){
+    if (alert.alertType === "BUDGET") {
         const forScope = forPayload.budgetScope;
 
-        const scope : ScopeForBudget = forScope === "TENANT" || forScope === "ACCOUNT" || forScope === "RESOURCE" ? forScope : "TENANT";
+        const scope: ScopeForBudget =
+            forScope === "TENANT" || forScope === "ACCOUNT" || forScope === "RESOURCE"
+                ? forScope
+                : "TENANT";
 
-        return {scope, resourceId : null};
+        return { scope, resourceId: null };
     }
 
-    const resourceId = (forPayload.resourceId as string | undefined) ?? (forPayload.resource_id as string | undefined) ?? null;
+    const resourceId =
+        (forPayload.resourceId as string | undefined) ??
+        (forPayload.resource_id as string | undefined) ??
+        null;
 
-    return {scope : "RESOURCE", resourceId};
+    return { scope: "RESOURCE", resourceId };
 }
 
 interface PropsForAlertsTable {
@@ -58,7 +64,7 @@ interface ForColumns {
     onToggle: (alert: Alert, enabled: boolean) => Promise<void>;
     info: (alert: Alert) => void;
     onDelete: (alert: Alert) => void;
-    resourceNames : Record<string, string>;
+    resourceNames: Record<string, string>;
 }
 
 function cleanAlertTitle(title: string): string {
@@ -81,7 +87,12 @@ function cleanAlertTitle(title: string): string {
     return cleaned;
 }
 
-function helperForColumns({ onToggle, info, onDelete, resourceNames }: ForColumns): ColumnDef<Alert>[] {
+function helperForColumns({
+    onToggle,
+    info,
+    onDelete,
+    resourceNames,
+}: ForColumns): ColumnDef<Alert>[] {
     return [
         {
             id: "enabled",
@@ -143,21 +154,35 @@ function helperForColumns({ onToggle, info, onDelete, resourceNames }: ForColumn
             ),
         },
 
-        {id : "scope", header : () => "SCOPE", enableSorting : false, cell : ({row}) => {
-            const alert = row.original;
+        {
+            id: "scope",
+            header: () => "SCOPE",
+            enableSorting: false,
+            cell: ({ row }) => {
+                const alert = row.original;
 
-            const inactive = alert.status !== "ACTIVE";
+                const inactive = alert.status !== "ACTIVE";
 
-            const {scope, resourceId} = getScope(alert);
+                const { scope, resourceId } = getScope(alert);
 
-            const labelForScope = LABELS_FOR_SCOPE[scope];
+                const labelForScope = LABELS_FOR_SCOPE[scope];
 
-            const name = scope === "RESOURCE" && resourceId ? (resourceNames[resourceId] ?? resourceId) : null;
+                const name =
+                    scope === "RESOURCE" && resourceId
+                        ? (resourceNames[resourceId] ?? resourceId)
+                        : null;
 
-            return(
-                <div className = {`flex flex-col text-sm ${inactive ? "text-muted-foreground" : "text-foreground"}`}> <span> {labelForScope} </span> {name && (<span className = "text-muted-foreground"> {name} </span>)} </div>
-            );
-        },},
+                return (
+                    <div
+                        className={`flex flex-col text-sm ${inactive ? "text-muted-foreground" : "text-foreground"}`}
+                    >
+                        {" "}
+                        <span> {labelForScope} </span>{" "}
+                        {name && <span className="text-muted-foreground"> {name} </span>}{" "}
+                    </div>
+                );
+            },
+        },
 
         {
             accessorKey: "title",
@@ -242,13 +267,16 @@ export function AlertTable({ alerts, onToggle, info, onDelete }: Readonly<PropsF
         let cancelled = false;
 
         (async () => {
-            try{
-                const forNames = await apiClient<Record<string, string>>("/analytics/resource-names", {method : "GET"});
+            try {
+                const forNames = await apiClient<Record<string, string>>(
+                    "/analytics/resource-names",
+                    { method: "GET" }
+                );
 
-                if(!cancelled){
+                if (!cancelled) {
                     setResourceNames(forNames);
                 }
-            }catch{}
+            } catch {}
         })();
 
         return () => {

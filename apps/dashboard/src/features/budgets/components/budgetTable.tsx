@@ -34,10 +34,15 @@ interface Columns {
     edit: (budget: Budget) => void;
     toggleEnabled: (budget: Budget, enabled: boolean) => void;
     onDelete: (budget: Budget) => void;
-    resourceNames : Record<string, string>;
+    resourceNames: Record<string, string>;
 }
 
-function helperForColumns({ edit, toggleEnabled, onDelete, resourceNames }: Columns): ColumnDef<Budget>[] {
+function helperForColumns({
+    edit,
+    toggleEnabled,
+    onDelete,
+    resourceNames,
+}: Columns): ColumnDef<Budget>[] {
     return [
         {
             id: "enabled",
@@ -61,13 +66,18 @@ function helperForColumns({ edit, toggleEnabled, onDelete, resourceNames }: Colu
 
                 const label = LABELS_FOR_SCOPE[forBudget.scope];
 
-                const name = forBudget.scope === "RESOURCE" && forBudget.scope_id ? (resourceNames[forBudget.scope_id] ?? forBudget.scope_id) : null;
+                const name =
+                    forBudget.scope === "RESOURCE" && forBudget.scope_id
+                        ? (resourceNames[forBudget.scope_id] ?? forBudget.scope_id)
+                        : null;
 
                 return (
-                    <div className={`flex flex-col text-sm ${mutedBudget ? "text-muted-foreground" : "text-foreground"}`}>
+                    <div
+                        className={`flex flex-col text-sm ${mutedBudget ? "text-muted-foreground" : "text-foreground"}`}
+                    >
                         <span> {label} </span>
 
-                        {name && (<span className = "text-muted-foreground"> {name} </span>)}
+                        {name && <span className="text-muted-foreground"> {name} </span>}
                     </div>
                 );
             },
@@ -149,18 +159,20 @@ export function BudgetTable({ budgets, edit, toggleEnabled, onDelete }: Readonly
         let cancelled = false;
 
         (async () => {
-            try{
-                const names = await apiClient<Record<string, string>>("/analytics/resource-names", {method : "GET"});
+            try {
+                const names = await apiClient<Record<string, string>>("/analytics/resource-names", {
+                    method: "GET",
+                });
 
-                if(!cancelled){
+                if (!cancelled) {
                     setResourceNames(names);
                 }
-            }catch{}
+            } catch {}
         })();
 
         return () => {
             cancelled = true;
-        }
+        };
     }, []);
 
     const forColumns = useMemo(

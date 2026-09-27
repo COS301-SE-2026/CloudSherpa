@@ -115,11 +115,16 @@ interface Columns {
     edit: (forThreshold: Threshold) => void;
     toggleEnabled: (forThreshold: Threshold, enabled: boolean) => void;
     onDelete: (forThreshold: Threshold) => void;
-    resourceNames : Record<string, string>;
+    resourceNames: Record<string, string>;
 }
 
 //copied from below to correct sonarqube errors
-function helperForColumns({ edit, toggleEnabled, onDelete, resourceNames }: Columns): ColumnDef<Threshold>[] {
+function helperForColumns({
+    edit,
+    toggleEnabled,
+    onDelete,
+    resourceNames,
+}: Columns): ColumnDef<Threshold>[] {
     return [
         {
             id: "enabled",
@@ -138,17 +143,25 @@ function helperForColumns({ edit, toggleEnabled, onDelete, resourceNames }: Colu
             },
         },
 
-        {id : "resource", header : () => "RESOURCE", enableSorting : false, cell : ({row}) => {
-            const forThreshold = row.original;
+        {
+            id: "resource",
+            header: () => "RESOURCE",
+            enableSorting: false,
+            cell: ({ row }) => {
+                const forThreshold = row.original;
 
-            const mutedThreshold = !forThreshold.enabled;
+                const mutedThreshold = !forThreshold.enabled;
 
-            const name = resourceNames[forThreshold.resourceId] ?? forThreshold.resourceId;
+                const name = resourceNames[forThreshold.resourceId] ?? forThreshold.resourceId;
 
-            return(
-                <Truncation text = {name} className = {`w-[120px] flex-shrink-0 ${mutedThreshold ? "text-muted-foreground" : "text-foreground"}`}/>
-            );
-        },},
+                return (
+                    <Truncation
+                        text={name}
+                        className={`w-[120px] flex-shrink-0 ${mutedThreshold ? "text-muted-foreground" : "text-foreground"}`}
+                    />
+                );
+            },
+        },
 
         {
             accessorKey: "metricName",
@@ -301,13 +314,15 @@ export function ThresholdTable({
         let cancelled = false;
 
         (async () => {
-            try{
-                const names = await apiClient<Record<string, string>>("/analytics/resource-names", {method : "GET"});
+            try {
+                const names = await apiClient<Record<string, string>>("/analytics/resource-names", {
+                    method: "GET",
+                });
 
-                if(!cancelled){
+                if (!cancelled) {
                     setResourceNames(names);
                 }
-            }catch{}
+            } catch {}
         })();
 
         return () => {
