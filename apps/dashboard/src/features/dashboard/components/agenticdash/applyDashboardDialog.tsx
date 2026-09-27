@@ -36,28 +36,28 @@ export default function ApplyDashboardDialog({
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="grid gap-3">
-                    <Button
+                <div className="grid gap-3 w-full">
+                    {/* <Button
                         variant="default"
                         disabled={isApplying}
                         onClick={() => onApply("REPLACE_STARTED_DASHBOARD")}
                         className="h-auto flex-col items-start gap-1 px-4 py-3 text-left"
                     >
                         <span>Replace the dashboard I started with</span>
-                        <span className="text-xs font-normal opacity-80">
+                        <span className="text-xs font-normal opacity-80 text-wrap">
                             Replace the dashboard you started the AI session on with this staged
                             dashboard.
                         </span>
-                    </Button>
+                    </Button> */}
 
                     <Button
                         variant="outline"
                         disabled={isApplying}
                         onClick={() => onApply("CREATE_NEW_DASHBOARD")}
-                        className="h-auto flex-col items-start gap-1 px-4 py-3 text-left"
+                        className="h-auto flex-col items-start gap-1 px-4 py-3 text-left w-full"
                     >
                         <span>Create a new dashboard</span>
-                        <span className="text-xs font-normal opacity-80">
+                        <span className="text-xs font-normal opacity-80 text-wrap">
                             Keep the original dashboard and create this staged dashboard as a
                             separate dashboard.
                         </span>
