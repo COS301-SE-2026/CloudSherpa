@@ -24,33 +24,31 @@ import {
     DropdownMenuTrigger,
 } from "@/components/atoms/dropdown-menu";
 import { LABELS_FOR_SCOPE, type ScopeForBudget } from "@/features/budgets/types/budgetTypes";
-import apiClient from "@/lib/fetch/api-client";
 
 interface AlertScope {
     scope: ScopeForBudget;
-    resourceId: string | null;
+    name: string | null;
 }
 
 function getScope(alert: Alert): AlertScope {
     const forPayload = (alert.payload ?? {}) as Record<string, unknown>;
 
     if (alert.alertType === "BUDGET") {
-        const forScope = forPayload.budgetScope;
+        const forScope = forPayload.budget_scope;
 
         const scope: ScopeForBudget =
             forScope === "TENANT" || forScope === "ACCOUNT" || forScope === "RESOURCE"
                 ? forScope
                 : "TENANT";
 
-        return { scope, resourceId: null };
+        const name = (forPayload.scope_name as string | undefined) ?? null;
+
+        return { scope, name };
     }
 
-    const resourceId =
-        (forPayload.resourceId as string | undefined) ??
-        (forPayload.resource_id as string | undefined) ??
-        null;
+    const name = (forPayload.resource_name as string | undefined) ?? null;
 
-    return { scope: "RESOURCE", resourceId };
+    return { scope: "RESOURCE", name };
 }
 
 interface PropsForAlertsTable {
@@ -64,7 +62,6 @@ interface ForColumns {
     onToggle: (alert: Alert, enabled: boolean) => Promise<void>;
     info: (alert: Alert) => void;
     onDelete: (alert: Alert) => void;
-    resourceNames: Record<string, string>;
 }
 
 function cleanAlertTitle(title: string): string {
@@ -87,12 +84,7 @@ function cleanAlertTitle(title: string): string {
     return cleaned;
 }
 
-function helperForColumns({
-    onToggle,
-    info,
-    onDelete,
-    resourceNames,
-}: ForColumns): ColumnDef<Alert>[] {
+function helperForColumns({ onToggle, info, onDelete }: ForColumns): ColumnDef<Alert>[] {
     return [
         {
             id: "enabled",
@@ -163,14 +155,9 @@ function helperForColumns({
 
                 const inactive = alert.status !== "ACTIVE";
 
-                const { scope, resourceId } = getScope(alert);
+                const { scope, name } = getScope(alert);
 
                 const labelForScope = LABELS_FOR_SCOPE[scope];
-
-                const name =
-                    scope === "RESOURCE" && resourceId
-                        ? (resourceNames[resourceId] ?? resourceId)
-                        : null;
 
                 return (
                     <div
@@ -261,32 +248,9 @@ function helperForColumns({
 export function AlertTable({ alerts, onToggle, info, onDelete }: Readonly<PropsForAlertsTable>) {
     const [sorting, setSorting] = useState<SortingState>([]);
 
-    const [resourceNames, setResourceNames] = useState<Record<string, string>>({});
-
-    useEffect(() => {
-        let cancelled = false;
-
-        (async () => {
-            try {
-                const forNames = await apiClient<Record<string, string>>(
-                    "/analytics/resource-names",
-                    { method: "GET" }
-                );
-
-                if (!cancelled) {
-                    setResourceNames(forNames);
-                }
-            } catch {}
-        })();
-
-        return () => {
-            cancelled = true;
-        };
-    }, []);
-
     const columns = useMemo(
-        () => helperForColumns({ onToggle, info, onDelete, resourceNames }),
-        [onToggle, info, onDelete, resourceNames]
+        () => helperForColumns({ onToggle, info, onDelete }),
+        [onToggle, info, onDelete]
     );
 
     const tableForAlerts = useReactTable({
