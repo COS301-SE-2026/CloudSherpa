@@ -91,6 +91,9 @@ public class ThresholdEvaluationService {
     if (existing.isPresent()) {
       // Repeated violations update the existing alert instead of creating duplicates.
       alert = existing.get();
+      alert.setTitle(buildTitle(event));
+      alert.setMessage(buildMessage(threshold, event));
+      alert.setPayload(buildPayload(threshold, event));
       alert.setLastSeen(OffsetDateTime.now(ZoneOffset.UTC));
     } else {
       // The first violation creates a new active alert.
@@ -110,23 +113,23 @@ public class ThresholdEvaluationService {
         buildWebhookEventPayload(threshold, event, alert));
   }
 
+  private Map<String, Object> buildPayload(Threshold threshold, MetricStreamEventDto event) {
+    return Map.of(
+        "metric_name", event.metricName(),
+        "metric_display_name", metricDisplayNameMapper.toDisplayName(event.metricName()),
+        "metric_value", event.metricValue(),
+        "threshold_operator", threshold.getOperator(),
+        "threshold_value", threshold.getValue(),
+        "resource_id", event.resourceId(),
+        "resource_name", threshold.getResource().getResourceName(),
+        "provider", resolveProvider(threshold),
+        "period_start", event.periodStart(),
+        "period_end", event.periodEnd());
+  }
+
   private Alert buildNewAlert(
       Threshold threshold, MetricStreamEventDto event, UUID userId, String canonicalKey) {
     OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
-
-    // Example payload: metric_value=92, operator=GT, threshold_value=80.
-    Map<String, Object> payload =
-        Map.of(
-            "metric_name", event.metricName(),
-            "metric_display_name", metricDisplayNameMapper.toDisplayName(event.metricName()),
-            "metric_value", event.metricValue(),
-            "threshold_operator", threshold.getOperator(),
-            "threshold_value", threshold.getValue(),
-            "resource_id", event.resourceId(),
-            "resource_name", threshold.getResource().getResourceName(),
-            "provider", resolveProvider(threshold),
-            "period_start", event.periodStart(),
-            "period_end", event.periodEnd());
 
     return Alert.builder()
         .userId(userId)
@@ -135,7 +138,7 @@ public class ThresholdEvaluationService {
         .severity(Optional.ofNullable(threshold.getSeverity()).orElse(AlertSeverityEnum.WARNING))
         .title(buildTitle(event))
         .message(buildMessage(threshold, event))
-        .payload(payload)
+        .payload(buildPayload(threshold, event))
         .status(AlertStatusEnum.ACTIVE)
         .canonicalKey(canonicalKey)
         .createdAt(now)
@@ -166,8 +169,7 @@ public class ThresholdEvaluationService {
 
   private String buildTitle(MetricStreamEventDto event) {
     String metricDisplayName = metricDisplayNameMapper.toDisplayName(event.metricName());
-
-    return metricDisplayName + " threshold breach";
+    return "Threshold breached: " + metricDisplayName;
   }
 
   private String buildMessage(Threshold threshold, MetricStreamEventDto event) {
@@ -182,11 +184,11 @@ public class ThresholdEvaluationService {
         + operatorLabel(threshold.getOperator())
         + " "
         + threshold.getValue()
-        + ") on resource "
+        + ") on "
         + threshold.getResource().getResourceName()
-        + " ["
+        + " from "
         + resolveProvider(threshold)
-        + "].";
+        + ".";
   }
 
   private String operatorVerb(String operator) {

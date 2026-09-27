@@ -198,7 +198,7 @@ public class BudgetEvaluationService {
   }
 
   private BudgetScopeContext tenantScopeContext() {
-    return new BudgetScopeContext("Multi-cloud", "All connected resources", "MULTI");
+    return new BudgetScopeContext("Multi-cloud", "all connected resources", "MULTI");
   }
 
   private String resolveProvider(Resource resource) {
@@ -270,17 +270,15 @@ public class BudgetEvaluationService {
   }
 
   private String buildMessage(Budget budget, BigDecimal value, BudgetScopeContext scopeContext) {
-    return "Spend "
+    return "The current spend of USD "
         + value
-        + " exceeded the configured budget "
+        + " has exceeded the configured budget of USD "
         + budget.getAmount()
         + " over the last "
         + budget.getWindowDays()
         + " days for "
         + scopeContext.scopeName()
-        + " ["
-        + scopeContext.provider()
-        + "].";
+        + ".";
   }
 
   private BudgetAlertPayload buildWebhookEventPayload(
