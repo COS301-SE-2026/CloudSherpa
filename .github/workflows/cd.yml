@@ -325,3 +325,8 @@ jobs:
 
                 echo "Failed after ${MAX_RETRIES} retries exceeded with status ${STATUS}"
                 exit 1
+
+            - name: Verify TLS configuration after deployment
+              run: |
+                chmod +x nfr-tests/tls-test.sh
+                nfr-tests/tls-test.sh "${{ github.ref_name == 'main' && vars.PRODUCTION_URL_WITHOUT_SCHEME || vars.STAGING_URL_WITHOUT_SCHEME }}"
