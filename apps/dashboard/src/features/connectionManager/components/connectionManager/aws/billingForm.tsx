@@ -4,7 +4,15 @@ import { Button } from "@/components/atoms/button";
 import { BillingConfig } from "./stepTwo";
 import { Input } from "@/components/atoms/input";
 import { BillingFormContainer } from "../billingFormContainer";
-import { Dropdown } from "@/components/atoms/dropdown";
+
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/atoms/select";
 import {
     Field,
     FieldDescription,
@@ -99,15 +107,20 @@ export function AwsBillingForm({
                         <FieldDescription>
                             Select the AWS region where your S3 bucket is hosted.
                         </FieldDescription>
-                        <Dropdown
-                            options={regionOptions}
-                            value={bucketRegion}
-                            onChange={setBucketRegion}
-                            placeholder="Select a region"
-                            labelKey="label"
-                            valueKey="value"
-                            className="w-full"
-                        />
+                        <Select value={bucketRegion} onValueChange={setBucketRegion}>
+                            <SelectTrigger className="w-full">
+                                <SelectValue placeholder="select bucket region" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectGroup>
+                                    {regionOptions.map((option) => (
+                                        <SelectItem key={option.value} value={option.value}>
+                                            {option.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
                     </Field>
                     <Field>
                         <FieldLabel

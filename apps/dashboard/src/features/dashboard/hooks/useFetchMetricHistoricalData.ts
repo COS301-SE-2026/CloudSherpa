@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Metric, MetricType } from "@/features/dashboard/types/metric";
 import { useMetricStore } from "@/features/dashboard/stores/metric-store";
 import apiClient from "@/lib/fetch/api-client";
+import { TimeWindowPreset } from "../types/timewindow";
 
 interface DownsampledHistoricalMetricResponseDto {
     metricId: string;
@@ -25,6 +26,7 @@ interface PropsForUseFetchHistoricalDataProps {
     fromMs: number;
     toMs?: number;
     metricName?: string;
+    selectedPreset: TimeWindowPreset;
 }
 
 export function useFetchMetricHistoricalData({
@@ -32,6 +34,7 @@ export function useFetchMetricHistoricalData({
     fromMs,
     toMs,
     metricName = "",
+    selectedPreset,
 }: PropsForUseFetchHistoricalDataProps) {
     const setMetricSeries = useMetricStore((state) => state.setMetricSeries);
 
@@ -40,15 +43,25 @@ export function useFetchMetricHistoricalData({
     const [forErrors, setForErrors] = useState<Error | null>(null);
 
     const request = useRef<string | null>(null);
+    const currentWindow = useRef({ fromMs, toMs });
+
+    const customFromMs = selectedPreset === "custom" ? fromMs : undefined;
+    const customToMs = selectedPreset === "custom" ? toMs : undefined;
 
     useEffect(() => {
-        if (!resourceId || !metricName || !Number.isFinite(fromMs)) {
+        currentWindow.current = { fromMs, toMs };
+    }, [fromMs, toMs]);
+
+    useEffect(() => {
+        const { fromMs: requestFromMs, toMs: requestToMs } = currentWindow.current;
+
+        if (!resourceId || !metricName || !Number.isFinite(requestFromMs)) {
             return;
         }
 
         const finalMetricNames = metricName || "default";
 
-        const keyForRequest = `${resourceId}:${finalMetricNames}:${fromMs}:${toMs}`;
+        const keyForRequest = `${resourceId}:${finalMetricNames}:${requestFromMs}:${requestToMs}`;
 
         if (request.current === keyForRequest) {
             return;
@@ -69,8 +82,10 @@ export function useFetchMetricHistoricalData({
                         body: JSON.stringify({
                             resourceId: resourceId,
                             metricName: finalMetricNames,
-                            from: new Date(fromMs).toISOString(),
-                            to: toMs ? new Date(toMs).toISOString() : new Date().toISOString(),
+                            from: new Date(requestFromMs).toISOString(),
+                            to: requestToMs
+                                ? new Date(requestToMs).toISOString()
+                                : new Date().toISOString(),
                         }),
                     }
                 );
@@ -115,7 +130,7 @@ export function useFetchMetricHistoricalData({
         }
 
         void fetchHistoricalData();
-    }, [resourceId, fromMs, toMs, metricName, setMetricSeries]);
+    }, [resourceId, metricName, selectedPreset, customFromMs, customToMs, setMetricSeries]);
 
     return { isLoading, forErrors };
 }

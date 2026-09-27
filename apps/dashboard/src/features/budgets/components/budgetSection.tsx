@@ -161,7 +161,6 @@ export function BudgetSection() {
                 key={editing?.budget_id ?? "new"}
                 open={popupOpen}
                 initial={editing}
-                userId="user-1"
                 onClose={() => setPopupOpen(false)}
                 onSubmit={handlingSubmit}
             />

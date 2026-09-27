@@ -12,24 +12,52 @@ import {
 import { Button } from "@/components/atoms/button";
 import { Switch } from "@/components/atoms/switch";
 import { Table, TableBody, TableCell, TableRow } from "@/components/atoms/table";
-import { Info } from "lucide-react";
+import { Info, MoreVertical, Trash2 } from "lucide-react";
 import { SEVERITY_COLOURS, STATUS_LABELS, TYPE } from "@/features/alerts/types/alertTypes";
 import type { Alert } from "@/features/alerts/types/alertTypes";
 import { toast } from "sonner";
 import { TableHeaderData } from "@/features/alerts/components/atoms/tableHeaderData";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/atoms/dropdown-menu";
 
 interface PropsForAlertsTable {
     alerts: Alert[];
     onToggle: (alert: Alert, enabled: boolean) => Promise<void>;
     info: (alert: Alert) => void;
+    onDelete: (alert: Alert) => void;
 }
 
 interface ForColumns {
     onToggle: (alert: Alert, enabled: boolean) => Promise<void>;
     info: (alert: Alert) => void;
+    onDelete: (alert: Alert) => void;
 }
 
-function helperForColumns({ onToggle, info }: ForColumns): ColumnDef<Alert>[] {
+function cleanAlertTitle(title: string): string {
+    const cleaned = title.trim();
+
+    if (!cleaned.endsWith(")")) {
+        return cleaned;
+    }
+
+    const tagStartIndex = cleaned.toLowerCase().lastIndexOf("(z=");
+
+    if (tagStartIndex !== -1) {
+        const insideTag = cleaned.slice(tagStartIndex + 3, -1);
+
+        if (insideTag.length > 0 && !insideTag.includes(")")) {
+            return cleaned.slice(0, tagStartIndex).trim();
+        }
+    }
+
+    return cleaned;
+}
+
+function helperForColumns({ onToggle, info, onDelete }: ForColumns): ColumnDef<Alert>[] {
     return [
         {
             id: "enabled",
@@ -96,52 +124,82 @@ function helperForColumns({ onToggle, info }: ForColumns): ColumnDef<Alert>[] {
             header: () => "ALERT",
             cell: ({ row }) => {
                 const inactive = row.original.status !== "ACTIVE";
+                const displayTitle = cleanAlertTitle(row.original.title);
 
                 return (
                     <span className={inactive ? "text-muted-foreground" : "text-foreground"}>
                         {" "}
-                        {row.original.title}{" "}
+                        {displayTitle}{" "}
                     </span>
                 );
             },
         },
 
         {
-            accessorKey: "createdAt",
-            header: () => "CREATED",
-            cell: ({ row }) => (
-                <span className="text-xs text-muted-foreground">
-                    {" "}
-                    {row.original.createdAt
-                        ? new Date(row.original.createdAt).toLocaleString()
-                        : "-"}{" "}
-                </span>
-            ),
+            accessorKey: "lastSeen",
+            header: () => "UPDATED AT",
+            cell: ({ row }) => {
+                const updatedAt = row.original.lastSeen ?? row.original.createdAt;
+                return (
+                    <span className="text-xs text-muted-foreground">
+                        {" "}
+                        {updatedAt ? new Date(updatedAt).toLocaleString() : "-"}{" "}
+                    </span>
+                );
+            },
         },
 
         {
             id: "info",
             header: () => "",
             enableSorting: false,
-            cell: ({ row }) => (
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-auto p-0 text-muted-foreground hover:text-foreground"
-                    onClick={() => info(row.original)}
-                >
-                    {" "}
-                    <Info className="h-4 w-4" />{" "}
-                </Button>
-            ),
+            cell: ({ row }) => {
+                const forAlerts = row.original;
+
+                return (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-auto p-0 text-muted-foreground hover:text-foreground"
+                            >
+                                {" "}
+                                <MoreVertical className="h-4 w-4" />{" "}
+                            </Button>
+                        </DropdownMenuTrigger>
+
+                        <DropdownMenuContent align="end" className="w-40">
+                            <DropdownMenuItem
+                                onClick={() => info(forAlerts)}
+                                className="cursor-pointer"
+                            >
+                                {" "}
+                                <Info className="mr-2 h-4 w-4" /> More info{" "}
+                            </DropdownMenuItem>
+
+                            <DropdownMenuItem
+                                onClick={() => onDelete(forAlerts)}
+                                className="cursor-pointer text-destructive focus:text-destructive"
+                            >
+                                {" "}
+                                <Trash2 className="mr-2 h-4 w-4" /> Delete{" "}
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                );
+            },
         },
     ];
 }
 
-export function AlertTable({ alerts, onToggle, info }: Readonly<PropsForAlertsTable>) {
+export function AlertTable({ alerts, onToggle, info, onDelete }: Readonly<PropsForAlertsTable>) {
     const [sorting, setSorting] = useState<SortingState>([]);
 
-    const columns = useMemo(() => helperForColumns({ onToggle, info }), [onToggle, info]);
+    const columns = useMemo(
+        () => helperForColumns({ onToggle, info, onDelete }),
+        [onToggle, info, onDelete]
+    );
 
     const tableForAlerts = useReactTable({
         data: alerts,
