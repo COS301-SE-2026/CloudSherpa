@@ -184,6 +184,10 @@ public class NormalizedMetricService {
         normalizedMetricsRepository.getSegmentedDownsampledNormalizedMetrics(
             request.resourceId(), canonMetricName, request.from(), request.to(), 1800, 300);
 
+    if (segmentedSeries.isEmpty()) {
+      return List.of();
+    }
+
     long currentSegment = segmentedSeries.get(0).segmentId();
 
     SegmentedMetric previous = null;
