@@ -109,7 +109,7 @@ public class Alert {
     private String message;
     private Map<String, Object> payload;
     private AlertStatusEnum status;
-    private Boolean inAppNotificationsSilenced;
+    private boolean inAppNotificationsSilenced = false;
     private String canonicalKey;
     private OffsetDateTime createdAt;
     private OffsetDateTime lastSeen;
@@ -160,11 +160,10 @@ public class Alert {
       return this;
     }
 
-    public Builder inAppNotificationsSilenced(Boolean inAppNotificationsSilenced)
-    {
-      this.inAppNotificationsSilenced = inAppNotificationsSilenced;
-      return  this;
-    }
+    public Builder inAppNotificationsSilenced(boolean inAppNotificationsSilenced) {
+    this.inAppNotificationsSilenced = inAppNotificationsSilenced;
+    return this;
+  }
 
     public Builder canonicalKey(String canonicalKey) {
       this.canonicalKey = canonicalKey;
