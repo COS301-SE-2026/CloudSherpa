@@ -114,10 +114,8 @@ export function formatUsageValue(value: number | null, baseUnit: string) {
         };
     }
 
-    //truncate normal numbers like percentages and smaller metrics ie duration, connections and errors
-    const truncatedValue = Math.trunc(value * 100) / 100; //mult 100 remove trailing decimals and divide again to make num smaller
     return {
-        formattedValue: truncatedValue.toString(),
+        formattedValue: value.toString(),
         displayUnit: baseUnit,
     };
 }
