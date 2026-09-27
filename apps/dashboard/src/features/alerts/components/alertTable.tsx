@@ -7,7 +7,7 @@ import {
     getCoreRowModel,
     getSortedRowModel,
     SortingState,
-    useReactTable,
+    useReactTable, getPaginationRowModel
 } from "@tanstack/react-table";
 import { Button } from "@/components/atoms/button";
 import { Switch } from "@/components/atoms/switch";
@@ -24,6 +24,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/atoms/dropdown-menu";
 import { LABELS_FOR_SCOPE, type ScopeForBudget } from "@/features/budgets/types/budgetTypes";
+import {TablePagination} from "@/components/molecules/tablePagination";
 
 interface AlertScope {
     scope: ScopeForBudget;
@@ -260,6 +261,8 @@ export function AlertTable({ alerts, onToggle, info, onDelete }: Readonly<PropsF
         onSortingChange: setSorting,
         getCoreRowModel: getCoreRowModel(),
         getSortedRowModel: getSortedRowModel(),
+        getPaginationRowModel : getPaginationRowModel(),
+        initialState : {pagination : {pageSize : 10}},
     });
 
     return (
@@ -295,6 +298,8 @@ export function AlertTable({ alerts, onToggle, info, onDelete }: Readonly<PropsF
                     )}
                 </TableBody>
             </Table>
+
+            <TablePagination forTable = {tableForAlerts}/>
         </div>
     );
 }
