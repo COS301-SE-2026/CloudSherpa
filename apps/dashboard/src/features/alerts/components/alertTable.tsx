@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
     ColumnDef,
     flexRender,
@@ -23,6 +23,29 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/atoms/dropdown-menu";
+import { LABELS_FOR_SCOPE, type ScopeForBudget } from "@/features/budgets/types/budgetTypes";
+import apiClient from "@/lib/fetch/api-client";
+
+interface AlertScope{
+    scope : ScopeForBudget;
+    resourceId : string | null;
+}
+
+function getScope(alert : Alert) : AlertScope{
+    const forPayload = (alert.payload ?? {}) as Record<string, unknown>;
+
+    if(alert.alertType === "BUDGET"){
+        const forScope = forPayload.budgetScope;
+
+        const scope : ScopeForBudget = forScope === "TENANT" || forScope === "ACCOUNT" || forScope === "RESOURCE" ? forScope : "TENANT";
+
+        return {scope, resourceId : null};
+    }
+
+    const resourceId = (forPayload.resourceId as string | undefined) ?? (forPayload.resource_id as string | undefined) ?? null;
+
+    return {scope : "RESOURCE", resourceId};
+}
 
 interface PropsForAlertsTable {
     alerts: Alert[];
@@ -35,6 +58,7 @@ interface ForColumns {
     onToggle: (alert: Alert, enabled: boolean) => Promise<void>;
     info: (alert: Alert) => void;
     onDelete: (alert: Alert) => void;
+    resourceNames : Record<string, string>;
 }
 
 function cleanAlertTitle(title: string): string {
@@ -57,7 +81,7 @@ function cleanAlertTitle(title: string): string {
     return cleaned;
 }
 
-function helperForColumns({ onToggle, info, onDelete }: ForColumns): ColumnDef<Alert>[] {
+function helperForColumns({ onToggle, info, onDelete, resourceNames }: ForColumns): ColumnDef<Alert>[] {
     return [
         {
             id: "enabled",
@@ -80,7 +104,7 @@ function helperForColumns({ onToggle, info, onDelete }: ForColumns): ColumnDef<A
                     <div className="flex items-center gap-2">
                         <Switch checked={active} onCheckedChange={handlingToggle} />
 
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-sm text-muted-foreground">
                             {" "}
                             {STATUS_LABELS[row.original.status]}{" "}
                         </span>
@@ -100,7 +124,7 @@ function helperForColumns({ onToggle, info, onDelete }: ForColumns): ColumnDef<A
                     : SEVERITY_COLOURS[row.original.severity];
 
                 return (
-                    <span className={`text-xs font-semibold uppercase tracking wider ${colours}`}>
+                    <span className={`text-sm font-semibold uppercase tracking wider ${colours}`}>
                         {" "}
                         {row.original.severity}{" "}
                     </span>
@@ -112,12 +136,28 @@ function helperForColumns({ onToggle, info, onDelete }: ForColumns): ColumnDef<A
             accessorKey: "alertType",
             header: () => "TYPE",
             cell: ({ row }) => (
-                <span className="text-xs text-muted-foreground">
+                <span className="text-sm text-muted-foreground">
                     {" "}
                     {TYPE[row.original.alertType]}{" "}
                 </span>
             ),
         },
+
+        {id : "scope", header : () => "SCOPE", enableSorting : false, cell : ({row}) => {
+            const alert = row.original;
+
+            const inactive = alert.status !== "ACTIVE";
+
+            const {scope, resourceId} = getScope(alert);
+
+            const labelForScope = LABELS_FOR_SCOPE[scope];
+
+            const name = scope === "RESOURCE" && resourceId ? (resourceNames[resourceId] ?? resourceId) : null;
+
+            return(
+                <div className = {`flex flex-col text-sm ${inactive ? "text-muted-foreground" : "text-foreground"}`}> <span> {labelForScope} </span> {name && (<span className = "text-muted-foreground"> {name} </span>)} </div>
+            );
+        },},
 
         {
             accessorKey: "title",
@@ -141,7 +181,7 @@ function helperForColumns({ onToggle, info, onDelete }: ForColumns): ColumnDef<A
             cell: ({ row }) => {
                 const updatedAt = row.original.lastSeen ?? row.original.createdAt;
                 return (
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-sm text-muted-foreground">
                         {" "}
                         {updatedAt ? new Date(updatedAt).toLocaleString() : "-"}{" "}
                     </span>
@@ -196,9 +236,29 @@ function helperForColumns({ onToggle, info, onDelete }: ForColumns): ColumnDef<A
 export function AlertTable({ alerts, onToggle, info, onDelete }: Readonly<PropsForAlertsTable>) {
     const [sorting, setSorting] = useState<SortingState>([]);
 
+    const [resourceNames, setResourceNames] = useState<Record<string, string>>({});
+
+    useEffect(() => {
+        let cancelled = false;
+
+        (async () => {
+            try{
+                const forNames = await apiClient<Record<string, string>>("/analytics/resource-names", {method : "GET"});
+
+                if(!cancelled){
+                    setResourceNames(forNames);
+                }
+            }catch{}
+        })();
+
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
     const columns = useMemo(
-        () => helperForColumns({ onToggle, info, onDelete }),
-        [onToggle, info, onDelete]
+        () => helperForColumns({ onToggle, info, onDelete, resourceNames }),
+        [onToggle, info, onDelete, resourceNames]
     );
 
     const tableForAlerts = useReactTable({
