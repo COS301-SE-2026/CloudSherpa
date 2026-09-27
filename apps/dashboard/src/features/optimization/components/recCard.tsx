@@ -28,7 +28,7 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
         e.stopPropagation();
         try {
             await dismissRec(recommendation.recommendationId);
-            toast.success(`Successfully dismissed recommendation.`);
+            toast.success(`Successfully disabled recommendation.`);
         } catch {
             toast.error(`Failed to dismiss recommendation.`);
             return;
@@ -223,7 +223,7 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
                     </CardTitle>
                 </div>
                 <Badge className={`text-sm px-3 py-1 ${getStatusBadgeClass()}`}>
-                    {recommendation.status}
+                    {recommendation.status === "DISMISSED" ? "DISABLED" : recommendation.status}
                 </Badge>
             </CardHeader>
             {open && (
