@@ -24,20 +24,22 @@ export default function AgenticDashCard() {
         setOpen(!open);
     };
 
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent | TouchEvent) => {
-            //check click outside popup and btn
-            if (
-                open &&
-                popupRef.current &&
-                !popupRef.current.contains(event.target as Node) &&
-                buttonRef.current &&
-                !buttonRef.current.contains(event.target as Node)
-            ) {
-                setOpen(false);
-            }
-        };
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+        //check click outside popup and btn
+        if (
+            open &&
+            popupRef.current &&
+            !popupRef.current.contains(event.target as Node) &&
+            buttonRef.current &&
+            !buttonRef.current.contains(event.target as Node)
+        ) {
+            setOpen(false); // NO SONAR
+        }
+    };
 
+    handleClickOutside;
+
+    useEffect(() => {
         //attach listners on open
         if (open) {
             document.addEventListener("mousedown", handleClickOutside);

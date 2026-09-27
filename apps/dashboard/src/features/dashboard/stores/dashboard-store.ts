@@ -564,11 +564,11 @@ const createAgenticSlice: StateCreator<DashboardStore, [], [], AgenticSlice> = (
                 return;
             }
 
-            set({ isGenerating: true, startedDashboardId });
-
             let sessionId: string | null = null;
 
             try {
+                set({ isGenerating: true, startedDashboardId });
+
                 const sessionRes = await createAiSession();
                 sessionId = sessionRes.sessionId;
 

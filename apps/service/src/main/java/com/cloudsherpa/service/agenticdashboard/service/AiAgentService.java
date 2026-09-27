@@ -189,41 +189,43 @@ public class AiAgentService {
         throw new IllegalArgumentException("Tool arguments must be a JSON object");
       }
 
-      String result = switch (toolName) {
-        case "list_cloud_accounts" -> objectMapper.writeValueAsString(
-            mcpTools.listCloudAccounts(context));
+      String result =
+          switch (toolName) {
+            case "list_cloud_accounts" -> objectMapper.writeValueAsString(
+                mcpTools.listCloudAccounts(context));
 
-        case "list_resources" -> objectMapper.writeValueAsString(
-            mcpTools.listResources(
-                context, nullableUuid(args, "accountId"), nullableText(args, "resourceType")));
+            case "list_resources" -> objectMapper.writeValueAsString(
+                mcpTools.listResources(
+                    context, nullableUuid(args, "accountId"), nullableText(args, "resourceType")));
 
-        case "list_available_metrics" -> objectMapper.writeValueAsString(
-            mcpTools.listAvailableMetrics(context, requiredUuid(args, "resourceId")));
+            case "list_available_metrics" -> objectMapper.writeValueAsString(
+                mcpTools.listAvailableMetrics(context, requiredUuid(args, "resourceId")));
 
-        case "list_billing_charges" -> objectMapper.writeValueAsString(
-            mcpTools.listBillingCharges(context));
+            case "list_billing_charges" -> objectMapper.writeValueAsString(
+                mcpTools.listBillingCharges(context));
 
-        case "stage_dashboard_version" -> {
-          JsonNode planNode = requiredNode(args, "plan");
+            case "stage_dashboard_version" -> {
+              JsonNode planNode = requiredNode(args, "plan");
 
-          System.out.println("=== AI DASHBOARD PLAN ===");
-          System.out.println(planNode.toPrettyString());
+              System.out.println("=== AI DASHBOARD PLAN ===");
+              System.out.println(planNode.toPrettyString());
 
-          JsonNode planForStaging = planNode.deepCopy();
+              JsonNode planForStaging = planNode.deepCopy();
 
-          if (planForStaging.has("widgets") && planForStaging.get("widgets").isArray()) {
-            for (JsonNode widget : planForStaging.get("widgets")) {
-              if (widget.isObject()) {
-                ((com.fasterxml.jackson.databind.node.ObjectNode) widget).remove("widgetId");
+              if (planForStaging.has("widgets") && planForStaging.get("widgets").isArray()) {
+                for (JsonNode widget : planForStaging.get("widgets")) {
+                  if (widget.isObject()) {
+                    ((com.fasterxml.jackson.databind.node.ObjectNode) widget).remove("widgetId");
+                  }
+                }
               }
-            }
-          }
 
-          DashboardPlanDto plan = objectMapper.treeToValue(planForStaging, DashboardPlanDto.class);
-          yield objectMapper.writeValueAsString(mcpTools.stageDashboardVersion(context, plan));
-        }
-        default -> throw new IllegalArgumentException("Unknown AI tool: " + toolName);
-      };
+              DashboardPlanDto plan =
+                  objectMapper.treeToValue(planForStaging, DashboardPlanDto.class);
+              yield objectMapper.writeValueAsString(mcpTools.stageDashboardVersion(context, plan));
+            }
+            default -> throw new IllegalArgumentException("Unknown AI tool: " + toolName);
+          };
       return AiToolResultDto.success(toolName, result);
     } catch (Exception exception) {
       return AiToolResultDto.failure(toolName, buildToolErrorMessage(toolName, exception));
@@ -256,7 +258,8 @@ public class AiAgentService {
           sessionId, null, null, stageAttempted, stageSucceeded, assistantMessage, null);
     }
 
-    var response = versionService.getVersionResponse(userId, sessionId, session.getCurrentVersionId());
+    var response =
+        versionService.getVersionResponse(userId, sessionId, session.getCurrentVersionId());
 
     return new AiDashboardPlanResponseDto(
         sessionId,
@@ -436,43 +439,47 @@ public class AiAgentService {
 
     widgetProperties.put("aggregationWindowDays", Map.of("type", "integer", "minimum", 1));
 
-    Map<String, Object> widgetSchema = Map.of(
-        "type",
-        "object",
-        "properties",
-        widgetProperties,
-        "required",
-        List.of("widgetType", "displayName", "startX", "startY", "width", "height"));
+    Map<String, Object> widgetSchema =
+        Map.of(
+            "type",
+            "object",
+            "properties",
+            widgetProperties,
+            "required",
+            List.of("widgetType", "displayName", "startX", "startY", "width", "height"));
 
-    Map<String, Object> planProperties = Map.of(
-        "title",
-        Map.of("type", "string"),
-        "description",
-        Map.of("type", "string"),
-        "timeFrom",
-        Map.of("type", "string"),
-        "timeTo",
-        Map.of("type", "string"),
-        "predefinedTime",
-        Map.of("type", "string"),
-        "widgets",
-        Map.of("type", "array", "items", widgetSchema));
+    Map<String, Object> planProperties =
+        Map.of(
+            "title",
+            Map.of("type", "string"),
+            "description",
+            Map.of("type", "string"),
+            "timeFrom",
+            Map.of("type", "string"),
+            "timeTo",
+            Map.of("type", "string"),
+            "predefinedTime",
+            Map.of("type", "string"),
+            "widgets",
+            Map.of("type", "array", "items", widgetSchema));
 
-    Map<String, Object> planSchema = Map.of(
-        "type",
-        "object",
-        "properties",
-        planProperties,
-        "required",
-        List.of("title", "widgets"));
+    Map<String, Object> planSchema =
+        Map.of(
+            "type",
+            "object",
+            "properties",
+            planProperties,
+            "required",
+            List.of("title", "widgets"));
 
-    Map<String, Object> stageParameters = Map.of(
-        "type",
-        "object",
-        "properties",
-        Map.of("plan", planSchema),
-        "required",
-        List.of("plan"));
+    Map<String, Object> stageParameters =
+        Map.of(
+            "type",
+            "object",
+            "properties",
+            Map.of("plan", planSchema),
+            "required",
+            List.of("plan"));
 
     List<Map<String, Object>> tools = new ArrayList<>();
 
@@ -565,7 +572,8 @@ public class AiAgentService {
 
     if (session.getCurrentVersionId() == null) {
       return Map.of(
-          "role", "system",
+          "role",
+          "system",
           "content",
           """
               CURRENT ACTIVE DASHBOARD:
@@ -576,7 +584,8 @@ public class AiAgentService {
               """);
     }
 
-    DashboardPlanDto dashboard = versionService.getDashboardPlan(userId, sessionId, session.getCurrentVersionId());
+    DashboardPlanDto dashboard =
+        versionService.getDashboardPlan(userId, sessionId, session.getCurrentVersionId());
 
     try {
       String dashboardJson = objectMapper.writeValueAsString(dashboard);
@@ -630,7 +639,8 @@ public class AiAgentService {
         Map.of("name", name, "description", description, "parameters", parameters));
   }
 
-  private static final String SYSTEM_PROMPT = """
+  private static final String SYSTEM_PROMPT =
+      """
       You are the CloudSherpa Dashboard Construction Agent.
 
       Construct dashboards only from data discovered through CloudSherpa tools.
