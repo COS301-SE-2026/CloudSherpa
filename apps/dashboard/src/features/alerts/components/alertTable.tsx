@@ -17,19 +17,24 @@ import { SEVERITY_COLOURS, STATUS_LABELS, TYPE } from "@/features/alerts/types/a
 import type { Alert } from "@/features/alerts/types/alertTypes";
 import { toast } from "sonner";
 import { TableHeaderData } from "@/features/alerts/components/atoms/tableHeaderData";
-import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/atoms/dropdown-menu";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/atoms/dropdown-menu";
 
 interface PropsForAlertsTable {
     alerts: Alert[];
     onToggle: (alert: Alert, enabled: boolean) => Promise<void>;
     info: (alert: Alert) => void;
-    onDelete : (alert : Alert) => void;
+    onDelete: (alert: Alert) => void;
 }
 
 interface ForColumns {
     onToggle: (alert: Alert, enabled: boolean) => Promise<void>;
     info: (alert: Alert) => void;
-    onDelete : (alert : Alert) => void;
+    onDelete: (alert: Alert) => void;
 }
 
 function cleanAlertTitle(title: string): string {
@@ -151,16 +156,35 @@ function helperForColumns({ onToggle, info, onDelete }: ForColumns): ColumnDef<A
             cell: ({ row }) => {
                 const forAlerts = row.original;
 
-                return(
+                return (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant = "ghost" size = "sm" className = "h-auto p-0 text-muted-foreground hover:text-foreground"> <MoreVertical className = "h-4 w-4"/> </Button>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-auto p-0 text-muted-foreground hover:text-foreground"
+                            >
+                                {" "}
+                                <MoreVertical className="h-4 w-4" />{" "}
+                            </Button>
                         </DropdownMenuTrigger>
 
-                        <DropdownMenuContent align = "end" className = "w-40">
-                            <DropdownMenuItem onClick = {() => info(forAlerts)} className = "cursor-pointer"> <Info className = "mr-2 h-4 w-4"/> More info </DropdownMenuItem>
+                        <DropdownMenuContent align="end" className="w-40">
+                            <DropdownMenuItem
+                                onClick={() => info(forAlerts)}
+                                className="cursor-pointer"
+                            >
+                                {" "}
+                                <Info className="mr-2 h-4 w-4" /> More info{" "}
+                            </DropdownMenuItem>
 
-                            <DropdownMenuItem onClick = {() => onDelete(forAlerts)} className = "cursor-pointer text-destructive focus:text-destructive"> <Trash2 className = "mr-2 h-4 w-4" /> Delete </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={() => onDelete(forAlerts)}
+                                className="cursor-pointer text-destructive focus:text-destructive"
+                            >
+                                {" "}
+                                <Trash2 className="mr-2 h-4 w-4" /> Delete{" "}
+                            </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 );
@@ -172,7 +196,10 @@ function helperForColumns({ onToggle, info, onDelete }: ForColumns): ColumnDef<A
 export function AlertTable({ alerts, onToggle, info, onDelete }: Readonly<PropsForAlertsTable>) {
     const [sorting, setSorting] = useState<SortingState>([]);
 
-    const columns = useMemo(() => helperForColumns({ onToggle, info, onDelete }), [onToggle, info, onDelete]);
+    const columns = useMemo(
+        () => helperForColumns({ onToggle, info, onDelete }),
+        [onToggle, info, onDelete]
+    );
 
     const tableForAlerts = useReactTable({
         data: alerts,

@@ -7,7 +7,7 @@ interface AlertStore {
     setAlerts: (alerts: Alert[]) => void;
     upsertAlert: (incoming: Alert) => void;
     setStatus: (alertId: string, status: Alert["status"]) => void;
-    removeAlert : (alertId : string) => void;
+    removeAlert: (alertId: string) => void;
 }
 
 // This function determines which of two alerts is newer.
@@ -103,9 +103,9 @@ export const useAlertStore = create<AlertStore>((set) => ({
         });
     },
 
-    removeAlert : (alertId) => {
+    removeAlert: (alertId) => {
         set((forState) => ({
-            alerts : forState.alerts.filter((alert) => alert.alertId !== alertId),
+            alerts: forState.alerts.filter((alert) => alert.alertId !== alertId),
         }));
     },
 }));

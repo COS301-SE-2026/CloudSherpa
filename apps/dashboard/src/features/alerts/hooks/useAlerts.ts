@@ -12,7 +12,7 @@ interface AlertsResult {
     refreshing: () => Promise<void>;
     disable: (alertId: string) => Promise<void>;
     enable: (alertId: string) => Promise<void>;
-    removeAlert : (alertId : string) => Promise<void>;
+    removeAlert: (alertId: string) => Promise<void>;
 }
 
 export function useAlerts(typeForAlert?: TypeForAlerts): AlertsResult {
@@ -83,11 +83,14 @@ export function useAlerts(typeForAlert?: TypeForAlerts): AlertsResult {
         [setStatus]
     );
 
-    const removeAlert = useCallback(async (alertId : string) => {
-        await deleteAlert(alertId);
+    const removeAlert = useCallback(
+        async (alertId: string) => {
+            await deleteAlert(alertId);
 
-        removeFromStore(alertId);
-    }, [removeFromStore]);
+            removeFromStore(alertId);
+        },
+        [removeFromStore]
+    );
 
     return {
         alerts,
@@ -95,6 +98,7 @@ export function useAlerts(typeForAlert?: TypeForAlerts): AlertsResult {
         forError,
         refreshing,
         disable,
-        enable, removeAlert
+        enable,
+        removeAlert,
     };
 }

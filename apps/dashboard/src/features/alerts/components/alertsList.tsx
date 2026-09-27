@@ -7,8 +7,8 @@ interface PropsForAlerts {
     alerts: Alert[];
     disable: (alertId: string) => Promise<void>;
     enable: (alertId: string) => Promise<void>;
-    info : (alert : Alert) => void;
-    onDelete : (alert : Alert) => void;
+    info: (alert: Alert) => void;
+    onDelete: (alert: Alert) => void;
 }
 
 export function AlertsList({ alerts, disable, enable, info, onDelete }: Readonly<PropsForAlerts>) {
@@ -22,7 +22,7 @@ export function AlertsList({ alerts, disable, enable, info, onDelete }: Readonly
                     checked ? enable(alert.alertId) : disable(alert.alertId)
                 }
                 info={info}
-                onDelete = {onDelete}
+                onDelete={onDelete}
             />
 
             {/* <AlertDialog
