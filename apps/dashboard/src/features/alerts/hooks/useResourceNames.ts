@@ -1,12 +1,12 @@
 "use client";
 
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import apiClient from "@/lib/fetch/api-client";
 
-export function useResourceNames() : Record<string, string>{
+export function useResourceNames(): Record<string, string> {
     //copied from budget file to correct sonarqube error
     const [resourceNames, setResourceNames] = useState<Record<string, string>>({});
-    
+
     useEffect(() => {
         let cancelled = false;
 

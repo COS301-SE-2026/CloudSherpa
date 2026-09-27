@@ -36,7 +36,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/atoms/dropdown-menu";
-import {useResourceNames} from "@/features/alerts/hooks/useResourceNames";
+import { useResourceNames } from "@/features/alerts/hooks/useResourceNames";
 
 const CONDITION_VERBS: Record<OperatorsForThreshold, string> = {
     GT: "More than",

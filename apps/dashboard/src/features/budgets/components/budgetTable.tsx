@@ -22,7 +22,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/atoms/dropdown-menu";
-import {useResourceNames} from "@/features/alerts/hooks/useResourceNames";
+import { useResourceNames } from "@/features/alerts/hooks/useResourceNames";
 interface PropsForBudget {
     budgets: Budget[];
     edit: (budget: Budget) => void;
