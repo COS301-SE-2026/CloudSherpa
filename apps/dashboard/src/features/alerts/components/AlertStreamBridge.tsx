@@ -7,6 +7,7 @@ import type { Alert } from "@/features/alerts/types/alertTypes";
 import { useAlertStream } from "@/features/alerts/services/sse/alert-stream";
 import { useAlertStore } from "@/features/alerts/stores/alert-store";
 import { fetchAlerts } from "@/features/alerts/alerts";
+import { TriangleAlertIcon } from "lucide-react";
 
 function findExistingAlert(previous: Alert[], incoming: Alert): Alert | undefined {
     const canonical = incoming.canonicalKey?.trim();
@@ -60,10 +61,17 @@ export function AlertStreamBridge() {
             const toastTitle = escalated ? "Alert severity CRITICAL" : "New alert";
             const toastDescription = incoming.title || "A new alert needs your attention.";
 
-            toast.warning(toastTitle, {
+            toast(toastTitle, {
                 description: toastDescription,
+                icon: <TriangleAlertIcon className="size-4" />,
                 position: "top-center",
                 duration: 9000,
+                className:
+                    "bg-[var(--color-orange-300)]! text-[var(--color-orange-800)]! border-[var(--color-orange-400)]! dark:bg-[var(--color-orange-700)]! dark:text-[var(--color-orange-50)]! dark:border-[var(--color-orange-800)]!",
+                classNames: {
+                    actionButton:
+                        "bg-[var(--color-orange-300)]! text-[var(--color-orange-800)]! hover:brightness-90! dark:bg-[var(--color-orange-700)]! dark:text-[var(--color-orange-50)]!",
+                },
                 action: {
                     label: "View alert",
                     onClick: () => router.push("/alerts"),
