@@ -23,6 +23,7 @@ import com.cloudsherpa.lib.repositories.AlertRepository;
 import com.cloudsherpa.lib.repositories.ThresholdRepository;
 import com.cloudsherpa.service.alerts.service.ThresholdEvaluationService;
 import com.cloudsherpa.service.listener.dto.MetricStreamEventDto;
+import com.cloudsherpa.service.metrics.MetricDisplayNameMapper;
 import com.cloudsherpa.service.sse.SseService;
 import com.cloudsherpa.service.webhooks.producers.WebhookProducerService;
 import java.math.BigDecimal;
@@ -45,6 +46,7 @@ class ThresholdEvaluationServiceTest {
   @Mock private AlertRepository alertRepository;
   @Mock private SseService sseService;
   @Mock private WebhookProducerService webhookProducerService;
+  @Mock private MetricDisplayNameMapper metricDisplayNameMapper;
 
   private ThresholdEvaluationService service;
   private UUID userId;
@@ -54,13 +56,21 @@ class ThresholdEvaluationServiceTest {
   void setUp() {
     service =
         new ThresholdEvaluationService(
-            thresholdRepository, alertRepository, sseService, webhookProducerService);
+            thresholdRepository,
+            alertRepository,
+            sseService,
+            webhookProducerService,
+            metricDisplayNameMapper);
+
     userId = UUID.randomUUID();
     resourceId = UUID.randomUUID();
   }
 
   @Test
   void evaluateShouldCreateAlertWhenThresholdIsViolated() {
+
+    when(metricDisplayNameMapper.toDisplayName("CPUUtilization")).thenReturn("CPU Utilization");
+
     Threshold threshold = threshold("CPUUtilization", "GT", 80.0, AlertSeverityEnum.WARNING, true);
     mockWebhookEventProduction(threshold);
 
@@ -81,9 +91,10 @@ class ThresholdEvaluationServiceTest {
     assertEquals(AlertStatusEnum.ACTIVE, saved.getStatus());
     assertEquals(AlertTypeEnum.THRESHOLD, saved.getAlertType());
     assertEquals(AlertSeverityEnum.WARNING, saved.getSeverity());
-    assertEquals("CPUUtilization GT 80.0", saved.getTitle());
+    assertEquals("CPU Utilization threshold breach", saved.getTitle());
     assertEquals(
-        "CPUUtilization is 92 (threshold GT 80.0) for resource " + resourceId, saved.getMessage());
+        "CPU Utilization is 92, which exceeds the configured threshold (> 80.0) on resource Example resource [UNKNOWN].",
+        saved.getMessage());
     assertEquals(
         "threshold:" + threshold.getThresholdId() + ":" + resourceId, saved.getCanonicalKey());
     verify(sseService).broadcast(eq(userId), eq("alert"), same(saved));
@@ -116,8 +127,9 @@ class ThresholdEvaluationServiceTest {
             .widgetId(null)
             .alertType(AlertTypeEnum.THRESHOLD)
             .severity(AlertSeverityEnum.WARNING)
-            .title("CPUUtilization GT 80.0")
-            .message("CPUUtilization is 92 (threshold GT 80.0) for resource " + resourceId)
+            .title("CPU Utilization threshold breach")
+            .message(
+                "CPU Utilization is 92, which exceeds the configured threshold (> 80.0) on resource Example resource [UNKNOWN].")
             .payload(Map.of("metric_name", "CPUUtilization"))
             .status(AlertStatusEnum.ACTIVE)
             .canonicalKey(canonicalKey)

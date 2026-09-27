@@ -198,7 +198,7 @@ public class BudgetEvaluationService {
   }
 
   private BudgetScopeContext tenantScopeContext() {
-    return new BudgetScopeContext(TENANT_SCOPE, "All connected resources", "MULTI");
+    return new BudgetScopeContext("Multi-cloud", "All connected resources", "MULTI");
   }
 
   private String resolveProvider(Resource resource) {

@@ -87,8 +87,8 @@ class AnomalyEvaluationServiceTest {
     assertEquals(AlertStatusEnum.ACTIVE, saved.getStatus());
     assertEquals(AlertTypeEnum.ANOMALY, saved.getAlertType());
     assertEquals(AlertSeverityEnum.WARNING, saved.getSeverity());
-
-    assertTrue(saved.getTitle().contains(String.format("anomaly detected (z=%.2f)", 3.0)));
+    assertEquals("Anomaly detected: ResponseTime", saved.getTitle());
+    assertTrue(saved.getMessage().contains("on resource Example resource [UNKNOWN]."));
     assertEquals("anomaly:" + resourceId + ":ResponseTime", saved.getCanonicalKey());
 
     verify(sseService).broadcast(eq(userId), eq("alert"), same(saved));
@@ -115,8 +115,7 @@ class AnomalyEvaluationServiceTest {
     verify(alertRepository).save(captor.capture());
 
     assertEquals(AlertSeverityEnum.CRITICAL, captor.getValue().getSeverity());
-    assertTrue(
-        captor.getValue().getTitle().contains(String.format("anomaly detected (z=%.2f)", 4.5)));
+    assertEquals("Anomaly detected: ResponseTime", captor.getValue().getTitle());
   }
 
   @Test
