@@ -29,10 +29,10 @@
     --accent-foreground: var(--color-neutral-900);
     --destructive: var(--color-red-500);
     --destructive-foreground: var(--color-red-50);
-    --success: var(--color-green-400);
+    --success: var(--color-green-300);
     --success-foreground: var(--color-green-900);
-    --warning: var(--color-orange-200);
-    --warning-foreground: var(--color-orange-800);
+    --warning: var(--color-orange-500);
+    --warning-foreground: var(--color-orange-950);
     --border: var(--color-neutral-300);
     --input: var(--color-neutral-200);
     --ring: var(--color-brand-500);
