@@ -183,16 +183,6 @@ export function AlertsPage() {
                             </p>
                         </div>
 
-                        {forInfo?.payload && (
-                            <div>
-                                <p className="font-medium text-foreground"> Payload </p>
-
-                                <pre className="mt-1 max-h-64 overflow-auto rounded-md bg-muted p-3 text-xs">
-                                    {" "}
-                                    {JSON.stringify(forInfo.payload, null, 2)}{" "}
-                                </pre>
-                            </div>
-                        )}
                     </div>
 
                     <DialogFooter>
