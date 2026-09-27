@@ -23,6 +23,33 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/atoms/dropdown-menu";
+import { LABELS_FOR_SCOPE, type ScopeForBudget } from "@/features/budgets/types/budgetTypes";
+
+interface AlertScope {
+    scope: ScopeForBudget;
+    name: string | null;
+}
+
+function getScope(alert: Alert): AlertScope {
+    const forPayload = (alert.payload ?? {}) as Record<string, unknown>;
+
+    if (alert.alertType === "BUDGET") {
+        const forScope = forPayload.budget_scope;
+
+        const scope: ScopeForBudget =
+            forScope === "TENANT" || forScope === "ACCOUNT" || forScope === "RESOURCE"
+                ? forScope
+                : "TENANT";
+
+        const name = (forPayload.scope_name as string | undefined) ?? null;
+
+        return { scope, name };
+    }
+
+    const name = (forPayload.resource_name as string | undefined) ?? null;
+
+    return { scope: "RESOURCE", name };
+}
 
 interface PropsForAlertsTable {
     alerts: Alert[];
@@ -80,7 +107,7 @@ function helperForColumns({ onToggle, info, onDelete }: ForColumns): ColumnDef<A
                     <div className="flex items-center gap-2">
                         <Switch checked={active} onCheckedChange={handlingToggle} />
 
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-sm text-muted-foreground">
                             {" "}
                             {STATUS_LABELS[row.original.status]}{" "}
                         </span>
@@ -100,7 +127,7 @@ function helperForColumns({ onToggle, info, onDelete }: ForColumns): ColumnDef<A
                     : SEVERITY_COLOURS[row.original.severity];
 
                 return (
-                    <span className={`text-xs font-semibold uppercase tracking wider ${colours}`}>
+                    <span className={`text-sm font-semibold uppercase tracking wider ${colours}`}>
                         {" "}
                         {row.original.severity}{" "}
                     </span>
@@ -112,11 +139,36 @@ function helperForColumns({ onToggle, info, onDelete }: ForColumns): ColumnDef<A
             accessorKey: "alertType",
             header: () => "TYPE",
             cell: ({ row }) => (
-                <span className="text-xs text-muted-foreground">
+                <span className="text-sm text-muted-foreground">
                     {" "}
                     {TYPE[row.original.alertType]}{" "}
                 </span>
             ),
+        },
+
+        {
+            id: "scope",
+            header: () => "SCOPE",
+            enableSorting: false,
+            cell: ({ row }) => {
+                const alert = row.original;
+
+                const inactive = alert.status !== "ACTIVE";
+
+                const { scope, name } = getScope(alert);
+
+                const labelForScope = LABELS_FOR_SCOPE[scope];
+
+                return (
+                    <div
+                        className={`flex flex-col text-sm ${inactive ? "text-muted-foreground" : "text-foreground"}`}
+                    >
+                        {" "}
+                        <span> {labelForScope} </span>{" "}
+                        {name && <span className="text-muted-foreground"> {name} </span>}{" "}
+                    </div>
+                );
+            },
         },
 
         {
@@ -141,7 +193,7 @@ function helperForColumns({ onToggle, info, onDelete }: ForColumns): ColumnDef<A
             cell: ({ row }) => {
                 const updatedAt = row.original.lastSeen ?? row.original.createdAt;
                 return (
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-sm text-muted-foreground">
                         {" "}
                         {updatedAt ? new Date(updatedAt).toLocaleString() : "-"}{" "}
                     </span>
