@@ -174,7 +174,14 @@ export function KPIConfigTable<TValue>({
                                     </div>
                                 </CardHeader>
                                 <CardContent className="flex flex-col gap-4 w-full text-xs  font-medium text-foreground">
-                                    <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 text-sm">
+                                    <div
+                                        className={cn(
+                                            "grid grid-cols-2 gap-4 text-sm",
+                                            row.original.resourceName
+                                                ? "lg:grid-cols-3"
+                                                : "lg:grid-cols-2"
+                                        )}
+                                    >
                                         <div className="flex flex-col gap-1 w-full min-w-0">
                                             <span className="text-muted-foreground">
                                                 Service Type
