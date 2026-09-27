@@ -12,11 +12,16 @@ import {
 import { Button } from "@/components/atoms/button";
 import { Switch } from "@/components/atoms/switch";
 import { Table, TableBody, TableCell, TableRow } from "@/components/atoms/table";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, MoreVertical } from "lucide-react";
 import type { Budget } from "@/features/budgets/types/budgetTypes";
 import { LABELS_FOR_SCOPE } from "@/features/budgets/types/budgetTypes";
 import { TableHeaderData } from "@/features/alerts/components/atoms/tableHeaderData";
-
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/atoms/dropdown-menu";
 interface PropsForBudget {
     budgets: Budget[];
     edit: (budget: Budget) => void;
@@ -89,29 +94,38 @@ function helperForColumns({ edit, toggleEnabled, onDelete }: Columns): ColumnDef
             id: "actions",
             header: () => "ACTIONS",
             enableSorting: false,
-            cell: ({ row }) => (
-                <div className="flex items-center gap-2">
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-auto p-0 text-primary"
-                        onClick={() => edit(row.original)}
-                    >
-                        {" "}
-                        <Pencil className="h-4 w-4" />{" "}
-                    </Button>
+            cell: ({ row }) => {
+                const forBudget = row.original;
 
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-auto p-0 text-destructive"
-                        onClick={() => onDelete(row.original)}
-                    >
-                        {" "}
-                        <Trash2 className="h-4 w-4" />{" "}
-                    </Button>
-                </div>
-            ),
+                return (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                {" "}
+                                <MoreVertical className="h-4 w-4" />{" "}
+                            </Button>
+                        </DropdownMenuTrigger>
+
+                        <DropdownMenuContent align="end" className="w-36">
+                            <DropdownMenuItem
+                                onClick={() => edit(forBudget)}
+                                className="cursor-pointer"
+                            >
+                                {" "}
+                                <Pencil className="mr-2 h-4 w-4" /> Edit{" "}
+                            </DropdownMenuItem>
+
+                            <DropdownMenuItem
+                                onClick={() => onDelete(forBudget)}
+                                className="cursor-pointer text-destructive focus:text-destructive"
+                            >
+                                {" "}
+                                <Trash2 className="mr-2 h-4 w-4" /> Delete{" "}
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                );
+            },
         },
     ];
 }

@@ -23,7 +23,6 @@ interface UsagePredictionChartProps {
     readonly historicalUsageSeries: HistoricalUsageSeriesDto | null;
     readonly usageError: UsageError | null;
     readonly loading: boolean;
-    readonly aggregatedHistory: boolean;
 }
 
 const now = Date.now();
@@ -32,7 +31,6 @@ export default function UsagePredictionChart({
     historicalUsageSeries,
     usageError,
     loading,
-    aggregatedHistory,
 }: UsagePredictionChartProps) {
     //styles
     const { themeName, tokens } = useChartTheme();
@@ -307,19 +305,17 @@ export default function UsagePredictionChart({
         <Card className="h-full w-full gap-0 overflow-hidden">
             <CardHeader className="flex flex-row justify-between items-center gap-1 ">
                 <div>
-                    {aggregatedHistory && (
-                        <Tooltip>
-                            <TooltipTrigger>
-                                <span className="flex flex-row align-center gap-1 text-muted-foreground">
-                                    <CircleAlert className="h-5 w-5" /> Aggregated History
-                                </span>
-                            </TooltipTrigger>
-                            <TooltipContent side="right">
-                                The usage history is averaged into 10-minute buckets to facilitate
-                                forecasting by normalizing the series.
-                            </TooltipContent>
-                        </Tooltip>
-                    )}
+                    <Tooltip>
+                        <TooltipTrigger>
+                            <span className="flex flex-row align-center gap-1 text-muted-foreground">
+                                <CircleAlert className="h-5 w-5" /> Aggregated History
+                            </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="right">
+                            The usage history is averaged into 10-minute buckets to facilitate
+                            forecasting by normalizing the series.
+                        </TooltipContent>
+                    </Tooltip>
                 </div>
                 <div>
                     <Button

@@ -49,6 +49,7 @@ test.describe("authentication", () => {
 
         // Logout
         await page.getByLabel("logout button").click();
+        await expect(page).toHaveURL(/\/login/);
         await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible();
 
         // Cant navigate to dasbhoard
