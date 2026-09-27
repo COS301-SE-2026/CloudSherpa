@@ -91,6 +91,7 @@ function helperForColumns({ onToggle, info, onDelete }: ForColumns): ColumnDef<A
             id: "enabled",
             header: () => "STATUS",
             enableSorting: false,
+            size : 120,
             cell: ({ row }) => {
                 const active = row.original.status === "ACTIVE";
 
@@ -120,6 +121,7 @@ function helperForColumns({ onToggle, info, onDelete }: ForColumns): ColumnDef<A
         {
             accessorKey: "severity",
             header: () => "SEVERITY",
+            size : 110,
             cell: ({ row }) => {
                 const inactive = row.original.status !== "ACTIVE";
 
@@ -139,6 +141,7 @@ function helperForColumns({ onToggle, info, onDelete }: ForColumns): ColumnDef<A
         {
             accessorKey: "alertType",
             header: () => "TYPE",
+            size : 110,
             cell: ({ row }) => (
                 <span className="text-sm text-muted-foreground">
                     {" "}
@@ -151,6 +154,7 @@ function helperForColumns({ onToggle, info, onDelete }: ForColumns): ColumnDef<A
             id: "scope",
             header: () => "SCOPE",
             enableSorting: false,
+            size : 180,
             cell: ({ row }) => {
                 const alert = row.original;
 
@@ -175,6 +179,7 @@ function helperForColumns({ onToggle, info, onDelete }: ForColumns): ColumnDef<A
         {
             accessorKey: "title",
             header: () => "ALERT",
+            size : 240,
             cell: ({ row }) => {
                 const inactive = row.original.status !== "ACTIVE";
                 const displayTitle = cleanAlertTitle(row.original.title);
@@ -191,6 +196,7 @@ function helperForColumns({ onToggle, info, onDelete }: ForColumns): ColumnDef<A
         {
             accessorKey: "lastSeen",
             header: () => "UPDATED AT",
+            size : 160,
             cell: ({ row }) => {
                 const updatedAt = row.original.lastSeen ?? row.original.createdAt;
                 return (
@@ -206,6 +212,7 @@ function helperForColumns({ onToggle, info, onDelete }: ForColumns): ColumnDef<A
             id: "info",
             header: () => "",
             enableSorting: false,
+            size : 60,
             cell: ({ row }) => {
                 const forAlerts = row.original;
 
@@ -267,7 +274,7 @@ export function AlertTable({ alerts, onToggle, info, onDelete }: Readonly<PropsF
 
     return (
         <div className="overflow-hidden rounded-lg border border-border bg-card text-card-foreground">
-            <Table>
+            <Table className = "table-fixed">
                 <TableHeaderData headerGroups={tableForAlerts.getHeaderGroups()} />
 
                 <TableBody>

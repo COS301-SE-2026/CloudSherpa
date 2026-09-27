@@ -49,6 +49,7 @@ function helperForColumns({
             id: "enabled",
             header: () => "ENABLED",
             enableSorting: false,
+            size : 120,
             cell: ({ row }) => (
                 <Switch
                     checked={row.original.enabled}
@@ -60,6 +61,7 @@ function helperForColumns({
         {
             accessorKey: "scope",
             header: () => "SCOPE",
+            size : 220,
             cell: ({ row }) => {
                 const forBudget = row.original;
 
@@ -87,6 +89,7 @@ function helperForColumns({
         {
             accessorKey: "budget",
             header: () => "BUDGET",
+            size : 160,
             cell: ({ row }) => {
                 const mutedBudget = !row.original.enabled;
 
@@ -104,6 +107,7 @@ function helperForColumns({
         {
             accessorKey: "window_days",
             header: () => "WINDOW",
+            size : 140,
             cell: ({ row }) => (
                 <span className={!row.original.enabled ? "text-muted-foreground" : ""}>
                     {row.original.window_days} {row.original.window_days === 1 ? "day" : "days"}
@@ -115,6 +119,7 @@ function helperForColumns({
             id: "actions",
             header: () => "ACTIONS",
             enableSorting: false,
+            size : 120,
             cell: ({ row }) => {
                 const forBudget = row.original;
 
@@ -174,7 +179,7 @@ export function BudgetTable({ budgets, edit, toggleEnabled, onDelete }: Readonly
 
     return (
         <div className="overflow-hidden rounded-lg border border-border bg-card text-card-foreground">
-            <Table>
+            <Table className = "table-fixed">
                 <TableHeaderData headerGroups={tableForBudgets.getHeaderGroups()} />
 
                 <TableBody>

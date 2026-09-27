@@ -131,6 +131,7 @@ function helperForColumns({
             id: "enabled",
             header: () => "ENABLED",
             enableSorting: false,
+            size : 20,
             cell: ({ row }) => {
                 const forThreshold = row.original;
 
@@ -147,6 +148,7 @@ function helperForColumns({
         {
             id: "resource",
             header: () => "RESOURCE",
+            size : 180,
             enableSorting: false,
             cell: ({ row }) => {
                 const forThreshold = row.original;
@@ -167,6 +169,7 @@ function helperForColumns({
         {
             accessorKey: "metricName",
             header: () => "METRIC",
+            size : 180,
             cell: ({ row }) => {
                 const forThreshold = row.original;
 
@@ -185,6 +188,7 @@ function helperForColumns({
             id: "condition",
             header: () => "CONDITION",
             enableSorting: false,
+            size : 140,
             cell: ({ row }) => {
                 const forThreshold = row.original;
 
@@ -207,6 +211,7 @@ function helperForColumns({
         {
             accessorKey: "severity",
             header: () => "SEVERITY",
+            size : 120,
             cell: ({ row }) => {
                 const forThreshold = row.original;
 
@@ -230,6 +235,7 @@ function helperForColumns({
         {
             accessorKey: "value",
             header: () => "VALUE",
+            size : 100,
             cell: ({ row }) => {
                 const forThreshold = row.original;
 
@@ -248,6 +254,7 @@ function helperForColumns({
             id: "currentValue",
             header: () => "CURRENT VALUE",
             enableSorting: false,
+            size : 140,
             cell: ({ row }) => {
                 const forThreshold = row.original;
 
@@ -265,6 +272,7 @@ function helperForColumns({
             id: "actions",
             header: () => "ACTIONS",
             enableSorting: false,
+            size : 100,
             cell: ({ row }) => {
                 const forThreshold = row.original;
 
@@ -329,7 +337,7 @@ export function ThresholdTable({
 
     return (
         <div className="overflow-hidden rounded-lg border border-border bg-card text-card-foreground">
-            <Table>
+            <Table className = "table-fixed">
                 <TableHeader>
                     {forThresholdTable.getHeaderGroups().map((headerGroup) => (
                         <TableRow key={headerGroup.id} className="hover:bg-transparent">
