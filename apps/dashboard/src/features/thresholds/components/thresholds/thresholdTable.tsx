@@ -8,7 +8,7 @@ import {
     getCoreRowModel,
     getSortedRowModel,
     SortingState,
-    useReactTable,
+    useReactTable, getPaginationRowModel
 } from "@tanstack/react-table";
 import {
     Table,
@@ -37,6 +37,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/atoms/dropdown-menu";
 import { useResourceNames } from "@/features/alerts/hooks/useResourceNames";
+import {TablePagination} from "@/components/molecules/tablePagination";
 
 const CONDITION_VERBS: Record<OperatorsForThreshold, string> = {
     GT: "More than",
@@ -322,6 +323,8 @@ export function ThresholdTable({
         onSortingChange: setSorting,
         getCoreRowModel: getCoreRowModel(),
         getSortedRowModel: getSortedRowModel(),
+        getPaginationRowModel : getPaginationRowModel(),
+        initialState : {pagination : {pageSize : 10}},
     });
 
     return (
@@ -400,6 +403,8 @@ export function ThresholdTable({
                     )}
                 </TableBody>
             </Table>
+
+            <TablePagination forTable = {forThresholdTable}/>
         </div>
     );
 }
