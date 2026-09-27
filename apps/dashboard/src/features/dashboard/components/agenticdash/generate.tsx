@@ -37,13 +37,13 @@ export default function GenerateDashInput() {
             return;
         }
 
-        if (isSessionActive) {
-            await sendPrompt(prompt);
-        } else {
-            await startSessionAndGenerate(prompt);
-        }
+        const succeeded = isSessionActive
+            ? await sendPrompt(prompt)
+            : await startSessionAndGenerate(prompt);
 
-        setPrompt("");
+        if (succeeded) {
+            setPrompt("");
+        }
     };
 
     useEffect(() => {

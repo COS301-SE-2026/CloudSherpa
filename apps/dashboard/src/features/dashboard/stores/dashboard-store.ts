@@ -47,8 +47,8 @@ function getDefaultWindow() {
 }
 
 export interface AgenticActions {
-    startSessionAndGenerate: (prompt: string) => Promise<void>;
-    sendPrompt: (prompt: string) => Promise<void>;
+    startSessionAndGenerate: (prompt: string) => Promise<boolean>;
+    sendPrompt: (prompt: string) => Promise<boolean>;
     switchVersion: (versionId: string) => Promise<void>;
     fetchVersions: () => Promise<void>;
     applyDashboard: (versionId: string, mode: AiDashboardApplyMode) => Promise<boolean>;
@@ -562,7 +562,7 @@ const createAgenticSlice: StateCreator<DashboardStore, [], [], AgenticSlice> = (
             const startedDashboardId = get().activeDashboardId;
             if (!startedDashboardId) {
                 toast.error("Select a dashboard before starting an AI session.");
-                return;
+                return false;
             }
 
             let sessionId: string | null = null;
@@ -601,6 +601,7 @@ const createAgenticSlice: StateCreator<DashboardStore, [], [], AgenticSlice> = (
                             "The AI could not create the requested dashboard."
                     );
                 }
+                return true;
             } catch (error) {
                 console.error("Failed to start AI session:", error);
 
@@ -627,12 +628,36 @@ const createAgenticSlice: StateCreator<DashboardStore, [], [], AgenticSlice> = (
                 toast.error(
                     error instanceof Error ? error.message : "Failed to generate AI dashboard plan."
                 );
+
+                return false;
             }
         },
 
         sendPrompt: async (prompt: string) => {
             const { sessionId, startedDashboardId } = get();
-            if (!sessionId || !startedDashboardId) return;
+            if (!sessionId || !startedDashboardId) {
+                console.error("sendPrompt called with no active session context", {
+                    sessionId,
+                    startedDashboardId,
+                });
+
+                toast.error(
+                    "Your AI session appears to have been lost. Please reload the page and start a new one."
+                );
+
+                set({
+                    sessionId: null,
+                    startedDashboardId: null,
+                    currentVersionId: null,
+                    isSessionActive: false,
+                    isGenerating: false,
+                    versions: [],
+                    stagedLayouts: {},
+                    stagedWidgets: {},
+                });
+
+                return false;
+            }
 
             set({ isGenerating: true });
 
@@ -662,12 +687,14 @@ const createAgenticSlice: StateCreator<DashboardStore, [], [], AgenticSlice> = (
                             "The AI could not create the requested dashboard."
                     );
                 }
+                return true;
             } catch (error) {
                 console.error("Failed to update plan:", error);
                 toast.error(
                     error instanceof Error ? error.message : "Failed to update AI dashboard draft."
                 );
                 set({ isGenerating: false });
+                return false;
             }
         },
 

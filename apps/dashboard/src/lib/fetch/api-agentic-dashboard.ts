@@ -27,10 +27,24 @@ export async function deleteAiSession(sessionId: string): Promise<void> {
 export async function generateDashboardPlan(
     payload: AiDashboardPlanRequest
 ): Promise<AiDashboardPlanResponse> {
-    return await apiClient<AiDashboardPlanResponse>("/ai/dashboard/plan", {
-        method: "POST",
-        body: JSON.stringify(payload),
-    });
+    try {
+        const response = await apiClient<AiDashboardPlanResponse>("/ai/dashboard/plan", {
+            method: "POST",
+            body: JSON.stringify(payload),
+        });
+
+        if (!response.stageSucceeded && !response.stageAttempted) {
+            throw new Error(
+                response.assistantMessage ||
+                    "The AI didn't make any changes. Try rephrasing your request or save changes and restart the session."
+            );
+        }
+
+        return response;
+    } catch (error) {
+        console.error("generatedashboardplan failed:", error);
+        throw error;
+    }
 }
 
 //return all dashboards versions
