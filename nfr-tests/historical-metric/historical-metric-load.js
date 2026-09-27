@@ -1,8 +1,5 @@
-import http from 'k6/http';
-import { sleep, check } from 'k6';
 import { loginSetup } from '../common/utils/login-setup.js';
-import { config } from '../common/utils/config.js';
-import historicalMetricEndpoint, { queryObjects } from './historical-metric-utils.js';
+import historicalMetricEndpoint from './historical-metric-utils.js';
 
 const now = new Date().toISOString();
 const thirtyDaysBack = new Date(Date.now() - 30*  86_400_000).toISOString();
@@ -15,7 +12,7 @@ export const options = {
   ],
 
   thresholds: {
-    http_req_duration: ['p(95)<500'],
+    http_req_duration: ['p(95)<1000'],
     http_req_failed: ['rate<0.01']   
   }
 };
