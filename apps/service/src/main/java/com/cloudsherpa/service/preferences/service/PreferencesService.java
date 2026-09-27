@@ -41,4 +41,26 @@ public class PreferencesService {
     prefs.setTheme(theme);
     preferencesRepository.save(prefs);
   }
+
+  public boolean getInAppAlertNotificationsEnabled(UUID userId) {
+    return preferencesRepository
+        .findById(userId)
+        .map(UserPreferences::getInAppAlertNotificationsEnabled)
+        .orElse(true);
+  }
+
+  @Transactional
+  public void updateInAppAlertNotificationsEnabled(UUID userId, boolean enabled) {
+    UserPreferences preferences =
+        preferencesRepository
+            .findById(userId)
+            .orElseGet(
+                () ->
+                    new UserPreferences(
+                        userId, ThemeEnum.dark, null, CurrencyEnum.USD, LanguageEnum.en, true));
+
+    preferences.setInAppAlertNotificationsEnabled(enabled);
+
+    preferencesRepository.save(preferences);
+  }
 }

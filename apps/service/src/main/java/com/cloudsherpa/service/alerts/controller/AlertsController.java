@@ -4,6 +4,7 @@ import com.cloudsherpa.lib.entities.Alert;
 import com.cloudsherpa.lib.entities.AlertStatusEnum;
 import com.cloudsherpa.lib.entities.AlertTypeEnum;
 import com.cloudsherpa.lib.repositories.AlertRepository;
+import com.cloudsherpa.service.alerts.dto.AlertNotificationSilenceRequest;
 import com.cloudsherpa.service.alerts.dto.AlertResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -111,5 +112,21 @@ public class AlertsController {
 
     alertRepository.deleteById(id);
     return ResponseEntity.noContent().build();
+  }
+
+  @PostMapping("/{id}/notification-silence")
+  public ResponseEntity<Void> updateNotificationSilence(
+      @PathVariable UUID id, @RequestBody AlertNotificationSilenceRequest request) {
+
+    return alertRepository
+        .findById(id)
+        .map(
+            alert -> {
+              alert.setInAppNotificationsSilenced(request.silenced());
+              alertRepository.save(alert);
+
+              return ResponseEntity.noContent().<Void>build();
+            })
+        .orElseGet(() -> ResponseEntity.notFound().build());
   }
 }
