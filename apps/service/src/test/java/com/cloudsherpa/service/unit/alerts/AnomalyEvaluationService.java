@@ -2,7 +2,6 @@ package com.cloudsherpa.service.unit.alerts;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -88,7 +87,9 @@ class AnomalyEvaluationServiceTest {
     assertEquals(AlertTypeEnum.ANOMALY, saved.getAlertType());
     assertEquals(AlertSeverityEnum.WARNING, saved.getSeverity());
     assertEquals("Anomaly detected: ResponseTime", saved.getTitle());
-    assertTrue(saved.getMessage().contains("on resource Example resource [UNKNOWN]."));
+    assertEquals(
+        "ResponseTime is 80 above baseline average 50 for resource Example resource from UNKNOWN.",
+        saved.getMessage());
     assertEquals("anomaly:" + resourceId + ":ResponseTime", saved.getCanonicalKey());
 
     verify(sseService).broadcast(eq(userId), eq("alert"), same(saved));

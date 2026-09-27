@@ -93,7 +93,7 @@ class BudgetEvaluationServiceTest {
     assertEquals("Budget exceeded: Multi-cloud spend alert", saved.getTitle());
     assertEquals("budget:" + budget.getBudgetId(), saved.getCanonicalKey());
     assertEquals("TENANT", saved.getPayload().get("budget_scope"));
-    assertEquals("All connected resources", saved.getPayload().get("scope_name"));
+    assertEquals("all connected resources", saved.getPayload().get("scope_name"));
     assertEquals("MULTI", saved.getPayload().get("provider"));
 
     verify(sseService).broadcast(eq(userId), eq("alert"), same(saved));
