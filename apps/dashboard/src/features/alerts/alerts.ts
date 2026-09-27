@@ -21,3 +21,13 @@ export const enableAlert = async (alertId: string): Promise<void> => {
 export const deleteAlert = async (alertId: string): Promise<void> => {
     return apiClient<void>(`/api/alerts/${alertId}`, { method: "DELETE" });
 };
+
+export const updateAlertNotificationSilence = (
+    alertId: string,
+    silenced: boolean
+): Promise<void> => {
+    return apiClient<void>(`/api/alerts/${alertId}/notification-silence`, {
+        method: "POST",
+        body: JSON.stringify({ silenced }),
+    });
+};

@@ -1,5 +1,6 @@
 package com.cloudsherpa.service.preferences.controller;
 
+import com.cloudsherpa.service.preferences.dto.AlertNotificationsUpdateRequest;
 import com.cloudsherpa.service.preferences.dto.ThemeUpdateRequest;
 import com.cloudsherpa.service.preferences.service.PreferencesService;
 import java.util.Collections;
@@ -50,6 +51,24 @@ public class PreferencesController {
     UUID userId = UUID.fromString(jwt.getSubject());
     preferencesService.updateTheme(userId, request.getTheme());
 
+    return ResponseEntity.ok().build();
+  }
+
+  @GetMapping("/alert-notifications")
+  public ResponseEntity<Map<String, Boolean>> getAlertNotifications(
+      @AuthenticationPrincipal Jwt jwt) {
+    UUID userId = UUID.fromString(jwt.getSubject());
+
+    return ResponseEntity.ok(
+        Map.of("enabled", preferencesService.getInAppAlertNotificationsEnabled(userId)));
+  }
+
+  @PostMapping("/alert-notifications")
+  public ResponseEntity<Void> updateAlertNotifications(
+      @AuthenticationPrincipal Jwt jwt, @RequestBody AlertNotificationsUpdateRequest request) {
+    UUID userId = UUID.fromString(jwt.getSubject());
+
+    preferencesService.updateInAppAlertNotificationsEnabled(userId, request.enabled());
     return ResponseEntity.ok().build();
   }
 }

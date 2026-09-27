@@ -61,6 +61,9 @@ public class Alert {
   @Column(name = "status", nullable = false, columnDefinition = "public.alert_status_enum")
   private AlertStatusEnum status;
 
+  @Column(name = "in_app_notifications_silenced", nullable = false)
+  private boolean inAppNotificationsSilenced;
+
   @Column(name = "canonical_key")
   private String canonicalKey;
 
@@ -85,6 +88,7 @@ public class Alert {
     this.message = builder.message;
     this.payload = builder.payload;
     this.status = builder.status;
+    this.inAppNotificationsSilenced = builder.inAppNotificationsSilenced;
     this.canonicalKey = builder.canonicalKey;
     this.createdAt = builder.createdAt;
     this.lastSeen = builder.lastSeen;
@@ -105,6 +109,7 @@ public class Alert {
     private String message;
     private Map<String, Object> payload;
     private AlertStatusEnum status;
+    private boolean inAppNotificationsSilenced = false;
     private String canonicalKey;
     private OffsetDateTime createdAt;
     private OffsetDateTime lastSeen;
@@ -154,6 +159,11 @@ public class Alert {
       this.status = status;
       return this;
     }
+
+    public Builder inAppNotificationsSilenced(boolean inAppNotificationsSilenced) {
+    this.inAppNotificationsSilenced = inAppNotificationsSilenced;
+    return this;
+  }
 
     public Builder canonicalKey(String canonicalKey) {
       this.canonicalKey = canonicalKey;
@@ -258,6 +268,14 @@ public class Alert {
 
   public void setStatus(AlertStatusEnum status) {
     this.status = status;
+  }
+
+  public boolean isInAppNotificationsSilenced() {
+    return inAppNotificationsSilenced;
+  }
+
+  public void setInAppNotificationsSilenced(boolean inAppNotificationsSilenced) {
+    this.inAppNotificationsSilenced = inAppNotificationsSilenced;
   }
 
   public String getCanonicalKey() {
