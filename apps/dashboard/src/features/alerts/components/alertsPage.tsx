@@ -63,7 +63,6 @@ export function AlertsPage() {
     const forTotalCount = alerts.length;
     const criticalCount = alerts.filter((alert) => alert.severity === "CRITICAL").length;
     const warningCount = alerts.filter((alert) => alert.severity === "WARNING").length;
-    const disabledCount = alerts.filter((alert) => alert.status === "DISABLED").length;
 
     const handlingInfo = (alert: Alert) => {
         setForInfo(alert);

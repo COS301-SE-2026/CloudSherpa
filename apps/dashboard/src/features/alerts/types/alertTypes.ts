@@ -20,7 +20,7 @@ export interface Alert {
 }
 
 export const SEVERITY_COLOURS: Record<SeverityForAlerts, string> = {
-    WARNING: "text-orange-500",
+    WARNING: "text-warning",
     CRITICAL: "text-destructive",
 };
 
