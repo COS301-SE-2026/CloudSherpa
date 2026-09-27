@@ -11,6 +11,7 @@ import { useAlerts } from "@/features/alerts/hooks/useAlerts";
 import { useAlertStore } from "@/features/alerts/stores/alert-store";
 import { updateAlertNotifications } from "@/lib/fetch/api-preferences";
 import type { TypeForAlerts, Alert } from "@/features/alerts/types/alertTypes";
+import RecommendationCardHero from "@/features/optimization/components/recCardHero";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -30,6 +31,15 @@ import {
     DialogTitle,
 } from "@/components/atoms/dialog";
 import { toast } from "sonner";
+import { SEVERITY_COLOURS, STATUS_LABELS, TYPE } from "@/features/alerts/types/alertTypes";
+
+const COLOURS_FOR_STATUS: Record<Alert["status"], string> = {
+    ACTIVE: "text-success",
+    DISABLED: "text-muted-foreground",
+};
+
+const TAG =
+    "rounded-md border border-border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider";
 
 const FILTERS: Array<{ value: "ALL" | TypeForAlerts; label: string }> = [
     { value: "ALL", label: "All" },
@@ -68,6 +78,8 @@ export function AlertsPage() {
 
     const activeCount = alerts.filter((alert) => alert.status === "ACTIVE").length;
     const forTotalCount = alerts.length;
+    const criticalCount = alerts.filter((alert) => alert.severity === "CRITICAL").length;
+    const warningCount = alerts.filter((alert) => alert.severity === "WARNING").length;
 
     const handlingInfo = (alert: Alert) => {
         setForInfo(alert);
@@ -138,6 +150,21 @@ export function AlertsPage() {
                     <h1 className="mb-4 text-2xl font-semibold tracking-tight text-foreground">
                         Alerts
                     </h1>
+
+                    <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                        <RecommendationCardHero
+                            value={`Total ${forTotalCount}`}
+                            className="text-card-foreground"
+                        />
+                        <RecommendationCardHero
+                            value={`Critical ${criticalCount}`}
+                            className="text-destructive"
+                        />
+                        <RecommendationCardHero
+                            value={`Warning ${warningCount}`}
+                            className="text-orange-500"
+                        />
+                    </div>
 
                     <div className="mb-4 flex items-center gap-2">
                         <Input
@@ -219,8 +246,31 @@ export function AlertsPage() {
                     <DialogHeader>
                         <DialogTitle>{forInfo?.title}</DialogTitle>
 
-                        <DialogDescription>
-                            {forInfo?.alertType} {forInfo?.severity} {forInfo?.status}
+                        <DialogDescription asChild>
+                            <div className="flex flex-wrap items-center gap-2 pt-1">
+                                {forInfo && (
+                                    <>
+                                        <span className={`${TAG} text-muted-foreground`}>
+                                            {" "}
+                                            {TYPE[forInfo.alertType]}{" "}
+                                        </span>
+
+                                        <span
+                                            className={`${TAG} ${SEVERITY_COLOURS[forInfo.severity]}`}
+                                        >
+                                            {" "}
+                                            {forInfo.severity}{" "}
+                                        </span>
+
+                                        <span
+                                            className={`${TAG} ${COLOURS_FOR_STATUS[forInfo.status]}`}
+                                        >
+                                            {" "}
+                                            {STATUS_LABELS[forInfo.status]}{" "}
+                                        </span>
+                                    </>
+                                )}
+                            </div>
                         </DialogDescription>
                     </DialogHeader>
 
@@ -238,16 +288,6 @@ export function AlertsPage() {
                                     : "-"}
                             </p>
                         </div>
-
-                        {forInfo?.payload && (
-                            <div>
-                                <p className="font-medium text-foreground">Payload</p>
-
-                                <pre className="mt-1 max-h-64 overflow-auto rounded-md bg-muted p-3 text-xs">
-                                    {JSON.stringify(forInfo.payload, null, 2)}
-                                </pre>
-                            </div>
-                        )}
                     </div>
 
                     <DialogFooter>

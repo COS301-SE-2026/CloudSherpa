@@ -23,6 +23,33 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/atoms/dropdown-menu";
+import { LABELS_FOR_SCOPE, type ScopeForBudget } from "@/features/budgets/types/budgetTypes";
+
+interface AlertScope {
+    scope: ScopeForBudget;
+    name: string | null;
+}
+
+function getScope(alert: Alert): AlertScope {
+    const forPayload = (alert.payload ?? {}) as Record<string, unknown>;
+
+    if (alert.alertType === "BUDGET") {
+        const forScope = forPayload.budget_scope;
+
+        const scope: ScopeForBudget =
+            forScope === "TENANT" || forScope === "ACCOUNT" || forScope === "RESOURCE"
+                ? forScope
+                : "TENANT";
+
+        const name = (forPayload.scope_name as string | undefined) ?? null;
+
+        return { scope, name };
+    }
+
+    const name = (forPayload.resource_name as string | undefined) ?? null;
+
+    return { scope: "RESOURCE", name };
+}
 
 interface PropsForAlertsTable {
     alerts: Alert[];
@@ -181,6 +208,31 @@ function helperForColumns({
                 </span>
             ),
         },
+        {
+            id: "scope",
+            header: () => "SCOPE",
+            enableSorting: false,
+            cell: ({ row }) => {
+                const alert = row.original;
+
+                const inactive = alert.status !== "ACTIVE";
+
+                const { scope, name } = getScope(alert);
+
+                const labelForScope = LABELS_FOR_SCOPE[scope];
+
+                return (
+                    <div
+                        className={`flex flex-col text-sm ${inactive ? "text-muted-foreground" : "text-foreground"}`}
+                    >
+                        {" "}
+                        <span> {labelForScope} </span>{" "}
+                        {name && <span className="text-muted-foreground"> {name} </span>}{" "}
+                    </div>
+                );
+            },
+        },
+
         {
             accessorKey: "title",
             header: () => "ALERT",

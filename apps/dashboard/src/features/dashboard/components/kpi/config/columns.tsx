@@ -2,12 +2,15 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/atoms/checkbox";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 export type KPIConfigTableRow = {
     chargeId: string;
     resourceId: string;
     service: string;
     provider: string;
+    resourceName: string | null;
+    chargeCost: number;
 };
 
 export const kpiConfigColumns: ColumnDef<KPIConfigTableRow>[] = [
@@ -55,7 +58,7 @@ export const kpiConfigColumns: ColumnDef<KPIConfigTableRow>[] = [
     {
         accessorKey: "resourceId",
         header: "Resource ID",
-        size: 200,
+        size: 250,
         cell: ({ getValue }) => {
             const value = getValue<string>();
 
@@ -70,10 +73,20 @@ export const kpiConfigColumns: ColumnDef<KPIConfigTableRow>[] = [
     {
         accessorKey: "provider",
         header: "Provider",
-        size: 50,
+        size: 15,
     },
-    // {
-    //     accessorKey: "connection",
-    //     header: "Connection",
-    // },
+    {
+        id: "rowDropdown",
+        header: () => null,
+        size: 30,
+        cell: ({ row }) => (
+            <>
+                {row.getIsExpanded() ? (
+                    <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                ) : (
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                )}
+            </>
+        ),
+    },
 ];
