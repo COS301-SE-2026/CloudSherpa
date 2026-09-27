@@ -117,6 +117,8 @@ public class AnomalyEvaluationService {
       return;
     }
 
+    Resource resource = resourceRepository.findById(event.resourceId()).orElseThrow();
+
     Alert alert;
     if (existing.isPresent()) {
       // Repeated deviations update (and can upgrade the severity of) the existing alert.
@@ -125,14 +127,13 @@ public class AnomalyEvaluationService {
       alert.setLastSeen(OffsetDateTime.now(ZoneOffset.UTC));
 
     } else {
-      alert = buildNewAlert(baseline, event, userId, canonicalKey, severity, zScore);
+      alert = buildNewAlert(baseline, event, resource, userId, canonicalKey, severity, zScore);
     }
 
     alertRepository.save(alert);
     sseService.broadcast(userId, "alert", alert);
 
     // Build & submit webhook event
-    Resource resource = resourceRepository.findById(event.resourceId()).orElseThrow();
     webhookProducerService.produceEvent(
         userId,
         resource.getAccountId(),
@@ -167,6 +168,7 @@ public class AnomalyEvaluationService {
   private Alert buildNewAlert(
       OptimizationMetricStatistics baseline,
       MetricStreamEventDto event,
+      Resource resource,
       UUID userId,
       String canonicalKey,
       AlertSeverityEnum severity,
@@ -181,6 +183,8 @@ public class AnomalyEvaluationService {
             "standard_deviation", baseline.getStandardDeviation(),
             "z_score", zScore,
             "resource_id", event.resourceId(),
+            "resource_name", resource.getResourceName(),
+            "provider", resolveProvider(resource),
             "period_start", event.periodStart(),
             "period_end", event.periodEnd());
 
@@ -189,8 +193,8 @@ public class AnomalyEvaluationService {
         .widgetId(null)
         .alertType(AlertTypeEnum.ANOMALY)
         .severity(severity)
-        .title(buildTitle(event, zScore))
-        .message(buildMessage(event, baseline, zScore))
+        .title(buildTitle(event))
+        .message(buildMessage(event, baseline, zScore, resource))
         .payload(payload)
         .status(AlertStatusEnum.ACTIVE)
         .canonicalKey(canonicalKey)
@@ -203,23 +207,42 @@ public class AnomalyEvaluationService {
     return "anomaly:" + event.resourceId() + ":" + event.metricName();
   }
 
-  private String buildTitle(MetricStreamEventDto event, double zScore) {
-    return event.metricName() + " anomaly detected (z=" + String.format("%.2f", zScore) + ")";
+  private String buildTitle(MetricStreamEventDto event) {
+    return "Anomaly detected: " + event.metricName();
   }
 
   private String buildMessage(
-      MetricStreamEventDto event, OptimizationMetricStatistics baseline, double zScore) {
+      MetricStreamEventDto event,
+      OptimizationMetricStatistics baseline,
+      double zScore,
+      Resource resource) {
+
+    String direction = zScore >= 0 ? "above" : "below";
+
     return event.metricName()
         + " is "
         + event.metricValue()
-        + " (baseline average "
+        + " ("
+        + String.format("%.2f", Math.abs(zScore))
+        + " sigma "
+        + direction
+        + " baseline avg "
         + baseline.getAverageValue()
         + ", stddev "
         + baseline.getStandardDeviation()
-        + ", z-score "
-        + String.format("%.2f", zScore)
-        + ") for resource "
-        + event.resourceId();
+        + ") on resource "
+        + resource.getResourceName()
+        + " ["
+        + resolveProvider(resource)
+        + "].";
+  }
+
+  private String resolveProvider(Resource resource) {
+    if (resource.getAccount() == null || resource.getAccount().getConnection() == null) {
+      return "UNKNOWN";
+    }
+
+    return resource.getAccount().getConnection().getProvider().name();
   }
 
   private AnomalyAlertPayload buildWebhookEventPayload(
