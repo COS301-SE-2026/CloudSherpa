@@ -13,12 +13,16 @@ import {
 } from "@/components/atoms/tooltip";
 import { Kbd, KbdGroup } from "@/components/atoms/kbd";
 import { useToolbar } from "../toolbar/toolbarProvider";
+import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
+import { cn } from "@/lib/utils";
 
 export default function AgenticDashCard() {
     const [open, setOpen] = useState(false);
     const popupRef = useRef<HTMLDivElement>(null);
+    const [showPresets, setShowPresets] = useState(false);
     const buttonRef = useRef<HTMLButtonElement>(null);
     const { isEditMode, isApplyDialogOpen } = useToolbar();
+    const isSessionActive = useDashboardStore((state) => state.isSessionActive);
 
     const handleClick = () => {
         setOpen(!open);
@@ -112,16 +116,27 @@ export default function AgenticDashCard() {
                         </CardHeader>
                         <CardContent className="h-full">
                             <Tabs defaultValue="generate" className="flex flex-col h-full w-full">
-                                <TabsList>
-                                    <TabsTrigger value="generate">Generate</TabsTrigger>
-                                    <TabsTrigger value="history">History</TabsTrigger>
-                                </TabsList>
+                                <div className="flex flex-row justify-between">
+                                    <TabsList>
+                                        <TabsTrigger value="generate">Generate</TabsTrigger>
+                                        <TabsTrigger value="history">History</TabsTrigger>
+                                    </TabsList>
+                                    {isSessionActive && (
+                                        <Button
+                                            variant="secondary"
+                                            className={cn(showPresets && "bg-card/50 text-foreground", 'text-muted-foreground')}
+                                            onClick={() => setShowPresets((prev) => !prev)}
+                                        >
+                                            Presets Prompts
+                                        </Button>
+                                    )}
+                                </div>
                                 <div className="flex-1 min-h-0 w-full relative">
                                     <TabsContent
                                         value="generate"
                                         className="absolute inset-0 m-0 data-[state=active]:flex flex-col"
                                     >
-                                        <GenerateDashInput />
+                                        <GenerateDashInput showPresets={showPresets} />
                                     </TabsContent>
                                     <TabsContent
                                         value="history"

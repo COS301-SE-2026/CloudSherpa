@@ -6,14 +6,18 @@ import {
 } from "@/components/atoms/input-group";
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/atoms/button";
-import { Loader2, X, AlertTriangle } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 import PresetPrompts from "@/features/dashboard/components/agenticdash/presetPrompts";
 import ApplyDashboardDialog from "@/features/dashboard/components/agenticdash/applyDashboardDialog";
 import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
 import type { AiDashboardApplyMode } from "@/features/dashboard/types/agentic";
 import { useToolbar } from "@/features/dashboard/components/toolbar/toolbarProvider";
 
-export default function GenerateDashInput() {
+interface GenerateDashInputProps {
+    showPresets: boolean;
+}
+
+export default function GenerateDashInput({ showPresets }: Readonly<GenerateDashInputProps>) {
     const [prompt, setPrompt] = useState("");
     const { isApplyDialogOpen, setIsApplyDialogOpen } = useToolbar();
     const [isApplying, setIsApplying] = useState(false);
@@ -77,10 +81,12 @@ export default function GenerateDashInput() {
         textRef.current?.focus();
     };
 
+    const shouldShowPresets = !(isSessionActive || isGenerating) || showPresets;
+
     return (
         <>
             <div className="h-full flex flex-col justify-end items-start gap-4">
-                {!(isSessionActive || isGenerating) && (
+                {shouldShowPresets && (
                     <div className="h-full flex-1 overflow-y-auto w-full">
                         <PresetPrompts onSelect={setPrompt} />
                     </div>
