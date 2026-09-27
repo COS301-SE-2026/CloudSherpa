@@ -292,7 +292,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     </SidebarGroup>
 
                     <SidebarGroup>
-                        <SidebarGroupLabel>Wow factor</SidebarGroupLabel>
+                        <SidebarGroupLabel>Alerts</SidebarGroupLabel>
                         <SidebarGroupContent>
                             <SidebarMenu>
                                 <SidebarMenuItem>
