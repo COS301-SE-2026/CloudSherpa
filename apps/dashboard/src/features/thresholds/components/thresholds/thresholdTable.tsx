@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { Switch } from "@/components/atoms/switch";
 import {
     ColumnDef,
@@ -36,7 +36,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/atoms/dropdown-menu";
-import apiClient from "@/lib/fetch/api-client";
+import {useResourceNames} from "@/features/alerts/hooks/useResourceNames";
 
 const CONDITION_VERBS: Record<OperatorsForThreshold, string> = {
     GT: "More than",
@@ -308,27 +308,7 @@ export function ThresholdTable({
 }: Readonly<PropsForThresholds>) {
     const [sorting, setSorting] = useState<SortingState>([]);
 
-    const [resourceNames, setResourceNames] = useState<Record<string, string>>({});
-
-    useEffect(() => {
-        let cancelled = false;
-
-        (async () => {
-            try {
-                const names = await apiClient<Record<string, string>>("/analytics/resource-names", {
-                    method: "GET",
-                });
-
-                if (!cancelled) {
-                    setResourceNames(names);
-                }
-            } catch {}
-        })();
-
-        return () => {
-            cancelled = true;
-        };
-    }, []);
+    const resourceNames = useResourceNames();
 
     const forColumns = useMemo<ColumnDef<Threshold>[]>(
         () => helperForColumns({ edit, toggleEnabled, onDelete, resourceNames }),

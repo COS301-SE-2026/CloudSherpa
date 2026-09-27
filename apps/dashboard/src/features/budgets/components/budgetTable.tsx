@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import {
     ColumnDef,
     flexRender,
@@ -22,7 +22,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/atoms/dropdown-menu";
-import apiClient from "@/lib/fetch/api-client";
+import {useResourceNames} from "@/features/alerts/hooks/useResourceNames";
 interface PropsForBudget {
     budgets: Budget[];
     edit: (budget: Budget) => void;
@@ -153,27 +153,7 @@ function helperForColumns({
 export function BudgetTable({ budgets, edit, toggleEnabled, onDelete }: Readonly<PropsForBudget>) {
     const [sorting, setSorting] = useState<SortingState>([]);
 
-    const [resourceNames, setResourceNames] = useState<Record<string, string>>({});
-
-    useEffect(() => {
-        let cancelled = false;
-
-        (async () => {
-            try {
-                const names = await apiClient<Record<string, string>>("/analytics/resource-names", {
-                    method: "GET",
-                });
-
-                if (!cancelled) {
-                    setResourceNames(names);
-                }
-            } catch {}
-        })();
-
-        return () => {
-            cancelled = true;
-        };
-    }, []);
+    const resourceNames = useResourceNames();
 
     const forColumns = useMemo(
         () => helperForColumns({ edit, toggleEnabled, onDelete, resourceNames }),
