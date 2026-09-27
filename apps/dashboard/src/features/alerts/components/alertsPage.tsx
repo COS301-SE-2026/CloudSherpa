@@ -6,6 +6,7 @@ import { Input } from "@/components/atoms/input";
 import { AlertsList } from "@/features/alerts/components/alertsList";
 import { useAlerts } from "@/features/alerts/hooks/useAlerts";
 import type { TypeForAlerts, Alert } from "@/features/alerts/types/alertTypes";
+import RecommendationCardHero from "@/features/optimization/components/recCardHero";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -60,6 +61,9 @@ export function AlertsPage() {
 
     const activeCount = alerts.filter((alert) => alert.status === "ACTIVE").length;
     const forTotalCount = alerts.length;
+    const criticalCount = alerts.filter((alert) => alert.severity === "CRITICAL").length;
+    const warningCount = alerts.filter((alert) => alert.severity === "WARNING").length;
+    const disabledCount = alerts.filter((alert) => alert.status === "DISABLED").length;
 
     const handlingInfo = (alert: Alert) => {
         setForInfo(alert);
@@ -92,6 +96,21 @@ export function AlertsPage() {
                     <h1 className="mb-4 text-2xl font-semibold tracking-tight text-foreground">
                         Alerts
                     </h1>
+
+                    <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                        <RecommendationCardHero
+                            value={`Total ${forTotalCount}`}
+                            className="text-card-foreground"
+                        />
+                        <RecommendationCardHero
+                            value={`Critical ${criticalCount}`}
+                            className="text-destructive"
+                        />
+                        <RecommendationCardHero
+                            value={`Warning ${warningCount}`}
+                            className="text-orange-500"
+                        />
+                    </div>
 
                     <div className="mb-4 flex items-center gap-2">
                         <Input
