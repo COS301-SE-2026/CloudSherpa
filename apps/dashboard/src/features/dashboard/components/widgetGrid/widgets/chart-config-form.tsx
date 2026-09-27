@@ -18,6 +18,7 @@ interface ChartConfigFormProps {
 
 export function ChartConfigFormInner({ ChartId }: Readonly<ChartConfigFormProps>) {
     const [isSaving, setIsSaving] = useState(false);
+    const [isError, setIsError] = useState("");
     const updateWidget = useDashboardStore((state) => state.actions.updateChartWidgetConfig);
     const getWidget = useDashboardStore((state) => state.actions.getWidget);
 
@@ -44,6 +45,10 @@ export function ChartConfigFormInner({ ChartId }: Readonly<ChartConfigFormProps>
     const router = useRouter();
 
     const handleSave = async () => {
+        if (!config.displayName || config.displayName.trim() === "") {
+            setIsError("Enter a widget title to save changes");
+            return;
+        }
         setIsSaving(true);
         try {
             await updateWidget(config);
@@ -78,7 +83,16 @@ export function ChartConfigFormInner({ ChartId }: Readonly<ChartConfigFormProps>
             <div className="flex flex-row gap-6 h-full">
                 <Card className="w-2/3">
                     <CardContent className="flex flex-col gap-6">
-                        <ChartFormDetails configuration={config} setConfiguration={setConfig} />
+                        {isError.length > 0 && (
+                            <div className="w-full p-3 bg-destructive/10 border border-destructive/80 rounded-md text-destructive text-xs">
+                                {isError}
+                            </div>
+                        )}
+                        <ChartFormDetails
+                            configuration={config}
+                            setConfiguration={setConfig}
+                            error={isError}
+                        />
                         <ChartFormConnection configuration={config} setConfiguration={setConfig} />
                         <ChartFormResource
                             key={config.accountId || "empty-connection"}

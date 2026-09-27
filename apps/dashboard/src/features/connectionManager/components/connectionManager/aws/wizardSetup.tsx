@@ -61,7 +61,7 @@ export default function WizardSetup() {
     const handleStepTwoNext = (
         selectedServices: string[],
         resources: ResourceDetail[],
-        billingConfig: BillingConfig
+        billingConfig: BillingConfig | null
     ) => {
         setWizardData({
             ...wizardData,
@@ -110,7 +110,7 @@ export default function WizardSetup() {
                         secretAccessKey: wizardData.credentials!.secretAccessKey,
                     }}
                     resources={wizardData.resources}
-                    billingConfig={wizardData.billingConfig!}
+                    billingConfig={wizardData.billingConfig}
                     onComplete={handleStepThreeComplete}
                     onBack={handleBack}
                 />

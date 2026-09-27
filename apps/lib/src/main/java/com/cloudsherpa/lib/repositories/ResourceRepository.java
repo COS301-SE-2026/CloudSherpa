@@ -43,4 +43,6 @@ public interface ResourceRepository extends JpaRepository<Resource, UUID> {
 
   @Query("select r.account.connection.provider from Resource r where r.id = :resourceId")
   ProviderEnum findProviderByResourceId(@Param("resourceId") UUID resourceId);
+
+  public Optional<Resource> findByResourceIdentifier(String identifier);
 }

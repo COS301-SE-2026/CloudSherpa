@@ -78,7 +78,7 @@ function ListOfTags({ tags }: Readonly<{ tags: string[] }>) {
     return (
         <div className="flex items-center gap-1 flex-wrap">
             {displayedTags.map((tag) => (
-                <Tooltip key={tag}>
+                <Tooltip key={tag} showOnTruncate>
                     <TooltipTrigger>
                         <Badge
                             variant="secondary"
@@ -112,7 +112,7 @@ function ResourceHeaders({ column }: Readonly<HeaderContext<Resource, string>>) 
 
 function ResourceCells({ getValue }: Readonly<CellContext<Resource, string>>) {
     return (
-        <Tooltip>
+        <Tooltip showOnTruncate>
             <TooltipTrigger asChild>
                 <span className="block max-w-50 truncate font-medium">{getValue()}</span>
             </TooltipTrigger>
@@ -123,7 +123,7 @@ function ResourceCells({ getValue }: Readonly<CellContext<Resource, string>>) {
 
 function SecondaryCells({ getValue }: Readonly<CellContext<Resource, string>>) {
     return (
-        <Tooltip>
+        <Tooltip showOnTruncate>
             <TooltipTrigger asChild>
                 <span className="block max-w-50 truncate text-xs text-muted-foreground">
                     {" "}

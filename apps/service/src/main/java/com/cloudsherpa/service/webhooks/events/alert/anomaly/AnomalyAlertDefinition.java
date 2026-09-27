@@ -1,5 +1,6 @@
 package com.cloudsherpa.service.webhooks.events.alert.anomaly;
 
+import com.cloudsherpa.lib.entities.AlertSeverityEnum;
 import com.cloudsherpa.service.webhooks.events.WebhookEventDefinition;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -41,7 +42,7 @@ public class AnomalyAlertDefinition implements WebhookEventDefinition<AnomalyAle
         new BigDecimal("92.0"),
         new BigDecimal("60.0"),
         3.2,
-        "CRITICAL",
+        AlertSeverityEnum.CRITICAL,
         OffsetDateTime.parse("2026-09-21T09:00:00Z"),
         OffsetDateTime.parse("2026-09-21T09:05:00Z"));
   }

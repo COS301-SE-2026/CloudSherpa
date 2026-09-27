@@ -1,13 +1,21 @@
 package com.cloudsherpa.service.alerts.service;
 
 import com.cloudsherpa.lib.entities.Alert;
+import com.cloudsherpa.lib.entities.AlertSeverityEnum;
+import com.cloudsherpa.lib.entities.AlertStatusEnum;
+import com.cloudsherpa.lib.entities.AlertTypeEnum;
 import com.cloudsherpa.lib.entities.Budget;
+import com.cloudsherpa.lib.entities.CloudAccount;
 import com.cloudsherpa.lib.entities.Resource;
 import com.cloudsherpa.lib.repositories.AlertRepository;
 import com.cloudsherpa.lib.repositories.BudgetRepository;
+import com.cloudsherpa.lib.repositories.CloudAccountRepository;
 import com.cloudsherpa.lib.repositories.NormalizedCostsRepository;
 import com.cloudsherpa.lib.repositories.ResourceRepository;
+import com.cloudsherpa.service.alerts.dto.BudgetScopeContext;
 import com.cloudsherpa.service.sse.SseService;
+import com.cloudsherpa.service.webhooks.events.alert.budget.BudgetAlertPayload;
+import com.cloudsherpa.service.webhooks.producers.WebhookProducerService;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -23,27 +31,36 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class BudgetEvaluationService {
-  private static final String ALERT_STATUS_ACTIVE = "ACTIVE";
-  private static final String ALERT_TYPE_BUDGET = "BUDGET";
 
   private final NormalizedCostsRepository normalizedCostsRepository;
   private final AlertRepository alertRepository;
   private final SseService sseService;
   private final BudgetRepository budgetRepository;
   private final ResourceRepository resourceRepository;
+  private final WebhookProducerService producerService;
+  private final CloudAccountRepository cloudAccountRepository;
   private static final Logger logger = LoggerFactory.getLogger(BudgetEvaluationService.class);
+
+  private static final String RESOURCE_SCOPE = "RESOURCE";
+  private static final String ACCOUNT_SCOPE = "ACCOUNT";
+  private static final String TENANT_SCOPE = "TENANT";
+  private static final String UNKNOWN = "Unknown";
 
   public BudgetEvaluationService(
       NormalizedCostsRepository normalizedCostsRepository,
       AlertRepository alertRepository,
       SseService sseService,
       BudgetRepository budgetRepository,
-      ResourceRepository resourceRepository) {
+      ResourceRepository resourceRepository,
+      WebhookProducerService producerService,
+      CloudAccountRepository cloudAccountRepository) {
     this.normalizedCostsRepository = normalizedCostsRepository;
     this.alertRepository = alertRepository;
     this.sseService = sseService;
     this.budgetRepository = budgetRepository;
     this.resourceRepository = resourceRepository;
+    this.producerService = producerService;
+    this.cloudAccountRepository = cloudAccountRepository;
   }
 
   private void evaluateCurrentSpend(Budget budget) {
@@ -65,14 +82,15 @@ public class BudgetEvaluationService {
   public void evaluateForAccount(UUID userId, UUID accountId) {
     List<Budget> matchingBudgets = new ArrayList<>();
 
-    matchingBudgets.addAll(budgetRepository.findByUserIdAndScopeAndEnabledTrue(userId, "TENANT"));
+    matchingBudgets.addAll(
+        budgetRepository.findByUserIdAndScopeAndEnabledTrue(userId, TENANT_SCOPE));
 
     matchingBudgets.addAll(
-        budgetRepository.findByScopeAndScopeIdAndEnabledTrue("ACCOUNT", accountId));
+        budgetRepository.findByScopeAndScopeIdAndEnabledTrue(ACCOUNT_SCOPE, accountId));
 
     for (Resource resource : resourceRepository.findByAccountId(accountId)) {
       matchingBudgets.addAll(
-          budgetRepository.findByScopeAndScopeIdAndEnabledTrue("RESOURCE", resource.getId()));
+          budgetRepository.findByScopeAndScopeIdAndEnabledTrue(RESOURCE_SCOPE, resource.getId()));
     }
 
     for (Budget budget : matchingBudgets) {
@@ -82,8 +100,8 @@ public class BudgetEvaluationService {
 
   private BigDecimal sumScopedCost(Budget budget, OffsetDateTime from, OffsetDateTime to) {
     return switch (budget.getScope()) {
-      case "RESOURCE" -> sumCostForResourceBudget(budget, from, to);
-      case "ACCOUNT" -> normalizedCostsRepository.sumTotalCostBetweenForAccountId(
+      case RESOURCE_SCOPE -> sumCostForResourceBudget(budget, from, to);
+      case ACCOUNT_SCOPE -> normalizedCostsRepository.sumTotalCostBetweenForAccountId(
           budget.getScopeId(), from, to);
       default -> normalizedCostsRepository.sumTotalCostBetween(from, to);
     };
@@ -105,15 +123,27 @@ public class BudgetEvaluationService {
     String canonicalKey = buildCanonicalKey(budget);
 
     Optional<Alert> existing =
-        alertRepository.findByCanonicalKeyAndStatus(canonicalKey, ALERT_STATUS_ACTIVE);
+        alertRepository.findByCanonicalKeyAndStatus(canonicalKey, AlertStatusEnum.ACTIVE);
+
+    if (existing.isEmpty()
+        && alertRepository
+            .findByCanonicalKeyAndStatus(canonicalKey, AlertStatusEnum.DISABLED)
+            .isPresent()) {
+      // User disabled alerts for this budget; don't recreate one.
+      return;
+    }
+
+    BudgetScopeContext scopeContext = resolveScopeContext(budget);
 
     Alert alert;
     if (existing.isPresent()) {
       alert = existing.get();
-      alert.setPayload(buildPayload(budget, value));
+      alert.setTitle(buildTitle(scopeContext));
+      alert.setMessage(buildMessage(budget, value, scopeContext));
+      alert.setPayload(buildPayload(budget, value, scopeContext));
       alert.setLastSeen(OffsetDateTime.now(ZoneOffset.UTC));
     } else {
-      alert = buildNewAlert(budget, value, canonicalKey);
+      alert = buildNewAlert(budget, value, canonicalKey, scopeContext);
     }
 
     alertRepository.save(alert);
@@ -126,33 +156,107 @@ public class BudgetEvaluationService {
     sseService.broadcast(budget.getUserId(), "alert", alert);
 
     // Build & submit budget webhook event alert.budget
-
+    UUID cloudAccountId = getCloudAccountIdForWebhookEvent(budget);
+    BudgetAlertPayload payload = buildWebhookEventPayload(budget, alert, value);
+    producerService.produceEvent(budget.getUserId(), cloudAccountId, "alert.budget", payload);
   }
 
-  private Alert buildNewAlert(Budget budget, BigDecimal value, String canonicalKey) {
+  private BudgetScopeContext resolveScopeContext(Budget budget) {
+    return switch (budget.getScope()) {
+      case RESOURCE_SCOPE -> resolveResourceScopeContext(budget.getScopeId());
+      case ACCOUNT_SCOPE -> resolveAccountScopeContext(budget.getScopeId());
+      default -> tenantScopeContext();
+    };
+  }
+
+  private BudgetScopeContext resolveResourceScopeContext(UUID scopeId) {
+    if (scopeId == null) {
+      return new BudgetScopeContext(RESOURCE_SCOPE, "Unknown resource", UNKNOWN);
+    }
+
+    return resourceRepository
+        .findById(scopeId)
+        .map(
+            resource ->
+                new BudgetScopeContext(
+                    RESOURCE_SCOPE, resource.getResourceName(), resolveProvider(resource)))
+        .orElseGet(() -> new BudgetScopeContext(RESOURCE_SCOPE, scopeId.toString(), UNKNOWN));
+  }
+
+  private BudgetScopeContext resolveAccountScopeContext(UUID scopeId) {
+    if (scopeId == null) {
+      return new BudgetScopeContext(ACCOUNT_SCOPE, "Unknown account", UNKNOWN);
+    }
+
+    return cloudAccountRepository
+        .findById(scopeId)
+        .map(
+            account ->
+                new BudgetScopeContext(
+                    ACCOUNT_SCOPE, resolveAccountName(account), resolveProvider(account)))
+        .orElseGet(() -> new BudgetScopeContext(ACCOUNT_SCOPE, scopeId.toString(), UNKNOWN));
+  }
+
+  private BudgetScopeContext tenantScopeContext() {
+    return new BudgetScopeContext("Multi-cloud", "all connected resources", "MULTI");
+  }
+
+  private String resolveProvider(Resource resource) {
+    if (resource.getAccount() == null || resource.getAccount().getConnection() == null) {
+      return "UNKNOWN";
+    }
+
+    return resource.getAccount().getConnection().getProvider().name();
+  }
+
+  private String resolveProvider(CloudAccount account) {
+    if (account.getConnection() == null || account.getConnection().getProvider() == null) {
+      return "UNKNOWN";
+    }
+
+    return account.getConnection().getProvider().name();
+  }
+
+  private String resolveAccountName(CloudAccount account) {
+    if (account.getDisplayName() == null || account.getDisplayName().isBlank()) {
+      return account.getId().toString();
+    }
+
+    return account.getDisplayName();
+  }
+
+  private Alert buildNewAlert(
+      Budget budget, BigDecimal value, String canonicalKey, BudgetScopeContext scopeContext) {
     OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
 
     return Alert.builder()
         .userId(budget.getUserId())
         .widgetId(null)
-        .alertType(ALERT_TYPE_BUDGET)
-        .severity("WARNING")
-        .title(buildTitle(budget))
-        .message(buildMessage(budget, value))
-        .payload(buildPayload(budget, value))
-        .status(ALERT_STATUS_ACTIVE)
+        .alertType(AlertTypeEnum.BUDGET)
+        .severity(AlertSeverityEnum.WARNING)
+        .title(buildTitle(scopeContext))
+        .message(buildMessage(budget, value, scopeContext))
+        .payload(buildPayload(budget, value, scopeContext))
+        .status(AlertStatusEnum.ACTIVE)
         .canonicalKey(canonicalKey)
         .createdAt(now)
         .lastSeen(now)
         .build();
   }
 
-  private Map<String, Object> buildPayload(Budget budget, BigDecimal value) {
+  private Map<String, Object> buildPayload(
+      Budget budget, BigDecimal value, BudgetScopeContext scopeContext) {
     Map<String, Object> payload = new HashMap<>();
 
     payload.put("budget_id", budget.getBudgetId());
+    payload.put("budget_scope", budget.getScope());
+    payload.put("scope_id", budget.getScopeId());
+    payload.put("scope_name", scopeContext.scopeName());
+    payload.put("provider", scopeContext.provider());
+    payload.put("window_days", budget.getWindowDays());
     payload.put("budget_amount", budget.getAmount());
     payload.put("current_total", value);
+    payload.put("overage_amount", value.subtract(budget.getAmount()));
 
     return payload;
   }
@@ -161,11 +265,49 @@ public class BudgetEvaluationService {
     return "budget:" + budget.getBudgetId();
   }
 
-  private String buildTitle(Budget budget) {
-    return "Current spend exceeded budget of: " + budget.getAmount();
+  private String buildTitle(BudgetScopeContext scopeContext) {
+    return "Budget exceeded: " + scopeContext.scopeLabel() + " spend alert";
   }
 
-  private String buildMessage(Budget budget, BigDecimal value) {
-    return "Current spend " + value + " has reached budget amount " + budget.getAmount();
+  private String buildMessage(Budget budget, BigDecimal value, BudgetScopeContext scopeContext) {
+    return "The current spend of USD "
+        + value
+        + " has exceeded the configured budget of USD "
+        + budget.getAmount()
+        + " over the last "
+        + budget.getWindowDays()
+        + " days for "
+        + scopeContext.scopeName()
+        + ".";
+  }
+
+  private BudgetAlertPayload buildWebhookEventPayload(
+      Budget budget, Alert alert, BigDecimal value) {
+    return new BudgetAlertPayload(
+        alert.getTitle(),
+        alert.getMessage(),
+        budget.getScope(),
+        alert.getSeverity().toString(),
+        budget.getAmount(),
+        value,
+        budget.getWindowDays());
+  }
+
+  private UUID getCloudAccountIdForWebhookEvent(Budget budget) {
+    return switch (budget.getScope()) {
+      case RESOURCE_SCOPE -> getResourceCloudAccount(budget.getScopeId());
+      case ACCOUNT_SCOPE -> budget.getScopeId();
+      default -> null;
+    };
+  }
+
+  private UUID getResourceCloudAccount(UUID resourceId) {
+    Resource resource = resourceRepository.findById(resourceId).orElse(null);
+
+    if (resource == null) {
+      return null;
+    }
+
+    return resource.getAccountId();
   }
 }

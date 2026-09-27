@@ -17,6 +17,7 @@ export type KpiPreviewResponseDto = {
     timeLabel: string;
     updatedAt: string;
     previousValue: number | null;
+    resourceName: string | null;
 };
 
 export type KpiCharge = {
@@ -24,6 +25,9 @@ export type KpiCharge = {
     resourceId: string;
     service: string;
     provider: CloudProviderEnum;
+    resourceName: string | null;
+    chargeCost: number;
+    metadata: Record<string, unknown> | null;
 };
 
 export type KpiResourceResponseDto = KpiCharge[];

@@ -68,6 +68,7 @@ export default function ChartFormConnection({
                                 provider,
                                 accountId: null,
                                 resourceId: null,
+                                metricName: "",
                                 metricType: null,
                             });
                         }}
@@ -89,9 +90,11 @@ export default function ChartFormConnection({
                                 ...configuration,
                                 accountId: currentValue,
                                 resourceId: null,
+                                metricName: "",
                                 metricType: null,
                             });
                         }}
+                        disabled={!configuration.provider}
                         widthVariant="full"
                         placeholder="Select Connection"
                         emptyMessage="No connections found"

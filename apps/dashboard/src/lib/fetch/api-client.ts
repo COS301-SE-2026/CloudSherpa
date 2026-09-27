@@ -2,6 +2,18 @@ const API_BASE = process.env["NEXT_PUBLIC_API_URL"];
 
 let refreshPromise: Promise<boolean> | null = null;
 let isLoggingOut = false;
+let hasEmittedSessionExpired = false;
+
+export const AUTH_SESSION_EXPIRED_EVENT = "auth:session-expired";
+
+function emitSessionExpired() {
+    if (typeof window === "undefined" || isLoggingOut || hasEmittedSessionExpired) {
+        return;
+    }
+
+    hasEmittedSessionExpired = true;
+    window.dispatchEvent(new CustomEvent(AUTH_SESSION_EXPIRED_EVENT));
+}
 
 export function startLogout() {
     isLoggingOut = true;
@@ -9,6 +21,7 @@ export function startLogout() {
 
 export function finishLogin() {
     isLoggingOut = false;
+    hasEmittedSessionExpired = false;
 }
 
 async function refreshSession(): Promise<boolean> {
@@ -28,16 +41,16 @@ async function refreshSession(): Promise<boolean> {
     return refreshPromise;
 }
 
-/* params:
- *   - path
- *       expects initial slash, i.e. for path /api/some-endpoint is valid,
- *       api/some-endpoint not valid
- *   - options
- *       of type RequestInit, object with fields: method, headers and body
- *   - throws
- *       callers need to handle exception, this is intentional behavior, lets caller
- *       decide how to handle failed request
- */
+export async function ensureSessionRefreshed(): Promise<boolean> {
+    const refreshed = await refreshSession();
+
+    if (!refreshed) {
+        emitSessionExpired();
+    }
+
+    return refreshed;
+}
+
 export default async function apiClient<T>(
     path: string,
     options?: RequestInit,
@@ -68,10 +81,12 @@ export default async function apiClient<T>(
         normalizedPath !== "/auth/refresh" &&
         normalizedPath !== "/auth/login";
 
-    if (refreshOnUnauthorized && canRefresh && (await refreshSession())) {
-        // If refreshSession() returns true (the token was successfully renewed),
-        // we retry the exact same API request as previously
+    if (refreshOnUnauthorized && canRefresh && (await ensureSessionRefreshed())) {
         response = await fetch(`${API_BASE}${normalizedPath}`, options);
+    }
+
+    if (response.status === 401) {
+        emitSessionExpired();
     }
 
     if (response.status === 204) {
@@ -81,6 +96,8 @@ export default async function apiClient<T>(
     if (!response.ok) {
         throw new Error(`Request failed with status code ${response.status}`);
     }
+
+    hasEmittedSessionExpired = false;
 
     const text = await response.text();
     if (!text) {

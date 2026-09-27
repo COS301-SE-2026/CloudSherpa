@@ -7,7 +7,12 @@ import {
     getFilteredRowModel,
     getPaginationRowModel,
     RowSelectionState,
+    getExpandedRowModel,
 } from "@tanstack/react-table";
+
+import { Badge } from "@/components/atoms/badge";
+
+import { cn } from "@/lib/utils";
 
 import {
     FieldDescription,
@@ -35,11 +40,13 @@ import {
 } from "@/components/atoms/table";
 import { SearchIcon } from "lucide-react";
 import { FormCountCircle } from "@/components/atoms/form-count-circle";
-import React, { useMemo } from "react";
+import React, { useMemo, Fragment } from "react";
 import { DataTablePagination } from "./config-table-pagination";
 import { CloudProviderEnum } from "@/features/dashboard/types/provider";
 import { Spinner } from "@/components/atoms/spinner";
 import { KPIConfigTableRow } from "./columns";
+import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/atoms/card";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/atoms/tooltip";
 
 interface KPIConfigTableProps<TValue> {
     readonly columns: ColumnDef<KPIConfigTableRow, TValue>[];
@@ -78,6 +85,8 @@ export function KPIConfigTable<TValue>({
         onColumnFiltersChange: setColumnFilters,
         getFilteredRowModel: getFilteredRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
+        getExpandedRowModel: getExpandedRowModel(),
+        getRowCanExpand: () => true,
         onRowSelectionChange: (updater) => {
             // tanstack behaviour: updater takes old RowSelectionState as argument and returns the new RowSelectionState based on
             // what was now selected
@@ -121,19 +130,133 @@ export function KPIConfigTable<TValue>({
         );
     } else if (table.getRowModel().rows?.length) {
         tableBodyContent = table.getRowModel().rows.map((row) => (
-            <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
-                {row.getVisibleCells().map((cell) => (
-                    <TableCell
-                        key={cell.id}
-                        style={{
-                            width: cell.column.getSize(),
-                            maxWidth: cell.column.getSize(),
-                        }}
-                    >
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                ))}
-            </TableRow>
+            <Fragment key={row.id}>
+                <TableRow
+                    data-state={row.getIsSelected() && "selected"}
+                    onClick={row.getToggleExpandedHandler()}
+                    className="cursor-pointer select-none [&_*]:cursor-pointer" // [&_*] tailwind class modifier adds specified class to component and all it's children
+                >
+                    {row.getVisibleCells().map((cell) => (
+                        <TableCell
+                            key={cell.id}
+                            style={{
+                                width: cell.column.getSize(),
+                                maxWidth: cell.column.getSize(),
+                            }}
+                            onClick={(e) => {
+                                if (cell.column.id === "select") {
+                                    e.stopPropagation();
+                                }
+                            }}
+                            className="cursor-pointer"
+                        >
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </TableCell>
+                    ))}
+                </TableRow>
+                {row.getIsExpanded() && (
+                    <TableRow className="bg-muted hover:bg-muted">
+                        <TableCell colSpan={row.getVisibleCells().length}>
+                            <Card>
+                                <CardHeader>
+                                    <div className="flex items-center justify-between">
+                                        <div className="space-y-1">
+                                            <CardTitle className="text-sm font-semibold">
+                                                Resource Details
+                                            </CardTitle>
+                                            <CardDescription className="text-xs">
+                                                More information on this resource
+                                            </CardDescription>
+                                        </div>
+                                        <Badge className="text-bold text-white">
+                                            {row.original.provider}
+                                        </Badge>
+                                    </div>
+                                </CardHeader>
+                                <CardContent className="flex flex-col gap-4 w-full text-xs  font-medium text-foreground">
+                                    <div
+                                        className={cn(
+                                            "grid grid-cols-2 gap-4 text-sm",
+                                            row.original.resourceName
+                                                ? "lg:grid-cols-3"
+                                                : "lg:grid-cols-2"
+                                        )}
+                                    >
+                                        <div className="flex flex-col gap-1 w-full min-w-0">
+                                            <span className="text-muted-foreground">
+                                                Service Type
+                                            </span>
+                                            <Tooltip showOnTruncate>
+                                                <TooltipTrigger className="w-full min-w-0 truncate text-left">
+                                                    {row.original.service}
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    {row.original.service}
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        </div>
+                                        <div className="flex flex-col gap-1">
+                                            <span className="text-muted-foreground">
+                                                Charge Cost
+                                            </span>
+                                            {(() => {
+                                                const cost = row.original.chargeCost;
+                                                const roundedCost = Number(cost.toFixed(5));
+                                                const absCost = Math.abs(roundedCost);
+
+                                                return (
+                                                    <span
+                                                        className={cn(
+                                                            roundedCost > 0 && "text-destructive",
+                                                            roundedCost < 0 && "text-success"
+                                                        )}
+                                                    >
+                                                        {roundedCost < 0
+                                                            ? `-$${absCost}`
+                                                            : `$${absCost}`}
+                                                    </span>
+                                                );
+                                            })()}
+                                        </div>
+                                        {row.original.resourceName && (
+                                            <div className="flex flex-col gap-1">
+                                                <Tooltip showOnTruncate>
+                                                    <TooltipTrigger className="w-full min-w-0 truncate text-left text-muted-foreground">
+                                                        {" "}
+                                                        Resource Name
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        {row.original.service}
+                                                    </TooltipContent>
+                                                </Tooltip>{" "}
+                                                <span>
+                                                    {row.original.resourceName || "No Name"}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+                                    {row.original.resourceId &&
+                                        row.original.resourceId != "NoResourceId" && (
+                                            <div className="flex flex-col gap-4">
+                                                <div className="flex flex-col gap-1">
+                                                    <span className="text-muted-foreground">
+                                                        Resource ID
+                                                    </span>
+                                                    <span
+                                                        className="text-wrap font-mono"
+                                                        title={row.original.resourceId}
+                                                    >
+                                                        {row.original.resourceId}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        )}
+                                </CardContent>
+                            </Card>
+                        </TableCell>
+                    </TableRow>
+                )}
+            </Fragment>
         ));
     } else {
         tableBodyContent = (

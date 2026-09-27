@@ -9,7 +9,7 @@ async function registerAndLoginNewUser(page: Page) {
     await page.goto("http://localhost:3000/login");
     await page.getByLabel("get started button").click();
 
-    const signUpButton = page.getByRole("button", { name: /Sign Up/i });
+    const signUpButton = page.getByRole("button", { name: /Sign Up/ });
 
     await expect(page.getByRole("heading", { name: "Sign Up" })).toBeVisible();
 
@@ -24,7 +24,7 @@ async function registerAndLoginNewUser(page: Page) {
 
     //auto logs in
 
-    await page.waitForURL(/.*\/dashboard.*/, { timeout: 15000 });
+    await page.waitForURL(/.*\/dashboard.*/);
     await expect(page.getByText(email)).toBeVisible();
 
     return { email, password };

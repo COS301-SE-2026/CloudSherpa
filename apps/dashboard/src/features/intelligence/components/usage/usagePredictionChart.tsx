@@ -2,7 +2,7 @@
 
 import { useMemo, useRef } from "react";
 import ReactECharts from "echarts-for-react";
-import { AlertCircleIcon, RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
+import { AlertCircleIcon, CircleAlert, RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
 import type { CallbackDataParams } from "echarts/types/dist/shared";
 import {
     formatChartData,
@@ -17,14 +17,13 @@ import { timeMs, durationByPreset } from "@/lib/timeUtils";
 import { HistoricalUsageSeriesDto } from "../../types/dtos";
 import { UsageError } from "../../types/errors";
 import { Spinner } from "@/components/atoms/spinner";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/atoms/tooltip";
 
 interface UsagePredictionChartProps {
     readonly historicalUsageSeries: HistoricalUsageSeriesDto | null;
     readonly usageError: UsageError | null;
     readonly loading: boolean;
 }
-
-const now = Date.now();
 
 export default function UsagePredictionChart({
     historicalUsageSeries,
@@ -59,7 +58,12 @@ export default function UsagePredictionChart({
 
     // 3. X-AXIS MATH HOOK
     const { currentTime, minXAxisTime, maxXAxisTime } = useMemo(() => {
-        const minTime = now - durationByPreset[pastTimeWindowPreset];
+        const forecastStart =
+            historicalUsagePoints.length > 0
+                ? historicalUsagePoints[historicalUsagePoints.length - 1][0]
+                : 0;
+
+        const minTime = forecastStart - durationByPreset[pastTimeWindowPreset];
         let maxTime: number;
 
         if (usageForecast && usageForecast.horizonTimestamps.length > 0) {
@@ -67,11 +71,11 @@ export default function UsagePredictionChart({
             const lastForecastIso = usageForecast.horizonTimestamps[lastForecastIndex];
             maxTime = toBrowserTimezoneTimestamp(lastForecastIso);
         } else {
-            maxTime = now + timeMs.dayMs;
+            maxTime = forecastStart + timeMs.dayMs;
         }
 
         return {
-            currentTime: now,
+            currentTime: forecastStart,
             minXAxisTime: minTime,
             maxXAxisTime: maxTime,
         };
@@ -302,26 +306,46 @@ export default function UsagePredictionChart({
 
     return (
         <Card className="h-full w-full gap-0 overflow-hidden">
-            <CardHeader className="flex flex-row justify-end items-center gap-1 ">
-                <Button
-                    onClick={() => handleZoom("in")}
-                    variant="ghost"
-                    size="icon"
-                    title="Zoom In"
-                >
-                    <ZoomIn className="h-4 w-4" />
-                </Button>
-                <Button
-                    onClick={() => handleZoom("out")}
-                    variant="ghost"
-                    size="icon"
-                    title="Zoom Out"
-                >
-                    <ZoomOut className="h-4 w-4" />
-                </Button>
-                <Button onClick={handleResetZoom} variant="ghost" size="icon" title="Reset Zoom">
-                    <RotateCcw className="h-4 w-4" />
-                </Button>
+            <CardHeader className="flex flex-row justify-between items-center gap-1 ">
+                <div>
+                    <Tooltip>
+                        <TooltipTrigger>
+                            <span className="flex flex-row align-center gap-1 text-muted-foreground">
+                                <CircleAlert className="h-5 w-5" /> Aggregated History
+                            </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="right">
+                            The usage history is averaged into 10-minute buckets to facilitate
+                            forecasting by normalizing the series.
+                        </TooltipContent>
+                    </Tooltip>
+                </div>
+                <div>
+                    <Button
+                        onClick={() => handleZoom("in")}
+                        variant="ghost"
+                        size="icon"
+                        title="Zoom In"
+                    >
+                        <ZoomIn className="h-4 w-4" />
+                    </Button>
+                    <Button
+                        onClick={() => handleZoom("out")}
+                        variant="ghost"
+                        size="icon"
+                        title="Zoom Out"
+                    >
+                        <ZoomOut className="h-4 w-4" />
+                    </Button>
+                    <Button
+                        onClick={handleResetZoom}
+                        variant="ghost"
+                        size="icon"
+                        title="Reset Zoom"
+                    >
+                        <RotateCcw className="h-4 w-4" />
+                    </Button>
+                </div>
             </CardHeader>
             <CardContent className="h-full p-0">
                 {usageError?.item == "both" ? (

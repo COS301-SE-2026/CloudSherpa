@@ -2,6 +2,8 @@ package com.cloudsherpa.lib.entities;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -34,11 +36,15 @@ public class Alert {
   @JoinColumn(name = "widget_id", insertable = false, updatable = false)
   private Widget widget;
 
-  @Column(name = "alert_type", nullable = false, length = 20)
-  private String alertType;
+  @Enumerated(EnumType.STRING)
+  @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+  @Column(name = "alert_type", nullable = false, columnDefinition = "public.alert_type_enum")
+  private AlertTypeEnum alertType;
 
-  @Column(name = "severity", nullable = false, length = 20)
-  private String severity;
+  @Enumerated(EnumType.STRING)
+  @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+  @Column(name = "severity", nullable = false, columnDefinition = "public.alert_severity_enum")
+  private AlertSeverityEnum severity;
 
   @Column(name = "title", nullable = false)
   private String title;
@@ -50,8 +56,13 @@ public class Alert {
   @Column(name = "payload", columnDefinition = "jsonb")
   private Map<String, Object> payload;
 
-  @Column(name = "status", nullable = false, length = 20)
-  private String status;
+ @Enumerated(EnumType.STRING)
+  @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+  @Column(name = "status", nullable = false, columnDefinition = "public.alert_status_enum")
+  private AlertStatusEnum status;
+
+  @Column(name = "in_app_notifications_silenced", nullable = false)
+  private boolean inAppNotificationsSilenced;
 
   @Column(name = "canonical_key")
   private String canonicalKey;
@@ -65,7 +76,7 @@ public class Alert {
   @Column(name = "resolved_at")
   private OffsetDateTime resolvedAt;
 
-  protected Alert() {}
+  public Alert() {}
 
   private Alert(Builder builder) {
     this.alertId = builder.alertId;
@@ -77,6 +88,7 @@ public class Alert {
     this.message = builder.message;
     this.payload = builder.payload;
     this.status = builder.status;
+    this.inAppNotificationsSilenced = builder.inAppNotificationsSilenced;
     this.canonicalKey = builder.canonicalKey;
     this.createdAt = builder.createdAt;
     this.lastSeen = builder.lastSeen;
@@ -91,12 +103,13 @@ public class Alert {
     private UUID alertId = UUID.randomUUID();
     private UUID userId;
     private UUID widgetId;
-    private String alertType;
-    private String severity;
+    private AlertTypeEnum alertType;
+    private AlertSeverityEnum severity;
     private String title;
     private String message;
     private Map<String, Object> payload;
-    private String status;
+    private AlertStatusEnum status;
+    private boolean inAppNotificationsSilenced = false;
     private String canonicalKey;
     private OffsetDateTime createdAt;
     private OffsetDateTime lastSeen;
@@ -117,12 +130,12 @@ public class Alert {
       return this;
     }
 
-    public Builder alertType(String alertType) {
+    public Builder alertType(AlertTypeEnum alertType) {
       this.alertType = alertType;
       return this;
     }
 
-    public Builder severity(String severity) {
+    public Builder severity(AlertSeverityEnum severity) {
       this.severity = severity;
       return this;
     }
@@ -142,10 +155,15 @@ public class Alert {
       return this;
     }
 
-    public Builder status(String status) {
+    public Builder status(AlertStatusEnum status) {
       this.status = status;
       return this;
     }
+
+    public Builder inAppNotificationsSilenced(boolean inAppNotificationsSilenced) {
+    this.inAppNotificationsSilenced = inAppNotificationsSilenced;
+    return this;
+  }
 
     public Builder canonicalKey(String canonicalKey) {
       this.canonicalKey = canonicalKey;
@@ -204,19 +222,19 @@ public class Alert {
     return widget;
   }
 
-  public String getAlertType() {
+  public AlertTypeEnum getAlertType() {
     return alertType;
   }
 
-  public void setAlertType(String alertType) {
+  public void setAlertType(AlertTypeEnum alertType) {
     this.alertType = alertType;
   }
 
-  public String getSeverity() {
+  public AlertSeverityEnum getSeverity() {
     return severity;
   }
 
-  public void setSeverity(String severity) {
+  public void setSeverity(AlertSeverityEnum severity) {
     this.severity = severity;
   }
 
@@ -244,12 +262,20 @@ public class Alert {
     this.payload = payload;
   }
 
-  public String getStatus() {
+  public AlertStatusEnum getStatus() {
     return status;
   }
 
-  public void setStatus(String status) {
+  public void setStatus(AlertStatusEnum status) {
     this.status = status;
+  }
+
+  public boolean isInAppNotificationsSilenced() {
+    return inAppNotificationsSilenced;
+  }
+
+  public void setInAppNotificationsSilenced(boolean inAppNotificationsSilenced) {
+    this.inAppNotificationsSilenced = inAppNotificationsSilenced;
   }
 
   public String getCanonicalKey() {

@@ -23,7 +23,7 @@ public class PendingWebhookEvent {
     @Column(name = "tenant_id", nullable = false)
     private UUID tenantId;
 
-    @Column(name = "cloud_account", nullable = false)
+    @Column(name = "cloud_account", nullable = true)
     private UUID cloudAccountId;
 
     @Column(name = "event_type", nullable = false)

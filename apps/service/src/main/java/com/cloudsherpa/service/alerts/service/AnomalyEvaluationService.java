@@ -1,6 +1,9 @@
 package com.cloudsherpa.service.alerts.service;
 
 import com.cloudsherpa.lib.entities.Alert;
+import com.cloudsherpa.lib.entities.AlertSeverityEnum;
+import com.cloudsherpa.lib.entities.AlertStatusEnum;
+import com.cloudsherpa.lib.entities.AlertTypeEnum;
 import com.cloudsherpa.lib.entities.OptimizationMetricStatistics;
 import com.cloudsherpa.lib.entities.Resource;
 import com.cloudsherpa.lib.repositories.AlertRepository;
@@ -25,11 +28,9 @@ public class AnomalyEvaluationService {
 
   private static final Logger logger = LoggerFactory.getLogger(AnomalyEvaluationService.class);
 
-  private static final String ALERT_STATUS_ACTIVE = "ACTIVE";
-  private static final String ALERT_TYPE_ANOMALY = "ANOMALY";
-
-  private static final double CRITICAL_Z_SCORE = 3.0;
-  private static final double WARNING_Z_SCORE = 2.0;
+  private static final double CRITICAL_Z_SCORE = 4.0;
+  private static final double WARNING_Z_SCORE = 2.5;
+  private static final int MIN_SAMPLE_SIZE = 30;
 
   private final OptimizationMetricStatisticsRepository statisticsRepository;
   private final AlertRepository alertRepository;
@@ -81,7 +82,9 @@ public class AnomalyEvaluationService {
 
     if (standardDeviation == null
         || average == null
-        || standardDeviation.compareTo(BigDecimal.ZERO) <= 0) {
+        || standardDeviation.compareTo(BigDecimal.ZERO) <= 0
+        || baseline.getSampleCount() == null
+        || baseline.getSampleCount() < MIN_SAMPLE_SIZE) {
       return;
     }
 
@@ -95,7 +98,7 @@ public class AnomalyEvaluationService {
         (event.metricValue().doubleValue() - average.doubleValue())
             / standardDeviation.doubleValue();
 
-    String severity = resolveSeverity(zScore);
+    AlertSeverityEnum severity = resolveSeverity(zScore);
 
     if (severity == null) {
       return;
@@ -104,24 +107,36 @@ public class AnomalyEvaluationService {
     String canonicalKey = buildCanonicalKey(event);
 
     Optional<Alert> existing =
-        alertRepository.findByCanonicalKeyAndStatus(canonicalKey, ALERT_STATUS_ACTIVE);
+        alertRepository.findByCanonicalKeyAndStatus(canonicalKey, AlertStatusEnum.ACTIVE);
+
+    if (existing.isEmpty()
+        && alertRepository
+            .findByCanonicalKeyAndStatus(canonicalKey, AlertStatusEnum.DISABLED)
+            .isPresent()) {
+      // User disabled anomaly alerts for this metric+resource; don't recreate one.
+      return;
+    }
+
+    Resource resource = resourceRepository.findById(event.resourceId()).orElseThrow();
 
     Alert alert;
     if (existing.isPresent()) {
       // Repeated deviations update (and can upgrade the severity of) the existing alert.
       alert = existing.get();
       alert.setSeverity(severity);
+      alert.setTitle(buildTitle(event));
+      alert.setMessage(buildMessage(event, baseline, resource));
+      alert.setPayload(buildPayload(baseline, event, resource, zScore));
       alert.setLastSeen(OffsetDateTime.now(ZoneOffset.UTC));
 
     } else {
-      alert = buildNewAlert(baseline, event, userId, canonicalKey, severity, zScore);
+      alert = buildNewAlert(baseline, event, resource, userId, canonicalKey, severity, zScore);
     }
 
     alertRepository.save(alert);
     sseService.broadcast(userId, "alert", alert);
 
     // Build & submit webhook event
-    Resource resource = resourceRepository.findById(event.resourceId()).orElseThrow();
     webhookProducerService.produceEvent(
         userId,
         resource.getAccountId(),
@@ -129,7 +144,7 @@ public class AnomalyEvaluationService {
         buildWebhookEventPayload(resource, baseline, event, zScore, severity, alert));
   }
 
-  private String resolveSeverity(double zScore) {
+  private AlertSeverityEnum resolveSeverity(double zScore) {
     double magnitude = Math.abs(zScore);
 
     // Taken from
@@ -145,10 +160,10 @@ public class AnomalyEvaluationService {
     // reserved for identifying extreme outliers.
 
     if (magnitude >= CRITICAL_Z_SCORE) {
-      return "CRITICAL";
+      return AlertSeverityEnum.CRITICAL;
     }
     if (magnitude >= WARNING_Z_SCORE) {
-      return "WARNING";
+      return AlertSeverityEnum.WARNING;
     }
     return null;
   }
@@ -156,59 +171,75 @@ public class AnomalyEvaluationService {
   private Alert buildNewAlert(
       OptimizationMetricStatistics baseline,
       MetricStreamEventDto event,
+      Resource resource,
       UUID userId,
       String canonicalKey,
-      String severity,
+      AlertSeverityEnum severity,
       double zScore) {
     OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
-
-    Map<String, Object> payload =
-        Map.of(
-            "metric_name", event.metricName(),
-            "metric_value", event.metricValue(),
-            "average_value", baseline.getAverageValue(),
-            "standard_deviation", baseline.getStandardDeviation(),
-            "z_score", zScore,
-            "resource_id", event.resourceId(),
-            "period_start", event.periodStart(),
-            "period_end", event.periodEnd());
 
     return Alert.builder()
         .userId(userId)
         .widgetId(null)
-        .alertType(ALERT_TYPE_ANOMALY)
+        .alertType(AlertTypeEnum.ANOMALY)
         .severity(severity)
-        .title(buildTitle(event, zScore))
-        .message(buildMessage(event, baseline, zScore))
-        .payload(payload)
-        .status(ALERT_STATUS_ACTIVE)
+        .title(buildTitle(event))
+        .message(buildMessage(event, baseline, resource))
+        .payload(buildPayload(baseline, event, resource, zScore))
+        .status(AlertStatusEnum.ACTIVE)
         .canonicalKey(canonicalKey)
         .createdAt(now)
         .lastSeen(now)
         .build();
   }
 
+  private Map<String, Object> buildPayload(
+      OptimizationMetricStatistics baseline,
+      MetricStreamEventDto event,
+      Resource resource,
+      double zScore) {
+    return Map.of(
+        "metric_name", event.metricName(),
+        "metric_value", event.metricValue(),
+        "average_value", baseline.getAverageValue(),
+        "standard_deviation", baseline.getStandardDeviation(),
+        "z_score", zScore,
+        "resource_id", event.resourceId(),
+        "resource_name", resource.getResourceName(),
+        "provider", resolveProvider(resource),
+        "period_start", event.periodStart(),
+        "period_end", event.periodEnd());
+  }
+
   private String buildCanonicalKey(MetricStreamEventDto event) {
     return "anomaly:" + event.resourceId() + ":" + event.metricName();
   }
 
-  private String buildTitle(MetricStreamEventDto event, double zScore) {
-    return event.metricName() + " anomaly detected (z=" + String.format("%.2f", zScore) + ")";
+  private String buildTitle(MetricStreamEventDto event) {
+    return "Anomaly detected: " + event.metricName();
   }
 
   private String buildMessage(
-      MetricStreamEventDto event, OptimizationMetricStatistics baseline, double zScore) {
+      MetricStreamEventDto event, OptimizationMetricStatistics baseline, Resource resource) {
+
     return event.metricName()
         + " is "
         + event.metricValue()
-        + " (baseline average "
+        + " above baseline average "
         + baseline.getAverageValue()
-        + ", stddev "
-        + baseline.getStandardDeviation()
-        + ", z-score "
-        + String.format("%.2f", zScore)
-        + ") for resource "
-        + event.resourceId();
+        + " for resource "
+        + resource.getResourceName()
+        + " from "
+        + resolveProvider(resource)
+        + ".";
+  }
+
+  private String resolveProvider(Resource resource) {
+    if (resource.getAccount() == null || resource.getAccount().getConnection() == null) {
+      return "UNKNOWN";
+    }
+
+    return resource.getAccount().getConnection().getProvider().name();
   }
 
   private AnomalyAlertPayload buildWebhookEventPayload(
@@ -216,7 +247,7 @@ public class AnomalyEvaluationService {
       OptimizationMetricStatistics baseline,
       MetricStreamEventDto event,
       double zScore,
-      String severity,
+      AlertSeverityEnum severity,
       Alert alert) {
 
     return new AnomalyAlertPayload(

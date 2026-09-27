@@ -348,6 +348,7 @@ export default function ManagingConnections() {
                                                             handleDeletion(connection.id)
                                                         }
                                                         className="bg-destructive hover:bg-destructive/90"
+                                                        variant="destructive"
                                                     >
                                                         Delete
                                                     </AlertDialogAction>

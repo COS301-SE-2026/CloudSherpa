@@ -11,6 +11,7 @@ import {
     Lightbulb,
     Webhook,
     LogOut,
+    ShieldAlert,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
@@ -21,8 +22,11 @@ import Image from "next/image";
 import { Badge } from "@/components/atoms/badge";
 import { useRecStore } from "@/features/optimization/stores/useRecStore";
 import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/atoms/tooltip";
+
+import { useAlertStore } from "@/features/alerts/stores/alert-store";
 
 import {
     Sidebar,
@@ -45,8 +49,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const { theme, setTheme } = useTheme();
     const authContext = useAuthContext();
     const { logout } = useLogout();
+    const pathname = usePathname();
 
     const [mounted, setMounted] = React.useState(false);
+
+    const activeAlerts = useAlertStore(
+        (state) => state.alerts.filter((a) => a.status === "ACTIVE").length
+    );
 
     const handleThemeToggle = async () => {
         const newTheme = theme === "dark" ? "light" : "dark";
@@ -127,7 +136,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                             <SidebarMenu>
                                 {navItems.map((item) => (
                                     <SidebarMenuItem key={item.title}>
-                                        <SidebarMenuButton asChild tooltip={item.title}>
+                                        <SidebarMenuButton
+                                            asChild
+                                            tooltip={item.title}
+                                            isActive={pathname === item.url}
+                                        >
                                             <Link href={item.url}>
                                                 <item.icon />
                                                 <span>{item.title}</span>
@@ -143,7 +156,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         <SidebarGroupContent>
                             <SidebarMenu>
                                 <SidebarMenuItem>
-                                    <SidebarMenuButton asChild tooltip="Add AWS connection">
+                                    <SidebarMenuButton
+                                        asChild
+                                        tooltip="Add AWS connection"
+                                        isActive={pathname === "/addConnection/aws"}
+                                    >
                                         <Link href="/addConnection/aws">
                                             <ServerPlus />
                                             <span>AWS</span>
@@ -151,7 +168,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                                 <SidebarMenuItem>
-                                    <SidebarMenuButton asChild tooltip="Add GCP connection">
+                                    <SidebarMenuButton
+                                        asChild
+                                        tooltip="Add GCP connection"
+                                        isActive={pathname === "/addConnection/gcp"}
+                                    >
                                         <Link href="/addConnection/gcp">
                                             <ServerPlus />
                                             <span>GCP</span>
@@ -159,7 +180,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                                 <SidebarMenuItem>
-                                    <SidebarMenuButton asChild tooltip="Add Azure connection">
+                                    <SidebarMenuButton
+                                        asChild
+                                        tooltip="Add Azure connection"
+                                        isActive={pathname === "/addConnection/azure"}
+                                    >
                                         <Link href="/addConnection/azure">
                                             <ServerPlus />
                                             <span>Azure</span>
@@ -174,7 +199,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         <SidebarGroupContent>
                             <SidebarMenu>
                                 <SidebarMenuItem>
-                                    <SidebarMenuButton asChild tooltip="Manage Connections">
+                                    <SidebarMenuButton
+                                        asChild
+                                        tooltip="Manage Connections"
+                                        isActive={pathname === "/manageConnections"}
+                                    >
                                         <Link href="/manageConnections">
                                             <Network />
                                             <span>Connections</span>
@@ -190,7 +219,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         <SidebarGroupContent>
                             <SidebarMenu>
                                 <SidebarMenuItem>
-                                    <SidebarMenuButton asChild tooltip="Usage Forecasts">
+                                    <SidebarMenuButton
+                                        asChild
+                                        tooltip="Usage Forecasts"
+                                        isActive={pathname === "/intelligence/usage"}
+                                    >
                                         <Link href="/intelligence/usage">
                                             <Telescope />
                                             <span>Usage Forecasts</span>
@@ -198,7 +231,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                                 <SidebarMenuItem>
-                                    <SidebarMenuButton asChild tooltip="Billing Forecasts">
+                                    <SidebarMenuButton
+                                        asChild
+                                        tooltip="Billing Forecasts"
+                                        isActive={pathname === "/intelligence/billing"}
+                                    >
                                         <Link href="/intelligence/billing">
                                             <Telescope />
                                             <span>Billing Forecasts</span>
@@ -214,7 +251,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         <SidebarGroupContent>
                             <SidebarMenu>
                                 <SidebarMenuItem>
-                                    <SidebarMenuButton asChild tooltip="Recommendations">
+                                    <SidebarMenuButton
+                                        asChild
+                                        tooltip="Recommendations"
+                                        isActive={pathname === "/recommendations"}
+                                    >
                                         <Link href="/recommendations">
                                             <div className="flex flex-row gap-2">
                                                 <Lightbulb />
@@ -235,10 +276,49 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         <SidebarGroupContent>
                             <SidebarMenu>
                                 <SidebarMenuItem>
-                                    <SidebarMenuButton asChild tooltip="Webhooks">
+                                    <SidebarMenuButton
+                                        asChild
+                                        tooltip="Webhooks"
+                                        isActive={pathname === "/webhooks"}
+                                    >
                                         <Link href="/webhooks">
                                             <Webhook />
                                             <span>Webhooks</span>
+                                        </Link>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            </SidebarMenu>
+                        </SidebarGroupContent>
+                    </SidebarGroup>
+
+                    <SidebarGroup>
+                        <SidebarGroupLabel>Alerts</SidebarGroupLabel>
+                        <SidebarGroupContent>
+                            <SidebarMenu>
+                                <SidebarMenuItem>
+                                    <SidebarMenuButton
+                                        asChild
+                                        tooltip="Alerts"
+                                        isActive={pathname === "/alerts"}
+                                    >
+                                        <Link href="/alerts">
+                                            <ShieldAlert />
+                                            <span>Alerts</span>
+                                            {activeAlerts > 0 && (
+                                                <Badge>{`${activeAlerts} active`}</Badge>
+                                            )}
+                                        </Link>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                                <SidebarMenuItem>
+                                    <SidebarMenuButton
+                                        asChild
+                                        tooltip="Thresholds & Budgets"
+                                        isActive={pathname === "/thresholds"}
+                                    >
+                                        <Link href="/thresholds">
+                                            <ShieldAlert />
+                                            <span>Thresholds & Budgets </span>
                                         </Link>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
@@ -252,7 +332,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         <SidebarGroupContent>
                             <SidebarMenu>
                                 <SidebarMenuItem>
-                                    <SidebarMenuButton asChild tooltip="Help Center">
+                                    <SidebarMenuButton
+                                        asChild
+                                        tooltip="Help Center"
+                                        isActive={pathname === "/helpMenu/documentsAndTutorials"}
+                                    >
                                         <Link href="/helpMenu/documentsAndTutorials">
                                             {" "}
                                             <HelpCircle />

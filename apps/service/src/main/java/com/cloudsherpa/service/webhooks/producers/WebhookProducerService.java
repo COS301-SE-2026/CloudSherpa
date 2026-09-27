@@ -19,7 +19,7 @@ public class WebhookProducerService {
   private final WebhookEventQueue eventQueue;
   private final ObjectMapper objectMapper;
 
-  WebhookProducerService(
+  public WebhookProducerService(
       PendingWebhookEventRepository pendingWebhookEventRepository,
       ObjectMapper objectMapper,
       WebhookEventQueue eventQueue) {

@@ -17,7 +17,7 @@ public interface WebhookRepository extends JpaRepository<Webhook, UUID> {
             FROM webhooks
             WHERE webhook_status = 'ACTIVE'
             AND :eventType = ANY(event_types)
-            AND (cardinality(cloud_accounts) = 0 OR :cloudAccountId = ANY(cloud_accounts))
+            AND (cardinality(cloud_accounts) = 0 OR (:cloudAccountId IS NULL OR :cloudAccountId = ANY(cloud_accounts)))
             """,
         nativeQuery = true
     )

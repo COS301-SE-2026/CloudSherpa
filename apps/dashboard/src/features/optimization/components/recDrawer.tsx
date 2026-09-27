@@ -137,7 +137,7 @@ export default function RecDrawer({ group, isOpen, setIsOpen }: Readonly<RecDraw
                                     Applied ({appliedCount})
                                 </TabsTrigger>
                                 <TabsTrigger value="dismissed" className="text-sm">
-                                    Dismissed ({dismissedCount})
+                                    Disabled ({dismissedCount})
                                 </TabsTrigger>
                             </TabsList>
                         </Tabs>

@@ -170,13 +170,13 @@ function Truncation({
 }: Readonly<{ tagsAndName: string; className?: string }>) {
     return (
         <TooltipProvider>
-            <Tooltip>
+            <Tooltip showOnTruncate>
                 <TooltipTrigger asChild>
-                    <span className={`block truncate ${className}`}> {tagsAndName} </span>
+                    <span className={`block truncate ${className}`}>{tagsAndName}</span>
                 </TooltipTrigger>
 
                 <TooltipContent>
-                    <p className="max-w-xs break-all"> {tagsAndName} </p>
+                    <p className="max-w-xs break-all">{tagsAndName}</p>
                 </TooltipContent>
             </Tooltip>
         </TooltipProvider>
@@ -195,7 +195,7 @@ function ListOfTags({ tags }: Readonly<{ tags: Record<string, string> }>) {
                     <Badge
                         key={key}
                         variant="secondary"
-                        className="text-[10px] font-normal cursor-default w-[80px] flex-shrink-0"
+                        className="text-[10px] font-normal cursor-default w-full flex-shrink-0"
                     >
                         <Truncation tagsAndName={wholeTag} className="w-full text-left" />
                     </Badge>
@@ -220,13 +220,11 @@ function ResourceHeaders({ column }: Readonly<HeaderContext<ResourceSelectionDto
 }
 
 function ResourceCells({ getValue }: Readonly<CellContext<ResourceSelectionDto, string>>) {
-    return <Truncation tagsAndName={getValue()} className="font-medium w-[110px]" />;
+    return <Truncation tagsAndName={getValue()} className="font-medium w-full" />;
 }
 
 function SecondaryCells({ getValue }: Readonly<CellContext<ResourceSelectionDto, string>>) {
-    return (
-        <Truncation tagsAndName={getValue()} className="text-xs text-muted-foreground w-[80px]" />
-    );
+    return <Truncation tagsAndName={getValue()} className="text-xs text-muted-foreground w-full" />;
 }
 
 function TagCells({
@@ -236,7 +234,7 @@ function TagCells({
 }
 
 function ToggleHeader() {
-    return <span className="block text-center"> Active/Inactive </span>;
+    return <span className="block"> Active/Inactive </span>;
 }
 
 function ToggleCells({
@@ -258,15 +256,20 @@ function ToggleCells({
 const helperForColumns = createColumnHelper<ResourceSelectionDto>();
 
 const columns = [
-    helperForColumns.accessor("resourceName", { header: ResourceHeaders, cell: ResourceCells }),
-    helperForColumns.accessor("serviceType", { header: "Type", cell: SecondaryCells }),
-    helperForColumns.accessor("region", { header: "Region", cell: SecondaryCells }),
-    helperForColumns.accessor("tags", { header: "Tags", cell: TagCells }),
+    helperForColumns.accessor("resourceName", {
+        header: ResourceHeaders,
+        cell: ResourceCells,
+        size: 25,
+    }),
+    helperForColumns.accessor("serviceType", { header: "Type", cell: SecondaryCells, size: 10 }),
+    helperForColumns.accessor("region", { header: "Region", cell: SecondaryCells, size: 10 }),
+    helperForColumns.accessor("tags", { header: "Tags", cell: TagCells, size: 30 }),
     helperForColumns.accessor("active", {
         header: ToggleHeader,
         filterFn: "equals",
         cell: ToggleCells,
         enableSorting: false,
+        size: 25,
     }),
 ];
 
@@ -395,9 +398,7 @@ export function ResourceTable({
                                 {headerGroup.headers.map((header) => (
                                     <TableHead
                                         key={header.id}
-                                        className={
-                                            header.column.id === "selected" ? "w-10" : undefined
-                                        }
+                                        style={{ width: `${header.column.getSize()}%` }}
                                     >
                                         {flexRender(
                                             header.column.columnDef.header,
@@ -426,9 +427,7 @@ export function ResourceTable({
                                     {row.getVisibleCells().map((cell) => (
                                         <TableCell
                                             key={cell.id}
-                                            className={
-                                                cell.column.id === "selected" ? "w-10" : undefined
-                                            }
+                                            style={{ width: `${cell.column.getSize()}%` }}
                                         >
                                             {flexRender(
                                                 cell.column.columnDef.cell,

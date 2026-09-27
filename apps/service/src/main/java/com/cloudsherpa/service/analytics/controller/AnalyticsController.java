@@ -154,7 +154,7 @@ public class AnalyticsController {
     }
 
     List<NormalizedMetrics> downsampledSeries =
-        normalizedMetricService.fetchDownsampledSeries(request);
+        normalizedMetricService.fetchSegmentedDownsampledSeries(request);
     return ResponseEntity.ok().body(downsampledSeries);
   }
 

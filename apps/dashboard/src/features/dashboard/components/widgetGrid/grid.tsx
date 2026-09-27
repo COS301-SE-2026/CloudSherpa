@@ -69,6 +69,8 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
     const layoutChangeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const isInteractingRef = useRef(false);
 
+    const isSessionActive = useDashboardStore((state) => state.isSessionActive);
+
     const cancelPendingCompact = () => {
         if (compactTimerRef.current) {
             clearTimeout(compactTimerRef.current);
@@ -124,7 +126,8 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
                     cellHeight: 100, //handles row heights that widgets snap to
                     margin: 12, //layer around every widget. meaning there is 24px margin between every widget
                     handle: ".drag-handle",
-                    staticGrid: !isEditModeRef.current, //lock grid not in edit mode
+                    staticGrid:
+                        !isEditModeRef.current || useDashboardStore.getState().isSessionActive,
                     float: false,
                     animate: true, //better performance
                     minRow: 3,
@@ -307,7 +310,8 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
     //lock layouts outside edit
     useEffect(() => {
         if (gridStackInstance.current) {
-            gridStackInstance.current.setStatic(!isEditMode);
+            const shouldBeStatic = !isEditMode || isSessionActive;
+            gridStackInstance.current.setStatic(shouldBeStatic);
 
             if (isEditMode) {
                 gridRef.current?.classList.add("is-editing");
@@ -315,7 +319,7 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
                 gridRef.current?.classList.remove("is-editing");
             }
         }
-    }, [isEditMode]);
+    }, [isEditMode, isSessionActive]);
 
     return (
         <div className="bg-background flex-1 min-h-full pb-40">

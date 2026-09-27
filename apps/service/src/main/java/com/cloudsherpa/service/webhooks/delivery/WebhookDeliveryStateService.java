@@ -85,8 +85,10 @@ public class WebhookDeliveryStateService {
         delivery.getEventType(),
         delivery.getEventTimestamp(),
         new WebhookEventCloudAccount(
-            delivery.getCloudAccount().getDisplayName(),
-            delivery.getCloudAccount().getConnection().getProvider()),
+            delivery.getCoudAccountName(),
+            delivery.getCloudAccount() != null
+                ? delivery.getCloudAccount().getConnection().getProvider()
+                : null),
         delivery.getPayload(),
         delivery.getWebhook().getSigningKey(),
         delivery.getAttemptCount());

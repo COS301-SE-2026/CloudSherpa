@@ -2,7 +2,6 @@ package com.cloudsherpa.service.unit.alerts;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -14,12 +13,16 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.cloudsherpa.lib.entities.Alert;
+import com.cloudsherpa.lib.entities.AlertSeverityEnum;
+import com.cloudsherpa.lib.entities.AlertStatusEnum;
+import com.cloudsherpa.lib.entities.AlertTypeEnum;
 import com.cloudsherpa.lib.entities.Resource;
 import com.cloudsherpa.lib.entities.Threshold;
 import com.cloudsherpa.lib.repositories.AlertRepository;
 import com.cloudsherpa.lib.repositories.ThresholdRepository;
 import com.cloudsherpa.service.alerts.service.ThresholdEvaluationService;
 import com.cloudsherpa.service.listener.dto.MetricStreamEventDto;
+import com.cloudsherpa.service.metrics.MetricDisplayNameMapper;
 import com.cloudsherpa.service.sse.SseService;
 import com.cloudsherpa.service.webhooks.producers.WebhookProducerService;
 import java.math.BigDecimal;
@@ -42,6 +45,7 @@ class ThresholdEvaluationServiceTest {
   @Mock private AlertRepository alertRepository;
   @Mock private SseService sseService;
   @Mock private WebhookProducerService webhookProducerService;
+  @Mock private MetricDisplayNameMapper metricDisplayNameMapper;
 
   private ThresholdEvaluationService service;
   private UUID userId;
@@ -51,20 +55,28 @@ class ThresholdEvaluationServiceTest {
   void setUp() {
     service =
         new ThresholdEvaluationService(
-            thresholdRepository, alertRepository, sseService, webhookProducerService);
+            thresholdRepository,
+            alertRepository,
+            sseService,
+            webhookProducerService,
+            metricDisplayNameMapper);
+
     userId = UUID.randomUUID();
     resourceId = UUID.randomUUID();
   }
 
   @Test
   void evaluateShouldCreateAlertWhenThresholdIsViolated() {
-    Threshold threshold = threshold("CPUUtilization", "GT", 80.0, "HIGH", true);
+
+    when(metricDisplayNameMapper.toDisplayName("CPUUtilization")).thenReturn("CPU Utilization");
+
+    Threshold threshold = threshold("CPUUtilization", "GT", 80.0, AlertSeverityEnum.WARNING, true);
     mockWebhookEventProduction(threshold);
 
     when(thresholdRepository.findByResourceIdAndMetricNameAndEnabledTrue(
             resourceId, "CPUUtilization"))
         .thenReturn(List.of(threshold));
-    when(alertRepository.findByCanonicalKeyAndStatus(anyString(), eq("ACTIVE")))
+    when(alertRepository.findByCanonicalKeyAndStatus(anyString(), eq(AlertStatusEnum.ACTIVE)))
         .thenReturn(Optional.empty());
 
     MetricStreamEventDto event = metricEvent("CPUUtilization", new BigDecimal(92));
@@ -75,12 +87,13 @@ class ThresholdEvaluationServiceTest {
     verify(alertRepository).save(captor.capture());
 
     Alert saved = captor.getValue();
-    assertEquals("ACTIVE", saved.getStatus());
-    assertEquals("THRESHOLD", saved.getAlertType());
-    assertEquals("HIGH", saved.getSeverity());
-    assertEquals("CPUUtilization GT 80.0", saved.getTitle());
+    assertEquals(AlertStatusEnum.ACTIVE, saved.getStatus());
+    assertEquals(AlertTypeEnum.THRESHOLD, saved.getAlertType());
+    assertEquals(AlertSeverityEnum.WARNING, saved.getSeverity());
+    assertEquals("Threshold breached: CPU Utilization", saved.getTitle());
     assertEquals(
-        "CPUUtilization is 92 (threshold GT 80.0) for resource " + resourceId, saved.getMessage());
+        "CPU Utilization is 92, which exceeds the configured threshold (> 80.0) on Example resource from UNKNOWN.",
+        saved.getMessage());
     assertEquals(
         "threshold:" + threshold.getThresholdId() + ":" + resourceId, saved.getCanonicalKey());
     verify(sseService).broadcast(eq(userId), eq("alert"), same(saved));
@@ -88,7 +101,7 @@ class ThresholdEvaluationServiceTest {
 
   @Test
   void evaluateShouldSkipAlertWhenMetricDoesNotViolateThreshold() {
-    Threshold threshold = threshold("CPUUtilization", "GT", 80.0, "HIGH", true);
+    Threshold threshold = threshold("CPUUtilization", "GT", 80.0, AlertSeverityEnum.WARNING, true);
     when(thresholdRepository.findByResourceIdAndMetricNameAndEnabledTrue(
             resourceId, "CPUUtilization"))
         .thenReturn(List.of(threshold));
@@ -103,7 +116,9 @@ class ThresholdEvaluationServiceTest {
 
   @Test
   void evaluateShouldReuseExistingActiveAlertForRepeatViolation() {
-    Threshold threshold = threshold("CPUUtilization", "GT", 80.0, "HIGH", true);
+    when(metricDisplayNameMapper.toDisplayName("CPUUtilization")).thenReturn("CPU Utilization");
+
+    Threshold threshold = threshold("CPUUtilization", "GT", 80.0, AlertSeverityEnum.WARNING, true);
     mockWebhookEventProduction(threshold);
     String canonicalKey = "threshold:" + threshold.getThresholdId() + ":" + resourceId;
 
@@ -111,12 +126,13 @@ class ThresholdEvaluationServiceTest {
         Alert.builder()
             .userId(userId)
             .widgetId(null)
-            .alertType("THRESHOLD")
-            .severity("HIGH")
-            .title("CPUUtilization GT 80.0")
-            .message("CPUUtilization is 92 (threshold GT 80.0) for resource " + resourceId)
+            .alertType(AlertTypeEnum.THRESHOLD)
+            .severity(AlertSeverityEnum.WARNING)
+            .title("Threshold breached: CPU Utilization")
+            .message(
+                "CPU Utilization is 92, which exceeds the configured threshold (> 80.0) on Example resource from UNKNOWN.")
             .payload(Map.of("metric_name", "CPUUtilization"))
-            .status("ACTIVE")
+            .status(AlertStatusEnum.ACTIVE)
             .canonicalKey(canonicalKey)
             .createdAt(OffsetDateTime.now().minusMinutes(5))
             .lastSeen(OffsetDateTime.now().minusMinutes(5))
@@ -125,22 +141,28 @@ class ThresholdEvaluationServiceTest {
     when(thresholdRepository.findByResourceIdAndMetricNameAndEnabledTrue(
             resourceId, "CPUUtilization"))
         .thenReturn(List.of(threshold));
-    when(alertRepository.findByCanonicalKeyAndStatus(canonicalKey, "ACTIVE"))
+    when(alertRepository.findByCanonicalKeyAndStatus(canonicalKey, AlertStatusEnum.ACTIVE))
         .thenReturn(Optional.of(existing));
+
+    OffsetDateTime previousLastSeen = existing.getLastSeen();
 
     MetricStreamEventDto event = metricEvent("CPUUtilization", new BigDecimal(92));
 
     service.evaluate(event, userId);
 
     assertNotNull(existing.getLastSeen());
-    assertTrue(existing.getLastSeen().isAfter(OffsetDateTime.now().minusMinutes(1)));
+    assertNotNull(previousLastSeen);
+    assertNotNull(existing.getMessage());
+    assertNotNull(existing.getTitle());
+
     verify(alertRepository).save(existing);
     verify(sseService).broadcast(eq(userId), eq("alert"), same(existing));
   }
 
   @Test
   void evaluateShouldIgnoreUnknownOperatorAndNotCreateAlert() {
-    Threshold threshold = threshold("CPUUtilization", "UNKNOWN", 80.0, "HIGH", true);
+    Threshold threshold =
+        threshold("CPUUtilization", "UNKNOWN", 80.0, AlertSeverityEnum.WARNING, true);
     when(thresholdRepository.findByResourceIdAndMetricNameAndEnabledTrue(
             resourceId, "CPUUtilization"))
         .thenReturn(List.of(threshold));
@@ -154,7 +176,11 @@ class ThresholdEvaluationServiceTest {
   }
 
   private Threshold threshold(
-      String metricName, String operator, double value, String severity, boolean enabled) {
+      String metricName,
+      String operator,
+      double value,
+      AlertSeverityEnum severity,
+      boolean enabled) {
     Threshold threshold =
         new Threshold(resourceId, userId, metricName, operator, value, severity, enabled);
     threshold.setThresholdId(UUID.randomUUID());

@@ -1,6 +1,9 @@
 package com.cloudsherpa.service.alerts.dto;
 
 import com.cloudsherpa.lib.entities.Alert;
+import com.cloudsherpa.lib.entities.AlertSeverityEnum;
+import com.cloudsherpa.lib.entities.AlertStatusEnum;
+import com.cloudsherpa.lib.entities.AlertTypeEnum;
 import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.UUID;
@@ -8,12 +11,13 @@ import java.util.UUID;
 public record AlertResponse(
     UUID alertId,
     UUID userId,
-    String alertType,
-    String severity,
+    AlertTypeEnum alertType,
+    AlertSeverityEnum severity,
     String title,
     String message,
     Map<String, Object> payload,
-    String status,
+    AlertStatusEnum status,
+    boolean inAppNotificationsSilenced,
     String canonicalKey,
     OffsetDateTime createdAt,
     OffsetDateTime lastSeen,
@@ -29,6 +33,7 @@ public record AlertResponse(
         alert.getMessage(),
         alert.getPayload(),
         alert.getStatus(),
+        alert.isInAppNotificationsSilenced(),
         alert.getCanonicalKey(),
         alert.getCreatedAt(),
         alert.getLastSeen(),

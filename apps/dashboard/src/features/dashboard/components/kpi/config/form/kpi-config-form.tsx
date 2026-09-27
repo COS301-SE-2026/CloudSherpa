@@ -24,6 +24,7 @@ export type KpiConfigFormProps = {
 export function KpiConfigFormInner({ kpiId }: KpiConfigFormProps) {
     const { fetchTableResources, tableResourcesFetchError, tableResourcesLoading, tableResources } =
         useFetchTableResources();
+    const [isError, setIsError] = useState("");
     const getWidget = useDashboardStore((state) => state.actions.getWidget);
     const updateWidget = useDashboardStore((state) => state.actions.updateKpiWidgetConfig);
     const [isSaving, setIsSaving] = useState(false);
@@ -74,6 +75,10 @@ export function KpiConfigFormInner({ kpiId }: KpiConfigFormProps) {
     }
 
     function saveKpiConfig() {
+        if (!config.displayName || config.displayName.trim() === "") {
+            setIsError("Enter a dispaly name to save changes");
+            return;
+        }
         setIsSaving(true);
         updateWidget(config);
         setIsSaving(false);
@@ -102,6 +107,11 @@ export function KpiConfigFormInner({ kpiId }: KpiConfigFormProps) {
             </div>
             <div className="grid grid-cols-[2fr_1fr] gap-4 h-full">
                 <Card className="p-6">
+                    {isError.length > 0 && (
+                        <div className="w-full p-3 bg-destructive/10 border border-destructive/80 rounded-md text-destructive text-xs">
+                            {isError}
+                        </div>
+                    )}
                     <KpiFormDetails
                         title={config.displayName ?? "No Title"}
                         onTitleChange={onTitleChange}

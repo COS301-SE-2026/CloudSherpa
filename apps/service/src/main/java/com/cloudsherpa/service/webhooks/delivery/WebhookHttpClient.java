@@ -23,17 +23,23 @@ public class WebhookHttpClient {
 
   // Returns delivery status code
   public Integer send(DeliveryAttempt attempt) {
+
+    DeliveryHttpBody body = requestBody(attempt);
+
     try {
       Instant timestamp = Instant.now();
       ResponseEntity<Void> res =
           restClient
               .post()
               .uri(attempt.webhookUrl())
-              .body(requestBody(attempt))
+              .body(body)
               .header("Content-Type", "application/json")
               .header("webhook-id", attempt.headers().webhookId())
               .header("webhook-timestamp", timestamp.toString())
-              .header("webhook-signature", signingService.signWebhookDelivery(attempt, timestamp))
+              .header(
+                  "webhook-signature",
+                  signingService.signWebhookDelivery(
+                      attempt.signingKey(), attempt.headers().webhookId(), timestamp, body))
               .retrieve()
               .toBodilessEntity();
 
@@ -47,6 +53,6 @@ public class WebhookHttpClient {
 
   private DeliveryHttpBody requestBody(DeliveryAttempt attempt) {
     return new DeliveryHttpBody(
-        attempt.type(), attempt.timestamp().toString(), attempt.account(), attempt.data());
+        attempt.type(), attempt.timestamp().toEpochMilli(), attempt.account(), attempt.data());
   }
 }

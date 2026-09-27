@@ -12,18 +12,14 @@ import { AwsCredentialsDto } from "@/lib/fetch/dto/cloud-credentials";
 import { ResourceDetail, ResourceSelectionDto } from "@/lib/fetch/dto/cloud-resource";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { BillingConfig } from "./stepTwo";
 
 interface PropsForStepThree {
     displayName: string;
     ingestionPeriod: string;
     credentials: AwsCredentialsDto;
     resources: ResourceDetail[];
-    billingConfig: {
-        bucketName: string;
-        bucketRegion: string;
-        prefix: string;
-        exportName: string;
-    };
+    billingConfig: BillingConfig | null;
     onComplete: (ingestionPeriod: string) => void;
     onBack: () => void;
 }
@@ -91,12 +87,14 @@ export default function StepThreeAws({
                 ingestionPeriod: String(ingestionPeriodState),
                 credentials,
                 resources: resourceData,
-                billingConfig: {
-                    bucketName: billingConfig.bucketName,
-                    bucketRegion: billingConfig.bucketRegion,
-                    exportPrefix: billingConfig.prefix,
-                    exportName: billingConfig.exportName,
-                },
+                billingConfig: billingConfig
+                    ? {
+                          bucketName: billingConfig.bucketName,
+                          bucketRegion: billingConfig.bucketRegion,
+                          exportPrefix: billingConfig.prefix,
+                          exportName: billingConfig.exportName,
+                      }
+                    : null,
             };
 
             await createAwsConnection(request);

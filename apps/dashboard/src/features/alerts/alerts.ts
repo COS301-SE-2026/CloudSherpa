@@ -1,0 +1,33 @@
+import apiClient from "@/lib/fetch/api-client";
+
+import type { Alert, TypeForAlerts } from "@/features/alerts/types/alertTypes";
+
+export const fetchAlerts = async (typeForAlert?: TypeForAlerts): Promise<Alert[]> => {
+    const forPath = typeForAlert
+        ? `/api/alerts?alertType=${encodeURIComponent(typeForAlert)}`
+        : "/api/alerts";
+
+    return apiClient<Alert[]>(forPath, { method: "GET" });
+};
+
+export const disableAlert = async (alertId: string): Promise<void> => {
+    return apiClient<void>(`/api/alerts/${alertId}/disable`, { method: "POST" });
+};
+
+export const enableAlert = async (alertId: string): Promise<void> => {
+    return apiClient<void>(`/api/alerts/${alertId}/enable`, { method: "POST" });
+};
+
+export const deleteAlert = async (alertId: string): Promise<void> => {
+    return apiClient<void>(`/api/alerts/${alertId}`, { method: "DELETE" });
+};
+
+export const updateAlertNotificationSilence = (
+    alertId: string,
+    silenced: boolean
+): Promise<void> => {
+    return apiClient<void>(`/api/alerts/${alertId}/notification-silence`, {
+        method: "POST",
+        body: JSON.stringify({ silenced }),
+    });
+};

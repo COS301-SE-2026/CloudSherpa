@@ -1,5 +1,6 @@
 package com.cloudsherpa.service.webhooks.events.alert.threshold;
 
+import com.cloudsherpa.lib.entities.AlertSeverityEnum;
 import com.cloudsherpa.service.webhooks.events.WebhookEventDefinition;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -44,7 +45,7 @@ public class ThresholdAlertEventDefinition
         "Percent",
         "GT",
         80.0,
-        "WARNING",
+        AlertSeverityEnum.WARNING,
         OffsetDateTime.parse("2026-09-21T09:00:00Z"),
         OffsetDateTime.parse("2026-09-21T09:05:00Z"));
   }

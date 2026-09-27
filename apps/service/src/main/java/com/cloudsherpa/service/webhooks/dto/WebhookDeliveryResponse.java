@@ -12,4 +12,5 @@ public record WebhookDeliveryResponse(
     UUID cloudAccountId,
     String cloudAccountName,
     WebhookDeliveryStatusEnum result,
-    Integer responseCode) {}
+    Integer responseCode,
+    Instant nextRetryAttempt) {}

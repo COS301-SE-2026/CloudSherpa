@@ -1,7 +1,10 @@
 package com.cloudsherpa.service.alerts.controller;
 
 import com.cloudsherpa.lib.entities.Alert;
+import com.cloudsherpa.lib.entities.AlertStatusEnum;
+import com.cloudsherpa.lib.entities.AlertTypeEnum;
 import com.cloudsherpa.lib.repositories.AlertRepository;
+import com.cloudsherpa.service.alerts.dto.AlertNotificationSilenceRequest;
 import com.cloudsherpa.service.alerts.dto.AlertResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -38,7 +41,7 @@ public class AlertsController {
               array = @ArraySchema(schema = @Schema(implementation = AlertResponse.class))))
   @GetMapping
   public ResponseEntity<List<AlertResponse>> getAlerts(
-      @RequestParam(name = "alertType", required = false) String alertType) {
+      @RequestParam(name = "alertType", required = false) AlertTypeEnum alertType) {
 
     List<Alert> alerts =
         alertType == null
@@ -68,21 +71,62 @@ public class AlertsController {
         .orElseGet(() -> ResponseEntity.notFound().build());
   }
 
-  @Operation(summary = "Acknowledge alert", description = "Mark an alert as ACKNOWLEDGED.")
-  @ApiResponse(responseCode = "204", description = "Alert acknowledged")
-  @ApiResponse(responseCode = "404", description = "Alert not found", content = @Content)
-  @PostMapping("/{id}/acknowledge")
-  public ResponseEntity<Void> acknowledge(
+  @PostMapping("/{id}/disable")
+  public ResponseEntity<Void> disable(
       @Parameter(description = "Alert UUID") @PathVariable UUID id) {
+    return alertRepository
+        .findById(id)
+        .map(
+            alert -> {
+              alert.setStatus(AlertStatusEnum.DISABLED);
+              alertRepository.save(alert);
+
+              return ResponseEntity.noContent().<Void>build();
+            })
+        .orElseGet(() -> ResponseEntity.notFound().build());
+  }
+
+  @PostMapping("/{id}/enable")
+  public ResponseEntity<Void> enable(@Parameter(description = "Alert UUID") @PathVariable UUID id) {
+    return alertRepository
+        .findById(id)
+        .map(
+            alert -> {
+              alert.setStatus(AlertStatusEnum.ACTIVE);
+              alertRepository.save(alert);
+
+              return ResponseEntity.noContent().<Void>build();
+            })
+        .orElseGet(() -> ResponseEntity.notFound().build());
+  }
+
+  @Operation(summary = "Delete alert", description = "Delete an existing alert.")
+  @ApiResponse(responseCode = "204", description = "Alert deleted")
+  @ApiResponse(responseCode = "404", description = "Alert not found", content = @Content)
+  @DeleteMapping("/{id}")
+  public ResponseEntity<Void> deleteAlert(
+      @Parameter(description = "Alert UUID") @PathVariable UUID id) {
+    if (!alertRepository.existsById(id)) {
+      return ResponseEntity.notFound().build();
+    }
+
+    alertRepository.deleteById(id);
     return ResponseEntity.noContent().build();
   }
 
-  @Operation(summary = "Dismiss alert", description = "Mark an alert as DISMISSED.")
-  @ApiResponse(responseCode = "204", description = "Alert dismissed")
-  @ApiResponse(responseCode = "404", description = "Alert not found", content = @Content)
-  @PostMapping("/{id}/dismiss")
-  public ResponseEntity<Void> dismiss(
-      @Parameter(description = "Alert UUID") @PathVariable UUID id) {
-    return ResponseEntity.noContent().build();
+  @PostMapping("/{id}/notification-silence")
+  public ResponseEntity<Void> updateNotificationSilence(
+      @PathVariable UUID id, @RequestBody AlertNotificationSilenceRequest request) {
+
+    return alertRepository
+        .findById(id)
+        .map(
+            alert -> {
+              alert.setInAppNotificationsSilenced(request.silenced());
+              alertRepository.save(alert);
+
+              return ResponseEntity.noContent().<Void>build();
+            })
+        .orElseGet(() -> ResponseEntity.notFound().build());
   }
 }

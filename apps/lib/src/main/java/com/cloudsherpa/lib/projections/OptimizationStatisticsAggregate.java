@@ -16,4 +16,5 @@ public interface OptimizationStatisticsAggregate {
     BigDecimal getP95Value();
     BigDecimal getP99Value();
     BigDecimal getStandardDeviation();
+    int getSampleCount();
 }

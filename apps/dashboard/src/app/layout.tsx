@@ -31,6 +31,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <html
             lang="en"
             suppressHydrationWarning
+            data-scroll-behavior="smooth"
             className={cn(
                 geistSans.variable,
                 geistHeading.variable,

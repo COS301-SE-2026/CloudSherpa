@@ -65,6 +65,9 @@ public class OptimizationMetricStatistics {
     @Column(name = "completeness_ratio")
     private BigDecimal completenessRatio;
 
+    @Column(name = "sample_count")
+    private Integer sampleCount;
+
     @Column(name = "window_start", nullable = false)
     private OffsetDateTime windowStart;
 
@@ -92,6 +95,7 @@ public class OptimizationMetricStatistics {
         this.spikeCount = builder.spikeCount;
         this.peakDurationSeconds = builder.peakDurationSeconds;
         this.completenessRatio = builder.completenessRatio;
+        this.sampleCount = builder.sampleCount;
         this.windowStart = builder.windowStart;
         this.windowEnd = builder.windowEnd;
         this.calculatedAt = builder.calculatedAt;
@@ -117,6 +121,7 @@ public class OptimizationMetricStatistics {
         private Integer spikeCount;
         private Integer peakDurationSeconds;
         private BigDecimal completenessRatio;
+        private int sampleCount;
         private OffsetDateTime windowStart;
         private OffsetDateTime windowEnd;
         private OffsetDateTime calculatedAt;
@@ -193,6 +198,12 @@ public class OptimizationMetricStatistics {
 
         public Builder completenessRatio(BigDecimal completenessRatio) {
             this.completenessRatio = completenessRatio;
+            return this;
+        }
+
+        public Builder sampleCount(int sampleCount)
+        {
+            this.sampleCount = sampleCount;
             return this;
         }
 
@@ -274,6 +285,11 @@ public class OptimizationMetricStatistics {
 
     public Integer getPeakDurationSeconds() {
         return peakDurationSeconds;
+    }
+
+    public Integer getSampleCount()
+    {
+        return sampleCount;
     }
 
     public BigDecimal getCompletenessRatio() {
