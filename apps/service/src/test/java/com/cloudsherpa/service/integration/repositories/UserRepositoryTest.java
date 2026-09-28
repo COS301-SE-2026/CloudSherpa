@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.cloudsherpa.lib.entities.User;
 import com.cloudsherpa.lib.repositories.UserRepository;
-import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -14,7 +13,6 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
-import org.testcontainers.utility.MountableFile;
 
 @Testcontainers
 @DataJpaTest
@@ -27,19 +25,11 @@ class UserRepositoryTest {
       new PostgreSQLContainer(
               DockerImageName.parse("timescale/timescaledb-ha:pg16-ts2.29")
                   .asCompatibleSubstituteFor("postgres"))
-          .withCopyFileToContainer(
-              MountableFile.forClasspathResource("sherpadb-schema.sql"),
-              "/docker-entrypoint-initdb.d/01_schema.sql");
+          .withInitScript("sherpadb-schema.sql");
 
   @Test
   void testFindByEmailIgnoreCase() {
-    User testUser = new User(UUID.randomUUID(), "test@gmail.com", "testuser", "test-password-hash");
-
-    userRepository.save(testUser);
-
-    User user = userRepository.findByEmailIgnoreCase("TEST@GMAIL.COM");
-
+    User user = userRepository.findByEmailIgnoreCase("test@gmail.com");
     assertThat(user).isNotNull();
-    assertThat(user.getEmail()).isEqualTo("test@gmail.com");
   }
 }

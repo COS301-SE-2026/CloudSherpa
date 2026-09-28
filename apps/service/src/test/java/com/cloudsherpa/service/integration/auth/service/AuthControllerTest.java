@@ -10,7 +10,6 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
-import org.testcontainers.utility.MountableFile;
 
 @Testcontainers
 @ActiveProfiles("test")
@@ -30,9 +29,7 @@ class AuthControllerTest {
       new PostgreSQLContainer(
               DockerImageName.parse("timescale/timescaledb-ha:pg16-ts2.29")
                   .asCompatibleSubstituteFor("postgres"))
-          .withCopyFileToContainer(
-              MountableFile.forClasspathResource("sherpadb-schema.sql"),
-              "/docker-entrypoint-initdb.d/01_schema.sql");
+          .withInitScript("sherpadb-schema.sql");
 
   @Test
   void isConnectionEstablished() {
