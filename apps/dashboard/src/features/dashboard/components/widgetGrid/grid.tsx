@@ -327,15 +327,27 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
         }
     }, [isEditMode, isSessionActive]);
 
+    const widgets = (
+        <div ref={gridRef} className="grid-stack">
+            {layouts.map((l) => (
+                <WidgetWrapper key={l.id} layout={l} isEditMode={isEditMode} />
+            ))}
+        </div>
+    );
+
     return (
         <div
-            className={`bg-background flex-1 min-h-full pb-40 rounded-lg ${isGenerating ? "animate-pulse" : ""}`}
+            className={`bg-background flex-1 min-h-full pb-40 rounded-lg flex flex-col ${isGenerating ? "animate-pulse" : ""}`}
         >
-            <div ref={gridRef} className="grid-stack">
-                {layouts.map((l) => (
-                    <WidgetWrapper key={l.id} layout={l} isEditMode={isEditMode} />
-                ))}
-            </div>
+            {layouts.length === 0 && (isGenerating || isSessionActive) ? (
+                <div className="flex-1 w-full flex justify-center items-center">
+                    <p className="text-base font-medium text-muted-foreground">
+                        Generating dashboard...
+                    </p>
+                </div>
+            ) : (
+                widgets
+            )}
             <div ref={scrollRef} aria-hidden className="h-px w-full" />
         </div>
     );

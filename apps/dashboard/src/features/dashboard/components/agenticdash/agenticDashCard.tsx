@@ -124,7 +124,10 @@ export default function AgenticDashCard() {
                                     {isSessionActive && (
                                         <Button
                                             variant="secondary"
-                                            className={cn(showPresets && "bg-card/50 text-foreground", 'text-muted-foreground')}
+                                            className={cn(
+                                                showPresets && "bg-card/50 text-red-500",
+                                                "text-muted-foreground"
+                                            )}
                                             onClick={() => setShowPresets((prev) => !prev)}
                                         >
                                             Presets Prompts
