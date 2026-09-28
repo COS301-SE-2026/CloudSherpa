@@ -49,9 +49,9 @@ function helperForColumns({
     return [
         {
             id: "enabled",
-            header: () => <span className="block text-center"> ENABLED </span>,
+            header: () => "ENABLED",
             enableSorting: false,
-            size: 190,
+            size: 25,
             cell: ({ row }) => (
                 <div className="flex items-center justify-center">
                     <Switch
@@ -65,7 +65,7 @@ function helperForColumns({
         {
             accessorKey: "scope",
             header: () => "SCOPE",
-            size: 160,
+            size: 100,
             cell: ({ row }) => {
                 const forBudget = row.original;
 
@@ -93,7 +93,7 @@ function helperForColumns({
         {
             accessorKey: "budget",
             header: () => "BUDGET",
-            size: 160,
+            size: 100,
             cell: ({ row }) => {
                 const mutedBudget = !row.original.enabled;
 
@@ -113,7 +113,7 @@ function helperForColumns({
         {
             accessorKey: "window_days",
             header: () => "WINDOW",
-            size: 140,
+            size: 100,
             cell: ({ row }) => (
                 <span className={!row.original.enabled ? "text-muted-foreground" : ""}>
                     {row.original.window_days} {row.original.window_days === 1 ? "day" : "days"}
@@ -125,14 +125,14 @@ function helperForColumns({
             id: "actions",
             header: () => "",
             enableSorting: false,
-            size: 65,
+            size: 10,
             cell: ({ row }) => {
                 const forBudget = row.original;
 
                 return (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                            <Button variant="ghost" size="sm" className="h-auto p-0 text-muted-foreground hover:text-foreground">
                                 {" "}
                                 <MoreVertical className="h-4 w-4" />{" "}
                             </Button>

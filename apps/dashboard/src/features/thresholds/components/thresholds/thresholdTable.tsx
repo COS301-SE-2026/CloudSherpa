@@ -64,9 +64,9 @@ function helperForColumns({
     return [
         {
             id: "enabled",
-            header: () => <span className="block text-center"> ENABLED </span>,
+            header: () => "ENABLED",
             enableSorting: false,
-            size: 200,
+            size: 30,
             cell: ({ row }) => {
                 const forThreshold = row.original;
 
@@ -85,7 +85,7 @@ function helperForColumns({
         {
             id: "resource",
             header: () => "RESOURCE",
-            size: 180,
+            size: 100,
             enableSorting: false,
             cell: ({ row }) => {
                 const forThreshold = row.original;
@@ -97,7 +97,7 @@ function helperForColumns({
                 return (
                     <Truncation
                         text={name}
-                        className={`w-[120px] flex-shrink-0 ${mutedThreshold ? "text-muted-foreground" : "text-foreground"}`}
+                        className={`w-[250px] flex-shrink-0 ${mutedThreshold ? "text-muted-foreground" : "text-foreground"}`}
                     />
                 );
             },
@@ -106,7 +106,7 @@ function helperForColumns({
         {
             accessorKey: "metricName",
             header: () => "METRIC",
-            size: 180,
+            size: 80,
             cell: ({ row }) => {
                 const forThreshold = row.original;
 
@@ -115,7 +115,7 @@ function helperForColumns({
                 return (
                     <Truncation
                         text={forThreshold.metricName}
-                        className={`w-[100px] flex-shrink-0 ${mutedThreshold ? "text-muted-foreground" : "text-foreground"}`}
+                        className={`w-[250px] flex-shrink-0 ${mutedThreshold ? "text-muted-foreground" : "text-foreground"}`}
                     />
                 );
             },
@@ -123,9 +123,9 @@ function helperForColumns({
 
         {
             id: "condition",
-            header: () => "CONDITION",
+            header: () => <div className = "text-center"> CONDITION </div>,
             enableSorting: false,
-            size: 140,
+            size: 70,
             cell: ({ row }) => {
                 const forThreshold = row.original;
 
@@ -139,7 +139,7 @@ function helperForColumns({
                     <Truncation
                         text={visibleCondition}
                         tooltipText={tooltip}
-                        className={mutedThreshold ? "text-muted-foreground" : "text-foreground"}
+                        className={`text-center ${mutedThreshold ? "text-muted-foreground" : "text-foreground"}`}
                     />
                 );
             },
@@ -148,7 +148,7 @@ function helperForColumns({
         {
             accessorKey: "severity",
             header: () => "SEVERITY",
-            size: 120,
+            size: 45,
             cell: ({ row }) => {
                 const forThreshold = row.original;
 
@@ -170,35 +170,17 @@ function helperForColumns({
         },
 
         {
-            accessorKey: "value",
-            header: () => "VALUE",
-            size: 100,
-            cell: ({ row }) => {
-                const forThreshold = row.original;
-
-                const mutedThreshold = !forThreshold.enabled;
-
-                return (
-                    <span className={mutedThreshold ? "text-muted-foreground" : "text-foreground"}>
-                        {" "}
-                        {forThreshold.value}{" "}
-                    </span>
-                );
-            },
-        },
-
-        {
             id: "actions",
             header: () => "",
             enableSorting: false,
-            size: 100,
+            size: 10,
             cell: ({ row }) => {
                 const forThreshold = row.original;
 
                 return (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                            <Button variant="ghost" size="sm" className="h-auto p-0 text-muted-foreground hover:text-foreground">
                                 {" "}
                                 <MoreVertical className="h-4 w-4" />{" "}
                             </Button>
