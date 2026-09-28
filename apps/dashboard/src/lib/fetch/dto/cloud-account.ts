@@ -11,6 +11,7 @@ export interface CloudAccount {
     displayName: string;
     ingestionPeriod: string;
     createdAt: string;
+    billingConfigured: boolean;
 }
 
 export interface CloudAccountDetails {

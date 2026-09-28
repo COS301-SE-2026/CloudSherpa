@@ -199,6 +199,9 @@ export function BudgetPopup({ open, initial, onClose, onSubmit }: Readonly<Props
         setScopeError(null);
     };
 
+    //dreive accounts with billing setup
+    const billingAccounts = accounts.filter((account) => account.billingConfigured);
+
     const resolvedTarget = (() => {
         if (scope === "TENANT") {
             return "All cloud accounts";
@@ -344,7 +347,7 @@ export function BudgetPopup({ open, initial, onClose, onSubmit }: Readonly<Props
                             <div className="min-w-0 w-full overflow-hidden">
                                 <Dropdown
                                     value={selectedAccountId}
-                                    options={accounts.map((account) => ({
+                                    options={billingAccounts.map((account) => ({
                                         value: account.id,
                                         label: account.displayName,
                                     }))}

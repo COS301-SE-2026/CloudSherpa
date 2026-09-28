@@ -12,6 +12,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+import jakarta.persistence.Transient;
 
 @Entity
 @Table(name = "cloud_account", schema = "public")
@@ -53,8 +54,12 @@ public class CloudAccount {
 
   @Column(name = "next_billing_ingestion")
   private OffsetDateTime nextBillingIngestion;
-    
-  protected CloudAccount() {}
+
+  @Transient
+  private boolean billingConfigured;
+
+  protected CloudAccount() {
+  }
 
   public CloudAccount(
       UUID id,
@@ -78,86 +83,88 @@ public class CloudAccount {
     this.lastBillingIngestion = lastBillingIngestion;
     this.nextBillingIngestion = nextBillingIngestion;
   }
-public static Builder builder() {
-  return new Builder();
-}
 
-public static class Builder {
-  private UUID id;
-  private UUID connectionId;
-  private AccountTypeEnum accountType;
-  private String displayName;
-  private String ingestionPeriod;
-  private OffsetDateTime createdAt;
-  private OffsetDateTime lastUsageIngestion;
-  private OffsetDateTime nextUsageIngestion;
-  private OffsetDateTime lastBillingIngestion;
-  private OffsetDateTime nextBillingIngestion;
-
-  public Builder id(UUID id) {
-    this.id = id;
-    return this;
+  public static Builder builder() {
+    return new Builder();
   }
 
-  public Builder connectionId(UUID connectionId) {
-    this.connectionId = connectionId;
-    return this;
-  }
+  public static class Builder {
+    private UUID id;
+    private UUID connectionId;
+    private AccountTypeEnum accountType;
+    private String displayName;
+    private String ingestionPeriod;
+    private OffsetDateTime createdAt;
+    private OffsetDateTime lastUsageIngestion;
+    private OffsetDateTime nextUsageIngestion;
+    private OffsetDateTime lastBillingIngestion;
+    private OffsetDateTime nextBillingIngestion;
 
-  public Builder accountType(AccountTypeEnum accountType) {
-    this.accountType = accountType;
-    return this;
-  }
+    public Builder id(UUID id) {
+      this.id = id;
+      return this;
+    }
 
-  public Builder displayName(String displayName) {
-    this.displayName = displayName;
-    return this;
-  }
+    public Builder connectionId(UUID connectionId) {
+      this.connectionId = connectionId;
+      return this;
+    }
 
-  public Builder ingestionPeriod(String ingestionPeriod) {
-    this.ingestionPeriod = ingestionPeriod;
-    return this;
-  }
+    public Builder accountType(AccountTypeEnum accountType) {
+      this.accountType = accountType;
+      return this;
+    }
 
-  public Builder createdAt(OffsetDateTime createdAt) {
-    this.createdAt = createdAt;
-    return this;
-  }
+    public Builder displayName(String displayName) {
+      this.displayName = displayName;
+      return this;
+    }
 
-  public Builder lastUsageIngestion(OffsetDateTime lastUsageIngestion) {
-    this.lastUsageIngestion = lastUsageIngestion;
-    return this;
-  }
+    public Builder ingestionPeriod(String ingestionPeriod) {
+      this.ingestionPeriod = ingestionPeriod;
+      return this;
+    }
 
-  public Builder nextUsageIngestion(OffsetDateTime nextUsageIngestion) {
-    this.nextUsageIngestion = nextUsageIngestion;
-    return this;
-  }
+    public Builder createdAt(OffsetDateTime createdAt) {
+      this.createdAt = createdAt;
+      return this;
+    }
 
-  public Builder lastBillingIngestion(OffsetDateTime lastBillingIngestion) {
-    this.lastBillingIngestion = lastBillingIngestion;
-    return this;
-  }
+    public Builder lastUsageIngestion(OffsetDateTime lastUsageIngestion) {
+      this.lastUsageIngestion = lastUsageIngestion;
+      return this;
+    }
 
-  public Builder nextBillingIngestion(OffsetDateTime nextBillingIngestion) {
-    this.nextBillingIngestion = nextBillingIngestion;
-    return this;
-  }
+    public Builder nextUsageIngestion(OffsetDateTime nextUsageIngestion) {
+      this.nextUsageIngestion = nextUsageIngestion;
+      return this;
+    }
 
-  public CloudAccount build() {
-    return new CloudAccount(
-        id,
-        connectionId,
-        accountType,
-        displayName,
-        ingestionPeriod,
-        createdAt,
-        lastUsageIngestion,
-        nextUsageIngestion,
-        lastBillingIngestion,
-        nextBillingIngestion);
+    public Builder lastBillingIngestion(OffsetDateTime lastBillingIngestion) {
+      this.lastBillingIngestion = lastBillingIngestion;
+      return this;
+    }
+
+    public Builder nextBillingIngestion(OffsetDateTime nextBillingIngestion) {
+      this.nextBillingIngestion = nextBillingIngestion;
+      return this;
+    }
+
+    public CloudAccount build() {
+      return new CloudAccount(
+          id,
+          connectionId,
+          accountType,
+          displayName,
+          ingestionPeriod,
+          createdAt,
+          lastUsageIngestion,
+          nextUsageIngestion,
+          lastBillingIngestion,
+          nextBillingIngestion);
     }
   }
+
   public UUID getId() {
     return id;
   }
@@ -209,7 +216,7 @@ public static class Builder {
   public OffsetDateTime getLastBillingIngestion() {
     return lastBillingIngestion;
   }
-  
+
   public void setLastBillingIngestion(OffsetDateTime lastIngestion) {
     this.lastBillingIngestion = lastIngestion;
   }
@@ -220,5 +227,13 @@ public static class Builder {
 
   public void setNextBillingIngestion(OffsetDateTime nextIngestion) {
     this.nextBillingIngestion = nextIngestion;
+  }
+
+  public boolean isBillingConfigured() {
+    return billingConfigured;
+  }
+
+  public void setBillingConfigured(boolean billingConfigured) {
+    this.billingConfigured = billingConfigured;
   }
 }
