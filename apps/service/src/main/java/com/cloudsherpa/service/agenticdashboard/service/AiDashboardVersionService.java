@@ -64,7 +64,7 @@ public class AiDashboardVersionService {
     var session = sessionService.getSession(userId, sessionId);
 
     if (session.getCurrentVersionId() != null) {
-      return getVersion(userId, sessionId, session.getCurrentVersionId());
+      return findVersion(sessionId, session.getCurrentVersionId());
     }
 
     DashboardDTO sourceDashboard = dashboardService.getDashboard(userId, sourceDashboardId);
@@ -158,7 +158,9 @@ public class AiDashboardVersionService {
   @Transactional
   public AiVersionResponseDto activateVersion(UUID userId, UUID sessionId, UUID versionId) {
 
-    AiDashboardVersion target = getVersion(userId, sessionId, versionId);
+    sessionService.getSession(userId, sessionId);
+
+    AiDashboardVersion target = findVersion(sessionId, versionId);
 
     for (AiDashboardVersion version :
         versionRepository.findBySessionIdOrderByVersionNumberDesc(sessionId)) {
@@ -170,8 +172,7 @@ public class AiDashboardVersionService {
     }
 
     sessionService.updateCurrentVersion(userId, sessionId, versionId);
-
-    return getVersionResponse(userId, sessionId, versionId);
+    return buildVersionResponse(target);
   }
 
   @Transactional(readOnly = true)
@@ -187,35 +188,25 @@ public class AiDashboardVersionService {
 
     sessionService.getSession(userId, sessionId);
 
-    return versionRepository
-        .findByVersionIdAndSessionId(versionId, sessionId)
-        .orElseThrow(
-            () ->
-                new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "AI dashboard version not found"));
+    return findVersion(sessionId, versionId);
   }
 
   @Transactional(readOnly = true)
   public AiVersionResponseDto getVersionResponse(UUID userId, UUID sessionId, UUID versionId) {
 
-    AiDashboardVersion version = getVersion(userId, sessionId, versionId);
+    sessionService.getSession(userId, sessionId);
 
-    DashboardPlanDto dashboard = toDashboardPlan(version);
+    AiDashboardVersion version = findVersion(sessionId, versionId);
 
-    return new AiVersionResponseDto(
-        version.getVersionId(),
-        version.getSessionId(),
-        version.getVersionNumber(),
-        version.getParentVersionId(),
-        version.getCurrent(),
-        version.getCreatedAt(),
-        dashboard);
+    return buildVersionResponse(version);
   }
 
   @Transactional(readOnly = true)
   public DashboardPlanDto getDashboardPlan(UUID userId, UUID sessionId, UUID versionId) {
 
-    AiDashboardVersion version = getVersion(userId, sessionId, versionId);
+    sessionService.getSession(userId, sessionId);
+
+    AiDashboardVersion version = findVersion(sessionId, versionId);
 
     return toDashboardPlan(version);
   }
@@ -251,42 +242,67 @@ public class AiDashboardVersionService {
 
   private DashboardPlanWidgetDto mapSourceWidget(WidgetDTO widget) {
     return switch (widget) {
-      case ChartWidgetDTO chart -> new DashboardPlanWidgetDto(
-          chart.id(),
-          chart.widgetType(),
-          chart.displayName(),
-          chart.startX(),
-          chart.startY(),
-          chart.width(),
-          chart.height(),
-          chart.chartType(),
-          chart.chartColour(),
-          chart.provider(),
-          null,
-          chart.accountId(),
-          chart.resourceId(),
-          chart.metricType(),
-          chart.metricName(),
-          null,
-          null);
-      case KpiWidgetDTO kpi -> new DashboardPlanWidgetDto(
-          kpi.id(),
-          kpi.widgetType(),
-          kpi.displayName(),
-          kpi.startX(),
-          kpi.startY(),
-          kpi.width(),
-          kpi.height(),
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          kpi.chargeIds(),
-          kpi.aggregationWindowDays());
+      case ChartWidgetDTO(
+              UUID id,
+              TypeEnum widgetType,
+              String displayName,
+              Integer startX,
+              Integer startY,
+              Integer width,
+              Integer height,
+              var chartType,
+              var chartColour,
+              var provider,
+              UUID accountId,
+              UUID resourceId,
+              String metricType,
+              String metricName) ->
+          new DashboardPlanWidgetDto(
+              id,
+              widgetType,
+              displayName,
+              startX,
+              startY,
+              width,
+              height,
+              chartType,
+              chartColour,
+              provider,
+              null,
+              accountId,
+              resourceId,
+              metricType,
+              metricName,
+              null,
+              null);
+      case KpiWidgetDTO(
+              UUID id,
+              TypeEnum widgetType,
+              String displayName,
+              Integer startX,
+              Integer startY,
+              Integer width,
+              Integer height,
+              List<String> chargeIds,
+              Integer aggregationWindowDays) ->
+          new DashboardPlanWidgetDto(
+              id,
+              widgetType,
+              displayName,
+              startX,
+              startY,
+              width,
+              height,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              chargeIds,
+              aggregationWindowDays);
     };
   }
 
@@ -414,5 +430,29 @@ public class AiDashboardVersionService {
             .build();
 
     entityManager.persist(kpiWidget);
+  }
+
+  private AiDashboardVersion findVersion(UUID sessionId, UUID versionId) {
+
+    return versionRepository
+        .findByVersionIdAndSessionId(versionId, sessionId)
+        .orElseThrow(
+            () ->
+                new ResponseStatusException(
+                    HttpStatus.NOT_FOUND, "AI dashboard version not found"));
+  }
+
+  private AiVersionResponseDto buildVersionResponse(AiDashboardVersion version) {
+
+    DashboardPlanDto dashboard = toDashboardPlan(version);
+
+    return new AiVersionResponseDto(
+        version.getVersionId(),
+        version.getSessionId(),
+        version.getVersionNumber(),
+        version.getParentVersionId(),
+        version.getCurrent(),
+        version.getCreatedAt(),
+        dashboard);
   }
 }

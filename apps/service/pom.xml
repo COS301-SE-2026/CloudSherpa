@@ -231,7 +231,7 @@
 				<configuration>
 					<java>
 						<googleJavaFormat>
-							<version>1.17.0</version>
+							<version>1.19.2</version>
 						</googleJavaFormat>
 					</java>
 				</configuration>

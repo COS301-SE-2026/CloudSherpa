@@ -12,11 +12,14 @@ import com.cloudsherpa.service.agenticdashboard.mcp.McpTools;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +35,49 @@ public class AiAgentService {
   private final McpTools mcpTools;
   private final ObjectMapper objectMapper;
   private final int maxToolRounds;
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(AiAgentService.class);
+
+  private static final String ROLE_FIELD = "role";
+  private static final String CONTENT_FIELD = "content";
+  private static final String ROLE_SYSTEM = "system";
+  private static final String ROLE_ASSISTANT = "assistant";
+  private static final String ROLE_TOOL = "tool";
+
+  private static final String FUNCTION_FIELD = "function";
+  private static final String ARGUMENTS_FIELD = "arguments";
+  private static final String TOOL_CALL_ID_FIELD = "tool_call_id";
+
+  private static final String STAGE_DASHBOARD_VERSION_TOOL = "stage_dashboard_version";
+
+  private static final String ACCOUNT_ID_FIELD = "accountId";
+  private static final String RESOURCE_ID_FIELD = "resourceId";
+  private static final String TITLE_FIELD = "title";
+  private static final String JSON_STRING_TYPE = "string";
+  private static final String JSON_INTEGER_TYPE = "integer";
+  private static final String JSON_MINIMUM_FIELD = "minimum";
+  private static final String JSON_FORMAT_FIELD = "format";
+  private static final String JSON_OBJECT_TYPE = "object";
+  private static final String JSON_PROPERTIES_FIELD = "properties";
+  private static final String JSON_REQUIRED_FIELD = "required";
+  private static final String WIDGETS_FIELD = "widgets";
+  private static final String PLAN_FIELD = "plan";
+
+  private static final String STAGED_SUCCESS_MESSAGE = "Dashboard version staged successfully.";
+
+  private static final class AgentRunState {
+    private boolean stageAttempted;
+  }
+
+  private AiToolResultDto executeToolCall(
+      AiAgentContext context, String toolName, String arguments, AgentRunState state) {
+
+    if (STAGE_DASHBOARD_VERSION_TOOL.equals(toolName)) {
+      state.stageAttempted = true;
+    }
+
+    return executeTool(context, toolName, arguments);
+  }
 
   public AiAgentService(
       AiSessionService aiSessionService,
@@ -56,128 +102,213 @@ public class AiAgentService {
       UUID userId, UUID sessionId, UUID startingDashboardId, String userMessage) {
 
     AiSession session = aiSessionService.getSession(userId, sessionId);
-
-    if (userMessage == null || userMessage.isBlank()) {
-
-      throw new IllegalArgumentException("User message is required");
-    }
+    validateUserMessage(userMessage);
+    initializeSessionVersion(session, userId, sessionId, startingDashboardId);
 
     AiAgentContext context = new AiAgentContext(userId, sessionId);
+    saveMessage(sessionId, AiMessage.AiMessageRole.USER, userMessage);
+
+    List<Map<String, Object>> messages = buildInitialMessages(userId, sessionId);
+    AgentRunState state = new AgentRunState();
+
+    for (int round = 0; round < maxToolRounds; round++) {
+      AiDashboardPlanResponseDto response =
+          processRound(userId, sessionId, context, messages, state);
+
+      if (response != null) {
+        return response;
+      }
+    }
+
+    throw new IllegalStateException("AI agent exceeded maximum tool-call rounds");
+  }
+
+  private void validateUserMessage(String userMessage) {
+    if (userMessage == null || userMessage.isBlank()) {
+      throw new IllegalArgumentException("User message is required");
+    }
+  }
+
+  private void initializeSessionVersion(
+      AiSession session, UUID userId, UUID sessionId, UUID startingDashboardId) {
 
     if (session.getCurrentVersionId() == null) {
       versionService.createInitialVersion(userId, sessionId, startingDashboardId);
     }
+  }
 
-    saveMessage(sessionId, AiMessage.AiMessageRole.USER, userMessage);
+  private List<Map<String, Object>> buildInitialMessages(UUID userId, UUID sessionId) {
 
     List<Map<String, Object>> messages = new ArrayList<>();
-    boolean stageAttempted = false;
 
-    messages.add(Map.of("role", "system", "content", SYSTEM_PROMPT));
+    messages.add(Map.of(ROLE_FIELD, ROLE_SYSTEM, CONTENT_FIELD, SYSTEM_PROMPT));
+
     messages.add(buildCurrentDashboardContext(userId, sessionId));
     messages.addAll(buildConversation(userId, sessionId));
 
-    for (int round = 0; round < maxToolRounds; round++) {
+    return messages;
+  }
 
-      JsonNode response = modelClient.complete(messages, toolDefinitions());
+  private AiDashboardPlanResponseDto processRound(
+      UUID userId,
+      UUID sessionId,
+      AiAgentContext context,
+      List<Map<String, Object>> messages,
+      AgentRunState state) {
 
-      JsonNode choices = response.path("choices");
+    JsonNode message = requestAssistantMessage(messages);
 
-      if (!choices.isArray() || choices.isEmpty()) {
-
-        throw new IllegalStateException("AI model returned no completion choices");
-      }
-
-      JsonNode message = choices.get(0).path("message");
-
-      if (message.isMissingNode()) {
-        throw new IllegalStateException("AI model returned no assistant message");
-      }
-
-      JsonNode toolCalls = message.path("tool_calls");
-
-      if (toolCalls.isArray() && !toolCalls.isEmpty()) {
-
-        messages.add(objectMapper.convertValue(message, Map.class));
-
-        for (JsonNode toolCall : toolCalls) {
-
-          String toolCallId = requiredJsonText(toolCall, "id");
-
-          JsonNode function = toolCall.path("function");
-
-          String toolName = requiredJsonText(function, "name");
-
-          String arguments = requiredJsonText(function, "arguments");
-
-          if ("stage_dashboard_version".equals(toolName)) {
-            stageAttempted = true;
-          }
-
-          AiToolResultDto toolResult = executeTool(context, toolName, arguments);
-          if ("stage_dashboard_version".equals(toolName) && toolResult.success()) {
-
-            String assistantMessage = "Dashboard version staged successfully.";
-
-            saveMessage(sessionId, AiMessage.AiMessageRole.ASSISTANT, assistantMessage);
-
-            aiSessionService.updateLastActivity(userId, sessionId);
-
-            return buildResponse(userId, sessionId, assistantMessage, stageAttempted, true);
-          }
-          messages.add(
-              Map.of("role", "tool", "tool_call_id", toolCallId, "content", toJson(toolResult)));
-        }
-
-        continue;
-      }
-
-      String assistantContent = message.path("content").asText("");
-
-      JsonNode textualToolCall = parseTextualToolCall(assistantContent);
-
-      if (textualToolCall != null) {
-
-        String toolName = requiredJsonText(textualToolCall, "name");
-
-        JsonNode argumentsNode = textualToolCall.path("arguments");
-
-        String arguments = argumentsNode.isMissingNode() ? "{}" : argumentsNode.toString();
-        if ("stage_dashboard_version".equals(toolName)) {
-          stageAttempted = true;
-        }
-
-        AiToolResultDto toolResult = executeTool(context, toolName, arguments);
-
-        if ("stage_dashboard_version".equals(toolName) && toolResult.success()) {
-          String assistantMessage = "Dashboard version staged successfully.";
-          saveMessage(sessionId, AiMessage.AiMessageRole.ASSISTANT, assistantMessage);
-
-          aiSessionService.updateLastActivity(userId, sessionId);
-
-          return buildResponse(userId, sessionId, assistantMessage, stageAttempted, true);
-        }
-
-        messages.add(Map.of("role", "assistant", "content", assistantContent));
-
-        messages.add(Map.of("role", "tool", "content", toJson(toolResult)));
-
-        continue;
-      }
-      String assistantMessage = message.path("content").asText("");
-
-      if (assistantMessage.isBlank()) {
-        throw new IllegalStateException("AI model returned an empty assistant message");
-      }
-
-      saveMessage(sessionId, AiMessage.AiMessageRole.ASSISTANT, assistantMessage);
-
-      aiSessionService.updateLastActivity(userId, sessionId);
-
-      return buildResponse(userId, sessionId, assistantMessage, stageAttempted, false);
+    JsonNode toolCalls = message.path("tool_calls");
+    if (toolCalls.isArray() && !toolCalls.isEmpty()) {
+      return processNativeToolCalls(
+          userId, sessionId, context, messages, message, toolCalls, state);
     }
 
-    throw new IllegalStateException("AI agent exceeded maximum tool-call rounds");
+    String assistantContent = message.path(CONTENT_FIELD).asText("");
+    JsonNode textualToolCall = parseTextualToolCall(assistantContent);
+
+    if (textualToolCall != null) {
+      return processTextualToolCall(
+          userId, sessionId, context, messages, assistantContent, textualToolCall, state);
+    }
+
+    return completeAssistantResponse(userId, sessionId, assistantContent, state);
+  }
+
+  private JsonNode requestAssistantMessage(List<Map<String, Object>> messages) {
+    JsonNode response = modelClient.complete(messages, toolDefinitions());
+    JsonNode choices = response.path("choices");
+
+    if (!choices.isArray() || choices.isEmpty()) {
+      throw new IllegalStateException("AI model returned no completion choices");
+    }
+
+    JsonNode message = choices.get(0).path("message");
+
+    if (message.isMissingNode()) {
+      throw new IllegalStateException("AI model returned no assistant message");
+    }
+
+    return message;
+  }
+
+  private AiDashboardPlanResponseDto processNativeToolCalls(
+      UUID userId,
+      UUID sessionId,
+      AiAgentContext context,
+      List<Map<String, Object>> messages,
+      JsonNode message,
+      JsonNode toolCalls,
+      AgentRunState state) {
+
+    messages.add(objectMapper.convertValue(message, Map.class));
+
+    for (JsonNode toolCall : toolCalls) {
+      AiDashboardPlanResponseDto response =
+          processNativeToolCall(userId, sessionId, context, messages, toolCall, state);
+
+      if (response != null) {
+        return response;
+      }
+    }
+
+    return null;
+  }
+
+  private AiDashboardPlanResponseDto processNativeToolCall(
+      UUID userId,
+      UUID sessionId,
+      AiAgentContext context,
+      List<Map<String, Object>> messages,
+      JsonNode toolCall,
+      AgentRunState state) {
+
+    String toolCallId = requiredJsonText(toolCall, "id");
+    JsonNode function = toolCall.path(FUNCTION_FIELD);
+
+    String toolName = requiredJsonText(function, "name");
+    String arguments = requiredJsonText(function, ARGUMENTS_FIELD);
+
+    AiToolResultDto toolResult = executeToolCall(context, toolName, arguments, state);
+
+    AiDashboardPlanResponseDto response =
+        buildSuccessfulStageResponse(userId, sessionId, toolName, toolResult, state);
+
+    if (response != null) {
+      return response;
+    }
+
+    messages.add(
+        Map.of(
+            ROLE_FIELD,
+            ROLE_TOOL,
+            TOOL_CALL_ID_FIELD,
+            toolCallId,
+            CONTENT_FIELD,
+            toJson(toolResult)));
+
+    return null;
+  }
+
+  private AiDashboardPlanResponseDto processTextualToolCall(
+      UUID userId,
+      UUID sessionId,
+      AiAgentContext context,
+      List<Map<String, Object>> messages,
+      String assistantContent,
+      JsonNode textualToolCall,
+      AgentRunState state) {
+
+    String toolName = requiredJsonText(textualToolCall, "name");
+    JsonNode argumentsNode = textualToolCall.path(ARGUMENTS_FIELD);
+    String arguments = argumentsNode.isMissingNode() ? "{}" : argumentsNode.toString();
+
+    AiToolResultDto toolResult = executeToolCall(context, toolName, arguments, state);
+
+    AiDashboardPlanResponseDto response =
+        buildSuccessfulStageResponse(userId, sessionId, toolName, toolResult, state);
+
+    if (response != null) {
+      return response;
+    }
+
+    messages.add(Map.of(ROLE_FIELD, ROLE_ASSISTANT, CONTENT_FIELD, assistantContent));
+
+    messages.add(Map.of(ROLE_FIELD, ROLE_TOOL, CONTENT_FIELD, toJson(toolResult)));
+
+    return null;
+  }
+
+  private AiDashboardPlanResponseDto buildSuccessfulStageResponse(
+      UUID userId,
+      UUID sessionId,
+      String toolName,
+      AiToolResultDto toolResult,
+      AgentRunState state) {
+
+    if (!STAGE_DASHBOARD_VERSION_TOOL.equals(toolName) || !toolResult.success()) {
+      return null;
+    }
+
+    saveMessage(sessionId, AiMessage.AiMessageRole.ASSISTANT, STAGED_SUCCESS_MESSAGE);
+
+    aiSessionService.updateLastActivity(userId, sessionId);
+
+    return buildResponse(userId, sessionId, STAGED_SUCCESS_MESSAGE, state.stageAttempted, true);
+  }
+
+  private AiDashboardPlanResponseDto completeAssistantResponse(
+      UUID userId, UUID sessionId, String assistantMessage, AgentRunState state) {
+
+    if (assistantMessage.isBlank()) {
+      throw new IllegalStateException("AI model returned an empty assistant message");
+    }
+
+    saveMessage(sessionId, AiMessage.AiMessageRole.ASSISTANT, assistantMessage);
+
+    aiSessionService.updateLastActivity(userId, sessionId);
+
+    return buildResponse(userId, sessionId, assistantMessage, state.stageAttempted, false);
   }
 
   private AiToolResultDto executeTool(AiAgentContext context, String toolName, String arguments) {
@@ -191,44 +322,64 @@ public class AiAgentService {
 
       String result =
           switch (toolName) {
-            case "list_cloud_accounts" -> objectMapper.writeValueAsString(
-                mcpTools.listCloudAccounts(context));
+            case "list_cloud_accounts" ->
+                objectMapper.writeValueAsString(mcpTools.listCloudAccounts(context));
 
-            case "list_resources" -> objectMapper.writeValueAsString(
-                mcpTools.listResources(
-                    context, nullableUuid(args, "accountId"), nullableText(args, "resourceType")));
+            case "list_resources" ->
+                objectMapper.writeValueAsString(
+                    mcpTools.listResources(
+                        context,
+                        nullableUuid(args, ACCOUNT_ID_FIELD),
+                        nullableText(args, "resourceType")));
 
-            case "list_available_metrics" -> objectMapper.writeValueAsString(
-                mcpTools.listAvailableMetrics(context, requiredUuid(args, "resourceId")));
+            case "list_available_metrics" ->
+                objectMapper.writeValueAsString(
+                    mcpTools.listAvailableMetrics(context, requiredUuid(args, RESOURCE_ID_FIELD)));
 
-            case "list_billing_charges" -> objectMapper.writeValueAsString(
-                mcpTools.listBillingCharges(context));
+            case "list_billing_charges" ->
+                objectMapper.writeValueAsString(mcpTools.listBillingCharges(context));
 
-            case "stage_dashboard_version" -> {
-              JsonNode planNode = requiredNode(args, "plan");
+            case STAGE_DASHBOARD_VERSION_TOOL -> {
+              JsonNode planNode = requiredNode(args, PLAN_FIELD);
 
-              System.out.println("=== AI DASHBOARD PLAN ===");
-              System.out.println(planNode.toPrettyString());
-
-              JsonNode planForStaging = planNode.deepCopy();
-
-              if (planForStaging.has("widgets") && planForStaging.get("widgets").isArray()) {
-                for (JsonNode widget : planForStaging.get("widgets")) {
-                  if (widget.isObject()) {
-                    ((com.fasterxml.jackson.databind.node.ObjectNode) widget).remove("widgetId");
-                  }
-                }
+              if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("AI dashboard plan: {}", planNode.toPrettyString());
               }
+
+              JsonNode planForStaging = preparePlanForStaging(planNode);
 
               DashboardPlanDto plan =
                   objectMapper.treeToValue(planForStaging, DashboardPlanDto.class);
+
               yield objectMapper.writeValueAsString(mcpTools.stageDashboardVersion(context, plan));
             }
+
             default -> throw new IllegalArgumentException("Unknown AI tool: " + toolName);
           };
+
       return AiToolResultDto.success(toolName, result);
     } catch (Exception exception) {
       return AiToolResultDto.failure(toolName, buildToolErrorMessage(toolName, exception));
+    }
+  }
+
+  private JsonNode preparePlanForStaging(JsonNode planNode) {
+    JsonNode planForStaging = planNode.deepCopy();
+
+    JsonNode widgets = planForStaging.path(WIDGETS_FIELD);
+
+    if (widgets.isArray()) {
+      for (JsonNode widget : widgets) {
+        removeWidgetId(widget);
+      }
+    }
+
+    return planForStaging;
+  }
+
+  private void removeWidgetId(JsonNode widget) {
+    if (widget.isObject()) {
+      ((ObjectNode) widget).remove("widgetId");
     }
   }
 
@@ -253,7 +404,6 @@ public class AiAgentService {
     var session = aiSessionService.getSession(userId, sessionId);
 
     if (session.getCurrentVersionId() == null) {
-
       return new AiDashboardPlanResponseDto(
           sessionId, null, null, stageAttempted, stageSucceeded, assistantMessage, null);
     }
@@ -302,7 +452,7 @@ public class AiAgentService {
       }
 
       JsonNode name = node.path("name");
-      JsonNode arguments = node.path("arguments");
+      JsonNode arguments = node.path(ARGUMENTS_FIELD);
 
       if (!name.isTextual() || name.asText().isBlank() || arguments.isMissingNode()) {
         return null;
@@ -323,8 +473,8 @@ public class AiAgentService {
         .map(
             message -> {
               Map<String, Object> result = new java.util.HashMap<>();
-              result.put("role", message.getRole().name().toLowerCase());
-              result.put("content", message.getContent());
+              result.put(ROLE_FIELD, message.getRole().name().toLowerCase());
+              result.put(CONTENT_FIELD, message.getContent());
               return result;
             })
         .collect(java.util.stream.Collectors.toCollection(ArrayList::new));
@@ -380,7 +530,6 @@ public class AiAgentService {
   private static UUID nullableUuid(JsonNode node, String field) {
 
     if (!node.hasNonNull(field) || node.path(field).asText().isBlank()) {
-
       return null;
     }
 
@@ -399,86 +548,93 @@ public class AiAgentService {
   private List<Map<String, Object>> toolDefinitions() {
 
     Map<String, Object> widgetProperties = new java.util.LinkedHashMap<>();
-    widgetProperties.put("widgetType", Map.of("type", "string", "enum", List.of("KPI", "CHART")));
-
-    widgetProperties.put("displayName", Map.of("type", "string"));
-
-    widgetProperties.put("startX", Map.of("type", "integer", "minimum", 0));
-
-    widgetProperties.put("startY", Map.of("type", "integer", "minimum", 0));
-
-    widgetProperties.put("width", Map.of("type", "integer", "minimum", 1, "maximum", 12));
-
-    widgetProperties.put("height", Map.of("type", "integer", "minimum", 1));
 
     widgetProperties.put(
-        "chartType", Map.of("type", "string", "enum", List.of("gauge_chart", "line_chart")));
+        "widgetType", Map.of("type", JSON_STRING_TYPE, "enum", List.of("KPI", "CHART")));
+
+    widgetProperties.put("displayName", Map.of("type", JSON_STRING_TYPE));
+
+    widgetProperties.put("startX", Map.of("type", JSON_INTEGER_TYPE, JSON_MINIMUM_FIELD, 0));
+
+    widgetProperties.put("startY", Map.of("type", JSON_INTEGER_TYPE, JSON_MINIMUM_FIELD, 0));
+
+    widgetProperties.put(
+        "width", Map.of("type", JSON_INTEGER_TYPE, JSON_MINIMUM_FIELD, 1, "maximum", 12));
+
+    widgetProperties.put("height", Map.of("type", JSON_INTEGER_TYPE, JSON_MINIMUM_FIELD, 1));
+
+    widgetProperties.put(
+        "chartType",
+        Map.of("type", JSON_STRING_TYPE, "enum", List.of("gauge_chart", "line_chart")));
 
     widgetProperties.put(
         "chartColour",
         Map.of(
             "type",
-            "string",
+            JSON_STRING_TYPE,
             "enum",
             List.of("chart_1", "chart_2", "chart_3", "chart_4", "chart_5")));
 
     widgetProperties.put(
-        "provider", Map.of("type", "string", "enum", List.of("AWS", "AZURE", "GCP")));
+        "provider", Map.of("type", JSON_STRING_TYPE, "enum", List.of("AWS", "AZURE", "GCP")));
 
-    widgetProperties.put("title", Map.of("type", "string"));
+    widgetProperties.put(TITLE_FIELD, Map.of("type", JSON_STRING_TYPE));
 
-    widgetProperties.put("accountId", Map.of("type", "string", "format", "uuid"));
+    widgetProperties.put(
+        ACCOUNT_ID_FIELD, Map.of("type", JSON_STRING_TYPE, JSON_FORMAT_FIELD, "uuid"));
 
-    widgetProperties.put("resourceId", Map.of("type", "string", "format", "uuid"));
+    widgetProperties.put(
+        RESOURCE_ID_FIELD, Map.of("type", JSON_STRING_TYPE, JSON_FORMAT_FIELD, "uuid"));
 
-    widgetProperties.put("metricType", Map.of("type", "string"));
+    widgetProperties.put("metricType", Map.of("type", JSON_STRING_TYPE));
+    widgetProperties.put("metricName", Map.of("type", JSON_STRING_TYPE));
 
-    widgetProperties.put("metricName", Map.of("type", "string"));
+    widgetProperties.put(
+        "chargeIds", Map.of("type", "array", "items", Map.of("type", JSON_STRING_TYPE)));
 
-    widgetProperties.put("chargeIds", Map.of("type", "array", "items", Map.of("type", "string")));
-
-    widgetProperties.put("aggregationWindowDays", Map.of("type", "integer", "minimum", 1));
+    widgetProperties.put(
+        "aggregationWindowDays", Map.of("type", JSON_INTEGER_TYPE, JSON_MINIMUM_FIELD, 1));
 
     Map<String, Object> widgetSchema =
         Map.of(
             "type",
-            "object",
-            "properties",
+            JSON_OBJECT_TYPE,
+            JSON_PROPERTIES_FIELD,
             widgetProperties,
-            "required",
+            JSON_REQUIRED_FIELD,
             List.of("widgetType", "displayName", "startX", "startY", "width", "height"));
 
     Map<String, Object> planProperties =
         Map.of(
-            "title",
-            Map.of("type", "string"),
+            TITLE_FIELD,
+            Map.of("type", JSON_STRING_TYPE),
             "description",
-            Map.of("type", "string"),
+            Map.of("type", JSON_STRING_TYPE),
             "timeFrom",
-            Map.of("type", "string"),
+            Map.of("type", JSON_STRING_TYPE),
             "timeTo",
-            Map.of("type", "string"),
+            Map.of("type", JSON_STRING_TYPE),
             "predefinedTime",
-            Map.of("type", "string"),
-            "widgets",
+            Map.of("type", JSON_STRING_TYPE),
+            WIDGETS_FIELD,
             Map.of("type", "array", "items", widgetSchema));
 
     Map<String, Object> planSchema =
         Map.of(
             "type",
-            "object",
-            "properties",
+            JSON_OBJECT_TYPE,
+            JSON_PROPERTIES_FIELD,
             planProperties,
-            "required",
-            List.of("title", "widgets"));
+            JSON_REQUIRED_FIELD,
+            List.of(TITLE_FIELD, WIDGETS_FIELD));
 
     Map<String, Object> stageParameters =
         Map.of(
             "type",
-            "object",
-            "properties",
+            JSON_OBJECT_TYPE,
+            JSON_PROPERTIES_FIELD,
             Map.of("plan", planSchema),
-            "required",
+            JSON_REQUIRED_FIELD,
             List.of("plan"));
 
     List<Map<String, Object>> tools = new ArrayList<>();
@@ -495,15 +651,18 @@ public class AiAgentService {
             "List all resources belonging to one of the user's cloud accounts. "
                 + "Do not guess or invent resource types.",
             objectSchema(
-                Map.of("accountId", Map.of("type", "string", "format", "uuid")),
-                List.of("accountId"))));
+                Map.of(
+                    ACCOUNT_ID_FIELD, Map.of("type", JSON_STRING_TYPE, JSON_FORMAT_FIELD, "uuid")),
+                List.of(ACCOUNT_ID_FIELD))));
+
     tools.add(
         tool(
             "list_available_metrics",
             "List metrics available for a specific resource.",
             objectSchema(
-                Map.of("resourceId", Map.of("type", "string", "format", "uuid")),
-                List.of("resourceId"))));
+                Map.of(
+                    RESOURCE_ID_FIELD, Map.of("type", JSON_STRING_TYPE, JSON_FORMAT_FIELD, "uuid")),
+                List.of(RESOURCE_ID_FIELD))));
 
     tools.add(
         tool(
@@ -513,10 +672,9 @@ public class AiAgentService {
 
     tools.add(
         tool(
-            "stage_dashboard_version",
+            STAGE_DASHBOARD_VERSION_TOOL,
             """
                 Create a new validated staged dashboard version.
-
                 Every invocation creates a new dashboard version.
                 Never use this tool merely to acknowledge a request.
                 If the user asks to create, modify, update, add, remove, resize,
@@ -572,9 +730,9 @@ public class AiAgentService {
 
     if (session.getCurrentVersionId() == null) {
       return Map.of(
-          "role",
-          "system",
-          "content",
+          ROLE_FIELD,
+          ROLE_SYSTEM,
+          CONTENT_FIELD,
           """
               CURRENT ACTIVE DASHBOARD:
               There is currently no active dashboard version for this session.
@@ -591,20 +749,24 @@ public class AiAgentService {
       String dashboardJson = objectMapper.writeValueAsString(dashboard);
 
       return Map.of(
-          "role",
-          "system",
-          "content",
+          ROLE_FIELD,
+          ROLE_SYSTEM,
+          CONTENT_FIELD,
           """
               CURRENT ACTIVE DASHBOARD
 
               The following dashboard is the active version for this session.
+
               Treat it as the starting state when the user asks to
               modify, update, add to, remove from, resize, rename, recolour,
               or otherwise change the dashboard.
 
               If the user asks for a modification, preserve the existing
               dashboard unless the user explicitly asks to change or remove
-              something.
+              something. You may resize widgets if this is requested by the user.
+              Upon resize request match the user request to the most relevant widget
+              and increase or decrease the widget size as requested. Surrounding widget
+              positions may need to be changed to accommodate the modification.
 
               You MUST call stage_dashboard_version with the COMPLETE resulting
               dashboard. Do not return a textual acknowledgement instead of
@@ -621,12 +783,13 @@ public class AiAgentService {
 
   private Map<String, Object> objectSchema(Map<String, Object> properties) {
 
-    return Map.of("type", "object", "properties", properties);
+    return Map.of("type", JSON_OBJECT_TYPE, JSON_PROPERTIES_FIELD, properties);
   }
 
   private Map<String, Object> objectSchema(Map<String, Object> properties, List<String> required) {
 
-    return Map.of("type", "object", "properties", properties, "required", required);
+    return Map.of(
+        "type", JSON_OBJECT_TYPE, JSON_PROPERTIES_FIELD, properties, JSON_REQUIRED_FIELD, required);
   }
 
   private Map<String, Object> tool(
@@ -634,8 +797,8 @@ public class AiAgentService {
 
     return Map.of(
         "type",
-        "function",
-        "function",
+        FUNCTION_FIELD,
+        FUNCTION_FIELD,
         Map.of("name", name, "description", description, "parameters", parameters));
   }
 
@@ -659,8 +822,9 @@ public class AiAgentService {
 
       If stage_dashboard_version fails, use the returned tool error as feedback,
       correct the dashboard plan, and try again when a retry can reasonably fix
-      the problem. Never claim that a dashboard was staged unless the staging
-      tool returned success.
+      the problem using additional tool calls or feedback to ensure that the new
+      version conforms to the requirements. Never claim that a dashboard was staged
+      unless the staging tool returned success.
 
       You must never apply a dashboard. Applying a dashboard is performed by
       the authenticated human user through a separate endpoint.

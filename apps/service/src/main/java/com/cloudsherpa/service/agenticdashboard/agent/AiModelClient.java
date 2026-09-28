@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -15,6 +17,7 @@ public class AiModelClient {
   private final RestClient restClient;
   private final ObjectMapper objectMapper;
   private final String model;
+  private static final Logger LOGGER = LoggerFactory.getLogger(AiModelClient.class);
 
   public AiModelClient(
       RestClient.Builder restClientBuilder,
@@ -62,8 +65,11 @@ public class AiModelClient {
       throw new IllegalStateException("AI model returned an empty response");
     }
 
-    System.out.println("=== RAW LLM RESPONSE ===");
-    System.out.println(response.toPrettyString());
+    if (LOGGER.isDebugEnabled()) {
+      String rawResponse = response.toPrettyString();
+      LOGGER.debug("Raw LLM response: {}", rawResponse);
+    }
+
     return response;
   }
 
