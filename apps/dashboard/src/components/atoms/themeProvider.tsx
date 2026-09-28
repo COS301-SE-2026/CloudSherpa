@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useState } from "react";
 import { ThemeProvider as NextThemesProvider, useTheme } from "next-themes";
 import { usePathname } from "next/navigation";
 import { fetchUserTheme } from "@/lib/fetch/api-preferences";
@@ -10,14 +11,16 @@ function ThemePersistenceEnforcer({ children }: Readonly<{ children: React.React
     const { setTheme } = useTheme();
     const { isAuthReady, isAuthenticated } = useAuthContext();
 
-    React.useEffect(() => {
-        if (!isAuthReady || !isAuthenticated) return;
+    const [themeLoaded, setThemeLoaded] = useState(false);
 
+    React.useEffect(() => {
+        if (!isAuthReady || !isAuthenticated || themeLoaded) return;
         fetchUserTheme()
             .then((data) => {
                 if (data?.theme === "light" || data?.theme === "dark") {
                     setTheme(data.theme);
                 }
+                setThemeLoaded(true);
             })
             .catch((error) => console.error("Failed to fetch user theme:", error));
     }, [isAuthReady, isAuthenticated, setTheme]);
@@ -35,6 +38,7 @@ export function ThemeProvider({
 
     return (
         <NextThemesProvider
+            // attribute={"class"}
             disableTransitionOnChange
             forcedTheme={forceDarkMode ? "dark" : undefined}
             {...props}
