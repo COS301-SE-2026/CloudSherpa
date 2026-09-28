@@ -133,14 +133,17 @@ public class NormalizedMetricService {
     List<TimestampedNumericDataPoint> fetchedResourceMetrics = null;
 
     switch (provider) {
-      case AWS -> fetchedResourceMetrics =
-          normalizedMetricsRepository.getTimestampedMetricValuesAfterDate(
-              resourceId, canonMetricName, fromInstant);
-      case GCP, AZURE -> fetchedResourceMetrics =
-          normalizedMetricsRepository.getAggregatedTimestampedMetricValuesAfterDate(
-              resourceId, canonMetricName, fromInstant);
-      default -> throw new IllegalArgumentException(
-          "Repository method needs to be explicitly set per supported provider");
+      case AWS ->
+          fetchedResourceMetrics =
+              normalizedMetricsRepository.getTimestampedMetricValuesAfterDate(
+                  resourceId, canonMetricName, fromInstant);
+      case GCP, AZURE ->
+          fetchedResourceMetrics =
+              normalizedMetricsRepository.getAggregatedTimestampedMetricValuesAfterDate(
+                  resourceId, canonMetricName, fromInstant);
+      default ->
+          throw new IllegalArgumentException(
+              "Repository method needs to be explicitly set per supported provider");
     }
 
     if (fetchedResourceMetrics.isEmpty()) {

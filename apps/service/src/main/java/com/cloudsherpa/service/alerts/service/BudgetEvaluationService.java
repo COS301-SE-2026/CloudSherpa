@@ -84,8 +84,8 @@ public class BudgetEvaluationService {
   private BigDecimal sumScopedCost(Budget budget, OffsetDateTime from, OffsetDateTime to) {
     return switch (budget.getScope()) {
       case "RESOURCE" -> sumCostForResourceBudget(budget, from, to);
-      case "ACCOUNT" -> normalizedCostsRepository.sumTotalCostBetweenForAccountId(
-          budget.getScopeId(), from, to);
+      case "ACCOUNT" ->
+          normalizedCostsRepository.sumTotalCostBetweenForAccountId(budget.getScopeId(), from, to);
       default -> normalizedCostsRepository.sumTotalCostBetween(from, to);
     };
   }
