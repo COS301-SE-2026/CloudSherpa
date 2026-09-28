@@ -274,7 +274,7 @@ export function ThresholdPopup({
                     <div className="grid gap-2">
                         <Label> Connection </Label>
 
-                        <div className = "min-w-0 w-full overflow-hidden">
+                        <div className="min-w-0 w-full overflow-hidden">
                             <Dropdown
                                 value={accountId}
                                 options={connection.map((connections) => ({
@@ -293,7 +293,7 @@ export function ThresholdPopup({
                     <div className="grid gap-2">
                         <Label> Resource </Label>
 
-                        <div className = "min-w-0 w-full overflow-hidden">
+                        <div className="min-w-0 w-full overflow-hidden">
                             <Dropdown
                                 value={resourceId}
                                 options={activeResource.map((resource) => ({
@@ -316,10 +316,13 @@ export function ThresholdPopup({
                     <div className="space-y-2">
                         <Label htmlFor="metricName"> Metric </Label>
 
-                        <div className = "min-w-0 w-full overflow-hidden">
+                        <div className="min-w-0 w-full overflow-hidden">
                             <Dropdown
                                 value={metricName || null}
-                                options={availableMetrics.map((type) => ({ value: type, label: type }))}
+                                options={availableMetrics.map((type) => ({
+                                    value: type,
+                                    label: type,
+                                }))}
                                 onSelect={(change) => {
                                     setMetricName(change as string);
                                     if (metricError) {

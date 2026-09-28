@@ -49,11 +49,11 @@ function helperForColumns({
     return [
         {
             id: "enabled",
-            header: () => <span className = "block text-center"> ENABLED </span>,
+            header: () => <span className="block text-center"> ENABLED </span>,
             enableSorting: false,
             size: 190,
             cell: ({ row }) => (
-                <div className = "flex items-center justify-center">
+                <div className="flex items-center justify-center">
                     <Switch
                         checked={row.original.enabled}
                         onCheckedChange={(checked) => toggleEnabled(row.original, checked)}

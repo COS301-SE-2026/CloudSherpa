@@ -121,7 +121,7 @@ function helperForColumns({
     return [
         {
             id: "enabled",
-            header: () => <span className = "block text-center"> STATUS </span>,
+            header: () => <span className="block text-center"> STATUS </span>,
             enableSorting: false,
             size: 100,
             cell: ({ row }) => {
@@ -152,7 +152,7 @@ function helperForColumns({
         },
         {
             id: "notifications",
-            header: () => <span className = "block text-center"> NOTIFICATIONS </span>,
+            header: () => <span className="block text-center"> NOTIFICATIONS </span>,
             enableSorting: false,
             cell: ({ row }) => {
                 const alertDisabled = row.original.status !== "ACTIVE";
@@ -167,7 +167,7 @@ function helperForColumns({
                 );
 
                 return (
-                    <div className = "flex items-center justify-center">
+                    <div className="flex items-center justify-center">
                         <Button
                             variant="ghost"
                             size="sm"
@@ -281,7 +281,7 @@ function helperForColumns({
                 const alert = row.original;
 
                 return (
-                    <div className = "flex justify-center">
+                    <div className="flex justify-center">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button

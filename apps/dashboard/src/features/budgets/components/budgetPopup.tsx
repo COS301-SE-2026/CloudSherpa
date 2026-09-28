@@ -341,20 +341,24 @@ export function BudgetPopup({ open, initial, onClose, onSubmit }: Readonly<Props
                         <div className="grid gap-2">
                             <Label htmlFor="account"> Account </Label>
 
-                            <div className = "min-w-0 w-full overflow-hidden">
-                                <Dropdown value = {selectedAccountId}
-                                          options = {accounts.map((account) => ({
-                                            value : account.id, label : account.displayName,
-                                          }))}
-                                          onSelect = {(value) => {
-                                            setSelectedAccountId(value);
-                                            setSelectedResourceId(null);
-                                          }}
-                                          disabled = {loadingAccounts}
-                                          widthVariant = "full"
-                                          placeholder = {loadingAccounts ? "Loading accounts" : "Select account"}
-                                          emptyMessage = "No accounts found"
-                                    />
+                            <div className="min-w-0 w-full overflow-hidden">
+                                <Dropdown
+                                    value={selectedAccountId}
+                                    options={accounts.map((account) => ({
+                                        value: account.id,
+                                        label: account.displayName,
+                                    }))}
+                                    onSelect={(value) => {
+                                        setSelectedAccountId(value);
+                                        setSelectedResourceId(null);
+                                    }}
+                                    disabled={loadingAccounts}
+                                    widthVariant="full"
+                                    placeholder={
+                                        loadingAccounts ? "Loading accounts" : "Select account"
+                                    }
+                                    emptyMessage="No accounts found"
+                                />
                             </div>
                         </div>
                     )}
@@ -363,17 +367,19 @@ export function BudgetPopup({ open, initial, onClose, onSubmit }: Readonly<Props
                         <div className="grid gap-2">
                             <Label htmlFor="resource"> Resource </Label>
 
-                            <div className = "min-w-0 w-full overflow-hidden">
-                                <Dropdown value = {selectedResourceId}
-                                          options = {resources.map((resource) => ({
-                                            value : resource.id, label : resource.resourceName,
-                                          }))}
-                                          onSelect = {(value) => setSelectedResourceId(value)}
-                                          disabled = {!selectedAccountId}
-                                          widthVariant = "full"
-                                          placeholder = {forPlaceholder}
-                                          emptyMessage = "No resources found"
-                                    />
+                            <div className="min-w-0 w-full overflow-hidden">
+                                <Dropdown
+                                    value={selectedResourceId}
+                                    options={resources.map((resource) => ({
+                                        value: resource.id,
+                                        label: resource.resourceName,
+                                    }))}
+                                    onSelect={(value) => setSelectedResourceId(value)}
+                                    disabled={!selectedAccountId}
+                                    widthVariant="full"
+                                    placeholder={forPlaceholder}
+                                    emptyMessage="No resources found"
+                                />
                             </div>
                         </div>
                     )}
