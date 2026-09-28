@@ -24,6 +24,7 @@ export default function AgenticDashCard() {
     const buttonRef = useRef<HTMLButtonElement>(null);
     const { isEditMode } = useToolbar();
     const isSessionActive = useDashboardStore((state) => state.isSessionActive);
+    const [activeTab, setActiveTab] = useState("generate");
 
     const handleClick = () => {
         setOpen(!open);
@@ -86,14 +87,19 @@ export default function AgenticDashCard() {
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="h-full">
-                            <Tabs defaultValue="generate" className="flex flex-col h-full w-full">
+                            <Tabs
+                                defaultValue="generate"
+                                value={activeTab}
+                                onValueChange={setActiveTab}
+                                className="flex flex-col h-full w-full"
+                            >
                                 <div className="flex flex-row justify-between">
                                     <TabsList>
                                         <TabsTrigger value="generate">Generate</TabsTrigger>
                                         <TabsTrigger value="structured">Structured</TabsTrigger>
                                         <TabsTrigger value="history">History</TabsTrigger>
                                     </TabsList>
-                                    {isSessionActive && (
+                                    {isSessionActive && activeTab === "generate" && (
                                         <Button
                                             variant="secondary"
                                             className={cn(
