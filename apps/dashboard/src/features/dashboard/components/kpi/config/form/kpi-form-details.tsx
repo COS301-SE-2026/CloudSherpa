@@ -16,7 +16,7 @@ type KpiFormDetailsProps = {
     error?: string;
 };
 
-export function KpiFormDetails({ title, onTitleChange, error }: KpiFormDetailsProps) {
+export function KpiFormDetails({ title, onTitleChange, error }: Readonly<KpiFormDetailsProps>) {
     return (
         <FieldSet>
             <div className="flex flex-row items-center gap-3">
