@@ -5,24 +5,28 @@ import com.cloudsherpa.lib.entities.CloudConnection;
 import com.cloudsherpa.lib.entities.OfferedMetric;
 import com.cloudsherpa.lib.entities.ProviderEnum;
 import com.cloudsherpa.lib.entities.Resource;
-import com.cloudsherpa.lib.entities.TypeEnum;
 import com.cloudsherpa.lib.repositories.CloudAccountRepository;
 import com.cloudsherpa.lib.repositories.CloudConnectionRepository;
 import com.cloudsherpa.lib.repositories.OfferedMetricRepository;
 import com.cloudsherpa.lib.repositories.ResourceRepository;
 import com.cloudsherpa.service.agenticdashboard.agent.AiAgentContext;
-import com.cloudsherpa.service.agenticdashboard.dto.DashboardPlanDto;
-import com.cloudsherpa.service.agenticdashboard.dto.DashboardPlanWidgetDto;
+import com.cloudsherpa.service.agenticdashboard.mcp.dto.AddChartWidgetToolDto;
+import com.cloudsherpa.service.agenticdashboard.mcp.dto.AddKpiWidgetToolDto;
 import com.cloudsherpa.service.agenticdashboard.mcp.dto.BillingChargeToolDto;
 import com.cloudsherpa.service.agenticdashboard.mcp.dto.CloudAccountToolDto;
 import com.cloudsherpa.service.agenticdashboard.mcp.dto.MetricToolDto;
 import com.cloudsherpa.service.agenticdashboard.mcp.dto.ResourceToolDto;
+import com.cloudsherpa.service.agenticdashboard.mcp.dto.UpdateChartWidgetToolDto;
+import com.cloudsherpa.service.agenticdashboard.mcp.dto.UpdateDashboardToolDto;
+import com.cloudsherpa.service.agenticdashboard.mcp.dto.UpdateKpiWidgetToolDto;
+import com.cloudsherpa.service.agenticdashboard.mcp.dto.UpdateWidgetLayoutToolDto;
 import com.cloudsherpa.service.agenticdashboard.service.AiDashboardVersionService;
 import com.cloudsherpa.service.agenticdashboard.service.AiSessionService;
-import com.cloudsherpa.service.agenticdashboard.validation.DashboardPlanValidator;
 import com.cloudsherpa.service.billing.dto.BillingChargeResponse;
 import com.cloudsherpa.service.billing.service.BillingService;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -31,6 +35,12 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 public class McpTools {
 
+  private static final int MAX_ACCOUNTS = 10;
+  private static final int MAX_RESOURCES = 12;
+  private static final int MAX_METRICS = 16;
+  private static final int MAX_CHARGES = 16;
+  private static final int MAX_WIDGETS = 20;
+
   private final CloudConnectionRepository cloudConnectionRepository;
   private final CloudAccountRepository cloudAccountRepository;
   private final ResourceRepository resourceRepository;
@@ -38,7 +48,6 @@ public class McpTools {
   private final BillingService billingService;
   private final AiSessionService aiSessionService;
   private final AiDashboardVersionService versionService;
-  private final DashboardPlanValidator dashboardPlanValidator;
 
   public McpTools(
       CloudConnectionRepository cloudConnectionRepository,
@@ -47,8 +56,7 @@ public class McpTools {
       OfferedMetricRepository offeredMetricRepository,
       BillingService billingService,
       AiSessionService aiSessionService,
-      AiDashboardVersionService versionService,
-      DashboardPlanValidator dashboardPlanValidator) {
+      AiDashboardVersionService versionService) {
 
     this.cloudConnectionRepository = cloudConnectionRepository;
     this.cloudAccountRepository = cloudAccountRepository;
@@ -57,159 +65,370 @@ public class McpTools {
     this.billingService = billingService;
     this.aiSessionService = aiSessionService;
     this.versionService = versionService;
-    this.dashboardPlanValidator = dashboardPlanValidator;
   }
 
-  public List<CloudAccountToolDto> listCloudAccounts(AiAgentContext context) {
-
+  public Map<String, Object> findCloudAccounts(
+      AiAgentContext context, String query, Integer limit) {
     validateSession(context);
+    int resultLimit = normalizeLimit(limit, MAX_ACCOUNTS);
+    String normalizedQuery = normalizeQuery(query);
 
-    List<CloudConnection> connections = cloudConnectionRepository.findByUserId(context.userId());
+    List<CloudAccountToolDto> results =
+        cloudConnectionRepository.findByUserId(context.userId()).stream()
+            .flatMap(connection -> mapAccounts(connection).stream())
+            .filter(account -> matchesAccount(account, normalizedQuery))
+            .limit(resultLimit)
+            .toList();
 
-    return connections.stream()
-        .flatMap(
-            connection ->
-                cloudAccountRepository.findByConnectionId(connection.getId()).stream()
-                    .map(
-                        account ->
-                            new CloudAccountToolDto(
-                                account.getId(),
-                                account.getDisplayName(),
-                                connection.getProvider(),
-                                account.getAccountType().name())))
-        .toList();
+    return Map.of(
+        "results",
+        results,
+        "count",
+        results.size(),
+        "limit",
+        resultLimit,
+        "truncated",
+        results.size() >= resultLimit);
   }
 
-  public List<ResourceToolDto> listResources(
-      AiAgentContext context, UUID accountId, String resourceType) {
+  public Map<String, Object> findResources(
+      AiAgentContext context, UUID accountId, String query, String resourceType, Integer limit) {
 
     validateSession(context);
-
     CloudAccount account = getOwnedAccount(context.userId(), accountId);
+    int resultLimit = normalizeLimit(limit, MAX_RESOURCES);
+    String normalizedQuery = normalizeQuery(query);
+    String normalizedResourceType = normalizeQuery(resourceType);
 
-    List<Resource> resources;
+    List<ResourceToolDto> results =
+        resourceRepository.findByAccountId(account.getId()).stream()
+            .filter(resource -> matchesResourceType(resource, normalizedResourceType))
+            .filter(resource -> matchesResource(resource, normalizedQuery))
+            .sorted(
+                Comparator.comparing(
+                    Resource::getResourceName, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)))
+            .limit(resultLimit)
+            .map(resource -> mapResource(resource, account.getConnection().getProvider()))
+            .toList();
 
-    if (resourceType == null || resourceType.isBlank()) {
-
-      resources = resourceRepository.findByAccountId(account.getId());
-
-    } else {
-
-      resources = resourceRepository.findByAccountIdAndResourceType(account.getId(), resourceType);
-    }
-
-    ProviderEnum provider = account.getConnection().getProvider();
-
-    return resources.stream()
-        .map(
-            resource ->
-                new ResourceToolDto(
-                    resource.getId(),
-                    resource.getAccountId(),
-                    provider,
-                    resource.getResourceType(),
-                    resource.getResourceName(),
-                    resource.getResourceIdentifier(),
-                    resource.getRegion()))
-        .toList();
+    return Map.of(
+        "results",
+        results,
+        "count",
+        results.size(),
+        "limit",
+        resultLimit,
+        "truncated",
+        results.size() >= resultLimit);
   }
 
-  public List<MetricToolDto> listAvailableMetrics(AiAgentContext context, UUID resourceId) {
+  public Map<String, Object> findAvailableMetrics(
+      AiAgentContext context, UUID resourceId, String query, Integer limit) {
 
     validateSession(context);
-
     Resource resource = getOwnedResource(context.userId(), resourceId);
-
+    int resultLimit = normalizeLimit(limit, MAX_METRICS);
+    String normalizedQuery = normalizeQuery(query);
     ProviderEnum provider = resource.getAccount().getConnection().getProvider();
 
-    return offeredMetricRepository
-        .findByProviderAndServiceType(provider, resource.getResourceType())
-        .stream()
-        .map(this::mapMetric)
-        .toList();
-  }
-
-  public List<BillingChargeToolDto> listBillingCharges(AiAgentContext context) {
-
-    validateSession(context);
-
-    return billingService.getCharges().stream()
-        .map(
-            charge ->
-                new BillingChargeToolDto(
-                    charge.resourceId(), charge.chargeId(), charge.service(), charge.provider()))
-        .toList();
-  }
-
-  public UUID stageDashboardVersion(AiAgentContext context, DashboardPlanDto plan) {
-
-    validateSession(context);
-
-    dashboardPlanValidator.validate(plan);
-
-    validatePlanOwnership(context, plan);
-
-    return versionService.createVersion(context.userId(), context.sessionId(), plan).getVersionId();
-  }
-
-  private void validatePlanOwnership(AiAgentContext context, DashboardPlanDto plan) {
-
-    for (DashboardPlanWidgetDto widget : plan.widgets()) {
-
-      if (widget.widgetType() == TypeEnum.CHART) {
-        validateChartWidget(context, widget);
-      }
-
-      if (widget.widgetType() == TypeEnum.KPI) {
-        validateKpiWidget(widget);
-      }
-    }
-  }
-
-  private void validateChartWidget(AiAgentContext context, DashboardPlanWidgetDto widget) {
-
-    Resource resource = getOwnedResource(context.userId(), widget.resourceId());
-
-    if (!resource.getAccountId().equals(widget.accountId())) {
-
-      throw invalid("Chart account does not own the selected resource");
-    }
-
-    ProviderEnum provider = resource.getAccount().getConnection().getProvider();
-
-    if (provider != widget.provider()) {
-      throw invalid("Chart provider does not match the selected resource");
-    }
-
-    boolean metricExists =
+    List<MetricToolDto> results =
         offeredMetricRepository
             .findByProviderAndServiceType(provider, resource.getResourceType())
             .stream()
-            .anyMatch(metric -> metric.getMetricName().equals(widget.metricName()));
+            .filter(metric -> matchesMetric(metric, normalizedQuery))
+            .sorted(
+                Comparator.comparing(
+                    OfferedMetric::getMetricName,
+                    Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)))
+            .limit(resultLimit)
+            .map(this::mapMetric)
+            .toList();
 
-    if (!metricExists) {
-      throw invalid("Metric is not available for the selected resource");
-    }
+    return Map.of(
+        "resourceId",
+        resourceId,
+        "accountId",
+        resource.getAccountId(),
+        "provider",
+        provider,
+        "resourceType",
+        resource.getResourceType(),
+        "results",
+        results,
+        "count",
+        results.size(),
+        "limit",
+        resultLimit,
+        "truncated",
+        results.size() >= resultLimit);
   }
 
-  private void validateKpiWidget(DashboardPlanWidgetDto widget) {
+  public Map<String, Object> findBillingCharges(
+      AiAgentContext context, String query, Integer limit) {
 
-    if (widget.chargeIds() == null || widget.chargeIds().isEmpty()) {
+    validateSession(context);
+    int resultLimit = normalizeLimit(limit, MAX_CHARGES);
+    String normalizedQuery = normalizeQuery(query);
 
-      throw invalid("KPI charge IDs are required");
+    List<BillingChargeToolDto> results =
+        billingService.getCharges().stream()
+            .filter(charge -> matchesCharge(charge, normalizedQuery))
+            .sorted(
+                Comparator.comparing(
+                    BillingChargeResponse::chargeId,
+                    Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)))
+            .limit(resultLimit)
+            .map(
+                charge ->
+                    new BillingChargeToolDto(
+                        charge.resourceId(),
+                        charge.chargeId(),
+                        charge.service(),
+                        charge.provider()))
+            .toList();
+
+    return Map.of(
+        "results",
+        results,
+        "count",
+        results.size(),
+        "limit",
+        resultLimit,
+        "truncated",
+        results.size() >= resultLimit);
+  }
+
+  public Map<String, Object> addChartWidget(AiAgentContext context, AddChartWidgetToolDto request) {
+    validateSession(context);
+    validateWidgetCount(context);
+
+    var widget = versionService.addChartWidget(context.userId(), context.sessionId(), request);
+    return Map.of(
+        "widgetId",
+        widget.widgetId(),
+        "widgetType",
+        widget.widgetType(),
+        "displayName",
+        widget.displayName(),
+        "startX",
+        widget.startX(),
+        "startY",
+        widget.startY(),
+        "width",
+        widget.width(),
+        "height",
+        widget.height(),
+        "message",
+        "Chart widget added");
+  }
+
+  public Map<String, Object> addKpiWidget(AiAgentContext context, AddKpiWidgetToolDto request) {
+    validateSession(context);
+    validateWidgetCount(context);
+
+    var widget = versionService.addKpiWidget(context.userId(), context.sessionId(), request);
+    return Map.of(
+        "widgetId",
+        widget.widgetId(),
+        "widgetType",
+        widget.widgetType(),
+        "displayName",
+        widget.displayName(),
+        "startX",
+        widget.startX(),
+        "startY",
+        widget.startY(),
+        "width",
+        widget.width(),
+        "height",
+        widget.height(),
+        "message",
+        "KPI widget added");
+  }
+
+  public Map<String, Object> updateWidgetLayout(
+      AiAgentContext context, UpdateWidgetLayoutToolDto request) {
+    validateSession(context);
+
+    var widget = versionService.updateWidgetLayout(context.userId(), context.sessionId(), request);
+    return widgetSummary(widget, "Widget layout updated");
+  }
+
+  public Map<String, Object> updateChartWidget(
+      AiAgentContext context, UpdateChartWidgetToolDto request) {
+    validateSession(context);
+
+    var widget = versionService.updateChartWidget(context.userId(), context.sessionId(), request);
+    return widgetSummary(widget, "Chart widget updated");
+  }
+
+  public Map<String, Object> updateKpiWidget(
+      AiAgentContext context, UpdateKpiWidgetToolDto request) {
+    validateSession(context);
+
+    var widget = versionService.updateKpiWidget(context.userId(), context.sessionId(), request);
+    return widgetSummary(widget, "KPI widget updated");
+  }
+
+  public Map<String, Object> deleteWidget(AiAgentContext context, UUID widgetId) {
+    validateSession(context);
+
+    var widget = versionService.deleteWidget(context.userId(), context.sessionId(), widgetId);
+    return Map.of(
+        "widgetId",
+        widget.widgetId(),
+        "displayName",
+        widget.displayName(),
+        "message",
+        "Widget deleted");
+  }
+
+  public Map<String, Object> clearWorkingDashboard(AiAgentContext context) {
+    validateSession(context);
+
+    var draft = versionService.getWorkingDashboard(context.userId(), context.sessionId());
+    int deletedCount = draft.widgets().size();
+    versionService.clearWorkingDashboard(context.userId(), context.sessionId());
+
+    return Map.of("deletedWidgetCount", deletedCount, "message", "Working dashboard cleared");
+  }
+
+  public Map<String, Object> discardWorkingDashboard(AiAgentContext context) {
+    validateSession(context);
+    versionService.discardWorkingDashboard(context.userId(), context.sessionId());
+    return Map.of("message", "Uncommitted dashboard changes discarded");
+  }
+
+  public Map<String, Object> updateDashboard(
+      AiAgentContext context, UpdateDashboardToolDto request) {
+    validateSession(context);
+
+    var dashboard = versionService.updateDashboard(context.userId(), context.sessionId(), request);
+    return Map.of(
+        "title", dashboard.title(),
+        "widgetCount", dashboard.widgets().size(),
+        "message", "Dashboard metadata updated");
+  }
+
+  public Map<String, Object> commitDashboardChanges(AiAgentContext context) {
+    validateSession(context);
+
+    var response = versionService.commitWorkingDashboard(context.userId(), context.sessionId());
+    return Map.of(
+        "versionId", response.versionId(),
+        "version", response.version(),
+        "message", "Dashboard changes committed as a new version");
+  }
+
+  private List<CloudAccountToolDto> mapAccounts(CloudConnection connection) {
+    return cloudAccountRepository.findByConnectionId(connection.getId()).stream()
+        .map(
+            account ->
+                new CloudAccountToolDto(
+                    account.getId(),
+                    account.getDisplayName(),
+                    connection.getProvider(),
+                    account.getAccountType().name()))
+        .toList();
+  }
+
+  private ResourceToolDto mapResource(Resource resource, ProviderEnum provider) {
+    return new ResourceToolDto(
+        resource.getId(),
+        resource.getAccountId(),
+        provider,
+        resource.getResourceType(),
+        resource.getResourceName(),
+        resource.getResourceIdentifier(),
+        resource.getRegion());
+  }
+
+  private boolean matchesAccount(CloudAccountToolDto account, String query) {
+    if (query == null) {
+      return true;
     }
+    return contains(account.displayName(), query)
+        || contains(account.accountType(), query)
+        || String.valueOf(account.provider()).equalsIgnoreCase(query);
+  }
 
-    List<String> validChargeIds =
-        billingService.getCharges().stream().map(BillingChargeResponse::chargeId).toList();
+  private boolean matchesResourceType(Resource resource, String resourceType) {
+    return resourceType == null || contains(resource.getResourceType(), resourceType);
+  }
 
-    if (!widget.chargeIds().stream().allMatch(validChargeIds::contains)) {
+  private boolean matchesResource(Resource resource, String query) {
+    return query == null
+        || contains(resource.getResourceName(), query)
+        || contains(resource.getResourceIdentifier(), query)
+        || contains(resource.getRegion(), query)
+        || contains(resource.getResourceType(), query);
+  }
 
-      throw invalid("One or more KPI charge IDs are not available");
+  private boolean matchesMetric(OfferedMetric metric, String query) {
+    return query == null
+        || contains(metric.getMetricName(), query)
+        || contains(metric.getDescription(), query)
+        || contains(metric.getExpectedUnit(), query);
+  }
+
+  private boolean matchesCharge(BillingChargeResponse charge, String query) {
+    return query == null
+        || contains(charge.chargeId(), query)
+        || contains(charge.service(), query)
+        || String.valueOf(charge.provider()).equalsIgnoreCase(query);
+  }
+
+  private boolean contains(String value, String query) {
+    return value != null && value.toLowerCase().contains(query);
+  }
+
+  private String normalizeQuery(String query) {
+    if (query == null || query.isBlank()) {
+      return null;
+    }
+    return query.trim().toLowerCase();
+  }
+
+  private int normalizeLimit(Integer requestedLimit, int maximum) {
+    if (requestedLimit == null) {
+      return maximum;
+    }
+    if (requestedLimit < 1 || requestedLimit > maximum) {
+      throw invalid("limit must be between 1 and " + maximum);
+    }
+    return requestedLimit;
+  }
+
+  private Map<String, Object> widgetSummary(
+      com.cloudsherpa.service.agenticdashboard.dto.DashboardPlanWidgetDto widget, String message) {
+    return Map.of(
+        "widgetId",
+        widget.widgetId(),
+        "widgetType",
+        widget.widgetType(),
+        "displayName",
+        widget.displayName(),
+        "startX",
+        widget.startX(),
+        "startY",
+        widget.startY(),
+        "width",
+        widget.width(),
+        "height",
+        widget.height(),
+        "message",
+        message);
+  }
+
+  private void validateWidgetCount(AiAgentContext context) {
+    int count =
+        versionService.getWorkingDashboard(context.userId(), context.sessionId()).widgets().size();
+    if (count >= MAX_WIDGETS) {
+      throw invalid("Dashboard cannot contain more than " + MAX_WIDGETS + " widgets");
     }
   }
 
   private CloudAccount getOwnedAccount(UUID userId, UUID accountId) {
-
     CloudAccount account =
         cloudAccountRepository
             .findById(accountId)
@@ -217,7 +436,6 @@ public class McpTools {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cloud account not found"));
 
     if (!account.getConnection().getUserId().equals(userId)) {
-
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Cloud account not found");
     }
 
@@ -225,7 +443,6 @@ public class McpTools {
   }
 
   private Resource getOwnedResource(UUID userId, UUID resourceId) {
-
     Resource resource =
         resourceRepository
             .findById(resourceId)
@@ -233,7 +450,6 @@ public class McpTools {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Resource not found"));
 
     if (!resource.getAccount().getConnection().getUserId().equals(userId)) {
-
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Resource not found");
     }
 
@@ -241,12 +457,10 @@ public class McpTools {
   }
 
   private void validateSession(AiAgentContext context) {
-
     aiSessionService.getSession(context.userId(), context.sessionId());
   }
 
   private MetricToolDto mapMetric(OfferedMetric metric) {
-
     return new MetricToolDto(
         metric.getProvider(),
         metric.getServiceType(),
@@ -257,7 +471,6 @@ public class McpTools {
   }
 
   private ResponseStatusException invalid(String message) {
-
     return new ResponseStatusException(HttpStatus.BAD_REQUEST, message);
   }
 }
