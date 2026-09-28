@@ -1,13 +1,9 @@
 import apiClient from "./api-client";
-import { CloudAccount, CloudAccountDetails } from "./dto/cloud-account";
+import { CloudAccount, CloudAccountDetails, CloudAccountPatch } from "./dto/cloud-account";
 import { CloudResource, ResourceStatus } from "./dto/cloud-resource";
 
 export interface ResourceCountResponse {
     count: number;
-}
-
-export interface UpdateAccountNameRequest {
-    name: string;
 }
 
 export async function getAwsAccountConnections(): Promise<CloudAccount[]> {
@@ -37,6 +33,16 @@ export async function getAwsAccountResourceCount(accountId: string): Promise<num
     return response.count;
 }
 
+export async function updateCloudAccount(
+    accountId: string,
+    patch: CloudAccountPatch
+): Promise<CloudAccountDetails> {
+    return apiClient<CloudAccountDetails>(`/aws/accounts/${accountId}`, {
+        method: "PATCH",
+        body: JSON.stringify(patch),
+    });
+}
+
 export async function updateAwsResourceStatus(
     resourceId: string,
     status: ResourceStatus
@@ -52,14 +58,5 @@ export async function updateAwsResourceStatus(
 export async function deleteAwsAccount(accountId: string): Promise<void> {
     await apiClient<void>(`/aws/connections/${accountId}`, {
         method: "DELETE",
-    });
-}
-
-export async function updateAwsAccountName(accountId: string, name: string): Promise<void> {
-    await apiClient<void>(`/aws/connections/${accountId}/name`, {
-        method: "PATCH",
-        body: JSON.stringify({
-            name,
-        }),
     });
 }

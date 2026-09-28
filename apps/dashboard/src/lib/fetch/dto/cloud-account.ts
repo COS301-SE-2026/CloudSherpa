@@ -20,4 +20,16 @@ export interface CloudAccountDetails {
     accountEmail: string;
     ingestionPeriod: string;
     createdAt: string;
+    periodicResourceDiscovery: boolean;
+    autoAdjustIngestionPeriod: boolean;
+    newResourcesActive: boolean;
+    nextResourceScan: string;
+}
+
+export interface CloudAccountPatch {
+    displayName?: string;
+    ingestionPeriod?: number;
+    periodicResourceDiscovery?: boolean;
+    autoAdjustIngestionPeriod?: boolean;
+    newResourcesActive?: boolean;
 }

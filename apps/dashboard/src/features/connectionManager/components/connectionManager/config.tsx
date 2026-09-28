@@ -16,7 +16,7 @@ import { useParams, useRouter } from "next/navigation";
 import {
     getAwsAccount,
     getAwsAccountResources,
-    updateAwsAccountName,
+    updateCloudAccount,
 } from "@/lib/fetch/cloud-account-api";
 import { CloudAccountDetails } from "@/lib/fetch/dto/cloud-account";
 import { CloudResource, ResourceStatus } from "@/lib/fetch/dto/cloud-resource";
@@ -74,6 +74,24 @@ export default function ConfigureConnection() {
 
     const [custom, setCustom] = useState("");
 
+    const handlingResourceDiscovery = async (checked: boolean) => {
+        const previousValue = resourceDiscovery;
+
+        setResourceDiscovery(checked);
+
+        try {
+            const updatedAccount = await updateCloudAccount(accountId, {
+                periodicResourceDiscovery: checked,
+            });
+
+            setAccount(updatedAccount);
+            setResourceDiscovery(updatedAccount.periodicResourceDiscovery);
+        } catch (err) {
+            console.error("Failed to update resource discovery setting", err);
+            setResourceDiscovery(previousValue);
+        }
+    };
+
     async function loadConnection() {
         try {
             const [accountResponse, resourcesResponse] = await Promise.all([
@@ -85,6 +103,14 @@ export default function ConfigureConnection() {
 
             setConnectionName(accountResponse.displayName);
             setNewName(accountResponse.displayName);
+
+            setResourceDiscovery(accountResponse.periodicResourceDiscovery);
+            setMonitorNewResources(accountResponse.newResourcesActive);
+            setAdjustInterval(accountResponse.autoAdjustIngestionPeriod);
+
+            if (accountResponse.ingestionPeriod !== null) {
+                setIngestionPeriod(Number(accountResponse.ingestionPeriod));
+            }
 
             setResources(
                 resourcesResponse.filter((resource) => resource.status === ResourceStatus.ACTIVE)
@@ -107,16 +133,21 @@ export default function ConfigureConnection() {
     };
 
     const handlingSave = async () => {
-        if (newName.trim() === connectionName) {
-            //no name change, so we don't send a request
+        const trimmedName = newName.trim();
+
+        if (trimmedName === connectionName) {
             setIsChanging(false);
             return;
         }
 
         try {
-            await updateAwsAccountName(accountId, newName.trim());
+            const updatedAccount = await updateCloudAccount(accountId, {
+                displayName: trimmedName,
+            });
 
-            setConnectionName(newName.trim());
+            setAccount(updatedAccount);
+            setConnectionName(updatedAccount.displayName);
+            setNewName(updatedAccount.displayName);
             setIsChanging(false);
         } catch (err) {
             console.error("Failed to update connection name", err);
@@ -137,11 +168,30 @@ export default function ConfigureConnection() {
 
     const accurateIngestionPeriod = ingestionPeriod ?? recIngestionPeriod;
 
-    const handlingAdjust = (checked: boolean) => {
+    const handlingAdjust = async (checked: boolean) => {
+        const previousValue = adjustInterval;
+
         setAdjustInterval(checked);
 
-        if (!checked) {
-            setIngestionPeriod(null);
+        try {
+            const updatedAccount = await updateCloudAccount(accountId, {
+                autoAdjustIngestionPeriod: checked,
+            });
+
+            setAccount(updatedAccount);
+            setAdjustInterval(updatedAccount.autoAdjustIngestionPeriod);
+
+            if (!checked) {
+                setIngestionPeriod(
+                    updatedAccount.ingestionPeriod === null
+                        ? null
+                        : Number(updatedAccount.ingestionPeriod)
+                );
+            }
+        } catch (err) {
+            console.error("Failed to update automatic ingestion adjustment setting", err);
+
+            setAdjustInterval(previousValue);
         }
     };
 
@@ -152,6 +202,46 @@ export default function ConfigureConnection() {
             setCustom("");
 
             setIngestionPeriod(null);
+        }
+    };
+
+    const handlingNewResources = async (checked: boolean) => {
+        const previousValue = monitorNewResources;
+
+        setMonitorNewResources(checked);
+
+        try {
+            const updatedAccount = await updateCloudAccount(accountId, {
+                newResourcesActive: checked,
+            });
+
+            setAccount(updatedAccount);
+            setMonitorNewResources(updatedAccount.newResourcesActive);
+        } catch (err) {
+            console.error("Failed to update new resource monitoring setting", err);
+            setMonitorNewResources(previousValue);
+        }
+    };
+
+    const handlingIngestionPeriodChange = async (value: number | null) => {
+        setIngestionPeriod(value);
+
+        if (value === null) {
+            return;
+        }
+
+        try {
+            const updatedAccount = await updateCloudAccount(accountId, {
+                ingestionPeriod: value,
+            });
+
+            setAccount(updatedAccount);
+
+            if (updatedAccount.ingestionPeriod !== null) {
+                setIngestionPeriod(Number(updatedAccount.ingestionPeriod));
+            }
+        } catch (err) {
+            console.error("Failed to update ingestion period", err);
         }
     };
 
@@ -316,7 +406,7 @@ export default function ConfigureConnection() {
                                         id="resource-discovery"
                                         checked={resourceDiscovery}
                                         onCheckedChange={(checkedBox) =>
-                                            setResourceDiscovery(checkedBox === true)
+                                            void handlingResourceDiscovery(checkedBox === true)
                                         }
                                         className="mt-0.5"
                                     />
@@ -344,7 +434,7 @@ export default function ConfigureConnection() {
                                         id="monitor-new-resources"
                                         checked={monitorNewResources}
                                         onCheckedChange={(checkedBox) =>
-                                            setMonitorNewResources(checkedBox === true)
+                                            void handlingNewResources(checkedBox === true)
                                         }
                                         className="mt-0.5"
                                     />
@@ -379,7 +469,7 @@ export default function ConfigureConnection() {
                                         id="adjust-interval"
                                         checked={adjustInterval}
                                         onCheckedChange={(checked) =>
-                                            handlingAdjust(checked === true)
+                                            void handlingAdjust(checked === true)
                                         }
                                         className="mt-0.5"
                                     />
@@ -451,7 +541,7 @@ export default function ConfigureConnection() {
 
                             <IngestionSlider
                                 ingestionPeriod={accurateIngestionPeriod}
-                                setIngestionPeriod={setIngestionPeriod}
+                                setIngestionPeriod={handlingIngestionPeriodChange}
                                 activeCount={activeCount}
                                 recIngestionPeriod={recIngestionPeriod}
                                 formatSeconds={formattingSecond}
