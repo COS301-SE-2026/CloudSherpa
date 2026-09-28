@@ -47,7 +47,7 @@ class GcpBillingRecordIngestionTest {
   // ! WARNING: the target as per our documentation is 1000, the run should be recorded
   // in the NFR matrix as long as it is below that threshold. GCP billing ingestion performance
   // should be improved via batch processing.
-  private static final int RECORD_PER_SECOND_THRESHOLD = 200;
+  private static final int RECORD_PER_SECOND_THRESHOLD = 1000;
   private static final int NUM_RECORDS_TO_SEED = 10000;
 
   @Container @ServiceConnection

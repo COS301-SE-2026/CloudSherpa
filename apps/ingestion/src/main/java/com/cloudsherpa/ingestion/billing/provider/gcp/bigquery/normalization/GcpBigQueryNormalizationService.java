@@ -5,6 +5,9 @@ import com.cloudsherpa.ingestion.billing.provider.gcp.bigquery.pipeline.GcpBilli
 import com.cloudsherpa.ingestion.service.SherpaDbPersistenceService;
 import com.cloudsherpa.lib.entities.NormalizedCosts;
 import com.google.cloud.bigquery.FieldValueList;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
@@ -28,29 +31,62 @@ public class GcpBigQueryNormalizationService {
     GcpBigQueryNormalizer gcpBigQueryNormalizer = contexts.getObject();
     gcpBigQueryNormalizer.setBillingId(context.getBillingConfig().billingAccountId());
 
-    for (FieldValueList fieldValueList : context.getTableResult().getValues()) {
+    Iterator<FieldValueList> it = context.getTableResult().getValues().iterator();
 
-      GcpBigQueryBillingRecord gcpBigQueryBillingRecord =
-          new GcpBigQueryBillingRecord(fieldValueList, new CreditProcessingState());
+    while (it.hasNext()) {
+      List<NormalizedCosts> batch = normalizeBatch(it, 100, gcpBigQueryNormalizer, context);
 
-      if (!fieldValueList.get("credits").getRepeatedValue().isEmpty()) {
-        gcpBigQueryBillingRecord.creditProcessingState().setHasCredits(true);
+      if (!batch.isEmpty()) {
+        persistenceService.recordCosts(batch, context.getUserId());
       }
+    }
+  }
 
-      try {
-        if (gcpBigQueryBillingRecord.creditProcessingState().getHasCredits()) {
-          NormalizedCosts normalizedCosts =
-              gcpBigQueryNormalizer.normalize(gcpBigQueryBillingRecord, context.getBillingExport());
-          gcpBigQueryBillingRecord.creditProcessingState().setProcessed(true);
-          persistenceService.recordCost(normalizedCosts, context.getUserId());
-        }
+  private List<NormalizedCosts> normalizeBatch(
+      Iterator<FieldValueList> it,
+      int batchSize,
+      GcpBigQueryNormalizer gcpBigQueryNormalizer,
+      GcpBillingContext context) {
+    List<NormalizedCosts> currentBatch = new ArrayList<>();
 
+    while (it.hasNext() && currentBatch.size() < batchSize) {
+      List<NormalizedCosts> normalizedCost =
+          normalizeRow(it.next(), gcpBigQueryNormalizer, context);
+      if (!normalizedCost.isEmpty()) {
+        currentBatch.addAll(normalizedCost);
+      }
+    }
+
+    return currentBatch;
+  }
+
+  private List<NormalizedCosts> normalizeRow(
+      FieldValueList fieldValueList,
+      GcpBigQueryNormalizer gcpBigQueryNormalizer,
+      GcpBillingContext context) {
+    List<NormalizedCosts> normalizationResult = new ArrayList<>();
+
+    GcpBigQueryBillingRecord gcpBigQueryBillingRecord =
+        new GcpBigQueryBillingRecord(fieldValueList, new CreditProcessingState());
+
+    if (!fieldValueList.get("credits").getRepeatedValue().isEmpty()) {
+      gcpBigQueryBillingRecord.creditProcessingState().setHasCredits(true);
+    }
+
+    try {
+      if (gcpBigQueryBillingRecord.creditProcessingState().getHasCredits()) {
         NormalizedCosts normalizedCosts =
             gcpBigQueryNormalizer.normalize(gcpBigQueryBillingRecord, context.getBillingExport());
-        persistenceService.recordCost(normalizedCosts, context.getUserId());
-      } catch (NormalizationException e) {
-        logger.error(e.getMessage(), e);
+        gcpBigQueryBillingRecord.creditProcessingState().setProcessed(true);
+        normalizationResult.add(normalizedCosts);
       }
+
+      normalizationResult.add(
+          gcpBigQueryNormalizer.normalize(gcpBigQueryBillingRecord, context.getBillingExport()));
+      return normalizationResult;
+    } catch (NormalizationException e) {
+      logger.error(e.getMessage(), e);
+      return normalizationResult;
     }
   }
 }
