@@ -23,8 +23,6 @@ import { Button } from "@/components/atoms/button";
 import type { OperatorsForThreshold, Threshold } from "@/features/thresholds/types/thresholdTypes";
 import { OPERATOR_LABEL, SEVERITY_COLOURS } from "@/features/thresholds/types/thresholdTypes";
 import { ArrowUp, ArrowDown, Pencil, Trash2, MoreVertical } from "lucide-react";
-import { useMetricStore } from "@/features/dashboard/stores/metric-store";
-import { metricSeriesToArray } from "@/features/dashboard/types/metric";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -42,42 +40,6 @@ const CONDITION_VERBS: Record<OperatorsForThreshold, string> = {
     LTE: "Less than or equal to",
     EQ: "Equal to",
 };
-
-interface PropsForCurrentValue {
-    resourceId: string;
-    metricName: string;
-    enabled: boolean;
-}
-
-function CurrentValue({ resourceId, metricName, enabled }: Readonly<PropsForCurrentValue>) {
-    const forSeries = useMetricStore(
-        (forState) => forState.seriesByKey[`${resourceId}:${metricName}`]
-    );
-
-    const latestValue = metricSeriesToArray(forSeries).at(-1);
-
-    if (latestValue?.value == null) {
-        return (
-            <Truncation
-                text="-"
-                className="w-[100px] flex-shrink-0 text-muted-foreground cursor-help"
-            />
-        );
-    }
-
-    const forDisplay = String(latestValue.value);
-
-    const forTooltip = `${metricName} at ${latestValue.timestamp}: ${forDisplay}`;
-
-    return (
-        <Truncation
-            text={forDisplay}
-            tooltipText={forTooltip}
-            className={`w-[100px] flex-shrink-0 ${enabled ? "text-foreground" : "text-muted-foreground"}`}
-        />
-    );
-}
-
 interface PropsForThresholds {
     thresholds: Threshold[];
     edit: (forThreshold: Threshold) => void;
@@ -219,24 +181,6 @@ function helperForColumns({
                         {" "}
                         {forThreshold.value}{" "}
                     </span>
-                );
-            },
-        },
-
-        {
-            id: "currentValue",
-            header: () => "CURRENT VALUE",
-            enableSorting: false,
-            size: 140,
-            cell: ({ row }) => {
-                const forThreshold = row.original;
-
-                return (
-                    <CurrentValue
-                        resourceId={forThreshold.resourceId}
-                        metricName={forThreshold.metricName}
-                        enabled={forThreshold.enabled}
-                    />
                 );
             },
         },
