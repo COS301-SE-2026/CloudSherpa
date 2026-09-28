@@ -1,5 +1,17 @@
 package com.cloudsherpa.ingestion.nfr;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import com.azure.storage.blob.BlobContainerClient;
+import com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.AzureBillingContext;
+import com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.model.AzureManifest;
+import com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.pipeline.ManifestDiscoveryStep;
+import com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.pipeline.ManifestParsingStep;
+import com.cloudsherpa.ingestion.provider.azure.services.blobstorage.AzureBlobReader;
 import com.cloudsherpa.ingestion.scheduler.encryption.CredentialEncryptionService;
 import com.cloudsherpa.lib.entities.AzureBillingExportConfig;
 import com.cloudsherpa.lib.entities.BillingExportConfig;
@@ -7,15 +19,24 @@ import com.cloudsherpa.lib.entities.CloudCredential;
 import com.cloudsherpa.lib.repositories.AzureBillingExportConfigRepository;
 import com.cloudsherpa.lib.repositories.BillingExportConfigRepository;
 import com.cloudsherpa.lib.repositories.CloudCredentialRepository;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.zip.GZIPOutputStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
@@ -41,11 +62,17 @@ class AzureBillingRecordIngestionTest {
   private static final String STORAGE_CONTAINER = "billing-exports";
   private static final String BILLING_EXPORT_DIRECTORY = "exports/daily";
   private static final String BILLING_EXPORT_NAME = "nfr-billing-export";
+  private static final String RUN_ID = "nfr-run";
+  private static final String BLOB_NAME = "exports/daily/nfr-billing-export/part0.csv.gz";
+  private static final int NUM_RECORDS_TO_SEED = 10000;
 
   @Autowired BillingExportConfigRepository exportConfigRepository;
   @Autowired AzureBillingExportConfigRepository azureExportConfigRepository;
   @Autowired CloudCredentialRepository cloudCredentialRepository;
   @Autowired CredentialEncryptionService credentialEncryptionService;
+  @MockitoBean ManifestDiscoveryStep manifestDiscoveryStep;
+  @MockitoBean ManifestParsingStep manifestParsingStep;
+  @MockitoBean AzureBlobReader blobReader;
 
   @Container @ServiceConnection
   static PostgreSQLContainer timescaledb =
@@ -63,6 +90,77 @@ class AzureBillingRecordIngestionTest {
   void setUp() {
     persistConfigs();
     writeCredentials();
+    mockManifestDiscoveryStep();
+    mockManifestParsingStep();
+    mockCsvInputStream(NUM_RECORDS_TO_SEED);
+  }
+
+  private void mockManifestDiscoveryStep() {
+    doAnswer(
+            invocation -> {
+              AzureBillingContext context = invocation.getArgument(0);
+              context.setBlobContainerClient(mock(BlobContainerClient.class));
+              return null;
+            })
+        .when(manifestDiscoveryStep)
+        .execute(any(AzureBillingContext.class));
+  }
+
+  private void mockManifestParsingStep() {
+    AzureManifest manifest =
+        new AzureManifest(
+            100,
+            1,
+            NUM_RECORDS_TO_SEED,
+            new AzureManifest.RunInfo(
+                Instant.parse("2026-09-01T00:30:00Z"),
+                RUN_ID,
+                Instant.parse("2026-08-01T00:00:00Z"),
+                Instant.parse("2026-09-01T00:00:00Z")),
+            new AzureManifest.DeliveryConfig("Csv"),
+            List.of(new AzureManifest.Partition(BLOB_NAME, 100, NUM_RECORDS_TO_SEED)));
+    UUID executionId =
+        UUID.nameUUIDFromBytes((CONFIG_ID + ":" + RUN_ID).getBytes(StandardCharsets.UTF_8));
+
+    doAnswer(
+            invocation -> {
+              AzureBillingContext context = invocation.getArgument(0);
+              context.setManifests(Map.of(executionId, manifest));
+              return null;
+            })
+        .when(manifestParsingStep)
+        .execute(any(AzureBillingContext.class));
+  }
+
+  private void mockCsvInputStream(int recordCount) {
+    byte[] csvBytes = createCsvExport(recordCount);
+
+    when(blobReader.openStream(any(BlobContainerClient.class), eq(BLOB_NAME)))
+        .thenAnswer(invocation -> new ByteArrayInputStream(csvBytes));
+  }
+
+  private byte[] createCsvExport(int recordCount) {
+    StringBuilder csv =
+        new StringBuilder(
+            "billingAccountId,date,consumedService,meterCategory,meterSubCategory,"
+                + "ResourceId,chargeType,billingCurrency,costInPricingCurrency\n");
+
+    for (int index = 0; index < recordCount; index++) {
+      csv.append("billing-account,09/01/2026,Microsoft.Compute,Virtual Machines,")
+          .append("Dv3 Series,/subscriptions/test/resourceGroups/nfr/providers/")
+          .append("Microsoft.Compute/virtualMachines/vm-")
+          .append(index)
+          .append(",Usage,USD,0.01\n");
+    }
+
+    try (ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        GZIPOutputStream gzip = new GZIPOutputStream(bytes)) {
+      gzip.write(csv.toString().getBytes(StandardCharsets.UTF_8));
+      gzip.finish();
+      return bytes.toByteArray();
+    } catch (IOException exception) {
+      throw new UncheckedIOException("Failed to construct mock Azure billing CSV", exception);
+    }
   }
 
   private void persistConfigs() {
