@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import apiClient from "@/lib/fetch/api-client";
 
-interface Resources{
-    resourceId : string;
-    resourceName : string;
+interface Resources {
+    resourceId: string;
+    resourceName: string;
 }
 
 export function useResourceNames(): Record<string, string> {
@@ -22,7 +22,12 @@ export function useResourceNames(): Record<string, string> {
                 });
 
                 if (!cancelled) {
-                    const forMapping = Object.fromEntries(names.map((forResources) => [forResources.resourceId, forResources.resourceName])) as Record<string, string>;
+                    const forMapping = Object.fromEntries(
+                        names.map((forResources) => [
+                            forResources.resourceId,
+                            forResources.resourceName,
+                        ])
+                    ) as Record<string, string>;
 
                     setResourceNames(forMapping);
                 }
