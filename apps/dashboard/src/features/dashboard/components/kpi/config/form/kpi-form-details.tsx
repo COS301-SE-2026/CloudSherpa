@@ -8,13 +8,15 @@ import {
 } from "@/components/atoms/field";
 import { Input } from "@/components/atoms/input";
 import { FormCountCircle } from "@/components/atoms/form-count-circle";
+import { cn } from "@/lib/utils";
 
 type KpiFormDetailsProps = {
     readonly title: string;
     readonly onTitleChange: (title: string) => void;
+    error?: string;
 };
 
-export function KpiFormDetails({ title, onTitleChange }: KpiFormDetailsProps) {
+export function KpiFormDetails({ title, onTitleChange, error }: Readonly<KpiFormDetailsProps>) {
     return (
         <FieldSet>
             <div className="flex flex-row items-center gap-3">
@@ -35,6 +37,7 @@ export function KpiFormDetails({ title, onTitleChange }: KpiFormDetailsProps) {
                         }}
                         maxLength={80}
                         aria-label={"kpi display name"}
+                        className={cn({ "border border-destructive": error })}
                     ></Input>
                 </Field>
             </FieldGroup>

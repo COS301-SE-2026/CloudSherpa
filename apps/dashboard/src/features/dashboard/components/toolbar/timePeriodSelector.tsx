@@ -21,7 +21,7 @@ import {
 import { useDashboardStore } from "../../stores/dashboard-store";
 
 export function getPresetRange(presetId: TimeWindowPreset): DateRange | undefined {
-    if (presetId == "custom") {
+    if (presetId == "CUSTOM") {
         return undefined;
     }
     const to = new Date();
@@ -45,7 +45,7 @@ export function TimePeriodSelector({
     const selectedPreset = useDashboardStore((state) => state.selectedPreset);
 
     const getDisplayLabel = () => {
-        if (selectedPreset !== "custom") {
+        if (selectedPreset !== "CUSTOM") {
             return presets.find((p) => p.id === selectedPreset)?.label;
         }
         if (date?.from) {
@@ -152,7 +152,7 @@ export function TimePeriodSelector({
                                 selected={date}
                                 onSelect={(range) => {
                                     onDateChange(range);
-                                    if (range?.from && range?.to) setSelectedPreset("custom");
+                                    if (range?.from && range?.to) setSelectedPreset("CUSTOM");
                                 }}
                                 numberOfMonths={2}
                             />

@@ -121,6 +121,17 @@ public class DashboardController {
       @RequestBody DashboardWindowUpdateDTO request,
       @AuthenticationPrincipal Jwt jwt) {
     UUID userId = UUID.fromString(jwt.getSubject());
+
+    if (request.from() != null || request.to() != null) {
+      if (request.from() == null || request.to() == null) {
+        return ResponseEntity.badRequest().build();
+      }
+
+      if (request.from().isAfter(request.to())) {
+        return ResponseEntity.badRequest().build();
+      }
+    }
+
     dashboardService.updateDashboardTimeWindow(userId, dashboardId, request);
     return ResponseEntity.ok().build();
   }

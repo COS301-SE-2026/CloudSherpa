@@ -45,8 +45,8 @@ export function useFetchMetricHistoricalData({
     const request = useRef<string | null>(null);
     const currentWindow = useRef({ fromMs, toMs });
 
-    const customFromMs = selectedPreset === "custom" ? fromMs : undefined;
-    const customToMs = selectedPreset === "custom" ? toMs : undefined;
+    const customFromMs = selectedPreset === "CUSTOM" ? fromMs : undefined;
+    const customToMs = selectedPreset === "CUSTOM" ? toMs : undefined;
 
     useEffect(() => {
         currentWindow.current = { fromMs, toMs };
