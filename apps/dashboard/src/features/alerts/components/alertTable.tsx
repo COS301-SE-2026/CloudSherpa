@@ -121,9 +121,9 @@ function helperForColumns({
     return [
         {
             id: "enabled",
-            header: () => "STATUS",
+            header: () => <span className = "block text-center"> STATUS </span>,
             enableSorting: false,
-            size: 120,
+            size: 100,
             cell: ({ row }) => {
                 const active = row.original.status === "ACTIVE";
 
@@ -220,7 +220,7 @@ function helperForColumns({
             id: "scope",
             header: () => "SCOPE",
             enableSorting: false,
-            size: 180,
+            size: 140,
             cell: ({ row }) => {
                 const alert = row.original;
 
