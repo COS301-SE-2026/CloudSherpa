@@ -44,6 +44,11 @@ public class AiDashboardApplyService {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Apply mode is required");
     }
 
+    if (versionService.hasWorkingDraft(userId, sessionId)) {
+      throw new ResponseStatusException(
+          HttpStatus.CONFLICT, "Commit or discard the working dashboard before applying a version");
+    }
+
     AiDashboardVersion version = versionService.getVersion(userId, sessionId, versionId);
     if (version.getVersionNumber() == 0) {
       throw new ResponseStatusException(

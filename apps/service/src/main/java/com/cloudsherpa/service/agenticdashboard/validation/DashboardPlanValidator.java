@@ -3,21 +3,18 @@ package com.cloudsherpa.service.agenticdashboard.validation;
 import com.cloudsherpa.lib.entities.TypeEnum;
 import com.cloudsherpa.service.agenticdashboard.dto.DashboardPlanDto;
 import com.cloudsherpa.service.agenticdashboard.dto.DashboardPlanWidgetDto;
+import java.util.HashSet;
+import java.util.Set;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 
 @Component
-/*
- * This validator only validates the general field requirements of the widgets.
- * The specific AI tool layer is going to
- * validate the resources and metrics against the session user's specific
- * accounts.
- */
 public class DashboardPlanValidator {
 
   private static final int MAX_WIDGETS = 20;
   private static final int MAX_GRID_WIDTH = 12;
+  private static final int MAX_WIDGET_HEIGHT = 1000;
 
   public void validate(DashboardPlanDto plan) {
     if (plan == null) {
@@ -57,14 +54,24 @@ public class DashboardPlanValidator {
   }
 
   private void validateWidgets(DashboardPlanDto plan) {
+    Set<java.util.UUID> widgetIds = new HashSet<>();
+
     for (DashboardPlanWidgetDto widget : plan.widgets()) {
       validateWidget(widget);
+
+      if (!widgetIds.add(widget.widgetId())) {
+        throw invalid("Widget IDs must be unique");
+      }
     }
   }
 
   private void validateWidget(DashboardPlanWidgetDto widget) {
     if (widget == null) {
       throw invalid("Widget cannot be null");
+    }
+
+    if (widget.widgetId() == null) {
+      throw invalid("Widget ID is required");
     }
 
     if (widget.widgetType() == null) {
@@ -91,8 +98,12 @@ public class DashboardPlanValidator {
       throw invalid("Widget width must be between 1 and 12");
     }
 
-    if (widget.height() == null || widget.height() <= 0) {
-      throw invalid("Widget height must be greater than zero");
+    if (widget.height() == null || widget.height() <= 0 || widget.height() > MAX_WIDGET_HEIGHT) {
+      throw invalid("Widget height must be between 1 and " + MAX_WIDGET_HEIGHT);
+    }
+
+    if (widget.startX() + widget.width() > MAX_GRID_WIDTH) {
+      throw invalid("Widget must fit within the 12-column dashboard grid");
     }
 
     if (widget.widgetType() == TypeEnum.CHART) {
@@ -123,6 +134,10 @@ public class DashboardPlanValidator {
 
     if (widget.metricType() == null || widget.metricType().isBlank()) {
       throw invalid("Chart metric type is required");
+    }
+
+    if (widget.metricType().length() > 50) {
+      throw invalid("Chart metric type must not exceed 50 characters");
     }
 
     if (widget.metricName() == null || widget.metricName().isBlank()) {

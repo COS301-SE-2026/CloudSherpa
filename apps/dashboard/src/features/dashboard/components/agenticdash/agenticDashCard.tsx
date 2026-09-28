@@ -15,7 +15,6 @@ import { Kbd, KbdGroup } from "@/components/atoms/kbd";
 import { useToolbar } from "../toolbar/toolbarProvider";
 import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
 import { cn } from "@/lib/utils";
-import StructuredRequest from "@/features/dashboard/components/agenticdash/structured";
 
 interface AgenticDashCardProps {
     isApplying: boolean;
@@ -26,7 +25,7 @@ export default function AgenticDashCard({ isApplying }: Readonly<AgenticDashCard
     const popupRef = useRef<HTMLDivElement>(null);
     const [showPresets, setShowPresets] = useState(false);
     const buttonRef = useRef<HTMLButtonElement>(null);
-    const { isEditMode } = useToolbar();
+    const { isEditMode, isApplyDialogOpen } = useToolbar();
     const isSessionActive = useDashboardStore((state) => state.isSessionActive);
     const [activeTab, setActiveTab] = useState("generate");
     const isGenerating = useDashboardStore((state) => state.isGenerating);
@@ -34,6 +33,36 @@ export default function AgenticDashCard({ isApplying }: Readonly<AgenticDashCard
     const handleClick = () => {
         setOpen(!open);
     };
+
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+        if (isApplyDialogOpen) return;
+        //check click outside popup and btn
+        if (
+            open &&
+            popupRef.current &&
+            !popupRef.current.contains(event.target as Node) &&
+            buttonRef.current &&
+            !buttonRef.current.contains(event.target as Node)
+        ) {
+            setOpen(false); // NOSONAR
+        }
+    };
+
+    handleClickOutside;
+
+    useEffect(() => {
+        //attach listners on open
+        if (open) {
+            document.addEventListener("mousedown", handleClickOutside);
+            document.addEventListener("touchstart", handleClickOutside);
+        }
+
+        //clean lisners
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+            document.removeEventListener("touchstart", handleClickOutside);
+        };
+    }, [open]);
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -93,19 +122,13 @@ export default function AgenticDashCard({ isApplying }: Readonly<AgenticDashCard
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="h-full">
-                            <Tabs
-                                defaultValue="generate"
-                                value={activeTab}
-                                onValueChange={setActiveTab}
-                                className="flex flex-col h-full w-full"
-                            >
+                            <Tabs defaultValue="generate" className="flex flex-col h-full w-full">
                                 <div className="flex flex-row justify-between">
                                     <TabsList>
                                         <TabsTrigger value="generate">Generate</TabsTrigger>
-                                        <TabsTrigger value="structured">Structured</TabsTrigger>
                                         <TabsTrigger value="history">History</TabsTrigger>
                                     </TabsList>
-                                    {isSessionActive && activeTab === "generate" && (
+                                    {isSessionActive && (
                                         <Button
                                             variant="secondary"
                                             className={cn(
