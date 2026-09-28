@@ -85,7 +85,7 @@ export default function GenerateDashInput({ showPresets }: Readonly<GenerateDash
 
     return (
         <>
-            <div className="h-full flex flex-col justify-end items-start gap-4">
+            <div className="h-full flex flex-col justify-end items-start pt-4 gap-4">
                 {shouldShowPresets && (
                     <div className="h-full flex-1 overflow-y-auto w-full">
                         <PresetPrompts onSelect={setPrompt} />

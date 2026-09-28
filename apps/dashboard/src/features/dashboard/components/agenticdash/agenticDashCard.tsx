@@ -15,48 +15,19 @@ import { Kbd, KbdGroup } from "@/components/atoms/kbd";
 import { useToolbar } from "../toolbar/toolbarProvider";
 import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
 import { cn } from "@/lib/utils";
+import StructuredRequest from "@/features/dashboard/components/agenticdash/structured";
 
 export default function AgenticDashCard() {
     const [open, setOpen] = useState(false);
     const popupRef = useRef<HTMLDivElement>(null);
     const [showPresets, setShowPresets] = useState(false);
     const buttonRef = useRef<HTMLButtonElement>(null);
-    const { isEditMode, isApplyDialogOpen } = useToolbar();
+    const { isEditMode } = useToolbar();
     const isSessionActive = useDashboardStore((state) => state.isSessionActive);
 
     const handleClick = () => {
         setOpen(!open);
     };
-
-    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
-        if (isApplyDialogOpen) return;
-        //check click outside popup and btn
-        if (
-            open &&
-            popupRef.current &&
-            !popupRef.current.contains(event.target as Node) &&
-            buttonRef.current &&
-            !buttonRef.current.contains(event.target as Node)
-        ) {
-            setOpen(false); // NOSONAR
-        }
-    };
-
-    handleClickOutside;
-
-    useEffect(() => {
-        //attach listners on open
-        if (open) {
-            document.addEventListener("mousedown", handleClickOutside);
-            document.addEventListener("touchstart", handleClickOutside);
-        }
-
-        //clean lisners
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-            document.removeEventListener("touchstart", handleClickOutside);
-        };
-    }, [open]);
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -119,6 +90,7 @@ export default function AgenticDashCard() {
                                 <div className="flex flex-row justify-between">
                                     <TabsList>
                                         <TabsTrigger value="generate">Generate</TabsTrigger>
+                                        <TabsTrigger value="structured">Structured</TabsTrigger>
                                         <TabsTrigger value="history">History</TabsTrigger>
                                     </TabsList>
                                     {isSessionActive && (
@@ -140,6 +112,12 @@ export default function AgenticDashCard() {
                                         className="absolute inset-0 m-0 data-[state=active]:flex flex-col"
                                     >
                                         <GenerateDashInput showPresets={showPresets} />
+                                    </TabsContent>
+                                    <TabsContent
+                                        value="structured"
+                                        className="absolute inset-0 m-0 data-[state=active]:flex flex-col"
+                                    >
+                                        <StructuredRequest />
                                     </TabsContent>
                                     <TabsContent
                                         value="history"
