@@ -40,7 +40,6 @@ public class AiAgentService {
   private static final int DEFAULT_MAX_TOOL_ROUNDS = 30;
   private static final int DEFAULT_MAX_TOOL_CALLS = 22;
   private static final int MAX_TOOL_ARGUMENT_BYTES = 8192;
-  private static final int MAX_CONTEXT_MESSAGES = 15;
   private static final int MAX_PROTOCOL_REPAIR_ATTEMPTS = 5;
 
   private static final String ROLE_FIELD = "role";
@@ -79,7 +78,45 @@ public class AiAgentService {
   private static final String REPEATED_TOOL_STOP_MESSAGE =
       "Dashboard agent stopped due to repeatedly requesting the same action. "
           + "No duplicate dashboard mutation was applied.";
-  private static final int MAX_REPEATED_TOOL_CALLS = 60;
+  private static final int MAX_REPEATED_TOOL_CALLS = 1;
+
+  private static final String SYSTEM_PROMPT =
+      """
+      You are the CloudSherpa Dashboard Construction Agent.
+
+      Work only with the authenticated user's dashboard data exposed by tools.
+      Never invent IDs, metric names, charge IDs, provider/account identity, or credentials.
+
+      Use native OpenAI-compatible tool calls.
+      Make exactly one tool call per assistant turn.
+      Do not emit textual JSON tool calls and do not emit a complete dashboard plan.
+
+      For changes to an existing dashboard, update the working dashboard with the smallest necessary mutation.
+      For a completely new dashboard, clear_working_dashboard first, then add only the requested widgets.
+      If the user asks to undo all uncommitted changes, use discard_working_changes.
+
+      The backend owns widget IDs, provider/account identity, metric type, validation,
+      defaults, and layout collision handling.
+
+      Use discovery tools before selecting resources, metrics, or billing charges unless the
+      needed identifier is already visible in the current dashboard context.
+
+      A successful tool result is authoritative.
+      Do not repeat an identical successful tool call.
+      After a mutation succeeds, decide whether another distinct mutation is still required.
+      Do not rediscover information that is already available in the current dashboard context
+      or in a previous successful tool result.
+
+      After all requested changes are complete, call commit_dashboard_changes exactly once.
+      Do not call commit_dashboard_changes until all requested changes are complete.
+      Do not claim that changes were committed unless that tool succeeds.
+
+      The working dashboard is a private server-side draft.
+      The authenticated human user is the only actor that can apply a committed version
+      to a production dashboard.
+
+      Keep responses concise and do not reproduce the dashboard JSON.
+      """;
 
   private final AiSessionService aiSessionService;
   private final AiDashboardVersionService versionService;
@@ -130,7 +167,7 @@ public class AiAgentService {
       saveMessage(sessionId, AiMessage.AiMessageRole.USER, userMessage);
 
       AgentRunState state = new AgentRunState(userMessage);
-      List<Map<String, Object>> continuation = List.of();
+      List<Map<String, Object>> history = new ArrayList<>();
 
       for (int round = 0; round < maxToolRounds; round++) {
         if (state.toolCallCount >= maxToolCalls) {
@@ -138,7 +175,7 @@ public class AiAgentService {
         }
 
         List<Map<String, Object>> messages =
-            buildRequestMessages(userId, sessionId, userMessage, continuation);
+            buildRequestMessages(userId, sessionId, userMessage, history);
         JsonNode message =
             requestAssistantMessage(
                 messages, state.protocolRepairAttempts > 0 || state.noToolRepairAttempts > 0);
@@ -151,7 +188,7 @@ public class AiAgentService {
                     + "Only one native CloudSherpa tool call is allowed per turn. "
                     + "Choose the single most appropriate tool call and try again.";
             if (registerProtocolRepair(state)) {
-              continuation = buildProtocolFeedback(feedback);
+              history.addAll(buildProtocolFeedback(feedback));
               continue;
             }
             return protocolStop(userId, sessionId, state, feedback);
@@ -165,7 +202,14 @@ public class AiAgentService {
             if (repeatedCount > MAX_REPEATED_TOOL_CALLS) {
               return safetyStopWithMessage(userId, sessionId, state, REPEATED_TOOL_STOP_MESSAGE);
             }
-            continuation = buildToolContinuation(toolCall, cachedResult.toolResult());
+            history.addAll(buildToolContinuation(toolCall, cachedResult.toolResult()));
+            history.add(
+                Map.of(
+                    ROLE_FIELD,
+                    ROLE_SYSTEM,
+                    CONTENT_FIELD,
+                    "This exact tool call already succeeded. Do not repeat it. "
+                        + "Either perform a different necessary action or commit the completed changes."));
             continue;
           }
 
@@ -179,7 +223,7 @@ public class AiAgentService {
                 userId, sessionId, COMMIT_SUCCESS_MESSAGE, state.commitAttempted, true);
           }
 
-          continuation = buildToolContinuation(toolCall, result.toolResult());
+          history.addAll(buildToolContinuation(toolCall, result.toolResult()));
           continue;
         }
 
@@ -193,7 +237,7 @@ public class AiAgentService {
                   + exception.getMessage()
                   + ". Return exactly one tool call with a valid tool name and JSON object arguments.";
           if (registerProtocolRepair(state)) {
-            continuation = buildProtocolFeedback(feedback);
+            history.addAll(buildProtocolFeedback(feedback));
             continue;
           }
           return protocolStop(userId, sessionId, state, feedback);
@@ -207,7 +251,14 @@ public class AiAgentService {
             if (repeatedCount > MAX_REPEATED_TOOL_CALLS) {
               return safetyStopWithMessage(userId, sessionId, state, REPEATED_TOOL_STOP_MESSAGE);
             }
-            continuation = buildToolContinuation(textualToolCall, cachedResult.toolResult());
+            history.addAll(buildToolContinuation(textualToolCall, cachedResult.toolResult()));
+            history.add(
+                Map.of(
+                    ROLE_FIELD,
+                    ROLE_SYSTEM,
+                    CONTENT_FIELD,
+                    "This exact tool call already succeeded. Do not repeat it. "
+                        + "Either perform a different necessary action or commit the completed changes."));
             continue;
           }
 
@@ -221,7 +272,7 @@ public class AiAgentService {
                 userId, sessionId, COMMIT_SUCCESS_MESSAGE, state.commitAttempted, true);
           }
 
-          continuation = buildToolContinuation(textualToolCall, result.toolResult());
+          history.addAll(buildToolContinuation(textualToolCall, result.toolResult()));
           continue;
         }
 
@@ -230,7 +281,7 @@ public class AiAgentService {
               "The previous response was empty. Either make exactly one native CloudSherpa tool call "
                   + "or provide a concise final answer.";
           if (registerProtocolRepair(state)) {
-            continuation = buildProtocolFeedback(feedback);
+            history.addAll(buildProtocolFeedback(feedback));
             continue;
           }
           return protocolStop(userId, sessionId, state, feedback);
@@ -238,13 +289,15 @@ public class AiAgentService {
 
         if (state.noToolRepairAttempts == 0 && likelyRequiresTool(userMessage)) {
           state.noToolRepairAttempts++;
-          continuation =
+          history.addAll(
               List.of(
                   Map.of(
+                      ROLE_FIELD,
                       ROLE_SYSTEM,
+                      CONTENT_FIELD,
                       "Your previous response did not call a tool. "
                           + "Use exactly one native CloudSherpa tool now. "
-                          + "Do not emit JSON tool-call text or a dashboard plan."));
+                          + "Do not emit JSON tool-call text or a dashboard plan.")));
           continue;
         }
 
@@ -277,13 +330,13 @@ public class AiAgentService {
   }
 
   private List<Map<String, Object>> buildRequestMessages(
-      UUID userId, UUID sessionId, String userMessage, List<Map<String, Object>> continuation) {
+      UUID userId, UUID sessionId, String userMessage, List<Map<String, Object>> history) {
 
-    List<Map<String, Object>> messages = new ArrayList<>(MAX_CONTEXT_MESSAGES);
+    List<Map<String, Object>> messages = new ArrayList<>();
     messages.add(Map.of(ROLE_FIELD, ROLE_SYSTEM, CONTENT_FIELD, SYSTEM_PROMPT));
     messages.add(buildWorkingDashboardContext(userId, sessionId));
     messages.add(Map.of(ROLE_FIELD, ROLE_USER, CONTENT_FIELD, userMessage));
-    messages.addAll(continuation);
+    messages.addAll(history);
     return messages;
   }
 
@@ -755,8 +808,9 @@ public class AiAgentService {
             "Find the user's cloud accounts. Use query to narrow results. Never invent account IDs.",
             objectSchema(
                 Map.of(
-                    "query", stringProperty(),
-                    "limit", integerProperty(1, 10)))));
+                    "query", nullableStringProperty(),
+                    "limit", nullableIntegerProperty(1, 10)),
+                List.of("query", "limit"))));
 
     tools.add(
         tool(
@@ -765,10 +819,10 @@ public class AiAgentService {
             objectSchema(
                 Map.of(
                     "accountId", uuidProperty(),
-                    "query", stringProperty(),
-                    "resourceType", stringProperty(),
-                    "limit", integerProperty(1, 12)),
-                List.of("accountId"))));
+                    "query", nullableStringProperty(),
+                    "resourceType", nullableStringProperty(),
+                    "limit", nullableIntegerProperty(1, 12)),
+                List.of("accountId", "query", "resourceType", "limit"))));
 
     tools.add(
         tool(
@@ -777,9 +831,9 @@ public class AiAgentService {
             objectSchema(
                 Map.of(
                     "resourceId", uuidProperty(),
-                    "query", stringProperty(),
-                    "limit", integerProperty(1, 16)),
-                List.of("resourceId"))));
+                    "query", nullableStringProperty(),
+                    "limit", nullableIntegerProperty(1, 16)),
+                List.of("resourceId", "query", "limit"))));
 
     tools.add(
         tool(
@@ -787,13 +841,15 @@ public class AiAgentService {
             "Find billing charge IDs available to this user. Never invent charge IDs.",
             objectSchema(
                 Map.of(
-                    "query", stringProperty(),
-                    "limit", integerProperty(1, 16)))));
+                    "query", nullableStringProperty(),
+                    "limit", nullableIntegerProperty(1, 16)),
+                List.of("query", "limit"))));
 
     tools.add(
         tool(
             ADD_CHART_TOOL,
-            "Add one chart widget. The backend derives provider, accountId, and metricType from resourceId.",
+            "Add one chart widget. The backend derives provider, accountId, and metricType from resourceId. "
+                + "Use discovery first unless the resourceId and metricName are already known.",
             objectSchema(
                 Map.of(
                     "displayName",
@@ -803,18 +859,28 @@ public class AiAgentService {
                     "metricName",
                     stringProperty(),
                     "chartType",
-                    enumProperty(List.of("line_chart", "gauge_chart")),
+                    nullableEnumProperty(List.of("line_chart", "gauge_chart")),
                     "chartColour",
-                    enumProperty(List.of("chart_1", "chart_2", "chart_3", "chart_4", "chart_5")),
+                    nullableEnumProperty(
+                        List.of("chart_1", "chart_2", "chart_3", "chart_4", "chart_5")),
                     "startX",
-                    integerProperty(0, 12),
+                    nullableIntegerProperty(0, 12),
                     "startY",
-                    integerProperty(0, null),
+                    nullableIntegerProperty(0, null),
                     "width",
-                    integerProperty(1, 12),
+                    nullableIntegerProperty(1, 12),
                     "height",
-                    integerProperty(1, null)),
-                List.of("displayName", "resourceId", "metricName"))));
+                    nullableIntegerProperty(1, null)),
+                List.of(
+                    "displayName",
+                    "resourceId",
+                    "metricName",
+                    "chartType",
+                    "chartColour",
+                    "startX",
+                    "startY",
+                    "width",
+                    "height"))));
 
     tools.add(
         tool(
@@ -825,59 +891,73 @@ public class AiAgentService {
                 Map.of(
                     "displayName", stringProperty(),
                     "chargeIds", arrayStringProperty(),
-                    "aggregationWindowDays", integerProperty(1, null),
-                    "startX", integerProperty(0, 12),
-                    "startY", integerProperty(0, null),
-                    "width", integerProperty(1, 12),
-                    "height", integerProperty(1, null)),
-                List.of("displayName", "chargeIds"))));
+                    "aggregationWindowDays", nullableIntegerProperty(1, null),
+                    "startX", nullableIntegerProperty(0, 12),
+                    "startY", nullableIntegerProperty(0, null),
+                    "width", nullableIntegerProperty(1, 12),
+                    "height", nullableIntegerProperty(1, null)),
+                List.of(
+                    "displayName",
+                    "chargeIds",
+                    "aggregationWindowDays",
+                    "startX",
+                    "startY",
+                    "width",
+                    "height"))));
 
     tools.add(
         tool(
             UPDATE_LAYOUT_TOOL,
-            "Resize or move an existing widget. Omitted fields are preserved. The backend "
-                + "moves the widget to a free position if the requested layout collides.",
+            "Resize or move an existing widget. Omitted fields are represented as null and are preserved. "
+                + "The backend moves the widget to a free position if the requested layout collides.",
             objectSchema(
                 Map.of(
                     "widgetId", uuidProperty(),
-                    "startX", integerProperty(0, 12),
-                    "startY", integerProperty(0, null),
-                    "width", integerProperty(1, 12),
-                    "height", integerProperty(1, null)),
-                List.of("widgetId"))));
+                    "startX", nullableIntegerProperty(0, 12),
+                    "startY", nullableIntegerProperty(0, null),
+                    "width", nullableIntegerProperty(1, 12),
+                    "height", nullableIntegerProperty(1, null)),
+                List.of("widgetId", "startX", "startY", "width", "height"))));
 
     tools.add(
         tool(
             UPDATE_CHART_TOOL,
-            "Update an existing chart's configuration. Omitted fields are preserved; "
+            "Update an existing chart's configuration. Omitted fields are represented as null and are preserved; "
                 + "provider/account/metricType are derived by the backend.",
             objectSchema(
                 Map.of(
                     "widgetId",
                     uuidProperty(),
                     "displayName",
-                    stringProperty(),
+                    nullableStringProperty(),
                     "chartType",
-                    enumProperty(List.of("line_chart", "gauge_chart")),
+                    nullableEnumProperty(List.of("line_chart", "gauge_chart")),
                     "chartColour",
-                    enumProperty(List.of("chart_1", "chart_2", "chart_3", "chart_4", "chart_5")),
+                    nullableEnumProperty(
+                        List.of("chart_1", "chart_2", "chart_3", "chart_4", "chart_5")),
                     "resourceId",
-                    uuidProperty(),
+                    nullableUuidProperty(),
                     "metricName",
-                    stringProperty()),
-                List.of("widgetId"))));
+                    nullableStringProperty()),
+                List.of(
+                    "widgetId",
+                    "displayName",
+                    "chartType",
+                    "chartColour",
+                    "resourceId",
+                    "metricName"))));
 
     tools.add(
         tool(
             UPDATE_KPI_TOOL,
-            "Update an existing KPI's configuration. Omitted fields are preserved.",
+            "Update an existing KPI's configuration. Omitted fields are represented as null and are preserved.",
             objectSchema(
                 Map.of(
                     "widgetId", uuidProperty(),
-                    "displayName", stringProperty(),
-                    "chargeIds", arrayStringProperty(),
-                    "aggregationWindowDays", integerProperty(1, null)),
-                List.of("widgetId"))));
+                    "displayName", nullableStringProperty(),
+                    "chargeIds", nullableArrayStringProperty(),
+                    "aggregationWindowDays", nullableIntegerProperty(1, null)),
+                List.of("widgetId", "displayName", "chargeIds", "aggregationWindowDays"))));
 
     tools.add(
         tool(
@@ -890,32 +970,33 @@ public class AiAgentService {
             CLEAR_DASHBOARD_TOOL,
             "Clear all widgets from the working dashboard. Use this when the user asks for "
                 + "an entirely new dashboard or to start over.",
-            objectSchema(Map.of())));
+            objectSchema(Map.of(), List.of())));
 
     tools.add(
         tool(
             DISCARD_DASHBOARD_TOOL,
             "Discard all uncommitted working changes and return to the last committed AI version.",
-            objectSchema(Map.of())));
+            objectSchema(Map.of(), List.of())));
 
     tools.add(
         tool(
             UPDATE_DASHBOARD_TOOL,
-            "Update dashboard metadata. Omitted fields are preserved.",
+            "Update dashboard metadata. Omitted fields are represented as null and are preserved.",
             objectSchema(
                 Map.of(
-                    "title", stringProperty(),
-                    "description", stringProperty(),
-                    "timeFrom", stringProperty(),
-                    "timeTo", stringProperty(),
-                    "predefinedTime", stringProperty()))));
+                    "title", nullableStringProperty(),
+                    "description", nullableStringProperty(),
+                    "timeFrom", nullableStringProperty(),
+                    "timeTo", nullableStringProperty(),
+                    "predefinedTime", nullableStringProperty()),
+                List.of("title", "description", "timeFrom", "timeTo", "predefinedTime"))));
 
     tools.add(
         tool(
             COMMIT_TOOL,
             "Commit the current working dashboard as a new immutable AI version. "
-                + "Call this after completing the user's requested changes.",
-            objectSchema(Map.of())));
+                + "Call this exactly once after all requested changes are complete.",
+            objectSchema(Map.of(), List.of())));
 
     return List.copyOf(tools);
   }
@@ -926,11 +1007,15 @@ public class AiAgentService {
         TYPE_FIELD,
         "function",
         "function",
-        Map.of(NAME_FIELD, name, "description", description, "parameters", parameters));
-  }
-
-  private Map<String, Object> objectSchema(Map<String, Object> properties) {
-    return Map.of(TYPE_FIELD, "object", "properties", properties, "additionalProperties", false);
+        Map.of(
+            NAME_FIELD,
+            name,
+            "description",
+            description,
+            "parameters",
+            parameters,
+            "strict",
+            true));
   }
 
   private Map<String, Object> objectSchema(Map<String, Object> properties, List<String> required) {
@@ -949,8 +1034,16 @@ public class AiAgentService {
     return Map.of("type", "string");
   }
 
+  private Map<String, Object> nullableStringProperty() {
+    return Map.of("type", List.of("string", "null"));
+  }
+
   private Map<String, Object> uuidProperty() {
-    return Map.of("type", "string", "format", "uuid");
+    return Map.of("type", "string", "description", "UUID");
+  }
+
+  private Map<String, Object> nullableUuidProperty() {
+    return Map.of("type", List.of("string", "null"), "description", "UUID or null");
   }
 
   private Map<String, Object> integerProperty(Integer minimum, Integer maximum) {
@@ -965,40 +1058,33 @@ public class AiAgentService {
     return property;
   }
 
+  private Map<String, Object> nullableIntegerProperty(Integer minimum, Integer maximum) {
+    Map<String, Object> property = new LinkedHashMap<>();
+    property.put("type", List.of("integer", "null"));
+    if (minimum != null) {
+      property.put("minimum", minimum);
+    }
+    if (maximum != null) {
+      property.put("maximum", maximum);
+    }
+    return property;
+  }
+
   private Map<String, Object> enumProperty(List<String> values) {
     return Map.of("type", "string", "enum", values);
+  }
+
+  private Map<String, Object> nullableEnumProperty(List<String> values) {
+    return Map.of("type", List.of("string", "null"), "enum", values);
   }
 
   private Map<String, Object> arrayStringProperty() {
     return Map.of("type", "array", "items", Map.of("type", "string"));
   }
 
-  private static final String SYSTEM_PROMPT =
-      """
-      You are the CloudSherpa Dashboard Construction Agent.
-
-      Work only with the authenticated user's dashboard data exposed by tools.
-      Never invent IDs, metric names, charge IDs, provider/account identity, or credentials.
-
-      Prefer native OpenAI-compatible tool calls and make one tool call per assistant turn.
-      A standalone Qwen-style textual tool call is also accepted by the server compatibility layer.
-      Never include prose around a textual tool call, and never emit a complete dashboard plan.
-
-      For changes to an existing dashboard, update the working dashboard with the smallest necessary mutation.
-      For a completely new dashboard, clear_working_dashboard first, then add only the requested widgets.
-      If the user asks to undo all uncommitted changes, use discard_working_changes.
-      The backend owns widget IDs, provider/account identity, metric type, validation,
-      defaults, and layout collision handling.
-
-      Use discovery tools before selecting resources, metrics, or billing charges unless the
-      needed identifier is already visible in the current dashboard context.
-      After all requested changes are complete, call commit_dashboard_changes exactly once.
-      Do not claim that changes were committed unless that tool succeeds.
-
-      The working dashboard is a private server-side draft. The authenticated human user is
-      the only actor that can apply a committed version to a production dashboard.
-      Keep responses concise and do not reproduce the dashboard JSON.
-      """;
+  private Map<String, Object> nullableArrayStringProperty() {
+    return Map.of("type", List.of("array", "null"), "items", Map.of("type", "string"));
+  }
 
   private record ToolCallResult(String toolCallId, String toolName, AiToolResultDto toolResult) {}
 

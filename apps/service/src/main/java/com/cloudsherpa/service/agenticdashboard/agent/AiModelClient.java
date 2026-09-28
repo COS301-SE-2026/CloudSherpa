@@ -15,31 +15,34 @@ import org.springframework.web.client.RestClient;
 public class AiModelClient {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AiModelClient.class);
-  private static final int DEFAULT_MAX_TOKENS = 768;
+  private static final String OPENAI_BASE_URL = "https://api.openai.com";
+  private static final int DEFAULT_MAX_COMPLETION_TOKENS = 8192;
 
   private final RestClient restClient;
   private final ObjectMapper objectMapper;
   private final String model;
-  private final int maxTokens;
+  private final int maxCompletionTokens;
 
   public AiModelClient(
       RestClient.Builder restClientBuilder,
       ObjectMapper objectMapper,
-      @Value("${ai.llm.base-url}") String baseUrl,
-      @Value("${ai.llm.client-id}") String clientId,
-      @Value("${ai.llm.client-secret}") String clientSecret,
-      @Value("${ai.llm.model:qwen2.5-coder:14b-instruct}") String model,
-      @Value("${ai.llm.max-tokens:768}") int maxTokens) {
+      @Value("${OPENAI_API_KEY}") String apiKey,
+      @Value("${ai.llm.model:gpt-5.6}") String model,
+      @Value("${ai.llm.max-completion-tokens:8192}") int maxCompletionTokens) {
+
+    if (apiKey == null || apiKey.isBlank()) {
+      throw new IllegalArgumentException("ai.llm.api-key must be configured");
+    }
 
     this.objectMapper = objectMapper;
     this.model = model;
-    this.maxTokens = maxTokens > 0 ? maxTokens : DEFAULT_MAX_TOKENS;
+    this.maxCompletionTokens =
+        maxCompletionTokens > 0 ? maxCompletionTokens : DEFAULT_MAX_COMPLETION_TOKENS;
 
     this.restClient =
         restClientBuilder
-            .baseUrl(baseUrl)
-            .defaultHeader("CF-Access-Client-Id", clientId)
-            .defaultHeader("CF-Access-Client-Secret", clientSecret)
+            .baseUrl(OPENAI_BASE_URL)
+            .defaultHeader("Authorization", "Bearer " + apiKey)
             .build();
   }
 
@@ -54,8 +57,8 @@ public class AiModelClient {
     request.put("tools", tools);
     request.put("tool_choice", requireToolCall ? "required" : "auto");
     request.put("parallel_tool_calls", false);
-    request.put("temperature", 0);
-    request.put("max_tokens", maxTokens);
+    request.put("reasoning_effort", "none");
+    request.put("max_completion_tokens", maxCompletionTokens);
 
     JsonNode response =
         restClient
