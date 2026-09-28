@@ -49,14 +49,16 @@ function helperForColumns({
     return [
         {
             id: "enabled",
-            header: () => "ENABLED",
+            header: () => <span className = "block text-center"> ENABLED </span>,
             enableSorting: false,
-            size: 100,
+            size: 190,
             cell: ({ row }) => (
-                <Switch
-                    checked={row.original.enabled}
-                    onCheckedChange={(checked) => toggleEnabled(row.original, checked)}
-                />
+                <div className = "flex items-center justify-center">
+                    <Switch
+                        checked={row.original.enabled}
+                        onCheckedChange={(checked) => toggleEnabled(row.original, checked)}
+                    />
+                </div>
             ),
         },
 
@@ -121,9 +123,9 @@ function helperForColumns({
 
         {
             id: "actions",
-            header: () => "ACTIONS",
+            header: () => "",
             enableSorting: false,
-            size: 100,
+            size: 65,
             cell: ({ row }) => {
                 const forBudget = row.original;
 
