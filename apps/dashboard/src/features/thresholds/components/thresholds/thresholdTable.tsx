@@ -123,7 +123,7 @@ function helperForColumns({
 
         {
             id: "condition",
-            header: () => <div className = "text-center"> CONDITION </div>,
+            header: () => <div className="text-center"> CONDITION </div>,
             enableSorting: false,
             size: 70,
             cell: ({ row }) => {
@@ -180,7 +180,11 @@ function helperForColumns({
                 return (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-auto p-0 text-muted-foreground hover:text-foreground">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-auto p-0 text-muted-foreground hover:text-foreground"
+                            >
                                 {" "}
                                 <MoreVertical className="h-4 w-4" />{" "}
                             </Button>
