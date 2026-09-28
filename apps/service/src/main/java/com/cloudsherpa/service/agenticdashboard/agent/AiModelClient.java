@@ -27,7 +27,7 @@ public class AiModelClient {
       RestClient.Builder restClientBuilder,
       ObjectMapper objectMapper,
       @Value("${OPENAI_API_KEY}") String apiKey,
-      @Value("${ai.llm.model:gpt-5.6}") String model,
+      @Value("${ai.llm.model:gpt-5.4-mini}") String model,
       @Value("${ai.llm.max-completion-tokens:8192}") int maxCompletionTokens) {
 
     if (apiKey == null || apiKey.isBlank()) {
