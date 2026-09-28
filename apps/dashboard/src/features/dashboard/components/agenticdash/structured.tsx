@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Dropdown from "@/components/molecules/dropdown";
 import { Label } from "@/components/atoms/label";
 import { CloudAccount } from "@/lib/fetch/dto/cloud-account";
@@ -44,54 +44,89 @@ const THEMES = [
 
 export default function StructuredRequest() {
     const [provider, setProvider] = useState<string | null>(null);
-    const [accountId, setAccountId] = useState<string | null>(null);
-    const [resourceId, setResourceId] = useState<string | null>(null);
-    const [themeId, setThemeId] = useState<string | null>(null);
+    const [accountIds, setAccountIds] = useState<string[]>([]);
+    const [resourceIds, setResourceIds] = useState<string[]>([]);
+    const [themeIds, setThemeIds] = useState<string[]>([]);
 
     const [connections, setConnections] = useState<CloudAccount[]>([]);
     const [resources, setResources] = useState<CloudResource[]>([]);
 
     const getMetricList = useMetricStore((state: MetricStore) => state.getMetricList);
 
-    const availableMetrics: string[] = resourceId ? (getMetricList()[resourceId] ?? []) : [];
-    const availableThemes = THEMES.filter((theme) =>
-        theme.metricNames.some((name) => availableMetrics.includes(name))
-    );
+    const availableMetrics = useMemo(() => {
+        if (resourceIds.length === 0) return [];
+        const metricList = getMetricList();
+        const metricsSet = new Set<string>();
+        resourceIds.forEach((id) => {
+            const list = metricList[id] ?? [];
+            list.forEach((m) => metricsSet.add(m));
+        });
+        return Array.from(metricsSet);
+    }, [resourceIds, getMetricList]);
 
-    const handleProviderSelect = (value: string) => {
+    const availableThemes = useMemo(() => {
+        return THEMES.filter((theme) =>
+            theme.metricNames.some((name) => availableMetrics.includes(name))
+        );
+    }, [availableMetrics]);
+
+    const connectionOptions = useMemo(() => {
+        if (!provider) return [];
+        const providertype = PROVIDER_MAP[provider];
+
+        return connections
+            .filter((c) => {
+                const isCurrentProvider = (c.accountType || "").toUpperCase() === providertype;
+                const isSelected = accountIds.includes(c.id);
+                return isCurrentProvider || isSelected;
+            })
+            .map((c) => ({ value: c.id, label: c.displayName }));
+    }, [connections, provider, accountIds]);
+
+    const handleProviderSelect = (val: string | string[]) => {
+        const value = Array.isArray(val) ? val[0] : val;
+        if (!value) return;
+
         const next = value.toUpperCase();
 
         setProvider(next);
-        setAccountId(null);
-        setResourceId(null);
-        setThemeId(null);
-        setConnections([]);
-        setResources([]);
 
         getAwsAccountConnections()
             .then((all) => {
-                const targetType = PROVIDER_MAP[next];
-                setConnections(
-                    all.filter((conn) => (conn.accountType || "").toUpperCase() === targetType)
-                );
+                setConnections(all);
             })
             .catch(() => toast.error("Failed to load connections."));
     };
 
-    const handleAccountSelect = (value: string) => {
-        setAccountId(value);
-        setResourceId(null);
-        setThemeId(null);
-        setResources([]);
+    const handleAccountSelect = (val: string | string[]) => {
+        const selectedAccountIds = Array.isArray(val) ? val : [val];
 
-        getAwsAccountResources(value)
-            .then((all) => setResources(all.filter((r) => r.status === ResourceStatus.ACTIVE)))
+        setAccountIds(selectedAccountIds);
+
+        if (selectedAccountIds.length === 0) return;
+
+        Promise.all(selectedAccountIds.map((id) => getAwsAccountResources(id)))
+            .then((results) => {
+                const allResources = results
+                    .flat()
+                    .filter((r) => r.status === ResourceStatus.ACTIVE);
+                setResources(allResources);
+
+                setResourceIds((prev) =>
+                    prev.filter((id) => allResources.some((r) => r.id === id))
+                );
+            })
             .catch(() => toast.error("Failed to load resources."));
     };
 
-    const handleResourceSelect = (value: string) => {
-        setResourceId(value);
-        setThemeId(null);
+    const handleResourceSelect = (val: string | string[]) => {
+        const selectedResourceIds = Array.isArray(val) ? val : [val];
+        setResourceIds(selectedResourceIds);
+    };
+
+    const handleThemeSelect = (val: string | string[]) => {
+        const selectedThemeIds = Array.isArray(val) ? val : [val];
+        setThemeIds(selectedThemeIds);
     };
 
     return (
@@ -110,7 +145,8 @@ export default function StructuredRequest() {
             <div className="grid gap-2 w-full">
                 <Label>Connection</Label>
                 <Dropdown
-                    value={accountId}
+                    multiple
+                    value={accountIds}
                     options={connections.map((c) => ({ value: c.id, label: c.displayName }))}
                     onSelect={handleAccountSelect}
                     disabled={!provider}
@@ -122,10 +158,11 @@ export default function StructuredRequest() {
             <div className="grid gap-2 w-full">
                 <Label>Resource</Label>
                 <Dropdown
-                    value={resourceId}
+                    multiple
+                    value={resourceIds}
                     options={resources.map((r) => ({ value: r.id, label: r.resourceName }))}
                     onSelect={handleResourceSelect}
-                    disabled={!accountId}
+                    disabled={accountIds.length === 0}
                     widthVariant="full"
                     placeholder="Select Resource"
                     emptyMessage="No resources found"
@@ -134,10 +171,11 @@ export default function StructuredRequest() {
             <div className="grid gap-2 w-full">
                 <Label>Theme</Label>
                 <Dropdown
-                    value={themeId}
+                    multiple
+                    value={themeIds}
                     options={availableThemes.map((t) => ({ value: t.id, label: t.label }))}
-                    onSelect={setThemeId}
-                    disabled={!resourceId}
+                    onSelect={handleThemeSelect}
+                    disabled={resourceIds.length === 0}
                     disableSearch={true}
                     widthVariant="full"
                     placeholder="Select Theme"
