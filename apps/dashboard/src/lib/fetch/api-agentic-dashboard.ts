@@ -9,6 +9,62 @@ import type {
 } from "@/features/dashboard/types/agentic";
 import type { DashboardDTO } from "@/lib/fetch/api-dashboard";
 
+export class AiDashboardResponseError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = "AiDashboardResponseError";
+    }
+}
+
+export class AiDashboardNoChangeError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = "AiDashboardNoChangeError";
+    }
+}
+
+function validateDashboardPlanResponse(response: AiDashboardPlanResponse): AiDashboardPlanResponse {
+    //check undefined so it doesn't behave unexpectedly
+    if (
+        typeof response.stageAttempted !== "boolean" ||
+        typeof response.stageSucceeded !== "boolean"
+    ) {
+        console.error("Malformed AI dashboard response:", response);
+
+        throw new AiDashboardResponseError(
+            "The dashboard generation service returned an invalid response. Please try again."
+        );
+    }
+
+    if (typeof response.assistantMessage !== "string" && response.assistantMessage !== null) {
+        console.error("Invalid assistantMessage in AI dashboard response:", response);
+
+        throw new AiDashboardResponseError(
+            "The dashboard generation service returned an invalid response. Please try again."
+        );
+    }
+
+    // if stagingattempted is false but it also says stage succeeded is true
+    if (response.stageSucceeded && !response.stageAttempted) {
+        console.error("Inconsistent AI dashboard response:", response);
+
+        throw new AiDashboardResponseError(
+            "The dashboard generation service returned an inconsistent response. Please try again."
+        );
+    }
+
+    // completed without trying to stage dash
+    if (!response.stageAttempted) {
+        console.warn("AI completed without staging a dashboard:", response.assistantMessage);
+
+        throw new AiDashboardNoChangeError(
+            "The AI did not create a dashboard version. Please try rephrasing your request."
+        );
+    }
+
+    return response;
+}
+
 //create new session.
 export async function createAiSession(): Promise<AiSessionResponse> {
     return await apiClient<AiSessionResponse>("/ai/sessions", {
@@ -33,18 +89,16 @@ export async function generateDashboardPlan(
             body: JSON.stringify(payload),
         });
 
-        if (!response.stageSucceeded && !response.stageAttempted) {
-            throw new Error(
-                response.assistantMessage ||
-                    "The AI didn't make any changes. Try rephrasing your request or save changes and restart the session."
-            );
-        }
-
-        return response;
+        return validateDashboardPlanResponse(response);
     } catch (error) {
-        console.error(
-            "Failed to generate dashboard \n Try saving or discarding the current version and try again"
-        );
+        if (
+            error instanceof AiDashboardResponseError ||
+            error instanceof AiDashboardNoChangeError
+        ) {
+            throw error;
+        }
+        console.error("Failed to generate AI dashboard plan:", error);
+
         throw error;
     }
 }

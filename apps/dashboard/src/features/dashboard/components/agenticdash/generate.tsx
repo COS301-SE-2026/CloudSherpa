@@ -62,11 +62,9 @@ export default function GenerateDashInput({ showPresets }: Readonly<GenerateDash
         setIsApplying(true);
 
         try {
-            console.log("is applying ai dashboard");
             const applied = await applyDashboard(currentVersionId, mode);
 
             if (applied) {
-                console.log("applied dashboard");
                 setIsApplyDialogOpen(false);
             }
         } finally {

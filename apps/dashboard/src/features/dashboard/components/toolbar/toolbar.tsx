@@ -10,6 +10,12 @@ import AddWidget from "@/features/dashboard/components/toolbar/addWidget";
 import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
 import AgenticDashCard from "@/features/dashboard/components/agenticdash/agenticDashCard";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/atoms/button";
+import { X } from "lucide-react";
+import type { AiDashboardApplyMode } from "@/features/dashboard/types/agentic";
+import { useToolbar } from "@/features/dashboard/components/toolbar/toolbarProvider";
+import { useState } from "react";
+import { Card, CardHeader } from "@/components/atoms/card";
 
 interface ToolbarProps {
     dashboards: DashboardStub[];
@@ -46,6 +52,37 @@ export default function Toolbar({
 }: Readonly<ToolbarProps>) {
     const isSessionActive = useDashboardStore((state) => state.isSessionActive);
     const isGenerating = useDashboardStore((state) => state.isGenerating);
+    const currentVersionId = useDashboardStore((state) => state.currentVersionId);
+    const versions = useDashboardStore((state) => state.versions);
+    const { isApplyDialogOpen, setIsApplyDialogOpen } = useToolbar();
+    const [isApplying, setIsApplying] = useState(false);
+
+    const { startSessionAndGenerate, sendPrompt, applyDashboard, cancelSession } =
+        useDashboardStore((state) => state.agenticActions);
+
+    const currentVersion = versions.find((version) => version.versionId === currentVersionId);
+
+    const canApplyCurrentVersion =
+        isSessionActive && currentVersion !== undefined && currentVersion.version > 0;
+
+    const handleApply = async (mode: AiDashboardApplyMode): Promise<void> => {
+        if (!currentVersionId) {
+            return;
+        }
+
+        setIsApplying(true);
+
+        try {
+            const applied = await applyDashboard(currentVersionId, mode);
+
+            if (applied) {
+                setIsApplyDialogOpen(false);
+            }
+        } finally {
+            setIsApplying(false);
+        }
+    };
+
     const hideTools = hasActiveDashboard || isSessionActive;
     return (
         <header className="sticky top-0 z-50 w-full flex flex-col items-center group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 pt-3 pb-2 relative">
@@ -67,14 +104,47 @@ export default function Toolbar({
                             onDelete={onDeleteDashboard}
                         />
                     ) : (
-                        <h1
-                            className={cn(
-                                isGenerating && "animate-pulse",
-                                "text-xl font-semibold text-foreground bg-card border py-2 px-6 rounded-md"
-                            )}
-                        >
-                            AI Preview Session
-                        </h1>
+                        <div className="flex flex-row justify-start items-center gap-2">
+                            <h1
+                                className={cn(
+                                    isGenerating && "animate-pulse",
+                                    "text-sm font-semibold text-foreground bg-card border py-4 px-6 rounded-md"
+                                )}
+                            >
+                                AI Preview Session
+                            </h1>
+                            <Card className="flex flex-row items-center justify-between px-2 py-2 bg-muted/30 border rounded-lg gap-4">
+                                <CardHeader>
+                                    <span className="text-muted-foreground text-sm font-medium">
+                                        {currentVersion?.version === 0
+                                            ? "Viewing the dashboard you started with"
+                                            : `Viewing version v${currentVersion?.version ?? ""}`}
+                                    </span>
+                                    <div className="flex flex-row justify-center items-center gap-1">
+                                        {isSessionActive && (
+                                            <Button
+                                                size="sm"
+                                                variant="destructive"
+                                                onClick={() => cancelSession()}
+                                                disabled={isGenerating || isApplying}
+                                            >
+                                                <X />
+                                                Discard
+                                            </Button>
+                                        )}
+                                        {canApplyCurrentVersion && (
+                                            <Button
+                                                size="sm"
+                                                onClick={() => setIsApplyDialogOpen(true)}
+                                                disabled={isGenerating || isApplying}
+                                            >
+                                                Save Dashboard
+                                            </Button>
+                                        )}
+                                    </div>
+                                </CardHeader>
+                            </Card>
+                        </div>
                     )}
                 </div>
                 {hideTools && (
