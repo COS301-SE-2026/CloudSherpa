@@ -1,5 +1,6 @@
 package com.cloudsherpa.ingestion.nfr;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -7,6 +8,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.azure.storage.blob.BlobContainerClient;
+import com.cloudsherpa.ingestion.billing.provider.azure.AzureBillingIngestionService;
 import com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.AzureBillingContext;
 import com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.model.AzureManifest;
 import com.cloudsherpa.ingestion.billing.provider.azure.storageaccount.pipeline.ManifestDiscoveryStep;
@@ -32,6 +34,9 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.zip.GZIPOutputStream;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
@@ -65,11 +70,15 @@ class AzureBillingRecordIngestionTest {
   private static final String RUN_ID = "nfr-run";
   private static final String BLOB_NAME = "exports/daily/nfr-billing-export/part0.csv.gz";
   private static final int NUM_RECORDS_TO_SEED = 10000;
+  private static final int RECORD_PER_SECOND_THRESHOLD = 1000;
+  private static final Logger logger =
+      LoggerFactory.getLogger(AzureBillingRecordIngestionTest.class);
 
   @Autowired BillingExportConfigRepository exportConfigRepository;
   @Autowired AzureBillingExportConfigRepository azureExportConfigRepository;
   @Autowired CloudCredentialRepository cloudCredentialRepository;
   @Autowired CredentialEncryptionService credentialEncryptionService;
+  @Autowired AzureBillingIngestionService ingestionService;
   @MockitoBean ManifestDiscoveryStep manifestDiscoveryStep;
   @MockitoBean ManifestParsingStep manifestParsingStep;
   @MockitoBean AzureBlobReader blobReader;
@@ -93,6 +102,26 @@ class AzureBillingRecordIngestionTest {
     mockManifestDiscoveryStep();
     mockManifestParsingStep();
     mockCsvInputStream(NUM_RECORDS_TO_SEED);
+  }
+
+  @Test
+  void awsCurIngestionMeetsRecordsPerSecondThreshold() {
+
+    long start = System.nanoTime();
+
+    ingestionService.execute(TENANT_ID.toString(), CONFIG_ID.toString());
+
+    long duration = System.nanoTime() - start;
+    double elapsedSeconds = duration / Math.pow(10, 9);
+
+    double recordsPerSecond = NUM_RECORDS_TO_SEED / elapsedSeconds;
+    logger.info(
+        "\nDuration: {}s\nRecords processed: {}\nRecords per second: {}",
+        elapsedSeconds,
+        NUM_RECORDS_TO_SEED,
+        recordsPerSecond);
+
+    assertTrue(recordsPerSecond > RECORD_PER_SECOND_THRESHOLD);
   }
 
   private void mockManifestDiscoveryStep() {
