@@ -3,6 +3,7 @@ package com.cloudsherpa.lib.repositories;
 import com.cloudsherpa.lib.entities.CloudAccount;
 import com.cloudsherpa.lib.entities.ProviderEnum;
 import com.cloudsherpa.lib.entities.Resource;
+import com.cloudsherpa.lib.entities.StatusEnum;
 import com.cloudsherpa.lib.projections.ResourceNames;
 import java.util.List;
 import java.util.Optional;
@@ -45,4 +46,8 @@ public interface ResourceRepository extends JpaRepository<Resource, UUID> {
   ProviderEnum findProviderByResourceId(@Param("resourceId") UUID resourceId);
 
   public Optional<Resource> findByResourceIdentifier(String identifier);
+
+  List<Resource> findByAccountIdAndStatus(
+      UUID accountId,
+      StatusEnum status);
 }
