@@ -15,7 +15,7 @@ import { X } from "lucide-react";
 import type { AiDashboardApplyMode } from "@/features/dashboard/types/agentic";
 import { useToolbar } from "@/features/dashboard/components/toolbar/toolbarProvider";
 import { useState } from "react";
-import { Card, CardHeader } from "@/components/atoms/card";
+import { Card, CardContent } from "@/components/atoms/card";
 
 interface ToolbarProps {
     dashboards: DashboardStub[];
@@ -107,14 +107,14 @@ export default function Toolbar({
                         <div className="flex flex-row justify-start items-center gap-2">
                             <h1
                                 className={cn(
-                                    isGenerating && "animate-pulse",
-                                    "text-sm font-semibold text-foreground bg-card border py-4 px-6 rounded-md"
+                                    // isGenerating && "animate-pulse",
+                                    "text-sm font-semibold text-foreground bg-card border py-3 px-6 rounded-md"
                                 )}
                             >
-                                AI Preview Session
+                                AI Dashboard Preview
                             </h1>
-                            <Card className="flex flex-row items-center justify-between px-2 py-2 bg-muted/30 border rounded-lg gap-4">
-                                <CardHeader>
+                            <Card className="py-0 h-full flex flex-row justify-center items-center rounded-md">
+                                <CardContent className=" flex flex-row justify-center items-center gap-4 pr-2">
                                     <span className="text-muted-foreground text-sm font-medium">
                                         {currentVersion?.version === 0
                                             ? "Viewing the dashboard you started with"
@@ -142,7 +142,7 @@ export default function Toolbar({
                                             </Button>
                                         )}
                                     </div>
-                                </CardHeader>
+                                </CardContent>
                             </Card>
                         </div>
                     )}

@@ -330,7 +330,7 @@ export default function StructuredRequest() {
                     />
                 </div>
                 <div className="h-full w-full flex flex flex-col justify-end items-end gap-2">
-                    {isSessionActive && (
+                    {/* {isSessionActive && (
                         <div className="w-full flex items-center justify-between px-3 py-2 bg-muted/30 border rounded-md">
                             <span className="text-muted-foreground text-xs font-medium">
                                 {currentVersion?.version === 0
@@ -347,7 +347,7 @@ export default function StructuredRequest() {
                                     disabled={isGenerating || isApplying}
                                 >
                                     <X />
-                                    End
+                                    Discard
                                 </Button>
 
                                 {canApplyCurrentVersion && (
@@ -357,16 +357,17 @@ export default function StructuredRequest() {
                                         onClick={() => setIsApplyDialogOpen(true)}
                                         disabled={isGenerating || isApplying}
                                     >
-                                        Apply
+                                        Save
                                     </Button>
                                 )}
                             </div>
                         </div>
-                    )}
+                    )} */}
                     <Button
                         variant="default"
                         onClick={handleGenerate}
                         disabled={isGenerating || isApplying}
+                        className="mx-3 my-2"
                     >
                         {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : "Generate"}
                     </Button>

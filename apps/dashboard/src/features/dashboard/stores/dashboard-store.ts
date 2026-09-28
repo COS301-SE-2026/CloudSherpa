@@ -703,11 +703,7 @@ const createAgenticSlice: StateCreator<DashboardStore, [], [], AgenticSlice> = (
                         "Dashboard generation took longer than 2 minutes. Please try again."
                     );
                 } else {
-                    toast.error(
-                        error instanceof Error
-                            ? error.message
-                            : "Failed to generate AI dashboard plan."
-                    );
+                    toast.error("We couldn't generate the dashboard. Please try again.");
                 }
 
                 return false;
@@ -779,11 +775,7 @@ const createAgenticSlice: StateCreator<DashboardStore, [], [], AgenticSlice> = (
                         "Dashboard generation took longer than 2 minutes. Please try again."
                     );
                 } else {
-                    toast.error(
-                        error instanceof Error
-                            ? error.message
-                            : "Failed to generate AI dashboard plan."
-                    );
+                    toast.error("We couldn't update the dashboard. Please try again.");
                 }
 
                 set({ isGenerating: false });
@@ -814,9 +806,7 @@ const createAgenticSlice: StateCreator<DashboardStore, [], [], AgenticSlice> = (
                 );
             } catch (error) {
                 console.error("Failed to activate version:", error);
-                toast.error(
-                    error instanceof Error ? error.message : "Failed to load selected version."
-                );
+                toast.error("We couldn't load that dashboard version. Please try again.");
             }
         },
 
@@ -875,9 +865,7 @@ const createAgenticSlice: StateCreator<DashboardStore, [], [], AgenticSlice> = (
                 return true;
             } catch (error) {
                 console.error("Failed to apply dashboard version:", error);
-                toast.error(
-                    error instanceof Error ? error.message : "Failed to apply AI dashboard."
-                );
+                toast.error("We couldn't save the dashboard. Please try again.");
                 return false;
             }
         },

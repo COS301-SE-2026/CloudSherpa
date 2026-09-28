@@ -91,7 +91,7 @@ export default function GenerateDashInput({ showPresets }: Readonly<GenerateDash
                 )}
 
                 <div className="shrink-0 w-full flex flex-col gap-2">
-                    {isSessionActive && (
+                    {/* {isSessionActive && (
                         <div className="flex items-center justify-between px-3 py-2 bg-muted/30 border rounded-md">
                             <span className="text-muted-foreground text-xs font-medium">
                                 {currentVersion?.version === 0
@@ -108,7 +108,7 @@ export default function GenerateDashInput({ showPresets }: Readonly<GenerateDash
                                     disabled={isGenerating || isApplying}
                                 >
                                     <X />
-                                    End
+                                    Discard
                                 </Button>
 
                                 {canApplyCurrentVersion && (
@@ -118,12 +118,12 @@ export default function GenerateDashInput({ showPresets }: Readonly<GenerateDash
                                         onClick={() => setIsApplyDialogOpen(true)}
                                         disabled={isGenerating || isApplying}
                                     >
-                                        Apply
+                                        Save
                                     </Button>
                                 )}
                             </div>
                         </div>
-                    )}
+                    )} */}
 
                     <div className="shrink-0 bg-background w-full">
                         <InputGroup onClick={handleTextGroupClick}>
