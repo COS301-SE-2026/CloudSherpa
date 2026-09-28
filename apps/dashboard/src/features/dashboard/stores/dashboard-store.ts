@@ -112,7 +112,11 @@ type WindowSlice = {
     days?: number;
     setWindow: (from: Date, to: Date) => void;
     setPreset: (preset: TimeWindowPreset) => void;
-    hydrateWindowOnDashboardLoad: (preset: TimeWindowPreset) => void;
+    hydrateWindowOnDashboardLoad: (
+        preset: TimeWindowPreset,
+        fromMs: number | null,
+        toMs: number | null
+    ) => void;
     timeoutId?: ReturnType<typeof setTimeout>;
     intervalId?: ReturnType<typeof setInterval>;
     clear: () => void;
@@ -397,7 +401,7 @@ const createWindowSlice: StateCreator<DashboardStore, [], [], WindowSlice> = (se
         clearTimeout(get().timeoutId ?? undefined);
         clearInterval(get().intervalId ?? undefined);
 
-        if (get().selectedPreset == "custom") {
+        if (get().selectedPreset == "CUSTOM") {
             return;
         }
 
@@ -415,17 +419,35 @@ const createWindowSlice: StateCreator<DashboardStore, [], [], WindowSlice> = (se
         set({ timeoutId: timeoutId });
     },
     setPreset: async (preset) => {
-        if (preset === "custom") {
+        if (preset === "CUSTOM") {
             clearTimeout(get().timeoutId ?? undefined);
             clearInterval(get().intervalId ?? undefined);
         }
 
         set({ selectedPreset: preset });
-        await setDashboardPresetTimeWindow(preset, get().activeDashboardId);
+        await setDashboardPresetTimeWindow(
+            preset,
+            get().activeDashboardId,
+            new Date(get().fromMs).toISOString(),
+            new Date(get().toMs).toISOString()
+        );
     },
-    hydrateWindowOnDashboardLoad: (preset: TimeWindowPreset) => {
-        // Uses the default for now
-        if (preset == "custom") {
+    hydrateWindowOnDashboardLoad: (
+        preset: TimeWindowPreset,
+        fromMs: number | null,
+        toMs: number | null
+    ) => {
+        if (preset == "CUSTOM") {
+            if (fromMs == null || toMs == null) {
+                return;
+            }
+
+            set({
+                selectedPreset: "CUSTOM",
+                toMs,
+                fromMs,
+            });
+
             return;
         }
 
