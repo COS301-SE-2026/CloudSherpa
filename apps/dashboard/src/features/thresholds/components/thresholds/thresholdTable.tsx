@@ -64,18 +64,20 @@ function helperForColumns({
     return [
         {
             id: "enabled",
-            header: () => "ENABLED",
+            header: () => <span className = "block text-center"> ENABLED </span>,
             enableSorting: false,
-            size: 100,
+            size: 200,
             cell: ({ row }) => {
                 const forThreshold = row.original;
 
                 return (
-                    <Switch
-                        checked={forThreshold.enabled}
-                        onCheckedChange={(checked) => toggleEnabled(forThreshold, checked)}
-                        aria-label={`Toggle ${forThreshold.metricName} threshold`}
-                    />
+                    <div className = "flex items-center justify-center">
+                        <Switch
+                            checked={forThreshold.enabled}
+                            onCheckedChange={(checked) => toggleEnabled(forThreshold, checked)}
+                            aria-label={`Toggle ${forThreshold.metricName} threshold`}
+                        />
+                    </div>
                 );
             },
         },
@@ -187,7 +189,7 @@ function helperForColumns({
 
         {
             id: "actions",
-            header: () => "ACTIONS",
+            header: () => "",
             enableSorting: false,
             size: 100,
             cell: ({ row }) => {
