@@ -107,6 +107,13 @@ export default function ConfigureConnection() {
             setResourceDiscovery(accountResponse.periodicResourceDiscovery);
             setMonitorNewResources(accountResponse.newResourcesActive);
             setAdjustInterval(accountResponse.autoAdjustIngestionPeriod);
+            setCustom(accountResponse.ingestionBudget.toString());
+
+            if (accountResponse.ingestionBudget > 0) {
+                setBudget("custom");
+            } else {
+                setBudget("free");
+            }
 
             if (accountResponse.ingestionPeriod !== null) {
                 setIngestionPeriod(Number(accountResponse.ingestionPeriod));
@@ -199,7 +206,7 @@ export default function ConfigureConnection() {
         setBudget(choice);
 
         if (choice === "free") {
-            setCustom("");
+            setCustom("0");
 
             setIngestionPeriod(null);
         }
