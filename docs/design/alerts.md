@@ -1,172 +1,101 @@
-# Automated Alerts
+# Automated Alerts Engine
 
-**Overview**  
-This document specifies a design for the Automated Alerts engine that reuses existing statistical aggregation (optimization recommendation) and forecasting (intelligence) components for Threshold, Anomaly and Billing/Forecast alerts.
+## Overview
+
+The Automated Alerts engine continuously watches a user's cloud metrics and cost data and proactively notifies users when something needs their attention, for example, a resource is misbehaving, a metric looks abnormal compared to its own history, or spend is trending over budget. 
+
+Instead of requiring users to keep dashboards open and notice problems themselves, the engine evaluates incoming data in the background and surfaces **alerts** through the dashboard in-app notification preferences, and outbound webhooks.
+
+## Motivation
+
+Today, users only discover problems by manually reviewing dashboards. This means:
+- Performance regressions (e.g. runaway CPU) can go unnoticed until they cause an outage or cost spike.
+- Unusual metric behavior that doesn't cross a hard-coded threshold is invisible.
+- Overspend is only discovered after the billing cycle closes, when it's too late to act.
 
 ## Goals
-- Threshold Alerts: per-widget/user-defined numeric rules (GT/LT/GTE/LTE/EQ).
-- Anomaly Alerts: real-time z-score / deviation detection using precomputed baselines (means/stddevs/percentiles) produced by the existing Optimization Statistics pipeline.
-- Forecast Alerts (billing/usage): Use the forecasting service to compare projected spend against explicit user budgets; keep anomaly alerts as a secondary safety net.
 
----
+- **Threshold Alerts** - let a user define a simple numeric rule (`>`, `>=`, `<`, `<=`, `==`) against a specific metric on a specific resource, and be notified the moment it's violated.
+- **Anomaly Alerts** - automatically flag metric values that are statistically unusual for a resource, without requiring the user to configure anything, by comparing live values against a precomputed baseline.
+- **Budget Alerts** - let a user set a spending cap (cross-account, per cloud account, or per resource) and be notified when actual spend over a trailing window meets or exceeds it.
+- Avoid alert fatigue: repeated violations of the same condition should update a single alert rather than spamming new ones.
+- Give users control: alerts can be muted (globally or individually) and enabled/disabled without deleting their configuration.
+- Make alerts consumable outside the dashboard via webhooks, so users can wire alerts into their own tooling.
 
-## Data model
+## Concepts
 
-- alerts
-  - id uuid
-  - user_id uuid
-  - widget_id uuid (nullable)
-  - alert_type enum: THRESHOLD | ANOMALY | BILLING
-  - severity enum: INFO | WARNING | CRITICAL
-  - title text
-  - message text
-  - payload jsonb
-  - status enum: ACTIVE | ACKNOWLEDGED | DISMISSED | RESOLVED
-  - created_at timestamptz
-  - resolved_at timestamptz (nullable)
+| Concept | Meaning |
+|---|---|
+| **Alert type** | What kind of condition produced the alert: `THRESHOLD`, `ANOMALY`, or `BUDGET`. |
+| **Severity** | How serious the alert is: `WARNING` or `CRITICAL`. |
+| **Status** | Whether the underlying rule that produces this alert is `ACTIVE` or has been `DISABLED` by the user. |
+| **Canonical key** | A stable identifier for "this exact condition" (e.g. a specific threshold on a specific resource). Used to deduplicate (a condition that keeps firing updates one alert record instead of creating new ones every time). |
+| **In-app notification silence** | A per-alert mute, independent of disabling the alert entirely. There is also a global in-app notification toggle in user preferences. |
 
-- budgets
-  - budget_id uuid
-  - user_id uuid
-  - scope enum: TENANT | ACCOUNT | RESOURCE
-  - scope_id uuid
-  - amount numeric
-  - currency text
-  - window_days integer
-  - enabled boolean
-  - created_at timestamptz
-  - updated_at timestamptz
+## Architecture Overview
 
-Note: Optimization baseline records are already persisted to the tenant `optimization_metric_statistics` table by the Optimization Statistics service.
+At a high level, alerts are produced by three independent detectors that share a common alert store, a common real-time delivery channel, and a common webhook fan-out:
 
----
+```mermaid
+flowchart LR
+    subgraph Ingestion
+        M[Metrics & Cost Ingestion]
+    end
 
-## High-level data flow
+    M -->|metric event| TD[Threshold Detector]
+    M -->|metric event| AD[Anomaly Detector]
+    M -->|billing export completed| BD[Budget Detector]
 
-**Real-time detectors (Threshold & Anomaly):**
-1. Metrics and costs are ingested to tenant tables (`normalized_metrics`, `normalized_costs`) and emit metric events via the `notify_metric_event()` trigger.
-2. An Evaluation Worker subscribes to metric/cost events and runs detectors.
-3. Detector order:
-   - Threshold detector (widget thresholds).
-   - Anomaly detector (precomputed baselines from `optimization_metric_statistics`).
-4. On trigger, persist an `alerts` record and call the SSE broadcast with `alert` event targeted to the user.
-5. Frontend renders toast + inbox item; APIs support list/ack/dismiss.
+    OS[(Optimization Statistics\nbaselines)] --> AD
 
-**Scheduled Billing/Forecast detector:**
-1. A scheduled job triggers at a configurable interval.
-2. For each tenant/account/resource scope, the job invokes the pluggable forecasting service.
-3. The threshold service evaluates thresholds against active budgets using the forecasting service.
-4. Create `alerts` records for any threshold violations and broadcast SSE to affected users.
+    TD --> STORE[(Alerts table)]
+    AD --> STORE
+    BD --> STORE
 
----
+    STORE --> SSE[Real-time SSE stream]
+    STORE --> WH[Webhook fan-out]
+    SSE --> UI[Dashboard: toast + alert inbox]
+    WH --> EXT[External systems]
+```
 
-## Implementation: Threshold Detector
+## Alert Types
 
-- Lookup active thresholds scoped to widget/resource/metric and evaluate operator (GT/LT/GTE/LTE/EQ).
-- Use DB index storing last_alerted_at for duplications.
-- Persist `alerts` row and broadcast SSE on violation.
+### Threshold Alerts
 
-SSE payload example (threshold):
-{
-  "alert_id":"uuid",
-  "type":"THRESHOLD",
-  "severity":"WARNING",
-  "title":"CPU > 80% on i-0123",
-  "message":"CPU usage 92% for instance i-0123 (threshold 80%)",
-  "timestamp":"2026-09-16T12:34:56Z",
-  "widget_id":"uuid",
-  "payload": {
-    "metric_name":"CPUUtilization",
-    "metric_value":92,
-    "threshold_operator":"GT",
-    "threshold_value":80,
-    "period_start":"...",
-    "period_end":"..."
-  }
-}
+A user picks a resource, a metric, an operator, and a value (e.g. "CPU utilization on i-0123 > 80%"). As metric events stream in, every enabled threshold for that resource/metric is evaluated. A violation:
 
----
+1. Is matched against a canonical key of the form "this threshold, this resource" so repeat violations update the same alert instead of creating duplicates.
+2. Produces an alert whose severity matches the threshold's configured severity.
+3. Is broadcast in real time and fanned out as a webhook (if configured).
 
-## Implementation: Anomaly Detector
+If a user disables the alert for a given threshold, it will not be recreated on subsequent violations until re-enabled.
 
-- Reuse `optimization_metric_statistics` (p95, mean, stddev) produced by the Optimization Statistics pipeline.
-- Steps:
-  1. Query baseline for resource_id + canonical metric name + preferred window.
-  2. If `standard_deviation` > 0 compute z = (value - average) / standard_deviation.
-  3. Trigger if abs(z) >= thresholds: WARNING=2, CRITICAL=3.
-  4. Upgrade existing ACTIVE alerts rather than creating duplicates.
-- Persist alert and send SSE.
+### Anomaly Alerts
 
----
+Anomaly detection requires no configuration from the user. It runs automatically for every resource/metric that has an established statistical baseline. For each incoming metric value:
 
-## Implementation: Forecast / Billing Alerts
+1. The most recent baseline (mean, standard deviation, sample size) is looked up.
+2. If there isn't enough history yet (a minimum sample size is required) or the baseline has no variance, the metric is skipped (there isn't enough data to say what's "normal.")
+3. A z-score is computed: how many standard deviations the current value is from the mean.
+4. Values that are moderately unusual raise a `WARNING`; values that are extremely unusual raise a `CRITICAL`. Values within normal range don't alert at all.
 
-Design principle: require user-configured budgets as the primary billing alert trigger. Use the forecasting service to compare to budgets. Keep anomaly detection as a secondary safety net for tenants without budgets or if budgets are disabled.
+This gives users a safety net for problems they never thought to set an explicit threshold for.
 
-1. Triggering model
-   - Budget check against forecasted median.
+### Budget Alerts
 
-2. Forecast source
-   - Use Chronos forecasting via the intelligence service to get `forecast_median`, `forecast_q1`, `forecast_q3` for the next `window_days`.
+A user sets a budget: an amount, a trailing window in days, and a scope (across all cloud accounts, one cloud account, or one specific resource):
 
-3. Calculation steps
-   - Build historical totals:
-     - Query tenant `normalized_costs` for the past `window_days` and compute `historical_total` and daily mean/stddev.
-   - Call forecasting service with the historical daily series and `forecast_horizon = window_days`.
-   - Compute:
-     - `projected_median_total = sum(forecast_median)` as the primary forecast metric.
-   - Compare to configured budget amount for the same scope (tenant/account/resource).
+1. All enabled budgets relevant to that account are gathered (the tenant-wide budget, the account-level budget, and any resource-level budgets for resources under that account.)
+2. For each budget, actual spend over the trailing `window_days` is summed at the matching scope.
+3. If spend meets or exceeds the budget amount, an alert is raised (or an existing one for that budget is updated) at `WARNING` severity.
+4. As with the other detectors, subsequent breaches update the same alert rather than duplicating it, and a user-disabled budget alert won't be recreated.
 
-4. Checks & thresholds 
-   - Budget check (primary):
-     - WARNING when `projected_median_total >= budget * 0.9`
-     - CRITICAL when `projected_median_total >= budget`
-   - Relative growth check (secondary):
-     - WARNING when `projected_median_total >= historical_total * 1.3` (30% growth)
-     - CRITICAL when `projected_median_total >= historical_total * 2.0` (100% growth)
-   - Optional z-score of projected daily mean vs historical daily mean:
-     - WARNING z >= 2, CRITICAL z >= 3
+## External Integrations: Webhooks
 
-5. Alert creation & payload
-   - Persist `alerts` with `alert_type: BILLING` and include `budget_id` in `payload`.
-   - Broadcast SSE.
+Every alert additionally produces a webhook event so users can integrate alerts with external systems. Each alert type maps to its own event type and payload shape, containing the fields relevant to that alert.
 
-Example SSE payload (billing):
-{
-  "alert_id":"uuid",
-  "type":"BILLING",
-  "severity":"WARNING",
-  "title":"30-day projected spend may exceed budget",
-  "message":"Projected 30d spend X vs budget B",
-  "timestamp":"2026-09-16T12:00:00Z",
-  "payload":{
-    "forecast_median":[...],
-    "forecast_q1":[...],
-    "forecast_q3":[...],
-    "forecast_horizon_days":30,
-    "projected_median_total": X,
-    "budget_id": "uuid",
-    "budget_amount": B,
-    "historic_total_30d": H
-  }
-}
+## User Experience
 
----
-
-## APIs & UI
-
-- Budgets:
-  - `POST /api/budgets`
-  - `GET /api/budgets?scope=...&scopeId=...`
-  - `PUT /api/budgets/{id}`
-  - `DELETE /api/budgets/{id}`
-
-- Alerts:
-  - `GET /api/alerts?status=ACTIVE&page=1&size=20`
-  - `POST /api/alerts/{id}/acknowledge`
-  - `POST /api/alerts/{id}/dismiss`
-  - `GET /api/alerts/{id}`
-
-UI: Add Budget settings in the dashboard (tenant/account/resource scoped), allow enabling/disabling budgets and setting amount/window.
-
----
+- **Alerts inbox**: a dedicated page listing all alerts with search, type filtering, and at-a-glance total/critical/warning counts. Each row shows status, severity, type, and scope, and supports enabling/disabling, muting in-app notifications, viewing details, and deleting.
+- **Toasts**: new alerts (and alerts that escalate from `WARNING` to `CRITICAL`) surface as a toast from anywhere in the app, with a link into the alerts inbox (unless the alert is disabled, individually muted, or the user has turned off in-app notifications globally).
+- **Budget & threshold configuration**: users can create, edit, enable/disable, and delete budgets and thresholds, separately from viewing the alerts they produce.
