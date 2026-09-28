@@ -37,6 +37,13 @@ public class CloudAccountPersistenceService {
       account.setDisplayName(request.displayName());
     }
 
+    if (request.ingestionBudget() != null) {
+      if (request.ingestionBudget() < 0) {
+        throw new IllegalArgumentException("ingestionBudget must be greater than or equal to 0");
+      }
+      account.setIngestionBudget(request.ingestionBudget());
+    }
+
     if (request.ingestionPeriod() != null) {
       if (request.ingestionPeriod() <= 0) {
         throw new IllegalArgumentException("ingestionPeriod must be greater than 0");

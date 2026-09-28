@@ -5,13 +5,15 @@ public record CloudAccountPatchRequest(
     Integer ingestionPeriod,
     Boolean periodicResourceDiscovery,
     Boolean autoAdjustIngestionPeriod,
-    Boolean newResourcesActive) {
+    Boolean newResourcesActive,
+    Double ingestionBudget) {
 
   public boolean hasUpdates() {
     return displayName != null
         || ingestionPeriod != null
         || periodicResourceDiscovery != null
         || autoAdjustIngestionPeriod != null
-        || newResourcesActive != null;
+        || newResourcesActive != null
+        || ingestionBudget != null;
   }
 }

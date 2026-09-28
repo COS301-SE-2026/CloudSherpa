@@ -256,6 +256,14 @@ public class CloudAccount {
     this.ingestionPeriod = ingestionPeriod;
   }
 
+  public Double getIngestionBudget() {
+    return ingestionBudget.doubleValue();
+  }
+
+  public void setIngestionBudget(Double ingestionBudget) {
+    this.ingestionBudget = BigDecimal.valueOf(ingestionBudget);
+  }
+
   public OffsetDateTime getCreatedAt() {
     return createdAt;
   }
