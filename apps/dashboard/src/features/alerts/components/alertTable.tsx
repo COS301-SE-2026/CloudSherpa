@@ -152,7 +152,7 @@ function helperForColumns({
         },
         {
             id: "notifications",
-            header: () => "NOTIFICATIONS",
+            header: () => <span className = "block text-center"> NOTIFICATIONS </span>,
             enableSorting: false,
             cell: ({ row }) => {
                 const alertDisabled = row.original.status !== "ACTIVE";
@@ -167,22 +167,24 @@ function helperForColumns({
                 );
 
                 return (
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        type="button"
-                        disabled={alertDisabled || !globalInAppNotificationsEnabled}
-                        className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
-                        title={label}
-                        aria-label={label}
-                        onClick={() => void onToggleNotificationSilence(row.original)}
-                    >
-                        {muted ? (
-                            <BellOff className="h-4 w-4" />
-                        ) : (
-                            <Bell className="h-4 w-4 text-success" />
-                        )}
-                    </Button>
+                    <div className = "flex items-center justify-center">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            type="button"
+                            disabled={alertDisabled || !globalInAppNotificationsEnabled}
+                            className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+                            title={label}
+                            aria-label={label}
+                            onClick={() => void onToggleNotificationSilence(row.original)}
+                        >
+                            {muted ? (
+                                <BellOff className="h-4 w-4" />
+                            ) : (
+                                <Bell className="h-4 w-4 text-success" />
+                            )}
+                        </Button>
+                    </div>
                 );
             },
         },
@@ -243,7 +245,7 @@ function helperForColumns({
         {
             accessorKey: "title",
             header: () => "ALERT",
-            size: 240,
+            size: 200,
             cell: ({ row }) => {
                 const inactive = row.original.status !== "ACTIVE";
                 const displayTitle = cleanAlertTitle(row.original.title);
@@ -279,35 +281,37 @@ function helperForColumns({
                 const alert = row.original;
 
                 return (
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-auto p-0 text-muted-foreground hover:text-foreground"
-                            >
-                                <MoreVertical className="h-4 w-4" />
-                            </Button>
-                        </DropdownMenuTrigger>
+                    <div className = "flex justify-center">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-auto p-0 text-muted-foreground hover:text-foreground"
+                                >
+                                    <MoreVertical className="h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
 
-                        <DropdownMenuContent align="end" className="w-40">
-                            <DropdownMenuItem
-                                onClick={() => info(alert)}
-                                className="cursor-pointer"
-                            >
-                                <Info className="mr-2 h-4 w-4" />
-                                More info
-                            </DropdownMenuItem>
+                            <DropdownMenuContent align="end" className="w-40">
+                                <DropdownMenuItem
+                                    onClick={() => info(alert)}
+                                    className="cursor-pointer"
+                                >
+                                    <Info className="mr-2 h-4 w-4" />
+                                    More info
+                                </DropdownMenuItem>
 
-                            <DropdownMenuItem
-                                onClick={() => onDelete(alert)}
-                                className="cursor-pointer text-destructive focus:text-destructive"
-                            >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Delete
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                                <DropdownMenuItem
+                                    onClick={() => onDelete(alert)}
+                                    className="cursor-pointer text-destructive focus:text-destructive"
+                                >
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Delete
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
                 );
             },
         },
