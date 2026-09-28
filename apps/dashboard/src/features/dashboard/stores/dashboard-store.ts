@@ -33,6 +33,7 @@ import {
 } from "@/lib/fetch/api-agentic-dashboard";
 import type { DashboardDTO } from "@/lib/fetch/api-dashboard";
 import type { AiDashboardApplyMode } from "@/features/dashboard/types/agentic";
+import { getAwsAccountConnections } from "@/lib/fetch/cloud-account-api";
 
 const tickIntervalMs = 60_000;
 
@@ -546,6 +547,33 @@ function adaptState(dashboardPlan: DashboardPlan) {
     return { layoutsMap, widgetsMap };
 }
 
+const GENERATION_TIMEOUT_MS = 3.5 * 60 * 1000;
+
+class GenerationTimeoutError extends Error {
+    constructor() {
+        super("Dashboard generation timed out.");
+        this.name = "GenerationTimeoutError";
+    }
+}
+
+function generateWithTimeout<T>(promise: Promise<T>): Promise<T> {
+    return new Promise<T>((resolve, reject) => {
+        const timeoutId = setTimeout(() => {
+            reject(new GenerationTimeoutError());
+        }, GENERATION_TIMEOUT_MS);
+
+        promise
+            .then((result) => {
+                clearTimeout(timeoutId);
+                resolve(result);
+            })
+            .catch((error) => {
+                clearTimeout(timeoutId);
+                reject(error);
+            });
+    });
+}
+
 const createAgenticSlice: StateCreator<DashboardStore, [], [], AgenticSlice> = (set, get) => ({
     sessionId: null,
     startedDashboardId: null,
@@ -559,9 +587,13 @@ const createAgenticSlice: StateCreator<DashboardStore, [], [], AgenticSlice> = (
 
     agenticActions: {
         startSessionAndGenerate: async (prompt: string) => {
+            if ((await getAwsAccountConnections()).length == 0) {
+                toast.error("Connect cloud accounts before generating dashboards");
+                return false;
+            }
             const startedDashboardId = get().activeDashboardId;
             if (!startedDashboardId) {
-                toast.error("Select a dashboard before starting an AI session.");
+                toast.error("Select a dashboard before starting an AI session");
                 return false;
             }
 
@@ -573,11 +605,13 @@ const createAgenticSlice: StateCreator<DashboardStore, [], [], AgenticSlice> = (
                 const sessionRes = await createAiSession();
                 sessionId = sessionRes.sessionId;
 
-                const planRes = await generateDashboardPlan({
-                    sessionId,
-                    startingDashboardId: startedDashboardId,
-                    message: prompt,
-                });
+                const planRes = await generateWithTimeout(
+                    generateDashboardPlan({
+                        sessionId,
+                        startingDashboardId: startedDashboardId,
+                        message: prompt,
+                    })
+                );
 
                 const { layoutsMap, widgetsMap } = adaptState(planRes.dashboard);
 
@@ -625,9 +659,17 @@ const createAgenticSlice: StateCreator<DashboardStore, [], [], AgenticSlice> = (
                     stagedWidgets: {},
                 });
 
-                toast.error(
-                    error instanceof Error ? error.message : "Failed to generate AI dashboard plan."
-                );
+                if (error instanceof GenerationTimeoutError) {
+                    toast.error(
+                        "Dashboard generation took longer than 2 minutes. Please try again."
+                    );
+                } else {
+                    toast.error(
+                        error instanceof Error
+                            ? error.message
+                            : "Failed to generate AI dashboard plan."
+                    );
+                }
 
                 return false;
             }
@@ -662,11 +704,13 @@ const createAgenticSlice: StateCreator<DashboardStore, [], [], AgenticSlice> = (
             set({ isGenerating: true });
 
             try {
-                const planRes = await generateDashboardPlan({
-                    sessionId,
-                    startingDashboardId: startedDashboardId,
-                    message: prompt,
-                });
+                const planRes = await generateWithTimeout(
+                    generateDashboardPlan({
+                        sessionId,
+                        startingDashboardId: startedDashboardId,
+                        message: prompt,
+                    })
+                );
                 const { layoutsMap, widgetsMap } = adaptState(planRes.dashboard);
 
                 set({
@@ -690,10 +734,21 @@ const createAgenticSlice: StateCreator<DashboardStore, [], [], AgenticSlice> = (
                 return true;
             } catch (error) {
                 console.error("Failed to update plan:", error);
-                toast.error(
-                    error instanceof Error ? error.message : "Failed to update AI dashboard draft."
-                );
+
+                if (error instanceof GenerationTimeoutError) {
+                    toast.error(
+                        "Dashboard generation took longer than 2 minutes. Please try again."
+                    );
+                } else {
+                    toast.error(
+                        error instanceof Error
+                            ? error.message
+                            : "Failed to generate AI dashboard plan."
+                    );
+                }
+
                 set({ isGenerating: false });
+
                 return false;
             }
         },

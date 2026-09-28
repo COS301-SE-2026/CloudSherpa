@@ -9,6 +9,7 @@ import { HelpMenu } from "@/features/helpMenu/helpMenu";
 import AddWidget from "@/features/dashboard/components/toolbar/addWidget";
 import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
 import AgenticDashCard from "@/features/dashboard/components/agenticdash/agenticDashCard";
+import { cn } from "@/lib/utils";
 
 interface ToolbarProps {
     dashboards: DashboardStub[];
@@ -66,7 +67,14 @@ export default function Toolbar({
                             onDelete={onDeleteDashboard}
                         />
                     ) : (
-                        <div>AI preview session active</div>
+                        <h1
+                            className={cn(
+                                isGenerating && "animate-pulse",
+                                "text-xl font-semibold text-foreground bg-card border py-2 px-6 rounded-md"
+                            )}
+                        >
+                            AI Preview Session
+                        </h1>
                     )}
                 </div>
                 {hideTools && (

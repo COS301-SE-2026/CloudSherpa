@@ -328,7 +328,7 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
     }, [isEditMode, isSessionActive]);
 
     const widgets = (
-        <div ref={gridRef} className="grid-stack">
+        <div ref={gridRef} className={`grid-stack ${isGenerating ? "animate-pulse" : ""}`}>
             {layouts.map((l) => (
                 <WidgetWrapper key={l.id} layout={l} isEditMode={isEditMode} />
             ))}
@@ -336,11 +336,11 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
     );
 
     return (
-        <div
-            className={`bg-background flex-1 min-h-full pb-40 rounded-lg flex flex-col ${isGenerating ? "animate-pulse" : ""}`}
-        >
-            {layouts.length === 0 && (isGenerating || isSessionActive) ? (
-                <div className="flex-1 w-full flex justify-center items-center">
+        <div className={`bg-background flex-1 min-h-full pb-40 rounded-lg flex flex-col`}>
+            {layouts.length === 0 && isGenerating ? (
+                <div
+                    className={`flex-1 w-full flex justify-center items-center  ${isGenerating ? "animate-pulse" : ""}`}
+                >
                     <p className="text-base font-medium text-muted-foreground">
                         Generating dashboard...
                     </p>

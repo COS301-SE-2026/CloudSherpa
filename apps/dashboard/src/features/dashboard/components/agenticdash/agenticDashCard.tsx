@@ -25,6 +25,7 @@ export default function AgenticDashCard() {
     const { isEditMode } = useToolbar();
     const isSessionActive = useDashboardStore((state) => state.isSessionActive);
     const [activeTab, setActiveTab] = useState("generate");
+    const isGenerating = useDashboardStore((state) => state.isGenerating);
 
     const handleClick = () => {
         setOpen(!open);
@@ -63,6 +64,7 @@ export default function AgenticDashCard() {
                         variant="default"
                         onClick={handleClick}
                         disabled={isEditMode}
+                        className={cn(isGenerating && "animate-pulse")}
                     >
                         <Sparkles className="text-primary-foreground" />
                     </Button>

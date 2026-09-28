@@ -42,7 +42,9 @@ export async function generateDashboardPlan(
 
         return response;
     } catch (error) {
-        console.error("generatedashboardplan failed:", error);
+        console.error(
+            "Failed to generate dashboard \n Try saving or discarding the current version and try again"
+        );
         throw error;
     }
 }
