@@ -8,6 +8,7 @@ import {
     getSortedRowModel,
     SortingState,
     useReactTable,
+    getPaginationRowModel,
 } from "@tanstack/react-table";
 import { Button } from "@/components/atoms/button";
 import { Switch } from "@/components/atoms/switch";
@@ -24,6 +25,8 @@ import {
     DropdownMenuTrigger,
 } from "@/components/atoms/dropdown-menu";
 import { LABELS_FOR_SCOPE, type ScopeForBudget } from "@/features/budgets/types/budgetTypes";
+import { TablePagination } from "@/components/molecules/tablePagination";
+import { Truncation } from "@/components/molecules/truncation";
 
 interface AlertScope {
     scope: ScopeForBudget;
@@ -118,8 +121,9 @@ function helperForColumns({
     return [
         {
             id: "enabled",
-            header: () => "STATUS",
+            header: () => <span className="block text-center"> STATUS </span>,
             enableSorting: false,
+            size: 100,
             cell: ({ row }) => {
                 const active = row.original.status === "ACTIVE";
 
@@ -148,7 +152,7 @@ function helperForColumns({
         },
         {
             id: "notifications",
-            header: () => "NOTIFICATIONS",
+            header: () => <span className="block text-center"> NOTIFICATIONS </span>,
             enableSorting: false,
             cell: ({ row }) => {
                 const alertDisabled = row.original.status !== "ACTIVE";
@@ -163,28 +167,31 @@ function helperForColumns({
                 );
 
                 return (
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        type="button"
-                        disabled={alertDisabled || !globalInAppNotificationsEnabled}
-                        className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
-                        title={label}
-                        aria-label={label}
-                        onClick={() => void onToggleNotificationSilence(row.original)}
-                    >
-                        {muted ? (
-                            <BellOff className="h-4 w-4" />
-                        ) : (
-                            <Bell className="h-4 w-4 text-success" />
-                        )}
-                    </Button>
+                    <div className="flex items-center justify-center">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            type="button"
+                            disabled={alertDisabled || !globalInAppNotificationsEnabled}
+                            className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+                            title={label}
+                            aria-label={label}
+                            onClick={() => void onToggleNotificationSilence(row.original)}
+                        >
+                            {muted ? (
+                                <BellOff className="h-4 w-4" />
+                            ) : (
+                                <Bell className="h-4 w-4 text-success" />
+                            )}
+                        </Button>
+                    </div>
                 );
             },
         },
         {
             accessorKey: "severity",
             header: () => "SEVERITY",
+            size: 110,
             cell: ({ row }) => {
                 const inactive = row.original.status !== "ACTIVE";
 
@@ -202,6 +209,7 @@ function helperForColumns({
         {
             accessorKey: "alertType",
             header: () => "TYPE",
+            size: 110,
             cell: ({ row }) => (
                 <span className="text-xs text-muted-foreground">
                     {TYPE[row.original.alertType]}
@@ -212,6 +220,7 @@ function helperForColumns({
             id: "scope",
             header: () => "SCOPE",
             enableSorting: false,
+            size: 140,
             cell: ({ row }) => {
                 const alert = row.original;
 
@@ -225,9 +234,9 @@ function helperForColumns({
                     <div
                         className={`flex flex-col text-sm ${inactive ? "text-muted-foreground" : "text-foreground"}`}
                     >
-                        {" "}
-                        <span> {labelForScope} </span>{" "}
-                        {name && <span className="text-muted-foreground"> {name} </span>}{" "}
+                        <Truncation text={labelForScope} />
+
+                        {name && <Truncation text={name} className="text-muted-foreground" />}
                     </div>
                 );
             },
@@ -236,20 +245,23 @@ function helperForColumns({
         {
             accessorKey: "title",
             header: () => "ALERT",
+            size: 200,
             cell: ({ row }) => {
                 const inactive = row.original.status !== "ACTIVE";
                 const displayTitle = cleanAlertTitle(row.original.title);
 
                 return (
-                    <span className={inactive ? "text-muted-foreground" : "text-foreground"}>
-                        {displayTitle}
-                    </span>
+                    <Truncation
+                        text={displayTitle}
+                        className={inactive ? "text-muted-foreground" : "text-foreground"}
+                    />
                 );
             },
         },
         {
             accessorKey: "lastSeen",
             header: () => "UPDATED AT",
+            size: 160,
             cell: ({ row }) => {
                 const updatedAt = row.original.lastSeen ?? row.original.createdAt;
 
@@ -264,39 +276,42 @@ function helperForColumns({
             id: "info",
             header: () => "",
             enableSorting: false,
+            size: 60,
             cell: ({ row }) => {
                 const alert = row.original;
 
                 return (
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-auto p-0 text-muted-foreground hover:text-foreground"
-                            >
-                                <MoreVertical className="h-4 w-4" />
-                            </Button>
-                        </DropdownMenuTrigger>
+                    <div className="flex justify-center">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-auto p-0 text-muted-foreground hover:text-foreground"
+                                >
+                                    <MoreVertical className="h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
 
-                        <DropdownMenuContent align="end" className="w-40">
-                            <DropdownMenuItem
-                                onClick={() => info(alert)}
-                                className="cursor-pointer"
-                            >
-                                <Info className="mr-2 h-4 w-4" />
-                                More info
-                            </DropdownMenuItem>
+                            <DropdownMenuContent align="end" className="w-40">
+                                <DropdownMenuItem
+                                    onClick={() => info(alert)}
+                                    className="cursor-pointer"
+                                >
+                                    <Info className="mr-2 h-4 w-4" />
+                                    More info
+                                </DropdownMenuItem>
 
-                            <DropdownMenuItem
-                                onClick={() => onDelete(alert)}
-                                className="cursor-pointer text-destructive focus:text-destructive"
-                            >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Delete
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                                <DropdownMenuItem
+                                    onClick={() => onDelete(alert)}
+                                    className="cursor-pointer text-destructive focus:text-destructive"
+                                >
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Delete
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
                 );
             },
         },
@@ -332,11 +347,13 @@ export function AlertTable({
         onSortingChange: setSorting,
         getCoreRowModel: getCoreRowModel(),
         getSortedRowModel: getSortedRowModel(),
+        getPaginationRowModel: getPaginationRowModel(),
+        initialState: { pagination: { pageSize: 10 } },
     });
 
     return (
         <div className="overflow-hidden rounded-lg border border-border bg-card text-card-foreground">
-            <Table>
+            <Table className="table-fixed">
                 <TableHeaderData headerGroups={tableForAlerts.getHeaderGroups()} />
 
                 <TableBody>
@@ -362,6 +379,8 @@ export function AlertTable({
                     )}
                 </TableBody>
             </Table>
+
+            <TablePagination forTable={tableForAlerts} />
         </div>
     );
 }

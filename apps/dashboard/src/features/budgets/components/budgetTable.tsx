@@ -8,6 +8,7 @@ import {
     getSortedRowModel,
     SortingState,
     useReactTable,
+    getPaginationRowModel,
 } from "@tanstack/react-table";
 import { Button } from "@/components/atoms/button";
 import { Switch } from "@/components/atoms/switch";
@@ -23,6 +24,8 @@ import {
     DropdownMenuTrigger,
 } from "@/components/atoms/dropdown-menu";
 import { useResourceNames } from "@/features/alerts/hooks/useResourceNames";
+import { TablePagination } from "@/components/molecules/tablePagination";
+import { Truncation } from "@/components/molecules/truncation";
 interface PropsForBudget {
     budgets: Budget[];
     edit: (budget: Budget) => void;
@@ -48,17 +51,21 @@ function helperForColumns({
             id: "enabled",
             header: () => "ENABLED",
             enableSorting: false,
+            size: 25,
             cell: ({ row }) => (
-                <Switch
-                    checked={row.original.enabled}
-                    onCheckedChange={(checked) => toggleEnabled(row.original, checked)}
-                />
+                <div className="flex items-center justify-center">
+                    <Switch
+                        checked={row.original.enabled}
+                        onCheckedChange={(checked) => toggleEnabled(row.original, checked)}
+                    />
+                </div>
             ),
         },
 
         {
             accessorKey: "scope",
             header: () => "SCOPE",
+            size: 100,
             cell: ({ row }) => {
                 const forBudget = row.original;
 
@@ -75,9 +82,9 @@ function helperForColumns({
                     <div
                         className={`flex flex-col text-sm ${mutedBudget ? "text-muted-foreground" : "text-foreground"}`}
                     >
-                        <span> {label} </span>
+                        <Truncation text={label} />
 
-                        {name && <span className="text-muted-foreground"> {name} </span>}
+                        {name && <Truncation text={name} className="text-muted-foreground" />}
                     </div>
                 );
             },
@@ -86,16 +93,19 @@ function helperForColumns({
         {
             accessorKey: "budget",
             header: () => "BUDGET",
+            size: 100,
             cell: ({ row }) => {
                 const mutedBudget = !row.original.enabled;
 
                 const amount = row.original;
 
+                const forDisplay = `${amount.currency} ${amount.amount.toFixed(2)}`;
+
                 return (
-                    <span className={mutedBudget ? "text-muted-foreground" : "text-foreground"}>
-                        {" "}
-                        {amount.currency} {amount.amount.toFixed(2)}{" "}
-                    </span>
+                    <Truncation
+                        text={forDisplay}
+                        className={mutedBudget ? "text-muted-foreground" : "text-foreground"}
+                    />
                 );
             },
         },
@@ -103,6 +113,7 @@ function helperForColumns({
         {
             accessorKey: "window_days",
             header: () => "WINDOW",
+            size: 100,
             cell: ({ row }) => (
                 <span className={!row.original.enabled ? "text-muted-foreground" : ""}>
                     {row.original.window_days} {row.original.window_days === 1 ? "day" : "days"}
@@ -112,15 +123,20 @@ function helperForColumns({
 
         {
             id: "actions",
-            header: () => "ACTIONS",
+            header: () => "",
             enableSorting: false,
+            size: 10,
             cell: ({ row }) => {
                 const forBudget = row.original;
 
                 return (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-auto p-0 text-muted-foreground hover:text-foreground"
+                            >
                                 {" "}
                                 <MoreVertical className="h-4 w-4" />{" "}
                             </Button>
@@ -167,11 +183,13 @@ export function BudgetTable({ budgets, edit, toggleEnabled, onDelete }: Readonly
         onSortingChange: setSorting,
         getCoreRowModel: getCoreRowModel(),
         getSortedRowModel: getSortedRowModel(),
+        getPaginationRowModel: getPaginationRowModel(),
+        initialState: { pagination: { pageSize: 10 } },
     });
 
     return (
         <div className="overflow-hidden rounded-lg border border-border bg-card text-card-foreground">
-            <Table>
+            <Table className="table-fixed">
                 <TableHeaderData headerGroups={tableForBudgets.getHeaderGroups()} />
 
                 <TableBody>
@@ -201,6 +219,8 @@ export function BudgetTable({ budgets, edit, toggleEnabled, onDelete }: Readonly
                     )}
                 </TableBody>
             </Table>
+
+            <TablePagination forTable={tableForBudgets} />
         </div>
     );
 }
