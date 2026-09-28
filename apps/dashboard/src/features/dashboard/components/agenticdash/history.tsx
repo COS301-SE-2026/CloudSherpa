@@ -72,7 +72,7 @@ export default function History() {
     }
 
     return (
-        <div className="h-full w-full overflow-y-auto border pt-4 rounded-lg">
+        <div className="h-full w-full overflow-y-auto border rounded-lg">
             <Table>
                 <TableHeader className="sticky top-0 bg-background z-10 shadow-sm">
                     {table.getHeaderGroups().map((headerGroup) => (

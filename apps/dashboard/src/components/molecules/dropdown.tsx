@@ -17,8 +17,9 @@ export interface DropdownOption {
     label: string;
 }
 
-interface BaseDropdownProps {
+interface DropdownProps {
     options: DropdownOption[];
+    value: string | null;
     onSelect: (value: string) => void;
     disabled?: boolean;
     disableSearch?: boolean;
@@ -28,20 +29,6 @@ interface BaseDropdownProps {
     emptyMessage?: string;
 }
 
-type SingleDropdownProps = BaseDropdownProps & {
-    multiple?: false;
-    value: string | null;
-    onSelect: (value: string) => void;
-};
-
-type MultiDropdownProps = BaseDropdownProps & {
-    multiple: true;
-    value: string[];
-    onSelect: (value: string[]) => void;
-};
-
-export type DropdownProps = SingleDropdownProps | MultiDropdownProps;
-
 const WIDTH_VARIANTS = {
     small: "w-35",
     medium: "w-50",
@@ -49,56 +36,18 @@ const WIDTH_VARIANTS = {
     full: "w-full",
 };
 
-export default function Dropdown(props: Readonly<DropdownProps>) {
-    const {
-        options,
-        disabled = false,
-        disableSearch = false,
-        placeholder = "Select option...",
-        widthVariant = "full",
-        className,
-        emptyMessage = "No options found",
-    } = props;
-
+export default function Dropdown({
+    options,
+    value,
+    onSelect,
+    disabled = false,
+    disableSearch = false,
+    placeholder = "select option...",
+    widthVariant = "full",
+    className,
+    emptyMessage = "No options found",
+}: Readonly<DropdownProps>) {
     const [open, setOpen] = useState(false);
-
-    const renderTriggerLabel = () => {
-        if (props.multiple) {
-            const selectedValues = props.value ?? [];
-            if (selectedValues.length === 0) return placeholder;
-            if (selectedValues.length === 1) {
-                return (
-                    options.find((opt) => opt.value === selectedValues[0])?.label ??
-                    selectedValues[0]
-                );
-            }
-            return `${selectedValues.length} selected`;
-        }
-
-        if (!props.value) return placeholder;
-        return options.find((opt) => opt.value === props.value)?.label ?? props.value;
-    };
-
-    const handleSelectOption = (optionValue: string) => {
-        if (props.multiple) {
-            const currentValues = props.value ?? [];
-            const isSelected = currentValues.includes(optionValue);
-            const nextValues = isSelected
-                ? currentValues.filter((v) => v !== optionValue)
-                : [...currentValues, optionValue];
-            props.onSelect(nextValues);
-        } else {
-            props.onSelect(optionValue);
-            setOpen(false);
-        }
-    };
-
-    const isOptionSelected = (optionValue: string) => {
-        if (props.multiple) {
-            return (props.value ?? []).includes(optionValue);
-        }
-        return props.value === optionValue;
-    };
 
     return (
         <div className={cn(WIDTH_VARIANTS[widthVariant], className)}>
@@ -111,7 +60,11 @@ export default function Dropdown(props: Readonly<DropdownProps>) {
                         className="justify-between w-full bg-card"
                         disabled={disabled}
                     >
-                        <span className="truncate">{renderTriggerLabel()}</span>
+                        <span className="truncate">
+                            {value
+                                ? options.find((opt) => opt.value === value)?.label
+                                : placeholder}
+                        </span>
                         <ChevronDown
                             className={cn(
                                 "h-4 w-4 opacity-50 transition-transform duration-200",
@@ -126,24 +79,24 @@ export default function Dropdown(props: Readonly<DropdownProps>) {
                         <CommandList>
                             <CommandEmpty>{emptyMessage}</CommandEmpty>
                             <CommandGroup>
-                                {options.map((opt) => {
-                                    const selected = isOptionSelected(opt.value);
-                                    return (
-                                        <CommandItem
-                                            key={opt.value}
-                                            value={opt.value}
-                                            onSelect={() => handleSelectOption(opt.value)}
-                                        >
-                                            <Check
-                                                className={cn(
-                                                    "mr-2 h-4 w-4 shrink-0",
-                                                    selected ? "opacity-100" : "opacity-0"
-                                                )}
-                                            />
-                                            <span className="truncate">{opt.label}</span>
-                                        </CommandItem>
-                                    );
-                                })}
+                                {options.map((opt) => (
+                                    <CommandItem
+                                        key={opt.value}
+                                        value={opt.value}
+                                        onSelect={(currentValue) => {
+                                            onSelect(currentValue);
+                                            setOpen(false);
+                                        }}
+                                    >
+                                        <Check
+                                            className={cn(
+                                                "mr-2 h-4 w-4",
+                                                value === opt.value ? "opacity-100" : "opacity-0"
+                                            )}
+                                        />
+                                        {opt.label}{" "}
+                                    </CommandItem>
+                                ))}
                             </CommandGroup>
                         </CommandList>
                     </Command>
