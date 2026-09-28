@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { useRef } from "react";
 import { ThemeProvider as NextThemesProvider, useTheme } from "next-themes";
 import { usePathname } from "next/navigation";
 import { fetchUserTheme } from "@/lib/fetch/api-preferences";
