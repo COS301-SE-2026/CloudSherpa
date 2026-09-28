@@ -37,7 +37,7 @@ export function ServicesList({
                     variant="ghost"
                     size="sm"
                     onClick={onSelectAll}
-                    className="text-primary hover:text-accent text-sm transition-colors px-0"
+                    className="text-primary hover:text-primary"
                 >
                     {allSelected ? "Deselect All" : "Select All"}
                 </Button>
