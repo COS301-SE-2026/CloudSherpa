@@ -8,13 +8,10 @@ import { useMetricStore } from "@/features/dashboard/stores/metric-store";
 import { MetricStore } from "@/features/dashboard/types/metric";
 import { toast } from "sonner";
 import { THEMES } from "@/features/dashboard/types/agentic";
-import { useToolbar } from "@/features/dashboard/components/toolbar/toolbarProvider";
 import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
-import ApplyDashboardDialog from "@/features/dashboard/components/agenticdash/applyDashboardDialog";
 import { generatePrompt, ResourceMeta } from "@/features/dashboard/utils/structuredPromptGenerater";
-import { AiDashboardApplyMode } from "@/features/dashboard/types/agentic";
 import { Button } from "@/components/atoms/button";
-import { Loader2, X } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 const PROVIDERS = ["AWS", "AZURE", "GCP"];
 
@@ -24,10 +21,11 @@ const PROVIDER_MAP: Record<string, string> = {
     GCP: "GCP_PROJECT",
 };
 
-export default function StructuredRequest() {
-    const { isApplyDialogOpen, setIsApplyDialogOpen } = useToolbar();
-    const [isApplying, setIsApplying] = useState(false);
+interface StructuredRequestProps {
+    isApplying: boolean;
+}
 
+export default function StructuredRequest({ isApplying }: Readonly<StructuredRequestProps>) {
     const [providers, setProviders] = useState<string[]>([]);
     const [accountIds, setAccountIds] = useState<string[]>([]);
     const [resourceIds, setResourceIds] = useState<string[]>([]);
@@ -38,13 +36,12 @@ export default function StructuredRequest() {
 
     const isSessionActive = useDashboardStore((state) => state.isSessionActive);
     const isGenerating = useDashboardStore((state) => state.isGenerating);
-    const currentVersionId = useDashboardStore((state) => state.currentVersionId);
-    const versions = useDashboardStore((state) => state.versions);
 
     const [userInstruction, setUserInstruction] = useState("");
 
-    const { startSessionAndGenerate, sendPrompt, applyDashboard, cancelSession } =
-        useDashboardStore((state) => state.agenticActions);
+    const { startSessionAndGenerate, sendPrompt } = useDashboardStore(
+        (state) => state.agenticActions
+    );
 
     const getMetricList = useMetricStore((state: MetricStore) => state.getMetricList);
 
@@ -64,11 +61,6 @@ export default function StructuredRequest() {
             theme.metricNames.some((name) => availableMetrics.includes(name))
         );
     }, [availableMetrics]);
-
-    const currentVersion = versions.find((version) => version.versionId === currentVersionId);
-
-    const canApplyCurrentVersion =
-        isSessionActive && currentVersion !== undefined && currentVersion.version > 0;
 
     const handleGenerate = async () => {
         if (isGenerating || providers.length === 0 || resourceIds.length === 0) {
@@ -125,20 +117,6 @@ export default function StructuredRequest() {
         }
 
         setUserInstruction("");
-    };
-
-    const handleApply = async (mode: AiDashboardApplyMode): Promise<void> => {
-        if (!currentVersionId) return;
-
-        setIsApplying(true);
-        try {
-            const applied = await applyDashboard(currentVersionId, mode);
-            if (applied) {
-                setIsApplyDialogOpen(false);
-            }
-        } finally {
-            setIsApplying(false);
-        }
     };
 
     const connectionOptions = useMemo(() => {
@@ -330,39 +308,6 @@ export default function StructuredRequest() {
                     />
                 </div>
                 <div className="h-full w-full flex flex flex-col justify-end items-end gap-2">
-                    {/* {isSessionActive && (
-                        <div className="w-full flex items-center justify-between px-3 py-2 bg-muted/30 border rounded-md">
-                            <span className="text-muted-foreground text-xs font-medium">
-                                {currentVersion?.version === 0
-                                    ? "Viewing the dashboard you started with"
-                                    : `Viewing version v${currentVersion?.version ?? ""}`}
-                            </span>
-
-                            <div className="flex items-center gap-1">
-                                <Button
-                                    variant="destructive"
-                                    className="h-7"
-                                    size="sm"
-                                    onClick={() => cancelSession()}
-                                    disabled={isGenerating || isApplying}
-                                >
-                                    <X />
-                                    Discard
-                                </Button>
-
-                                {canApplyCurrentVersion && (
-                                    <Button
-                                        size="sm"
-                                        className="h-7"
-                                        onClick={() => setIsApplyDialogOpen(true)}
-                                        disabled={isGenerating || isApplying}
-                                    >
-                                        Save
-                                    </Button>
-                                )}
-                            </div>
-                        </div>
-                    )} */}
                     <Button
                         variant="default"
                         onClick={handleGenerate}
@@ -373,15 +318,6 @@ export default function StructuredRequest() {
                     </Button>
                 </div>
             </div>
-            {canApplyCurrentVersion && currentVersion && (
-                <ApplyDashboardDialog
-                    open={isApplyDialogOpen}
-                    dashboardName={currentVersion.title}
-                    isApplying={isApplying}
-                    onOpenChange={setIsApplyDialogOpen}
-                    onApply={handleApply}
-                />
-            )}
         </>
     );
 }

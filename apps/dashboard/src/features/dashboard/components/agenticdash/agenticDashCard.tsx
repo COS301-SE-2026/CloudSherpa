@@ -17,7 +17,11 @@ import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
 import { cn } from "@/lib/utils";
 import StructuredRequest from "@/features/dashboard/components/agenticdash/structured";
 
-export default function AgenticDashCard() {
+interface AgenticDashCardProps {
+    isApplying: boolean;
+}
+
+export default function AgenticDashCard({ isApplying }: Readonly<AgenticDashCardProps>) {
     const [open, setOpen] = useState(false);
     const popupRef = useRef<HTMLDivElement>(null);
     const [showPresets, setShowPresets] = useState(false);
@@ -119,13 +123,16 @@ export default function AgenticDashCard() {
                                         value="generate"
                                         className="absolute inset-0 m-0 data-[state=active]:flex flex-col"
                                     >
-                                        <GenerateDashInput showPresets={showPresets} />
+                                        <GenerateDashInput
+                                            showPresets={showPresets}
+                                            isApplying={isApplying}
+                                        />
                                     </TabsContent>
                                     <TabsContent
                                         value="structured"
                                         className="absolute inset-0 m-0 data-[state=active]:flex flex-col"
                                     >
-                                        <StructuredRequest />
+                                        <StructuredRequest isApplying={isApplying} />
                                     </TabsContent>
                                     <TabsContent
                                         value="history"
