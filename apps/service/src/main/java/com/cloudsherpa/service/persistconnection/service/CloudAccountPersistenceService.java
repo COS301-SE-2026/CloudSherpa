@@ -28,10 +28,9 @@ public class CloudAccountPersistenceService {
       throw new IllegalArgumentException("At least one cloud account field must be supplied");
     }
 
-    CloudAccount account =
-        cloudAccountRepository
-            .findByIdAndUserId(accountId, userId)
-            .orElseThrow(() -> new NoSuchElementException("Cloud account not found"));
+    CloudAccount account = cloudAccountRepository
+        .findByIdAndUserId(accountId, userId)
+        .orElseThrow(() -> new NoSuchElementException("Cloud account not found"));
 
     if (request.displayName() != null) {
       account.setDisplayName(request.displayName());
@@ -91,6 +90,7 @@ public class CloudAccountPersistenceService {
         account.isPeriodicResourceDiscovery(),
         account.isAutoAdjustIngestionPeriod(),
         account.isNewResourcesActive(),
-        account.getNextResourceScan());
+        account.getNextResourceScan(),
+        account.getIngestionBudget());
   }
 }

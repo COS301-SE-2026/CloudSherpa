@@ -34,8 +34,7 @@ public class ConnectionQueryService {
     }
     List<CloudAccount> accounts = new ArrayList<>();
     connections.forEach(
-        connection ->
-            accounts.addAll(cloudAccountRepository.findByConnectionId(connection.getId())));
+        connection -> accounts.addAll(cloudAccountRepository.findByConnectionId(connection.getId())));
     return accounts;
   }
 
@@ -44,11 +43,10 @@ public class ConnectionQueryService {
   }
 
   public CloudAccountDetailsResponse getAccountDetails(UUID accountId) {
-    CloudAccount account =
-        cloudAccountRepository
-            .findById(accountId)
-            .orElseThrow(
-                () -> new IllegalArgumentException("No cloud account found with id " + accountId));
+    CloudAccount account = cloudAccountRepository
+        .findById(accountId)
+        .orElseThrow(
+            () -> new IllegalArgumentException("No cloud account found with id " + accountId));
 
     return new CloudAccountDetailsResponse(
         account.getId(),
@@ -60,7 +58,8 @@ public class ConnectionQueryService {
         account.isPeriodicResourceDiscovery(),
         account.isAutoAdjustIngestionPeriod(),
         account.isNewResourcesActive(),
-        account.getNextResourceScan());
+        account.getNextResourceScan(),
+        account.getIngestionBudget());
   }
 
   public List<Resource> getResourcesForAccount(UUID accountId) {

@@ -14,4 +14,6 @@ public record CloudAccountDetailsResponse(
     boolean periodicResourceDiscovery,
     boolean autoAdjustIngestionPeriod,
     boolean newResourcesActive,
-    OffsetDateTime nextResourceScan) {}
+    OffsetDateTime nextResourceScan,
+    Double ingestionBudget) {
+}

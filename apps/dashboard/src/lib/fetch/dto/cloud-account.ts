@@ -24,6 +24,7 @@ export interface CloudAccountDetails {
     autoAdjustIngestionPeriod: boolean;
     newResourcesActive: boolean;
     nextResourceScan: string;
+    ingestionBudget: number;
 }
 
 export interface CloudAccountPatch {
@@ -32,4 +33,5 @@ export interface CloudAccountPatch {
     periodicResourceDiscovery?: boolean;
     autoAdjustIngestionPeriod?: boolean;
     newResourcesActive?: boolean;
+    ingestionBudget?: number;
 }
