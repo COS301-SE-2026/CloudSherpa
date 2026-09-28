@@ -1,17 +1,19 @@
 "use client";
 
 import * as React from "react";
-import { useState } from "react";
+import { useRef } from "react";
 import { ThemeProvider as NextThemesProvider, useTheme } from "next-themes";
 import { usePathname } from "next/navigation";
 import { fetchUserTheme } from "@/lib/fetch/api-preferences";
 import { useAuthContext } from "@/features/authentication/providers/AuthContext";
+import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
 
 function ThemePersistenceEnforcer({ children }: Readonly<{ children: React.ReactNode }>) {
     const { setTheme } = useTheme();
     const { isAuthReady, isAuthenticated } = useAuthContext();
 
-    const [themeLoaded, setThemeLoaded] = useState(false);
+    const themeLoaded = useDashboardStore((state) => state.themeLoaded);
+    const setThemeLoaded = useDashboardStore((state) => state.setThemeLoaded);
 
     React.useEffect(() => {
         if (!isAuthReady || !isAuthenticated || themeLoaded) return;
@@ -33,8 +35,12 @@ export function ThemeProvider({
     ...props
 }: Readonly<React.ComponentProps<typeof NextThemesProvider>>) {
     const pathname = usePathname();
-
+    const setThemeLoaded = useDashboardStore((state) => state.setThemeLoaded);
     const forceDarkMode = pathname === "/" || pathname === "/login";
+
+    if (forceDarkMode) {
+        setThemeLoaded(false);
+    }
 
     return (
         <NextThemesProvider
