@@ -85,7 +85,7 @@ export default function GenerateDashInput({ showPresets }: Readonly<GenerateDash
 
     return (
         <>
-            <div className="h-full flex flex-col justify-end items-start gap-4">
+            <div className="h-full flex flex-col justify-end items-start pt-4 gap-4">
                 {shouldShowPresets && (
                     <div className="h-full flex-1 overflow-y-auto w-full">
                         <PresetPrompts onSelect={setPrompt} />
@@ -94,7 +94,7 @@ export default function GenerateDashInput({ showPresets }: Readonly<GenerateDash
 
                 <div className="shrink-0 w-full flex flex-col gap-2">
                     {isSessionActive && (
-                        <div className="flex items-center justify-between px-3 py-2 bg-muted/30 border rounded-md transition-all animate-in fade-in slide-in-from-bottom">
+                        <div className="flex items-center justify-between px-3 py-2 bg-muted/30 border rounded-md">
                             <span className="text-muted-foreground text-xs font-medium">
                                 {currentVersion?.version === 0
                                     ? "Viewing the dashboard you started with"
