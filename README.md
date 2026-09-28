@@ -36,15 +36,15 @@
 
 ## Documentation
 
-| Demo 3| Demo 2 | Demo 1 | 
-| :---: | :---: | :---: |
-| [System Requirements Specification](docs/documentation/demo3/Demo3_SRS.pdf) | [System Requirements Specification](docs/documentation/demo2/Demo2_SRS.pdf) | [System Requirements Specification](docs/documentation/demo1/Demo1_SRS.pdf)|
-| [System Architecture Specification](docs/documentation/demo3/Demo3_SAS.pdf) | [System Architecture Specification](docs/documentation/demo2/Demo2_SAS.pdf) | |
-| [User Manual](docs/documentation/demo3/Demo3_UserManual.pdf) | [Coding Standards](docs/documentation/demo2/Demo2_CodingStandards.pdf) ||
-|| [Testing Policy](docs/documentation/demo2/Demo2_TestingPolicy.pdf) || 
-|| [User Manual](docs/documentation/demo2/Demo2_UserManual.pdf) ||
-|| [Architecture Decision Records](docs/documentation/demo2/Demo2_ADR.pdf) ||
-|| [Brand Style Guide](docs/documentation/demo2/Demo2_DesignSystem.pdf) ||
+|Demo 4| Demo 3| Demo 2 | Demo 1 | 
+| :---: | :---: | :---: | :---: |
+|| [System Requirements Specification](docs/documentation/demo3/Demo3_SRS.pdf) | [System Requirements Specification](docs/documentation/demo2/Demo2_SRS.pdf) | [System Requirements Specification](docs/documentation/demo1/Demo1_SRS.pdf)|
+|| [System Architecture Specification](docs/documentation/demo3/Demo3_SAS.pdf) | [System Architecture Specification](docs/documentation/demo2/Demo2_SAS.pdf) | |
+|| [User Manual](docs/documentation/demo3/Demo3_UserManual.pdf) | [Coding Standards](docs/documentation/demo2/Demo2_CodingStandards.pdf) ||
+||| [Testing Policy](docs/documentation/demo2/Demo2_TestingPolicy.pdf) || 
+||| [User Manual](docs/documentation/demo2/Demo2_UserManual.pdf) ||
+||| [Architecture Decision Records](docs/documentation/demo2/Demo2_ADR.pdf) ||
+||| [Brand Style Guide](docs/documentation/demo2/Demo2_DesignSystem.pdf) ||
 
 ## Important Links
 
@@ -75,8 +75,6 @@ docker compose -f infra/docker-compose.yml up --build
 
 The dashboard frontend is available at `http://localhost:3000`.
 
-For development workflows, individual service commands, ports, and troubleshooting, see [`docs/dev/CheatSheet.md`](docs/dev/CheatSheet.md), [`infra/README.md`](infra/README.md), and the app-specific READMEs under [`apps/`](apps/).
-
 ## About Team BitFlip
 
 Team BitFlip is a cross-functional group of dedicated software engineering students committed to transparency, accountability, and quality-focused delivery. We utilize an Agile delivery framework to ensure continuous alignment with our stakeholders' vision. 
@@ -91,6 +89,10 @@ Team BitFlip is a cross-functional group of dedicated software engineering stude
 </div>
 
 ### Meet the Team
+
+<a href="https://github.com/COS301-SE-2026/CloudSherpa/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=COS301-SE-2026/CloudSherpa" />
+</a>
 
 **Megan Norval**
 
