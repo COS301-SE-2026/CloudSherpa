@@ -24,7 +24,8 @@ CREATE TYPE public.predefined_time_enum AS ENUM (
   'T_12_HOUR',
   'T_24_HOUR',
   'T_7_DAYS',
-  'T_30_DAYS'
+  'T_30_DAYS',
+  'CUSTOM'
 );
 CREATE TYPE public.type_enum AS ENUM ('KPI', 'CHART');
 CREATE TYPE public.execution_status_enum AS ENUM ('pending', 'processing', 'completed', 'failed');
@@ -113,7 +114,8 @@ CREATE TABLE IF NOT EXISTS public.preferences (
   background text, 
   currency public.currency_enum,
   language public.language_enum,
-  sidebar_toggle boolean DEFAULT true
+  sidebar_toggle boolean DEFAULT true,
+  in_app_alert_notifications_enabled boolean NOT NULL DEFAULT true
 );
 
 CREATE TABLE IF NOT EXISTS public.cloud_connection (
@@ -950,6 +952,7 @@ BEGIN
         message text,
         payload jsonb DEFAULT '{}'::jsonb,
         status public.alert_status_enum NOT NULL DEFAULT 'ACTIVE',
+        in_app_notifications_silenced boolean NOT NULL DEFAULT false,
         canonical_key text,
         created_at timestamptz DEFAULT NOW(),
         last_seen timestamptz DEFAULT NOW(),
@@ -1024,13 +1027,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-\set demo_password ''
-\getenv demo_password DEMO_PASSWORD
-
--- Custom variable
--- Must be separated by a .
-SET sherpa.demo_password = :'demo_password';
-
 -- ----------------------------------------------------------------
 -- DEMO SEED DATA
 -- ----------------------------------------------------------------
@@ -1062,9 +1058,9 @@ BEGIN
   INSERT INTO public.users (user_id, email, username, password_hash, created_at)
   VALUES (
     demo_user_id,
-    'demo@gmail.com',
-    'demo@gmail.com',
-    crypt(current_setting('sherpa.demo_password'), gen_salt('bf', 12)),
+    'test@gmail.com',
+    'test@gmail.com',
+    crypt('test123@abcd', gen_salt('bf', 12)),
     now()
   )
   ON CONFLICT DO NOTHING;
