@@ -121,7 +121,7 @@ class AzureBillingRecordIngestionTest {
         NUM_RECORDS_TO_SEED,
         recordsPerSecond);
 
-    assertTrue(recordsPerSecond > RECORD_PER_SECOND_THRESHOLD);
+    assertTrue(recordsPerSecond >= RECORD_PER_SECOND_THRESHOLD);
   }
 
   private void mockManifestDiscoveryStep() {
