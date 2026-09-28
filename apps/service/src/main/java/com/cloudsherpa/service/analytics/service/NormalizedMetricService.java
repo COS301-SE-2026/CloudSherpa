@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
@@ -130,18 +131,9 @@ public class NormalizedMetricService {
 
     String canonMetricName = metricMapper.toCanonicalName(provider.toString(), metricType);
 
-    List<TimestampedNumericDataPoint> fetchedResourceMetrics = null;
-
-    switch (provider) {
-      case AWS -> fetchedResourceMetrics =
-          normalizedMetricsRepository.getTimestampedMetricValuesAfterDate(
-              resourceId, canonMetricName, fromInstant);
-      case GCP, AZURE -> fetchedResourceMetrics =
-          normalizedMetricsRepository.getAggregatedTimestampedMetricValuesAfterDate(
-              resourceId, canonMetricName, fromInstant);
-      default -> throw new IllegalArgumentException(
-          "Repository method needs to be explicitly set per supported provider");
-    }
+    List<TimestampedNumericDataPoint> fetchedResourceMetrics =
+        normalizedMetricsRepository.getAggregatedTimestampedMetricValuesAfterDate(
+            resourceId, canonMetricName, fromInstant);
 
     if (fetchedResourceMetrics.isEmpty()) {
       logger.info(
@@ -178,6 +170,7 @@ public class NormalizedMetricService {
     return response;
   }
 
+  @Transactional(readOnly = true)
   public List<NormalizedMetrics> fetchSegmentedDownsampledSeries(
       DownsampledSeriesRequestDto request) {
     ProviderEnum provider = resourceRepository.findProviderByResourceId(request.resourceId());
@@ -186,9 +179,14 @@ public class NormalizedMetricService {
 
     List<NormalizedMetrics> result = new ArrayList<>();
 
+    normalizedMetricsRepository.disableJitForCurrentTransaction();
     List<SegmentedMetric> segmentedSeries =
         normalizedMetricsRepository.getSegmentedDownsampledNormalizedMetrics(
             request.resourceId(), canonMetricName, request.from(), request.to(), 1800, 300);
+
+    if (segmentedSeries.isEmpty()) {
+      return List.of();
+    }
 
     long currentSegment = segmentedSeries.get(0).segmentId();
 

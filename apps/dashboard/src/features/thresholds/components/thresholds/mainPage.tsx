@@ -22,15 +22,18 @@ import {
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { BudgetSection } from "@/features/budgets/components/budgetSection";
+import { useAuthContext } from "@/features/authentication/providers/AuthContext";
+import { useFetchMetrics } from "@/features/dashboard/hooks/useFetchMetrics";
 
-interface PropsForMainPage {
-    resourceId?: string;
-    userId?: string;
-}
+export function MainPage() {
+    const { user } = useAuthContext();
 
-export function MainPage({ resourceId, userId }: Readonly<PropsForMainPage>) {
+    const userId = user?.userId;
+
+    useFetchMetrics();
+
     const { thresholds, loading, forError, createThreshold, updateThreshold, removeThreshold } =
-        useThresholds(resourceId);
+        useThresholds();
 
     const [search, setSearch] = useState("");
 
@@ -202,7 +205,6 @@ export function MainPage({ resourceId, userId }: Readonly<PropsForMainPage>) {
                     key={isEditing?.thresholdId ?? "new"}
                     open={popupOpen}
                     initial={isEditing}
-                    resourceId={resourceId}
                     userId={userId}
                     onClose={() => setPopupOpen(false)}
                     onSubmit={handlingSubmit}

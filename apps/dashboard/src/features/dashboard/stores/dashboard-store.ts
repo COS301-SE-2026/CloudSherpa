@@ -421,6 +421,11 @@ const createWindowSlice: StateCreator<DashboardStore, [], [], WindowSlice> = (se
         set({ timeoutId: timeoutId });
     },
     setPreset: async (preset) => {
+        if (preset === "custom") {
+            clearTimeout(get().timeoutId ?? undefined);
+            clearInterval(get().intervalId ?? undefined);
+        }
+
         set({ selectedPreset: preset });
         await setDashboardPresetTimeWindow(preset, get().activeDashboardId);
     },

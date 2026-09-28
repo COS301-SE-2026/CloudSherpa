@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useAuthContext } from "../providers/AuthContext";
-import { useRouter } from "next/navigation";
 import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
 import { useResourceNameStore } from "@/features/dashboard/stores/resource-store";
 import { useUsageIntelligenceConfigStore } from "@/features/intelligence/stores/useUsageIntelligenceConfigStore";
@@ -11,7 +10,6 @@ import { useTheme } from "next-themes";
 export function useLogout() {
     const { setTheme } = useTheme();
     const authContext = useAuthContext();
-    const router = useRouter();
     const resetDashboardStore = useDashboardStore((state) => state.actions.reset);
     const resetWindowStore = useDashboardStore((state) => state.clear);
     const resetResourceStore = useResourceNameStore((state) => state.reset);
@@ -36,7 +34,6 @@ export function useLogout() {
         const logoutStatus = await authContext.logout();
         setLogoutError(!logoutStatus);
         setTheme("dark");
-        router.push("/login");
         clearStores();
     }
 

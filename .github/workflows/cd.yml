@@ -189,6 +189,15 @@ jobs:
             path: |
               nfr-tests/historical-metric/historical-metric-scalability.js
 
+        - name: Run Usage Forecasting Scalability Test
+          if: github.event_name == 'pull_request'
+          uses: grafana/run-k6-action@de51a7390bdf0ac85a3bef493691bd71d4c7c158
+          env:
+            BASE_URL: http://localhost:8083
+          with:
+            path: |
+              nfr-tests/forecasting/usage-forecasting-scalability.js
+
         - name: Compose Down
           if: github.event_name == 'pull_request' && always()
           run: |

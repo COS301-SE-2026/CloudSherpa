@@ -34,12 +34,11 @@ import type { CloudResource } from "@/lib/fetch/dto/cloud-resource";
 interface PropsForPopup {
     open: boolean;
     initial?: Budget | null;
-    userId: string;
     onClose: () => void;
     onSubmit: (payload: CreateBudgetRequest) => Promise<void>;
 }
 
-export function BudgetPopup({ open, initial, userId, onClose, onSubmit }: Readonly<PropsForPopup>) {
+export function BudgetPopup({ open, initial, onClose, onSubmit }: Readonly<PropsForPopup>) {
     const { user } = useAuthContext();
 
     const [scope, setScope] = useState<ScopeForBudget>(initial?.scope ?? "TENANT");
@@ -53,7 +52,7 @@ export function BudgetPopup({ open, initial, userId, onClose, onSubmit }: Readon
     const [enabled, setEnabled] = useState<boolean>(initial?.enabled ?? true);
 
     const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
-        initial?.scope === "ACCOUNT" || initial?.scope === "RESOURCE" ? initial.scope_id : null
+        initial?.scope === "ACCOUNT" ? initial.scope_id : null
     );
 
     const [selectedResourceId, setSelectedResourceId] = useState<string | null>(
@@ -75,6 +74,54 @@ export function BudgetPopup({ open, initial, userId, onClose, onSubmit }: Readon
     const [windowError, setWindowError] = useState<string | null>(null);
 
     const [scopeError, setScopeError] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!open) {
+            return;
+        }
+
+        if (initial?.scope !== "RESOURCE") {
+            return;
+        }
+
+        if (!initial.scope_id) {
+            return;
+        }
+
+        if (selectedAccountId) {
+            return;
+        }
+
+        let cancelled = false;
+
+        (async () => {
+            const allConnections = await getAwsAccountConnections();
+
+            for (const connection of allConnections) {
+                if (cancelled) {
+                    return;
+                }
+
+                const connectionResources = await getAwsAccountResources(connection.id);
+
+                if (cancelled) {
+                    return;
+                }
+
+                if (connectionResources.some((resource) => resource.id === initial.scope_id)) {
+                    setSelectedAccountId(connection.id);
+
+                    setSelectedResourceId(initial.scope_id);
+
+                    return;
+                }
+            }
+        })();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [open, initial?.scope, initial?.scope_id, selectedAccountId]);
 
     useEffect(() => {
         if (!open) {
@@ -183,7 +230,7 @@ export function BudgetPopup({ open, initial, userId, onClose, onSubmit }: Readon
         setScopeError(null);
 
         const forScopeId: Record<ScopeForBudget, string | null> = {
-            TENANT: user?.userId ?? null,
+            TENANT: null,
             ACCOUNT: selectedAccountId,
             RESOURCE: selectedResourceId,
         };
@@ -196,22 +243,33 @@ export function BudgetPopup({ open, initial, userId, onClose, onSubmit }: Readon
             RESOURCE: "Select an account and a resource",
         };
 
-        if (!resolvedScopeId) {
+        const validScope =
+            scope === "TENANT" ||
+            (scope === "ACCOUNT" && !!selectedAccountId) ||
+            (scope === "RESOURCE" && !!selectedResourceId);
+
+        if (!validScope) {
             setScopeError(scopeErrorMessage[scope]);
+
+            hasError = true;
+        }
+
+        if (!user?.userId) {
+            setScopeError("Not signed in");
 
             hasError = true;
         }
 
         const amountParsed = Number(amount);
 
-        if (!Number.isFinite(amountParsed) || amountParsed <= 0) {
-            setAmountError("Amount must be greater than 0");
+        if (!Number.isFinite(amountParsed) || amountParsed < 0) {
+            setAmountError("Amount must be 0 or greater");
 
             hasError = true;
         }
 
         if (!Number.isFinite(windowDays) || windowDays <= 0) {
-            setWindowError("Window must be greater than 0");
+            setWindowError("Window must be 0 or greater");
 
             hasError = true;
         }
@@ -256,7 +314,7 @@ export function BudgetPopup({ open, initial, userId, onClose, onSubmit }: Readon
                     <DialogTitle> {initial ? "Edit budget" : "New budget"} </DialogTitle>
                 </DialogHeader>
 
-                <form onSubmit={handlingSubmit} className="space-y-4">
+                <form onSubmit={handlingSubmit} className="space-y-4" noValidate>
                     <div className="space-y-2">
                         <Label htmlFor="scope"> Scope </Label>
 
@@ -349,6 +407,7 @@ export function BudgetPopup({ open, initial, userId, onClose, onSubmit }: Readon
                             id="amount"
                             type="number"
                             step="any"
+                            min={0}
                             value={amount}
                             onChange={(change) => {
                                 setAmount(change.target.value);
@@ -367,6 +426,8 @@ export function BudgetPopup({ open, initial, userId, onClose, onSubmit }: Readon
                         <Input
                             id="window"
                             type="number"
+                            min={1}
+                            step={1}
                             value={windowDays}
                             onChange={(change) => {
                                 setWindowDays(Number(change.target.value));

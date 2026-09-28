@@ -115,7 +115,7 @@ export default function Recommendations() {
                             className="text-primary"
                         />
                         <RecommendationCardHero
-                            value={`Dismissed ${summary.dismissed}`}
+                            value={`Disabled ${summary.dismissed}`}
                             className="text-destructive"
                         />
                     </div>

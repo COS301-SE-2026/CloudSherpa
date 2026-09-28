@@ -1,75 +1,96 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { disableAlert, enableAlert, fetchAlerts } from "@/features/alerts/alerts";
-import type { Alert, TypeForAlerts } from "@/features/alerts/types/alertTypes";
+import { disableAlert, enableAlert, fetchAlerts, deleteAlert } from "@/features/alerts/alerts";
+import { useAlertStore } from "@/features/alerts/stores/alert-store";
+import type { TypeForAlerts } from "@/features/alerts/types/alertTypes";
 
 interface AlertsResult {
-    alerts: Alert[];
+    alerts: ReturnType<typeof useAlertStore.getState>["alerts"];
     loading: boolean;
     forError: string | null;
     refreshing: () => Promise<void>;
     disable: (alertId: string) => Promise<void>;
     enable: (alertId: string) => Promise<void>;
+    removeAlert: (alertId: string) => Promise<void>;
 }
 
 export function useAlerts(typeForAlert?: TypeForAlerts): AlertsResult {
-    const [alerts, setAlerts] = useState<Alert[]>([]);
+    const allAlerts = useAlertStore((state) => state.alerts);
+    const setAlerts = useAlertStore((state) => state.setAlerts);
+    const setStatus = useAlertStore((state) => state.setStatus);
+    const removeFromStore = useAlertStore((forState) => forState.removeAlert);
+
     const [loading, setLoading] = useState<boolean>(true);
     const [forError, setForError] = useState<string | null>(null);
+
+    const alerts = typeForAlert
+        ? allAlerts.filter((alert) => alert.alertType === typeForAlert)
+        : allAlerts;
 
     const refreshing = useCallback(async () => {
         setLoading(true);
         setForError(null);
 
         try {
-            const forData = await fetchAlerts(typeForAlert);
-            setAlerts(forData);
+            const data = await fetchAlerts(typeForAlert);
+            setAlerts(data);
         } catch (error) {
             setForError(error instanceof Error ? error.message : "Failed to load alerts");
         } finally {
             setLoading(false);
         }
-    }, [typeForAlert]);
+    }, [setAlerts, typeForAlert]);
 
     useEffect(() => {
         let cancelled = false;
 
         (async () => {
             try {
-                const forData = await fetchAlerts(typeForAlert);
-                if (!cancelled) setAlerts(forData);
+                const data = await fetchAlerts(typeForAlert);
+                if (!cancelled) {
+                    setAlerts(data);
+                }
             } catch (error) {
                 if (!cancelled) {
                     setForError(error instanceof Error ? error.message : "Failed to load alerts");
                 }
             } finally {
-                if (!cancelled) setLoading(false);
+                if (!cancelled) {
+                    setLoading(false);
+                }
             }
         })();
 
         return () => {
             cancelled = true;
         };
-    }, [typeForAlert]);
+    }, [setAlerts, typeForAlert]);
 
-    const disable = useCallback(async (alertId: string) => {
-        await disableAlert(alertId);
-        setAlerts((previous) =>
-            previous.map((alert) =>
-                alert.alertId === alertId ? { ...alert, status: "DISABLED" } : alert
-            )
-        );
-    }, []);
+    const disable = useCallback(
+        async (alertId: string) => {
+            await disableAlert(alertId);
+            setStatus(alertId, "DISABLED");
+        },
+        [setStatus]
+    );
 
-    const enable = useCallback(async (alertId: string) => {
-        await enableAlert(alertId);
-        setAlerts((previous) =>
-            previous.map((alert) =>
-                alert.alertId === alertId ? { ...alert, status: "ACTIVE" } : alert
-            )
-        );
-    }, []);
+    const enable = useCallback(
+        async (alertId: string) => {
+            await enableAlert(alertId);
+            setStatus(alertId, "ACTIVE");
+        },
+        [setStatus]
+    );
+
+    const removeAlert = useCallback(
+        async (alertId: string) => {
+            await deleteAlert(alertId);
+
+            removeFromStore(alertId);
+        },
+        [removeFromStore]
+    );
 
     return {
         alerts,
@@ -78,5 +99,6 @@ export function useAlerts(typeForAlert?: TypeForAlerts): AlertsResult {
         refreshing,
         disable,
         enable,
+        removeAlert,
     };
 }

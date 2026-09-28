@@ -106,7 +106,6 @@ export const useBillingIntelligenceStore = create<BillingIntelligenceStore>((set
         set({
             pastTimeWindowDays: past,
             forecastTimeWindowDays: forecast,
-            billingData: null,
         });
 
         if (!get().disableFilters) {

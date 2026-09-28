@@ -57,6 +57,7 @@ export function ChartWidget({
 
     const fromMs = useDashboardStore((state) => state.fromMs);
     const toMs = useDashboardStore((state) => state.toMs);
+    const selectedPreset = useDashboardStore((state) => state.selectedPreset);
 
     const setFocusedRecommendation = useRecStore((state) => state.setFocusedRecommendation);
     const recommendationGroups = useRecStore((state) => state.recommendationGroups);
@@ -66,6 +67,7 @@ export function ChartWidget({
         fromMs: fromMs,
         toMs: toMs,
         metricName: metricName ?? undefined,
+        selectedPreset,
     });
 
     useEffect(() => {

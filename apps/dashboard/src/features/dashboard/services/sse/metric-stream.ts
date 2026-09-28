@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useMetricStore } from "@/features/dashboard/stores/metric-store";
 import { MetricDTO } from "@/features/dashboard/types/dtos/metrics/MetricDto";
 import { Metric, MetricType } from "@/features/dashboard/types/metric";
+import { ensureSessionRefreshed } from "@/lib/fetch/api-client";
 
 const MOCK_RESOURCE_ID = "mock-ec2-1";
 const MOCK_RESOURCES: { id: string; metricType: MetricType; metricName: string }[] = [
@@ -75,20 +76,6 @@ function createMockMetrics(): Metric[] {
     return metrics;
 }
 
-async function refreshAuthSession(): Promise<boolean> {
-    if (!API_BASE) return false;
-
-    try {
-        const response = await fetch(`${API_BASE}/auth/refresh`, {
-            method: "POST",
-            credentials: "include",
-        });
-        return response.ok;
-    } catch {
-        return false;
-    }
-}
-
 export function useMetricStream() {
     const addMetric = useMetricStore((state) => state.addMetric);
     const addMetricFromDto = useMetricStore((state) => state.addMetricFromDto);
@@ -125,12 +112,12 @@ export function useMetricStream() {
                 if (!hasRetriedRef.current) {
                     hasRetriedRef.current = true;
 
-                    refreshAuthSession().then((refreshed) => {
+                    ensureSessionRefreshed().then((refreshed) => {
                         if (isCleaningUp) return;
                         if (refreshed) {
                             connect();
                         } else {
-                            setError(new Error(`Failed to open metric stream connection`));
+                            setError(new Error("Failed to open metric stream connection"));
                         }
                     });
                     return;

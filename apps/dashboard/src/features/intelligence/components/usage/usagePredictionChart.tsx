@@ -23,16 +23,12 @@ interface UsagePredictionChartProps {
     readonly historicalUsageSeries: HistoricalUsageSeriesDto | null;
     readonly usageError: UsageError | null;
     readonly loading: boolean;
-    readonly aggregatedHistory: boolean;
 }
-
-const now = Date.now();
 
 export default function UsagePredictionChart({
     historicalUsageSeries,
     usageError,
     loading,
-    aggregatedHistory,
 }: UsagePredictionChartProps) {
     //styles
     const { themeName, tokens } = useChartTheme();
@@ -62,7 +58,12 @@ export default function UsagePredictionChart({
 
     // 3. X-AXIS MATH HOOK
     const { currentTime, minXAxisTime, maxXAxisTime } = useMemo(() => {
-        const minTime = now - durationByPreset[pastTimeWindowPreset];
+        const forecastStart =
+            historicalUsagePoints.length > 0
+                ? historicalUsagePoints[historicalUsagePoints.length - 1][0]
+                : 0;
+
+        const minTime = forecastStart - durationByPreset[pastTimeWindowPreset];
         let maxTime: number;
 
         if (usageForecast && usageForecast.horizonTimestamps.length > 0) {
@@ -70,11 +71,11 @@ export default function UsagePredictionChart({
             const lastForecastIso = usageForecast.horizonTimestamps[lastForecastIndex];
             maxTime = toBrowserTimezoneTimestamp(lastForecastIso);
         } else {
-            maxTime = now + timeMs.dayMs;
+            maxTime = forecastStart + timeMs.dayMs;
         }
 
         return {
-            currentTime: now,
+            currentTime: forecastStart,
             minXAxisTime: minTime,
             maxXAxisTime: maxTime,
         };
@@ -307,19 +308,17 @@ export default function UsagePredictionChart({
         <Card className="h-full w-full gap-0 overflow-hidden">
             <CardHeader className="flex flex-row justify-between items-center gap-1 ">
                 <div>
-                    {aggregatedHistory && (
-                        <Tooltip>
-                            <TooltipTrigger>
-                                <span className="flex flex-row align-center gap-1 text-muted-foreground">
-                                    <CircleAlert className="h-5 w-5" /> Aggregated History
-                                </span>
-                            </TooltipTrigger>
-                            <TooltipContent side="right">
-                                The usage history is averaged into 10-minute buckets to facilitate
-                                forecasting by normalizing the series.
-                            </TooltipContent>
-                        </Tooltip>
-                    )}
+                    <Tooltip>
+                        <TooltipTrigger>
+                            <span className="flex flex-row align-center gap-1 text-muted-foreground">
+                                <CircleAlert className="h-5 w-5" /> Aggregated History
+                            </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="right">
+                            The usage history is averaged into 10-minute buckets to facilitate
+                            forecasting by normalizing the series.
+                        </TooltipContent>
+                    </Tooltip>
                 </div>
                 <div>
                     <Button
