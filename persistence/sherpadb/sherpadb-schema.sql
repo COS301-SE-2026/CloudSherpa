@@ -137,6 +137,7 @@ CREATE TABLE IF NOT EXISTS public.cloud_account (
   next_billing_ingestion timestamptz DEFAULT NOW(),
   periodic_resource_discovery boolean NOT NULL DEFAULT false,
   auto_adjust_ingestion_period boolean NOT NULL DEFAULT false,
+  ingestion_budget numeric NOT NULL DEFAULT 0;
   new_resources_active boolean NOT NULL DEFAULT false,
 
   next_resource_scan timestamptz DEFAULT NOW()

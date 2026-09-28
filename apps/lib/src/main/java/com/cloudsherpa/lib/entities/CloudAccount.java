@@ -6,6 +6,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 import jakarta.persistence.EnumType;
@@ -60,6 +62,9 @@ public class CloudAccount {
   @Column(name = "auto_adjust_ingestion_period", nullable = false)
   private boolean autoAdjustIngestionPeriod;
 
+  @Column(name = "ingestion_budget", precision = 19, scale = 6)
+  private BigDecimal ingestionBudget;
+
   @Column(name = "new_resources_active", nullable = false)
   private boolean newResourcesActive;
 
@@ -83,7 +88,8 @@ public class CloudAccount {
       OffsetDateTime lastUsageIngestion,
       OffsetDateTime nextUsageIngestion,
       OffsetDateTime lastBillingIngestion,
-      OffsetDateTime nextBillingIngestion) {
+      OffsetDateTime nextBillingIngestion,
+      Double ingestionBudget) {
     this.id = id;
     this.connectionId = connectionId;
     this.accountType = accountType;
@@ -98,6 +104,7 @@ public class CloudAccount {
     this.nextUsageIngestion = nextUsageIngestion;
     this.lastBillingIngestion = lastBillingIngestion;
     this.nextBillingIngestion = nextBillingIngestion;
+    this.ingestionBudget = BigDecimal.valueOf(ingestionBudget);
   }
 
   public static Builder builder() {
@@ -119,6 +126,7 @@ public class CloudAccount {
     private boolean periodicResourceDiscovery = false;
     private boolean autoAdjustIngestionPeriod = false;
     private boolean newResourcesActive = false;
+    private Double ingestionBudget = 0.00;
     private OffsetDateTime nextResourceScan;
 
     public Builder id(UUID id) {
@@ -181,6 +189,11 @@ public class CloudAccount {
       return this;
     }
 
+    public Builder ingestionBudget(Double ingestionBudget) {
+      this.ingestionBudget = ingestionBudget;
+      return this;
+    }
+
     public Builder newResourcesActive(boolean newResourcesActive) {
       this.newResourcesActive = newResourcesActive;
       return this;
@@ -206,7 +219,8 @@ public class CloudAccount {
           lastUsageIngestion,
           nextUsageIngestion,
           lastBillingIngestion,
-          nextBillingIngestion);
+          nextBillingIngestion,
+          ingestionBudget);
     }
   }
 
