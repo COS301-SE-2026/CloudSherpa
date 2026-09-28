@@ -3,109 +3,79 @@ import type { Alert } from "@/features/alerts/types/alertTypes";
 
 interface AlertStore {
     alerts: Alert[];
+    inAppNotificationsEnabled: boolean | null;
 
     setAlerts: (alerts: Alert[]) => void;
     upsertAlert: (incoming: Alert) => void;
     setStatus: (alertId: string, status: Alert["status"]) => void;
+    setNotificationSilence: (alertId: string, silenced: boolean) => void;
+    setInAppNotificationsEnabled: (enabled: boolean) => void;
     removeAlert: (alertId: string) => void;
 }
 
-// This function determines which of two alerts is newer.
 function byRecencyDescending(alertA: Alert, alertB: Alert): number {
-    let timeA = 0;
-    if (alertA.lastSeen) {
-        timeA = new Date(alertA.lastSeen).getTime();
-    } else if (alertA.createdAt) {
-        timeA = new Date(alertA.createdAt).getTime();
-    }
-
-    let timeB = 0;
-    if (alertB.lastSeen) {
-        timeB = new Date(alertB.lastSeen).getTime();
-    } else if (alertB.createdAt) {
-        timeB = new Date(alertB.createdAt).getTime();
-    }
+    const timeA = new Date(alertA.lastSeen ?? alertA.createdAt ?? 0).getTime();
+    const timeB = new Date(alertB.lastSeen ?? alertB.createdAt ?? 0).getTime();
 
     return timeB - timeA;
 }
 
 function sortAlerts(alerts: Alert[]): Alert[] {
-    const safeCopy = [...alerts];
-
-    return safeCopy.sort(byRecencyDescending);
+    return [...alerts].sort(byRecencyDescending);
 }
 
 export const useAlertStore = create<AlertStore>((set) => ({
     alerts: [],
+    inAppNotificationsEnabled: null,
 
-    setAlerts: (newAlerts) => {
-        set({ alerts: sortAlerts(newAlerts) });
+    setAlerts: (alerts) => {
+        set({ alerts: sortAlerts(alerts) });
     },
 
     upsertAlert: (incomingAlert) => {
         set((state) => {
             const canonicalKey = incomingAlert.canonicalKey?.trim();
 
-            // Search for the alert in our current state
-            let existingIndex = -1;
+            const existingIndex = canonicalKey
+                ? state.alerts.findIndex((alert) => alert.canonicalKey === canonicalKey)
+                : state.alerts.findIndex((alert) => alert.alertId === incomingAlert.alertId);
 
-            if (canonicalKey) {
-                existingIndex = state.alerts.findIndex(
-                    (alert) => alert.canonicalKey === canonicalKey
-                );
-            } else {
-                existingIndex = state.alerts.findIndex(
-                    (alert) => alert.alertId === incomingAlert.alertId
-                );
-            }
-
-            // Alert was not found
             if (existingIndex === -1) {
-                // Put the new alert at the front, followed by all old alerts
-                const newArray = [incomingAlert, ...state.alerts];
-
-                return {
-                    alerts: sortAlerts(newArray),
-                };
+                return { alerts: sortAlerts([incomingAlert, ...state.alerts]) };
             }
 
-            // Alert was found
-            const updatedAlerts = [...state.alerts];
+            const alerts = [...state.alerts];
+            alerts[existingIndex] = { ...alerts[existingIndex], ...incomingAlert };
 
-            updatedAlerts[existingIndex] = {
-                ...updatedAlerts[existingIndex],
-                ...incomingAlert,
-            };
-
-            return {
-                alerts: sortAlerts(updatedAlerts),
-            };
+            return { alerts: sortAlerts(alerts) };
         });
     },
 
-    // Change the status (e.g., ACTIVE or DISABLED) of a specific alert
-    setStatus: (alertId, newStatus) => {
-        set((state) => {
-            const updatedAlerts = state.alerts.map((alert) => {
-                // If it's the exact alert we are looking for, apply the new status
-                if (alert.alertId === alertId) {
-                    return { ...alert, status: newStatus };
-                }
+    setStatus: (alertId, status) => {
+        set((state) => ({
+            alerts: state.alerts.map((alert) =>
+                alert.alertId === alertId ? { ...alert, status } : alert
+            ),
+        }));
+    },
 
-                // If it's any other alert, leave it completely alone
-                return alert;
-            });
+    setNotificationSilence: (alertId, silenced) => {
+        set((state) => ({
+            alerts: state.alerts.map((alert) =>
+                alert.alertId === alertId
+                    ? { ...alert, inAppNotificationsSilenced: silenced }
+                    : alert
+            ),
+        }));
+    },
 
-            // Save the updated list back to the store
-            return {
-                alerts: updatedAlerts,
-            };
-        });
+    setInAppNotificationsEnabled: (enabled) => {
+        set({ inAppNotificationsEnabled: enabled });
     },
 
     removeAlert: (alertId) => {
-        set((forState) => ({
-            alerts: forState.alerts.filter((alert) => alert.alertId !== alertId),
+        set((state) => ({
+            alerts: state.alerts.filter((alert) => alert.alertId !== alertId),
         }));
     },
 }));

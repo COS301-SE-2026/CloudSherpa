@@ -13,9 +13,6 @@ import java.util.UUID;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
-
 @Entity
 @Table(name = "dashboard", schema = "public")
 public class Dashboard {
@@ -97,6 +94,14 @@ public class Dashboard {
 
   public void setPredefinedTime(PredefinedTimeEnum predefinedTime) {
     this.predefinedTime = predefinedTime;
+  }
+
+  public void setTimeFrom(OffsetDateTime timeFrom) {
+    this.timeFrom = timeFrom;
+  }
+
+  public void setTimeTo(OffsetDateTime timeTo) {
+    this.timeTo = timeTo;
   }
 
   public Boolean getCurrent() {

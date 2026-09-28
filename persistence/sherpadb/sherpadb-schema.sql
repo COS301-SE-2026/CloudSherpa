@@ -24,7 +24,8 @@ CREATE TYPE public.predefined_time_enum AS ENUM (
   'T_12_HOUR',
   'T_24_HOUR',
   'T_7_DAYS',
-  'T_30_DAYS'
+  'T_30_DAYS',
+  'CUSTOM'
 );
 CREATE TYPE public.type_enum AS ENUM ('KPI', 'CHART');
 CREATE TYPE public.execution_status_enum AS ENUM ('pending', 'processing', 'completed', 'failed');
@@ -113,7 +114,8 @@ CREATE TABLE IF NOT EXISTS public.preferences (
   background text, 
   currency public.currency_enum,
   language public.language_enum,
-  sidebar_toggle boolean DEFAULT true
+  sidebar_toggle boolean DEFAULT true,
+  in_app_alert_notifications_enabled boolean NOT NULL DEFAULT true
 );
 
 CREATE TABLE IF NOT EXISTS public.cloud_connection (
@@ -950,6 +952,7 @@ BEGIN
         message text,
         payload jsonb DEFAULT '{}'::jsonb,
         status public.alert_status_enum NOT NULL DEFAULT 'ACTIVE',
+        in_app_notifications_silenced boolean NOT NULL DEFAULT false,
         canonical_key text,
         created_at timestamptz DEFAULT NOW(),
         last_seen timestamptz DEFAULT NOW(),

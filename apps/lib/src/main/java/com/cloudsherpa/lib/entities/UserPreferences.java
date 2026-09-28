@@ -45,6 +45,9 @@ public class UserPreferences {
   @Column(name = "sidebar_toggle")
   private Boolean sidebarToggle;
 
+  @Column(name = "in_app_alert_notifications_enabled", nullable = false)
+  private Boolean inAppAlertNotificationsEnabled = true;
+
   protected UserPreferences() {}
 
   public UserPreferences(
@@ -88,6 +91,14 @@ public class UserPreferences {
 
   public Boolean getSidebarToggle() {
     return sidebarToggle;
+  }
+
+  public Boolean getInAppAlertNotificationsEnabled() {
+    return inAppAlertNotificationsEnabled;
+  }
+
+  public void setInAppAlertNotificationsEnabled(Boolean enabled) {
+    this.inAppAlertNotificationsEnabled = enabled;
   }
 
   public void setTheme(ThemeEnum theme) {

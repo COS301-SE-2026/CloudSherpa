@@ -36,6 +36,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/atoms/dropdown-menu";
+import { useResourceNames } from "@/features/alerts/hooks/useResourceNames";
 
 const CONDITION_VERBS: Record<OperatorsForThreshold, string> = {
     GT: "More than",
@@ -114,10 +115,16 @@ interface Columns {
     edit: (forThreshold: Threshold) => void;
     toggleEnabled: (forThreshold: Threshold, enabled: boolean) => void;
     onDelete: (forThreshold: Threshold) => void;
+    resourceNames: Record<string, string>;
 }
 
 //copied from below to correct sonarqube errors
-function helperForColumns({ edit, toggleEnabled, onDelete }: Columns): ColumnDef<Threshold>[] {
+function helperForColumns({
+    edit,
+    toggleEnabled,
+    onDelete,
+    resourceNames,
+}: Columns): ColumnDef<Threshold>[] {
     return [
         {
             id: "enabled",
@@ -131,6 +138,26 @@ function helperForColumns({ edit, toggleEnabled, onDelete }: Columns): ColumnDef
                         checked={forThreshold.enabled}
                         onCheckedChange={(checked) => toggleEnabled(forThreshold, checked)}
                         aria-label={`Toggle ${forThreshold.metricName} threshold`}
+                    />
+                );
+            },
+        },
+
+        {
+            id: "resource",
+            header: () => "RESOURCE",
+            enableSorting: false,
+            cell: ({ row }) => {
+                const forThreshold = row.original;
+
+                const mutedThreshold = !forThreshold.enabled;
+
+                const name = resourceNames[forThreshold.resourceId] ?? forThreshold.resourceId;
+
+                return (
+                    <Truncation
+                        text={name}
+                        className={`w-[120px] flex-shrink-0 ${mutedThreshold ? "text-muted-foreground" : "text-foreground"}`}
                     />
                 );
             },
@@ -281,9 +308,11 @@ export function ThresholdTable({
 }: Readonly<PropsForThresholds>) {
     const [sorting, setSorting] = useState<SortingState>([]);
 
+    const resourceNames = useResourceNames();
+
     const forColumns = useMemo<ColumnDef<Threshold>[]>(
-        () => helperForColumns({ edit, toggleEnabled, onDelete }),
-        [edit, toggleEnabled, onDelete]
+        () => helperForColumns({ edit, toggleEnabled, onDelete, resourceNames }),
+        [edit, toggleEnabled, onDelete, resourceNames]
     );
 
     const forThresholdTable = useReactTable({

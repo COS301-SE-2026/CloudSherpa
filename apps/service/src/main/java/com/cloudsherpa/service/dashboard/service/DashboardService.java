@@ -153,6 +153,26 @@ public class DashboardService {
       UUID userId, UUID dashboardId, DashboardWindowUpdateDTO newWindowRequest) {
     Dashboard dashboard = getDashboardAndVerifyOwnership(userId, dashboardId);
     dashboard.setPredefinedTime(newWindowRequest.newTime());
+
+    if (newWindowRequest.newTime() == PredefinedTimeEnum.CUSTOM) {
+
+      if (newWindowRequest.from() == null || newWindowRequest.to() == null) {
+        throw new IllegalArgumentException(
+            "If the preset is custom, the from and to times are required");
+      }
+
+      dashboard.setTimeFrom(newWindowRequest.from());
+      dashboard.setTimeTo(newWindowRequest.to());
+    } else {
+      if (dashboard.getTimeFrom() != null) {
+        dashboard.setTimeFrom(null);
+      }
+
+      if (dashboard.getTimeTo() != null) {
+        dashboard.setTimeTo(null);
+      }
+    }
+
     dashboardRepository.save(dashboard);
   }
 

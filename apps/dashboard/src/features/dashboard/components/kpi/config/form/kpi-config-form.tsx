@@ -115,6 +115,7 @@ export function KpiConfigFormInner({ kpiId }: KpiConfigFormProps) {
                     <KpiFormDetails
                         title={config.displayName ?? "No Title"}
                         onTitleChange={onTitleChange}
+                        error={isError}
                     />
                     <FieldSeparator></FieldSeparator>
                     {config.id != "123" && (

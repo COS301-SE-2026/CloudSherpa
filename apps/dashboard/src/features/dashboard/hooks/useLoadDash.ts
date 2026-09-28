@@ -12,6 +12,7 @@ import {
     ChartColour,
 } from "@/features/dashboard/types/widgets";
 import { MetricType } from "@/features/dashboard/types/metric";
+import { TimeWindowPreset } from "../types/timewindow";
 
 // Extracted helper function
 export function processFetchedDashboards(fetchedData: DashboardDTO[]) {
@@ -67,6 +68,23 @@ export function processFetchedDashboards(fetchedData: DashboardDTO[]) {
     return { dashboardsMap, layoutsArray, configsArray };
 }
 
+const hydrateDashboard = (
+    selectedDashboard: DashboardDTO | undefined,
+    hydrateWindow: (
+        preset: TimeWindowPreset,
+        timeFrom: number | null,
+        timeTo: number | null
+    ) => void
+) => {
+    if (selectedDashboard?.predefinedTime) {
+        hydrateWindow(
+            selectedDashboard.predefinedTime,
+            selectedDashboard.timeFrom ? Date.parse(selectedDashboard.timeFrom) : null,
+            selectedDashboard.timeTo ? Date.parse(selectedDashboard.timeTo) : null
+        );
+    }
+};
+
 export function useLoadDashboardData() {
     const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
@@ -121,9 +139,7 @@ export function useLoadDashboardData() {
                     setActiveDashboard(defaultId);
 
                     const selectedDashboard = fetchedData.find((d) => d.id === defaultId);
-                    if (selectedDashboard?.predefinedTime) {
-                        hydrateWindow(selectedDashboard.predefinedTime);
-                    }
+                    hydrateDashboard(selectedDashboard, hydrateWindow);
 
                     if (urlId !== defaultId) {
                         router.replace(`?id=${defaultId}`);
