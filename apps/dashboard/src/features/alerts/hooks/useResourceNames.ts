@@ -3,6 +3,11 @@
 import { useEffect, useState } from "react";
 import apiClient from "@/lib/fetch/api-client";
 
+interface Resources{
+    resourceId : string;
+    resourceName : string;
+}
+
 export function useResourceNames(): Record<string, string> {
     //copied from budget file to correct sonarqube error
     const [resourceNames, setResourceNames] = useState<Record<string, string>>({});
@@ -12,12 +17,14 @@ export function useResourceNames(): Record<string, string> {
 
         (async () => {
             try {
-                const names = await apiClient<Record<string, string>>("/analytics/resource-names", {
+                const names = await apiClient<Resources[]>("/analytics/resource-names", {
                     method: "GET",
                 });
 
                 if (!cancelled) {
-                    setResourceNames(names);
+                    const forMapping = Object.fromEntries(names.map((forResources) => [forResources.resourceId, forResources.resourceName])) as Record<string, string>;
+
+                    setResourceNames(forMapping);
                 }
             } catch {}
         })();

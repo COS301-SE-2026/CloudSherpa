@@ -200,7 +200,7 @@ export function BudgetTable({ budgets, edit, toggleEnabled, onDelete }: Readonly
                                 className="py-8 text-center text-sm text-muted-foreground"
                             >
                                 {" "}
-                                No budgets configures{" "}
+                                No budgets configured{" "}
                             </TableCell>
                         </TableRow>
                     ) : (
