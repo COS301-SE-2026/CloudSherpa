@@ -118,7 +118,12 @@ type WindowSlice = {
     clear: () => void;
 };
 
-export type DashboardStore = DashboardSlice & WindowSlice & AgenticSlice;
+type PreferenceSlice = {
+    themeLoaded: boolean;
+    setThemeLoaded: (themeLoaded: boolean) => void;
+};
+
+export type DashboardStore = DashboardSlice & WindowSlice & AgenticSlice & PreferenceSlice;
 
 const createDashboardSlice: StateCreator<DashboardStore, [], [], DashboardSlice> = (set, get) => ({
     activeDashboardId: null,
@@ -449,6 +454,13 @@ const createWindowSlice: StateCreator<DashboardStore, [], [], WindowSlice> = (se
     },
 });
 
+const createPreferenceSlice: StateCreator<DashboardStore, [], [], PreferenceSlice> = (set) => ({
+    themeLoaded: false,
+    setThemeLoaded: (themeLoaded: boolean) => {
+        set(() => ({ themeLoaded: themeLoaded }));
+    },
+});
+
 function adaptState(dashboardPlan: DashboardPlan) {
     const layoutsMap: Record<string, LayoutItem> = {};
     const widgetsMap: Record<string, WidgetConfig> = {};
@@ -668,6 +680,7 @@ export const useDashboardStore = create<DashboardStore>()(
             ...createDashboardSlice(...args),
             ...createWindowSlice(...args),
             ...createAgenticSlice(...args),
+            ...createPreferenceSlice(...args),
         }),
         {
             name: "dashboard-store",
