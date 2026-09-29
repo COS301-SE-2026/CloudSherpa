@@ -37,8 +37,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class AiAgentService {
 
-  private static final int DEFAULT_MAX_TOOL_ROUNDS = 30;
-  private static final int DEFAULT_MAX_TOOL_CALLS = 22;
+  private static final int DEFAULT_MAX_TOOL_ROUNDS = 50;
+  private static final int DEFAULT_MAX_TOOL_CALLS = 30;
   private static final int MAX_TOOL_ARGUMENT_BYTES = 8192;
   private static final int MAX_PROTOCOL_REPAIR_ATTEMPTS = 5;
 
@@ -111,6 +111,16 @@ public class AiAgentService {
       Do not call commit_dashboard_changes until all requested changes are complete.
       Do not claim that changes were committed unless that tool succeeds.
 
+      Never call discard_working_changes unless the user explicitly asks to undo,
+      discard, revert, or throw away uncommitted dashboard changes.
+
+      Never use discard_working_changes as a recovery mechanism for a failed tool call.
+
+      After a successful mutation, continue only when another distinct user-requested
+      change is still required.
+
+      If requested dashboard changes have been successfully made, commit them.
+      A successful commit_dashboard_changes call is terminal; do not request another tool.
       The working dashboard is a private server-side draft.
       The authenticated human user is the only actor that can apply a committed version
       to a production dashboard.
@@ -139,7 +149,7 @@ public class AiAgentService {
       McpTools mcpTools,
       ObjectMapper objectMapper,
       @Value("${ai.llm.max-tool-rounds:50}") int maxToolRounds,
-      @Value("${ai.llm.max-tool-calls:32}") int maxToolCalls) {
+      @Value("${ai.llm.max-tool-calls:50}") int maxToolCalls) {
 
     this.aiSessionService = aiSessionService;
     this.versionService = versionService;
@@ -176,9 +186,21 @@ public class AiAgentService {
 
         List<Map<String, Object>> messages =
             buildRequestMessages(userId, sessionId, userMessage, history);
-        JsonNode message =
-            requestAssistantMessage(
-                messages, state.protocolRepairAttempts > 0 || state.noToolRepairAttempts > 0);
+        JsonNode message;
+        try {
+          message =
+              requestAssistantMessage(
+                  messages, state.protocolRepairAttempts > 0 || state.noToolRepairAttempts > 0);
+        } catch (RuntimeException exception) {
+          AiDashboardPlanResponseDto fallback = autoCommitWorkingDraft(userId, sessionId, state);
+
+          if (fallback != null) {
+            return fallback;
+          }
+
+          throw exception;
+        }
+
         JsonNode toolCalls = message.path(TOOL_CALLS_FIELD);
 
         if (toolCalls.isArray() && !toolCalls.isEmpty()) {
@@ -200,8 +222,14 @@ public class AiAgentService {
           if (cachedResult != null) {
             int repeatedCount = state.repeatedToolCalls.merge(signature, 1, Integer::sum);
             if (repeatedCount > MAX_REPEATED_TOOL_CALLS) {
+              AiDashboardPlanResponseDto fallback =
+                  autoCommitWorkingDraft(userId, sessionId, state);
+              if (fallback != null) {
+                return fallback;
+              }
               return safetyStopWithMessage(userId, sessionId, state, REPEATED_TOOL_STOP_MESSAGE);
             }
+
             history.addAll(buildToolContinuation(toolCall, cachedResult.toolResult()));
             history.add(
                 Map.of(
@@ -215,7 +243,18 @@ public class AiAgentService {
 
           state.toolCallCount++;
           ToolCallResult result = executeNativeToolCall(context, toolCall, state);
-          state.completedToolCalls.put(signature, result);
+          System.out.println(
+              "AI tool result: name="
+                  + result.toolName()
+                  + ", success="
+                  + result.toolResult().success()
+                  + ", error="
+                  + result.toolResult().error()
+                  + ", result="
+                  + result.toolResult().result());
+          if (result.toolResult().success()) {
+            state.completedToolCalls.put(signature, result);
+          }
 
           if (COMMIT_TOOL.equals(result.toolName()) && result.toolResult().success()) {
             saveMessage(sessionId, AiMessage.AiMessageRole.ASSISTANT, COMMIT_SUCCESS_MESSAGE);
@@ -249,6 +288,13 @@ public class AiAgentService {
           if (cachedResult != null) {
             int repeatedCount = state.repeatedToolCalls.merge(signature, 1, Integer::sum);
             if (repeatedCount > MAX_REPEATED_TOOL_CALLS) {
+              AiDashboardPlanResponseDto fallback =
+                  autoCommitWorkingDraft(userId, sessionId, state);
+
+              if (fallback != null) {
+                return fallback;
+              }
+
               return safetyStopWithMessage(userId, sessionId, state, REPEATED_TOOL_STOP_MESSAGE);
             }
             history.addAll(buildToolContinuation(textualToolCall, cachedResult.toolResult()));
@@ -264,8 +310,19 @@ public class AiAgentService {
 
           state.toolCallCount++;
           ToolCallResult result = executeNativeToolCall(context, textualToolCall, state);
-          state.completedToolCalls.put(signature, result);
+          System.out.println(
+              "AI tool result: name="
+                  + result.toolName()
+                  + ", success="
+                  + result.toolResult().success()
+                  + ", error="
+                  + result.toolResult().error()
+                  + ", result="
+                  + result.toolResult().result());
 
+          if (result.toolResult().success()) {
+            state.completedToolCalls.put(signature, result);
+          }
           if (COMMIT_TOOL.equals(result.toolName()) && result.toolResult().success()) {
             saveMessage(sessionId, AiMessage.AiMessageRole.ASSISTANT, COMMIT_SUCCESS_MESSAGE);
             return buildResponse(
@@ -392,6 +449,28 @@ public class AiAgentService {
     return result;
   }
 
+  private AiDashboardPlanResponseDto autoCommitWorkingDraft(
+      UUID userId, UUID sessionId, AgentRunState state) {
+
+    if (!versionService.hasUncommittedChanges(userId, sessionId)) {
+      return null;
+    }
+
+    try {
+      versionService.commitWorkingDashboard(userId, sessionId);
+
+      String message =
+          "The dashboard changes were staged automatically after the agent stopped before committing.";
+
+      saveMessage(sessionId, AiMessage.AiMessageRole.ASSISTANT, message);
+      aiSessionService.updateLastActivity(userId, sessionId);
+
+      return buildResponse(userId, sessionId, message, true, true);
+    } catch (RuntimeException exception) {
+      return null;
+    }
+  }
+
   private JsonNode requestAssistantMessage(
       List<Map<String, Object>> messages, boolean stateRequiresNativeToolCall) {
     JsonNode response =
@@ -412,7 +491,6 @@ public class AiAgentService {
 
   private ToolCallResult executeNativeToolCall(
       AiAgentContext context, JsonNode toolCall, AgentRunState state) {
-
     String toolCallId = requiredJsonText(toolCall, "id");
     JsonNode function = toolCall.path(FUNCTION_FIELD);
     String toolName = requiredJsonText(function, NAME_FIELD);
@@ -634,6 +712,12 @@ public class AiAgentService {
   }
 
   private AiDashboardPlanResponseDto safetyStop(UUID userId, UUID sessionId, AgentRunState state) {
+    AiDashboardPlanResponseDto fallback = autoCommitWorkingDraft(userId, sessionId, state);
+
+    if (fallback != null) {
+      return fallback;
+    }
+
     saveMessage(sessionId, AiMessage.AiMessageRole.ASSISTANT, SAFETY_STOP_MESSAGE);
     aiSessionService.updateLastActivity(userId, sessionId);
     return buildResponse(userId, sessionId, SAFETY_STOP_MESSAGE, state.mutationAttempted, false);
@@ -641,6 +725,12 @@ public class AiAgentService {
 
   private AiDashboardPlanResponseDto protocolStop(
       UUID userId, UUID sessionId, AgentRunState state, String message) {
+    AiDashboardPlanResponseDto fallback = autoCommitWorkingDraft(userId, sessionId, state);
+
+    if (fallback != null) {
+      return fallback;
+    }
+
     saveMessage(sessionId, AiMessage.AiMessageRole.ASSISTANT, message);
     aiSessionService.updateLastActivity(userId, sessionId);
     return buildResponse(userId, sessionId, message, state.mutationAttempted, false);
@@ -648,6 +738,12 @@ public class AiAgentService {
 
   private AiDashboardPlanResponseDto safetyStopWithMessage(
       UUID userId, UUID sessionId, AgentRunState state, String message) {
+    AiDashboardPlanResponseDto fallback = autoCommitWorkingDraft(userId, sessionId, state);
+
+    if (fallback != null) {
+      return fallback;
+    }
+
     saveMessage(sessionId, AiMessage.AiMessageRole.ASSISTANT, message);
     aiSessionService.updateLastActivity(userId, sessionId);
     return buildResponse(userId, sessionId, message, state.mutationAttempted, false);

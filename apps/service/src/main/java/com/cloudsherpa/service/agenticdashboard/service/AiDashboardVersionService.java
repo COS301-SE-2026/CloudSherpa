@@ -39,6 +39,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
@@ -462,6 +463,25 @@ public class AiDashboardVersionService {
     return widget;
   }
 
+  @Transactional(readOnly = true)
+  public boolean hasUncommittedChanges(UUID userId, UUID sessionId) {
+    sessionService.getSession(userId, sessionId);
+
+    Optional<DashboardPlanDto> draft = draftService.findDraft(sessionId);
+    if (draft.isEmpty()) {
+      return false;
+    }
+
+    var session = sessionService.getSession(userId, sessionId);
+    if (session.getCurrentVersionId() == null) {
+      return false;
+    }
+
+    DashboardPlanDto committed = getDashboardPlan(userId, sessionId, session.getCurrentVersionId());
+
+    return !draft.get().equals(committed);
+  }
+
   @Transactional
   public DashboardPlanDto clearWorkingDashboard(UUID userId, UUID sessionId) {
     DashboardPlanDto draft = ensureDraft(userId, sessionId);
@@ -808,7 +828,7 @@ public class AiDashboardVersionService {
 
   private void saveWidget(UUID dashboardVersionId, DashboardPlanWidgetDto widgetDto) {
 
-    UUID widgetId = widgetDto.widgetId() == null ? UUID.randomUUID() : widgetDto.widgetId();
+    UUID widgetId = UUID.randomUUID();
 
     AiDashboardWidget widget =
         AiDashboardWidget.builder()
