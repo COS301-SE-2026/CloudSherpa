@@ -4,13 +4,7 @@ import { useDashboardStore, DashboardStore } from "@/features/dashboard/stores/d
 import { useResourceNameStore } from "@/features/dashboard/stores/resource-store";
 import { useFetchMetrics } from "@/features/dashboard/hooks/useFetchMetrics";
 import { fetchDashboards, DashboardDTO } from "@/lib/fetch/api-dashboard";
-import {
-    DashboardConfig,
-    LayoutItem,
-    WidgetConfig,
-    ChartType,
-    ChartColour,
-} from "@/features/dashboard/types/widgets";
+import { DashboardConfig, LayoutItem, WidgetConfig } from "@/features/dashboard/types/widgets";
 import { MetricType } from "@/features/dashboard/types/metric";
 import { TimeWindowPreset } from "../types/timewindow";
 
@@ -44,8 +38,8 @@ export function processFetchedDashboards(fetchedData: DashboardDTO[]) {
             if (w.widgetType === "CHART") {
                 configsArray.push({
                     id: w.id,
-                    chartType: w.chartType as ChartType,
-                    chartColour: w.chartColour as ChartColour,
+                    chartType: w.chartType,
+                    chartColour: w.chartColour,
                     widgetType: "CHART",
                     displayName: w.displayName,
                     provider: w.provider,

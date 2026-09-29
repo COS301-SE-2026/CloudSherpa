@@ -96,15 +96,7 @@ export default function Toolbar({
                 />
                 <div className="h-16 w-full flex flex-row items-center justify-between  px-6">
                     <div className="flex flex-row gap-2">
-                        {!(isSessionActive || isGenerating) ? (
-                            <DashboardSelector
-                                dashboards={dashboards}
-                                selectedId={selectedDashboardId}
-                                onSelect={onDashboardChange}
-                                onCreate={onCreateDashboard}
-                                onDelete={onDeleteDashboard}
-                            />
-                        ) : (
+                        {isSessionActive || isGenerating ? (
                             <div className="flex flex-row justify-start items-center gap-2">
                                 <h1
                                     className={cn(
@@ -146,6 +138,14 @@ export default function Toolbar({
                                     </CardContent>
                                 </Card>
                             </div>
+                        ) : (
+                            <DashboardSelector
+                                dashboards={dashboards}
+                                selectedId={selectedDashboardId}
+                                onSelect={onDashboardChange}
+                                onCreate={onCreateDashboard}
+                                onDelete={onDeleteDashboard}
+                            />
                         )}
                     </div>
                     {hideTools && (

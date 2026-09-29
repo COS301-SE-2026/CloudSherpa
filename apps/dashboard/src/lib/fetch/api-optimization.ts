@@ -24,7 +24,7 @@ export const getRecommendationSummary = async (): Promise<RecommendationSummary>
                 method: "GET",
             }
         );
-        return data as RecommendationSummary;
+        return data;
     } catch (error) {
         console.error("Failed to fetch summary of recommendations:", error);
         throw error;

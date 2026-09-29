@@ -51,7 +51,7 @@ export function HeroAndNavBar({ scrolled }: Readonly<PropsForNavBarHero>) {
                                 {["Features", "How it works", "Who it's for"].map((forList) => (
                                     <NavigationMenuItem key={forList}>
                                         <NavigationMenuLink
-                                            href={`#${forList.toLowerCase().replace(/[\s']+/g, "-")}`}
+                                            href={`#${forList.toLowerCase().replaceAll(/[\s']+/g, "-")}`}
                                             className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                                         >
                                             {" "}
@@ -80,7 +80,7 @@ export function HeroAndNavBar({ scrolled }: Readonly<PropsForNavBarHero>) {
                                     //convert the name to a url friendly formts
                                     <a
                                         key={forList}
-                                        href={`#${forList.toLowerCase().replace(/[\s']+/g, "-")}`}
+                                        href={`#${forList.toLowerCase().replaceAll(/[\s']+/g, "-")}`}
                                         className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                                         onClick={() => setOpen(false)}
                                     >

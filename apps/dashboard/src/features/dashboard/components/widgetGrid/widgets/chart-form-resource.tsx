@@ -80,7 +80,7 @@ export default function ChartFormResource({
                         onSelect={(currentValue) => {
                             setConfiguration({
                                 ...configuration,
-                                metricName: currentValue as string,
+                                metricName: currentValue,
                             });
                         }}
                         disabled={!configuration.resourceId}
