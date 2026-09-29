@@ -228,7 +228,7 @@ export function MainPage() {
                         <AlertDialogFooter>
                             <AlertDialogCancel> Cancel </AlertDialogCancel>
 
-                            <AlertDialogAction onClick={confirmDelete}> Delete </AlertDialogAction>
+                            <AlertDialogAction onClick={confirmDelete} className = "bg-destructive hover:bg-destructive/90" variant = "destructive"> Delete </AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>
                 </AlertDialog>
