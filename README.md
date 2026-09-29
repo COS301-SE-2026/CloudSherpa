@@ -70,7 +70,15 @@ cd ..
 Then start the stack:
 
 ```bash
-docker compose -f infra/docker-compose.yml up --build --build-arg API_URL="http://localhost:8083"
+docker compose -f infra/docker-compose.yml build --build-arg API_URL="http://localhost:8083"
+docker compose -f infra/docker-compose.tml up
+```
+
+### Forecasting container
+
+```bash
+docker build -t cloudsherpa-intelligence apps/intelligence
+docker run --env-file apps/intelligence/.env -p 5000:5000 --name cloudsherpa-intelligence cloudsherpa-intelligence
 ```
 
 The dashboard frontend is available at `http://localhost:3000`.
