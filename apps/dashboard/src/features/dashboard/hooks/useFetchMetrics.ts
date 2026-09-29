@@ -17,7 +17,6 @@ export function useFetchMetrics() {
 
     const initializeMetricSeries = useMetricStore((state) => state.initializeMetricSeries);
 
-
     const fetchMetrics = useCallback(async () => {
         setMetricFetchLoad(true);
         setMetricFetchError(null);

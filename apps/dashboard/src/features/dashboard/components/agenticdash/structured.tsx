@@ -231,9 +231,7 @@ export default function StructuredRequest({ isApplying }: Readonly<StructuredReq
 
                 const forValidResourceIds = new Set(allResources.map((resource) => resource.id));
 
-                setResourceIds((previous) =>
-                    previous.filter((id) => forValidResourceIds.has(id))
-                );
+                setResourceIds((previous) => previous.filter((id) => forValidResourceIds.has(id)));
 
                 setThemeIds([]);
             })

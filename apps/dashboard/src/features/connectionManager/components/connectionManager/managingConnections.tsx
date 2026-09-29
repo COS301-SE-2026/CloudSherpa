@@ -263,7 +263,6 @@ export default function ManagingConnections() {
                     >
                         <TabsList className="self-start inline-flex gap-1 h-auto p-1 bg-muted rounded-lg w-fit">
                             {(["All", "AWS", "Azure", "GCP"] as Providers[]).map((providers) => {
-
                                 return (
                                     <TabsTrigger key={providers} value={providers}>
                                         {" "}

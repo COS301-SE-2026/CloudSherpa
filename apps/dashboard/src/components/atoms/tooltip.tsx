@@ -34,7 +34,10 @@ function Tooltip({
 
     const open = showOnTruncate && !isTruncated ? false : props.open; // props.open just lets it defaults to normal behavriour as afallback
 
-    const forContextValue = React.useMemo(() => ({showOnTruncate, isTruncated, setIsTruncated}), [showOnTruncate, isTruncated]);
+    const forContextValue = React.useMemo(
+        () => ({ showOnTruncate, isTruncated, setIsTruncated }),
+        [showOnTruncate, isTruncated]
+    );
 
     return (
         <TooltipContext.Provider value={forContextValue}>
