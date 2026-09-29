@@ -25,6 +25,16 @@ function getMinSize(widgetType?: WidgetConfig["widgetType"]) {
     return widgetType ? MIN_SIZES[widgetType] : DEFAULT_MIN;
 }
 
+function getActiveWidgetsMap(): Record<string, WidgetConfig> {
+    const state = useDashboardStore.getState();
+
+    return state.isSessionActive ? state.stagedWidgets : state.widgets;
+}
+
+function assignLayoutItemId(node: GridStackNode, widget: GridStackWidget) {
+    (widget as LayoutItem).id = String(node.id || "");
+}
+
 const repairLayout = (
     fullLayout: LayoutItem[],
     widgetsMap: Record<string, WidgetConfig>
@@ -70,6 +80,7 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
     const isInteractingRef = useRef(false);
 
     const isSessionActive = useDashboardStore((state) => state.isSessionActive);
+    const isGenerating = useDashboardStore((state) => state.isGenerating);
 
     const cancelPendingCompact = () => {
         if (compactTimerRef.current) {
@@ -105,8 +116,7 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
                     (w as LayoutItem).id = String(node.id || "");
                 }
             ) as LayoutItem[];
-
-            const widgetsMap = useDashboardStore.getState().widgets;
+            const widgetsMap = getActiveWidgetsMap();
             return repairLayout(fullLayout, widgetsMap);
         },
     }));
@@ -165,12 +175,10 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
                         const fullLayout = gridStackInstance.current.save(
                             false,
                             false,
-                            (node, w: GridStackWidget) => {
-                                (w as LayoutItem).id = String(node.id || "");
-                            }
+                            assignLayoutItemId
                         ) as LayoutItem[];
 
-                        const widgetsMap = useDashboardStore.getState().widgets;
+                        const widgetsMap = getActiveWidgetsMap();
                         const repaired = repairLayout(fullLayout, widgetsMap);
 
                         onLayoutChangeRef.current(repaired);
@@ -212,8 +220,7 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
             return;
         }
 
-        const widgetsMap = useDashboardStore.getState().widgets;
-
+        const widgetsMap = getActiveWidgetsMap();
         //batchupdate prevent multiple relayouts during sync
         gridStackInstance.current.batchUpdate();
 
@@ -268,7 +275,7 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
             }
         });
 
-        //sycn gristack with layout props
+        //sync gristack with layout props
         const layoutIdsInProps = new Set(layouts.map((l) => l.id));
         const nodesToRemove = gridStackInstance.current.engine.nodes.filter(
             (n) => n.id && !layoutIdsInProps.has(n.id)
@@ -321,13 +328,27 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
         }
     }, [isEditMode, isSessionActive]);
 
+    const widgets = (
+        <div ref={gridRef} className={`grid-stack ${isGenerating ? "animate-pulse" : ""}`}>
+            {layouts.map((l) => (
+                <WidgetWrapper key={l.id} layout={l} isEditMode={isEditMode} />
+            ))}
+        </div>
+    );
+
     return (
-        <div className="bg-background flex-1 min-h-full pb-40">
-            <div ref={gridRef} className="grid-stack">
-                {layouts.map((l) => (
-                    <WidgetWrapper key={l.id} layout={l} isEditMode={isEditMode} />
-                ))}
-            </div>
+        <div className={`bg-background flex-1 min-h-full pb-40 rounded-lg flex flex-col`}>
+            {layouts.length === 0 && isGenerating ? (
+                <div
+                    className={`flex-1 w-full flex justify-center items-center  ${isGenerating ? "animate-pulse" : ""}`}
+                >
+                    <p className="text-base font-medium text-muted-foreground">
+                        Generating dashboard...
+                    </p>
+                </div>
+            ) : (
+                widgets
+            )}
             <div ref={scrollRef} aria-hidden className="h-px w-full" />
         </div>
     );

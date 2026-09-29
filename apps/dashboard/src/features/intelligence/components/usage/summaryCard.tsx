@@ -2,7 +2,6 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/componen
 import { Info, LucideIcon } from "lucide-react";
 import { Separator } from "@/components/atoms/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/atoms/tooltip";
-import { MetricType } from "@/features/dashboard/types/metric";
 import { UsageError } from "../../types/errors";
 import { useUsageIntelligenceConfigStore } from "@/features/intelligence/stores/useUsageIntelligenceConfigStore";
 

@@ -42,6 +42,7 @@ services:
       INTELLIGENCE_API_KEY: abc123 
       INTELLIGENCE_URL: http://intelligence:5000
       INGESTION_API_KEY: abc123
+      OPENAI_API_KEY: "1234"
     depends_on:
       sherpa-db:
         condition: service_healthy

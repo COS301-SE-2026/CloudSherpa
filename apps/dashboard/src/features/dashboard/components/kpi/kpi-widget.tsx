@@ -20,6 +20,8 @@ interface WidgetProps {
 export function KPIWidget({ config, preview = false, isEditMode = false }: Readonly<WidgetProps>) {
     const { kpiPreview, loadingKpiValue } = useFetchKpiValue(config);
     const { id, chargeIds } = config;
+    const isSessionActive = useDashboardStore((state) => state.isSessionActive);
+    const isGenerating = useDashboardStore((state) => state.isGenerating);
 
     const openConfig = () => {
         if (!isEditMode) {
@@ -47,16 +49,6 @@ export function KPIWidget({ config, preview = false, isEditMode = false }: Reado
     const isNotConfigured = !chargeIds || chargeIds.length === 0;
 
     const renderKpiContent = () => {
-        // if (showSaveBeforeConfigure) {
-        //     return (
-        //         <div className="flex flex-1 items-center justify-center">
-        //             <p className="text-xs text-muted-foreground italic text-center">
-        //                 Drag to move widget.
-        //             </p>
-        //         </div>
-        //     );
-        // }
-
         if (isNotConfigured) {
             return (
                 <div className="flex flex-col gap-2 justify-center items-center h-full w-full">
@@ -97,6 +89,7 @@ export function KPIWidget({ config, preview = false, isEditMode = false }: Reado
 
     return (
         <WidgetMenu
+            disabled={isSessionActive || isGenerating}
             onConfigure={openConfig}
             isEditMode={isEditMode}
             preview={preview}
@@ -110,6 +103,7 @@ export function KPIWidget({ config, preview = false, isEditMode = false }: Reado
 
                     {!preview && !showSaveBeforeConfigure && (
                         <WidgetDropdown
+                            disabled={isSessionActive || isGenerating}
                             onConfigure={openConfig}
                             onDelete={() => removeWidget(id, id)}
                             isEditMode={isEditMode}

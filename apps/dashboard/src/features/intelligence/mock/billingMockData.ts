@@ -10,6 +10,7 @@ export const MOCK_ACCOUNTS: CloudAccount[] = [
         displayName: "Account one",
         ingestionPeriod: "30",
         createdAt: "2026-01-15T00:00:00.000Z",
+        billingConfigured: true,
     },
     {
         id: "account-2",
@@ -18,6 +19,7 @@ export const MOCK_ACCOUNTS: CloudAccount[] = [
         displayName: "Account two",
         ingestionPeriod: "30",
         createdAt: "2026-02-20T00:00:00.000Z",
+        billingConfigured: true,
     },
     {
         id: "account-3",
@@ -26,6 +28,7 @@ export const MOCK_ACCOUNTS: CloudAccount[] = [
         displayName: "Account three",
         ingestionPeriod: "7",
         createdAt: "2026-03-10T00:00:00.000Z",
+        billingConfigured: true,
     },
 ];
 

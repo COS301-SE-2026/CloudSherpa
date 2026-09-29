@@ -13,22 +13,30 @@ import {
     updateChartWidgetConfig,
     deleteDashboard,
     updateKpiWidgetConfig,
+    fetchDashboards,
 } from "@/lib/fetch/api-dashboard";
 import { TimeWindowPreset } from "../types/timewindow";
+import { MetricType } from "@/features/dashboard/types/metric";
 import { setDashboardPresetTimeWindow } from "../utils/setDashboardTimeWindow";
 import { persist } from "zustand/middleware";
 import { getPresetRange } from "../components/toolbar/timePeriodSelector";
 import { timeMs } from "@/lib/timeUtils";
 import { toast } from "sonner";
-import { AiVersionSummary, DashboardPlan } from "@/features/dashboard/types/agentic";
+import type {
+    AiVersionSummary,
+    DashboardPlan,
+    AiDashboardApplyMode,
+} from "@/features/dashboard/types/agentic";
 import {
     createAiSession,
     deleteAiSession,
     generateDashboardPlan,
     getAiDashboardVersions,
-    getAiDashboardVersion,
+    activateAiDashboardVersion,
     applyAiDashboardVersion,
 } from "@/lib/fetch/api-agentic-dashboard";
+import type { DashboardDTO } from "@/lib/fetch/api-dashboard";
+import { getAwsAccountConnections } from "@/lib/fetch/cloud-account-api";
 
 const tickIntervalMs = 60_000;
 
@@ -43,16 +51,17 @@ function getDefaultWindow() {
 }
 
 export interface AgenticActions {
-    startSessionAndGenerate: (prompt: string) => Promise<void>;
-    sendPrompt: (prompt: string) => Promise<void>;
+    startSessionAndGenerate: (prompt: string) => Promise<boolean>;
+    sendPrompt: (prompt: string) => Promise<boolean>;
     switchVersion: (versionId: string) => Promise<void>;
     fetchVersions: () => Promise<void>;
-    acceptDashboard: () => Promise<void>;
+    applyDashboard: (versionId: string, mode: AiDashboardApplyMode) => Promise<boolean>;
     cancelSession: () => Promise<void>;
 }
 
 export type AgenticSlice = {
     sessionId: string | null;
+    startedDashboardId: string | null;
     currentVersionId: string | null;
     isSessionActive: boolean;
     isGenerating: boolean;
@@ -60,6 +69,10 @@ export type AgenticSlice = {
     versions: AiVersionSummary[];
     stagedLayouts: Record<string, LayoutItem>;
     stagedWidgets: Record<string, WidgetConfig>;
+
+    generatePrompt: string;
+    setGeneratePrompt: (prompt: string) => void;
+
     agenticActions: AgenticActions;
 };
 
@@ -476,6 +489,60 @@ const createWindowSlice: StateCreator<DashboardStore, [], [], WindowSlice> = (se
     },
 });
 
+function adaptFetchedDashboards(dashboards: DashboardDTO[]) {
+    const dashboardsMap: Record<string, DashboardConfig> = {};
+    const layoutsArray: LayoutItem[] = [];
+    const widgetsArray: WidgetConfig[] = [];
+
+    dashboards.forEach((dashboard) => {
+        dashboardsMap[dashboard.id] = {
+            id: dashboard.id,
+            displayName: dashboard.displayName,
+            timeFrom: dashboard.timeFrom,
+            timeTo: dashboard.timeTo,
+            predefinedTime: dashboard.predefinedTime,
+            current: dashboard.current,
+            layoutItemIds: dashboard.widgets.map((widget) => widget.id),
+        };
+
+        dashboard.widgets.forEach((widget) => {
+            layoutsArray.push({
+                id: widget.id,
+                x: widget.startX,
+                y: widget.startY,
+                w: widget.width,
+                h: widget.height,
+                autoPosition: false,
+            });
+
+            if (widget.widgetType === "CHART") {
+                widgetsArray.push({
+                    id: widget.id,
+                    chartType: widget.chartType,
+                    chartColour: widget.chartColour,
+                    widgetType: "CHART",
+                    displayName: widget.displayName,
+                    provider: widget.provider,
+                    accountId: widget.accountId,
+                    resourceId: widget.resourceId,
+                    metricType: widget.metricType as MetricType | null,
+                    metricName: widget.metricName,
+                });
+            } else {
+                widgetsArray.push({
+                    id: widget.id,
+                    widgetType: "KPI",
+                    displayName: widget.displayName,
+                    chargeIds: widget.chargeIds,
+                    aggregationWindowDays: widget.aggregationWindowDays,
+                });
+            }
+        });
+    });
+
+    return { dashboardsMap, layoutsArray, widgetsArray };
+}
+
 const createPreferenceSlice: StateCreator<DashboardStore, [], [], PreferenceSlice> = (set) => ({
     themeLoaded: false,
     setThemeLoaded: (themeLoaded: boolean) => {
@@ -526,8 +593,36 @@ function adaptState(dashboardPlan: DashboardPlan) {
     return { layoutsMap, widgetsMap };
 }
 
+const GENERATION_TIMEOUT_MS = 3.5 * 60 * 1000;
+
+class GenerationTimeoutError extends Error {
+    constructor() {
+        super("Dashboard generation timed out.");
+        this.name = "GenerationTimeoutError";
+    }
+}
+
+function generateWithTimeout<T>(promise: Promise<T>): Promise<T> {
+    return new Promise<T>((resolve, reject) => {
+        const timeoutId = setTimeout(() => {
+            reject(new GenerationTimeoutError());
+        }, GENERATION_TIMEOUT_MS);
+
+        promise
+            .then((result) => {
+                clearTimeout(timeoutId);
+                resolve(result);
+            })
+            .catch((error) => {
+                clearTimeout(timeoutId);
+                reject(error);
+            });
+    });
+}
+
 const createAgenticSlice: StateCreator<DashboardStore, [], [], AgenticSlice> = (set, get) => ({
     sessionId: null,
+    startedDashboardId: null,
     currentVersionId: null,
     isSessionActive: false,
     isGenerating: false,
@@ -535,21 +630,36 @@ const createAgenticSlice: StateCreator<DashboardStore, [], [], AgenticSlice> = (
     versions: [],
     stagedLayouts: {},
     stagedWidgets: {},
+    generatePrompt: "",
+    setGeneratePrompt: (prompt) => set({ generatePrompt: prompt }),
 
     agenticActions: {
-        //create new temp session, send first prompt, translate response and populate store so dash can be viewed
         startSessionAndGenerate: async (prompt: string) => {
-            set({ isGenerating: true });
-            try {
-                //create session
-                const sessionRes = await createAiSession();
-                const sessionId = sessionRes.sessionId;
+            if ((await getAwsAccountConnections()).length == 0) {
+                toast.error("Connect cloud accounts before generating dashboards");
+                return false;
+            }
+            const startedDashboardId = get().activeDashboardId;
+            if (!startedDashboardId) {
+                toast.error("Select a dashboard before starting an AI session");
+                return false;
+            }
 
-                //send initial prompt
-                const planRes = await generateDashboardPlan({
-                    sessionId,
-                    message: prompt,
-                });
+            let sessionId: string | null = null;
+
+            try {
+                set({ isGenerating: true, startedDashboardId });
+
+                const sessionRes = await createAiSession();
+                sessionId = sessionRes.sessionId;
+
+                const planRes = await generateWithTimeout(
+                    generateDashboardPlan({
+                        sessionId,
+                        startingDashboardId: startedDashboardId,
+                        message: prompt,
+                    })
+                );
 
                 const { layoutsMap, widgetsMap } = adaptState(planRes.dashboard);
 
@@ -563,28 +673,88 @@ const createAgenticSlice: StateCreator<DashboardStore, [], [], AgenticSlice> = (
                     stagedWidgets: widgetsMap,
                 });
 
-                //refresh version history list
                 await get().agenticActions.fetchVersions();
-                toast.success("AI session started and draft generated!");
+
+                if (planRes.stageSucceeded) {
+                    toast.success("AI session started and draft generated!");
+                } else if (planRes.stageAttempted) {
+                    toast.error(
+                        planRes.assistantMessage ||
+                            "The AI could not create the requested dashboard."
+                    );
+                }
+                return true;
             } catch (error) {
-                console.error("Failed to start session:", error);
-                toast.error("Failed to generate AI dashboard plan.");
-                set({ isGenerating: false });
+                console.error("Failed to start AI session:", error);
+
+                if (sessionId) {
+                    try {
+                        await deleteAiSession(sessionId);
+                    } catch (cleanupError) {
+                        console.error("Failed to clean up AI session:", cleanupError);
+                    }
+                }
+
+                set({
+                    sessionId: null,
+                    startedDashboardId: null,
+                    currentVersionId: null,
+                    isSessionActive: false,
+                    isGenerating: false,
+                    assistantMessage: null,
+                    versions: [],
+                    stagedLayouts: {},
+                    stagedWidgets: {},
+                });
+
+                if (error instanceof GenerationTimeoutError) {
+                    toast.error(
+                        "Dashboard generation took longer than 2 minutes. Please try again."
+                    );
+                } else {
+                    toast.error("We couldn't generate the dashboard. Please try again.");
+                }
+
+                return false;
             }
         },
 
-        // while in session, send prompt to update current generated dash
         sendPrompt: async (prompt: string) => {
-            const { sessionId } = get();
-            if (!sessionId) return;
-
-            set({ isGenerating: true });
-            try {
-                const planRes = await generateDashboardPlan({
+            const { sessionId, startedDashboardId } = get();
+            if (!sessionId || !startedDashboardId) {
+                console.error("sendPrompt called with no active session context", {
                     sessionId,
-                    message: prompt,
+                    startedDashboardId,
                 });
 
+                toast.error(
+                    "Your AI session appears to have been lost. Please reload the page and start a new one."
+                );
+
+                set({
+                    sessionId: null,
+                    startedDashboardId: null,
+                    currentVersionId: null,
+                    isSessionActive: false,
+                    isGenerating: false,
+                    versions: [],
+                    stagedLayouts: {},
+                    stagedWidgets: {},
+                });
+
+                return false;
+            }
+
+            set({ isGenerating: true });
+
+            try {
+                const planRes = await generateWithTimeout(
+                    generateDashboardPlan({
+                        sessionId,
+                        startingDashboardId: startedDashboardId,
+                        message: prompt,
+                    })
+                );
                 const { layoutsMap, widgetsMap } = adaptState(planRes.dashboard);
 
                 set({
@@ -596,36 +766,59 @@ const createAgenticSlice: StateCreator<DashboardStore, [], [], AgenticSlice> = (
                 });
 
                 await get().agenticActions.fetchVersions();
-                toast.success("Dashboard draft updated!");
+
+                if (planRes.stageSucceeded) {
+                    toast.success("Dashboard draft updated!");
+                } else if (planRes.stageAttempted) {
+                    toast.error(
+                        planRes.assistantMessage ||
+                            "The AI could not create the requested dashboard."
+                    );
+                }
+                return true;
             } catch (error) {
                 console.error("Failed to update plan:", error);
-                toast.error("Failed to update AI dashboard draft.");
+
+                if (error instanceof GenerationTimeoutError) {
+                    toast.error(
+                        "Dashboard generation took longer than 2 minutes. Please try again."
+                    );
+                } else {
+                    toast.error("We couldn't update the dashboard. Please try again.");
+                }
+
                 set({ isGenerating: false });
+
+                return false;
             }
         },
 
-        //jmp 2 previous version, swap it into preview
         switchVersion: async (versionId: string) => {
             const { sessionId } = get();
             if (!sessionId) return;
 
             try {
-                const versionRes = await getAiDashboardVersion(sessionId, versionId);
+                const versionRes = await activateAiDashboardVersion(sessionId, versionId);
                 const { layoutsMap, widgetsMap } = adaptState(versionRes.dashboard);
-
+                console.log(" Staged layout: ", layoutsMap);
                 set({
                     currentVersionId: versionRes.versionId,
                     stagedLayouts: layoutsMap,
                     stagedWidgets: widgetsMap,
                 });
-                toast.success(`Switched to version v${versionRes.version}`);
+
+                await get().agenticActions.fetchVersions();
+                toast.success(
+                    versionRes.version === 0
+                        ? "Switched to the dashboard you started with."
+                        : `Switched to version v${versionRes.version}`
+                );
             } catch (error) {
-                console.error("Failed to fetch version:", error);
-                toast.error("Failed to load selected version.");
+                console.error("Failed to activate version:", error);
+                toast.error("We couldn't load that dashboard version. Please try again.");
             }
         },
 
-        //retrieve list of dash drafts during session for version history
         fetchVersions: async () => {
             const { sessionId } = get();
             if (!sessionId) return;
@@ -638,39 +831,56 @@ const createAgenticSlice: StateCreator<DashboardStore, [], [], AgenticSlice> = (
             }
         },
 
-        //persist current ai dash and cleanup state
-        acceptDashboard: async () => {
-            const { sessionId, currentVersionId } = get();
-            if (!sessionId || !currentVersionId) return;
+        applyDashboard: async (versionId: string, mode: AiDashboardApplyMode) => {
+            const { sessionId, startedDashboardId } = get();
+            if (!sessionId) return false;
+
+            if (mode === "REPLACE_STARTED_DASHBOARD" && !startedDashboardId) {
+                toast.error("The dashboard that started the AI session is no longer available.");
+                return false;
+            }
 
             try {
-                //apply version
-                await applyAiDashboardVersion(sessionId, currentVersionId);
+                const appliedDashboards = await applyAiDashboardVersion(sessionId, versionId, {
+                    mode,
+                    startedDashboardId:
+                        mode === "REPLACE_STARTED_DASHBOARD" ? startedDashboardId! : undefined,
+                });
 
-                //clean up session
-                await deleteAiSession(sessionId);
+                console.log(mode);
 
-                //reset local
+                const { dashboardsMap, layoutsArray, widgetsArray } =
+                    adaptFetchedDashboards(appliedDashboards);
+
+                get().actions.setInitialState(dashboardsMap, layoutsArray, widgetsArray);
+
                 set({
                     sessionId: null,
+                    startedDashboardId: null,
                     currentVersionId: null,
                     isSessionActive: false,
+                    isGenerating: false,
                     assistantMessage: null,
                     versions: [],
                     stagedLayouts: {},
                     stagedWidgets: {},
                 });
 
-                toast.success("Successfully applied AI dashboard!");
+                toast.success(
+                    mode === "REPLACE_STARTED_DASHBOARD"
+                        ? "The selected AI dashboard replaced your original dashboard."
+                        : "The selected AI dashboard was created as a new dashboard."
+                );
+                return true;
             } catch (error) {
                 console.error("Failed to apply dashboard version:", error);
-                toast.error("Failed to apply AI dashboard.");
+                toast.error("We couldn't save the dashboard. Please try again.");
+                return false;
             }
         },
 
-        //abort session and cleanup state
         cancelSession: async () => {
-            const { sessionId } = get();
+            const { sessionId, startedDashboardId } = get();
             if (sessionId) {
                 try {
                     await deleteAiSession(sessionId);
@@ -679,11 +889,26 @@ const createAgenticSlice: StateCreator<DashboardStore, [], [], AgenticSlice> = (
                 }
             }
 
-            //reset local
+            try {
+                const fetchedData = await fetchDashboards();
+                const { dashboardsMap, layoutsArray, widgetsArray } =
+                    adaptFetchedDashboards(fetchedData);
+
+                get().actions.setInitialState(dashboardsMap, layoutsArray, widgetsArray);
+
+                if (startedDashboardId && dashboardsMap[startedDashboardId]) {
+                    get().actions.setActiveDashboard(startedDashboardId);
+                }
+            } catch (error) {
+                console.error("Failed to fetch dashboards after cancelling session:", error);
+                toast.error("Failed to fetch dashboards. Please reload the page.");
+            }
             set({
                 sessionId: null,
+                startedDashboardId: null,
                 currentVersionId: null,
                 isSessionActive: false,
+                isGenerating: false,
                 assistantMessage: null,
                 versions: [],
                 stagedLayouts: {},

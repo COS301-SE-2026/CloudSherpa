@@ -80,10 +80,22 @@ cd ..
 Then start the stack:
 
 ```bash
-docker compose -f infra/docker-compose.yml up --build
+docker compose -f infra/docker-compose.yml build --build-arg API_URL="http://localhost:8083"
+docker compose -f infra/docker-compose.tml up
+```
+
+### Forecasting container
+
+```bash
+docker build -t cloudsherpa-intelligence apps/intelligence
+docker run --env-file apps/intelligence/.env -p 5000:5000 --name cloudsherpa-intelligence cloudsherpa-intelligence
 ```
 
 The dashboard frontend is available at `http://localhost:3000`.
+
+### Agentic dashboard construction
+
+Agentic dashboard construction uses OpenAI models to process dashboard construction prompts. Therefore, the environment variables specified in the [.env.schema](./apps/service/.env.schema) should be replaced with valid variables to be able to run agentic dashboard constructions.
 
 ## About Team BitFlip
 

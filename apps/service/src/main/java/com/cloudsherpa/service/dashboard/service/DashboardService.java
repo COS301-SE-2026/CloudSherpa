@@ -5,6 +5,7 @@ import com.cloudsherpa.lib.entities.PredefinedTimeEnum;
 import com.cloudsherpa.lib.entities.Widget;
 import com.cloudsherpa.lib.repositories.DashboardRepository;
 import com.cloudsherpa.lib.repositories.DashboardWidgetRepository;
+import com.cloudsherpa.service.agenticdashboard.dto.DashboardPlanDto;
 import com.cloudsherpa.service.dashboard.dto.ChartWidgetConfigUpdateDTO;
 import com.cloudsherpa.service.dashboard.dto.ChartWidgetDTO;
 import com.cloudsherpa.service.dashboard.dto.DashboardCreateDTO;
@@ -44,6 +45,73 @@ public class DashboardService {
   @Transactional
   public List<DashboardDTO> getDashboardsByUserId(UUID userId) {
     return dashboardRepository.findByUserId(userId).stream().map(this::mapToDashboardDTO).toList();
+  }
+
+  @Transactional
+  public DashboardDTO getDashboard(UUID userId, UUID dashboardId) {
+    return mapToDashboardDTO(getDashboardAndVerifyOwnership(userId, dashboardId));
+  }
+
+  @Transactional
+  public DashboardDTO createDashboardFromPlan(
+      UUID userId, UUID dashboardId, DashboardPlanDto plan) {
+    List<Dashboard> existingDashboards = dashboardRepository.findByUserId(userId);
+    for (Dashboard existing : existingDashboards) {
+      if (Boolean.TRUE.equals(existing.getCurrent())) {
+        Dashboard updatedExisting =
+            new Dashboard(
+                existing.getId(),
+                existing.getUserId(),
+                existing.getDisplayName(),
+                existing.getTimeFrom(),
+                existing.getTimeTo(),
+                existing.getPredefinedTime(),
+                false);
+        dashboardRepository.save(updatedExisting);
+      }
+    }
+
+    PredefinedTimeEnum predefinedTime =
+        plan.predefinedTime() != null ? plan.predefinedTime() : PredefinedTimeEnum.T_24_HOUR;
+
+    Dashboard dashboard =
+        new Dashboard(
+            dashboardId,
+            userId,
+            plan.title(),
+            plan.timeFrom(),
+            plan.timeTo(),
+            predefinedTime,
+            true);
+
+    dashboardRepository.save(dashboard);
+    return mapToDashboardDTO(dashboard);
+  }
+
+  @Transactional
+  public DashboardDTO replaceDashboardFromPlan(
+      UUID userId, UUID dashboardId, DashboardPlanDto plan) {
+    Dashboard existing = getDashboardAndVerifyOwnership(userId, dashboardId);
+
+    for (Widget widget : widgetRepository.findByDashboardId(dashboardId)) {
+      deleteWidget(userId, widget.getId());
+    }
+
+    PredefinedTimeEnum predefinedTime =
+        plan.predefinedTime() != null ? plan.predefinedTime() : existing.getPredefinedTime();
+
+    Dashboard replacement =
+        new Dashboard(
+            dashboardId,
+            userId,
+            plan.title(),
+            plan.timeFrom(),
+            plan.timeTo(),
+            predefinedTime,
+            true);
+
+    dashboardRepository.save(replacement);
+    return mapToDashboardDTO(replacement);
   }
 
   // create new blanck instance of dashbnoard

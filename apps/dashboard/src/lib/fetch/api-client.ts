@@ -7,12 +7,12 @@ let hasEmittedSessionExpired = false;
 export const AUTH_SESSION_EXPIRED_EVENT = "auth:session-expired";
 
 function emitSessionExpired() {
-    if (typeof window === "undefined" || isLoggingOut || hasEmittedSessionExpired) {
+    if (!("window" in globalThis) || isLoggingOut || hasEmittedSessionExpired) {
         return;
     }
 
     hasEmittedSessionExpired = true;
-    window.dispatchEvent(new CustomEvent(AUTH_SESSION_EXPIRED_EVENT));
+    globalThis.dispatchEvent(new CustomEvent(AUTH_SESSION_EXPIRED_EVENT));
 }
 
 export function startLogout() {
@@ -94,7 +94,23 @@ export default async function apiClient<T>(
     }
 
     if (!response.ok) {
-        throw new Error(`Request failed with status code ${response.status}`);
+        const errorText = await response.text();
+        let message = `Request failed with status code ${response.status}`;
+
+        if (errorText) {
+            try {
+                const errorBody = JSON.parse(errorText) as {
+                    message?: string;
+                    detail?: string;
+                    error?: string;
+                };
+                message = errorBody.message ?? errorBody.detail ?? errorBody.error ?? message;
+            } catch {
+                message = errorText;
+            }
+        }
+
+        throw new Error(message);
     }
 
     hasEmittedSessionExpired = false;

@@ -45,7 +45,7 @@ export function BudgetPopup({ open, initial, onClose, onSubmit }: Readonly<Props
     const [scope, setScope] = useState<ScopeForBudget>(initial?.scope ?? "TENANT");
 
     const [amount, setAmount] = useState<string>(
-        initial?.amount !== undefined ? String(initial.amount) : ""
+        initial?.amount === undefined ? "" : String(initial.amount)
     );
 
     const [windowDays, setWindowDays] = useState<number>(initial?.window_days ?? 30);
@@ -199,6 +199,9 @@ export function BudgetPopup({ open, initial, onClose, onSubmit }: Readonly<Props
         setScopeError(null);
     };
 
+    //dreive accounts with billing setup
+    const billingAccounts = accounts.filter((account) => account.billingConfigured);
+
     const resolvedTarget = (() => {
         if (scope === "TENANT") {
             return "All cloud accounts";
@@ -223,7 +226,7 @@ export function BudgetPopup({ open, initial, onClose, onSubmit }: Readonly<Props
         return resource?.resourceName ?? selectedResourceId;
     })();
 
-    const handlingSubmit = async (submit: React.FormEvent) => {
+    const handlingSubmit = async (submit: React.SubmitEvent) => {
         submit.preventDefault();
 
         let hasError = false;
@@ -344,7 +347,7 @@ export function BudgetPopup({ open, initial, onClose, onSubmit }: Readonly<Props
                             <div className="min-w-0 w-full overflow-hidden">
                                 <Dropdown
                                     value={selectedAccountId}
-                                    options={accounts.map((account) => ({
+                                    options={billingAccounts.map((account) => ({
                                         value: account.id,
                                         label: account.displayName,
                                     }))}

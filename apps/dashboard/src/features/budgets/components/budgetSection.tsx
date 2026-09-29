@@ -18,7 +18,11 @@ import {
 import { useBudget } from "@/features/budgets/hooks/useBudget";
 import { BudgetTable } from "@/features/budgets/components/budgetTable";
 import { BudgetPopup } from "@/features/budgets/components/budgetPopup";
-import type { Budget, CreateBudgetRequest } from "@/features/budgets/types/budgetTypes";
+import {
+    LABELS_FOR_SCOPE,
+    type Budget,
+    type CreateBudgetRequest,
+} from "@/features/budgets/types/budgetTypes";
 import { Input } from "@/components/atoms/input";
 
 export function BudgetSection() {
@@ -31,6 +35,8 @@ export function BudgetSection() {
     const [deleteBudget, setDeleteBudget] = useState<Budget | null>(null);
 
     const [search, setSearch] = useState("");
+
+    const scopeForDelete = deleteBudget ? LABELS_FOR_SCOPE[deleteBudget.scope] : "";
 
     const forFilters = useMemo(
         () =>
@@ -175,15 +181,22 @@ export function BudgetSection() {
 
                         <AlertDialogDescription>
                             {" "}
-                            This will permanently delete the {deleteBudget?.scope} budget of{" "}
-                            {deleteBudget?.currency} {deleteBudget?.amount}.{" "}
+                            This will permanently delete the {scopeForDelete} budget of{" "}
+                            {deleteBudget?.currency} {deleteBudget?.amount.toFixed(2)}.{" "}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
 
                     <AlertDialogFooter>
                         <AlertDialogCancel> Cancel </AlertDialogCancel>
 
-                        <AlertDialogAction onClick={confirmingDelete}> Delete </AlertDialogAction>
+                        <AlertDialogAction
+                            onClick={confirmingDelete}
+                            className="bg-destructive hover:bg-destructive/90"
+                            variant="destructive"
+                        >
+                            {" "}
+                            Delete{" "}
+                        </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>

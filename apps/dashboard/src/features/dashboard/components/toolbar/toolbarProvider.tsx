@@ -9,6 +9,8 @@ interface ToolbarContextType {
     setIsSelectorOpen: (value: boolean) => void;
     selectorView: "list" | "create";
     setSelectorView: (value: "list" | "create") => void;
+    isApplyDialogOpen: boolean;
+    setIsApplyDialogOpen: (value: boolean) => void;
 }
 
 const ToolbarContext = createContext<ToolbarContextType | undefined>(undefined);
@@ -17,6 +19,7 @@ export function ToolbarProvider({ children }: Readonly<{ children: ReactNode }>)
     const [isEditMode, setIsEditMode] = useState(false);
     const [isSelectorOpen, setIsSelectorOpen] = useState(false);
     const [selectorView, setSelectorView] = useState<"list" | "create">("list");
+    const [isApplyDialogOpen, setIsApplyDialogOpen] = useState(false);
 
     const contextValue = useMemo(
         () => ({
@@ -26,8 +29,10 @@ export function ToolbarProvider({ children }: Readonly<{ children: ReactNode }>)
             setIsSelectorOpen,
             selectorView,
             setSelectorView,
+            isApplyDialogOpen,
+            setIsApplyDialogOpen,
         }),
-        [isEditMode, isSelectorOpen, selectorView]
+        [isEditMode, isSelectorOpen, selectorView, isApplyDialogOpen]
     );
 
     return <ToolbarContext.Provider value={contextValue}>{children}</ToolbarContext.Provider>;

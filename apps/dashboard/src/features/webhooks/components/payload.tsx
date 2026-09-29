@@ -19,14 +19,14 @@ export const ExampleForPayload = ({ event, signingKey }: PropsForPayload) => {
     useEffect(() => {
         const calculateDemoHash = async (payload?: Record<string, unknown>) => {
             const encoder = new TextEncoder();
-            const importedKey = await window.crypto.subtle.importKey(
+            const importedKey = await globalThis.crypto.subtle.importKey(
                 "raw",
                 encoder.encode(signingKey),
                 { name: "HMAC", hash: "SHA-256" },
                 false,
                 ["sign"]
             );
-            const signature = await window.crypto.subtle.sign(
+            const signature = await globalThis.crypto.subtle.sign(
                 "HMAC",
                 importedKey,
                 encoder.encode(JSON.stringify(payload))

@@ -115,7 +115,7 @@ function helperForColumns({
             header: () => "WINDOW",
             size: 100,
             cell: ({ row }) => (
-                <span className={!row.original.enabled ? "text-muted-foreground" : ""}>
+                <span className={row.original.enabled ? "" : "text-muted-foreground"}>
                     {row.original.window_days} {row.original.window_days === 1 ? "day" : "days"}
                 </span>
             ),
@@ -200,7 +200,7 @@ export function BudgetTable({ budgets, edit, toggleEnabled, onDelete }: Readonly
                                 className="py-8 text-center text-sm text-muted-foreground"
                             >
                                 {" "}
-                                No budgets configures{" "}
+                                No budgets configured{" "}
                             </TableCell>
                         </TableRow>
                     ) : (

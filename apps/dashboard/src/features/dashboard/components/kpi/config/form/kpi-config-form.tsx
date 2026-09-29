@@ -30,14 +30,6 @@ export function KpiConfigFormInner({ kpiId }: KpiConfigFormProps) {
     const [isSaving, setIsSaving] = useState(false);
     const widgetConfig = getWidget(kpiId);
 
-    useEffect(() => {
-        async function fetchResources() {
-            await fetchTableResources();
-        }
-
-        fetchResources();
-    }, []);
-
     const getWidgetError = widgetConfig === undefined;
 
     const [config, setConfig] = useState<KpiWidgetConfig>(() =>
@@ -51,6 +43,15 @@ export function KpiConfigFormInner({ kpiId }: KpiConfigFormProps) {
                   chargeIds: [],
               }
     );
+
+    useEffect(() => {
+        async function fetchResources() {
+            await fetchTableResources(config.aggregationWindowDays);
+        }
+
+        void fetchResources();
+    }, [config.aggregationWindowDays, fetchTableResources]);
+
     const router = useRouter();
 
     function onTitleChange(newTitle: string): void {

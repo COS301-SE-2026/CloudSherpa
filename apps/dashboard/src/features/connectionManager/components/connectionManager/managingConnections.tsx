@@ -263,10 +263,6 @@ export default function ManagingConnections() {
                     >
                         <TabsList className="self-start inline-flex gap-1 h-auto p-1 bg-muted rounded-lg w-fit">
                             {(["All", "AWS", "Azure", "GCP"] as Providers[]).map((providers) => {
-                                const isActive = activeFilter === providers;
-
-                                const styling = providerTabs[providers];
-
                                 return (
                                     <TabsTrigger key={providers} value={providers}>
                                         {" "}
@@ -406,7 +402,7 @@ export default function ManagingConnections() {
                                         <span className="text-xs text-muted-foreground">
                                             {" "}
                                             {connection.resource} resource
-                                            {connection.resource !== 1 ? "s" : ""}
+                                            {connection.resource === 1 ? "" : "s"}
                                         </span>
 
                                         {connection.resource === 0 ? (

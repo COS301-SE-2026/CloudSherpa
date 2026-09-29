@@ -6,6 +6,7 @@ import com.cloudsherpa.lib.repositories.CloudAccountRepository;
 import com.cloudsherpa.lib.repositories.NormalizedCostsRepository;
 import com.cloudsherpa.lib.repositories.ResourceRepository;
 import com.cloudsherpa.service.billing.dto.BillingChargeResponse;
+import com.cloudsherpa.service.billing.dto.BillingKpiChargesRequest;
 import com.cloudsherpa.service.billing.dto.BillingKpiRequest;
 import com.cloudsherpa.service.billing.dto.BillingKpiResponse;
 import com.cloudsherpa.service.config.TenantContext;
@@ -103,15 +104,26 @@ public class BillingService {
   }
 
   @Transactional(readOnly = true)
-  public List<BillingChargeResponse> getCharges() {
+  public List<BillingChargeResponse> getCharges(BillingKpiChargesRequest request) {
     setTenantSchemaFromContext();
+
+    OffsetDateTime fromDate;
+    OffsetDateTime toDate;
+
+    try {
+      fromDate = OffsetDateTime.parse(request.from());
+      toDate = OffsetDateTime.parse(request.to());
+    } catch (DateTimeParseException ex) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST, "Date strings must be valid timestamps");
+    }
 
     List<NormalizedCosts> charges = normalizedCostsRepository.findDistinctByChargeId();
 
     List<BillingChargeResponse> response = new ArrayList<>();
 
     for (NormalizedCosts charge : charges) {
-      response.add(toBillingChargeResponse(charge));
+      response.add(toBillingChargeResponse(charge, fromDate, toDate));
     }
 
     return response;
@@ -168,11 +180,16 @@ public class BillingService {
     };
   }
 
-  private BillingChargeResponse toBillingChargeResponse(NormalizedCosts charge) {
+  private BillingChargeResponse toBillingChargeResponse(
+      NormalizedCosts charge, OffsetDateTime from, OffsetDateTime to) {
 
     Resource resource =
         resourceRepository.findByResourceIdentifier(charge.getResourceId()).orElse(null);
     String resourceName = resource != null ? resource.getResourceName() : null;
+
+    BigDecimal cost =
+        normalizedCostsRepository.sumTotalCostBetweenForResources(
+            from, to, List.of(charge.getChargeId()));
 
     return new BillingChargeResponse(
         charge.getResourceId(),
@@ -180,7 +197,7 @@ public class BillingService {
         charge.getServiceName(),
         charge.getProvider(),
         resourceName,
-        charge.getCostAmount(),
+        cost,
         charge.getMetadata());
   }
 }
