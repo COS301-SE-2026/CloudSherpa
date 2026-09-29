@@ -73,9 +73,7 @@ public class AiModelClient {
       throw new IllegalStateException("AI model returned an empty response");
     }
 
-    // if (LOGGER.isDebugEnabled()) {
     LOGGER.info("Raw LLM response: {}", response.toPrettyString());
-    // }
 
     return response;
   }
