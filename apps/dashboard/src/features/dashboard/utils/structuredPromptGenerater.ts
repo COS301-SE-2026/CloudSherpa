@@ -9,7 +9,7 @@ export interface ThemeMeta {
     metricNames: string[];
 }
 
-export interface generatePromptProps {
+export interface GeneratePromptProps {
     taskDescription: string;
     providers: string[];
     connections: {
@@ -27,7 +27,7 @@ export const generatePrompt = ({
     resources,
     themes,
     metricsByResource,
-}: generatePromptProps): string => {
+}: GeneratePromptProps): string => {
     const themeMetricsByResource = themes.map((theme) => {
         const resourceMatches = resources
             .map((resource) => {

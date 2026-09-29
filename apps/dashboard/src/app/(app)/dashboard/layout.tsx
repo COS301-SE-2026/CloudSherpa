@@ -331,11 +331,11 @@ function DashboardLayoutInner({ children }: Readonly<{ children: React.ReactNode
         };
 
         //event listener
-        window.addEventListener("keydown", handleKeyDown);
+        globalThis.addEventListener("keydown", handleKeyDown);
 
         //clean listener on unmount
         return () => {
-            window.removeEventListener("keydown", handleKeyDown);
+            globalThis.removeEventListener("keydown", handleKeyDown);
         };
     }, [handleAddWidget, handleAddKpi]);
 

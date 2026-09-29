@@ -1,5 +1,4 @@
 import SubSectionHeading from "@/design-system/shared/components/subsectionHeading";
-import { Badge } from "@/components/atoms/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/atoms/card";
 
 export default function Perceivable() {
