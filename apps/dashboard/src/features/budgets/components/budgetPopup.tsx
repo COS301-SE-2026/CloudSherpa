@@ -30,6 +30,7 @@ import { useAuthContext } from "@/features/authentication/providers/AuthContext"
 import { getAwsAccountConnections, getAwsAccountResources } from "@/lib/fetch/cloud-account-api";
 import type { CloudAccount } from "@/lib/fetch/dto/cloud-account";
 import type { CloudResource } from "@/lib/fetch/dto/cloud-resource";
+import Dropdown from "@/components/molecules/dropdown";
 
 interface PropsForPopup {
     open: boolean;
@@ -198,6 +199,9 @@ export function BudgetPopup({ open, initial, onClose, onSubmit }: Readonly<Props
         setScopeError(null);
     };
 
+    //dreive accounts with billing setup
+    const billingAccounts = accounts.filter((account) => account.billingConfigured);
+
     const resolvedTarget = (() => {
         if (scope === "TENANT") {
             return "All cloud accounts";
@@ -337,58 +341,49 @@ export function BudgetPopup({ open, initial, onClose, onSubmit }: Readonly<Props
                     </div>
 
                     {(scope === "ACCOUNT" || scope === "RESOURCE") && (
-                        <div className="space-y-2">
+                        <div className="grid gap-2">
                             <Label htmlFor="account"> Account </Label>
 
-                            <Select
-                                value={selectedAccountId ?? ""}
-                                onValueChange={(value) => {
-                                    setSelectedAccountId(value);
-                                    setSelectedResourceId(null);
-                                }}
-                            >
-                                <SelectTrigger id="account">
-                                    <SelectValue
-                                        placeholder={
-                                            loadingAccounts ? "Loading accounts" : "Select account"
-                                        }
-                                    />
-                                </SelectTrigger>
-
-                                <SelectContent>
-                                    {accounts.map((account) => (
-                                        <SelectItem key={account.id} value={account.id}>
-                                            {" "}
-                                            {account.displayName}{" "}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            <div className="min-w-0 w-full overflow-hidden">
+                                <Dropdown
+                                    value={selectedAccountId}
+                                    options={billingAccounts.map((account) => ({
+                                        value: account.id,
+                                        label: account.displayName,
+                                    }))}
+                                    onSelect={(value) => {
+                                        setSelectedAccountId(value);
+                                        setSelectedResourceId(null);
+                                    }}
+                                    disabled={loadingAccounts}
+                                    widthVariant="full"
+                                    placeholder={
+                                        loadingAccounts ? "Loading accounts" : "Select account"
+                                    }
+                                    emptyMessage="No accounts found"
+                                />
+                            </div>
                         </div>
                     )}
 
                     {scope === "RESOURCE" && (
-                        <div className="space-y-2">
+                        <div className="grid gap-2">
                             <Label htmlFor="resource"> Resource </Label>
 
-                            <Select
-                                value={selectedResourceId ?? ""}
-                                onValueChange={setSelectedResourceId}
-                                disabled={!selectedAccountId}
-                            >
-                                <SelectTrigger id="resource">
-                                    <SelectValue placeholder={forPlaceholder} />
-                                </SelectTrigger>
-
-                                <SelectContent>
-                                    {resources.map((resource) => (
-                                        <SelectItem key={resource.id} value={resource.id}>
-                                            {" "}
-                                            {resource.resourceName}{" "}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            <div className="min-w-0 w-full overflow-hidden">
+                                <Dropdown
+                                    value={selectedResourceId}
+                                    options={resources.map((resource) => ({
+                                        value: resource.id,
+                                        label: resource.resourceName,
+                                    }))}
+                                    onSelect={(value) => setSelectedResourceId(value)}
+                                    disabled={!selectedAccountId}
+                                    widthVariant="full"
+                                    placeholder={forPlaceholder}
+                                    emptyMessage="No resources found"
+                                />
+                            </div>
                         </div>
                     )}
 

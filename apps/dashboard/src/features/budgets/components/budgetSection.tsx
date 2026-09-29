@@ -158,7 +158,7 @@ export function BudgetSection() {
             )}
 
             <BudgetPopup
-                key={editing?.budget_id ?? "new"}
+                key={`${editing?.budget_id ?? "new"}-${popupOpen}`}
                 open={popupOpen}
                 initial={editing}
                 onClose={() => setPopupOpen(false)}

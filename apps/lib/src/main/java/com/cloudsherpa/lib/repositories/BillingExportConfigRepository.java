@@ -7,4 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface BillingExportConfigRepository extends JpaRepository<BillingExportConfig, UUID> {
   List<BillingExportConfig> findByAccountId(UUID accountId);
+
+  boolean existsByAccountId(UUID accountId);
 }

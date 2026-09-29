@@ -202,7 +202,7 @@ export function MainPage() {
                 </header>
 
                 <ThresholdPopup
-                    key={isEditing?.thresholdId ?? "new"}
+                    key={`${isEditing?.thresholdId ?? "new"}-${popupOpen}`}
                     open={popupOpen}
                     initial={isEditing}
                     userId={userId}

@@ -3,6 +3,7 @@ package com.cloudsherpa.service.persistconnection.service;
 import com.cloudsherpa.lib.entities.CloudAccount;
 import com.cloudsherpa.lib.entities.CloudConnection;
 import com.cloudsherpa.lib.entities.Resource;
+import com.cloudsherpa.lib.repositories.BillingExportConfigRepository;
 import com.cloudsherpa.lib.repositories.CloudAccountRepository;
 import com.cloudsherpa.lib.repositories.CloudConnectionRepository;
 import com.cloudsherpa.lib.repositories.ResourceRepository;
@@ -17,14 +18,17 @@ public class ConnectionQueryService {
   private final CloudConnectionRepository cloudConnectionRepository;
   private final CloudAccountRepository cloudAccountRepository;
   private final ResourceRepository resourceRepository;
+  private final BillingExportConfigRepository billingExportConfigRepository;
 
   public ConnectionQueryService(
       CloudConnectionRepository cloudConnectionRepository,
       CloudAccountRepository cloudAccountRepository,
-      ResourceRepository resourceRepository) {
+      ResourceRepository resourceRepository,
+      BillingExportConfigRepository billingExportConfigRepository) {
     this.cloudConnectionRepository = cloudConnectionRepository;
     this.cloudAccountRepository = cloudAccountRepository;
     this.resourceRepository = resourceRepository;
+    this.billingExportConfigRepository = billingExportConfigRepository;
   }
 
   public List<CloudAccount> getAccountConnections(UUID userId) {
@@ -36,6 +40,12 @@ public class ConnectionQueryService {
     connections.forEach(
         connection ->
             accounts.addAll(cloudAccountRepository.findByConnectionId(connection.getId())));
+
+    accounts.forEach(
+        account ->
+            account.setBillingConfigured(
+                billingExportConfigRepository.existsByAccountId(account.getId())));
+
     return accounts;
   }
 

@@ -24,7 +24,8 @@ CREATE TYPE public.predefined_time_enum AS ENUM (
   'T_12_HOUR',
   'T_24_HOUR',
   'T_7_DAYS',
-  'T_30_DAYS'
+  'T_30_DAYS',
+  'CUSTOM'
 );
 CREATE TYPE public.type_enum AS ENUM ('KPI', 'CHART');
 CREATE TYPE public.execution_status_enum AS ENUM ('pending', 'processing', 'completed', 'failed');
