@@ -78,7 +78,6 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
     const isSessionActive = useDashboardStore((state) => state.isSessionActive);
     const isGenerating = useDashboardStore((state) => state.isGenerating);
 
-    // console.log("Layouts: ", layouts);
     const cancelPendingCompact = () => {
         if (compactTimerRef.current) {
             clearTimeout(compactTimerRef.current);

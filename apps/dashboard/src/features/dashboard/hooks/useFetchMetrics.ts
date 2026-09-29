@@ -2,7 +2,6 @@ import apiClient from "@/lib/fetch/api-client";
 import { useMetricStore } from "@/features/dashboard/stores/metric-store";
 import { useCallback, useEffect, useState } from "react";
 
-/*type MetricStoreState = ReturnType<typeof useMetricStore.getState>;*/
 export interface AvailableMetricDto {
     resourceId: string;
 
@@ -18,13 +17,10 @@ export function useFetchMetrics() {
 
     const initializeMetricSeries = useMetricStore((state) => state.initializeMetricSeries);
 
-    //const clearMetricStore = useMetricStore((state: MetricStoreState) => state.clearStore);
 
     const fetchMetrics = useCallback(async () => {
         setMetricFetchLoad(true);
         setMetricFetchError(null);
-
-        //clearMetricStore();
 
         try {
             const availableMetrics = await apiClient<AvailableMetricDto[]>(

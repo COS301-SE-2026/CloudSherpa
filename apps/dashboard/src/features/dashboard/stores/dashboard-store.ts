@@ -22,7 +22,6 @@ import { persist } from "zustand/middleware";
 import { getPresetRange } from "../components/toolbar/timePeriodSelector";
 import { timeMs } from "@/lib/timeUtils";
 import { toast } from "sonner";
-import type { AiVersionSummary, DashboardPlan } from "@/features/dashboard/types/agentic";
 import {
     createAiSession,
     deleteAiSession,

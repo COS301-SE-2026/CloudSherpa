@@ -24,7 +24,7 @@ export default function GenerateDashInput({
     const isSessionActive = useDashboardStore((state) => state.isSessionActive);
     const isGenerating = useDashboardStore((state) => state.isGenerating);
 
-    const { startSessionAndGenerate, sendPrompt, applyDashboard, cancelSession } =
+    const { startSessionAndGenerate, sendPrompt } =
         useDashboardStore((state) => state.agenticActions);
 
     const handleGenerate = async () => {
