@@ -200,10 +200,7 @@ export default function StructuredRequest({ isApplying }: Readonly<StructuredReq
             previous.filter((themeId) => {
                 const theme = THEMES.find((theme) => theme.id === themeId);
 
-                return (
-                    theme !== undefined &&
-                    theme.metricNames.some((metric) => selectedMetrics.has(metric))
-                );
+                return theme?.metricNames.some((metric) => selectedMetrics.has(metric)) ?? false;
             })
         );
     };

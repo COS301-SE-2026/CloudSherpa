@@ -55,7 +55,6 @@ export default function ChartFormResource({
                             label: resource.resourceName,
                         }))}
                         onSelect={(currentValue) => {
-                            const nextMetricOptions = allAvailableMetrics()[currentValue] ?? [];
                             setConfiguration({
                                 ...configuration,
                                 resourceId: currentValue,
