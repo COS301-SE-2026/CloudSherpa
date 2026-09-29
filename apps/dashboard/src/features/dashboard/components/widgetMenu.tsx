@@ -16,6 +16,7 @@ export interface WidgetMenuProps {
     onDelete: () => void;
     isEditMode?: boolean;
     preview?: boolean;
+    disabled?: boolean;
 }
 
 export function WidgetMenu({
@@ -24,10 +25,13 @@ export function WidgetMenu({
     onDelete,
     isEditMode = false,
     preview = false,
+    disabled = false,
 }: Readonly<WidgetMenuProps>) {
     return (
         <ContextMenu>
-            <ContextMenuTrigger className="h-full w-full block">{children}</ContextMenuTrigger>
+            <ContextMenuTrigger disabled={disabled} className="h-full w-full block">
+                {children}
+            </ContextMenuTrigger>
 
             {!preview && (
                 <ContextMenuContent className="w-48">

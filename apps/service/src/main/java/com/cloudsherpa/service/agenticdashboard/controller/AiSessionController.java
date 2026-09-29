@@ -1,6 +1,8 @@
 package com.cloudsherpa.service.agenticdashboard.controller;
 
+import com.cloudsherpa.lib.entities.AiSession;
 import com.cloudsherpa.service.agenticdashboard.dto.AiSessionResponseDto;
+import com.cloudsherpa.service.agenticdashboard.service.AiSessionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -23,6 +25,12 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "AI Dashboard", description = "Agentic Dashboard Construction Operations")
 public class AiSessionController {
 
+  private final AiSessionService aiSessionService;
+
+  public AiSessionController(AiSessionService aiSessionService) {
+    this.aiSessionService = aiSessionService;
+  }
+
   @Operation(
       summary = "Create an AI dashboard session",
       description =
@@ -43,13 +51,25 @@ public class AiSessionController {
       })
   @PostMapping
   public ResponseEntity<AiSessionResponseDto> createSession(@AuthenticationPrincipal Jwt jwt) {
-    return ResponseEntity.status(HttpStatus.CREATED).build();
+
+    UUID userId = UUID.fromString(jwt.getSubject());
+
+    AiSession session = aiSessionService.createSession(userId);
+
+    AiSessionResponseDto response =
+        new AiSessionResponseDto(
+            session.getSessionId(),
+            session.getCreatedAt(),
+            session.getLastActivity(),
+            session.getCurrentVersionId());
+
+    return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
   @Operation(
       summary = "Delete an AI dashboard session",
       description =
-          "Deletes the AI session and all staged dashboard versions and messages belonging to it")
+          "Deletes the AI session and its staged data belonging to the authenticated user")
   @ApiResponses(
       value = {
         @ApiResponse(
@@ -63,6 +83,11 @@ public class AiSessionController {
   @DeleteMapping("/{sessionId}")
   public ResponseEntity<Void> deleteSession(
       @AuthenticationPrincipal Jwt jwt, @PathVariable UUID sessionId) {
+
+    UUID userId = UUID.fromString(jwt.getSubject());
+
+    aiSessionService.deleteSession(userId, sessionId);
+
     return ResponseEntity.noContent().build();
   }
 }
