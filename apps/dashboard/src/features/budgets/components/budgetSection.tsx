@@ -18,7 +18,11 @@ import {
 import { useBudget } from "@/features/budgets/hooks/useBudget";
 import { BudgetTable } from "@/features/budgets/components/budgetTable";
 import { BudgetPopup } from "@/features/budgets/components/budgetPopup";
-import { LABELS_FOR_SCOPE, type Budget, type CreateBudgetRequest } from "@/features/budgets/types/budgetTypes";
+import {
+    LABELS_FOR_SCOPE,
+    type Budget,
+    type CreateBudgetRequest,
+} from "@/features/budgets/types/budgetTypes";
 import { Input } from "@/components/atoms/input";
 
 export function BudgetSection() {
