@@ -49,7 +49,7 @@ export function KpiConfigFormInner({ kpiId }: KpiConfigFormProps) {
             await fetchTableResources(config.aggregationWindowDays);
         }
 
-        fetchResources();
+        void fetchResources();
     }, [config.aggregationWindowDays, fetchTableResources]);
 
     const router = useRouter();
