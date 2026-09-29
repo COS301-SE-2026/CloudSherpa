@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import { MetricType } from "@/features/dashboard/types/metric";
 import { persist } from "zustand/middleware";
 import { TimeWindowPreset } from "@/features/dashboard/types/timewindow";
 import { getAwsAccountConnections, getAwsAccountResources } from "@/lib/fetch/cloud-account-api";

@@ -226,7 +226,7 @@ export function BudgetPopup({ open, initial, onClose, onSubmit }: Readonly<Props
         return resource?.resourceName ?? selectedResourceId;
     })();
 
-    const handlingSubmit = async (submit: React.FormEvent) => {
+    const handlingSubmit = async (submit: React.SubmitEvent) => {
         submit.preventDefault();
 
         let hasError = false;
