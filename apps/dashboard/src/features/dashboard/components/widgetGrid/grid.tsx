@@ -31,6 +31,10 @@ function getActiveWidgetsMap(): Record<string, WidgetConfig> {
     return state.isSessionActive ? state.stagedWidgets : state.widgets;
 }
 
+function assignLayoutItemId(node: GridStackNode, widget: GridStackWidget) {
+    (widget as LayoutItem).id = String(node.id || "");
+}
+
 const repairLayout = (
     fullLayout: LayoutItem[],
     widgetsMap: Record<string, WidgetConfig>
@@ -171,9 +175,7 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
                         const fullLayout = gridStackInstance.current.save(
                             false,
                             false,
-                            (node, w: GridStackWidget) => {
-                                (w as LayoutItem).id = String(node.id || "");
-                            }
+                            assignLayoutItemId
                         ) as LayoutItem[];
 
                         const widgetsMap = getActiveWidgetsMap();

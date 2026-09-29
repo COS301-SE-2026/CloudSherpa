@@ -21,6 +21,12 @@ const PROVIDER_MAP: Record<string, string> = {
     GCP: "GCP_PROJECT",
 };
 
+function filterValidResourceIds(resourceIds: string[], resources: CloudResource[]): string[] {
+    const validResourceIds = new Set(resources.map((resource) => resource.id));
+
+    return resourceIds.filter((id) => validResourceIds.has(id));
+}
+
 function filterAccountsByProvider(
     accountIds: string[],
     connections: CloudAccount[],
@@ -240,9 +246,7 @@ export default function StructuredRequest({ isApplying }: Readonly<StructuredReq
 
                 setResources(allResources);
 
-                const forValidResourceIds = new Set(allResources.map((resource) => resource.id));
-
-                setResourceIds((previous) => previous.filter((id) => forValidResourceIds.has(id)));
+                setResourceIds((previous) => filterValidResourceIds(previous, allResources));
 
                 setThemeIds([]);
             })
