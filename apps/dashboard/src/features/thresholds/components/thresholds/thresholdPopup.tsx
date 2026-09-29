@@ -203,7 +203,7 @@ export function ThresholdPopup({
         }
     };
 
-    const handlingSubmit = async (submitting: React.FormEvent) => {
+    const handlingSubmit = async (submitting: React.SubmitEvent) => {
         submitting.preventDefault();
 
         let hasError = false;
@@ -274,35 +274,39 @@ export function ThresholdPopup({
                     <div className="grid gap-2">
                         <Label> Connection </Label>
 
-                        <Dropdown
-                            value={accountId}
-                            options={connection.map((connections) => ({
-                                value: connections.id,
-                                label: connections.displayName,
-                            }))}
-                            onSelect={handlingAccountChange}
-                            disabled={!provider}
-                            widthVariant="full"
-                            placeholder="Select connection"
-                            emptyMessage="No connections found"
-                        />
+                        <div className="min-w-0 w-full overflow-hidden">
+                            <Dropdown
+                                value={accountId}
+                                options={connection.map((connections) => ({
+                                    value: connections.id,
+                                    label: connections.displayName,
+                                }))}
+                                onSelect={handlingAccountChange}
+                                disabled={!provider}
+                                widthVariant="full"
+                                placeholder="Select connection"
+                                emptyMessage="No connections found"
+                            />
+                        </div>
                     </div>
 
                     <div className="grid gap-2">
                         <Label> Resource </Label>
 
-                        <Dropdown
-                            value={resourceId}
-                            options={activeResource.map((resource) => ({
-                                value: resource.id,
-                                label: resource.resourceName,
-                            }))}
-                            onSelect={handlingResourceChange}
-                            disabled={!accountId}
-                            widthVariant="full"
-                            placeholder="Select resource"
-                            emptyMessage="No resources found"
-                        />
+                        <div className="min-w-0 w-full overflow-hidden">
+                            <Dropdown
+                                value={resourceId}
+                                options={activeResource.map((resource) => ({
+                                    value: resource.id,
+                                    label: resource.resourceName,
+                                }))}
+                                onSelect={handlingResourceChange}
+                                disabled={!accountId}
+                                widthVariant="full"
+                                placeholder="Select resource"
+                                emptyMessage="No resources found"
+                            />
+                        </div>
 
                         {resourceError && (
                             <p className="text-xs text-destructive"> {resourceError} </p>
@@ -312,20 +316,25 @@ export function ThresholdPopup({
                     <div className="space-y-2">
                         <Label htmlFor="metricName"> Metric </Label>
 
-                        <Dropdown
-                            value={metricName || null}
-                            options={availableMetrics.map((type) => ({ value: type, label: type }))}
-                            onSelect={(change) => {
-                                setMetricName(change as string);
-                                if (metricError) {
-                                    setMetricError(null);
-                                }
-                            }}
-                            disabled={!resolvedResourceId}
-                            widthVariant="full"
-                            placeholder="Select metric"
-                            emptyMessage="No metric found"
-                        />
+                        <div className="min-w-0 w-full overflow-hidden">
+                            <Dropdown
+                                value={metricName || null}
+                                options={availableMetrics.map((type) => ({
+                                    value: type,
+                                    label: type,
+                                }))}
+                                onSelect={(change) => {
+                                    setMetricName(change);
+                                    if (metricError) {
+                                        setMetricError(null);
+                                    }
+                                }}
+                                disabled={!resolvedResourceId}
+                                widthVariant="full"
+                                placeholder="Select metric"
+                                emptyMessage="No metric found"
+                            />
+                        </div>
 
                         {metricError && (
                             <p id="metricName-error" className="text-xs text-destructive">

@@ -111,6 +111,7 @@ const SHORTCUT: KeyboardShortcuts[] = [
     { key: ["shift + E"], function: "Edit dashboard layout" },
     { key: ["shift + C"], function: "Chart widget" },
     { key: ["shift + K"], function: "KPI widget" },
+    { key: ["shift + D"], function: "Generate a dashboard" },
 ];
 
 export function HelpMenu() {

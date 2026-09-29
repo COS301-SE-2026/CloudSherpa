@@ -8,4 +8,4 @@ export type TimeWindowPreset =
     | "T_24_HOUR"
     | "T_7_DAYS"
     | "T_30_DAYS"
-    | "custom";
+    | "CUSTOM";

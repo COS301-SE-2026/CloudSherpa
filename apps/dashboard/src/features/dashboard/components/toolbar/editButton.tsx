@@ -10,7 +10,6 @@ import {
 import { Kbd, KbdGroup } from "@/components/atoms/kbd";
 
 import { Pencil } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface ToolbarProps {
     isEditMode: boolean;

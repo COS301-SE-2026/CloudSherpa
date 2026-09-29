@@ -18,6 +18,7 @@ import com.cloudsherpa.lib.repositories.CloudAccountRepository;
 import com.cloudsherpa.lib.repositories.NormalizedCostsRepository;
 import com.cloudsherpa.lib.repositories.ResourceRepository;
 import com.cloudsherpa.service.billing.dto.BillingChargeResponse;
+import com.cloudsherpa.service.billing.dto.BillingKpiChargesRequest;
 import com.cloudsherpa.service.billing.dto.BillingKpiRequest;
 import com.cloudsherpa.service.billing.dto.BillingKpiResponse;
 import com.cloudsherpa.service.billing.service.BillingService;
@@ -229,18 +230,29 @@ class BillingServiceTest {
   void getChargesMapsRepositoryResults() {
     NormalizedCosts charge = mock(NormalizedCosts.class);
 
+    String from = "2026-09-01T00:00:00+02:00";
+    String to = "2026-09-29T23:59:59+02:00";
+
+    OffsetDateTime fromDate = OffsetDateTime.parse(from);
+    OffsetDateTime toDate = OffsetDateTime.parse(to);
+
+    BillingKpiChargesRequest request = buildRequest();
+
     when(charge.getResourceId()).thenReturn("resource-1");
     when(charge.getChargeId()).thenReturn("charge-1");
     when(charge.getServiceName()).thenReturn("EC2");
     when(charge.getProvider()).thenReturn(ProviderEnum.AWS);
     when(charge.getProvider()).thenReturn(ProviderEnum.AWS);
-    when(charge.getCostAmount()).thenReturn(BigDecimal.valueOf(1));
     when(charge.getMetadata()).thenReturn(null);
 
     when(normalizedCostsRepository.findDistinctByChargeId()).thenReturn(List.of(charge));
     when(resourceRepository.findByResourceIdentifier("resource-1")).thenReturn(Optional.empty());
 
-    List<BillingChargeResponse> response = billingService.getCharges();
+    when(normalizedCostsRepository.sumTotalCostBetweenForResources(
+            fromDate, toDate, List.of("charge-1")))
+        .thenReturn(BigDecimal.valueOf(1));
+
+    List<BillingChargeResponse> response = billingService.getCharges(request);
 
     assertEquals(
         List.of(
@@ -261,15 +273,19 @@ class BillingServiceTest {
   void getChargesReturnsEmptyListWhenRepositoryIsEmpty() {
     when(normalizedCostsRepository.findDistinctByChargeId()).thenReturn(List.of());
 
-    assertEquals(List.of(), billingService.getCharges());
+    BillingKpiChargesRequest request = buildRequest();
+
+    assertEquals(List.of(), billingService.getCharges(request));
   }
 
   @Test
   void getChargesRejectsMissingTenant() {
     TenantContext.clear();
 
+    BillingKpiChargesRequest request = buildRequest();
+
     ResponseStatusException exception =
-        assertThrows(ResponseStatusException.class, () -> billingService.getCharges());
+        assertThrows(ResponseStatusException.class, () -> billingService.getCharges(request));
 
     assertEquals(HttpStatus.UNAUTHORIZED, exception.getStatusCode());
     verifyNoInteractions(normalizedCostsRepository);
@@ -289,5 +305,12 @@ class BillingServiceTest {
     assertEquals(BigDecimal.ZERO, response.value());
     assertEquals(BigDecimal.ZERO, response.previousValue());
     assertEquals(0, response.selectedChargeCount());
+  }
+
+  private BillingKpiChargesRequest buildRequest() {
+    String from = "2026-09-01T00:00:00+02:00";
+    String to = "2026-09-29T23:59:59+02:00";
+
+    return new BillingKpiChargesRequest(from, to);
   }
 }

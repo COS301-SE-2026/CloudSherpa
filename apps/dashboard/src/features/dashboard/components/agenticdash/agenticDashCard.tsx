@@ -13,43 +13,51 @@ import {
 } from "@/components/atoms/tooltip";
 import { Kbd, KbdGroup } from "@/components/atoms/kbd";
 import { useToolbar } from "../toolbar/toolbarProvider";
+import { useDashboardStore } from "@/features/dashboard/stores/dashboard-store";
+import { cn } from "@/lib/utils";
+import StructuredRequest from "@/features/dashboard/components/agenticdash/structured";
 
-export default function AgenticDashCard() {
+interface AgenticDashCardProps {
+    isApplying: boolean;
+}
+
+export default function AgenticDashCard({ isApplying }: Readonly<AgenticDashCardProps>) {
     const [open, setOpen] = useState(false);
     const popupRef = useRef<HTMLDivElement>(null);
+    const [showPresets, setShowPresets] = useState(false);
     const buttonRef = useRef<HTMLButtonElement>(null);
     const { isEditMode } = useToolbar();
+    const isSessionActive = useDashboardStore((state) => state.isSessionActive);
+    const [activeTab, setActiveTab] = useState("generate");
+    const isGenerating = useDashboardStore((state) => state.isGenerating);
 
     const handleClick = () => {
         setOpen(!open);
     };
 
     useEffect(() => {
-        const handleClickOutside = (event: MouseEvent | TouchEvent) => {
-            //check click outside popup and btn
+        const handleKeyDown = (e: KeyboardEvent) => {
+            const target = e.target as HTMLElement;
             if (
-                open &&
-                popupRef.current &&
-                !popupRef.current.contains(event.target as Node) &&
-                buttonRef.current &&
-                !buttonRef.current.contains(event.target as Node)
+                target.tagName === "INPUT" ||
+                target.tagName === "TEXTAREA" ||
+                target.isContentEditable
             ) {
-                setOpen(false);
+                return;
+            }
+
+            if (e.shiftKey && e.key.toLowerCase() === "d" && !isEditMode) {
+                e.preventDefault();
+                setOpen((prev) => !prev);
             }
         };
 
-        //attach listners on open
-        if (open) {
-            document.addEventListener("mousedown", handleClickOutside);
-            document.addEventListener("touchstart", handleClickOutside);
-        }
+        globalThis.addEventListener("keydown", handleKeyDown);
 
-        //clean lisners
         return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-            document.removeEventListener("touchstart", handleClickOutside);
+            globalThis.removeEventListener("keydown", handleKeyDown);
         };
-    }, [open]);
+    }, [isEditMode]);
 
     return (
         <TooltipProvider>
@@ -60,6 +68,7 @@ export default function AgenticDashCard() {
                         variant="default"
                         onClick={handleClick}
                         disabled={isEditMode}
+                        className={cn(isGenerating && "animate-pulse")}
                     >
                         <Sparkles className="text-primary-foreground" />
                     </Button>
@@ -67,7 +76,7 @@ export default function AgenticDashCard() {
                 <TooltipContent className="flex flex-row justify-center items-center">
                     <span className="text-sm">Generate a dashboard</span>
                     <KbdGroup>
-                        <Kbd>Ctrl</Kbd>
+                        <Kbd>Shift</Kbd>
                         <span>+</span>
                         <Kbd>D</Kbd>
                     </KbdGroup>
@@ -84,17 +93,46 @@ export default function AgenticDashCard() {
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="h-full">
-                            <Tabs defaultValue="generate" className="flex flex-col h-full w-full">
-                                <TabsList>
-                                    <TabsTrigger value="generate">Generate</TabsTrigger>
-                                    <TabsTrigger value="history">History</TabsTrigger>
-                                </TabsList>
+                            <Tabs
+                                defaultValue="generate"
+                                value={activeTab}
+                                onValueChange={setActiveTab}
+                                className="flex flex-col h-full w-full"
+                            >
+                                <div className="flex flex-row justify-between">
+                                    <TabsList>
+                                        <TabsTrigger value="generate">Generate</TabsTrigger>
+                                        <TabsTrigger value="structured">Structured</TabsTrigger>
+                                        <TabsTrigger value="history">History</TabsTrigger>
+                                    </TabsList>
+                                    {isSessionActive && activeTab === "generate" && (
+                                        <Button
+                                            variant="secondary"
+                                            className={cn(
+                                                showPresets && "bg-card/50 text-red-500",
+                                                "text-muted-foreground"
+                                            )}
+                                            onClick={() => setShowPresets((prev) => !prev)}
+                                        >
+                                            Presets Prompts
+                                        </Button>
+                                    )}
+                                </div>
                                 <div className="flex-1 min-h-0 w-full relative">
                                     <TabsContent
                                         value="generate"
                                         className="absolute inset-0 m-0 data-[state=active]:flex flex-col"
                                     >
-                                        <GenerateDashInput />
+                                        <GenerateDashInput
+                                            showPresets={showPresets}
+                                            isApplying={isApplying}
+                                        />
+                                    </TabsContent>
+                                    <TabsContent
+                                        value="structured"
+                                        className="absolute inset-0 m-0 data-[state=active]:flex flex-col"
+                                    >
+                                        <StructuredRequest isApplying={isApplying} />
                                     </TabsContent>
                                     <TabsContent
                                         value="history"

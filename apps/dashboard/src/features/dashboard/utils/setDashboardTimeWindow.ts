@@ -5,15 +5,17 @@ import { TimeWindowPreset } from "../types/timewindow";
 // preset is set.
 export async function setDashboardPresetTimeWindow(
     preset: TimeWindowPreset,
-    dashboardId: string | null
+    dashboardId: string | null,
+    timeFrom: string | null,
+    timeTo: string | null
 ) {
     if (!dashboardId) {
         return;
     }
     try {
-        apiClient(`/dashboards/${dashboardId}/window`, {
+        await apiClient(`/dashboards/${dashboardId}/window`, {
             method: "PATCH",
-            body: JSON.stringify({ newTime: preset }),
+            body: JSON.stringify({ newTime: preset, from: timeFrom, to: timeTo }),
         });
     } catch (error) {
         if (error instanceof Error) {

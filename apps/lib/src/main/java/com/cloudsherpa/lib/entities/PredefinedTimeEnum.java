@@ -9,5 +9,6 @@ public enum PredefinedTimeEnum {
   T_12_HOUR,
   T_24_HOUR,
   T_7_DAYS,
-  T_30_DAYS
+  T_30_DAYS,
+  CUSTOM
 }

@@ -8,6 +8,8 @@ services:
     container_name: ingestion
     env_file:
       - apps/ingestion/.env
+    ports:
+      - "8081:8080"
     depends_on:
       sherpa-db:
         condition: service_healthy
@@ -51,6 +53,11 @@ services:
     depends_on:
       service:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
 
   sherpa-db:
     image: timescale/timescaledb-ha:pg16-ts2.29
@@ -67,19 +74,6 @@ services:
       timeout: 3s
       retries: 20
 
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    container_name: pgadmin
-    ports:
-      - "5050:80"
-    env_file:
-      - persistence/sherpadb/.env
-    depends_on:
-      - sherpa-db
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
-
 volumes:
   sherpa_db_data: 
   pgadmin_data:
-  # Ensures that the data is persistent across docker compose down / up 

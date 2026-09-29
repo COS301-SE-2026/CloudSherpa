@@ -35,27 +35,37 @@ export function useAlertStream(onAlert: (alert: Alert) => void): UseAlertStreamR
 
             eventSource.addEventListener("alert", handleAlert);
 
-            eventSource.onerror = () => {
-                if (isCleaningUp) return;
+            const handleStreamError = async () => {
+                if (isCleaningUp) {
+                    return;
+                }
 
                 eventSource.removeEventListener("alert", handleAlert);
                 eventSource.close();
 
-                if (!hasRetriedRef.current) {
-                    hasRetriedRef.current = true;
-                    ensureSessionRefreshed().then((refreshed) => {
-                        if (isCleaningUp) return;
+                if (hasRetriedRef.current) {
+                    setError(new Error("Failed to open alert stream connection"));
+                    return;
+                }
 
-                        if (refreshed) {
-                            connect();
-                        } else {
-                            setError(new Error("Failed to open alert stream connection"));
-                        }
-                    });
+                hasRetriedRef.current = true;
+
+                const refreshed = await ensureSessionRefreshed();
+
+                if (isCleaningUp) {
+                    return;
+                }
+
+                if (refreshed) {
+                    connect();
                     return;
                 }
 
                 setError(new Error("Failed to open alert stream connection"));
+            };
+
+            eventSource.onerror = () => {
+                void handleStreamError();
             };
         };
 

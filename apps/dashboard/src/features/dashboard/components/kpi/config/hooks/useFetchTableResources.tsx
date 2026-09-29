@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { KPIConfigTableRow } from "../columns";
-import { KpiResourceResponseDto } from "../../dtos/kpi-dtos";
+import { KpiChargesRequestDto, KpiResourceResponseDto } from "../../dtos/kpi-dtos";
 import apiClient from "@/lib/fetch/api-client";
 
 export function useFetchTableResources() {
@@ -10,10 +10,25 @@ export function useFetchTableResources() {
     const [tableResourcesFetchError, setTableResourcesFetchError] = useState(false);
     const [tableResources, setTableResources] = useState<KPIConfigTableRow[]>();
 
-    async function fetchTableResources() {
+    const fetchTableResources = useCallback(async (aggregationWindowDays: number) => {
+        setTableResourcesLoading(true);
+
         try {
-            const resources: KpiResourceResponseDto =
-                await apiClient<KpiResourceResponseDto>("/billing/charges");
+            const to = new Date();
+            const from = new Date(to);
+            from.setDate(from.getDate() - aggregationWindowDays);
+            const payload: KpiChargesRequestDto = {
+                from: from.toISOString(),
+                to: to.toISOString(),
+            };
+
+            const resources: KpiResourceResponseDto = await apiClient<KpiResourceResponseDto>(
+                "/billing/charges",
+                {
+                    method: "POST",
+                    body: JSON.stringify(payload),
+                }
+            );
             setTableResources(
                 resources.map((resource) => ({
                     chargeId: resource.chargeId,
@@ -33,7 +48,7 @@ export function useFetchTableResources() {
             setTableResourcesFetchError(true);
             setTableResourcesLoading(false);
         }
-    }
+    }, []);
 
     return { fetchTableResources, tableResourcesLoading, tableResourcesFetchError, tableResources };
 }

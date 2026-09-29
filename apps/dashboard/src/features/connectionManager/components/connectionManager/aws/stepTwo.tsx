@@ -13,6 +13,7 @@ import { ResourceDetail } from "@/lib/fetch/dto/cloud-resource";
 import { ServicesList } from "@/components/molecules/services-list";
 import { ScanProgress } from "@/components/molecules/scan-progress";
 import { toast } from "sonner";
+import { Button } from "@/components/atoms/button";
 
 export interface BillingConfig {
     prefix: string;
@@ -276,13 +277,13 @@ export default function StepTwoAws({ credentials, onNext, onBack }: Readonly<Pro
                         {displayPermissions ? JSON.stringify(displayPermissions, null, 2) : "{}"}
                     </pre>
 
-                    <button
-                        type="button"
+                    <Button
+                        variant="ghost"
                         onClick={handleCopyJson}
-                        className="mt-3 text-primary hover:text-accent text-sm transition-colors"
+                        className="text-primary hover:text-primary mt-1"
                     >
                         {copied ? "Copied" : "Copy to clipboard"}{" "}
-                    </button>
+                    </Button>
                 </div>
             </div>
 

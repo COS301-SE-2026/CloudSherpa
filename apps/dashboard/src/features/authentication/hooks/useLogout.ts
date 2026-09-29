@@ -17,12 +17,17 @@ export function useLogout() {
         (state) => state.reset
     );
     const [logoutError, setLogoutError] = useState(false);
+    const isSessionActive = useDashboardStore((state) => state.isSessionActive);
+    const { cancelSession } = useDashboardStore((state) => state.agenticActions);
 
     function clearStores() {
         resetDashboardStore();
         resetWindowStore();
         resetResourceStore();
         resetUsageIntelligenceConfigStore();
+        if (isSessionActive) {
+            cancelSession();
+        }
     }
 
     async function logout() {

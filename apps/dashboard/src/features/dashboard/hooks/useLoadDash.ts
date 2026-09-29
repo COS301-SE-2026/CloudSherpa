@@ -4,14 +4,9 @@ import { useDashboardStore, DashboardStore } from "@/features/dashboard/stores/d
 import { useResourceNameStore } from "@/features/dashboard/stores/resource-store";
 import { useFetchMetrics } from "@/features/dashboard/hooks/useFetchMetrics";
 import { fetchDashboards, DashboardDTO } from "@/lib/fetch/api-dashboard";
-import {
-    DashboardConfig,
-    LayoutItem,
-    WidgetConfig,
-    ChartType,
-    ChartColour,
-} from "@/features/dashboard/types/widgets";
+import { DashboardConfig, LayoutItem, WidgetConfig } from "@/features/dashboard/types/widgets";
 import { MetricType } from "@/features/dashboard/types/metric";
+import { TimeWindowPreset } from "../types/timewindow";
 
 // Extracted helper function
 export function processFetchedDashboards(fetchedData: DashboardDTO[]) {
@@ -43,8 +38,8 @@ export function processFetchedDashboards(fetchedData: DashboardDTO[]) {
             if (w.widgetType === "CHART") {
                 configsArray.push({
                     id: w.id,
-                    chartType: w.chartType as ChartType,
-                    chartColour: w.chartColour as ChartColour,
+                    chartType: w.chartType,
+                    chartColour: w.chartColour,
                     widgetType: "CHART",
                     displayName: w.displayName,
                     provider: w.provider,
@@ -66,6 +61,23 @@ export function processFetchedDashboards(fetchedData: DashboardDTO[]) {
     }
     return { dashboardsMap, layoutsArray, configsArray };
 }
+
+const hydrateDashboard = (
+    selectedDashboard: DashboardDTO | undefined,
+    hydrateWindow: (
+        preset: TimeWindowPreset,
+        timeFrom: number | null,
+        timeTo: number | null
+    ) => void
+) => {
+    if (selectedDashboard?.predefinedTime) {
+        hydrateWindow(
+            selectedDashboard.predefinedTime,
+            selectedDashboard.timeFrom ? Date.parse(selectedDashboard.timeFrom) : null,
+            selectedDashboard.timeTo ? Date.parse(selectedDashboard.timeTo) : null
+        );
+    }
+};
 
 export function useLoadDashboardData() {
     const [isLoading, setIsLoading] = useState(true);
@@ -121,9 +133,7 @@ export function useLoadDashboardData() {
                     setActiveDashboard(defaultId);
 
                     const selectedDashboard = fetchedData.find((d) => d.id === defaultId);
-                    if (selectedDashboard?.predefinedTime) {
-                        hydrateWindow(selectedDashboard.predefinedTime);
-                    }
+                    hydrateDashboard(selectedDashboard, hydrateWindow);
 
                     if (urlId !== defaultId) {
                         router.replace(`?id=${defaultId}`);

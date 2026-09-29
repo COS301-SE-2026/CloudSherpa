@@ -49,7 +49,6 @@ export default function UsageIntelligence() {
     useFetchMetrics();
     const resourceId = useUsageIntelligenceConfigStore((state) => state.resourceId);
     const metricName = useUsageIntelligenceConfigStore((state) => state.metricName);
-    // const currentUnit = getMetricUnit(metricType);
 
     const setUsageForecast = useUsageIntelligenceStore((state) => state.setUsageForecast);
 
@@ -89,7 +88,6 @@ export default function UsageIntelligence() {
 
         async function loadForecast() {
             const forecastData = await requestUsageForecast(selectedResourceId, selectedMetricType);
-            // const mockData = generateMockForecast(3);
 
             if (forecastData) {
                 setUsageForecast(selectedResourceId, selectedMetricType, forecastData);
@@ -161,7 +159,6 @@ export default function UsageIntelligence() {
                 <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                     <SummaryCard
                         title="Max Usage"
-                        // unit={currentUnit}
                         Icon={TrendingUp}
                         pastUsage={pastSummary.max}
                         predictedUsage={forecastSummary.max}
@@ -171,7 +168,6 @@ export default function UsageIntelligence() {
                     />
                     <SummaryCard
                         title="Min Usage"
-                        // unit={currentUnit}
                         Icon={TrendingDown}
                         pastUsage={pastSummary.min}
                         predictedUsage={forecastSummary.min}
@@ -181,7 +177,6 @@ export default function UsageIntelligence() {
                     />
                     <SummaryCard
                         title="Average Usage"
-                        // unit={currentUnit}
                         Icon={Minus}
                         pastUsage={pastSummary.avg}
                         predictedUsage={forecastSummary.avg}

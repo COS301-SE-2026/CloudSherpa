@@ -28,7 +28,7 @@ export const durationByPreset: Record<TimeWindowPreset, number> = {
     T_24_HOUR: timeMs.dayMs,
     T_7_DAYS: 7 * timeMs.dayMs,
     T_30_DAYS: 30 * timeMs.dayMs,
-    custom: 0,
+    CUSTOM: 0,
 };
 
 export function timestampIsoStringToTime(isoTimestamp: string) {

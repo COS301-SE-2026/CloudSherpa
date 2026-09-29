@@ -16,7 +16,7 @@ const TooltipContext = React.createContext<TooltipContextType | null>(null);
 function TooltipProvider({
     delayDuration = 600,
     ...props
-}: React.ComponentProps<typeof TooltipPrimitive.Provider>) {
+}: Readonly<React.ComponentProps<typeof TooltipPrimitive.Provider>>) {
     return (
         <TooltipPrimitive.Provider
             data-slot="tooltip-provider"
@@ -33,8 +33,14 @@ function Tooltip({
     const [isTruncated, setIsTruncated] = React.useState(true);
 
     const open = showOnTruncate && !isTruncated ? false : props.open; // props.open just lets it defaults to normal behavriour as afallback
+
+    const forContextValue = React.useMemo(
+        () => ({ showOnTruncate, isTruncated, setIsTruncated }),
+        [showOnTruncate, isTruncated]
+    );
+
     return (
-        <TooltipContext.Provider value={{ showOnTruncate, isTruncated, setIsTruncated }}>
+        <TooltipContext.Provider value={forContextValue}>
             <TooltipPrimitive.Root data-slot="tooltip" open={open} {...props} />
         </TooltipContext.Provider>
     );

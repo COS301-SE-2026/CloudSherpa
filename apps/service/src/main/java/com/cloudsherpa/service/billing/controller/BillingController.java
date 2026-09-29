@@ -1,6 +1,7 @@
 package com.cloudsherpa.service.billing.controller;
 
 import com.cloudsherpa.service.billing.dto.BillingChargeResponse;
+import com.cloudsherpa.service.billing.dto.BillingKpiChargesRequest;
 import com.cloudsherpa.service.billing.dto.BillingKpiRequest;
 import com.cloudsherpa.service.billing.dto.BillingKpiResponse;
 import com.cloudsherpa.service.billing.service.BillingService;
@@ -13,7 +14,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -61,8 +61,9 @@ public class BillingController {
                         @ArraySchema(
                             schema = @Schema(implementation = BillingChargeResponse.class))))
       })
-  @GetMapping("/charges")
-  public ResponseEntity<List<BillingChargeResponse>> getResources() {
-    return ResponseEntity.ok(billingService.getCharges());
+  @PostMapping("/charges")
+  public ResponseEntity<List<BillingChargeResponse>> getResources(
+      @RequestBody BillingKpiChargesRequest request) {
+    return ResponseEntity.ok(billingService.getCharges(request));
   }
 }
