@@ -13,7 +13,10 @@ import org.springframework.stereotype.Component;
 public class AiTextualToolCallParser {
 
   private static final int MAX_TEXTUAL_TOOL_CALL_BYTES = 8192;
-  private static final Set<String> ALLOWED_FIELDS = Set.of("name", "arguments");
+  private static final String ARGUMENTS = "arguments";
+  private static final String TOOL_CALL = "<tool_call>";
+  private static final String FUNCTION_CALL = "<function_call>";
+  private static final Set<String> ALLOWED_FIELDS = Set.of("name", ARGUMENTS);
 
   private final ObjectMapper objectMapper;
 
@@ -51,7 +54,7 @@ public class AiTextualToolCallParser {
       throw new IllegalArgumentException("Textual tool call must be a JSON object");
     }
 
-    if (!payload.has("name") && !payload.has("arguments")) {
+    if (!payload.has("name") && !payload.has(ARGUMENTS)) {
       return null;
     }
 
@@ -62,7 +65,7 @@ public class AiTextualToolCallParser {
       throw new IllegalArgumentException("Textual tool call name is required");
     }
 
-    JsonNode argumentsNode = payload.get("arguments");
+    JsonNode argumentsNode = payload.get(ARGUMENTS);
     if (argumentsNode == null || argumentsNode.isNull()) {
       throw new IllegalArgumentException("Textual tool call arguments are required");
     }
@@ -78,25 +81,25 @@ public class AiTextualToolCallParser {
             objectMapper
                 .createObjectNode()
                 .put("name", nameNode.asText())
-                .put("arguments", toJson(normalizedArguments)));
+                .put(ARGUMENTS, toJson(normalizedArguments)));
   }
 
   private boolean isTextualToolCallCandidate(String value) {
     return value.startsWith("{")
         || value.startsWith("```")
-        || value.startsWith("<tool_call>")
-        || value.startsWith("<function_call>");
+        || value.startsWith(TOOL_CALL)
+        || value.startsWith(FUNCTION_CALL);
   }
 
   private String unwrap(String value) {
     String result = value;
 
-    if (result.startsWith("<tool_call>")) {
+    if (result.startsWith(TOOL_CALL)) {
       if (!result.endsWith("</tool_call>")) {
         throw new IllegalArgumentException("Textual tool-call wrapper is not closed");
       }
       result = result.substring(11, result.length() - 12).trim();
-    } else if (result.startsWith("<function_call>")) {
+    } else if (result.startsWith(FUNCTION_CALL)) {
       if (!result.endsWith("</function_call>")) {
         throw new IllegalArgumentException("Textual function-call wrapper is not closed");
       }
@@ -111,9 +114,9 @@ public class AiTextualToolCallParser {
       result = result.substring(firstLineEnd + 1, result.length() - 3).trim();
     }
 
-    if (result.contains("<tool_call>")
+    if (result.contains(TOOL_CALL)
         || result.contains("</tool_call>")
-        || result.contains("<function_call>")
+        || result.contains(FUNCTION_CALL)
         || result.contains("</function_call>")) {
       throw new IllegalArgumentException(
           "Textual tool-call content contains unsupported surrounding text");
