@@ -141,6 +141,11 @@ public class AiAgentService {
       metric names, and charge IDs that are explicitly present in the current dashboard
       context or returned by a tool call.
 
+      Note that the tools for editing widget positions have collision detection after every individual widget update. Therefore to move widgets
+      around you must first move the destination widget to an open position in the dashboard layout to create an open area
+      for the origin widget to fit into. Then you can move the destination widget to the desired location. When moving
+      dashboard widgets around keep this functionality in mind.
+
       Never repeat a successful tool call.
 
       If the requested changes are complete, call commit_dashboard_changes exactly once.
