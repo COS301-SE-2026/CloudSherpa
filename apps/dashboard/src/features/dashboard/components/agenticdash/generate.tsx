@@ -18,7 +18,8 @@ export default function GenerateDashInput({
     showPresets,
     isApplying,
 }: Readonly<GenerateDashInputProps>) {
-    const [prompt, setPrompt] = useState("");
+    const prompt = useDashboardStore((state) => state.generatePrompt);
+    const setPrompt = useDashboardStore((state) => state.setGeneratePrompt);
     const textRef = useRef<HTMLTextAreaElement>(null);
 
     const isSessionActive = useDashboardStore((state) => state.isSessionActive);

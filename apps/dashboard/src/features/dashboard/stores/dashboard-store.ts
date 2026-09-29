@@ -69,6 +69,10 @@ export type AgenticSlice = {
     versions: AiVersionSummary[];
     stagedLayouts: Record<string, LayoutItem>;
     stagedWidgets: Record<string, WidgetConfig>;
+
+    generatePrompt: string;
+    setGeneratePrompt: (prompt: string) => void;
+
     agenticActions: AgenticActions;
 };
 
@@ -626,6 +630,8 @@ const createAgenticSlice: StateCreator<DashboardStore, [], [], AgenticSlice> = (
     versions: [],
     stagedLayouts: {},
     stagedWidgets: {},
+    generatePrompt: "",
+    setGeneratePrompt: (prompt) => set({ generatePrompt: prompt }),
 
     agenticActions: {
         startSessionAndGenerate: async (prompt: string) => {

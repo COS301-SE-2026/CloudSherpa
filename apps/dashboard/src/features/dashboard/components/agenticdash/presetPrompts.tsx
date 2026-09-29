@@ -13,51 +13,52 @@ const presets: Preset[] = [
         title: "Compute Health",
         description: "Monitor CPU, memory, and disk utilization across instances",
         prompt:
-            "Create a concise compute health dashboard for active compute resources. " +
-            "Use available CPU Utilization and Memory Utilization metrics. " +
-            "Add no more than 4 charts and skip metrics that are unavailable.",
-    },
-    {
-        id: "cost-optimization",
-        title: "Cost Analysis",
-        description: "Track daily spend and identify resource cost anomalies",
-        prompt:
-            "Create a concise cost dashboard using available billing charges. " +
-            "Show total charges by connected cloud provider using no more than 3 KPI widgets.",
+            "Create a compute health dashboard for AWS only. " +
+            "Find the first connected AWS account. " +
+            "Find all active EC2 resources in that account. " +
+            "For each EC2 resource, find the available CPU Utilization metric. " +
+            "Add one line chart per EC2 resource using CPU Utilization, with no more than 4 charts total. " +
+            "Skip resources where CPU Utilization is unavailable. " +
+            "Do not use resources from other accounts or providers. " +
+            "Once the requested charts are added, finalize the dashboard.",
     },
     {
         id: "network-traffic",
         title: "Network Traffic",
         description: "Analyze inbound/outbound bandwidth and load balancer metrics",
         prompt:
-            "Create a concise network dashboard for active resources. " +
-            "Use available Network In and Network Out metrics. " +
-            "Add no more than 4 charts and skip unavailable metrics.",
+            "Create a network traffic dashboard for AWS only. " +
+            "Find the first connected AWS account. " +
+            "Find up to the first two active EC2 resources from that account. " +
+            "For each of those resources, find the available network metrics. " +
+            "Add a line chart for each available network metric, with no more than 4 charts total. " +
+            "Skip a resource if neither network metric is available. " +
+            "Do not use resources from other accounts or providers. " +
+            "Once the requested charts are added, finalize the dashboard.",
     },
     {
         id: "system-reliability",
         title: "System Reliability",
         description: "Overview of error rates, uptime, and failing requests",
         prompt:
-            "Create a concise reliability dashboard for active resources. " +
-            "Use available HTTP request and 5xx error metrics. " +
-            "Add no more than 4 charts and skip unavailable metrics.",
+            "Create a system reliability dashboard for AWS only. " +
+            "Find the first connected AWS account. " +
+            "Find up to the first two active resources in that account that have an available HTTP Error 5xx metric. " +
+            "For each of those resources, add one line chart using HTTP Error 5xx, with no more than 2 charts total. " +
+            "Skip resources where HTTP Error 5xx is unavailable. " +
+            "Do not substitute unrelated metrics and do not use resources from other accounts or providers. " +
+            "Once the requested charts are added, finalize the dashboard.",
     },
     {
+        //very consistent
         id: "total-spend",
         title: "Total Spend",
         description: "Track total cloud spending over the last 30 days",
         prompt:
-            "Create one billing KPI showing total cloud spend for the last 30 days. " +
-            "Use available billing charge IDs.",
-    },
-    {
-        id: "provider-costs",
-        title: "Provider Costs",
-        description: "Compare spending across connected cloud providers",
-        prompt:
-            "Create a billing KPI for each connected cloud provider showing total spend over the last 30 days. " +
-            "Use only available billing charge IDs and add no more than 3 KPIs.",
+            "Create a simple billing dashboard. " +
+            "Find available billing charges and create exactly one KPI using the returned charge IDs. " +
+            "Use a 30 day aggregation window and name the KPI Total Spend. " +
+            "Commit the dashboard when complete.",
     },
 ];
 
