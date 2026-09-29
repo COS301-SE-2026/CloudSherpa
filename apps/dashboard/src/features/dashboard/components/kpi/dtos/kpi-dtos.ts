@@ -20,6 +20,11 @@ export type KpiPreviewResponseDto = {
     resourceName: string | null;
 };
 
+export type KpiChargesRequestDto = {
+    from: string;
+    to: string;
+};
+
 export type KpiCharge = {
     chargeId: string;
     resourceId: string;

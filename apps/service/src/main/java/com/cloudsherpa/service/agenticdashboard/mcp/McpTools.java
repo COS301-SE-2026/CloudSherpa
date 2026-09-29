@@ -23,7 +23,9 @@ import com.cloudsherpa.service.agenticdashboard.mcp.dto.UpdateWidgetLayoutToolDt
 import com.cloudsherpa.service.agenticdashboard.service.AiDashboardVersionService;
 import com.cloudsherpa.service.agenticdashboard.service.AiSessionService;
 import com.cloudsherpa.service.billing.dto.BillingChargeResponse;
+import com.cloudsherpa.service.billing.dto.BillingKpiChargesRequest;
 import com.cloudsherpa.service.billing.service.BillingService;
+import java.time.OffsetDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -169,9 +171,12 @@ public class McpTools {
     validateSession(context);
     int resultLimit = normalizeLimit(limit, MAX_CHARGES);
     String normalizedQuery = normalizeQuery(query);
+    OffsetDateTime effectiveTo = OffsetDateTime.now();
+    OffsetDateTime effectiveFrom = effectiveTo.minusDays(30);
+    var request = new BillingKpiChargesRequest(effectiveFrom.toString(), effectiveTo.toString());
 
     List<BillingChargeToolDto> results =
-        billingService.getCharges().stream()
+        billingService.getCharges(request).stream()
             .filter(charge -> matchesCharge(charge, normalizedQuery))
             .sorted(
                 Comparator.comparing(

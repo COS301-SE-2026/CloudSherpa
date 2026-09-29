@@ -26,6 +26,7 @@ import com.cloudsherpa.service.agenticdashboard.mcp.dto.UpdateDashboardToolDto;
 import com.cloudsherpa.service.agenticdashboard.mcp.dto.UpdateKpiWidgetToolDto;
 import com.cloudsherpa.service.agenticdashboard.mcp.dto.UpdateWidgetLayoutToolDto;
 import com.cloudsherpa.service.agenticdashboard.validation.DashboardPlanValidator;
+import com.cloudsherpa.service.billing.dto.BillingKpiChargesRequest;
 import com.cloudsherpa.service.billing.service.BillingService;
 import com.cloudsherpa.service.dashboard.dto.ChartWidgetDTO;
 import com.cloudsherpa.service.dashboard.dto.DashboardDTO;
@@ -233,13 +234,13 @@ public class AiDashboardVersionService {
 
     DashboardPlanDto draft = ensureDraft(userId, sessionId);
     validateText(request.displayName(), "displayName", 80);
-    validateChargeIds(request.chargeIds());
 
     int aggregationWindowDays =
         request.aggregationWindowDays() == null ? 30 : request.aggregationWindowDays();
     if (aggregationWindowDays <= 0) {
       throw invalid("aggregationWindowDays must be greater than zero");
     }
+    validateChargeIds(request.chargeIds(), aggregationWindowDays);
 
     Layout layout =
         resolveLayout(
@@ -418,10 +419,10 @@ public class AiDashboardVersionService {
             ? existing.aggregationWindowDays()
             : request.aggregationWindowDays();
 
-    validateChargeIds(chargeIds);
     if (aggregationWindowDays == null || aggregationWindowDays <= 0) {
       throw invalid("aggregationWindowDays must be greater than zero");
     }
+    validateChargeIds(chargeIds, aggregationWindowDays);
 
     DashboardPlanWidgetDto updatedWidget =
         copyWidget(
@@ -1084,7 +1085,7 @@ public class AiDashboardVersionService {
     }
   }
 
-  private void validateChargeIds(List<String> chargeIds) {
+  private void validateChargeIds(List<String> chargeIds, int aggregationWindowDays) {
     if (chargeIds == null || chargeIds.isEmpty()) {
       throw invalid("At least one billing charge ID is required");
     }
@@ -1098,8 +1099,13 @@ public class AiDashboardVersionService {
       throw invalid("Billing charge IDs must be unique");
     }
 
+    OffsetDateTime effectiveTo = OffsetDateTime.now();
+    OffsetDateTime effectiveFrom = effectiveTo.minusDays(aggregationWindowDays);
     Set<String> validChargeIds =
-        billingService.getCharges().stream()
+        billingService
+            .getCharges(
+                new BillingKpiChargesRequest(effectiveFrom.toString(), effectiveTo.toString()))
+            .stream()
             .map(charge -> charge.chargeId())
             .collect(java.util.stream.Collectors.toSet());
     if (!validChargeIds.containsAll(chargeIds)) {
