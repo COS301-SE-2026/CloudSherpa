@@ -406,7 +406,7 @@ export default function ManagingConnections() {
                                         <span className="text-xs text-muted-foreground">
                                             {" "}
                                             {connection.resource} resource
-                                            {connection.resource !== 1 ? "s" : ""}
+                                            {connection.resource === 1 ? "" : "s"}
                                         </span>
 
                                         {connection.resource === 0 ? (
