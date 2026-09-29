@@ -7,7 +7,7 @@ let hasEmittedSessionExpired = false;
 export const AUTH_SESSION_EXPIRED_EVENT = "auth:session-expired";
 
 function emitSessionExpired() {
-    if (typeof globalThis.window === "undefined" || isLoggingOut || hasEmittedSessionExpired) {
+    if (!("window" in globalThis) || isLoggingOut || hasEmittedSessionExpired) {
         return;
     }
 
