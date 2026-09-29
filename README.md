@@ -83,7 +83,9 @@ docker run --env-file apps/intelligence/.env -p 5000:5000 --name cloudsherpa-int
 
 The dashboard frontend is available at `http://localhost:3000`.
 
-For development workflows, individual service commands, ports, and troubleshooting, see [`docs/dev/CheatSheet.md`](docs/dev/CheatSheet.md), [`infra/README.md`](infra/README.md), and the app-specific READMEs under [`apps/`](apps/).
+### Agentic dashboard construction
+
+Agentic dashboard construction uses OpenAI models to process dashboard construction prompts. Therefore, the environment variables specified in the [.env.schema](./apps/service/.env.schema) should be replaced with valid variables to be able to run agentic dashboard constructions.
 
 ## About Team BitFlip
 
