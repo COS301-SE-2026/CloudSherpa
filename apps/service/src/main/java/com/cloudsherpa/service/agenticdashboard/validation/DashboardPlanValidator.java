@@ -119,30 +119,6 @@ public class DashboardPlanValidator {
     if (widget.chartType() == null) {
       throw invalid("Chart type is required");
     }
-
-    if (widget.provider() == null) {
-      throw invalid("Chart provider is required");
-    }
-
-    if (widget.accountId() == null) {
-      throw invalid("Chart account ID is required");
-    }
-
-    if (widget.resourceId() == null) {
-      throw invalid("Chart resource ID is required");
-    }
-
-    if (widget.metricType() == null || widget.metricType().isBlank()) {
-      throw invalid("Chart metric type is required");
-    }
-
-    if (widget.metricType().length() > 50) {
-      throw invalid("Chart metric type must not exceed 50 characters");
-    }
-
-    if (widget.metricName() == null || widget.metricName().isBlank()) {
-      throw invalid("Chart metric name is required");
-    }
   }
 
   private void validateKpiWidget(DashboardPlanWidgetDto widget) {

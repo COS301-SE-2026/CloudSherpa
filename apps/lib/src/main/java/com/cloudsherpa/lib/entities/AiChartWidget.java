@@ -39,19 +39,19 @@ public class AiChartWidget {
   private ChartColourEnum chartColour;
 
   @Enumerated(EnumType.STRING)
-  @Column(name = "provider", nullable = false)
+  @Column(name = "provider")
   private ProviderEnum provider;
 
-  @Column(name = "account_id", nullable = false)
+  @Column(name = "account_id")
   private UUID accountId;
 
-  @Column(name = "resource_id", nullable = false)
+  @Column(name = "resource_id")
   private UUID resourceId;
 
-  @Column(name = "metric_type", nullable = false, length = 50)
+  @Column(name = "metric_type", length = 50)
   private String metricType;
 
-  @Column(name = "metric_name", nullable = false, length = 100)
+  @Column(name = "metric_name", length = 100)
   private String metricName;
 
   protected AiChartWidget() {
