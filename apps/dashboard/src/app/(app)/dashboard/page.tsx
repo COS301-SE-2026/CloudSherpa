@@ -32,25 +32,26 @@ function DashboardContent() {
     const standardLayouts = useDashboardStore((state) => state.layouts);
     const stagedLayouts = useDashboardStore((state) => state.stagedLayouts);
 
+    // computes the layouts array for the active dashboard
+    const activeDashboard = activeDashboardId ? dashboards[activeDashboardId] : undefined;
+
     //acitve layouts
-    const activeLayoutsMap = isSessionActive ? stagedLayouts : standardLayouts;
-    const layoutItems = useMemo(() => Object.values(activeLayoutsMap), [activeLayoutsMap]);
+    const layoutItems = useMemo(() => {
+        if (isSessionActive) {
+            return Object.values(stagedLayouts);
+        }
+        return (
+            activeDashboard?.layoutItemIds
+                ?.map((id) => standardLayouts[id])
+                .filter((l): l is LayoutItem => !!l) ?? []
+        );
+    }, [isSessionActive, stagedLayouts, activeDashboard, standardLayouts]);
 
     const effectiveEditMode = isEditMode && !isSessionActive;
 
     const { updateLayouts, setActiveDashboard } = useDashboardStore(
         (state: DashboardStore) => state.actions
     );
-
-    // sync Zustand store when the URL changes (i.e browser back/forward buttons)
-    useEffect(() => {
-        if (urlId && dashboards[urlId] && urlId !== activeDashboardId) {
-            setActiveDashboard(urlId);
-        }
-    }, [urlId, dashboards, activeDashboardId, setActiveDashboard]);
-
-    // computes the layouts array for the active dashboard
-    const activeDashboard = activeDashboardId ? dashboards[activeDashboardId] : undefined;
 
     const handleLayoutChange = useCallback(
         (newLayout: LayoutItem[]) => {
@@ -62,6 +63,49 @@ function DashboardContent() {
     const router = useRouter();
     const pathname = usePathname();
     const authToastHandled = useRef(false);
+
+    // sync Zustand store when the URL changes (i.e browser back/forward buttons)
+    // useEffect(() => {
+    //     if (urlId && dashboards[urlId] && urlId !== activeDashboardId) {
+    //         setActiveDashboard(urlId);
+    //     }
+    // }, [urlId, dashboards, activeDashboardId, setActiveDashboard]);
+    // useEffect(() => {
+    //     if (!isSessionActive && activeDashboardId && activeDashboardId !== urlId) {
+    //         router.replace(`${pathname}?id=${activeDashboardId}`, { scroll: false });
+    //     }
+    // }, [activeDashboardId, isSessionActive, pathname, router, urlId]);
+
+    const prevUrlId = useRef(urlId);
+    const prevActiveId = useRef(activeDashboardId);
+
+    useEffect(() => {
+        const hasUrlChanged = prevUrlId.current !== urlId;
+        const hasStoreChanged = prevActiveId.current !== activeDashboardId;
+
+        if (hasUrlChanged && urlId && dashboards[urlId]) {
+            if (urlId !== activeDashboardId) {
+                setActiveDashboard(urlId);
+            }
+        } else if (hasStoreChanged) {
+            if (!isSessionActive && activeDashboardId && activeDashboardId !== urlId) {
+                router.replace(`${pathname}?id=${activeDashboardId}`, { scroll: false });
+            }
+        } else if (!urlId && activeDashboardId && !isSessionActive) {
+            router.replace(`${pathname}?id=${activeDashboardId}`, { scroll: false });
+        }
+
+        prevUrlId.current = urlId;
+        prevActiveId.current = activeDashboardId;
+    }, [
+        urlId,
+        activeDashboardId,
+        dashboards,
+        isSessionActive,
+        pathname,
+        router,
+        setActiveDashboard,
+    ]);
 
     useEffect(() => {
         fetchRecGroups();
@@ -115,6 +159,7 @@ function DashboardContent() {
         if (activeDashboard || isSessionActive) {
             return (
                 <Grid
+                    key={activeDashboardId || "ai-preview-session"}
                     ref={gridApiRef}
                     isEditMode={effectiveEditMode}
                     dashboardId={activeDashboardId || "ai-preview-session"}

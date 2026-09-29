@@ -43,6 +43,7 @@ export function TimePeriodSelector({
     const [view, setView] = useState<"presets" | "custom">("presets");
     const setSelectedPreset = useDashboardStore((state) => state.setPreset);
     const selectedPreset = useDashboardStore((state) => state.selectedPreset);
+    const isGenerating = useDashboardStore((state) => state.isGenerating);
 
     const getDisplayLabel = () => {
         if (selectedPreset !== "CUSTOM") {
@@ -65,11 +66,12 @@ export function TimePeriodSelector({
                     if (!val) setView("presets");
                 }}
             >
-                <PopoverTrigger asChild aria-label="window selector">
+                <PopoverTrigger asChild aria-label="window selector" disabled={isGenerating}>
                     <Button
                         variant="outline"
                         className="group flex justify-between bg-card"
                         aria-label="window selector button"
+                        disabled={isGenerating}
                     >
                         {/* Mobile View */}
                         <Filter className="h-4 w-4 block md:hidden" />

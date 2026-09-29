@@ -14,25 +14,29 @@ export interface WidgetDropdownProps {
     onConfigure: () => void;
     onDelete: () => void;
     isEditMode?: boolean;
+    disabled?: boolean;
 }
 
 export function WidgetDropdown({
     onConfigure,
     onDelete,
     isEditMode = false,
+    disabled = false,
 }: Readonly<WidgetDropdownProps>) {
     return (
         <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    aria-label="chart options button"
-                >
-                    <EllipsisVertical className="h-4 w-4" />
-                </Button>
-            </DropdownMenuTrigger>
+            {!disabled && (
+                <DropdownMenuTrigger disabled={disabled} asChild>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        aria-label="chart options button"
+                    >
+                        <EllipsisVertical className="h-4 w-4" />
+                    </Button>
+                </DropdownMenuTrigger>
+            )}
             <DropdownMenuContent align="end" className="w-fit">
                 <DropdownMenuItem
                     onClick={onConfigure}
