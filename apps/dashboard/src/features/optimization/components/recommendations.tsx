@@ -35,11 +35,11 @@ export default function Recommendations() {
     const filteredRecommendationGroups = useMemo(() => {
         const filtered = recommendationGroups.filter((group) => {
             const matchesProvider =
-                filter !== "all"
-                    ? group.recommendations.some(
+                filter === "all"
+                    ? true
+                    : group.recommendations.some(
                           (rec) => rec.provider.toLowerCase() === filter.toLowerCase()
-                      )
-                    : true;
+                      );
 
             const query = searchQuery.trim().toLowerCase();
 

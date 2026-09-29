@@ -50,7 +50,7 @@ export default function RecommendationGroupCard({ group }: Readonly<Recommendati
                                         <Badge>{provider}</Badge>
                                         <Badge variant="secondary">
                                             {recommendationsCount} Recommendation
-                                            {recommendationsCount !== 1 ? "s" : ""}
+                                            {recommendationsCount === 1 ? "" : "s"}
                                         </Badge>
                                     </div>
                                 </div>

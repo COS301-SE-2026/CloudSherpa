@@ -1,5 +1,4 @@
 import SubSectionHeading from "@/design-system/shared/components/subsectionHeading";
-import { Alert, AlertDescription, AlertTitle } from "@/components/atoms/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/atoms/card";
 
 export default function Robust() {

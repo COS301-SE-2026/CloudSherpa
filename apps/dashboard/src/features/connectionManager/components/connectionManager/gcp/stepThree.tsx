@@ -40,8 +40,6 @@ export default function StepThreeGcp({
 }: Readonly<StepThreePropsForGcp>) {
     const [forSaving, setForSaving] = useState(false);
 
-    const [errors, setErrors] = useState<string | null>(null);
-
     const [tableResources, setTableResources] = useState<ResourceSelectionDto[]>(() => {
         if (!resources || resources.length === 0) {
             return [];

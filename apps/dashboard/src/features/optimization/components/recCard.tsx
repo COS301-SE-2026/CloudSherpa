@@ -150,7 +150,7 @@ export default function RecommendationCard({ recommendation }: Readonly<Recommen
 
             const { metricName, aggregation, timeframe } = parsed;
 
-            const displayValue = formatValue(metricName, value as number);
+            const displayValue = formatValue(metricName, value);
             const label = formatMetricLabel(metricName, aggregation);
 
             const days = timeframe.replace("d", "");

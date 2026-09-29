@@ -161,9 +161,9 @@ export default function BillingIntelligence() {
                 <BillingStatisticsCard
                     name="Primary cost driver"
                     value={
-                        primaryDriverCost !== undefined
-                            ? `${currency}${primaryDriverCost.toFixed(4)}`
-                            : "-"
+                        primaryDriverCost === undefined
+                            ? "-"
+                            : `${currency}${primaryDriverCost.toFixed(4)}`
                     }
                     description={
                         forSummary

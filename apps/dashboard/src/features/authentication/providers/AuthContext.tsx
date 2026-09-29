@@ -29,10 +29,10 @@ export function AuthProvider({ children }: AuthProps) {
             setIsAuthReady(true);
         };
 
-        window.addEventListener(AUTH_SESSION_EXPIRED_EVENT, onSessionExpired);
+        globalThis.addEventListener(AUTH_SESSION_EXPIRED_EVENT, onSessionExpired);
 
         return () => {
-            window.removeEventListener(AUTH_SESSION_EXPIRED_EVENT, onSessionExpired);
+            globalThis.removeEventListener(AUTH_SESSION_EXPIRED_EVENT, onSessionExpired);
         };
     }, []);
 
