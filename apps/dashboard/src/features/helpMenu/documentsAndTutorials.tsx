@@ -64,7 +64,7 @@ const BROWSECATEGORIES: BrowseCategory[] = [
     {
         id: "connections",
         label: "Connections",
-        description: "Connect your AWS account",
+        description: "Connect your AWS, GCP and Azure account",
         href: "/helpMenu/documents/connections",
         icon: Plug,
     },
