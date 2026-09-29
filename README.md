@@ -34,17 +34,27 @@
 </div>
 </div>
 
+## Main Features of CloudSherpa
+
+- Multi-cloud resource discovery and usage monitoring
+- A finOps dashboard for visualizing metrics
+- Agentic dashboard construction. Describe what to monitor in natural language and an AI agent builds the dashboard via an MCP server
+- An active alerting engine with threshold alerts, anomaly detection and budget alerts
+- Billing and usage forecasting
+- Rule-based optimization recommendations
+- Webhook delivery for alerts to external systems
+
 ## Documentation
 
-| Demo 3| Demo 2 | Demo 1 | 
-| :---: | :---: | :---: |
-| [System Requirements Specification](docs/documentation/demo3/Demo3_SRS.pdf) | [System Requirements Specification](docs/documentation/demo2/Demo2_SRS.pdf) | [System Requirements Specification](docs/documentation/demo1/Demo1_SRS.pdf)|
-| [System Architecture Specification](docs/documentation/demo3/Demo3_SAS.pdf) | [System Architecture Specification](docs/documentation/demo2/Demo2_SAS.pdf) | |
-| [User Manual](docs/documentation/demo3/Demo3_UserManual.pdf) | [Coding Standards](docs/documentation/demo2/Demo2_CodingStandards.pdf) ||
-|| [Testing Policy](docs/documentation/demo2/Demo2_TestingPolicy.pdf) || 
-|| [User Manual](docs/documentation/demo2/Demo2_UserManual.pdf) ||
-|| [Architecture Decision Records](docs/documentation/demo2/Demo2_ADR.pdf) ||
-|| [Brand Style Guide](docs/documentation/demo2/Demo2_DesignSystem.pdf) ||
+|Demo 4| Demo 3| Demo 2 | Demo 1 | 
+| :---: | :---: | :---: | :---: |
+|[System Requirements Specification](docs/documentation/demo4/Demo4_SRS.pdf)| [System Requirements Specification](docs/documentation/demo3/Demo3_SRS.pdf) | [System Requirements Specification](docs/documentation/demo2/Demo2_SRS.pdf) | [System Requirements Specification](docs/documentation/demo1/Demo1_SRS.pdf)|
+|[System Architecture Specification](docs/documentation/demo4/Demo4_SAS.pdf)| [System Architecture Specification](docs/documentation/demo3/Demo3_SAS.pdf) | [System Architecture Specification](docs/documentation/demo2/Demo2_SAS.pdf) | |
+|[User Manual](docs/documentation/demo4/Demo4_UserManual.pdf)| [User Manual](docs/documentation/demo3/Demo3_UserManual.pdf) | [Coding Standards](docs/documentation/demo2/Demo2_CodingStandards.pdf) ||
+||| [Testing Policy](docs/documentation/demo2/Demo2_TestingPolicy.pdf) || 
+||| [User Manual](docs/documentation/demo2/Demo2_UserManual.pdf) ||
+||| [Architecture Decision Records](docs/documentation/demo2/Demo2_ADR.pdf) ||
+||| [Brand Style Guide](docs/documentation/demo2/Demo2_DesignSystem.pdf) ||
 
 ## Important Links
 
@@ -102,6 +112,10 @@ Team BitFlip is a cross-functional group of dedicated software engineering stude
 
 ### Meet the Team
 
+<a href="https://github.com/COS301-SE-2026/CloudSherpa/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=COS301-SE-2026/CloudSherpa" />
+</a>
+
 **Megan Norval**
 
 [LinkedIn](www.linkedin.com/in/megan-norval)
@@ -146,16 +160,6 @@ In our BitFlip team working on CloudSherpa for BBD, I am acting as our API & Sys
 
 I am a developer with a deep interest in the intersection of technical architecture and UI/UX design. My background in Information and Knowledge Systems has given me a strong foundation in how users interact with data. I’m not just looking to build a functional tool, but a reliable, high-performance solution that users genuinely enjoy engaging with.
 In our BitFlip team, while working on CloudSherpa for BBD I acted as Frontend Application Developer and focused on implementing login and registration ui, as well dashboard state handling and grid layout and resizing logic.
-
----
-
-
-**Role Allocations:**
-* **Megan Norval** - *Team Lead & Core Backend Architect*
-* **Gerard Jordaan** - *DevOps Architect, Full-Stack Contributor*
-* **Karishma Boodhoo** - *Frontend UI/UX Engineer*
-* **Cherise Heyl** - *API & Systems Integration Engineer*
-* **Flip Venter** - *Frontend Application Developer*
 
 ---
 *Developed in partnership with BBD for the COS 301 Capstone Project (2026).*
