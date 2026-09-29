@@ -49,8 +49,6 @@ export function ChartWidget({
     const isSessionActive = useDashboardStore((state) => state.isSessionActive);
     const isGenerating = useDashboardStore((state) => state.isGenerating);
 
-    const hideOptions = useState(isSessionActive);
-
     // watch widget content while expanding
     const contentRef = useRef<HTMLDivElement>(null);
     const [isLayoutReady, setIsLayoutReady] = useState(false);

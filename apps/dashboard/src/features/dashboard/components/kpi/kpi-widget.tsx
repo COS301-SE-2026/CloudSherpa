@@ -49,16 +49,6 @@ export function KPIWidget({ config, preview = false, isEditMode = false }: Reado
     const isNotConfigured = !chargeIds || chargeIds.length === 0;
 
     const renderKpiContent = () => {
-        // if (showSaveBeforeConfigure) {
-        //     return (
-        //         <div className="flex flex-1 items-center justify-center">
-        //             <p className="text-xs text-muted-foreground italic text-center">
-        //                 Drag to move widget.
-        //             </p>
-        //         </div>
-        //     );
-        // }
-
         if (isNotConfigured) {
             return (
                 <div className="flex flex-col gap-2 justify-center items-center h-full w-full">

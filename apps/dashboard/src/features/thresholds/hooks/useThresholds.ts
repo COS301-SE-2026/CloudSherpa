@@ -94,7 +94,7 @@ export function useThresholds(resourceId?: string): RequestForThreshold {
                 return {
                     ...forThreshold,
                     ...rest,
-                    ...(metric_name !== undefined ? { metricName: metric_name } : {}),
+                    ...(metric_name === undefined ? {} : { metricName: metric_name }),
                 };
             })
         );

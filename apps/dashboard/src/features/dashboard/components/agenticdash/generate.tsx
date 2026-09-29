@@ -18,14 +18,16 @@ export default function GenerateDashInput({
     showPresets,
     isApplying,
 }: Readonly<GenerateDashInputProps>) {
-    const [prompt, setPrompt] = useState("");
+    const prompt = useDashboardStore((state) => state.generatePrompt);
+    const setPrompt = useDashboardStore((state) => state.setGeneratePrompt);
     const textRef = useRef<HTMLTextAreaElement>(null);
 
     const isSessionActive = useDashboardStore((state) => state.isSessionActive);
     const isGenerating = useDashboardStore((state) => state.isGenerating);
 
-    const { startSessionAndGenerate, sendPrompt, applyDashboard, cancelSession } =
-        useDashboardStore((state) => state.agenticActions);
+    const { startSessionAndGenerate, sendPrompt } = useDashboardStore(
+        (state) => state.agenticActions
+    );
 
     const handleGenerate = async () => {
         if (!prompt.trim() || isGenerating) {

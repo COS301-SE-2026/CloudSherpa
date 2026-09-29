@@ -22,7 +22,11 @@ import { persist } from "zustand/middleware";
 import { getPresetRange } from "../components/toolbar/timePeriodSelector";
 import { timeMs } from "@/lib/timeUtils";
 import { toast } from "sonner";
-import type { AiVersionSummary, DashboardPlan } from "@/features/dashboard/types/agentic";
+import type {
+    AiVersionSummary,
+    DashboardPlan,
+    AiDashboardApplyMode,
+} from "@/features/dashboard/types/agentic";
 import {
     createAiSession,
     deleteAiSession,
@@ -32,7 +36,6 @@ import {
     applyAiDashboardVersion,
 } from "@/lib/fetch/api-agentic-dashboard";
 import type { DashboardDTO } from "@/lib/fetch/api-dashboard";
-import type { AiDashboardApplyMode } from "@/features/dashboard/types/agentic";
 import { getAwsAccountConnections } from "@/lib/fetch/cloud-account-api";
 
 const tickIntervalMs = 60_000;
@@ -66,6 +69,10 @@ export type AgenticSlice = {
     versions: AiVersionSummary[];
     stagedLayouts: Record<string, LayoutItem>;
     stagedWidgets: Record<string, WidgetConfig>;
+
+    generatePrompt: string;
+    setGeneratePrompt: (prompt: string) => void;
+
     agenticActions: AgenticActions;
 };
 
@@ -511,8 +518,8 @@ function adaptFetchedDashboards(dashboards: DashboardDTO[]) {
             if (widget.widgetType === "CHART") {
                 widgetsArray.push({
                     id: widget.id,
-                    chartType: widget.chartType as ChartType,
-                    chartColour: widget.chartColour as ChartColour,
+                    chartType: widget.chartType,
+                    chartColour: widget.chartColour,
                     widgetType: "CHART",
                     displayName: widget.displayName,
                     provider: widget.provider,
@@ -623,6 +630,8 @@ const createAgenticSlice: StateCreator<DashboardStore, [], [], AgenticSlice> = (
     versions: [],
     stagedLayouts: {},
     stagedWidgets: {},
+    generatePrompt: "",
+    setGeneratePrompt: (prompt) => set({ generatePrompt: prompt }),
 
     agenticActions: {
         startSessionAndGenerate: async (prompt: string) => {

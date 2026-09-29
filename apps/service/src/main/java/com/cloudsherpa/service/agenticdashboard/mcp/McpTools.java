@@ -23,7 +23,9 @@ import com.cloudsherpa.service.agenticdashboard.mcp.dto.UpdateWidgetLayoutToolDt
 import com.cloudsherpa.service.agenticdashboard.service.AiDashboardVersionService;
 import com.cloudsherpa.service.agenticdashboard.service.AiSessionService;
 import com.cloudsherpa.service.billing.dto.BillingChargeResponse;
+import com.cloudsherpa.service.billing.dto.BillingKpiChargesRequest;
 import com.cloudsherpa.service.billing.service.BillingService;
+import java.time.OffsetDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +42,19 @@ public class McpTools {
   private static final int MAX_METRICS = 16;
   private static final int MAX_CHARGES = 16;
   private static final int MAX_WIDGETS = 20;
+
+  private static final String RESULTS = "results";
+  private static final String COUNT = "count";
+  private static final String LIMIT = "limit";
+  private static final String TRUNCATED = "truncated";
+  private static final String WIDGET_ID = "widgetId";
+  private static final String WIDGET_TYPE = "widgetType";
+  private static final String DISPLAY_NAME = "displayName";
+  private static final String START_X = "startX";
+  private static final String START_Y = "startY";
+  private static final String WIDTH = "width";
+  private static final String HEIGHT = "height";
+  private static final String MESSAGE = "message";
 
   private final CloudConnectionRepository cloudConnectionRepository;
   private final CloudAccountRepository cloudAccountRepository;
@@ -81,13 +96,13 @@ public class McpTools {
             .toList();
 
     return Map.of(
-        "results",
+        RESULTS,
         results,
-        "count",
+        COUNT,
         results.size(),
-        "limit",
+        LIMIT,
         resultLimit,
-        "truncated",
+        TRUNCATED,
         results.size() >= resultLimit);
   }
 
@@ -112,13 +127,13 @@ public class McpTools {
             .toList();
 
     return Map.of(
-        "results",
+        RESULTS,
         results,
-        "count",
+        COUNT,
         results.size(),
-        "limit",
+        LIMIT,
         resultLimit,
-        "truncated",
+        TRUNCATED,
         results.size() >= resultLimit);
   }
 
@@ -153,13 +168,13 @@ public class McpTools {
         provider,
         "resourceType",
         resource.getResourceType(),
-        "results",
+        RESULTS,
         results,
-        "count",
+        COUNT,
         results.size(),
-        "limit",
+        LIMIT,
         resultLimit,
-        "truncated",
+        TRUNCATED,
         results.size() >= resultLimit);
   }
 
@@ -169,9 +184,12 @@ public class McpTools {
     validateSession(context);
     int resultLimit = normalizeLimit(limit, MAX_CHARGES);
     String normalizedQuery = normalizeQuery(query);
+    OffsetDateTime effectiveTo = OffsetDateTime.now();
+    OffsetDateTime effectiveFrom = effectiveTo.minusDays(30);
+    var request = new BillingKpiChargesRequest(effectiveFrom.toString(), effectiveTo.toString());
 
     List<BillingChargeToolDto> results =
-        billingService.getCharges().stream()
+        billingService.getCharges(request).stream()
             .filter(charge -> matchesCharge(charge, normalizedQuery))
             .sorted(
                 Comparator.comparing(
@@ -188,13 +206,13 @@ public class McpTools {
             .toList();
 
     return Map.of(
-        "results",
+        RESULTS,
         results,
-        "count",
+        COUNT,
         results.size(),
-        "limit",
+        LIMIT,
         resultLimit,
-        "truncated",
+        TRUNCATED,
         results.size() >= resultLimit);
   }
 
@@ -204,21 +222,21 @@ public class McpTools {
 
     var widget = versionService.addChartWidget(context.userId(), context.sessionId(), request);
     return Map.of(
-        "widgetId",
+        WIDGET_ID,
         widget.widgetId(),
-        "widgetType",
+        WIDGET_TYPE,
         widget.widgetType(),
-        "displayName",
+        DISPLAY_NAME,
         widget.displayName(),
-        "startX",
+        START_X,
         widget.startX(),
-        "startY",
+        START_Y,
         widget.startY(),
-        "width",
+        WIDTH,
         widget.width(),
-        "height",
+        HEIGHT,
         widget.height(),
-        "message",
+        MESSAGE,
         "Chart widget added");
   }
 
@@ -228,21 +246,21 @@ public class McpTools {
 
     var widget = versionService.addKpiWidget(context.userId(), context.sessionId(), request);
     return Map.of(
-        "widgetId",
+        WIDGET_ID,
         widget.widgetId(),
-        "widgetType",
+        WIDGET_TYPE,
         widget.widgetType(),
-        "displayName",
+        DISPLAY_NAME,
         widget.displayName(),
-        "startX",
+        START_X,
         widget.startX(),
-        "startY",
+        START_Y,
         widget.startY(),
-        "width",
+        WIDTH,
         widget.width(),
-        "height",
+        HEIGHT,
         widget.height(),
-        "message",
+        MESSAGE,
         "KPI widget added");
   }
 
@@ -275,11 +293,11 @@ public class McpTools {
 
     var widget = versionService.deleteWidget(context.userId(), context.sessionId(), widgetId);
     return Map.of(
-        "widgetId",
+        WIDGET_ID,
         widget.widgetId(),
-        "displayName",
+        DISPLAY_NAME,
         widget.displayName(),
-        "message",
+        MESSAGE,
         "Widget deleted");
   }
 
@@ -290,13 +308,13 @@ public class McpTools {
     int deletedCount = draft.widgets().size();
     versionService.clearWorkingDashboard(context.userId(), context.sessionId());
 
-    return Map.of("deletedWidgetCount", deletedCount, "message", "Working dashboard cleared");
+    return Map.of("deletedWidgetCount", deletedCount, MESSAGE, "Working dashboard cleared");
   }
 
   public Map<String, Object> discardWorkingDashboard(AiAgentContext context) {
     validateSession(context);
     versionService.discardWorkingDashboard(context.userId(), context.sessionId());
-    return Map.of("message", "Uncommitted dashboard changes discarded");
+    return Map.of(MESSAGE, "Uncommitted dashboard changes discarded");
   }
 
   public Map<String, Object> updateDashboard(
@@ -305,9 +323,12 @@ public class McpTools {
 
     var dashboard = versionService.updateDashboard(context.userId(), context.sessionId(), request);
     return Map.of(
-        "title", dashboard.title(),
-        "widgetCount", dashboard.widgets().size(),
-        "message", "Dashboard metadata updated");
+        "title",
+        dashboard.title(),
+        "widgetCount",
+        dashboard.widgets().size(),
+        MESSAGE,
+        "Dashboard metadata updated");
   }
 
   public Map<String, Object> commitDashboardChanges(AiAgentContext context) {
@@ -315,9 +336,12 @@ public class McpTools {
 
     var response = versionService.commitWorkingDashboard(context.userId(), context.sessionId());
     return Map.of(
-        "versionId", response.versionId(),
-        "version", response.version(),
-        "message", "Dashboard changes committed as a new version");
+        "versionId",
+        response.versionId(),
+        "version",
+        response.version(),
+        MESSAGE,
+        "Dashboard changes committed as a new version");
   }
 
   private List<CloudAccountToolDto> mapAccounts(CloudConnection connection) {
@@ -402,21 +426,21 @@ public class McpTools {
   private Map<String, Object> widgetSummary(
       com.cloudsherpa.service.agenticdashboard.dto.DashboardPlanWidgetDto widget, String message) {
     return Map.of(
-        "widgetId",
+        WIDGET_ID,
         widget.widgetId(),
-        "widgetType",
+        WIDGET_TYPE,
         widget.widgetType(),
-        "displayName",
+        DISPLAY_NAME,
         widget.displayName(),
-        "startX",
+        START_X,
         widget.startX(),
-        "startY",
+        START_Y,
         widget.startY(),
-        "width",
+        WIDTH,
         widget.width(),
-        "height",
+        HEIGHT,
         widget.height(),
-        "message",
+        MESSAGE,
         message);
   }
 

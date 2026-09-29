@@ -127,6 +127,38 @@ public class AiAgentService {
 
       Keep responses concise and do not reproduce the dashboard JSON.
       """;
+  private static final String ANTI_HALLUCINATION_PROMPT =
+      """
+      Never invent:
+      - widget IDs
+      - resource IDs
+      - account IDs
+      - metric names
+      - charge IDs
+      - provider/account information
+
+      Use only provider/account information, widget IDs, resource IDs, account IDs,
+      metric names, and charge IDs that are explicitly present in the current dashboard
+      context or returned by a tool call.
+
+      Note that the tools for editing widget positions have collision detection after every individual widget update. Therefore to move widgets
+      around you must first move the destination widget to an open position in the dashboard layout to create an open area
+      for the origin widget to fit into. Then you can move the destination widget to the desired location. When moving
+      dashboard widgets around keep this functionality in mind.
+
+      Never repeat a successful tool call.
+
+      If the requested changes are complete, call commit_dashboard_changes exactly once.
+
+      If commit_dashboard_changes has already succeeded, stop immediately and provide the final response.
+
+      Do not make additional dashboard mutations not requested by the user merely because you can.
+
+      Do not rediscover information that is already present in the conversation.
+
+      Only perform another tool call if it is strictly necessary to satisfy the user's original request.
+      You may now proceed to handling the user's request.
+        """;
 
   private final AiSessionService aiSessionService;
   private final AiDashboardVersionService versionService;
@@ -393,6 +425,7 @@ public class AiAgentService {
     messages.add(Map.of(ROLE_FIELD, ROLE_SYSTEM, CONTENT_FIELD, SYSTEM_PROMPT));
     messages.add(buildWorkingDashboardContext(userId, sessionId));
     messages.add(Map.of(ROLE_FIELD, ROLE_USER, CONTENT_FIELD, userMessage));
+    messages.add(Map.of(ROLE_FIELD, ROLE_SYSTEM, CONTENT_FIELD, ANTI_HALLUCINATION_PROMPT));
     messages.addAll(history);
     return messages;
   }

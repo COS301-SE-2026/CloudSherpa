@@ -45,7 +45,7 @@ export function BudgetPopup({ open, initial, onClose, onSubmit }: Readonly<Props
     const [scope, setScope] = useState<ScopeForBudget>(initial?.scope ?? "TENANT");
 
     const [amount, setAmount] = useState<string>(
-        initial?.amount !== undefined ? String(initial.amount) : ""
+        initial?.amount === undefined ? "" : String(initial.amount)
     );
 
     const [windowDays, setWindowDays] = useState<number>(initial?.window_days ?? 30);
@@ -226,7 +226,7 @@ export function BudgetPopup({ open, initial, onClose, onSubmit }: Readonly<Props
         return resource?.resourceName ?? selectedResourceId;
     })();
 
-    const handlingSubmit = async (submit: React.FormEvent) => {
+    const handlingSubmit = async (submit: React.SubmitEvent) => {
         submit.preventDefault();
 
         let hasError = false;

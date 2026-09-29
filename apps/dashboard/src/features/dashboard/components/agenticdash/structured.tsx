@@ -21,6 +21,46 @@ const PROVIDER_MAP: Record<string, string> = {
     GCP: "GCP_PROJECT",
 };
 
+function filterValidResourceIds(resourceIds: string[], resources: CloudResource[]): string[] {
+    const validResourceIds = new Set(resources.map((resource) => resource.id));
+
+    return resourceIds.filter((id) => validResourceIds.has(id));
+}
+
+function filterAccountsByProvider(
+    accountIds: string[],
+    connections: CloudAccount[],
+    selectedProviderTypes: Set<string>
+): string[] {
+    return accountIds.filter((accountId) => {
+        const connection = connections.find((connection) => connection.id === accountId);
+
+        return (
+            connection !== undefined &&
+            selectedProviderTypes.has((connection.accountType || "").toUpperCase())
+        );
+    });
+}
+
+function getSelectedMetrics(
+    selectedResourceIds: string[],
+    metricList: Record<string, string[]>
+): Set<string> {
+    return new Set(selectedResourceIds.flatMap((id) => metricList[id] ?? []));
+}
+
+function filterThemeIdsByMetrics(themeIds: string[], selectedMetrics: Set<string>): string[] {
+    return themeIds.filter((themeId) => {
+        const theme = THEMES.find((theme) => theme.id === themeId);
+
+        if (theme === undefined) {
+            return false;
+        }
+
+        return theme.metricNames.some((metric) => selectedMetrics.has(metric));
+    });
+}
+
 interface StructuredRequestProps {
     isApplying: boolean;
 }
@@ -141,24 +181,15 @@ export default function StructuredRequest({ isApplying }: Readonly<StructuredReq
 
         setProviders(selectedProviders);
 
-        setAccountIds((previous) => {
-            if (selectedProviders.length === 0) {
-                return [];
-            }
+        const selectedProviderTypes = new Set(
+            selectedProviders.map((provider) => PROVIDER_MAP[provider])
+        );
 
-            const selectedProviderTypes = new Set(
-                selectedProviders.map((provider) => PROVIDER_MAP[provider])
-            );
-
-            return previous.filter((accountId) => {
-                const connection = connections.find((connection) => connection.id === accountId);
-
-                return (
-                    connection &&
-                    selectedProviderTypes.has((connection.accountType || "").toUpperCase())
-                );
-            });
-        });
+        setAccountIds((previous) =>
+            selectedProviders.length === 0
+                ? []
+                : filterAccountsByProvider(previous, connections, selectedProviderTypes)
+        );
 
         setResources([]);
         setResourceIds([]);
@@ -186,26 +217,9 @@ export default function StructuredRequest({ isApplying }: Readonly<StructuredReq
         setResourceIds(selectedResourceIds);
 
         const metricList = getMetricList();
-        const selectedMetrics = new Set<string>();
+        const selectedMetrics = getSelectedMetrics(selectedResourceIds, metricList);
 
-        selectedResourceIds.forEach((id) => {
-            const metrics = metricList[id] ?? [];
-
-            metrics.forEach((metric) => {
-                selectedMetrics.add(metric);
-            });
-        });
-
-        setThemeIds((previous) =>
-            previous.filter((themeId) => {
-                const theme = THEMES.find((theme) => theme.id === themeId);
-
-                return (
-                    theme !== undefined &&
-                    theme.metricNames.some((metric) => selectedMetrics.has(metric))
-                );
-            })
-        );
+        setThemeIds((previous) => filterThemeIdsByMetrics(previous, selectedMetrics));
     };
 
     const handleThemeSelect = (val: string | string[]) => {
@@ -232,9 +246,7 @@ export default function StructuredRequest({ isApplying }: Readonly<StructuredReq
 
                 setResources(allResources);
 
-                setResourceIds((previous) =>
-                    previous.filter((id) => allResources.some((resource) => resource.id === id))
-                );
+                setResourceIds((previous) => filterValidResourceIds(previous, allResources));
 
                 setThemeIds([]);
             })
@@ -250,74 +262,72 @@ export default function StructuredRequest({ isApplying }: Readonly<StructuredReq
     }, [accountIds]);
 
     return (
-        <>
-            <div className="h-full flex flex-col justify-start pt-4 gap-4">
-                <div className="grid gap-2 w-full">
-                    <Label>Provider</Label>
-                    <Dropdown
-                        multiple
-                        value={providers}
-                        options={PROVIDERS.map((p) => ({ value: p, label: p }))}
-                        onSelect={handleProviderSelect}
-                        disableSearch={true}
-                        widthVariant="full"
-                        placeholder="Select Provider"
-                    />
-                </div>
-                <div className="grid gap-2 w-full">
-                    <Label>Connection</Label>
-                    <Dropdown
-                        multiple
-                        value={accountIds}
-                        options={connectionOptions}
-                        onSelect={handleAccountSelect}
-                        disabled={!providers}
-                        widthVariant="full"
-                        placeholder="Select Connection"
-                        emptyMessage="No connections found"
-                    />
-                </div>
-                <div className="grid gap-2 w-full">
-                    <Label>Resource</Label>
-                    <Dropdown
-                        multiple
-                        value={resourceIds}
-                        options={resources.map((r) => ({ value: r.id, label: r.resourceName }))}
-                        onSelect={handleResourceSelect}
-                        disabled={accountIds.length === 0}
-                        widthVariant="full"
-                        placeholder="Select Resource"
-                        emptyMessage="No resources found"
-                    />
-                </div>
-                <div className="grid gap-2 w-full">
-                    <Label>Theme</Label>
-                    <Dropdown
-                        multiple
-                        value={themeIds}
-                        options={availableThemes.map((theme) => ({
-                            value: theme.id,
-                            label: theme.label,
-                        }))}
-                        onSelect={handleThemeSelect}
-                        disabled={resourceIds.length === 0}
-                        disableSearch={true}
-                        widthVariant="full"
-                        placeholder="Select Theme"
-                        emptyMessage="No themes available for this resource"
-                    />
-                </div>
-                <div className="h-full w-full flex flex flex-col justify-end items-end gap-2">
-                    <Button
-                        variant="default"
-                        onClick={handleGenerate}
-                        disabled={isGenerating || isApplying}
-                        className="mx-3 my-2"
-                    >
-                        {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : "Generate"}
-                    </Button>
-                </div>
+        <div className="h-full flex flex-col justify-start pt-4 gap-4">
+            <div className="grid gap-2 w-full">
+                <Label>Provider</Label>
+                <Dropdown
+                    multiple
+                    value={providers}
+                    options={PROVIDERS.map((p) => ({ value: p, label: p }))}
+                    onSelect={handleProviderSelect}
+                    disableSearch={true}
+                    widthVariant="full"
+                    placeholder="Select Provider"
+                />
             </div>
-        </>
+            <div className="grid gap-2 w-full">
+                <Label>Connection</Label>
+                <Dropdown
+                    multiple
+                    value={accountIds}
+                    options={connectionOptions}
+                    onSelect={handleAccountSelect}
+                    disabled={!providers}
+                    widthVariant="full"
+                    placeholder="Select Connection"
+                    emptyMessage="No connections found"
+                />
+            </div>
+            <div className="grid gap-2 w-full">
+                <Label>Resource</Label>
+                <Dropdown
+                    multiple
+                    value={resourceIds}
+                    options={resources.map((r) => ({ value: r.id, label: r.resourceName }))}
+                    onSelect={handleResourceSelect}
+                    disabled={accountIds.length === 0}
+                    widthVariant="full"
+                    placeholder="Select Resource"
+                    emptyMessage="No resources found"
+                />
+            </div>
+            <div className="grid gap-2 w-full">
+                <Label>Theme</Label>
+                <Dropdown
+                    multiple
+                    value={themeIds}
+                    options={availableThemes.map((theme) => ({
+                        value: theme.id,
+                        label: theme.label,
+                    }))}
+                    onSelect={handleThemeSelect}
+                    disabled={resourceIds.length === 0}
+                    disableSearch={true}
+                    widthVariant="full"
+                    placeholder="Select Theme"
+                    emptyMessage="No themes available for this resource"
+                />
+            </div>
+            <div className="h-full w-full flex flex flex-col justify-end items-end gap-2">
+                <Button
+                    variant="default"
+                    onClick={handleGenerate}
+                    disabled={isGenerating || isApplying}
+                    className="mx-3 my-2"
+                >
+                    {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : "Generate"}
+                </Button>
+            </div>
+        </div>
     );
 }

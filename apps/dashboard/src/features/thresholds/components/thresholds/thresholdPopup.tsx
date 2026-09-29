@@ -203,7 +203,7 @@ export function ThresholdPopup({
         }
     };
 
-    const handlingSubmit = async (submitting: React.FormEvent) => {
+    const handlingSubmit = async (submitting: React.SubmitEvent) => {
         submitting.preventDefault();
 
         let hasError = false;
@@ -324,7 +324,7 @@ export function ThresholdPopup({
                                     label: type,
                                 }))}
                                 onSelect={(change) => {
-                                    setMetricName(change as string);
+                                    setMetricName(change);
                                     if (metricError) {
                                         setMetricError(null);
                                     }
