@@ -41,6 +41,10 @@ echo "Validating DASHBOARD env vars"
 echo "Validating INGESTION env vars"
 (cd apps/ingestion && varlock load)
 
+# Intelligence validation
+echo "Validating INTELLIGENCE env vars"
+(cd apps/intelligence && varlock load)
+
 # Service validation
 echo "Validating SERVICE env vars"
 (cd apps/service && varlock load)
