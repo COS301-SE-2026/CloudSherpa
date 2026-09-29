@@ -70,7 +70,7 @@ cd ..
 Then start the stack:
 
 ```bash
-docker compose -f infra/docker-compose.yml up --build
+docker compose -f infra/docker-compose.yml up --build --build-arg API_URL="http://localhost:8083"
 ```
 
 The dashboard frontend is available at `http://localhost:3000`.
