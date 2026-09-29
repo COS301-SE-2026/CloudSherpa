@@ -34,7 +34,7 @@ interface AlertScope {
 }
 
 function getScope(alert: Alert): AlertScope {
-    const forPayload = (alert.payload ?? {}) as Record<string, unknown>;
+    const forPayload = alert.payload ?? {};
 
     if (alert.alertType === "BUDGET") {
         const forScope = forPayload.budget_scope;

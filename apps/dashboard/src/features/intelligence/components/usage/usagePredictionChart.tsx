@@ -58,10 +58,7 @@ export default function UsagePredictionChart({
 
     // 3. X-AXIS MATH HOOK
     const { currentTime, minXAxisTime, maxXAxisTime } = useMemo(() => {
-        const forecastStart =
-            historicalUsagePoints.length > 0
-                ? historicalUsagePoints[historicalUsagePoints.length - 1][0]
-                : 0;
+        const forecastStart = historicalUsagePoints.at(-1)?.[0] ?? 0;
 
         const minTime = forecastStart - durationByPreset[pastTimeWindowPreset];
         let maxTime: number;
@@ -162,7 +159,9 @@ export default function UsagePredictionChart({
                     const value = paramValue?.[1] ?? 0;
 
                     if (param.seriesName === "Historical Usage") {
-                        tooltipHtml += `${param.marker} Historical Usage: ${value.toFixed(2)}<br/>`;
+                        const marker = typeof param.marker === "string" ? param.marker : "";
+
+                        tooltipHtml += `${marker} Historical Usage: ${value.toFixed(2)}<br/>`;
                     } else if (param.seriesName === "Predicted Usage") {
                         predictedValue = value;
                         hasForecast = true;
@@ -292,7 +291,9 @@ export default function UsagePredictionChart({
         ],
     };
 
-    const cardContent = !loading ? (
+    const cardContent = loading ? (
+        <Spinner className="w-10 h-10" />
+    ) : (
         <ReactECharts
             ref={echartsRef}
             option={option}
@@ -300,8 +301,6 @@ export default function UsagePredictionChart({
             style={{ height: "100%", width: "100%" }}
             notMerge={true}
         />
-    ) : (
-        <Spinner className="w-10 h-10" />
     );
 
     return (

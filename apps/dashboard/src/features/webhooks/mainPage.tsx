@@ -276,7 +276,8 @@ export const Webhooks = () => {
                     setEventSelectedForPayload(events[0]);
                 }
             } catch (error) {
-                //console.error("error loading webhook data");
+                console.error("error loading webhook data", error);
+                toast.error("Failed to load webhook data");
             }
         };
 

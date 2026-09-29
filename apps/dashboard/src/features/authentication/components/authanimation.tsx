@@ -76,7 +76,9 @@ export default function AuthAnimation() {
     const [data, setData] = useState<number[]>(() => generateHistoricalData(30));
 
     useEffect(() => {
-        const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const prefersReducedMotion = globalThis.matchMedia(
+            "(prefers-reduced-motion: reduce)"
+        ).matches;
         if (prefersReducedMotion) return;
 
         const interval = setInterval(() => {

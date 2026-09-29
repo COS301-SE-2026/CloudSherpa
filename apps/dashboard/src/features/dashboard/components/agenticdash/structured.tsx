@@ -240,9 +240,9 @@ export default function StructuredRequest({ isApplying }: Readonly<StructuredReq
 
                 setResources(allResources);
 
-                setResourceIds((previous) =>
-                    previous.filter((id) => allResources.some((resource) => resource.id === id))
-                );
+                const forValidResourceIds = new Set(allResources.map((resource) => resource.id));
+
+                setResourceIds((previous) => previous.filter((id) => forValidResourceIds.has(id)));
 
                 setThemeIds([]);
             })
@@ -258,74 +258,72 @@ export default function StructuredRequest({ isApplying }: Readonly<StructuredReq
     }, [accountIds]);
 
     return (
-        <>
-            <div className="h-full flex flex-col justify-start pt-4 gap-4">
-                <div className="grid gap-2 w-full">
-                    <Label>Provider</Label>
-                    <Dropdown
-                        multiple
-                        value={providers}
-                        options={PROVIDERS.map((p) => ({ value: p, label: p }))}
-                        onSelect={handleProviderSelect}
-                        disableSearch={true}
-                        widthVariant="full"
-                        placeholder="Select Provider"
-                    />
-                </div>
-                <div className="grid gap-2 w-full">
-                    <Label>Connection</Label>
-                    <Dropdown
-                        multiple
-                        value={accountIds}
-                        options={connectionOptions}
-                        onSelect={handleAccountSelect}
-                        disabled={!providers}
-                        widthVariant="full"
-                        placeholder="Select Connection"
-                        emptyMessage="No connections found"
-                    />
-                </div>
-                <div className="grid gap-2 w-full">
-                    <Label>Resource</Label>
-                    <Dropdown
-                        multiple
-                        value={resourceIds}
-                        options={resources.map((r) => ({ value: r.id, label: r.resourceName }))}
-                        onSelect={handleResourceSelect}
-                        disabled={accountIds.length === 0}
-                        widthVariant="full"
-                        placeholder="Select Resource"
-                        emptyMessage="No resources found"
-                    />
-                </div>
-                <div className="grid gap-2 w-full">
-                    <Label>Theme</Label>
-                    <Dropdown
-                        multiple
-                        value={themeIds}
-                        options={availableThemes.map((theme) => ({
-                            value: theme.id,
-                            label: theme.label,
-                        }))}
-                        onSelect={handleThemeSelect}
-                        disabled={resourceIds.length === 0}
-                        disableSearch={true}
-                        widthVariant="full"
-                        placeholder="Select Theme"
-                        emptyMessage="No themes available for this resource"
-                    />
-                </div>
-                <div className="h-full w-full flex flex flex-col justify-end items-end gap-2">
-                    <Button
-                        variant="default"
-                        onClick={handleGenerate}
-                        disabled={isGenerating || isApplying}
-                        className="mx-3 my-2"
-                    >
-                        {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : "Generate"}
-                    </Button>
-                </div>
+        <div className="h-full flex flex-col justify-start pt-4 gap-4">
+            <div className="grid gap-2 w-full">
+                <Label>Provider</Label>
+                <Dropdown
+                    multiple
+                    value={providers}
+                    options={PROVIDERS.map((p) => ({ value: p, label: p }))}
+                    onSelect={handleProviderSelect}
+                    disableSearch={true}
+                    widthVariant="full"
+                    placeholder="Select Provider"
+                />
             </div>
-        </>
+            <div className="grid gap-2 w-full">
+                <Label>Connection</Label>
+                <Dropdown
+                    multiple
+                    value={accountIds}
+                    options={connectionOptions}
+                    onSelect={handleAccountSelect}
+                    disabled={!providers}
+                    widthVariant="full"
+                    placeholder="Select Connection"
+                    emptyMessage="No connections found"
+                />
+            </div>
+            <div className="grid gap-2 w-full">
+                <Label>Resource</Label>
+                <Dropdown
+                    multiple
+                    value={resourceIds}
+                    options={resources.map((r) => ({ value: r.id, label: r.resourceName }))}
+                    onSelect={handleResourceSelect}
+                    disabled={accountIds.length === 0}
+                    widthVariant="full"
+                    placeholder="Select Resource"
+                    emptyMessage="No resources found"
+                />
+            </div>
+            <div className="grid gap-2 w-full">
+                <Label>Theme</Label>
+                <Dropdown
+                    multiple
+                    value={themeIds}
+                    options={availableThemes.map((theme) => ({
+                        value: theme.id,
+                        label: theme.label,
+                    }))}
+                    onSelect={handleThemeSelect}
+                    disabled={resourceIds.length === 0}
+                    disableSearch={true}
+                    widthVariant="full"
+                    placeholder="Select Theme"
+                    emptyMessage="No themes available for this resource"
+                />
+            </div>
+            <div className="h-full w-full flex flex flex-col justify-end items-end gap-2">
+                <Button
+                    variant="default"
+                    onClick={handleGenerate}
+                    disabled={isGenerating || isApplying}
+                    className="mx-3 my-2"
+                >
+                    {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : "Generate"}
+                </Button>
+            </div>
+        </div>
     );
 }
