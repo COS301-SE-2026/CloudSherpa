@@ -324,7 +324,13 @@ export function AlertsPage() {
 
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={confirmingDelete}>Delete</AlertDialogAction>
+                        <AlertDialogAction
+                            onClick={confirmingDelete}
+                            className="bg-destructive hover:bg-destructive/90"
+                            variant="destructive"
+                        >
+                            Delete
+                        </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
