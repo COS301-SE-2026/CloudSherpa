@@ -21,6 +21,46 @@ const PROVIDER_MAP: Record<string, string> = {
     GCP: "GCP_PROJECT",
 };
 
+function filterValidResourceIds(resourceIds: string[], resources: CloudResource[]): string[] {
+    const validResourceIds = new Set(resources.map((resource) => resource.id));
+
+    return resourceIds.filter((id) => validResourceIds.has(id));
+}
+
+function filterAccountsByProvider(
+    accountIds: string[],
+    connections: CloudAccount[],
+    selectedProviderTypes: Set<string>
+): string[] {
+    return accountIds.filter((accountId) => {
+        const connection = connections.find((connection) => connection.id === accountId);
+
+        return (
+            connection !== undefined &&
+            selectedProviderTypes.has((connection.accountType || "").toUpperCase())
+        );
+    });
+}
+
+function getSelectedMetrics(
+    selectedResourceIds: string[],
+    metricList: Record<string, string[]>
+): Set<string> {
+    return new Set(selectedResourceIds.flatMap((id) => metricList[id] ?? []));
+}
+
+function filterThemeIdsByMetrics(themeIds: string[], selectedMetrics: Set<string>): string[] {
+    return themeIds.filter((themeId) => {
+        const theme = THEMES.find((theme) => theme.id === themeId);
+
+        if (theme === undefined) {
+            return false;
+        }
+
+        return theme.metricNames.some((metric) => selectedMetrics.has(metric));
+    });
+}
+
 interface StructuredRequestProps {
     isApplying: boolean;
 }
@@ -141,24 +181,15 @@ export default function StructuredRequest({ isApplying }: Readonly<StructuredReq
 
         setProviders(selectedProviders);
 
-        setAccountIds((previous) => {
-            if (selectedProviders.length === 0) {
-                return [];
-            }
+        const selectedProviderTypes = new Set(
+            selectedProviders.map((provider) => PROVIDER_MAP[provider])
+        );
 
-            const selectedProviderTypes = new Set(
-                selectedProviders.map((provider) => PROVIDER_MAP[provider])
-            );
-
-            return previous.filter((accountId) => {
-                const connection = connections.find((connection) => connection.id === accountId);
-
-                return (
-                    connection &&
-                    selectedProviderTypes.has((connection.accountType || "").toUpperCase())
-                );
-            });
-        });
+        setAccountIds((previous) =>
+            selectedProviders.length === 0
+                ? []
+                : filterAccountsByProvider(previous, connections, selectedProviderTypes)
+        );
 
         setResources([]);
         setResourceIds([]);
@@ -186,23 +217,9 @@ export default function StructuredRequest({ isApplying }: Readonly<StructuredReq
         setResourceIds(selectedResourceIds);
 
         const metricList = getMetricList();
-        const selectedMetrics = new Set<string>();
+        const selectedMetrics = getSelectedMetrics(selectedResourceIds, metricList);
 
-        selectedResourceIds.forEach((id) => {
-            const metrics = metricList[id] ?? [];
-
-            metrics.forEach((metric) => {
-                selectedMetrics.add(metric);
-            });
-        });
-
-        setThemeIds((previous) =>
-            previous.filter((themeId) => {
-                const theme = THEMES.find((theme) => theme.id === themeId);
-
-                return theme?.metricNames.some((metric) => selectedMetrics.has(metric)) ?? false;
-            })
-        );
+        setThemeIds((previous) => filterThemeIdsByMetrics(previous, selectedMetrics));
     };
 
     const handleThemeSelect = (val: string | string[]) => {
@@ -229,9 +246,7 @@ export default function StructuredRequest({ isApplying }: Readonly<StructuredReq
 
                 setResources(allResources);
 
-                const forValidResourceIds = new Set(allResources.map((resource) => resource.id));
-
-                setResourceIds((previous) => previous.filter((id) => forValidResourceIds.has(id)));
+                setResourceIds((previous) => filterValidResourceIds(previous, allResources));
 
                 setThemeIds([]);
             })

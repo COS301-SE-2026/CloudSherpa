@@ -92,6 +92,37 @@ export function useMetricStream() {
         let isCleaningUp = false;
         let eventSource: EventSource;
 
+        const handleStreamError = async () => {
+            if (isCleaningUp) {
+                return;
+            }
+
+            eventSource.close();
+            eventSource.removeEventListener("metric", handleMetric);
+
+            // the connection may have failed because the auth cookie expired
+            // while the user was on another page; try to refresh once and reconnect
+            if (hasRetriedRef.current) {
+                setError(new Error("Failed to open metric stream connection"));
+                return;
+            }
+
+            hasRetriedRef.current = true;
+
+            const refreshed = await ensureSessionRefreshed();
+
+            if (isCleaningUp) {
+                return;
+            }
+
+            if (refreshed) {
+                connect();
+                return;
+            }
+
+            setError(new Error("Failed to open metric stream connection"));
+        };
+
         const connect = () => {
             eventSource = new EventSource(sseUrl, { withCredentials: true });
 
@@ -103,27 +134,7 @@ export function useMetricStream() {
             eventSource.addEventListener("metric", handleMetric);
 
             eventSource.onerror = () => {
-                if (isCleaningUp) return;
-                eventSource.close();
-                eventSource.removeEventListener("metric", handleMetric);
-
-                // the connection may have failed because the auth cookie expired
-                // while the user was on another page; try to refresh once and reconnect
-                if (!hasRetriedRef.current) {
-                    hasRetriedRef.current = true;
-
-                    ensureSessionRefreshed().then((refreshed) => {
-                        if (isCleaningUp) return;
-                        if (refreshed) {
-                            connect();
-                        } else {
-                            setError(new Error("Failed to open metric stream connection"));
-                        }
-                    });
-                    return;
-                }
-
-                setError(new Error(`Failed to open metric stream connection`));
+                void handleStreamError();
             };
         };
 

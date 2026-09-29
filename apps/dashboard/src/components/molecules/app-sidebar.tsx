@@ -75,7 +75,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
     useEffect(() => {
         const getRecommendationSummary = async () => {
-            await fetchSummary;
+            await fetchSummary();
         };
         getRecommendationSummary();
     }, []);
