@@ -60,6 +60,8 @@
 
 [Deployed CloudSherpa](https://cloudsherpa.gjjcs.org/)
 
+[Cloudsherpa Demo Video](https://youtu.be/P1Y_Udxwmp4)
+
 [CloudSherpa Project](https://github.com/orgs/COS301-SE-2026/projects/39)
 
 [Status of CloudSherpa Deployment](https://cloudsherpa-monitoring.gjjcs.org/status/cloudsherpa)
