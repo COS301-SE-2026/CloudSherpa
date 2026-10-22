@@ -53,7 +53,7 @@ export const useBillingIntelligenceStore = create<BillingIntelligenceStore>((set
 
     accountDisplayName: null,
     resourceDisplayName: null,
-    pastTimeWindowDays: 30,
+    pastTimeWindowDays: 7,
     forecastTimeWindowDays: 7,
 
     accounts: [],

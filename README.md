@@ -60,6 +60,8 @@
 
 [Deployed CloudSherpa](https://cloudsherpa.gjjcs.org/)
 
+[Cloudsherpa Demo Video](https://youtu.be/P1Y_Udxwmp4)
+
 [CloudSherpa Project](https://github.com/orgs/COS301-SE-2026/projects/39)
 
 [Status of CloudSherpa Deployment](https://cloudsherpa-monitoring.gjjcs.org/status/cloudsherpa)
@@ -67,6 +69,9 @@
 [Design System](https://cloudsherpa.gjjcs.org/designsystem)
 
 ## Running the Project
+
+> [!WARNING]
+> CloudSherpa can only be run on Linux-based systems with Docker installed and running.
 
 CloudSherpa runs locally through Docker Compose. From the repository root, initialize local environment files once:
 
@@ -116,7 +121,15 @@ Team BitFlip is a cross-functional group of dedicated software engineering stude
   <img src="https://contrib.rocks/image?repo=COS301-SE-2026/CloudSherpa" />
 </a>
 
+---
+
 **Megan Norval**
+
+<img src="docs/assets/team-photos/individual/megan.jpg" width="150"/>
+
+[GitHub Profile](https://github.com/Star-shaker)
+
+<norvalmegan05@gmail.com>
 
 [LinkedIn](www.linkedin.com/in/megan-norval)
 
@@ -125,6 +138,12 @@ I am a dedicated problem solver with a strong background in Computer Science and
 ---
 
 **Gerard Jordaan**
+
+<img src="docs/assets/team-photos/individual/gerard.JPG" width="150"/>
+
+[GitHub Profile](https://github.com/g3rard-j)
+
+<jordaangerard10@gmail.com>
 
 [LinkedIn](https://www.linkedin.com/in/gerard-jordaan/)
 
@@ -135,6 +154,12 @@ In our BitFlip team working on CloudSherpa for BBD, I acted as our DevOps Engine
 
 **Karishma Boodhoo**
 
+<img src="docs/assets/team-photos/individual/karishma.jpg" width="150"/>
+
+[GitHub Profile](https://github.com/karishma0815)
+
+<bkarishma1508@gmail.com>
+
 [LinkedIn](www.linkedin.com/in/karishmaboodhoo)
 
 I am a passionate developer who thrives on turning complex data into clean, usable interfaces. With a Computer Science background, I combine technical problem-solving with a keen eye for design to create seamless experiences that users would enjoy working with.
@@ -143,6 +168,12 @@ In our BitFlip team, while working on CloudSherpa for BBD, I acted as the UI/UX 
 ---
 
 **Cherise Heyl**
+
+<img src="docs/assets/team-photos/individual/cherise.jpg" width="150"/>
+
+[GitHub Profile](https://github.com/CheriseHeyl)
+
+<cheriseheyl@gmail.com>
 
 [LinkedIn](http://www.linkedin.com/in/cherise-heyl-5464211ba)
 
@@ -155,6 +186,12 @@ In our BitFlip team working on CloudSherpa for BBD, I am acting as our API & Sys
 ---
 
 **Flip Venter**
+
+<img src="docs/assets/team-photos/individual/flip.png" width="150"/>
+
+[GitHub Profile](https://github.com/FlipVenter)
+
+<flipventer625@gmail.com>
 
 [LinkedIn](http://www.linkedin.com/in/flippie-venter-3a0356341)
 
