@@ -13,52 +13,28 @@ const presets: Preset[] = [
         title: "Compute Health",
         description: "Monitor CPU, memory, and disk utilization across instances",
         prompt:
-            "Create a compute health dashboard for AWS only. " +
-            "Find the first connected AWS account. " +
-            "Find all active EC2 resources in that account. " +
-            "For each EC2 resource, find the available CPU Utilization metric. " +
-            "Add one line chart per EC2 resource using CPU Utilization, with no more than 4 charts total. " +
-            "Skip resources where CPU Utilization is unavailable. " +
-            "Do not use resources from other accounts or providers. " +
-            "Once the requested charts are added, finalize the dashboard.",
+            "Create a compute health dashboard for my AWS, GCP and Azure accounts. " +
+            "For each resource, add the CPU utilization metric charts. Similarly " +
+            "add charts for the network in and network out metrics as well as any " +
+            "health check metrics.",
     },
     {
         id: "network-traffic",
         title: "Network Traffic",
         description: "Analyze inbound/outbound bandwidth and load balancer metrics",
         prompt:
-            "Create a network traffic dashboard for AWS only. " +
-            "Find the first connected AWS account. " +
-            "Find up to the first two active EC2 resources from that account. " +
-            "For each of those resources, find the available network metrics. " +
-            "Add a line chart for each available network metric, with no more than 4 charts total. " +
-            "Skip a resource if neither network metric is available. " +
-            "Do not use resources from other accounts or providers. " +
-            "Once the requested charts are added, finalize the dashboard.",
+            "Create a network traffic dashboard for  AWS, GCP and Azure. " +
+            "Find resources for those accounts and find the available network metrics. " +
+            "Add a line chart for each available network metric. Skip a resource if no network metrics are available.",
     },
     {
-        id: "system-reliability",
-        title: "System Reliability",
-        description: "Overview of error rates, uptime, and failing requests",
-        prompt:
-            "Create a system reliability dashboard for AWS only. " +
-            "Find the first connected AWS account. " +
-            "Find up to the first two active resources in that account that have an available HTTP Error 5xx metric. " +
-            "For each of those resources, add one line chart using HTTP Error 5xx, with no more than 2 charts total. " +
-            "Skip resources where HTTP Error 5xx is unavailable. " +
-            "Do not substitute unrelated metrics and do not use resources from other accounts or providers. " +
-            "Once the requested charts are added, finalize the dashboard.",
-    },
-    {
-        //very consistent
         id: "total-spend",
         title: "Total Spend",
         description: "Track total cloud spending over the last 30 days",
         prompt:
-            "Create a simple billing dashboard. " +
-            "Find available billing charges and create exactly one KPI using the returned charge IDs. " +
-            "Use a 30 day aggregation window and name the KPI Total Spend. " +
-            "Commit the dashboard when complete.",
+            "Create a billing dashboard detailing different types of spend within my AWS, GCP and Azure accounts. " +
+            "Create billing KPIs for total monthly spend for each account type as well as for " +
+            "monthly storage costs for each account.",
     },
 ];
 
