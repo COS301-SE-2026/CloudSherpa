@@ -12,7 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 @Component
 public class DashboardPlanValidator {
 
-  private static final int MAX_WIDGETS = 20;
+  private static final int MAX_WIDGETS = 30;
   private static final int MAX_GRID_WIDTH = 12;
   private static final int MAX_WIDGET_HEIGHT = 1000;
 

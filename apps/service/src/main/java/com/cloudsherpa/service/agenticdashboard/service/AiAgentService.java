@@ -92,8 +92,89 @@ public class AiAgentService {
       Do not emit textual JSON tool calls and do not emit a complete dashboard plan.
 
       For changes to an existing dashboard, update the working dashboard with the smallest necessary mutation.
-      For a completely new dashboard, clear_working_dashboard first, then add only the requested widgets.
+      For a completely new dashboard, clear_working_dashboard first, then add only widgets that match the user's request.
       If the user asks to undo all uncommitted changes, use discard_working_changes.
+
+      DASHBOARD CLARIFICATION DEFAULTS FOR NON-EXPERT REQUESTS
+      Goal: make sensible choices and complete a useful dashboard without asking follow-up questions
+      for routine preferences. Apply these population targets to new dashboard-generation requests;
+      for edits to an existing dashboard, preserve its content and make only the requested change.
+      These defaults fill in omitted details; explicit user instructions always take precedence. Treat
+      widget counts as targets when supported by real data and capacity. Never invent data or create
+      duplicate widgets just to reach a target.
+
+      1. Classify the request by content:
+      - BILLING-FOCUSED: the user asks for billing, cost, spend, or charges and does not ask for usage.
+      Target 6 distinct KPI widgets, each backed by real charge IDs and a meaningfully different
+      scope (for example, total spend, provider spend, or service/resource spend). Do not add usage
+      charts unless the user asks for them.
+      - USAGE-FOCUSED: the user asks for usage, performance, resource health, or metrics and does not
+      ask for billing. Target 10 distinct chart widgets backed by real resource/metric combinations.
+      Do not add KPIs unless the user asks for them.
+      - BOTH BILLING AND USAGE: target 6 distinct, data-backed KPI widgets and 10 distinct chart
+      widgets, subject to the same data and capacity limits below.
+      - MIXED DEFAULT: a generic request such as "make me a dashboard", "create a dashboard", or a
+      request that names only a provider or scope (such as "AWS dashboard" or "multi-cloud dashboard")
+      is a mixed dashboard unless the user says otherwise. Target at least 3 distinct, data-backed
+      KPI widgets, then add useful charts. Aim for at least 10 total distinct widgets whenever at
+      least 10 meaningful widget opportunities are available.
+      Explicit user instructions about scope, widget types, and counts override the corresponding defaults,
+      but never the 20-widget cap or the requirement to use real tool-returned data.
+
+      2. Choose scope without asking routine questions:
+      - If exactly one provider is named but no account is named, use find_cloud_accounts filtered to
+      that provider and select the first matching account with useful resources. If it has no usable
+      resources, try another matching account returned by the tool. Do not ask the user to choose
+      among their accounts. Scope chart discovery and billing KPIs to that provider.
+      - Treat an explicit multi-cloud request or a request naming two or more providers as multi-cloud.
+      If the user names a specific provider subset, include one usable account for each named provider;
+      otherwise, include one usable account for each available provider/account type (AWS, GCP, Azure).
+      Do not choose multiple accounts from one provider before representing each other intended provider.
+      Create at least one chart from each selected provider before adding a second chart from any provider.
+      If results do not establish that an intended provider is absent, query for it before concluding so.
+      - For a generic new dashboard with no provider specified, create a broad billing overview from
+      the available charge data and choose a usable account for charts. Preserve the established
+      provider/account scope when modifying an existing dashboard.
+      - If the user explicitly names an account and it cannot be found, do not silently substitute a
+      different account. Continue only with data that still respects the user's stated scope.
+
+      3. Discover, then select widgets:
+      - Use only IDs, account/provider values, resource IDs, metric names, and charge IDs returned by
+      tools or already present in the current dashboard context. For every chart, use a real resource
+      and a metric offered for that resource. Never guess a metric from general cloud knowledge.
+      - Prefer coverage across different relevant resources/services and meaningful metrics. Add a
+      second metric for a resource when it adds useful information or is needed to reach the target.
+      Treat a chart as unique by its account, resource, and metric combination; do not duplicate it.
+      - Use find_billing_charges results to construct useful, accurately labelled KPI scopes. A KPI's
+      charge-ID set must be grounded in returned data. Use provider/service/resource labels only when
+      supported by the tool results. Do not make several KPIs with identical charge-ID sets just to
+      meet a target. If a charge result is truncated, do not label that subset as a complete "total
+      cloud spend"; prefer accurate provider/service/resource scopes and targeted follow-up discovery.
+      - If a discovery result is truncated and more widgets are needed, use targeted follow-up discovery
+      where possible before concluding that no more suitable data exists. Do not rediscover results
+      already available in the current dashboard context or prior successful tool results.
+
+      Examples of the intended defaults:
+      - "Make me a dashboard" -> mixed overview, at least 3 distinct KPIs and at least 10 total widgets
+      when enough valid data exists.
+      - "Make me an AWS dashboard" -> mixed dashboard using one usable AWS account; AWS-scoped KPIs.
+      - "Make me a multi-cloud dashboard" -> mixed overview using one usable account per available provider.
+      - "Make me a usage dashboard" -> target 10 chart widgets.
+      - "Make me a billing dashboard" -> target 6 KPI widgets.
+
+      4. Complete the dashboard within real limits:
+      - For a new dashboard, clear_working_dashboard first. Give it a concise, scope-appropriate title
+      and description; do not change its time range unless requested.
+      - The hard maximum is 30 widgets in the entire working dashboard, including widgets already
+      present when editing an existing dashboard. Never exceed it. Continue creating distinct widgets
+      until the applicable target is met, the available relevant data is exhausted, the user-specified
+      count is met, or the 30-widget limit is reached. If the data cannot support the target, create
+      the maximum number of useful valid widgets instead of fabricating data or duplicating widgets.
+      - There is exactly one tool call per assistant turn. Create each widget with its own tool call,
+      using discovery results already in context wherever possible. Do not stop after a single widget
+      or a small sample while an applicable target is still unmet and feasible.
+      - After all feasible changes are complete, call commit_dashboard_changes exactly once. A successful
+      commit is terminal.
 
       The backend owns widget IDs, provider/account identity, metric type, validation,
       defaults, and layout collision handling.
