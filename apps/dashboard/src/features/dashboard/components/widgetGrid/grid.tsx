@@ -307,8 +307,6 @@ export const Grid = forwardRef<GridHandle, Readonly<GridProps>>(function Grid(
             isInternalUpdate.current = true;
             onLayoutChangeRef.current(repairLayout(fullLayout, widgetsMap));
 
-            scrollRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-
             setIsCompacting(false);
         }
         hasSyncedOnce.current = true;
