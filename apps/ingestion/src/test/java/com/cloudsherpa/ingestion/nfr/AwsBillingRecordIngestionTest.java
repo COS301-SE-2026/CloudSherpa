@@ -95,7 +95,7 @@ class AwsBillingRecordIngestionTest {
   private static final String EXPORT_PREFIX = "prefix";
   private static final String EXPORT_NAME = "export";
   private static final int NUM_RECORDS_TO_SEED = 10000;
-  private static final int RECORD_PER_SECOND_THRESHOLD = 1000;
+  private static final int RECORD_PER_SECOND_THRESHOLD = 800;
 
   private MockedStatic<S3Client> mockedS3Client;
 

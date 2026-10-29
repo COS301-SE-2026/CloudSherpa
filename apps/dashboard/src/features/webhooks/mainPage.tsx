@@ -188,7 +188,7 @@ const helperForDeliveryColumns = (webhooks: Webhook[]): ColumnDef<WebhookDeliver
                 if (nextRetryAttempt) {
                     postfix =
                         ". " +
-                        (nextRetryAttempt.getMilliseconds() - now.getMilliseconds() > 0
+                        (nextRetryAttempt.getTime() > now.getTime()
                             ? "Next retry attempt at "
                             : "Last retry attempt at ") +
                         formatRetryDate(nextRetryAttempt) +
