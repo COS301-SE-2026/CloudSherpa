@@ -9,10 +9,6 @@ public class OpenSearchPermissionsService implements PermissionsService {
 
   @Override
   public Set<String> getPermissionsRequired() {
-    return Set.of(
-        "opensearch:ListDomainNames",
-        "opensearch:DescribeDomain",
-        "opensearch:DescribeDomains",
-        "opensearch:ListTags");
+    return Set.of("es:ListDomainNames", "es:DescribeDomain", "es:ListTags");
   }
 }
