@@ -72,16 +72,13 @@ public class AiAgentService {
 
   private static final String MESSAGE_TOOL_ERROR_PREFIX = "Tool error: ";
   private static final String COMMIT_SUCCESS_MESSAGE = "Dashboard changes committed successfully.";
-  private static final String SAFETY_STOP_MESSAGE =
-      "Dashboard agent reached a safety limit. "
-          + "The working changes remain staged and can be continued in the same session.";
-  private static final String REPEATED_TOOL_STOP_MESSAGE =
-      "Dashboard agent stopped due to repeatedly requesting the same action. "
-          + "No duplicate dashboard mutation was applied.";
+  private static final String SAFETY_STOP_MESSAGE = "Dashboard agent reached a safety limit. "
+      + "The working changes remain staged and can be continued in the same session.";
+  private static final String REPEATED_TOOL_STOP_MESSAGE = "Dashboard agent stopped due to repeatedly requesting the same action. "
+      + "No duplicate dashboard mutation was applied.";
   private static final int MAX_REPEATED_TOOL_CALLS = 1;
 
-  private static final String SYSTEM_PROMPT =
-      """
+  private static final String SYSTEM_PROMPT = """
       You are the CloudSherpa Dashboard Construction Agent.
 
       Work only with the authenticated user's dashboard data exposed by tools.
@@ -165,10 +162,10 @@ public class AiAgentService {
       4. Complete the dashboard within real limits:
       - For a new dashboard, clear_working_dashboard first. Give it a concise, scope-appropriate title
       and description; do not change its time range unless requested.
-      - The hard maximum is 30 widgets in the entire working dashboard, including widgets already
+      - The hard maximum is 20 widgets in the entire working dashboard, including widgets already
       present when editing an existing dashboard. Never exceed it. Continue creating distinct widgets
       until the applicable target is met, the available relevant data is exhausted, the user-specified
-      count is met, or the 30-widget limit is reached. If the data cannot support the target, create
+      count is met, or the 20-widget limit is reached. If the data cannot support the target, create
       the maximum number of useful valid widgets instead of fabricating data or duplicating widgets.
       - There is exactly one tool call per assistant turn. Create each widget with its own tool call,
       using discovery results already in context wherever possible. Do not stop after a single widget
@@ -208,8 +205,7 @@ public class AiAgentService {
 
       Keep responses concise and do not reproduce the dashboard JSON.
       """;
-  private static final String ANTI_HALLUCINATION_PROMPT =
-      """
+  private static final String ANTI_HALLUCINATION_PROMPT = """
       Never invent:
       - widget IDs
       - resource IDs
@@ -297,13 +293,11 @@ public class AiAgentService {
           return safetyStop(userId, sessionId, state);
         }
 
-        List<Map<String, Object>> messages =
-            buildRequestMessages(userId, sessionId, userMessage, history);
+        List<Map<String, Object>> messages = buildRequestMessages(userId, sessionId, userMessage, history);
         JsonNode message;
         try {
-          message =
-              requestAssistantMessage(
-                  messages, state.protocolRepairAttempts > 0 || state.noToolRepairAttempts > 0);
+          message = requestAssistantMessage(
+              messages, state.protocolRepairAttempts > 0 || state.noToolRepairAttempts > 0);
         } catch (RuntimeException exception) {
           AiDashboardPlanResponseDto fallback = autoCommitWorkingDraft(userId, sessionId, state);
 
@@ -318,10 +312,9 @@ public class AiAgentService {
 
         if (toolCalls.isArray() && !toolCalls.isEmpty()) {
           if (toolCalls.size() != 1) {
-            String feedback =
-                "The previous response returned multiple native tool calls. "
-                    + "Only one native CloudSherpa tool call is allowed per turn. "
-                    + "Choose the single most appropriate tool call and try again.";
+            String feedback = "The previous response returned multiple native tool calls. "
+                + "Only one native CloudSherpa tool call is allowed per turn. "
+                + "Choose the single most appropriate tool call and try again.";
             if (registerProtocolRepair(state)) {
               history.addAll(buildProtocolFeedback(feedback));
               continue;
@@ -335,8 +328,7 @@ public class AiAgentService {
           if (cachedResult != null) {
             int repeatedCount = state.repeatedToolCalls.merge(signature, 1, Integer::sum);
             if (repeatedCount > MAX_REPEATED_TOOL_CALLS) {
-              AiDashboardPlanResponseDto fallback =
-                  autoCommitWorkingDraft(userId, sessionId, state);
+              AiDashboardPlanResponseDto fallback = autoCommitWorkingDraft(userId, sessionId, state);
               if (fallback != null) {
                 return fallback;
               }
@@ -384,10 +376,9 @@ public class AiAgentService {
         try {
           textualToolCall = textualToolCallParser.parse(assistantContent);
         } catch (IllegalArgumentException exception) {
-          String feedback =
-              "The textual tool call was malformed: "
-                  + exception.getMessage()
-                  + ". Return exactly one tool call with a valid tool name and JSON object arguments.";
+          String feedback = "The textual tool call was malformed: "
+              + exception.getMessage()
+              + ". Return exactly one tool call with a valid tool name and JSON object arguments.";
           if (registerProtocolRepair(state)) {
             history.addAll(buildProtocolFeedback(feedback));
             continue;
@@ -401,8 +392,7 @@ public class AiAgentService {
           if (cachedResult != null) {
             int repeatedCount = state.repeatedToolCalls.merge(signature, 1, Integer::sum);
             if (repeatedCount > MAX_REPEATED_TOOL_CALLS) {
-              AiDashboardPlanResponseDto fallback =
-                  autoCommitWorkingDraft(userId, sessionId, state);
+              AiDashboardPlanResponseDto fallback = autoCommitWorkingDraft(userId, sessionId, state);
 
               if (fallback != null) {
                 return fallback;
@@ -447,9 +437,8 @@ public class AiAgentService {
         }
 
         if (assistantContent.isBlank()) {
-          String feedback =
-              "The previous response was empty. Either make exactly one native CloudSherpa tool call "
-                  + "or provide a concise final answer.";
+          String feedback = "The previous response was empty. Either make exactly one native CloudSherpa tool call "
+              + "or provide a concise final answer.";
           if (registerProtocolRepair(state)) {
             history.addAll(buildProtocolFeedback(feedback));
             continue;
@@ -523,8 +512,7 @@ public class AiAgentService {
     payload.put("timeTo", dashboard.timeTo());
     payload.put("predefinedTime", dashboard.predefinedTime());
 
-    List<Map<String, Object>> widgets =
-        dashboard.widgets().stream().map(this::compactWidget).toList();
+    List<Map<String, Object>> widgets = dashboard.widgets().stream().map(this::compactWidget).toList();
     payload.put("widgets", widgets);
 
     return Map.of(
@@ -573,8 +561,7 @@ public class AiAgentService {
     try {
       versionService.commitWorkingDashboard(userId, sessionId);
 
-      String message =
-          "The dashboard changes were staged automatically after the agent stopped before committing.";
+      String message = "The dashboard changes were staged automatically after the agent stopped before committing.";
 
       saveMessage(sessionId, AiMessage.AiMessageRole.ASSISTANT, message);
       aiSessionService.updateLastActivity(userId, sessionId);
@@ -587,8 +574,7 @@ public class AiAgentService {
 
   private JsonNode requestAssistantMessage(
       List<Map<String, Object>> messages, boolean stateRequiresNativeToolCall) {
-    JsonNode response =
-        modelClient.complete(messages, toolDefinitions, stateRequiresNativeToolCall);
+    JsonNode response = modelClient.complete(messages, toolDefinitions, stateRequiresNativeToolCall);
     JsonNode choices = response.path("choices");
 
     if (!choices.isArray() || choices.isEmpty()) {
@@ -697,8 +683,7 @@ public class AiAgentService {
                   "startY",
                   "width",
                   "height"));
-          AddChartWidgetToolDto request =
-              objectMapper.treeToValue(args, AddChartWidgetToolDto.class);
+          AddChartWidgetToolDto request = objectMapper.treeToValue(args, AddChartWidgetToolDto.class);
           yield success(toolName, mcpTools.addChartWidget(context, request));
         }
         case ADD_KPI_TOOL -> {
@@ -717,8 +702,7 @@ public class AiAgentService {
         }
         case UPDATE_LAYOUT_TOOL -> {
           validateProperties(args, Set.of("widgetId", "startX", "startY", "width", "height"));
-          UpdateWidgetLayoutToolDto request =
-              objectMapper.treeToValue(args, UpdateWidgetLayoutToolDto.class);
+          UpdateWidgetLayoutToolDto request = objectMapper.treeToValue(args, UpdateWidgetLayoutToolDto.class);
           yield success(toolName, mcpTools.updateWidgetLayout(context, request));
         }
         case UPDATE_CHART_TOOL -> {
@@ -731,15 +715,13 @@ public class AiAgentService {
                   "chartColour",
                   "resourceId",
                   "metricName"));
-          UpdateChartWidgetToolDto request =
-              objectMapper.treeToValue(args, UpdateChartWidgetToolDto.class);
+          UpdateChartWidgetToolDto request = objectMapper.treeToValue(args, UpdateChartWidgetToolDto.class);
           yield success(toolName, mcpTools.updateChartWidget(context, request));
         }
         case UPDATE_KPI_TOOL -> {
           validateProperties(
               args, Set.of("widgetId", "displayName", "chargeIds", "aggregationWindowDays"));
-          UpdateKpiWidgetToolDto request =
-              objectMapper.treeToValue(args, UpdateKpiWidgetToolDto.class);
+          UpdateKpiWidgetToolDto request = objectMapper.treeToValue(args, UpdateKpiWidgetToolDto.class);
           yield success(toolName, mcpTools.updateKpiWidget(context, request));
         }
         case DELETE_WIDGET_TOOL -> {
@@ -757,8 +739,7 @@ public class AiAgentService {
         case UPDATE_DASHBOARD_TOOL -> {
           validateProperties(
               args, Set.of("title", "description", "timeFrom", "timeTo", "predefinedTime"));
-          UpdateDashboardToolDto request =
-              objectMapper.treeToValue(args, UpdateDashboardToolDto.class);
+          UpdateDashboardToolDto request = objectMapper.treeToValue(args, UpdateDashboardToolDto.class);
           yield success(toolName, mcpTools.updateDashboard(context, request));
         }
         case COMMIT_TOOL -> {
@@ -782,17 +763,16 @@ public class AiAgentService {
     String toolCallId = requiredJsonText(toolCall, "id");
     Map<String, Object> assistantMessage = objectMapper.convertValue(toolCall, Map.class);
 
-    Map<String, Object> assistantWrapper =
-        Map.of(ROLE_FIELD, ROLE_ASSISTANT, TOOL_CALLS_FIELD, List.of(assistantMessage));
+    Map<String, Object> assistantWrapper = Map.of(ROLE_FIELD, ROLE_ASSISTANT, TOOL_CALLS_FIELD,
+        List.of(assistantMessage));
 
-    Map<String, Object> toolMessage =
-        Map.of(
-            ROLE_FIELD,
-            ROLE_TOOL,
-            TOOL_CALL_ID_FIELD,
-            toolCallId,
-            CONTENT_FIELD,
-            toJson(toolResult));
+    Map<String, Object> toolMessage = Map.of(
+        ROLE_FIELD,
+        ROLE_TOOL,
+        TOOL_CALL_ID_FIELD,
+        toolCallId,
+        CONTENT_FIELD,
+        toJson(toolResult));
 
     return List.of(assistantWrapper, toolMessage);
   }
@@ -812,8 +792,7 @@ public class AiAgentService {
           sessionId, null, null, stageAttempted, stageSucceeded, assistantMessage, dashboard);
     }
 
-    var response =
-        versionService.getVersionResponse(userId, sessionId, session.getCurrentVersionId());
+    var response = versionService.getVersionResponse(userId, sessionId, session.getCurrentVersionId());
 
     return new AiDashboardPlanResponseDto(
         sessionId,
@@ -1296,7 +1275,8 @@ public class AiAgentService {
     return Map.of("type", List.of("array", "null"), "items", Map.of("type", "string"));
   }
 
-  private record ToolCallResult(String toolCallId, String toolName, AiToolResultDto toolResult) {}
+  private record ToolCallResult(String toolCallId, String toolName, AiToolResultDto toolResult) {
+  }
 
   private static final class AgentRunState {
     private final String userMessage;
